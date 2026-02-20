@@ -1,0 +1,137 @@
+/* Landing Page Specific Animations & Utilities */
+
+@theme {
+    --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.05);
+    --shadow-primary-glow: 0 10px 30px rgba(184, 92, 92, 0.2);
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(2deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+}
+
+@keyframes pulse-soft {
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes scroll-indicator {
+    0% {
+        transform: translateY(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateY(10px);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+}
+
+.animate-float {
+    animation: float 8s ease-in-out infinite;
+}
+
+.animate-pulse-soft {
+    animation: pulse-soft 4s ease-in-out infinite;
+}
+
+.scroll-indicator-dot {
+    animation: scroll-indicator 2.5s cubic-bezier(0.15, 0.41, 0.69, 0.94) infinite;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #1E293B 0%, #B85C5C 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.dark .text-gradient {
+    background: linear-gradient(135deg, #FFFFFF 0%, #B85C5C 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.glass-dark {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-lift:hover {
+    transform: translateY(-8px);
+}
+
+.hover-glow:hover {
+    box-shadow: var(--shadow-primary-glow);
+}
+
+/* Custom Scrollbar for Landing Page */
+.landing-page-container {
+    overflow-x: hidden;
+    --section-padding: 8rem;
+    /* py-32 */
+}
+
+@media (max-width: 768px) {
+    .landing-page-container {
+        --section-padding: 5rem;
+        /* py-20 */
+    }
+}
+
+.section-p {
+    padding-top: var(--section-padding);
+    padding-bottom: var(--section-padding);
+}
+
+.container-custom {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* Hero Glow */
+.hero-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40vw;
+    height: 40vw;
+    background: radial-gradient(circle, rgba(184, 92, 92, 0.15) 0%, transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+}

@@ -1,0 +1,240 @@
+{
+    "users": [
+        {
+            "id": "1",
+            "name": "Admin User",
+            "email": "admin@salon.com",
+            "password": "password123",
+            "role": "admin",
+            "avatar": "https://i.pravatar.cc/150?u=admin"
+        },
+        {
+            "id": "2",
+            "name": "Sarah Stylist",
+            "email": "sarah@salon.com",
+            "password": "password123",
+            "role": "stylist",
+            "avatar": "https://i.pravatar.cc/150?u=sarah"
+        },
+        {
+            "id": "3",
+            "name": "Mike Reception",
+            "email": "mike@salon.com",
+            "password": "password123",
+            "role": "receptionist",
+            "avatar": "https://i.pravatar.cc/150?u=mike"
+        }
+    ],
+    "clients": [
+        {
+            "id": "c1",
+            "name": "Alice Johnson",
+            "email": "alice@example.com",
+            "phone": "+1 555-0101",
+            "totalVisits": 12,
+            "lastVisit": "2023-10-15",
+            "loyaltyPoints": 450,
+            "avatar": "https://i.pravatar.cc/150?u=alice",
+            "tags": [
+                "VIP",
+                "Color"
+            ]
+        },
+        {
+            "id": "c2",
+            "name": "Bob Smith",
+            "email": "bob@example.com",
+            "phone": "+1 555-0102",
+            "totalVisits": 3,
+            "lastVisit": "2023-11-01",
+            "loyaltyPoints": 50,
+            "avatar": "https://i.pravatar.cc/150?u=bob",
+            "tags": [
+                "New"
+            ]
+        },
+        {
+            "id": "c3",
+            "name": "Emma Wilson",
+            "email": "emma@example.com",
+            "phone": "+1 555-0103",
+            "totalVisits": 8,
+            "lastVisit": "2023-10-28",
+            "loyaltyPoints": 210,
+            "avatar": "https://i.pravatar.cc/150?u=emma",
+            "tags": [
+                "Regular"
+            ]
+        }
+    ],
+    "bookings": [
+        {
+            "id": "b1",
+            "clientName": "Alice Johnson",
+            "clientId": "c1",
+            "serviceName": "Haircut & Style",
+            "staffName": "Sarah Stylist",
+            "date": "2023-11-15",
+            "time": "10:00 AM",
+            "status": "confirmed",
+            "amount": 85.00
+        },
+        {
+            "id": "b2",
+            "clientName": "Bob Smith",
+            "clientId": "c2",
+            "serviceName": "Beard Trim",
+            "staffName": "Mike Reception",
+            "date": "2023-11-15",
+            "time": "11:30 AM",
+            "status": "pending",
+            "amount": 35.00
+        },
+        {
+            "id": "b3",
+            "clientName": "Emma Wilson",
+            "clientId": "c3",
+            "serviceName": "Manicure",
+            "staffName": "Sarah Stylist",
+            "date": "2023-11-16",
+            "time": "02:00 PM",
+            "status": "completed",
+            "amount": 45.00
+        }
+    ],
+    "services": [
+        {
+            "id": "s1",
+            "name": "Haircut & Style",
+            "category": "Hair",
+            "duration": 60,
+            "price": 85.00,
+            "description": "Complete wash, cut, and blow-dry styling."
+        },
+        {
+            "id": "s2",
+            "name": "Beard Trim",
+            "category": "Grooming",
+            "duration": 30,
+            "price": 35.00,
+            "description": "Precision beard trimming and shaping."
+        },
+        {
+            "id": "s3",
+            "name": "Manicure",
+            "category": "Nails",
+            "duration": 45,
+            "price": 45.00,
+            "description": "Classic manicure with polish."
+        },
+        {
+            "id": "s4",
+            "name": "Full Color",
+            "category": "Hair",
+            "duration": 120,
+            "price": 150.00,
+            "description": "Full head hair coloring service."
+        }
+    ],
+    "products": [
+        {
+            "id": "p1",
+            "name": "Shampoo Pro",
+            "brand": "SalonCare",
+            "category": "Hair Care",
+            "price": 25.00,
+            "stock": 42,
+            "sku": "SC-SH-01"
+        },
+        {
+            "id": "p2",
+            "name": "Conditioner Silk",
+            "brand": "SalonCare",
+            "category": "Hair Care",
+            "price": 28.00,
+            "stock": 35,
+            "sku": "SC-CN-02"
+        },
+        {
+            "id": "p3",
+            "name": "Styling Gel",
+            "brand": "StyleMax",
+            "category": "Styling",
+            "price": 18.00,
+            "stock": 15,
+            "sku": "SM-GL-05"
+        }
+    ],
+    "stats": {
+        "totalRevenue": 12500,
+        "totalBookings": 145,
+        "newClients": 28,
+        "occupancyRate": 75,
+        "revenueChange": 12.5,
+        "bookingsChange": 8.2,
+        "clientsChange": -2.4,
+        "occupancyChange": 5.1
+    },
+    "employees": [
+        {
+            "id": "e1",
+            "name": "Sarah Stylist",
+            "role": "Senior Stylist",
+            "status": "Active",
+            "attendance": 98
+        },
+        {
+            "id": "e2",
+            "name": "Mike Reception",
+            "role": "Receptionist",
+            "status": "Active",
+            "attendance": 95
+        }
+    ],
+    "inventory": [
+        {
+            "id": 1,
+            "name": "Shampoo Pro",
+            "sku": "SC-SH-01",
+            "stock": 42,
+            "status": "In Stock"
+        },
+        {
+            "id": 2,
+            "name": "Styling Gel",
+            "sku": "SM-GL-05",
+            "stock": 5,
+            "status": "Low Stock"
+        }
+    ],
+    "finance": {
+        "transactions": [
+            {
+                "id": "t1",
+                "desc": "Service Payment - #B1",
+                "amount": 85.00,
+                "date": "2023-11-15",
+                "type": "income"
+            },
+            {
+                "id": "t2",
+                "desc": "Product Sale - #P1",
+                "amount": 25.00,
+                "date": "2023-11-15",
+                "type": "income"
+            },
+            {
+                "id": "t3",
+                "desc": "Supplier Payment",
+                "amount": -450.00,
+                "date": "2023-11-14",
+                "type": "expense"
+            }
+        ],
+        "kpi": {
+            "revenue": 12500,
+            "expenses": 4200,
+            "profit": 8300
+        }
+    }
+}
