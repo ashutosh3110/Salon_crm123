@@ -14,11 +14,11 @@ if (config.env !== 'test') {
     app.use(morgan('dev'));
 }
 
+// enable cors
+app.use(cors({ origin: config.cors.origin }));
+
 // set security HTTP headers
 app.use(helmet());
-
-// Apply global rate limiter
-app.use('/v1', globalLimiter);
 
 // parse json request body
 app.use(express.json());
@@ -26,8 +26,8 @@ app.use(express.json());
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 
-// enable cors
-app.use(cors({ origin: config.cors.origin }));
+// Apply global rate limiter
+app.use('/v1', globalLimiter);
 
 // api routes
 app.use('/v1', routes);

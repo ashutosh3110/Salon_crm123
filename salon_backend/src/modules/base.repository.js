@@ -12,13 +12,25 @@ export default class BaseRepository {
     }
 
     async find(filter, options = {}) {
-        const { page = 1, limit = 10, sort = { createdAt: -1 } } = options;
+        const { page = 1, limit = 10, sort = { createdAt: -1 }, populate } = options;
         const skip = (page - 1) * limit;
 
-        const results = await this.model.find(filter)
+        let query = this.model.find(filter)
             .sort(sort)
             .skip(skip)
             .limit(limit);
+
+        if (populate) {
+            if (Array.isArray(populate)) {
+                populate.forEach((path) => {
+                    query = query.populate(path);
+                });
+            } else {
+                query = query.populate(populate);
+            }
+        }
+
+        const results = await query;
 
         const totalResults = await this.model.countDocuments(filter);
         const totalPages = Math.ceil(totalResults / limit);

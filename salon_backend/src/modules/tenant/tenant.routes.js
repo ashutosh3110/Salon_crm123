@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.get('/public-list', tenantController.getPublicTenants);
 
+router.get('/stats', auth, authorize(['superadmin']), tenantController.getTenantStats);
+
 router
     .route('/')
     .post(auth, authorize(['superadmin']), validate(tenantValidation.createTenant), tenantController.createTenant)
@@ -16,6 +18,8 @@ router
 
 router
     .route('/:tenantId')
-    .get(auth, authorize(['superadmin', 'admin']), tenantController.getTenant);
+    .get(auth, authorize(['superadmin', 'admin']), tenantController.getTenant)
+    .put(auth, authorize(['superadmin']), tenantController.updateTenant)
+    .delete(auth, authorize(['superadmin']), tenantController.deleteTenant);
 
 export default router;
