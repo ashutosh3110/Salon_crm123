@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Scissors, User, Mail, Lock, Phone, Store, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Scissors, User, Mail, Lock, Phone, Store, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function RegisterPage() {
     const [form, setForm] = useState({
@@ -14,6 +15,8 @@ export default function RegisterPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { register } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,6 +25,7 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         if (form.password !== form.confirmPassword) {
             setError('Passwords do not match');
@@ -33,8 +37,21 @@ export default function RegisterPage() {
         }
 
         setLoading(true);
-        // TODO: integrate with backend register API
-        setTimeout(() => setLoading(false), 1500);
+        try {
+            await register({
+                salonName: form.salonName,
+                fullName: form.fullName,
+                email: form.email,
+                phone: form.phone,
+                password: form.password
+            });
+            // Successful registration will already set user and token in AuthContext
+            navigate('/admin');
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -99,14 +116,15 @@ export default function RegisterPage() {
                     <h2 className="text-2xl font-bold text-text">Create your account</h2>
                     <p className="mt-2 text-sm text-text-secondary">
                         Already have an account?{' '}
-                        <Link to="/login" className="text-primary font-semibold hover:underline">
+                        <Link to="/admin/login" className="text-primary font-semibold hover:underline">
                             Sign in
                         </Link>
                     </p>
 
                     {error && (
-                        <div className="mt-4 bg-error/10 border border-error/20 text-error text-sm px-4 py-2.5 rounded-lg">
-                            {error}
+                        <div className="mt-4 flex items-start gap-3 p-4 rounded-lg bg-error/10 border border-error/20 text-error animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                            <p className="text-sm font-medium">{error}</p>
                         </div>
                     )}
 

@@ -1,21 +1,34 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // TODO: integrate with backend auth API
-        setTimeout(() => setLoading(false), 1500);
+        setError('');
+
+        try {
+            await login(form.email, form.password);
+            navigate('/admin');
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Failed to sign in. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -83,6 +96,13 @@ export default function LoginPage() {
                             Start free trial
                         </Link>
                     </p>
+
+                    {error && (
+                        <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-error/10 border border-error/20 text-error animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                            <p className="text-sm font-medium">{error}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                         {/* Email */}

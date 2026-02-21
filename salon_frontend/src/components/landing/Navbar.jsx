@@ -42,7 +42,7 @@ export default function Navbar() {
                     {/* Desktop CTAs */}
                     <div className="hidden md:flex items-center gap-3">
                         <Link
-                            to="/login"
+                            to="/admin/login"
                             className="text-sm font-semibold text-text-secondary hover:text-primary transition-colors px-4 py-2"
                         >
                             Sign In
@@ -78,7 +78,7 @@ export default function Navbar() {
                         ))}
                         <div className="pt-3 border-t border-border space-y-2">
                             <Link
-                                to="/login"
+                                to="/admin/login"
                                 className="block text-sm font-semibold text-text-secondary hover:text-primary transition-colors py-2"
                             >
                                 Sign In

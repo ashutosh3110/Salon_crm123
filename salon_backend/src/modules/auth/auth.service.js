@@ -1,17 +1,19 @@
 import mongoose from 'mongoose';
+import httpStatus from 'http-status-codes';
 import userService from '../user/user.service.js';
 import tokenService from './token.service.js';
 import User from '../user/user.model.js';
 import Tenant from '../tenant/tenant.model.js';
 import Otp from './otp.model.js';
 import Client from '../client/client.model.js';
+import ApiError from '../../utils/ApiError.js';
 
 const registerSalonOwner = async (registrationData) => {
     const { salonName, fullName, email, phone, password, subscriptionPlan = 'free' } = registrationData;
 
     // Check if user already exists
     if (await User.isEmailTaken(email)) {
-        throw new Error('Email already taken');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
     }
 
     const session = await mongoose.startSession();
@@ -56,7 +58,7 @@ const registerSalonOwner = async (registrationData) => {
 const loginUserWithEmailAndPassword = async (email, password) => {
     const user = await userService.getUserByEmail(email);
     if (!user || !(await user.isPasswordMatch(password))) {
-        throw new Error('Incorrect email or password');
+        throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
     }
     return user;
 };

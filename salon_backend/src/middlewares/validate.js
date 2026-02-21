@@ -30,7 +30,11 @@ const validate = (schema) => (req, res, next) => {
         return next(customError);
     }
 
-    Object.assign(req, value);
+    // Merge validated values back into req instead of direct assignment
+    if (value.params) Object.assign(req.params, value.params);
+    if (value.query) Object.assign(req.query, value.query);
+    if (value.body) Object.assign(req.body, value.body);
+
     return next();
 };
 
