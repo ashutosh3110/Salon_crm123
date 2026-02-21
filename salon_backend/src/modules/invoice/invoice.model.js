@@ -12,6 +12,11 @@ const invoiceSchema = new mongoose.Schema(
             ref: 'Tenant',
             required: true
         },
+        outletId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Outlet',
+            required: true
+        },
         clientId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Client',
@@ -25,6 +30,9 @@ const invoiceSchema = new mongoose.Schema(
                 price: Number,
                 quantity: { type: Number, default: 1 },
                 total: Number,
+                stylistId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+                startTime: Date,
+                endTime: Date,
             },
         ],
         subTotal: Number,
@@ -44,6 +52,10 @@ const invoiceSchema = new mongoose.Schema(
         staffId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
+        },
+        promotionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Promotion',
         }
     },
     {

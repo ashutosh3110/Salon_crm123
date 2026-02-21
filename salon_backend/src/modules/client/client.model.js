@@ -18,6 +18,10 @@ const clientSchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        role: {
+            type: String,
+            default: 'customer',
+        },
         gender: {
             type: String,
             enum: ['male', 'female', 'other'],

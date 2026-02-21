@@ -11,7 +11,12 @@ const router = express.Router();
 router.use(auth);
 router.use(validateTenant);
 
+router.get('/analytics', authorize(['admin', 'manager']), promotionController.getOfferAnalytics);
 router.post('/', authorize(['admin', 'manager']), validate(promotionValidation.createPromotion), promotionController.createPromotion);
-router.get('/active', promotionController.getActivePromotions);
+router.get('/', authorize(['admin', 'manager', 'customer']), promotionController.getPromotions);
+router.get('/active', authorize(['admin', 'manager', 'customer']), promotionController.getActivePromotions);
+router.get('/:promotionId', authorize(['admin', 'manager']), promotionController.getPromotion);
+router.patch('/:promotionId', authorize(['admin', 'manager']), validate(promotionValidation.updatePromotion), promotionController.updatePromotion);
+router.delete('/:promotionId', authorize(['admin', 'manager']), promotionController.deletePromotion);
 
 export default router;
