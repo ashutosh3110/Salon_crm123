@@ -98,8 +98,8 @@ export default function Pricing() {
                         <div
                             key={plan.name}
                             className={`relative rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl ${plan.popular
-                                    ? 'bg-white border-primary shadow-lg scale-[1.02]'
-                                    : 'bg-white border-border hover:border-primary/30'
+                                ? 'bg-white border-primary shadow-lg scale-[1.02]'
+                                : 'bg-white border-border hover:border-primary/30'
                                 }`}
                         >
                             {plan.popular && (
@@ -131,10 +131,10 @@ export default function Pricing() {
                             </ul>
 
                             <Link
-                                to="/register"
+                                to={`/register?plan=${plan.name.toLowerCase()}`}
                                 className={`block text-center w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${plan.popular
-                                        ? 'btn-primary'
-                                        : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'
+                                    ? 'btn-primary'
+                                    : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'
                                     }`}
                             >
                                 {plan.cta}

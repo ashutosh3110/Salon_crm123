@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -13,57 +12,53 @@ export function AuthProvider({ children }) {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
         if (storedUser && token) {
-            setUser(JSON.parse(storedUser));
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (e) {
+                console.error('[AuthContext] Failed to parse stored user:', e);
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+            }
         }
         setLoading(false);
     }, []);
 
     const login = async (email, password) => {
-        try {
-            console.log('[AuthContext] Attempting login for:', email);
-            const response = await api.post('/auth/login', { email, password });
-            console.log('[AuthContext] Login response received:', response.data);
+        console.log('[Auth] Mock Login active for:', email);
 
-            const body = response.data;
-            if (!body || !body.data) {
-                throw new Error('Invalid response structure from server');
-            }
+        const mockUser = {
+            id: `mock-${Date.now()}`,
+            email: email || 'admin@salon.com',
+            name: (email || 'admin').split('@')[0].toUpperCase(),
+            role: 'admin',
+            isMock: true
+        };
+        const mockToken = `mock-token-${Date.now()}`;
 
-            const { accessToken, user: userData } = body.data;
-
-            if (!accessToken) throw new Error('No access token received');
-
-            localStorage.setItem('token', accessToken);
-            localStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
-            return body.data;
-        } catch (error) {
-            console.error('[AuthContext] Login error details:', error.response?.data || error.message);
-            throw error;
-        }
+        localStorage.clear();
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        setUser(mockUser);
+        return { accessToken: mockToken, user: mockUser };
     };
 
     const register = async (payload) => {
-        try {
-            console.log('[AuthContext] Attempting registration for:', payload.email);
-            const response = await api.post('/auth/register', payload);
-            console.log('[AuthContext] Register response received:', response.data);
+        console.log('[Auth] Mock Registration active for:', payload.email);
 
-            const body = response.data;
-            if (!body || !body.data) {
-                throw new Error('Invalid response structure from server');
-            }
+        const mockUser = {
+            id: `mock-reg-${Date.now()}`,
+            email: payload.email,
+            name: payload.name || payload.email.split('@')[0],
+            role: 'admin',
+            isMock: true
+        };
+        const mockToken = `mock-token-${Date.now()}`;
 
-            const { accessToken, user: userData } = body.data;
-
-            localStorage.setItem('token', accessToken);
-            localStorage.setItem('user', JSON.stringify(userData));
-            setUser(userData);
-            return body.data;
-        } catch (error) {
-            console.error('[AuthContext] Registration error details:', error.response?.data || error.message);
-            throw error;
-        }
+        localStorage.clear();
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        setUser(mockUser);
+        return { accessToken: mockToken, user: mockUser };
     };
 
     const logout = () => {

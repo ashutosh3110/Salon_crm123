@@ -1,180 +1,133 @@
+import React from 'react';
 import {
-    Users,
-    CalendarCheck,
-    IndianRupee,
     TrendingUp,
-    Package,
-    Clock,
-    UserPlus,
+    Users,
+    Calendar,
+    DollarSign,
     ArrowUpRight,
     ArrowDownRight,
+    Search,
+    Bell,
+    Settings,
+    MoreVertical
 } from 'lucide-react';
+import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const stats = [
-    {
-        label: "Today's Revenue",
-        value: '₹0',
-        change: '+0%',
-        trend: 'up',
-        icon: IndianRupee,
-        color: 'bg-green-50 text-green-600',
-    },
-    {
-        label: "Today's Bookings",
-        value: '0',
-        change: '+0%',
-        trend: 'up',
-        icon: CalendarCheck,
-        color: 'bg-blue-50 text-blue-600',
-    },
-    {
-        label: 'Total Clients',
-        value: '0',
-        change: '+0%',
-        trend: 'up',
-        icon: Users,
-        color: 'bg-purple-50 text-purple-600',
-    },
-    {
-        label: 'Active Staff',
-        value: '0',
-        change: '0',
-        trend: 'neutral',
-        icon: UserPlus,
-        color: 'bg-orange-50 text-orange-600',
-    },
+    { label: 'Total Revenue', value: 128450, prefix: '₹', trend: '+14.5%', positive: true, icon: DollarSign },
+    { label: 'Total Appointments', value: 842, prefix: '', trend: '+8.2%', positive: true, icon: Calendar },
+    { label: 'Active Clients', value: 3240, prefix: '', trend: '+22.4%', positive: true, icon: Users },
+    { label: 'Avg. Rating', value: 4.8, prefix: '', suffix: '/5', trend: 'Stable', positive: true, icon: TrendingUp },
 ];
 
-const recentBookings = [];
-const lowStockProducts = [];
+const recentActivity = [
+    { client: 'Rahul Sharma', service: 'Haircut & Styling', time: '5 mins ago', amount: '₹850', status: 'Completed' },
+    { client: 'Priya Singh', service: 'Facial Spa', time: '15 mins ago', amount: '₹2,200', status: 'In Progress' },
+    { client: 'Anita Verma', service: 'Manicure', time: '45 mins ago', amount: '₹1,200', status: 'Pending' },
+];
 
 export default function DashboardPage() {
     return (
-        <div className="space-y-6">
-            {/* Page Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-text">Dashboard</h1>
-                <p className="text-sm text-text-secondary mt-1">Welcome back! Here's your salon overview.</p>
+        <div className="space-y-6 animate-reveal">
+            {/* Top Bar / Welcome */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-text tracking-tight">Welcome Back, Admin</h1>
+                    <p className="text-sm text-text-secondary mt-1">Here's what's happening in your salons today.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="pl-10 pr-4 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all input-expand"
+                        />
+                    </div>
+                </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat) => (
-                    <div
-                        key={stat.label}
-                        className="bg-white rounded-xl border border-border p-5 hover:shadow-md transition-shadow"
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${stat.color}`}>
-                                <stat.icon className="w-5 h-5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {stats.map((stat, i) => (
+                    <div key={i} className="bg-white p-6 rounded-2xl border border-border shadow-sm group hover:shadow-xl transition-all card-interactive hover-shine">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                                <stat.icon className="w-6 h-6" />
                             </div>
-                            {stat.trend === 'up' && (
-                                <span className="flex items-center text-xs font-medium text-green-600">
-                                    {stat.change} <ArrowUpRight className="w-3 h-3 ml-0.5" />
-                                </span>
-                            )}
-                            {stat.trend === 'down' && (
-                                <span className="flex items-center text-xs font-medium text-red-500">
-                                    {stat.change} <ArrowDownRight className="w-3 h-3 ml-0.5" />
-                                </span>
-                            )}
+                            <div className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${stat.positive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                                {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                {stat.trend}
+                            </div>
                         </div>
-                        <div className="text-2xl font-bold text-text">{stat.value}</div>
-                        <div className="text-xs text-text-muted mt-1">{stat.label}</div>
+                        <p className="text-sm text-text-secondary font-medium">{stat.label}</p>
+                        <h3 className="text-3xl font-bold text-text mt-2 tracking-tight">
+                            <AnimatedCounter
+                                value={stat.value}
+                                prefix={stat.prefix}
+                                suffix={stat.suffix}
+                            />
+                        </h3>
                     </div>
                 ))}
             </div>
 
-            {/* Two Column Layout */}
-            <div className="grid lg:grid-cols-3 gap-6">
-                {/* Recent Bookings */}
-                <div className="lg:col-span-2 bg-white rounded-xl border border-border">
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                        <h2 className="font-semibold text-text">Recent Bookings</h2>
-                        <a href="/admin/bookings" className="text-xs text-primary font-medium hover:underline">
-                            View All
-                        </a>
+            {/* Recent Activity & Charts Placeholder */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-sm overflow-hidden card-interactive">
+                    <div className="px-6 py-5 border-b border-border flex items-center justify-between">
+                        <h3 className="font-bold text-text">Live Salon Activity</h3>
+                        <button className="text-primary text-xs font-bold hover:underline">View All</button>
                     </div>
-                    <div className="p-5">
-                        {recentBookings.length === 0 ? (
-                            <div className="text-center py-10">
-                                <Clock className="w-10 h-10 text-text-muted mx-auto mb-3" />
-                                <p className="text-sm text-text-secondary">No recent bookings</p>
-                                <p className="text-xs text-text-muted mt-1">Bookings will appear here once created</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {recentBookings.map((booking, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-surface">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
-                                                {booking.clientName?.[0]}
-                                            </div>
-                                            <div>
-                                                <div className="text-sm font-medium text-text">{booking.clientName}</div>
-                                                <div className="text-xs text-text-muted">{booking.service}</div>
-                                            </div>
-                                        </div>
-                                        <span className="text-xs font-medium text-text-secondary">{booking.time}</span>
+                    <div className="divide-y divide-border">
+                        {recentActivity.map((activity, i) => (
+                            <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-surface/50 transition-colors group">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center font-bold text-text-secondary group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                                        {activity.client[0]}
                                     </div>
-                                ))}
+                                    <div>
+                                        <p className="font-bold text-text">{activity.client}</p>
+                                        <p className="text-xs text-text-secondary">{activity.service}</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-bold text-text">{activity.amount}</p>
+                                    <p className="text-[10px] text-text-muted font-medium">{activity.time}</p>
+                                </div>
                             </div>
-                        )}
+                        ))}
                     </div>
                 </div>
 
-                {/* Quick Stats / Alerts */}
-                <div className="bg-white rounded-xl border border-border">
-                    <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                        <h2 className="font-semibold text-text">Low Stock Alerts</h2>
+                <div className="bg-white rounded-2xl border border-border shadow-sm p-6 space-y-6 card-interactive">
+                    <h3 className="font-bold text-text">Quick Actions</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button className="p-4 rounded-xl bg-surface hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 flex flex-col items-center gap-2 group">
+                            <Calendar className="w-6 h-6 text-text-muted group-hover:text-primary" />
+                            <span className="text-xs font-bold">Booking</span>
+                        </button>
+                        <button className="p-4 rounded-xl bg-surface hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 flex flex-col items-center gap-2 group">
+                            <Users className="w-6 h-6 text-text-muted group-hover:text-primary" />
+                            <span className="text-xs font-bold">Staff</span>
+                        </button>
+                        <button className="p-4 rounded-xl bg-surface hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 flex flex-col items-center gap-2 group">
+                            <TrendingUp className="w-6 h-6 text-text-muted group-hover:text-primary" />
+                            <span className="text-xs font-bold">Sales</span>
+                        </button>
+                        <button className="p-4 rounded-xl bg-surface hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 flex flex-col items-center gap-2 group">
+                            <Settings className="w-6 h-6 text-text-muted group-hover:text-primary" />
+                            <span className="text-xs font-bold">Settings</span>
+                        </button>
                     </div>
-                    <div className="p-5">
-                        {lowStockProducts.length === 0 ? (
-                            <div className="text-center py-10">
-                                <Package className="w-10 h-10 text-text-muted mx-auto mb-3" />
-                                <p className="text-sm text-text-secondary">All stock levels are healthy</p>
-                                <p className="text-xs text-text-muted mt-1">Low stock items will appear here</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {lowStockProducts.map((product, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-surface">
-                                        <div>
-                                            <div className="text-sm font-medium text-text">{product.name}</div>
-                                            <div className="text-xs text-text-muted">SKU: {product.sku}</div>
-                                        </div>
-                                        <span className="text-xs font-medium text-error bg-error/10 px-2 py-1 rounded">
-                                            {product.stock} left
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl border border-border p-5">
-                <h2 className="font-semibold text-text mb-4">Quick Actions</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                        { label: 'New Booking', href: '/admin/bookings', icon: CalendarCheck, color: 'text-blue-600 bg-blue-50' },
-                        { label: 'Add Client', href: '/admin/clients', icon: UserPlus, color: 'text-purple-600 bg-purple-50' },
-                        { label: 'Create Invoice', href: '/admin/invoices', icon: TrendingUp, color: 'text-green-600 bg-green-50' },
-                        { label: 'Add Product', href: '/admin/products', icon: Package, color: 'text-orange-600 bg-orange-50' },
-                    ].map((action) => (
-                        <a
-                            key={action.label}
-                            href={action.href}
-                            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:border-primary/30 hover:shadow-sm transition-all text-center"
-                        >
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}>
-                                <action.icon className="w-5 h-5" />
-                            </div>
-                            <span className="text-xs font-medium text-text-secondary">{action.label}</span>
-                        </a>
-                    ))}
+                    <div className="p-4 rounded-2xl bg-primary text-white space-y-2 relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
+                            <TrendingUp className="w-24 h-24" />
+                        </div>
+                        <p className="text-xs font-medium opacity-80">Pro Tip</p>
+                        <p className="text-sm font-bold leading-snug">Track your most popular stylists to optimize scheduling.</p>
+                    </div>
                 </div>
             </div>
         </div>

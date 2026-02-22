@@ -16,10 +16,21 @@ import ServicesPage from './pages/admin/ServicesPage';
 import ProductsPage from './pages/admin/ProductsPage';
 import OutletsPage from './pages/admin/OutletsPage';
 import StaffPage from './pages/admin/StaffPage';
+import CustomersPage from './pages/admin/CustomersPage';
+import POSDashboardPage from './pages/admin/pos/POSDashboardPage';
+import POSInvoicesPage from './pages/admin/pos/POSInvoicesPage';
+import POSPaymentsPage from './pages/admin/pos/POSPaymentsPage';
+import POSRefundsPage from './pages/admin/pos/POSRefundsPage';
+import POSSettingsPage from './pages/admin/pos/POSSettingsPage';
 import PromotionsPage from './pages/admin/PromotionsPage';
 import LoyaltyPage from './pages/admin/LoyaltyPage';
 import InvoicesPage from './pages/admin/InvoicesPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import FinancePage from './pages/admin/FinancePage';
+import HRPage from './pages/admin/HRPage';
+import OutletForm from './components/admin/outlets/OutletForm';
+import OutletDetailPage from './pages/admin/OutletDetailPage';
+import InventoryPage from './pages/admin/InventoryPage';
 
 // Super Admin layout & pages
 import SuperAdminLayout from './layouts/SuperAdminLayout';
@@ -49,12 +60,48 @@ function App() {
           >
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<DashboardPage />} />
-              <Route path="/admin/clients" element={<ClientsPage />} />
-              <Route path="/admin/bookings" element={<BookingsPage />} />
-              <Route path="/admin/services" element={<ServicesPage />} />
-              <Route path="/admin/products" element={<ProductsPage />} />
               <Route path="/admin/outlets" element={<OutletsPage />} />
+              <Route path="/admin/outlets/new" element={<OutletForm />} />
+              <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
+              <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
               <Route path="/admin/staff" element={<StaffPage />} />
+
+              {/* POS Routes */}
+              <Route path="/admin/pos" element={<POSDashboardPage />} />
+              <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
+              <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
+              <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
+              <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
+              <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
+
+              <Route path="/admin/bookings" element={<BookingsPage />} />
+
+              {/* CRM Routes */}
+              <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
+              <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
+              <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
+              <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+
+              <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
+              <Route path="/admin/clients" element={<ClientsPage />} />
+              <Route path="/admin/products" element={<ProductsPage />} />
+
+              {/* Inventory Routes */}
+              <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
+              <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+              <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
+              <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
+              <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
+
+              <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
+              <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
+              <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
+              <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
+              <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
+              <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
+              <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
+              <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+              <Route path="/admin/hr" element={<HRPage />} />
               <Route path="/admin/promotions" element={<PromotionsPage />} />
               <Route path="/admin/loyalty" element={<LoyaltyPage />} />
               <Route path="/admin/invoices" element={<InvoicesPage />} />
@@ -65,6 +112,22 @@ function App() {
               </Route>
             </Route>
           </Route>
+
+          <Route path="/unauthorized" element={
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-4xl font-bold text-text mb-2">403</h1>
+              <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
+              <button onClick={() => window.location.href = '/admin/login'} className="btn-primary">Go to Login</button>
+            </div>
+          } />
+
+          <Route path="*" element={
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-4xl font-bold text-text mb-2">404</h1>
+              <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
+              <button onClick={() => window.location.href = '/admin'} className="btn-primary">Go to Dashboard</button>
+            </div>
+          } />
 
           {/* Super Admin Routes (Protected) */}
           <Route

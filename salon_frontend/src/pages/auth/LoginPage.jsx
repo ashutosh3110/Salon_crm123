@@ -104,6 +104,28 @@ export default function LoginPage() {
                         </div>
                     )}
 
+                    {/* Demo Credentials Box */}
+                    <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col gap-2 relative overflow-hidden group hover:border-primary/30 transition-all">
+                        <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Lock className="w-12 h-12 text-primary" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Demo Access</span>
+                        </div>
+                        <div className="flex flex-col gap-1 relative z-10">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-text-secondary font-medium">Email:</span>
+                                <span className="font-bold text-text select-all cursor-pointer hover:text-primary transition-colors">admin@test.com</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-text-secondary font-medium">Password:</span>
+                                <span className="font-bold text-text select-all cursor-pointer hover:text-primary transition-colors">admin123</span>
+                            </div>
+                        </div>
+                        <p className="text-[9px] text-text-muted font-medium mt-1 uppercase tracking-tighter">* Backend disconnected. Any credentials will work.</p>
+                    </div>
+
                     <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                         {/* Email */}
                         <div>

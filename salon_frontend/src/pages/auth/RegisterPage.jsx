@@ -36,6 +36,9 @@ export default function RegisterPage() {
             return;
         }
 
+        const queryParams = new URLSearchParams(window.location.search);
+        const plan = queryParams.get('plan') || 'free';
+
         setLoading(true);
         try {
             await register({
@@ -43,7 +46,9 @@ export default function RegisterPage() {
                 fullName: form.fullName,
                 email: form.email,
                 phone: form.phone,
-                password: form.password
+                password: form.password,
+                confirmPassword: form.confirmPassword,
+                subscriptionPlan: plan
             });
             // Successful registration will already set user and token in AuthContext
             navigate('/admin');
