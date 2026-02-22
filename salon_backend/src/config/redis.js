@@ -13,12 +13,20 @@ if (config.redis.url) {
     try {
         redis = new Redis(config.redis.url, {
             lazyConnect: true,
-            maxRetriesPerRequest: 0,
             retryStrategy: (times) => {
-                if (times > 3) {
-                    return null; // Stop retrying after 3 attempts
+                // Try to reconnect for a while, but eventually give up if it's just not there
+                if (times > 10) {
+                    logger.warn('Redis reconnection failed after 10 attempts. Caching/Rate limiting might be affected.');
+                    return null;
                 }
                 return Math.min(times * 100, 3000);
+            },
+            reconnectOnError: (err) => {
+                const targetError = 'READONLY';
+                if (err.message.includes(targetError)) {
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -27,8 +35,8 @@ if (config.redis.url) {
         });
 
         redis.on('error', (err) => {
-            // Log as warning instead of error to keep it optional/silent
-            logger.warn('Redis connection issue (Optional):', err.message);
+            // Only log Redis errors as warnings to avoid crashing the process during development
+            logger.warn('Redis connection issue:', err.message);
         });
     } catch (err) {
         logger.warn('Failed to initialize Redis (Optional):', err.message);

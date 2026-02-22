@@ -13,7 +13,7 @@ const envVarsSchema = Joi.object()
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(15).description('minutes after which access tokens expire'),
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(7).description('days after which refresh tokens expire'),
-    CORS_ORIGIN: Joi.string().default('*').description('CORS allowed origin'),
+    CORS_ORIGIN: Joi.any().default('*').description('CORS allowed origin'),
   })
   .unknown();
 

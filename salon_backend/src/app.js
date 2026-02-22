@@ -15,10 +15,17 @@ if (config.env !== 'test') {
 }
 
 // enable cors
-app.use(cors({ origin: config.cors.origin }));
+app.use(cors({
+    origin: config.cors.origin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+}));
 
 // set security HTTP headers
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // parse json request body
 app.use(express.json());
