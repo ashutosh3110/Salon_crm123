@@ -77,64 +77,61 @@ const plans = [
 
 export default function Pricing() {
     return (
-        <section id="pricing" className="py-24">
+        <section id="pricing" className="py-16 bg-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Section Header */}
-                <div className="text-center max-w-2xl mx-auto mb-16">
-                    <span className="text-sm font-semibold text-primary tracking-wide uppercase">
-                        Pricing Plans
-                    </span>
-                    <h2 className="mt-3 text-3xl sm:text-4xl font-bold text-text">
+                <div className="text-center max-w-2xl mx-auto mb-10">
+                    <h2 className="text-2xl md:text-3xl font-bold text-text">
                         Simple, Transparent Pricing
                     </h2>
-                    <p className="mt-4 text-text-secondary leading-relaxed">
+                    <p className="mt-2 text-sm text-text-secondary leading-relaxed">
                         Start free and scale as you grow. No hidden fees, no surprises.
                     </p>
                 </div>
 
                 {/* Plans Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                     {plans.map((plan) => (
                         <div
                             key={plan.name}
-                            className={`relative rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl ${plan.popular
-                                    ? 'bg-white border-primary shadow-lg scale-[1.02]'
-                                    : 'bg-white border-border hover:border-primary/30'
+                            className={`relative rounded-xl p-5 border transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ${plan.popular
+                                ? 'bg-white border-primary shadow-[0_20px_40px_-15px_rgba(0,0,0,0.4)] scale-[1.01]'
+                                : 'bg-white border-border shadow-md hover:border-primary/30'
                                 }`}
                         >
                             {plan.popular && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                    <span className="bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-md">
+                                    <span className="bg-primary text-white text-[10px] font-bold px-3 py-0.5 rounded-full shadow-sm">
                                         Most Popular
                                     </span>
                                 </div>
                             )}
 
-                            <div className="mb-6">
-                                <h3 className="text-lg font-bold text-text">{plan.name}</h3>
-                                <div className="mt-2 flex items-baseline gap-1">
-                                    <span className="text-3xl font-extrabold text-text">{plan.price}</span>
+                            <div className="mb-4">
+                                <h3 className="text-base font-bold text-text">{plan.name}</h3>
+                                <div className="mt-1 flex items-baseline gap-1">
+                                    <span className="text-2xl font-extrabold text-text">{plan.price}</span>
                                     {plan.period && (
-                                        <span className="text-sm text-text-muted">{plan.period}</span>
+                                        <span className="text-xs text-text-muted">{plan.period}</span>
                                     )}
                                 </div>
-                                <p className="mt-2 text-sm text-text-secondary">{plan.desc}</p>
+                                <p className="mt-1 text-xs text-text-secondary line-clamp-2">{plan.desc}</p>
                             </div>
 
-                            <ul className="space-y-3 mb-8">
+                            <ul className="space-y-2 mb-6">
                                 {plan.features.map((feature) => (
                                     <li key={feature} className="flex items-start gap-2">
-                                        <Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                                        <span className="text-sm text-text-secondary">{feature}</span>
+                                        <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
+                                        <span className="text-[13px] text-text-secondary">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
 
                             <Link
                                 to="/register"
-                                className={`block text-center w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${plan.popular
-                                        ? 'btn-primary'
-                                        : 'border-2 border-primary text-primary hover:bg-primary hover:text-white'
+                                className={`block text-center w-full py-2 rounded-lg font-bold text-xs transition-all duration-200 ${plan.popular
+                                    ? 'btn-primary shadow-lg shadow-primary/20'
+                                    : 'border-2 border-primary/20 text-primary hover:border-primary hover:bg-primary/5'
                                     }`}
                             >
                                 {plan.cta}

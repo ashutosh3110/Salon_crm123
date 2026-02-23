@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
+import Navbar from '../../components/landing/Navbar';
 
 export default function LoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
-    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
@@ -14,141 +14,107 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        // TODO: integrate with backend auth API
         setTimeout(() => setLoading(false), 1500);
     };
 
     return (
-        <div className="min-h-screen flex">
-            {/* Left — Branding Panel */}
-            <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center p-12">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-primary-dark/30 blur-3xl" />
-                    <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-primary-light/30 blur-3xl" />
-                    <div className="absolute top-1/3 right-1/4 w-64 h-64 rounded-full border border-white/10" />
-                </div>
+        <div className="min-h-screen bg-[#6B2A3B] flex flex-col">
+            <Navbar />
+            <div className="flex-1 flex items-center justify-center p-4 pt-24">
+                {/* Main Center Container */}
+                <div className="w-full max-w-[1000px] h-[640px] bg-white rounded-[40px] shadow-2xl flex overflow-hidden relative">
 
-                <div className="relative z-10 text-white max-w-md">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                            <Scissors className="w-6 h-6 text-white" />
+                    {/* Left Side: Premium Arched Image & Glass Switcher */}
+                    <div className="hidden md:flex w-[42%] bg-[#4A1D28] relative overflow-hidden flex-col items-center justify-between text-white p-12">
+                        {/* Background Effects */}
+                        <div className="absolute inset-0 z-0 opacity-40">
+                            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary rounded-full blur-[120px]" />
+                            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary rounded-full blur-[120px]" />
                         </div>
-                        <span className="text-2xl font-bold">SalonCRM</span>
-                    </div>
 
-                    <h1 className="text-3xl font-bold leading-tight mb-4">
-                        Welcome back to your salon command center
-                    </h1>
-                    <p className="text-white/70 leading-relaxed">
-                        Manage appointments, track revenue, engage clients, and grow your
-                        business — all from one powerful platform.
-                    </p>
-
-                    {/* Testimonial Card */}
-                    <div className="mt-10 bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                        <p className="text-sm text-white/80 italic leading-relaxed">
-                            "SalonCRM transformed how we manage our 3 outlets. Booking
-                            efficiency is up 40% and our clients love the loyalty program."
-                        </p>
-                        <div className="mt-3 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                                RS
+                        <div className="relative z-10 w-full flex flex-col items-center flex-1 justify-center">
+                            {/* Arched Image Container */}
+                            <div className="relative w-full aspect-[4/5] rounded-t-full rounded-b-[40px] overflow-hidden border-4 border-white/10 shadow-2xl mb-8 group">
+                                <img
+                                    src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1000"
+                                    alt="Salon Interior"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#4A1D28]/80 via-transparent to-transparent" />
                             </div>
-                            <div>
-                                <div className="text-sm font-semibold">Riya Shah</div>
-                                <div className="text-xs text-white/50">Owner, Glamour Studio</div>
+
+                            {/* Branding Text */}
+                            <div className="text-center space-y-2">
+                                <h3 className="text-2xl font-black tracking-tight leading-none uppercase">Manage. Grow. <span className="text-primary italic">Thrive.</span></h3>
+                                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">The ultimate salon ecosystem</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Right — Login Form */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background">
-                <div className="w-full max-w-md">
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center gap-2 mb-8">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                            <Scissors className="w-5 h-5 text-white" />
+                        {/* Modern Tab Switcher */}
+                        <div className="relative z-10 w-full bg-white/5 backdrop-blur-sm border border-white/10 p-1.5 rounded-2xl flex items-center gap-2 mt-8">
+                            <div className="flex-1 bg-transparent border border-white/80 text-white font-black py-3 rounded-xl text-xs tracking-[0.2em] text-center uppercase transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                LOGIN
+                            </div>
+                            <Link to="/register" className="flex-1 text-white/50 hover:text-white border border-transparent hover:border-white/30 font-black py-3 rounded-xl text-xs tracking-[0.2em] text-center uppercase transition-all duration-300">
+                                SIGN IN
+                            </Link>
                         </div>
-                        <span className="text-xl font-bold text-text">
-                            Salon<span className="text-primary">CRM</span>
-                        </span>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-text">Sign in to your account</h2>
-                    <p className="mt-2 text-sm text-text-secondary">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-primary font-semibold hover:underline">
-                            Start free trial
-                        </Link>
-                    </p>
+                    {/* Right Side: Login Form */}
+                    <div className="flex-1 flex flex-col bg-white p-12 relative">
+                        {/* Header Logo */}
+                        <div className="flex flex-col items-center mb-10">
+                            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-xl mb-4 border-4 border-primary/10 ring-2 ring-primary/5 p-3">
+                                <img src="/2-removebg-preview.png" alt="Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <h2 className="text-2xl font-black text-primary tracking-[0.2em] uppercase">Login</h2>
+                        </div>
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <form onSubmit={handleSubmit} className="space-y-10 px-4 md:px-12 flex-1">
+                            {/* Email Input */}
+                            <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
+                                <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
                                 <input
                                     type="email"
                                     name="email"
                                     value={form.email}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                    placeholder="you@yoursalon.com"
+                                    className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
+                                    placeholder="Email"
                                 />
                             </div>
-                        </div>
 
-                        {/* Password */}
-                        <div>
-                            <div className="flex justify-between items-center mb-1.5">
-                                <label className="text-sm font-medium text-text-secondary">Password</label>
-                                <a href="#" className="text-xs text-primary font-medium hover:underline">
-                                    Forgot password?
-                                </a>
-                            </div>
-                            <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            {/* Password Input */}
+                            <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
+                                <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
+                                    type="password"
                                     name="password"
                                     value={form.password}
                                     onChange={handleChange}
                                     required
-                                    className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                    placeholder="Enter your password"
+                                    className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
+                                    placeholder="Password"
                                 />
+                            </div>
+
+                            {/* Row: Forgot & Submit */}
+                            <div className="flex items-center justify-between pt-4">
+                                <a href="#" className="text-xs font-bold text-primary/60 hover:text-primary transition-colors tracking-tight">
+                                    Forgot Password?
+                                </a>
                                 <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition"
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-primary text-white px-10 py-2.5 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
                                 >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    {loading ? '...' : 'LOGIN'}
                                 </button>
                             </div>
-                        </div>
-
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-60"
-                        >
-                            {loading ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    Sign In
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

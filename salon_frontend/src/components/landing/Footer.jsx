@@ -1,33 +1,22 @@
 import { Link } from 'react-router-dom';
-import { Scissors } from 'lucide-react';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     const footerLinks = {
         Product: [
-            { label: 'Features', href: '#features' },
-            { label: 'Pricing', href: '#pricing' },
-            { label: 'Integrations', href: '#' },
-            { label: 'Changelog', href: '#' },
+            { label: 'Features', href: '/#features' },
+            { label: 'Pricing', href: '/#pricing' },
         ],
         Company: [
-            { label: 'About', href: '#about' },
-            { label: 'Blog', href: '#' },
-            { label: 'Careers', href: '#' },
-            { label: 'Contact', href: '#contact' },
-        ],
-        Support: [
-            { label: 'Help Center', href: '#' },
-            { label: 'Documentation', href: '#' },
-            { label: 'Status Page', href: '#' },
-            { label: 'API Reference', href: '#' },
+            { label: 'About', href: '/#about' },
+            { label: 'Blog', href: '/blog' },
+            { label: 'Contact', href: '/contact' },
         ],
         Legal: [
-            { label: 'Privacy Policy', href: '#' },
-            { label: 'Terms of Service', href: '#' },
-            { label: 'Cookie Policy', href: '#' },
-            { label: 'GDPR', href: '#' },
+            { label: 'Privacy Policy', href: '/privacy' },
+            { label: 'Terms of Service', href: '/terms' },
+            { label: 'Cookie Policy', href: '/cookies' },
         ],
     };
 
@@ -38,12 +27,11 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="lg:col-span-2">
                         <Link to="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                                <Scissors className="w-5 h-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold">
-                                Salon<span className="text-primary-light">CRM</span>
-                            </span>
+                            <img
+                                src="/1-removebg-preview.png"
+                                alt="SalonCRM Logo"
+                                className="h-28 w-auto object-contain"
+                            />
                         </Link>
                         <p className="text-sm text-gray-400 leading-relaxed max-w-xs">
                             The all-in-one cloud platform for modern salons.
@@ -60,12 +48,12 @@ export default function Footer() {
                             <ul className="space-y-2.5">
                                 {links.map((link) => (
                                     <li key={link.label}>
-                                        <a
-                                            href={link.href}
+                                        <Link
+                                            to={link.href}
                                             className="text-sm text-gray-400 hover:text-primary-light transition-colors"
                                         >
                                             {link.label}
-                                        </a>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>
@@ -79,15 +67,15 @@ export default function Footer() {
                         © {currentYear} SalonCRM. All rights reserved.
                     </p>
                     <div className="flex items-center gap-6">
-                        <a href="#" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
+                        <Link to="/privacy" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
                             Privacy
-                        </a>
-                        <a href="#" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
+                        </Link>
+                        <Link to="/terms" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
                             Terms
-                        </a>
-                        <a href="#" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
+                        </Link>
+                        <Link to="/cookies" className="text-sm text-gray-500 hover:text-primary-light transition-colors">
                             Cookies
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
