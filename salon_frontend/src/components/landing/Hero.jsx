@@ -61,7 +61,7 @@ export default function Hero() {
     };
 
     return (
-        <section className="relative min-h-[auto] md:min-h-screen flex items-center overflow-hidden bg-[#FDF9F8] py-20 md:py-0">
+        <section className="relative min-h-screen flex items-center overflow-hidden bg-[#FDF9F8]">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl opacity-60" />
@@ -70,7 +70,7 @@ export default function Hero() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-primary/10" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-24 pb-8 md:pb-16 relative z-10 w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative z-10 w-full">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
                     {/* Left Content */}
@@ -82,40 +82,40 @@ export default function Hero() {
                     >
 
 
-                        <h1 className="text-[2.5rem] leading-[1.1] sm:text-5xl lg:text-6xl font-serif italic text-text tracking-tight px-2 sm:px-0">
+                        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif italic text-text leading-tight tracking-tight">
                             Elevate Your <span className="text-primary not-italic font-black">Salon</span>
-                            <span className="block text-primary/80 not-italic font-black mt-2">Smarter, Faster.</span>
+                            <span className="block text-primary/80 not-italic font-black mt-1">Smarter, Faster.</span>
                         </h1>
 
-                        <p className="mt-4 md:mt-6 text-[13px] md:text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80 px-4 md:px-0">
+                        <p className="mt-6 text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80">
                             The ultimate toolkit for modern salon scaling. Manage appointments,
                             billing, and analytics with cinematic efficiency.
                         </p>
 
-                        <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start px-8 sm:px-0">
+                        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <Link
                                 to="/register"
-                                className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-none shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-center"
+                                className="px-8 py-3.5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-none shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
                             >
                                 Get Started Free
                             </Link>
                             <Link
                                 to="/#features"
-                                className="w-full sm:w-auto px-8 py-4 bg-white text-primary font-black text-[10px] uppercase tracking-[0.2em] rounded-none border border-primary/20 shadow-lg shadow-black/5 hover:scale-105 active:scale-95 transition-all text-center"
+                                className="px-8 py-3.5 bg-white text-primary font-black text-[10px] uppercase tracking-[0.2em] rounded-none border border-primary/20 shadow-lg shadow-black/5 hover:scale-105 transition-transform"
                             >
                                 Learn More
                             </Link>
                         </div>
 
-                        <div className="mt-10 grid grid-cols-3 gap-4 md:gap-6 max-w-sm mx-auto lg:mx-0 border-t border-black/5 pt-6 md:pt-8 px-4 md:px-0">
+                        <div className="mt-12 grid grid-cols-3 gap-6 max-w-sm mx-auto lg:mx-0 border-t border-black/5 pt-8">
                             {[
                                 { value: '500+', label: 'Salons' },
                                 { value: '50K+', label: 'Bookings' },
                                 { value: '99.9%', label: 'Uptime' },
-                            ].map((stat) => (
-                                <div key={stat.label} className="text-center lg:text-left">
-                                    <div className="text-lg md:text-xl font-black text-primary italic">{stat.value}</div>
-                                    <div className="text-[8px] md:text-[9px] uppercase font-black tracking-widest text-text-muted mt-1 opacity-60">{stat.label}</div>
+                            ].map((stat, idx) => (
+                                <div key={stat.label}>
+                                    <div className="text-xl font-black text-primary italic">{stat.value}</div>
+                                    <div className="text-[9px] uppercase font-black tracking-widest text-text-muted mt-1 opacity-60">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
@@ -314,15 +314,15 @@ function PricingPreview({ cardVariants }) {
     ];
 
     return (
-        <div className="flex items-start md:justify-center gap-2 md:gap-4 w-full md:w-[140%] md:-ml-[20%] scale-[0.9] md:scale-[0.65] origin-top md:origin-center py-4 md:py-10 overflow-x-auto no-scrollbar px-4 md:px-0">
+        <div className="grid grid-cols-2 lg:flex lg:items-start lg:justify-center gap-2 md:gap-4 w-full lg:w-[140%] lg:-ml-[20%] scale-100 lg:scale-[0.65] origin-top lg:origin-center py-2 md:py-10 px-2 lg:px-0">
             {plans.map((plan, idx) => (
                 <motion.div
                     key={plan.name}
                     variants={cardVariants}
                     initial="hidden"
                     animate="visible"
-                    className={`relative bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-xl w-[200px] md:w-[260px] flex flex-col shrink-0 ${plan.popular ? 'border-2 border-primary z-10' : 'border border-black/5'
-                        }`}
+                    className={`relative bg-white rounded-2xl md:rounded-[2rem] p-3 md:p-6 shadow-xl flex flex-col ${plan.popular ? 'border-2 border-primary ring-4 ring-primary/5 z-10' : 'border border-black/5'
+                        } ${idx === 2 ? 'col-span-2 sm:col-span-1 mx-auto w-1/2 sm:w-full md:w-[260px]' : 'w-full md:w-[260px]'}`}
                 >
                     {plan.popular && (
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -332,27 +332,27 @@ function PricingPreview({ cardVariants }) {
                         </div>
                     )}
 
-                    <div className="mb-4 md:mb-6">
-                        <h3 className="text-lg md:text-xl font-bold text-text mb-0.5 md:mb-1">{plan.name}</h3>
+                    <div className="mb-3 md:mb-6">
+                        <h3 className="text-sm md:text-xl font-bold text-text mb-0.5 md:mb-1">{plan.name}</h3>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-2xl md:text-3xl font-black text-text tracking-tighter">{plan.price}</span>
+                            <span className="text-lg md:text-3xl font-black text-text tracking-tighter">{plan.price}</span>
                             <span className="text-[10px] md:text-xs text-text-muted/60">{plan.duration}</span>
                         </div>
-                        <p className="text-[10px] md:text-[11px] font-medium text-text-muted mt-1.5 md:mt-2 leading-tight">
+                        <p className="text-[9px] md:text-[11px] font-medium text-text-muted mt-1.5 md:mt-2 leading-tight">
                             {plan.desc}
                         </p>
                     </div>
 
-                    <ul className="space-y-1.5 md:space-y-2 mb-6 md:mb-8 flex-grow">
+                    <ul className="space-y-1 md:space-y-2 mb-4 md:mb-8 flex-grow">
                         {plan.features.map(f => (
-                            <li key={f} className="flex items-start gap-1.5 md:gap-2">
+                            <li key={f} className="flex items-start gap-1 md:gap-2">
                                 <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary shrink-0 mt-0.5" />
-                                <span className="text-[10px] md:text-[11px] font-medium text-text-secondary">{f}</span>
+                                <span className="text-[9px] md:text-[11px] font-medium text-text-secondary line-clamp-1">{f}</span>
                             </li>
                         ))}
                     </ul>
 
-                    <button className={`w-full py-3 rounded-2xl font-bold text-xs transition-all ${plan.popular
+                    <button className={`w-full py-2 md:py-3 rounded-xl md:rounded-2xl font-bold text-[10px] md:text-xs transition-all ${plan.popular
                         ? 'bg-primary text-white shadow-xl shadow-primary/20'
                         : 'bg-white border border-primary/20 text-primary shadow-sm'
                         }`}>
@@ -502,7 +502,7 @@ function FeaturesShowcase({ cardVariants }) {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.05 }}
                         transition={{ duration: 0.6 }}
-                        className="relative w-full h-[300px] md:h-[450px] rounded-t-full overflow-hidden shadow-2xl border-x border-t border-black/5"
+                        className="relative w-full h-[280px] md:h-[450px] rounded-t-full overflow-hidden shadow-2xl border-x border-t border-black/5"
                     >
                         <img
                             src={showcases[index].image}
@@ -583,7 +583,7 @@ function ContactPreview({ cardVariants }) {
             {/* Left Content — Maroon Branding */}
             <div className="w-full md:w-[45%] bg-[#B85C5C] p-10 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 space-y-8">
-                    <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4">Contact Us</h2>
+                    <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4 whitespace-nowrap">Contact Us</h2>
 
                     <div className="space-y-6">
                         <div className="flex items-center gap-4 group cursor-default">
@@ -606,11 +606,11 @@ function ContactPreview({ cardVariants }) {
                         </div>
 
                         <div className="flex items-center gap-4 group cursor-default">
-                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                                 <Phone className="w-4 h-4 text-white" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[12px] md:text-[13px] font-bold leading-none">+91 98765 43210</p>
+                                <p className="text-[13px] font-bold leading-none whitespace-nowrap">+91 98765 43210</p>
                             </div>
                         </div>
                     </div>
