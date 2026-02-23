@@ -122,7 +122,7 @@ export default function Hero() {
                     </motion.div>
 
                     {/* Right — Animated Feature Carousel Preview */}
-                    <div className="relative min-h-[400px] md:min-h-[600px] flex items-center justify-center scale-[0.85] sm:scale-100 overflow-visible">
+                    <div className="relative min-h-[450px] md:min-h-[600px] flex items-center justify-center scale-100 md:scale-100 overflow-visible">
 
                         <AnimatePresence mode="wait">
                             {currentSlide === 0 && (
@@ -314,14 +314,14 @@ function PricingPreview({ cardVariants }) {
     ];
 
     return (
-        <div className="flex items-start justify-center gap-3 w-full md:w-[140%] md:-ml-[20%] scale-[0.6] sm:scale-75 md:scale-[0.65] origin-center py-6 md:py-10">
+        <div className="flex items-start md:justify-center gap-4 w-full md:w-[140%] md:-ml-[20%] scale-100 md:scale-[0.65] origin-top md:origin-center py-6 md:py-10 overflow-x-auto no-scrollbar px-6 md:px-0">
             {plans.map((plan, idx) => (
                 <motion.div
                     key={plan.name}
                     variants={cardVariants}
                     initial="hidden"
                     animate="visible"
-                    className={`relative bg-white rounded-[2rem] p-6 shadow-xl w-[260px] flex flex-col shrink-0 ${plan.popular ? 'border-2 border-primary scale-110 z-10' : 'border border-black/5'
+                    className={`relative bg-white rounded-[2.5rem] p-6 md:p-6 shadow-xl w-[280px] md:w-[260px] flex flex-col shrink-0 ${plan.popular ? 'border-2 border-primary z-10' : 'border border-black/5'
                         }`}
                 >
                     {plan.popular && (
@@ -581,9 +581,9 @@ function ContactPreview({ cardVariants }) {
             className="w-full max-w-4xl mx-auto bg-white shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[auto] md:min-h-[450px] border border-black/5"
         >
             {/* Left Content — Maroon Branding */}
-            <div className="w-full md:w-[45%] bg-[#B85C5C] p-6 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
+            <div className="w-full md:w-[45%] bg-[#B85C5C] p-10 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 space-y-8">
-                    <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4 whitespace-nowrap">Contact Us</h2>
+                    <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4">Contact Us</h2>
 
                     <div className="space-y-6">
                         <div className="flex items-center gap-4 group cursor-default">
@@ -606,11 +606,11 @@ function ContactPreview({ cardVariants }) {
                         </div>
 
                         <div className="flex items-center gap-4 group cursor-default">
-                            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
                                 <Phone className="w-4 h-4 text-white" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[13px] font-bold leading-none whitespace-nowrap">+91 98765 43210</p>
+                                <p className="text-[12px] md:text-[13px] font-bold leading-none">+91 98765 43210</p>
                             </div>
                         </div>
                     </div>
@@ -630,7 +630,7 @@ function ContactPreview({ cardVariants }) {
                 </div>
 
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold">Your Name</div>
                         <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold">Your Email</div>
                     </div>
