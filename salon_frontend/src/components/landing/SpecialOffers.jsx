@@ -54,32 +54,32 @@ const offers = [
     {
         id: 1,
         image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=800',
-        className: 'w-48 h-64 rounded-full -rotate-12 translate-y-8',
+        className: 'w-[140px] h-[180px] md:w-48 md:h-64 rounded-full -rotate-6 md:-rotate-12 translate-y-4 md:translate-y-8',
     },
     {
         id: 2,
         image: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=800',
-        className: 'w-56 h-72 rounded-t-full -mt-20 rotate-6',
+        className: 'w-[150px] h-[190px] md:w-56 md:h-72 rounded-t-full -mt-10 md:-mt-20 rotate-3 md:rotate-6',
     },
     {
         id: 3,
         image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800',
-        className: 'w-44 h-60 rounded-full rotate-12 translate-x-12',
+        className: 'w-[130px] h-[170px] md:w-44 md:h-60 rounded-full rotate-6 md:rotate-12 translate-x-4 md:translate-x-12',
     },
     {
         id: 4,
         image: 'https://images.unsplash.com/photo-1596178065887-1198b6148b2b?auto=format&fit=crop&q=80&w=800',
-        className: 'w-52 h-64 rounded-b-full -translate-y-12 -rotate-6',
+        className: 'w-[140px] h-[180px] md:w-52 md:h-64 rounded-b-full -translate-y-6 md:-translate-y-12 -rotate-3 md:-rotate-6',
     },
     {
         id: 5,
         image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&q=80&w=800',
-        className: 'w-60 h-80 rounded-t-full rotate-3 translate-x-8',
+        className: 'w-[160px] h-[220px] md:w-60 md:h-80 rounded-t-full rotate-2 md:rotate-3 translate-x-4 md:translate-x-8',
     },
     {
         id: 6,
         image: 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=800',
-        className: 'w-48 h-64 rounded-full -rotate-12 -translate-y-4',
+        className: 'w-[140px] h-[180px] md:w-48 md:h-64 rounded-full -rotate-6 md:-rotate-12 -translate-y-2 md:-translate-y-4',
     }
 ];
 
@@ -101,21 +101,21 @@ export default function SpecialOffers() {
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="max-w-2xl mx-auto mb-20 pt-16"
+                    className="max-w-2xl mx-auto mb-10 md:mb-20 pt-8 md:pt-16"
                 >
-                    <h2 className="text-4xl md:text-5xl font-black text-white mb-6">
+                    <h2 className="text-3xl md:text-5xl font-black text-white mb-4 md:mb-6 leading-tight">
                         Special Beauty <span className="text-primary-light italic font-serif">Offers.</span>
                     </h2>
-                    <p className="text-sm text-white/60 leading-relaxed font-medium mb-10 max-w-xl mx-auto">
+                    <p className="text-[13px] md:text-sm text-white/60 leading-relaxed font-medium mb-8 md:mb-10 max-w-xl mx-auto px-4 md:px-0">
                         Unlock radiant transformations with our Special Beauty Offers tailored packages designed to pamper, enhance, and elevate your natural beauty.
                     </p>
-                    <button className="bg-[#D4A373] hover:bg-[#C08C5D] text-white px-10 py-4 rounded-lg font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-900/10 transition-all hover:scale-105 active:scale-95">
+                    <button className="bg-[#D4A373] hover:bg-[#C08C5D] text-white px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl shadow-amber-900/10 transition-all hover:scale-105 active:scale-95">
                         View Packages
                     </button>
                 </motion.div>
 
                 {/* Animated Image Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 items-center justify-items-center mt-12 pb-10 px-4">
+                <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 md:gap-6 items-center justify-items-center mt-8 md:mt-12 pb-10 px-2 md:px-4 max-w-4xl lg:max-w-none mx-auto overflow-visible">
                     {offers.map((offer, index) => (
                         <motion.div
                             key={offer.id}
@@ -132,7 +132,7 @@ export default function SpecialOffers() {
                                 transition: { duration: 0.3 }
                             }}
                             viewport={{ once: true }}
-                            className={`relative overflow-hidden shadow-2xl ${offer.className} border-4 border-white`}
+                            className={`relative overflow-hidden shadow-2xl ${offer.className} border-2 md:border-4 border-white transition-all`}
                         >
                             <img
                                 src={offer.image}
