@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Zap, Heart, Globe } from 'lucide-react';
+import { useContent } from '../../hooks/useContent';
+
+const ICON_MAP = {
+    'Lightning Fast': Zap,
+    'Enterprise Security': Shield,
+    'Built for Salons': Heart,
+    'Cloud Native': Globe
+};
+
 
 const values = [
     {
@@ -30,7 +39,9 @@ const values = [
 ];
 
 export default function About() {
+    const { about } = useContent();
     const [activeCards, setActiveCards] = useState({});
+
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -60,28 +71,29 @@ export default function About() {
                     >
                         <div className="flex justify-center lg:justify-start">
                             <span className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
-                                Why SalonCRM
+                                {about.badge}
                             </span>
                         </div>
+
                         <h2 className="mt-4 md:mt-6 text-2xl sm:text-5xl font-black text-text leading-tight uppercase tracking-tight text-center lg:text-left">
-                            Built by Salon Experts,<br />
-                            <span className="text-primary italic">For Salon Owners</span>
+                            {about.heading.split(',')[0] || about.heading},<br />
+                            <span className="text-primary italic">{about.heading.split(',')[1] || ''}</span>
                         </h2>
+
                         <div className="w-16 h-1 bg-primary/20 my-4 md:my-6 rounded-full mx-auto lg:mx-0" />
                         <p className="text-[13px] md:text-sm text-text-secondary leading-relaxed font-medium text-center lg:text-left">
-                            We understand the unique challenges of running a salon business. From managing
-                            walk-ins to tracking product inventory, from retaining clients to growing revenue —
-                            SalonCRM handles it all so you can focus on what you do best: making people look amazing.
+                            {about.para1}
                         </p>
                         <p className="mt-4 text-[13px] md:text-sm text-text-secondary leading-relaxed font-medium text-center lg:text-left">
-                            Trusted by 500+ salons across India, our platform processes over 50,000
-                            appointments every month with 99.9% uptime.
+                            {about.para2}
                         </p>
+
                     </motion.div>
 
                     {/* Right — Values Grid */}
                     <div className="grid grid-cols-2 gap-3 md:gap-6">
-                        {values.map((value, idx) => {
+                        {about.values.map((value, idx) => {
+                            const Icon = ICON_MAP[value.title] || Zap;
                             const isActive = activeCards[value.title];
                             return (
                                 <motion.div
@@ -108,8 +120,9 @@ export default function About() {
                                     {/* Content Layer */}
                                     <div className={`relative z-10 transition-transform duration-500 ${isActive ? '-translate-y-2' : 'group-hover:lg:-translate-y-2'}`}>
                                         <div className={`mb-2 md:mb-4 transition-all duration-500 ${isActive ? 'scale-110' : 'group-hover:lg:scale-110'}`}>
-                                            <value.icon className={`w-5 h-5 md:w-6 md:h-6 text-primary transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:lg:text-white'}`} />
+                                            <Icon className={`w-5 h-5 md:w-6 md:h-6 text-primary transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:lg:text-white'}`} />
                                         </div>
+
                                         <h3 className={`font-black text-[10px] md:text-xs uppercase tracking-widest text-text mb-1 md:mb-2 transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:lg:text-white'}`}>
                                             {value.title}
                                         </h3>

@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import BlogPage from './pages/landing/BlogPage';
 import BlogPostDetailPage from './pages/landing/BlogPostDetailPage';
 import ContactFullPage from './pages/landing/ContactFullPage';
@@ -75,7 +76,14 @@ import SuperAdminLayout from './layouts/SuperAdminLayout';
 import SuperAdminLoginPage from './pages/superadmin/SuperAdminLoginPage';
 import SADashboardPage from './pages/superadmin/SADashboardPage';
 import SATenantsPage from './pages/superadmin/SATenantsPage';
+import SATenantDetailPage from './pages/superadmin/SATenantDetailPage';
 import SASubscriptionsPage from './pages/superadmin/SASubscriptionsPage';
+import SAPlansPage from './pages/superadmin/SAPlansPage';
+import SABillingPage from './pages/superadmin/SABillingPage';
+import SASettingsPage from './pages/superadmin/SASettingsPage';
+import SASupportPage from './pages/superadmin/SASupportPage';
+import SAAnalyticsPage from './pages/superadmin/SAAnalyticsPage';
+import SAContentPage from './pages/superadmin/SAContentPage';
 
 // Customer App layout & pages
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
@@ -116,6 +124,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:id" element={<BlogPostDetailPage />} />
           <Route path="/contact" element={<ContactFullPage />} />
@@ -260,7 +269,14 @@ function App() {
             <Route element={<SuperAdminLayout />}>
               <Route path="/superadmin" element={<SADashboardPage />} />
               <Route path="/superadmin/tenants" element={<SATenantsPage />} />
+              <Route path="/superadmin/tenants/:id" element={<SATenantDetailPage />} />
               <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
+              <Route path="/superadmin/plans" element={<SAPlansPage />} />
+              <Route path="/superadmin/billing" element={<SABillingPage />} />
+              <Route path="/superadmin/analytics" element={<SAAnalyticsPage />} />
+              <Route path="/superadmin/settings" element={<SASettingsPage />} />
+              <Route path="/superadmin/support" element={<SASupportPage />} />
+              <Route path="/superadmin/content" element={<SAContentPage />} />
             </Route>
           </Route>
 

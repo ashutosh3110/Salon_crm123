@@ -14,7 +14,8 @@ import {
     UserPlus,
     Layers,
 } from 'lucide-react';
-import siteData from '../../data/data.json';
+import { useContent } from '../../hooks/useContent';
+
 
 // Icon Mapping for JSON data
 const IconMap = {
@@ -33,7 +34,9 @@ const IconMap = {
 };
 
 export default function Features() {
+    const { features: cmsFeatures } = useContent();
     const [flippedCards, setFlippedCards] = useState({});
+
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
@@ -75,10 +78,9 @@ export default function Features() {
                     </p>
                 </div>
 
-                {/* Feature Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8 px-2 md:px-0">
-                    {siteData.features.map((feature) => {
-                        const Icon = IconMap[feature.icon] || Layers;
+                    {cmsFeatures.map((feature) => {
+                        const Icon = IconMap[feature.title.split(' ')[0]] || Layers;
                         const isFlipped = flippedCards[feature.id];
 
                         return (
