@@ -89,6 +89,22 @@ import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
 import AppReferralPage from './pages/app/AppReferralPage';
 import AppProfilePage from './pages/app/AppProfilePage';
 
+// ── Phase 6: Role-Specific Layouts & Dashboards ────────────────────────
+import ReceptionistLayout from './layouts/ReceptionistLayout';
+import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard';
+
+import StylistLayout from './layouts/StylistLayout';
+import StylistDashboard from './pages/stylist/StylistDashboard';
+
+import AccountantLayout from './layouts/AccountantLayout';
+import AccountantDashboard from './pages/accountant/AccountantDashboard';
+
+import InventoryLayout from './layouts/InventoryLayout';
+import InventoryDashboard from './pages/inventory/InventoryDashboard';
+
+import ManagerLayout from './layouts/ManagerLayout';
+import ManagerDashboard from './pages/manager/ManagerDashboard';
+
 function App() {
   return (
     <Router>
@@ -108,12 +124,12 @@ function App() {
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
 
-          {/* Admin Routes (Protected) */}
+          {/* ═══════════════════════════════════════════════════════════
+              ADMIN — Salon Owner Panel
+              ═══════════════════════════════════════════════════════════ */}
           <Route
             element={
-              <ProtectedRoute
-                allowedRoles={['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager']}
-              />
+              <ProtectedRoute allowedRoles={['admin']} />
             }
           >
             <Route element={<AdminLayout />}>
@@ -123,8 +139,6 @@ function App() {
               <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
               <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
               <Route path="/admin/staff" element={<StaffPage />} />
-
-
               <Route path="/admin/bookings" element={<BookingsPage />} />
 
               {/* CRM Routes */}
@@ -132,7 +146,6 @@ function App() {
               <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
               <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
               <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-
               <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
               <Route path="/admin/clients" element={<ClientsPage />} />
               <Route path="/admin/products" element={<ProductsPage />} />
@@ -164,28 +177,86 @@ function App() {
             </Route>
           </Route>
 
-          <Route path="/unauthorized" element={
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-              <h1 className="text-4xl font-bold text-text mb-2">403</h1>
-              <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
-              <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
-            </div>
-          } />
+          {/* ═══════════════════════════════════════════════════════════
+              MANAGER — Operations Hub
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+            <Route element={<ManagerLayout />}>
+              <Route path="/manager" element={<ManagerDashboard />} />
+              <Route path="/manager/team" element={<ManagerDashboard />} />
+              <Route path="/manager/performance" element={<ManagerDashboard />} />
+              <Route path="/manager/attendance" element={<ManagerDashboard />} />
+              <Route path="/manager/targets" element={<ManagerDashboard />} />
+              <Route path="/manager/feedback" element={<ManagerDashboard />} />
+              <Route path="/manager/shifts" element={<ManagerDashboard />} />
+              <Route path="/manager/settings" element={<ManagerDashboard />} />
+            </Route>
+          </Route>
 
-          <Route path="*" element={
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-              <h1 className="text-4xl font-bold text-text mb-2">404</h1>
-              <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
-              <button onClick={() => window.location.href = '/admin'} className="btn-primary">Go to Dashboard</button>
-            </div>
-          } />
+          {/* ═══════════════════════════════════════════════════════════
+              RECEPTIONIST — Front Desk
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+            <Route element={<ReceptionistLayout />}>
+              <Route path="/receptionist" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/appointments" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/queue" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/checkin" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/invoices" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/payments" element={<ReceptionistDashboard />} />
+              <Route path="/receptionist/settings" element={<ReceptionistDashboard />} />
+            </Route>
+          </Route>
 
-          {/* Super Admin Routes (Protected) */}
-          <Route
-            element={
-              <ProtectedRoute allowedRoles={['superadmin']} />
-            }
-          >
+          {/* ═══════════════════════════════════════════════════════════
+              STYLIST — Personal Workspace
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['stylist']} />}>
+            <Route element={<StylistLayout />}>
+              <Route path="/stylist" element={<StylistDashboard />} />
+              <Route path="/stylist/clients" element={<StylistDashboard />} />
+              <Route path="/stylist/commissions" element={<StylistDashboard />} />
+              <Route path="/stylist/gallery" element={<StylistDashboard />} />
+              <Route path="/stylist/timeoff" element={<StylistDashboard />} />
+              <Route path="/stylist/settings" element={<StylistDashboard />} />
+            </Route>
+          </Route>
+
+          {/* ═══════════════════════════════════════════════════════════
+              ACCOUNTANT — Finance Panel
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['accountant']} />}>
+            <Route element={<AccountantLayout />}>
+              <Route path="/accountant" element={<AccountantDashboard />} />
+              <Route path="/accountant/revenue" element={<AccountantDashboard />} />
+              <Route path="/accountant/expenses" element={<AccountantDashboard />} />
+              <Route path="/accountant/invoices" element={<AccountantDashboard />} />
+              <Route path="/accountant/payroll" element={<AccountantDashboard />} />
+              <Route path="/accountant/tax" element={<AccountantDashboard />} />
+              <Route path="/accountant/reconciliation" element={<AccountantDashboard />} />
+              <Route path="/accountant/settings" element={<AccountantDashboard />} />
+            </Route>
+          </Route>
+
+          {/* ═══════════════════════════════════════════════════════════
+              INVENTORY MANAGER — Stock Panel
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['inventory_manager']} />}>
+            <Route element={<InventoryLayout />}>
+              <Route path="/inventory" element={<InventoryDashboard />} />
+              <Route path="/inventory/stock" element={<InventoryDashboard />} />
+              <Route path="/inventory/purchase" element={<InventoryDashboard />} />
+              <Route path="/inventory/transfer" element={<InventoryDashboard />} />
+              <Route path="/inventory/alerts" element={<InventoryDashboard />} />
+              <Route path="/inventory/reports" element={<InventoryDashboard />} />
+              <Route path="/inventory/settings" element={<InventoryDashboard />} />
+            </Route>
+          </Route>
+
+          {/* ═══════════════════════════════════════════════════════════
+              SUPER ADMIN — SaaS Owner
+              ═══════════════════════════════════════════════════════════ */}
+          <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
             <Route element={<SuperAdminLayout />}>
               <Route path="/superadmin" element={<SADashboardPage />} />
               <Route path="/superadmin/tenants" element={<SATenantsPage />} />
@@ -193,12 +264,12 @@ function App() {
             </Route>
           </Route>
 
-          {/* POS App Routes (standalone) */}
+          {/* ═══════════════════════════════════════════════════════════
+              POS — Point of Sale (shared by admin, manager, receptionist)
+              ═══════════════════════════════════════════════════════════ */}
           <Route
             element={
-              <ProtectedRoute
-                allowedRoles={['admin', 'manager', 'receptionist']}
-              />
+              <ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />
             }
           >
             <Route element={<POSLayout />}>
@@ -211,7 +282,9 @@ function App() {
             </Route>
           </Route>
 
-          {/* Customer App Routes */}
+          {/* ═══════════════════════════════════════════════════════════
+              CUSTOMER APP — Mobile-First Experience
+              ═══════════════════════════════════════════════════════════ */}
           <Route path="/app/login" element={
             <CustomerAuthProvider>
               <AppLoginPage />
@@ -230,6 +303,25 @@ function App() {
             <Route path="/app/referrals" element={<AppReferralPage />} />
             <Route path="/app/profile" element={<AppProfilePage />} />
           </Route>
+
+          {/* ═══════════════════════════════════════════════════════════
+              ERROR PAGES
+              ═══════════════════════════════════════════════════════════ */}
+          <Route path="/unauthorized" element={
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-4xl font-bold text-text mb-2">403</h1>
+              <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
+              <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
+            </div>
+          } />
+
+          <Route path="*" element={
+            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-4xl font-bold text-text mb-2">404</h1>
+              <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
+              <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
+            </div>
+          } />
         </Routes>
       </AuthProvider>
     </Router>
@@ -237,4 +329,3 @@ function App() {
 }
 
 export default App;
-
