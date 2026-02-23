@@ -86,8 +86,9 @@ export default function LoginPage() {
 
 
                         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-                            {/* Email */}
-                            <div className="space-y-4">
+                            {/* Email & Password Group */}
+                            <div className="space-y-6">
+                                {/* Email */}
                                 <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
                                     <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
                                     <input
@@ -101,7 +102,7 @@ export default function LoginPage() {
                                     />
                                 </div>
 
-                                {/* Password Input */}
+                                {/* Password */}
                                 <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
                                     <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
                                     <input

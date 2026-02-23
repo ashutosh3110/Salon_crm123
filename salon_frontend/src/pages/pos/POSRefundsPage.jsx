@@ -63,8 +63,7 @@ export default function POSRefundsPage() {
                                     <td className="px-6 py-4 text-text-secondary italic max-w-xs truncate">"{ref.reason}"</td>
                                     <td className="px-6 py-4 text-right font-bold text-error">{ref.amount}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ref.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-green-50 text-green-600 border border-green-100'
-                                            }`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ref.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
                                             {ref.status}
                                         </span>
                                     </td>

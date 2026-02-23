@@ -48,13 +48,13 @@ const menuItems = [
     {
         label: 'Operations',
         icon: ScissorsIcon,
-        path: '/admin/operations',
+        path: '/pos',
         subItems: [
-            { label: 'POS Dashboard', icon: LayoutDashboard, path: '/admin/pos' },
-            { label: 'Invoices', icon: FileText, path: '/admin/pos/invoices', badge: { count: 5, color: 'bg-emerald-400' } },
-            { label: 'Payments', icon: CreditCard, path: '/admin/pos/payments' },
-            { label: 'Refunds', icon: TrendingUp, path: '/admin/pos/refunds', badge: { count: 2, color: 'bg-rose-400' } },
-            { label: 'POS Settings', icon: Settings, path: '/admin/pos/settings' },
+            { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
+            { label: 'Invoices', icon: FileText, path: '/pos/invoices', badge: { count: 5, color: 'bg-emerald-400' } },
+            { label: 'Payments', icon: CreditCard, path: '/pos/payments' },
+            { label: 'Refunds', icon: TrendingUp, path: '/pos/refunds', badge: { count: 2, color: 'bg-rose-400' } },
+            { label: 'POS Settings', icon: Settings, path: '/pos/settings' },
         ]
     },
     {
