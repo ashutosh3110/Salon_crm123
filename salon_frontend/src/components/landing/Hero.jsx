@@ -325,8 +325,8 @@ function PricingPreview({ cardVariants }) {
                         } ${idx === 2 ? 'col-span-2 sm:col-span-1 mx-auto w-1/2 sm:w-full md:w-[260px]' : 'w-full md:w-[260px]'}`}
                 >
                     {plan.popular && (
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                            <span className="bg-primary text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-xl shadow-lg shadow-primary/30">
+                        <div className="absolute -top-3 md:-top-4 left-1/2 -translate-x-1/2 z-20">
+                            <span className="bg-primary text-white text-[7px] md:text-[10px] font-black uppercase tracking-wider md:tracking-widest px-2 md:px-4 py-1 md:py-1.5 rounded-full md:rounded-xl shadow-lg shadow-primary/30 whitespace-nowrap box-border inline-block">
                                 Most Popular
                             </span>
                         </div>
