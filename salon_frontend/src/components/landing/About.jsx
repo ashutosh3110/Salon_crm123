@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Zap, Heart, Globe } from 'lucide-react';
 
@@ -29,6 +30,24 @@ const values = [
 ];
 
 export default function About() {
+    const [activeCards, setActiveCards] = useState({});
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    const toggleCard = (title) => {
+        if (!isMobile) return;
+        setActiveCards(prev => ({
+            ...prev,
+            [title]: !prev[title]
+        }));
+    };
+
     return (
         <section id="about" className="py-24 bg-[#FDF9F8] relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,42 +81,48 @@ export default function About() {
 
                     {/* Right — Values Grid */}
                     <div className="grid grid-cols-2 gap-3 md:gap-6">
-                        {values.map((value, idx) => (
-                            <motion.div
-                                key={value.title}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.1 }}
-                                className="group relative min-h-[160px] md:h-64 bg-white rounded-none p-4 md:p-6 border border-black/5 overflow-hidden flex flex-col justify-end cursor-default"
-                            >
-                                {/* Background Image Reveal */}
-                                <div className="absolute inset-0 z-0">
-                                    <img
-                                        src={value.image}
-                                        alt={value.title}
-                                        className="w-full h-full object-cover grayscale scale-110 opacity-0 group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-100 transition-all duration-700 ease-out"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-[#4A1D28] via-[#4A1D28]/40 to-transparent opacity-0 group-hover:opacity-90 transition-opacity duration-500" />
-                                </div>
-
-                                {/* Content Layer */}
-                                <div className="relative z-10 transition-transform duration-500 group-hover:-translate-y-2">
-                                    <div className="mb-2 md:mb-4 transition-all duration-500 group-hover:scale-110">
-                                        <value.icon className="w-5 h-5 md:w-6 md:h-6 text-primary group-hover:text-white transition-colors duration-300" />
+                        {values.map((value, idx) => {
+                            const isActive = activeCards[value.title];
+                            return (
+                                <motion.div
+                                    key={value.title}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: idx * 0.1 }}
+                                    onClick={() => toggleCard(value.title)}
+                                    className={`group relative min-h-[160px] md:h-64 bg-white rounded-none p-4 md:p-6 border border-black/5 overflow-hidden flex flex-col justify-end cursor-pointer lg:cursor-default`}
+                                >
+                                    {/* Background Image Reveal */}
+                                    <div className={`absolute inset-0 z-0`}>
+                                        <img
+                                            src={value.image}
+                                            alt={value.title}
+                                            className={`w-full h-full object-cover grayscale scale-110 transition-all duration-700 ease-out 
+                                                ${isActive ? 'opacity-100 grayscale-0 scale-100' : 'opacity-0 group-hover:lg:opacity-100 group-hover:lg:grayscale-0 group-hover:lg:scale-100'}`}
+                                        />
+                                        <div className={`absolute inset-0 bg-gradient-to-t from-[#4A1D28] via-[#4A1D28]/40 to-transparent transition-opacity duration-500 
+                                            ${isActive ? 'opacity-90' : 'opacity-0 group-hover:lg:opacity-90'}`} />
                                     </div>
-                                    <h3 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-text mb-1 md:mb-2 group-hover:text-white transition-colors duration-300">
-                                        {value.title}
-                                    </h3>
-                                    <p className="text-[9px] md:text-[11px] font-medium text-text-secondary leading-tight md:leading-relaxed group-hover:text-white/80 transition-colors duration-300 line-clamp-2 md:line-clamp-none">
-                                        {value.desc}
-                                    </p>
-                                </div>
 
-                                {/* Animated Accent Border */}
-                                <div className="absolute bottom-0 left-0 h-1 bg-primary w-0 group-hover:w-full transition-all duration-700 ease-out" />
-                            </motion.div>
-                        ))}
+                                    {/* Content Layer */}
+                                    <div className={`relative z-10 transition-transform duration-500 ${isActive ? '-translate-y-2' : 'group-hover:lg:-translate-y-2'}`}>
+                                        <div className={`mb-2 md:mb-4 transition-all duration-500 ${isActive ? 'scale-110' : 'group-hover:lg:scale-110'}`}>
+                                            <value.icon className={`w-5 h-5 md:w-6 md:h-6 text-primary transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:lg:text-white'}`} />
+                                        </div>
+                                        <h3 className={`font-black text-[10px] md:text-xs uppercase tracking-widest text-text mb-1 md:mb-2 transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:lg:text-white'}`}>
+                                            {value.title}
+                                        </h3>
+                                        <p className={`text-[9px] md:text-[11px] font-medium text-text-secondary leading-tight md:leading-relaxed transition-colors duration-300 line-clamp-2 md:line-clamp-none ${isActive ? 'text-white/80' : 'group-hover:lg:text-white/80'}`}>
+                                            {value.desc}
+                                        </p>
+                                    </div>
+
+                                    {/* Animated Accent Border */}
+                                    <div className={`absolute bottom-0 left-0 h-1 bg-primary transition-all duration-700 ease-out ${isActive ? 'w-full' : 'w-0 group-hover:lg:w-full'}`} />
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>

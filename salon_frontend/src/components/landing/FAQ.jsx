@@ -60,24 +60,24 @@ const AccordionContent = ({ children, className, ...props }) => (
 
 export default function FAQ() {
     return (
-        <section className="py-16 bg-background relative" id="faq">
+        <section className="py-12 md:py-24 bg-background relative" id="faq">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-10">
-                    <h2 className="text-3xl font-bold text-text mb-3">
+                <div className="text-center mb-8 md:mb-16">
+                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text mb-3 md:mb-6">
                         Frequently Asked Questions
                     </h2>
-                    <p className="text-text-secondary text-base">
+                    <p className="text-sm md:text-lg text-text-secondary">
                         Everything you need to know about SalonCRM.
                     </p>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">
                     {faqs.map((faq, index) => (
-                        <AccordionItem key={index} value={`item-${index}`}>
-                            <AccordionTrigger className="text-base font-semibold text-text hover:text-primary transition-colors no-underline hover:no-underline">
+                        <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                            <AccordionTrigger className="text-[13px] md:text-base font-semibold text-text hover:text-primary transition-colors no-underline hover:no-underline py-3 md:py-5">
                                 {faq.question}
                             </AccordionTrigger>
-                            <AccordionContent className="text-text-secondary leading-relaxed">
+                            <AccordionContent className="text-[12px] md:text-base text-text-secondary leading-relaxed">
                                 {faq.answer}
                             </AccordionContent>
                         </AccordionItem>

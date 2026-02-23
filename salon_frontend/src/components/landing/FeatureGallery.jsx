@@ -19,18 +19,20 @@ export default function FeatureGallery() {
                 </div>
 
                 {/* Bento Grid Gallery */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 auto-rows-[120px] md:auto-rows-[250px]">
-                    {siteData.features.slice(0, 8).map((feature, index) => (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 auto-rows-[120px] md:auto-rows-[250px] grid-flow-dense">
+                    {siteData.features.slice(0, 12).map((feature, index) => (
                         <motion.div
                             key={feature.id}
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: index * 0.05 }}
-                            className={`group relative overflow-hidden rounded-none shadow-lg ${index === 0 ? 'col-span-2 row-span-2 md:col-span-2 md:row-span-2' :
-                                    index === 3 ? 'col-span-1 row-span-2 md:col-span-1 md:row-span-1' :
-                                        index === 5 ? 'col-span-2 md:col-span-2' :
-                                            index === 7 ? 'col-span-2 md:col-span-2' : ''
+                            className={`group relative overflow-hidden rounded-none shadow-lg ${index === 0 ? 'col-span-2 row-span-2' :
+                                index === 3 ? 'md:row-span-2' :
+                                    index === 5 ? 'col-span-2' :
+                                        index === 7 ? 'col-span-2' :
+                                            index === 9 ? 'md:row-span-2' :
+                                                index === 10 ? 'col-span-2' : ''
                                 }`}
                         >
                             <img

@@ -109,7 +109,10 @@ export default function SpecialOffers() {
                     <p className="text-[13px] md:text-sm text-white/60 leading-relaxed font-medium mb-8 md:mb-10 max-w-xl mx-auto px-4 md:px-0">
                         Unlock radiant transformations with our Special Beauty Offers tailored packages designed to pamper, enhance, and elevate your natural beauty.
                     </p>
-                    <button className="bg-[#D4A373] hover:bg-[#C08C5D] text-white px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl shadow-amber-900/10 transition-all hover:scale-105 active:scale-95">
+                    <button
+                        onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                        className="bg-[#D4A373] hover:bg-[#C08C5D] text-white px-8 md:px-10 py-3.5 md:py-4 rounded-lg font-black text-[10px] md:text-xs uppercase tracking-widest shadow-xl shadow-amber-900/10 transition-all hover:scale-105 active:scale-95"
+                    >
                         View Packages
                     </button>
                 </motion.div>

@@ -64,7 +64,7 @@ export default function RegisterPage() {
             <Navbar />
             <div className="flex-1 flex items-center justify-center p-4 pt-24">
                 {/* Main Center Container */}
-                <div className="w-full max-w-[1000px] h-[640px] bg-white rounded-[40px] shadow-2xl flex overflow-hidden relative">
+                <div className="w-full max-w-[1000px] min-h-[640px] md:h-[640px] bg-white rounded-3xl md:rounded-[40px] shadow-2xl flex flex-col md:flex-row overflow-hidden relative mx-auto my-8">
 
                     {/* Left Side: Premium Arched Image & Glass Switcher */}
                     <div className="hidden md:flex w-[42%] bg-[#4A1D28] relative overflow-hidden flex-col items-center justify-between text-white p-12">
@@ -93,24 +93,31 @@ export default function RegisterPage() {
                         </div>
 
                         {/* Modern Tab Switcher */}
-                        <div className="relative z-10 w-full bg-white/5 backdrop-blur-sm border border-white/10 p-1.5 rounded-2xl flex items-center gap-2 mt-8">
-                            <Link to="/login" className="flex-1 text-white/50 hover:text-white border border-transparent hover:border-white/30 font-black py-3 rounded-xl text-xs tracking-[0.2em] text-center uppercase transition-all duration-300">
+                        <div className="relative z-10 w-full bg-white/5 backdrop-blur-sm border border-white/10 p-1.5 rounded-2xl flex items-center gap-2 mb-4">
+                            <Link to="/login" className="flex-1 text-white/50 hover:text-white border border-transparent hover:border-white/30 font-black py-2.5 rounded-xl text-[10px] tracking-[0.2em] text-center uppercase transition-all duration-300">
                                 LOGIN
                             </Link>
-                            <div className="flex-1 bg-transparent border border-white/80 text-white font-black py-3 rounded-xl text-xs tracking-[0.2em] text-center uppercase transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
-                                SIGN IN
+                            <div className="flex-1 bg-transparent border border-white/80 text-white font-black py-2.5 rounded-xl text-[10px] tracking-[0.2em] text-center uppercase transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                SIGN UP
                             </div>
                         </div>
                     </div>
 
                     {/* Right Side: Register Form */}
-                    <div className="flex-1 flex flex-col bg-white p-10 md:p-12 relative overflow-y-auto max-h-[90vh]">
+                    <div className="flex-1 flex flex-col bg-white p-6 md:p-12 relative overflow-y-auto min-h-full">
+                        {/* Mobile Tab Switcher Toggle */}
+                        <div className="md:hidden flex justify-center mb-6">
+                            <div className="inline-flex bg-primary/5 p-1 rounded-full border border-primary/10">
+                                <Link to="/login" className="px-6 py-2 text-primary/40 text-[10px] font-black uppercase tracking-widest rounded-full">Login</Link>
+                                <div className="px-6 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full">Sign Up</div>
+                            </div>
+                        </div>
                         {/* Header Logo */}
-                        <div className="flex flex-col items-center mb-8">
-                            <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-lg mb-3 border-4 border-primary/10 ring-2 ring-primary/5 p-2">
+                        <div className="flex flex-col items-center mb-6 md:mb-8">
+                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center shadow-lg mb-2 md:mb-3 border-4 border-primary/10 ring-2 ring-primary/5 p-2">
                                 <img src="/2-removebg-preview.png" alt="Logo" className="w-full h-full object-contain" />
                             </div>
-                            <h2 className="text-xl font-black text-primary tracking-[0.2em] uppercase">Registration</h2>
+                            <h2 className="text-lg md:text-xl font-black text-primary tracking-[0.2em] uppercase">Registration</h2>
                         </div>
 
                         {error && (
