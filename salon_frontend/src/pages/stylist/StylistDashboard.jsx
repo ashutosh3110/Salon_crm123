@@ -17,9 +17,9 @@ const commissionData = {
 };
 
 const statusStyles = {
-    'completed': 'bg-green-100 text-green-700',
-    'in-progress': 'bg-blue-100 text-blue-700 animate-pulse',
-    'upcoming': 'bg-gray-100 text-gray-600',
+    'completed': 'bg-emerald-500/10 text-emerald-500',
+    'in-progress': 'bg-primary/10 text-primary animate-pulse',
+    'upcoming': 'bg-surface-alt text-text-muted',
 };
 
 export default function StylistDashboard() {
@@ -28,7 +28,7 @@ export default function StylistDashboard() {
     return (
         <div className="space-y-6">
             {/* Greeting & Commission Progress */}
-            <div className="bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden">
+            <div className="bg-gradient-to-r from-primary via-primary to-primary-dark rounded-2xl p-6 text-white relative overflow-hidden shadow-xl shadow-primary/20">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
                 <div className="absolute bottom-0 left-0 w-20 h-20 bg-white/5 rounded-full translate-y-6 -translate-x-6" />
                 <div className="relative z-10">
@@ -70,14 +70,14 @@ export default function StylistDashboard() {
             {/* Stats Mini Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                    { label: 'Total Today', value: mySchedule.length, icon: Calendar, color: 'violet' },
-                    { label: 'Completed', value: mySchedule.filter(s => s.status === 'completed').length, icon: Star, color: 'green' },
-                    { label: 'In Progress', value: mySchedule.filter(s => s.status === 'in-progress').length, icon: Clock, color: 'blue' },
-                    { label: 'Upcoming', value: mySchedule.filter(s => s.status === 'upcoming').length, icon: Users, color: 'gray' },
+                    { label: 'Total Today', value: mySchedule.length, icon: Calendar },
+                    { label: 'Completed', value: mySchedule.filter(s => s.status === 'completed').length, icon: Star },
+                    { label: 'In Progress', value: mySchedule.filter(s => s.status === 'in-progress').length, icon: Clock },
+                    { label: 'Upcoming', value: mySchedule.filter(s => s.status === 'upcoming').length, icon: Users },
                 ].map((s) => (
-                    <div key={s.label} className="bg-white rounded-2xl border border-border p-4 flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl bg-${s.color}-100 flex items-center justify-center`}>
-                            <s.icon className={`w-5 h-5 text-${s.color}-500`} />
+                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-background flex items-center justify-center border border-border/10">
+                            <s.icon className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-2xl font-black text-text">{s.value}</p>
@@ -88,18 +88,18 @@ export default function StylistDashboard() {
             </div>
 
             {/* My Schedule */}
-            <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                <div className="px-5 py-4 border-b border-border">
+            <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
                     <h2 className="text-sm font-extrabold text-text">My Schedule Today</h2>
                 </div>
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-border/40">
                     {mySchedule.map((apt) => (
                         <div key={apt.id} className="px-5 py-3.5 flex items-center gap-4 hover:bg-surface/50 transition-colors">
                             <div className="w-16 text-center shrink-0">
                                 <p className="text-sm font-black text-text">{apt.time.split(' ')[0]}</p>
                                 <p className="text-[10px] text-text-muted font-bold">{apt.time.split(' ')[1]}</p>
                             </div>
-                            <div className="w-px h-8 bg-border" />
+                            <div className="w-px h-8 bg-border/40" />
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-bold text-text truncate">{apt.customer}</p>
                                 <p className="text-xs text-text-muted truncate">{apt.service} • {apt.duration}</p>

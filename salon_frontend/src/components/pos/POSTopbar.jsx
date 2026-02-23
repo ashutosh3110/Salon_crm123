@@ -1,14 +1,17 @@
-import { Menu, Bell, Store } from 'lucide-react';
+import { Menu, Bell, Store, Moon, Sun } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { motion } from 'framer-motion';
 
 export default function POSTopbar({ onMenuClick }) {
+    const { theme, toggleTheme } = useTheme();
     return (
-        <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-xl border-b border-border">
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40">
             <div className="flex items-center justify-between h-14 px-4 sm:px-6">
                 {/* Left */}
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onMenuClick}
-                        className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface transition-colors"
+                        className="md:hidden w-10 h-10 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
                     >
                         <Menu className="w-5 h-5 text-text-secondary" />
                     </button>
@@ -19,14 +22,28 @@ export default function POSTopbar({ onMenuClick }) {
                 </div>
 
                 {/* Right */}
-                <div className="flex items-center gap-3">
-                    <button className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-surface transition-colors relative">
+                <div className="flex items-center gap-2">
+                    {/* Theme Toggle */}
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={toggleTheme}
+                        className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40"
+                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                    >
+                        {theme === 'light' ? (
+                            <Moon className="w-5 h-5 text-text-secondary" />
+                        ) : (
+                            <Sun className="w-5 h-5 text-amber-400" />
+                        )}
+                    </motion.button>
+
+                    <button className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors relative border border-border/40">
                         <Bell className="w-4.5 h-4.5 text-text-secondary" />
-                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />
+                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary ring-2 ring-white dark:ring-surface" />
                     </button>
 
-                    <div className="flex items-center gap-2 pl-3 border-l border-border">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-xs font-bold text-white shadow-sm">
+                    <div className="flex items-center gap-2 pl-3 border-l border-border/40 ml-1">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-xs font-black text-white shadow-lg shadow-primary/20">
                             RC
                         </div>
                         <div className="hidden sm:block">

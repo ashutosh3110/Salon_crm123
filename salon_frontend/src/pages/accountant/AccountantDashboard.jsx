@@ -26,9 +26,9 @@ const pendingInvoices = [
 ];
 
 const statusStyles = {
-    'overdue': 'bg-red-100 text-red-700',
-    'due-soon': 'bg-amber-100 text-amber-700',
-    'upcoming': 'bg-gray-100 text-gray-600',
+    'overdue': 'bg-rose-500/10 text-rose-500',
+    'due-soon': 'bg-amber-500/10 text-amber-500',
+    'upcoming': 'bg-surface-alt text-text-muted',
 };
 
 export default function AccountantDashboard() {
@@ -40,19 +40,19 @@ export default function AccountantDashboard() {
             {/* Financial KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
-                    { label: "Today's Revenue", value: `₹${financeSummary.todayRevenue.toLocaleString()}`, icon: TrendingUp, color: 'emerald', badge: `${isUp ? '+' : ''}${revChange}%`, badgeUp: isUp },
-                    { label: 'Month Revenue', value: `₹${(financeSummary.monthRevenue / 1000).toFixed(0)}K`, icon: DollarSign, color: 'emerald' },
-                    { label: 'Pending Payables', value: `₹${(financeSummary.pendingPayables / 1000).toFixed(0)}K`, icon: FileText, color: 'red' },
-                    { label: 'Cash in Hand', value: `₹${financeSummary.cashInHand.toLocaleString()}`, icon: Wallet, color: 'amber' },
-                    { label: 'Bank Balance', value: `₹${(financeSummary.bankBalance / 1000).toFixed(0)}K`, icon: CreditCard, color: 'blue' },
+                    { label: "Today's Revenue", value: `₹${financeSummary.todayRevenue.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-500', badge: `${isUp ? '+' : ''}${revChange}%`, badgeUp: isUp },
+                    { label: 'Month Revenue', value: `₹${(financeSummary.monthRevenue / 1000).toFixed(0)}K`, icon: DollarSign, color: 'text-emerald-500' },
+                    { label: 'Pending Payables', value: `₹${(financeSummary.pendingPayables / 1000).toFixed(0)}K`, icon: FileText, color: 'text-rose-500' },
+                    { label: 'Cash in Hand', value: `₹${financeSummary.cashInHand.toLocaleString()}`, icon: Wallet, color: 'text-amber-500' },
+                    { label: 'Bank Balance', value: `₹${(financeSummary.bankBalance / 1000).toFixed(0)}K`, icon: CreditCard, color: 'text-primary' },
                 ].map((s) => (
-                    <div key={s.label} className="bg-white rounded-2xl border border-border p-4">
+                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 shadow-sm">
                         <div className="flex items-center justify-between mb-2">
-                            <div className={`w-9 h-9 rounded-xl bg-${s.color}-100 flex items-center justify-center`}>
-                                <s.icon className={`w-4 h-4 text-${s.color}-500`} />
+                            <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-border/10">
+                                <s.icon className={`w-4 h-4 ${s.color}`} />
                             </div>
                             {s.badge && (
-                                <span className={`flex items-center gap-0.5 text-[10px] font-bold ${s.badgeUp ? 'text-emerald-600' : 'text-red-500'}`}>
+                                <span className={`flex items-center gap-0.5 text-[10px] font-bold ${s.badgeUp ? 'text-emerald-500' : 'text-rose-500'} bg-background px-1.5 py-0.5 rounded-lg border border-border/10`}>
                                     {s.badgeUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {s.badge}
                                 </span>
@@ -66,21 +66,21 @@ export default function AccountantDashboard() {
 
             <div className="grid lg:grid-cols-2 gap-4">
                 {/* Recent Transactions */}
-                <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border">
+                <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                    <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
                         <h2 className="text-sm font-extrabold text-text">Recent Transactions</h2>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/40">
                         {recentTransactions.map((tx) => (
-                            <div key={tx.id} className="px-5 py-3 flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === 'credit' ? 'bg-emerald-100' : 'bg-red-100'}`}>
-                                    {tx.type === 'credit' ? <ArrowDownRight className="w-4 h-4 text-emerald-500 rotate-180" /> : <ArrowUpRight className="w-4 h-4 text-red-500 rotate-180" />}
+                            <div key={tx.id} className="px-5 py-3 flex items-center gap-3 hover:bg-surface-alt transition-colors">
+                                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tx.type === 'credit' ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
+                                    {tx.type === 'credit' ? <ArrowDownRight className="w-4 h-4 text-emerald-500 rotate-180" /> : <ArrowUpRight className="w-4 h-4 text-rose-500 rotate-180" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-text truncate">{tx.desc}</p>
                                     <p className="text-[10px] text-text-muted">{tx.time}</p>
                                 </div>
-                                <p className={`text-sm font-black shrink-0 ${tx.type === 'credit' ? 'text-emerald-600' : 'text-red-500'}`}>
+                                <p className={`text-sm font-black shrink-0 ${tx.type === 'credit' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                     {tx.type === 'credit' ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString()}
                                 </p>
                             </div>
@@ -89,22 +89,22 @@ export default function AccountantDashboard() {
                 </div>
 
                 {/* Pending Supplier Invoices */}
-                <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border">
+                <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                    <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
                         <h2 className="text-sm font-extrabold text-text">Supplier Invoices</h2>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/40">
                         {pendingInvoices.map((inv) => (
-                            <div key={inv.id} className="px-5 py-3.5 flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center shrink-0">
+                            <div key={inv.id} className="px-5 py-3.5 flex items-center gap-3 hover:bg-surface-alt transition-colors">
+                                <div className="w-9 h-9 rounded-lg bg-background flex items-center justify-center shrink-0 border border-border/10">
                                     <FileText className="w-4 h-4 text-text-muted" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-text truncate">{inv.vendor}</p>
-                                    <p className="text-[10px] text-text-muted">Due: {inv.due}</p>
+                                    <p className="text-[10px] text-text-muted font-bold">Due: {inv.due}</p>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <p className="text-sm font-black text-text">₹{inv.amount.toLocaleString()}</p>
+                                    <p className="text-sm font-black text-text tracking-tight">₹{inv.amount.toLocaleString()}</p>
                                     <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${statusStyles[inv.status]}`}>
                                         {inv.status.replace('-', ' ')}
                                     </span>

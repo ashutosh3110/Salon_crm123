@@ -3,10 +3,10 @@ import { Clock, ChevronRight } from 'lucide-react';
 
 export default function ServiceCard({ service, onBook, index = 0 }) {
     const categoryColors = {
-        Hair: 'bg-violet-50 text-violet-600',
-        Skin: 'bg-rose-50 text-rose-600',
-        Nails: 'bg-pink-50 text-pink-600',
-        Spa: 'bg-emerald-50 text-emerald-600',
+        Hair: 'bg-violet-500/10 text-violet-500 dark:text-violet-400',
+        Skin: 'bg-rose-500/10 text-rose-500 dark:text-rose-400',
+        Nails: 'bg-pink-500/10 text-pink-500 dark:text-pink-400',
+        Spa: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400',
     };
 
     const badgeClass = categoryColors[service.category] || 'bg-gray-50 text-gray-600';
@@ -18,7 +18,7 @@ export default function ServiceCard({ service, onBook, index = 0 }) {
             transition={{ delay: index * 0.05, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onBook?.(service)}
-            className="bg-white rounded-2xl border border-border/60 p-4 hover:shadow-md hover:border-primary/20 transition-all cursor-pointer active:bg-surface group"
+            className="bg-surface rounded-2xl border border-border/60 p-4 hover:shadow-md hover:border-primary/20 transition-all cursor-pointer active:bg-surface-alt group"
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">

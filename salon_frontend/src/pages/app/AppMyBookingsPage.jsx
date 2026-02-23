@@ -43,7 +43,7 @@ export default function AppMyBookingsPage() {
                         {activeTab === tab && (
                             <motion.div
                                 layoutId="bookingsTab"
-                                className="absolute inset-0 bg-white rounded-lg shadow-sm"
+                                className="absolute inset-0 bg-background rounded-lg shadow-sm"
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         )}

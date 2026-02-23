@@ -28,9 +28,9 @@ export default function ManagerDashboard() {
             {/* Top Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {overviewStats.map((s) => (
-                    <div key={s.label} className="bg-white rounded-2xl border border-border p-4 flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl bg-${s.color}-100 flex items-center justify-center`}>
-                            <s.icon className={`w-5 h-5 text-${s.color}-500`} />
+                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-background flex items-center justify-center border border-border/10">
+                            <s.icon className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-2xl font-black text-text">{s.value}</p>
@@ -41,10 +41,10 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Staff Performance Table */}
-            <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-surface/50">
                     <h2 className="text-sm font-extrabold text-text">Staff Performance (This Month)</h2>
-                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Feb 2026</span>
+                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest bg-background px-2 py-1 rounded-md">Feb 2026</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -58,12 +58,14 @@ export default function ManagerDashboard() {
                                 <th className="text-right px-5 py-3 text-[10px] font-bold text-text-muted uppercase tracking-wider">Target</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border">
+                        <tbody className="divide-y divide-border/40">
                             {staffPerformance.map((s) => (
                                 <tr key={s.id} className="hover:bg-surface/30 transition-colors">
                                     <td className="px-5 py-3">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-600">{s.name.charAt(0)}</div>
+                                            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/10">
+                                                {s.name.charAt(0)}
+                                            </div>
                                             <span className="font-bold text-text">{s.name}</span>
                                         </div>
                                     </td>
@@ -92,11 +94,11 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Recent Feedback */}
-            <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                <div className="px-5 py-4 border-b border-border">
+            <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
                     <h2 className="text-sm font-extrabold text-text">Latest Customer Feedback</h2>
                 </div>
-                <div className="divide-y divide-border">
+                <div className="divide-y divide-border/40">
                     {recentFeedback.map((fb) => (
                         <div key={fb.id} className="px-5 py-4">
                             <div className="flex items-center justify-between mb-1.5">

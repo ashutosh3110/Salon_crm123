@@ -3,10 +3,10 @@ import { Calendar, Clock, User, ChevronRight } from 'lucide-react';
 
 export default function BookingCard({ booking, onTap, index = 0 }) {
     const statusConfig = {
-        pending: { bg: 'bg-amber-50', text: 'text-amber-600', label: 'Pending' },
-        confirmed: { bg: 'bg-blue-50', text: 'text-blue-600', label: 'Confirmed' },
-        completed: { bg: 'bg-emerald-50', text: 'text-emerald-600', label: 'Completed' },
-        cancelled: { bg: 'bg-gray-100', text: 'text-gray-500', label: 'Cancelled' },
+        pending: { bg: 'bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', label: 'Pending' },
+        confirmed: { bg: 'bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', label: 'Confirmed' },
+        completed: { bg: 'bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', label: 'Completed' },
+        cancelled: { bg: 'bg-surface-alt', text: 'text-text-muted', label: 'Cancelled' },
     };
 
     const status = statusConfig[booking.status] || statusConfig.pending;
@@ -33,7 +33,7 @@ export default function BookingCard({ booking, onTap, index = 0 }) {
             transition={{ delay: index * 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onTap?.(booking)}
-            className={`bg-white rounded-2xl border p-4 cursor-pointer hover:shadow-sm transition-all ${booking.status === 'cancelled' ? 'border-gray-200 opacity-70' : 'border-border/60'
+            className={`bg-surface rounded-2xl border p-4 cursor-pointer hover:shadow-sm transition-all ${booking.status === 'cancelled' ? 'border-border/40 opacity-70' : 'border-border/60'
                 }`}
         >
             <div className="flex items-start justify-between gap-3">

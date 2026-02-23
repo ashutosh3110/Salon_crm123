@@ -1,9 +1,11 @@
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import { Bell } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
+import { Bell, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AppHeader() {
     const { customer } = useCustomerAuth();
+    const { theme, toggleTheme } = useTheme();
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -21,7 +23,7 @@ export default function AppHeader() {
         <motion.header
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-border/40"
+            className="sticky top-0 z-40 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40"
         >
             <div className="max-w-lg mx-auto flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -38,13 +40,28 @@ export default function AppHeader() {
                     </div>
                 </div>
 
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    className="relative w-10 h-10 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
-                >
-                    <Bell className="w-5 h-5 text-text-secondary" />
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white" />
-                </motion.button>
+                <div className="flex items-center gap-2">
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={toggleTheme}
+                        className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors"
+                        title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                    >
+                        {theme === 'light' ? (
+                            <Moon className="w-5 h-5 text-text-secondary" />
+                        ) : (
+                            <Sun className="w-5 h-5 text-amber-400" />
+                        )}
+                    </motion.button>
+
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        className="relative w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors"
+                    >
+                        <Bell className="w-5 h-5 text-text-secondary" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white dark:ring-surface" />
+                    </motion.button>
+                </div>
             </div>
         </motion.header>
     );

@@ -21,20 +21,26 @@ export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen,
     const location = useLocation();
 
     const content = (
-        <div className="flex flex-col h-full bg-white">
+        <div className="flex flex-col h-full bg-background transition-colors duration-300">
             <div className={`flex items-center h-16 border-b border-border transition-all ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
                 {!collapsed ? (
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center shadow-sm">
+                        <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
+                            style={{ backgroundColor: 'var(--accent-color)' }}
+                        >
                             <Calculator className="w-4 h-4 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-bold text-text leading-none">Finance</h2>
+                            <h2 className="text-sm font-extrabold text-text leading-none">Finance</h2>
                             <p className="text-[10px] text-text-muted">Accountant Panel</p>
                         </div>
                     </div>
                 ) : (
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
+                    <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20"
+                        style={{ backgroundColor: 'var(--accent-color)' }}
+                    >
                         <Calculator className="w-4 h-4 text-white" />
                     </div>
                 )}
@@ -50,11 +56,15 @@ export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen,
                     <NavLink key={item.path} to={item.path} end={item.path === '/accountant'}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${isActive
-                                ? 'bg-emerald-50 text-emerald-600'
+                            `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all group ${isActive
+                                ? ''
                                 : 'text-text-secondary hover:bg-surface hover:text-text'
                             } ${collapsed ? 'justify-center' : ''}`}
                         title={collapsed ? item.label : undefined}
+                        style={({ isActive }) => ({
+                            backgroundColor: isActive ? 'color-mix(in srgb, var(--accent-color), transparent 85%)' : undefined,
+                            color: isActive ? 'var(--accent-color)' : undefined
+                        })}
                     >
                         <item.icon className="w-[18px] h-[18px] shrink-0" />
                         {!collapsed && <span>{item.label}</span>}
@@ -72,9 +82,9 @@ export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen,
 
     return (
         <>
-            <aside className={`hidden lg:block fixed top-0 left-0 h-screen z-40 border-r border-border bg-white transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}>{content}</aside>
-            {mobileOpen && <div className="lg:hidden fixed inset-0 bg-black/40 z-40" onClick={() => setMobileOpen(false)} />}
-            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-white border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>{content}</aside>
+            <aside className={`hidden lg:block fixed top-0 left-0 h-screen z-40 border-r border-border/40 bg-background transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}>{content}</aside>
+            {mobileOpen && <div className="lg:hidden fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />}
+            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-background border-r border-border/40 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>{content}</aside>
         </>
     );
 }
