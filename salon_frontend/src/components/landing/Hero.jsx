@@ -314,14 +314,14 @@ function PricingPreview({ cardVariants }) {
     ];
 
     return (
-        <div className="flex items-start md:justify-center gap-4 w-full md:w-[140%] md:-ml-[20%] scale-100 md:scale-[0.65] origin-top md:origin-center py-6 md:py-10 overflow-x-auto no-scrollbar px-6 md:px-0">
+        <div className="flex items-start md:justify-center gap-2 md:gap-4 w-full md:w-[140%] md:-ml-[20%] scale-[0.9] md:scale-[0.65] origin-top md:origin-center py-4 md:py-10 overflow-x-auto no-scrollbar px-4 md:px-0">
             {plans.map((plan, idx) => (
                 <motion.div
                     key={plan.name}
                     variants={cardVariants}
                     initial="hidden"
                     animate="visible"
-                    className={`relative bg-white rounded-[2.5rem] p-6 md:p-6 shadow-xl w-[280px] md:w-[260px] flex flex-col shrink-0 ${plan.popular ? 'border-2 border-primary z-10' : 'border border-black/5'
+                    className={`relative bg-white rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-xl w-[200px] md:w-[260px] flex flex-col shrink-0 ${plan.popular ? 'border-2 border-primary z-10' : 'border border-black/5'
                         }`}
                 >
                     {plan.popular && (
@@ -332,22 +332,22 @@ function PricingPreview({ cardVariants }) {
                         </div>
                     )}
 
-                    <div className="mb-6">
-                        <h3 className="text-xl font-bold text-text mb-1">{plan.name}</h3>
+                    <div className="mb-4 md:mb-6">
+                        <h3 className="text-lg md:text-xl font-bold text-text mb-0.5 md:mb-1">{plan.name}</h3>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-3xl font-black text-text tracking-tighter">{plan.price}</span>
-                            <span className="text-xs text-text-muted/60">{plan.duration}</span>
+                            <span className="text-2xl md:text-3xl font-black text-text tracking-tighter">{plan.price}</span>
+                            <span className="text-[10px] md:text-xs text-text-muted/60">{plan.duration}</span>
                         </div>
-                        <p className="text-[11px] font-medium text-text-muted mt-2 leading-tight">
+                        <p className="text-[10px] md:text-[11px] font-medium text-text-muted mt-1.5 md:mt-2 leading-tight">
                             {plan.desc}
                         </p>
                     </div>
 
-                    <ul className="space-y-2 mb-8 flex-grow">
+                    <ul className="space-y-1.5 md:space-y-2 mb-6 md:mb-8 flex-grow">
                         {plan.features.map(f => (
-                            <li key={f} className="flex items-start gap-2">
-                                <Check className="w-3 h-3 text-primary shrink-0 mt-0.5" />
-                                <span className="text-[11px] font-medium text-text-secondary">{f}</span>
+                            <li key={f} className="flex items-start gap-1.5 md:gap-2">
+                                <Check className="w-2.5 h-2.5 md:w-3 md:h-3 text-primary shrink-0 mt-0.5" />
+                                <span className="text-[10px] md:text-[11px] font-medium text-text-secondary">{f}</span>
                             </li>
                         ))}
                     </ul>
