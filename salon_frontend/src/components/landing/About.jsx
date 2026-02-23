@@ -39,27 +39,29 @@ export default function About() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                     >
-                        <span className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
-                            Why SalonCRM
-                        </span>
-                        <h2 className="mt-6 text-4xl sm:text-5xl font-black text-text leading-tight uppercase tracking-tight">
+                        <div className="flex justify-center lg:justify-start">
+                            <span className="text-[10px] font-bold text-primary tracking-[0.3em] uppercase bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
+                                Why SalonCRM
+                            </span>
+                        </div>
+                        <h2 className="mt-4 md:mt-6 text-2xl sm:text-5xl font-black text-text leading-tight uppercase tracking-tight text-center lg:text-left">
                             Built by Salon Experts,<br />
                             <span className="text-primary italic">For Salon Owners</span>
                         </h2>
-                        <div className="w-16 h-1 bg-primary/20 my-6 rounded-full" />
-                        <p className="text-sm text-text-secondary leading-relaxed font-medium">
+                        <div className="w-16 h-1 bg-primary/20 my-4 md:my-6 rounded-full mx-auto lg:mx-0" />
+                        <p className="text-[13px] md:text-sm text-text-secondary leading-relaxed font-medium text-center lg:text-left">
                             We understand the unique challenges of running a salon business. From managing
                             walk-ins to tracking product inventory, from retaining clients to growing revenue —
                             SalonCRM handles it all so you can focus on what you do best: making people look amazing.
                         </p>
-                        <p className="mt-4 text-sm text-text-secondary leading-relaxed font-medium">
+                        <p className="mt-4 text-[13px] md:text-sm text-text-secondary leading-relaxed font-medium text-center lg:text-left">
                             Trusted by 500+ salons across India, our platform processes over 50,000
                             appointments every month with 99.9% uptime.
                         </p>
                     </motion.div>
 
                     {/* Right — Values Grid */}
-                    <div className="grid sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-3 md:gap-6">
                         {values.map((value, idx) => (
                             <motion.div
                                 key={value.title}
@@ -67,7 +69,7 @@ export default function About() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.1 }}
-                                className="group relative h-64 bg-white rounded-none p-6 border border-black/5 overflow-hidden flex flex-col justify-end cursor-default"
+                                className="group relative min-h-[160px] md:h-64 bg-white rounded-none p-4 md:p-6 border border-black/5 overflow-hidden flex flex-col justify-end cursor-default"
                             >
                                 {/* Background Image Reveal */}
                                 <div className="absolute inset-0 z-0">
@@ -81,13 +83,13 @@ export default function About() {
 
                                 {/* Content Layer */}
                                 <div className="relative z-10 transition-transform duration-500 group-hover:-translate-y-2">
-                                    <div className="mb-4 transition-all duration-500 group-hover:scale-110">
-                                        <value.icon className="w-6 h-6 text-primary group-hover:text-white transition-colors duration-300" />
+                                    <div className="mb-2 md:mb-4 transition-all duration-500 group-hover:scale-110">
+                                        <value.icon className="w-5 h-5 md:w-6 md:h-6 text-primary group-hover:text-white transition-colors duration-300" />
                                     </div>
-                                    <h3 className="font-black text-xs uppercase tracking-widest text-text mb-2 group-hover:text-white transition-colors duration-300">
+                                    <h3 className="font-black text-[10px] md:text-xs uppercase tracking-widest text-text mb-1 md:mb-2 group-hover:text-white transition-colors duration-300">
                                         {value.title}
                                     </h3>
-                                    <p className="text-[11px] font-medium text-text-secondary leading-relaxed group-hover:text-white/80 transition-colors duration-300">
+                                    <p className="text-[9px] md:text-[11px] font-medium text-text-secondary leading-tight md:leading-relaxed group-hover:text-white/80 transition-colors duration-300 line-clamp-2 md:line-clamp-none">
                                         {value.desc}
                                     </p>
                                 </div>
