@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import { User, Mail, Lock, Phone, Store } from 'lucide-react';
 import Navbar from '../../components/landing/Navbar';
 
@@ -24,13 +25,38 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
 
         if (form.password !== form.confirmPassword) {
             setError('Passwords do not match');
             return;
         }
+
+        if (form.password.length < 8) {
+            setError('Password must be at least 8 characters');
+            return;
+        }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const plan = queryParams.get('plan') || 'free';
+
         setLoading(true);
-        setTimeout(() => setLoading(false), 1500);
+        try {
+            await register({
+                salonName: form.salonName,
+                fullName: form.fullName,
+                email: form.email,
+                phone: form.phone,
+                password: form.password,
+                confirmPassword: form.confirmPassword,
+                subscriptionPlan: plan
+            });
+            navigate('/admin');
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

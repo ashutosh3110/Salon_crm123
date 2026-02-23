@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import Navbar from '../../components/landing/Navbar';
 
 export default function LoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
@@ -16,9 +18,16 @@ export default function LoginPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
         setLoading(true);
-        // TODO: integrate with backend auth API
-        setTimeout(() => setLoading(false), 1500);
+        try {
+            await login(form.email, form.password);
+            navigate('/admin');
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -75,60 +84,53 @@ export default function LoginPage() {
                             <h2 className="text-2xl font-black text-primary tracking-[0.2em] uppercase">Login</h2>
                         </div>
 
-                    <h2 className="text-2xl font-bold text-text">Sign in to your account</h2>
-                    <p className="mt-2 text-sm text-text-secondary">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-primary font-semibold hover:underline">
-                            Start free trial
-                        </Link>
-                    </p>
 
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
-                                    placeholder="Email"
-                                />
-                            </div>
+                        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                            {/* Email */}
+                            <div>
+                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                                    Email Address
+                                </label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={form.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
+                                        placeholder="Email"
+                                    />
+                                </div>
 
-                            {/* Password Input */}
-                            <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
-                                <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
-                                <input
-                                    type="password"
-                                    name="password"
-                                    value={form.password}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
-                                    placeholder="Password"
-                                />
-                            </div>
+                                {/* Password Input */}
+                                <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
+                                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={form.password}
+                                        onChange={handleChange}
+                                        required
+                                        className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
+                                        placeholder="Password"
+                                    />
+                                </div>
 
-                            {/* Row: Forgot & Submit */}
-                            <div className="flex items-center justify-between pt-4">
-                                <a href="#" className="text-xs font-bold text-primary/60 hover:text-primary transition-colors tracking-tight">
-                                    Forgot Password?
-                                </a>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="bg-primary text-white px-10 py-2.5 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
-                                >
-                                    {loading ? '...' : 'LOGIN'}
-                                </button>
-                            </div>
+                                {/* Row: Forgot & Submit */}
+                                <div className="flex items-center justify-between pt-4">
+                                    <a href="#" className="text-xs font-bold text-primary/60 hover:text-primary transition-colors tracking-tight">
+                                        Forgot Password?
+                                    </a>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="bg-primary text-white px-10 py-2.5 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
+                                    >
+                                        {loading ? '...' : 'LOGIN'}
+                                    </button>
+                                </div>
                         </form>
                     </div>
                 </div>
