@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Scissors, User, Mail, Lock, Phone, Store, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { User, Mail, Lock, Phone, Store } from 'lucide-react';
+import Navbar from '../../components/landing/Navbar';
 
 export default function RegisterPage() {
     const [form, setForm] = useState({
@@ -12,7 +13,6 @@ export default function RegisterPage() {
         password: '',
         confirmPassword: '',
     });
-    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { register } = useAuth();
@@ -31,6 +31,7 @@ export default function RegisterPage() {
             setError('Passwords do not match');
             return;
         }
+
         if (form.password.length < 8) {
             setError('Password must be at least 8 characters');
             return;
@@ -50,7 +51,6 @@ export default function RegisterPage() {
                 confirmPassword: form.confirmPassword,
                 subscriptionPlan: plan
             });
-            // Successful registration will already set user and token in AuthContext
             navigate('/admin');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed. Please try again.');
@@ -60,224 +60,128 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="min-h-screen flex">
-            {/* Left — Branding */}
-            <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center p-12">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-primary-light/20 blur-3xl" />
-                    <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-primary-dark/30 blur-3xl" />
-                    <div className="absolute bottom-1/3 left-1/4 w-64 h-64 rounded-full border border-white/10" />
-                </div>
+        <div className="min-h-screen bg-[#6B2A3B] flex flex-col">
+            <Navbar />
+            <div className="flex-1 flex items-center justify-center p-4 pt-24">
+                {/* Main Center Container */}
+                <div className="w-full max-w-[1000px] min-h-[640px] md:h-[640px] bg-white rounded-3xl md:rounded-[40px] shadow-2xl flex flex-col md:flex-row overflow-hidden relative mx-auto my-8">
 
-                <div className="relative z-10 text-white max-w-md">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                            <Scissors className="w-6 h-6 text-white" />
+                    {/* Left Side: Premium Arched Image & Glass Switcher */}
+                    <div className="hidden md:flex w-[42%] bg-[#4A1D28] relative overflow-hidden flex-col items-center justify-between text-white p-12">
+                        {/* Background Effects */}
+                        <div className="absolute inset-0 z-0 opacity-40">
+                            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary rounded-full blur-[120px]" />
+                            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary rounded-full blur-[120px]" />
                         </div>
-                        <span className="text-2xl font-bold">SalonCRM</span>
+
+                        <div className="relative z-10 w-full flex flex-col items-center flex-1 justify-center">
+                            {/* Arched Image Container */}
+                            <div className="relative w-full aspect-[4/5] rounded-t-full rounded-b-[40px] overflow-hidden border-4 border-white/10 shadow-2xl mb-8 group">
+                                <img
+                                    src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=1000"
+                                    alt="Salon Experience"
+                                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#4A1D28]/80 via-transparent to-transparent" />
+                            </div>
+
+                            {/* Branding Text */}
+                            <div className="text-center space-y-2">
+                                <h3 className="text-2xl font-black tracking-tight leading-none uppercase">Join the <span className="text-primary italic">Masters.</span></h3>
+                                <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">Start your 14-day free journey</p>
+                            </div>
+                        </div>
+
+                        {/* Modern Tab Switcher */}
+                        <div className="relative z-10 w-full bg-white/5 backdrop-blur-sm border border-white/10 p-1.5 rounded-2xl flex items-center gap-2 mb-4">
+                            <Link to="/login" className="flex-1 text-white/50 hover:text-white border border-transparent hover:border-white/30 font-black py-2.5 rounded-xl text-[10px] tracking-[0.2em] text-center uppercase transition-all duration-300">
+                                LOGIN
+                            </Link>
+                            <div className="flex-1 bg-transparent border border-white/80 text-white font-black py-2.5 rounded-xl text-[10px] tracking-[0.2em] text-center uppercase transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+                                SIGN UP
+                            </div>
+                        </div>
                     </div>
 
-                    <h1 className="text-3xl font-bold leading-tight mb-4">
-                        Start your free trial today
-                    </h1>
-                    <p className="text-white/70 leading-relaxed mb-8">
-                        Get your salon up and running in minutes. No credit card required.
-                        Full access to all features for 14 days.
-                    </p>
-
-                    {/* Benefits List */}
-                    <ul className="space-y-4">
-                        {[
-                            'Complete salon management suite',
-                            'Unlimited bookings on all plans',
-                            'Built-in POS and billing',
-                            'Loyalty program out of the box',
-                            'Multi-outlet support',
-                        ].map((benefit) => (
-                            <li key={benefit} className="flex items-center gap-3">
-                                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
-                                    <span className="text-xs">✓</span>
-                                </div>
-                                <span className="text-sm text-white/80">{benefit}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </div>
-
-            {/* Right — Register Form */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background">
-                <div className="w-full max-w-md">
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center gap-2 mb-8">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                            <Scissors className="w-5 h-5 text-white" />
+                    {/* Right Side: Register Form */}
+                    <div className="flex-1 flex flex-col bg-white p-6 md:p-12 relative overflow-y-auto min-h-full">
+                        {/* Mobile Tab Switcher Toggle */}
+                        <div className="md:hidden flex justify-center mb-6">
+                            <div className="inline-flex bg-primary/5 p-1 rounded-full border border-primary/10">
+                                <Link to="/login" className="px-6 py-2 text-primary/40 text-[10px] font-black uppercase tracking-widest rounded-full">Login</Link>
+                                <div className="px-6 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-full">Sign Up</div>
+                            </div>
                         </div>
-                        <span className="text-xl font-bold text-text">
-                            Salon<span className="text-primary">CRM</span>
-                        </span>
+                        {/* Header Logo */}
+                        <div className="flex flex-col items-center mb-6 md:mb-8">
+                            <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white flex items-center justify-center shadow-lg mb-2 md:mb-3 border-4 border-primary/10 ring-2 ring-primary/5 p-2">
+                                <img src="/2-removebg-preview.png" alt="Logo" className="w-full h-full object-contain" />
+                            </div>
+                            <h2 className="text-lg md:text-xl font-black text-primary tracking-[0.2em] uppercase">Registration</h2>
+                        </div>
+
+                        {error && (
+                            <div className="mb-6 bg-error/10 border border-error/20 text-error text-[10px] uppercase font-bold tracking-wider px-4 py-2 rounded-lg text-center">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleSubmit} className="space-y-6 px-4 md:px-12">
+                            {/* 2-Column Inputs Grid */}
+                            <div className="grid sm:grid-cols-2 gap-x-10 gap-y-6">
+                                {/* Salon Name */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Store className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="text" name="salonName" value={form.salonName} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Salon Name" />
+                                </div>
+
+                                {/* Full Name */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="text" name="fullName" value={form.fullName} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Owner Name" />
+                                </div>
+
+                                {/* Email */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="email" name="email" value={form.email} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Email" />
+                                </div>
+
+                                {/* Phone */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Phone className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="tel" name="phone" value={form.phone} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Phone" />
+                                </div>
+
+                                {/* Password */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="password" name="password" value={form.password} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Password" />
+                                </div>
+
+                                {/* Confirm Password */}
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
+                                    <input type="password" name="confirmPassword" value={form.confirmPassword} onChange={handleChange} required className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none" placeholder="Confirm" />
+                                </div>
+                            </div>
+
+                            {/* Terms and Submit */}
+                            <div className="flex flex-col items-center pt-4">
+                                <p className="text-[10px] text-text-muted/60 mb-6 text-center">
+                                    By signing up, you agree to our <span className="text-primary font-bold cursor-pointer underline decoration-primary/20">Terms</span> and <span className="text-primary font-bold cursor-pointer underline decoration-primary/20">Privacy</span>.
+                                </p>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-primary text-white px-12 py-3 rounded-full font-bold text-sm tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {loading ? '...' : 'CREATE ACCOUNT'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-text">Create your account</h2>
-                    <p className="mt-2 text-sm text-text-secondary">
-                        Already have an account?{' '}
-                        <Link to="/admin/login" className="text-primary font-semibold hover:underline">
-                            Sign in
-                        </Link>
-                    </p>
-
-                    {error && (
-                        <div className="mt-4 flex items-start gap-3 p-4 rounded-lg bg-error/10 border border-error/20 text-error animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                            <p className="text-sm font-medium">{error}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                        {/* Salon Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                Salon Name
-                            </label>
-                            <div className="relative">
-                                <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                <input
-                                    type="text"
-                                    name="salonName"
-                                    value={form.salonName}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                    placeholder="Your Salon Name"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Full Name */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                Your Full Name
-                            </label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    value={form.fullName}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                    placeholder="John Doe"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Email & Phone */}
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                    Email
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={form.email}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                        placeholder="you@example.com"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                    Phone
-                                </label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                        placeholder="+91 98765 43210"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Password & Confirm */}
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={form.password}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-10 pr-10 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                        placeholder="Min 8 characters"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition"
-                                    >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                    </button>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                    Confirm Password
-                                </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        type={showPassword ? 'text' : 'password'}
-                                        name="confirmPassword"
-                                        value={form.confirmPassword}
-                                        onChange={handleChange}
-                                        required
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                        placeholder="Confirm password"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Terms */}
-                        <p className="text-xs text-text-muted">
-                            By creating an account, you agree to our{' '}
-                            <a href="#" className="text-primary hover:underline">Terms of Service</a> and{' '}
-                            <a href="#" className="text-primary hover:underline">Privacy Policy</a>.
-                        </p>
-
-                        {/* Submit */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="btn-primary w-full py-3 flex items-center justify-center gap-2 disabled:opacity-60"
-                        >
-                            {loading ? (
-                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    Create Account
-                                    <ArrowRight className="w-4 h-4" />
-                                </>
-                            )}
-                        </button>
-                    </form>
                 </div>
             </div>
         </div>

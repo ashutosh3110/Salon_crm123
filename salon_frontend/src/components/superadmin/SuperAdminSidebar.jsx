@@ -33,11 +33,11 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
     };
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-white relative">
+        <div className="flex flex-col h-full bg-background transition-colors duration-300 relative">
             {/* Desktop Toggle Button - Floating style */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-border items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
+                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-surface border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
             >
                 {collapsed ? (
                     <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
@@ -47,14 +47,19 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             </button>
 
             {/* Logo */}
-            <div className={`flex items-center h-16 border-b border-border transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
+            <div className={`flex items-center h-16 border-b border-border/40 transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
                 <div className={`flex items-center gap-3 ${collapsed ? '' : 'overflow-hidden'}`}>
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
                         <Shield className="w-5 h-5 text-white" />
                     </div>
                     {!collapsed && (
+<<<<<<< HEAD
                         <span className="text-lg font-bold text-text whitespace-nowrap tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
                             Super<span className="text-primary font-bold">Admin</span>
+=======
+                        <span className="text-lg font-black text-text whitespace-nowrap tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
+                            SUPER<span className="text-primary">ADMIN</span>
+>>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
                         </span>
                     )}
                 </div>
@@ -62,7 +67,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 {/* Mobile close button only */}
                 <button
                     onClick={() => setMobileOpen(false)}
-                    className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface transition-colors"
+                    className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-surface transition-colors"
                 >
                     <X className="w-5 h-5 text-text-muted" />
                 </button>
@@ -77,8 +82,8 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                         end={item.path === '/superadmin'}
                         onClick={() => setMobileOpen(false)}
                         className={({ isActive: isItemActive }) =>
-                            `flex items-center rounded-xl text-sm font-medium transition-all duration-200 group relative ${collapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-3 py-2.5 gap-3'} ${isItemActive
-                                ? 'bg-primary/5 text-primary'
+                            `flex items-center rounded-xl text-sm font-bold transition-all duration-200 group relative ${collapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-3 py-2.5 gap-3'} ${isItemActive
+                                ? 'bg-primary/10 text-primary'
                                 : 'text-text-secondary hover:bg-surface hover:text-text'
                             }`
                         }
@@ -101,12 +106,12 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             </nav>
 
             {/* Logout */}
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-border/40">
                 <button
                     onClick={handleLogout}
-                    className={`flex items-center rounded-xl text-sm font-medium text-text-secondary hover:bg-red-50 hover:text-red-600 transition-all duration-200 group ${collapsed ? 'justify-center h-11 w-11 mx-auto' : 'w-full px-3 py-2.5 gap-3'}`}
+                    className={`flex items-center rounded-xl text-sm font-bold text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all duration-200 group ${collapsed ? 'justify-center h-11 w-11 mx-auto' : 'w-full px-3 py-2.5 gap-3'}`}
                 >
-                    <LogOut className={`shrink-0 transition-colors ${collapsed ? 'w-5 h-5' : 'w-5 h-5'} text-text-muted group-hover:text-red-600`} />
+                    <LogOut className={`shrink-0 transition-colors ${collapsed ? 'w-5 h-5' : 'w-5 h-5'} text-text-muted group-hover:text-rose-500`} />
                     {!collapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Logout</span>}
                 </button>
             </div>
@@ -117,7 +122,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
         <>
             {/* Desktop Sidebar */}
             <aside
-                className={`hidden lg:block fixed top-0 left-0 h-screen bg-white border-r border-border z-30 transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}
+                className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border/40 z-30 transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60 shadow-2xl shadow-primary/5'}`}
             >
                 {sidebarContent}
             </aside>
@@ -125,14 +130,14 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             {/* Mobile Overlay */}
             {mobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Mobile Sidebar */}
             <aside
-                className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-white border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-background border-r border-border/40 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 {sidebarContent}
             </aside>

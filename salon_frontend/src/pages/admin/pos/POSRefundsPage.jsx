@@ -30,6 +30,15 @@ export default function POSRefundsPage() {
                 <p className="text-sm text-text-secondary mt-1">Review and approve service refund requests.</p>
             </div>
 
+            {/* Coming Soon Banner */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                <div>
+                    <p className="text-sm font-bold text-amber-800">Coming Soon</p>
+                    <p className="text-xs text-amber-600 mt-0.5">Refund processing is under development. The data below is placeholder.</p>
+                </div>
+            </div>
+
             {/* Refunds Table */}
             <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">

@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, getRedirectPath } from '../contexts/AuthContext';
 
 export default function ProtectedRoute({ allowedRoles }) {
     const { user, loading, isAuthenticated } = useAuth();
@@ -13,11 +13,13 @@ export default function ProtectedRoute({ allowedRoles }) {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/admin/login" replace />;
+        return <Navigate to="/login" replace />;
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        return <Navigate to="/unauthorized" replace />;
+        // Redirect to the user's own panel instead of a generic 403
+        const correctPath = getRedirectPath(user);
+        return <Navigate to={correctPath} replace />;
     }
 
     return <Outlet />;
