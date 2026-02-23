@@ -7,8 +7,6 @@ export const createProduct = {
         sku: Joi.string().required(),
         price: Joi.number().required().min(0),
         category: Joi.string(),
-        stock: Joi.number().integer().min(0).default(0),
-        lowStockThreshold: Joi.number().integer().min(0).default(5),
     }),
 };
 

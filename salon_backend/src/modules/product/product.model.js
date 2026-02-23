@@ -19,14 +19,6 @@ const productSchema = new mongoose.Schema(
         category: {
             type: String,
         },
-        stock: {
-            type: Number,
-            default: 0,
-        },
-        lowStockThreshold: {
-            type: Number,
-            default: 5,
-        },
         status: {
             type: String,
             enum: ['active', 'inactive'],

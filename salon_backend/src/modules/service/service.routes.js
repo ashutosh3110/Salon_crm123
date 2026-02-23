@@ -2,6 +2,7 @@ import express from 'express';
 import serviceController from './service.controller.js';
 import auth from '../../middlewares/auth.js';
 import validateTenant from '../../middlewares/tenant.js';
+import authorize from '../../middlewares/role.js';
 import validate from '../../middlewares/validate.js';
 import { serviceValidation } from '../../validations/index.js';
 import checkSubscriptionLimit from '../../middlewares/subscription.js';
@@ -14,7 +15,7 @@ router.use(validateTenant);
 router
     .route('/')
     .post(checkSubscriptionLimit('services'), validate(serviceValidation.createService), serviceController.createService)
-    .get(validate(serviceValidation.getServices), serviceController.getServices);
+    .get(authorize(['admin', 'manager', 'receptionist', 'customer']), validate(serviceValidation.getServices), serviceController.getServices);
 
 router
     .route('/:serviceId')

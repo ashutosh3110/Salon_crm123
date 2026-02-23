@@ -1,19 +1,23 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Lock } from 'lucide-react';
-import Navbar from '../../components/landing/Navbar';
+import { Scissors, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+        setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        // TODO: integrate with backend auth API
         setTimeout(() => setLoading(false), 1500);
     };
 
@@ -71,10 +75,22 @@ export default function LoginPage() {
                             <h2 className="text-2xl font-black text-primary tracking-[0.2em] uppercase">Login</h2>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-10 px-4 md:px-12 flex-1">
-                            {/* Email Input */}
-                            <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
-                                <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
+                    <h2 className="text-2xl font-bold text-text">Sign in to your account</h2>
+                    <p className="mt-2 text-sm text-text-secondary">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="text-primary font-semibold hover:underline">
+                            Start free trial
+                        </Link>
+                    </p>
+
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                        {/* Email */}
+                        <div>
+                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                 <input
                                     type="email"
                                     name="email"

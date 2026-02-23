@@ -14,11 +14,18 @@ if (config.env !== 'test') {
     app.use(morgan('dev'));
 }
 
-// set security HTTP headers
-app.use(helmet());
+// enable cors
+app.use(cors({
+    origin: config.cors.origin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+}));
 
-// Apply global rate limiter
-app.use('/v1', globalLimiter);
+// set security HTTP headers
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // parse json request body
 app.use(express.json());
@@ -26,8 +33,8 @@ app.use(express.json());
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 
-// enable cors
-app.use(cors({ origin: config.cors.origin }));
+// Apply global rate limiter
+app.use('/v1', globalLimiter);
 
 // api routes
 app.use('/v1', routes);

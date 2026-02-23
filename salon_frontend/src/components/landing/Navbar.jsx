@@ -78,7 +78,7 @@ export default function Navbar() {
                         ))}
                         <div className="pt-3 border-t border-border space-y-2">
                             <Link
-                                to="/login"
+                                to="/admin/login"
                                 className="block text-sm font-semibold text-text-secondary hover:text-primary transition-colors py-2"
                             >
                                 Sign In

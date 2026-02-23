@@ -30,7 +30,33 @@ const validate = (schema) => (req, res, next) => {
         return next(customError);
     }
 
-    Object.assign(req, value);
+    ['params', 'query', 'body'].forEach((key) => {
+        if (value[key]) {
+            if (req[key] && typeof req[key] === 'object') {
+                Object.assign(req[key], value[key]);
+            } else {
+                try {
+                    req[key] = value[key];
+                } catch (e) {
+                    // Fallback to defineProperty for restricted properties
+                    Object.defineProperty(req, key, {
+                        value: value[key],
+                        writable: true,
+                        configurable: true,
+                        enumerable: true,
+                    });
+                }
+            }
+        }
+    });
+
+    // Also handle any other keys in value that aren't params/query/body
+    Object.keys(value).forEach((key) => {
+        if (!['params', 'query', 'body'].includes(key)) {
+            req[key] = value[key];
+        }
+    });
+
     return next();
 };
 

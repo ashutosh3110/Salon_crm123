@@ -14,6 +14,8 @@ export default function RegisterPage() {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { register } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,6 +24,7 @@ export default function RegisterPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (form.password !== form.confirmPassword) {
             setError('Passwords do not match');
             return;
@@ -145,6 +148,7 @@ export default function RegisterPage() {
                             </div>
                         </form>
                     </div>
+
                 </div>
             </div>
         </div>

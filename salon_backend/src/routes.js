@@ -11,6 +11,7 @@ import onboardingRoute from './modules/onboarding/onboarding.routes.js';
 import outletRoute from './modules/outlet/outlet.routes.js';
 import userRoute from './modules/user/user.routes.js';
 import bookingRoute from './modules/booking/booking.routes.js';
+import inventoryRoute from './modules/inventory/inventory.routes.js';
 import onboardingGuard from './middlewares/onboardingGuard.js';
 
 const router = express.Router();
@@ -34,6 +35,10 @@ const protectedRoutes = [
     {
         path: '/pos',
         route: posRoute,
+    },
+    {
+        path: '/inventory',
+        route: inventoryRoute,
     },
     {
         path: '/clients',

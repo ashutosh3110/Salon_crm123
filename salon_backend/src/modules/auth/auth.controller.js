@@ -5,12 +5,20 @@ import tokenService from './token.service.js';
 const register = async (req, res, next) => {
     try {
         const { user } = await authService.registerSalonOwner(req.body);
+        const tokens = await tokenService.generateAuthTokens(user);
+
         res.status(httpStatus.CREATED).send({
-            code: httpStatus.CREATED,
-            message: 'Registration successful. Please login to continue.',
+            success: true,
+            message: 'Registration successful',
             data: {
-                email: user.email,
-                name: user.name
+                accessToken: tokens.access.token,
+                refreshToken: tokens.refresh.token,
+                user: {
+                    userId: user._id,
+                    tenantId: user.tenantId,
+                    role: user.role,
+                    onboardingStatus: user.onboardingStatus,
+                }
             }
         });
     } catch (error) {
