@@ -14,8 +14,18 @@ import CookiePolicy from './pages/legal/CookiePolicy';
 import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 function ScrollToHash() {
-  const { hash } = useLocation();
+  const { pathname, hash } = useLocation();
 
   useEffect(() => {
     if (hash) {
@@ -23,8 +33,10 @@ function ScrollToHash() {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
       }
+    } else {
+      window.scrollTo(0, 0);
     }
-  }, [hash]);
+  }, [hash, pathname]);
 
   return null;
 }
@@ -40,11 +52,14 @@ import ProductsPage from './pages/admin/ProductsPage';
 import OutletsPage from './pages/admin/OutletsPage';
 import StaffPage from './pages/admin/StaffPage';
 import CustomersPage from './pages/admin/CustomersPage';
-import POSDashboardPage from './pages/admin/pos/POSDashboardPage';
-import POSInvoicesPage from './pages/admin/pos/POSInvoicesPage';
-import POSPaymentsPage from './pages/admin/pos/POSPaymentsPage';
-import POSRefundsPage from './pages/admin/pos/POSRefundsPage';
-import POSSettingsPage from './pages/admin/pos/POSSettingsPage';
+// POS App (standalone)
+import POSLayout from './layouts/POSLayout';
+import POSBillingPage from './pages/pos/POSBillingPage';
+import POSDashboardPage from './pages/pos/POSDashboardPage';
+import POSInvoicesPage from './pages/pos/POSInvoicesPage';
+import POSPaymentsPage from './pages/pos/POSPaymentsPage';
+import POSRefundsPage from './pages/pos/POSRefundsPage';
+import POSSettingsPage from './pages/pos/POSSettingsPage';
 import PromotionsPage from './pages/admin/PromotionsPage';
 import LoyaltyPage from './pages/admin/LoyaltyPage';
 import InvoicesPage from './pages/admin/InvoicesPage';
@@ -62,9 +77,22 @@ import SADashboardPage from './pages/superadmin/SADashboardPage';
 import SATenantsPage from './pages/superadmin/SATenantsPage';
 import SASubscriptionsPage from './pages/superadmin/SASubscriptionsPage';
 
+// Customer App layout & pages
+import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
+import AppLayout from './layouts/AppLayout';
+import AppLoginPage from './pages/app/AppLoginPage';
+import AppHomePage from './pages/app/AppHomePage';
+import AppServicesPage from './pages/app/AppServicesPage';
+import AppBookingPage from './pages/app/AppBookingPage';
+import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
+import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
+import AppReferralPage from './pages/app/AppReferralPage';
+import AppProfilePage from './pages/app/AppProfilePage';
+
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <ScrollToHash />
       <AuthProvider>
         <Routes>
@@ -96,13 +124,6 @@ function App() {
               <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
               <Route path="/admin/staff" element={<StaffPage />} />
 
-              {/* POS Routes */}
-              <Route path="/admin/pos" element={<POSDashboardPage />} />
-              <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
-              <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
-              <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
-              <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
-              <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
 
               <Route path="/admin/bookings" element={<BookingsPage />} />
 
@@ -170,6 +191,44 @@ function App() {
               <Route path="/superadmin/tenants" element={<SATenantsPage />} />
               <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
             </Route>
+          </Route>
+
+          {/* POS App Routes (standalone) */}
+          <Route
+            element={
+              <ProtectedRoute
+                allowedRoles={['admin', 'manager', 'receptionist']}
+              />
+            }
+          >
+            <Route element={<POSLayout />}>
+              <Route path="/pos" element={<POSDashboardPage />} />
+              <Route path="/pos/billing" element={<POSBillingPage />} />
+              <Route path="/pos/invoices" element={<POSInvoicesPage />} />
+              <Route path="/pos/payments" element={<POSPaymentsPage />} />
+              <Route path="/pos/refunds" element={<POSRefundsPage />} />
+              <Route path="/pos/settings" element={<POSSettingsPage />} />
+            </Route>
+          </Route>
+
+          {/* Customer App Routes */}
+          <Route path="/app/login" element={
+            <CustomerAuthProvider>
+              <AppLoginPage />
+            </CustomerAuthProvider>
+          } />
+          <Route element={
+            <CustomerAuthProvider>
+              <AppLayout />
+            </CustomerAuthProvider>
+          }>
+            <Route path="/app" element={<AppHomePage />} />
+            <Route path="/app/services" element={<AppServicesPage />} />
+            <Route path="/app/book" element={<AppBookingPage />} />
+            <Route path="/app/bookings" element={<AppMyBookingsPage />} />
+            <Route path="/app/loyalty" element={<AppLoyaltyPage />} />
+            <Route path="/app/referrals" element={<AppReferralPage />} />
+            <Route path="/app/profile" element={<AppProfilePage />} />
           </Route>
         </Routes>
       </AuthProvider>
