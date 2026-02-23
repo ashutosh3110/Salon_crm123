@@ -61,7 +61,7 @@ export default function Hero() {
     };
 
     return (
-        <section className="relative min-h-screen flex items-center overflow-hidden bg-[#FDF9F8]">
+        <section className="relative min-h-[auto] md:min-h-screen flex items-center overflow-hidden bg-[#FDF9F8] py-20 md:py-0">
             {/* Background decoration */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-primary/5 blur-3xl opacity-60" />
@@ -70,7 +70,7 @@ export default function Hero() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full border border-primary/10" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative z-10 w-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 md:pt-24 pb-8 md:pb-16 relative z-10 w-full">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
                     {/* Left Content */}
@@ -82,47 +82,47 @@ export default function Hero() {
                     >
 
 
-                        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif italic text-text leading-tight tracking-tight">
+                        <h1 className="text-[2.5rem] leading-[1.1] sm:text-5xl lg:text-6xl font-serif italic text-text tracking-tight px-2 sm:px-0">
                             Elevate Your <span className="text-primary not-italic font-black">Salon</span>
-                            <span className="block text-primary/80 not-italic font-black mt-1">Smarter, Faster.</span>
+                            <span className="block text-primary/80 not-italic font-black mt-2">Smarter, Faster.</span>
                         </h1>
 
-                        <p className="mt-6 text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80">
+                        <p className="mt-4 md:mt-6 text-[13px] md:text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80 px-4 md:px-0">
                             The ultimate toolkit for modern salon scaling. Manage appointments,
                             billing, and analytics with cinematic efficiency.
                         </p>
 
-                        <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start px-8 sm:px-0">
                             <Link
                                 to="/register"
-                                className="px-8 py-3.5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-none shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
+                                className="w-full sm:w-auto px-8 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-none shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-center"
                             >
                                 Get Started Free
                             </Link>
                             <Link
                                 to="/#features"
-                                className="px-8 py-3.5 bg-white text-primary font-black text-[10px] uppercase tracking-[0.2em] rounded-none border border-primary/20 shadow-lg shadow-black/5 hover:scale-105 transition-transform"
+                                className="w-full sm:w-auto px-8 py-4 bg-white text-primary font-black text-[10px] uppercase tracking-[0.2em] rounded-none border border-primary/20 shadow-lg shadow-black/5 hover:scale-105 active:scale-95 transition-all text-center"
                             >
                                 Learn More
                             </Link>
                         </div>
 
-                        <div className="mt-12 grid grid-cols-3 gap-6 max-w-sm mx-auto lg:mx-0 border-t border-black/5 pt-8">
+                        <div className="mt-10 grid grid-cols-3 gap-4 md:gap-6 max-w-sm mx-auto lg:mx-0 border-t border-black/5 pt-6 md:pt-8 px-4 md:px-0">
                             {[
                                 { value: '500+', label: 'Salons' },
                                 { value: '50K+', label: 'Bookings' },
                                 { value: '99.9%', label: 'Uptime' },
-                            ].map((stat, idx) => (
-                                <div key={stat.label}>
-                                    <div className="text-xl font-black text-primary italic">{stat.value}</div>
-                                    <div className="text-[9px] uppercase font-black tracking-widest text-text-muted mt-1 opacity-60">{stat.label}</div>
+                            ].map((stat) => (
+                                <div key={stat.label} className="text-center lg:text-left">
+                                    <div className="text-lg md:text-xl font-black text-primary italic">{stat.value}</div>
+                                    <div className="text-[8px] md:text-[9px] uppercase font-black tracking-widest text-text-muted mt-1 opacity-60">{stat.label}</div>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
 
                     {/* Right — Animated Feature Carousel Preview */}
-                    <div className="relative min-h-[600px] flex items-center justify-center">
+                    <div className="relative min-h-[400px] md:min-h-[600px] flex items-center justify-center scale-[0.85] sm:scale-100 overflow-visible">
 
                         <AnimatePresence mode="wait">
                             {currentSlide === 0 && (
@@ -158,12 +158,12 @@ export default function Hero() {
                         </AnimatePresence>
 
                         {/* Slide Indicators */}
-                        <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-3">
+                        <div className="absolute -bottom-8 md:-bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3">
                             {[0, 1, 2, 3, 4, 5].map((idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentSlide(idx)}
-                                    className={`h-1 transition-all duration-500 rounded-full ${currentSlide === idx ? 'w-12 bg-primary' : 'w-4 bg-primary/20'
+                                    className={`h-1 transition-all duration-500 rounded-full ${currentSlide === idx ? 'w-8 md:w-12 bg-primary' : 'w-2 md:w-4 bg-primary/20'
                                         }`}
                                 />
                             ))}
@@ -237,7 +237,7 @@ function DashboardPreview({ cardVariants }) {
             <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="absolute -bottom-10 -left-10 bg-white rounded-2xl shadow-2xl border border-black/5 p-6 w-56 z-20"
+                className="absolute -bottom-6 -left-4 md:-bottom-10 md:-left-10 bg-white rounded-2xl shadow-2xl border border-black/5 p-4 md:p-6 w-40 md:w-56 z-20"
             >
                 <div className="flex items-center gap-3 mb-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -256,7 +256,7 @@ function DashboardPreview({ cardVariants }) {
             <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="absolute -top-6 -right-10 bg-white rounded-2xl shadow-2xl border border-black/5 p-5 w-52 z-20"
+                className="absolute -top-4 -right-4 md:-top-6 md:-right-10 bg-white rounded-2xl shadow-2xl border border-black/5 p-4 md:p-5 w-40 md:w-52 z-20"
             >
                 <div className="text-[10px] font-bold uppercase text-text-muted mb-2 tracking-widest">Loyalty Points</div>
                 <div className="text-2xl font-serif italic text-primary">2,450 pts</div>
@@ -314,7 +314,7 @@ function PricingPreview({ cardVariants }) {
     ];
 
     return (
-        <div className="flex items-start justify-center gap-3 w-[140%] -ml-[20%] scale-[0.65] origin-center py-10">
+        <div className="flex items-start justify-center gap-3 w-full md:w-[140%] md:-ml-[20%] scale-[0.6] sm:scale-75 md:scale-[0.65] origin-center py-6 md:py-10">
             {plans.map((plan, idx) => (
                 <motion.div
                     key={plan.name}
@@ -492,7 +492,7 @@ function FeaturesShowcase({ cardVariants }) {
     }, [showcases.length]);
 
     return (
-        <div className="flex flex-row items-center gap-12 w-full max-w-4xl mx-auto">
+        <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12 w-full max-w-4xl mx-auto">
             {/* Left — Visual Showcase */}
             <div className="relative flex-1 flex flex-col items-center">
                 <AnimatePresence mode="wait">
@@ -502,7 +502,7 @@ function FeaturesShowcase({ cardVariants }) {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.05 }}
                         transition={{ duration: 0.6 }}
-                        className="relative w-full h-[450px] rounded-t-full overflow-hidden shadow-2xl border-x border-t border-black/5"
+                        className="relative w-full h-[300px] md:h-[450px] rounded-t-full overflow-hidden shadow-2xl border-x border-t border-black/5"
                     >
                         <img
                             src={showcases[index].image}
@@ -532,7 +532,7 @@ function FeaturesShowcase({ cardVariants }) {
             </div>
 
             {/* Right — Vertical Heading List */}
-            <div className="flex flex-col gap-8 w-48 shrink-0">
+            <div className="flex flex-row md:flex-col gap-4 md:gap-8 w-full md:w-48 shrink-0 justify-center overflow-x-auto no-scrollbar py-2">
                 {showcases.map((s, i) => (
                     <button
                         key={s.title}
@@ -549,7 +549,7 @@ function FeaturesShowcase({ cardVariants }) {
                         {index === i && (
                             <motion.div
                                 layoutId="activeFeature"
-                                className="absolute -left-6 top-1/2 -translate-y-1/2 w-1.5 h-full bg-[#B85C5C] rounded-full"
+                                className="absolute -bottom-1 md:-bottom-auto md:-left-6 top-auto md:top-1/2 -translate-y-0 md:-translate-y-1/2 w-full md:w-1.5 h-0.5 md:h-full bg-[#B85C5C] rounded-full"
                             />
                         )}
                     </button>
@@ -578,10 +578,10 @@ function ContactPreview({ cardVariants }) {
             variants={cardVariants}
             initial="hidden"
             animate="visible"
-            className="w-full max-w-4xl mx-auto bg-white shadow-2xl overflow-hidden flex flex-row min-h-[450px] border border-black/5"
+            className="w-full max-w-4xl mx-auto bg-white shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[auto] md:min-h-[450px] border border-black/5"
         >
             {/* Left Content — Maroon Branding */}
-            <div className="w-[45%] bg-[#B85C5C] p-8 flex flex-col justify-center text-white relative overflow-hidden">
+            <div className="w-full md:w-[45%] bg-[#B85C5C] p-6 md:p-8 flex flex-col justify-center text-white relative overflow-hidden">
                 <div className="relative z-10 space-y-8">
                     <h2 className="text-xl font-black uppercase tracking-[0.25em] mb-4 whitespace-nowrap">Contact Us</h2>
 
@@ -634,7 +634,7 @@ function ContactPreview({ cardVariants }) {
                         <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold">Your Name</div>
                         <div className="bg-[#F8FAFC] p-3.5 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold">Your Email</div>
                     </div>
-                    <div className="bg-[#F8FAFC] p-4 h-24 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold leading-relaxed">
+                    <div className="bg-[#F8FAFC] p-4 h-20 md:h-24 rounded-xl border border-black/5 text-text-secondary/40 text-[11px] font-bold leading-relaxed">
                         Typing your message here...
                     </div>
 
