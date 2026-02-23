@@ -85,52 +85,50 @@ export default function LoginPage() {
                         </div>
 
 
-                        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
                             {/* Email */}
-                            <div>
-                                <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                    Email Address
-                                </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            <div className="space-y-4">
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
                                     <input
                                         type="email"
                                         name="email"
                                         value={form.email}
                                         onChange={handleChange}
                                         required
-                                        className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
-                                        placeholder="Email"
+                                        className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none"
+                                        placeholder="Email Address"
                                     />
                                 </div>
 
                                 {/* Password Input */}
-                                <div className="relative border-b-2 border-primary/20 transition-all focus-within:border-primary">
-                                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 text-primary/40" />
+                                <div className="relative border-b-2 border-primary/10 transition-all focus-within:border-primary">
+                                    <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40" />
                                     <input
                                         type="password"
                                         name="password"
                                         value={form.password}
                                         onChange={handleChange}
                                         required
-                                        className="w-full pl-8 pr-4 py-3 bg-transparent text-text placeholder:text-text-muted/40 focus:outline-none font-medium"
+                                        className="w-full pl-6 py-2 bg-transparent text-text text-sm placeholder:text-text-muted/40 focus:outline-none"
                                         placeholder="Password"
                                     />
                                 </div>
+                            </div>
 
-                                {/* Row: Forgot & Submit */}
-                                <div className="flex items-center justify-between pt-4">
-                                    <a href="#" className="text-xs font-bold text-primary/60 hover:text-primary transition-colors tracking-tight">
-                                        Forgot Password?
-                                    </a>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="bg-primary text-white px-10 py-2.5 rounded-full font-bold text-sm tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50"
-                                    >
-                                        {loading ? '...' : 'LOGIN'}
-                                    </button>
-                                </div>
+                            {/* Row: Forgot & Submit */}
+                            <div className="flex items-center justify-between pt-4">
+                                <a href="#" className="text-[10px] font-bold text-primary/40 hover:text-primary transition-colors tracking-widest uppercase">
+                                    Forgot?
+                                </a>
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="bg-primary text-white px-10 py-3 rounded-full font-bold text-xs tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                                >
+                                    {loading ? '...' : 'LOGIN'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
