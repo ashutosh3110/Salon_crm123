@@ -90,12 +90,30 @@ import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard';
 
 import StylistLayout from './layouts/StylistLayout';
 import StylistDashboard from './pages/stylist/StylistDashboard';
+import StylistClientsPage from './pages/stylist/StylistClientsPage';
+import StylistCommissionsPage from './pages/stylist/StylistCommissionsPage';
+import StylistGalleryPage from './pages/stylist/StylistGalleryPage';
+import StylistTimeOffPage from './pages/stylist/StylistTimeOffPage';
+import StylistSettingsPage from './pages/stylist/StylistSettingsPage';
 
 import AccountantLayout from './layouts/AccountantLayout';
 import AccountantDashboard from './pages/accountant/AccountantDashboard';
+import RevenuePage from './pages/accountant/RevenuePage';
+import ExpensesPage from './pages/accountant/ExpensesPage';
+import SupplierInvoicesPage from './pages/accountant/SupplierInvoicesPage';
+import PayrollPage from './pages/accountant/PayrollPage';
+import TaxPage from './pages/accountant/TaxPage';
+import ReconciliationPage from './pages/accountant/ReconciliationPage';
+import AccountantSettingsPage from './pages/accountant/AccountantSettingsPage';
 
 import InventoryLayout from './layouts/InventoryLayout';
 import InventoryDashboard from './pages/inventory/InventoryDashboard';
+import StockOverviewPage from './pages/inventory/StockOverviewPage';
+import PurchasePage from './pages/inventory/PurchasePage';
+import StockTransferPage from './pages/inventory/StockTransferPage';
+import LowStockAlertsPage from './pages/inventory/LowStockAlertsPage';
+import UsageReportsPage from './pages/inventory/UsageReportsPage';
+import InventorySettingsPage from './pages/inventory/InventorySettingsPage';
 
 import ManagerLayout from './layouts/ManagerLayout';
 import ManagerDashboard from './pages/manager/ManagerDashboard';
@@ -321,11 +339,12 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['stylist']} />}>
               <Route element={<StylistLayout />}>
                 <Route path="/stylist" element={<StylistDashboard />} />
-                <Route path="/stylist/clients" element={<StylistDashboard />} />
-                <Route path="/stylist/commissions" element={<StylistDashboard />} />
-                <Route path="/stylist/gallery" element={<StylistDashboard />} />
-                <Route path="/stylist/timeoff" element={<StylistDashboard />} />
-                <Route path="/stylist/settings" element={<StylistDashboard />} />
+                <Route path="/stylist/clients" element={<StylistClientsPage />} />
+                <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />
+                <Route path="/stylist/gallery" element={<StylistGalleryPage />} />
+                <Route path="/stylist/timeoff" element={<StylistTimeOffPage />} />
+                <Route path="/stylist/settings" element={<StylistSettingsPage />} />
+                <Route path="/stylist/settings/:section" element={<StylistSettingsPage />} />
               </Route>
             </Route>
 
@@ -335,13 +354,13 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['accountant']} />}>
               <Route element={<AccountantLayout />}>
                 <Route path="/accountant" element={<AccountantDashboard />} />
-                <Route path="/accountant/revenue" element={<AccountantDashboard />} />
-                <Route path="/accountant/expenses" element={<AccountantDashboard />} />
-                <Route path="/accountant/invoices" element={<AccountantDashboard />} />
-                <Route path="/accountant/payroll" element={<AccountantDashboard />} />
-                <Route path="/accountant/tax" element={<AccountantDashboard />} />
-                <Route path="/accountant/reconciliation" element={<AccountantDashboard />} />
-                <Route path="/accountant/settings" element={<AccountantDashboard />} />
+                <Route path="/accountant/revenue" element={<RevenuePage />} />
+                <Route path="/accountant/expenses" element={<ExpensesPage />} />
+                <Route path="/accountant/invoices" element={<SupplierInvoicesPage />} />
+                <Route path="/accountant/payroll" element={<PayrollPage />} />
+                <Route path="/accountant/tax" element={<TaxPage />} />
+                <Route path="/accountant/reconciliation" element={<ReconciliationPage />} />
+                <Route path="/accountant/settings" element={<AccountantSettingsPage />} />
               </Route>
             </Route>
 
@@ -351,12 +370,12 @@ function App() {
             <Route element={<ProtectedRoute allowedRoles={['inventory_manager']} />}>
               <Route element={<InventoryLayout />}>
                 <Route path="/inventory" element={<InventoryDashboard />} />
-                <Route path="/inventory/stock" element={<InventoryDashboard />} />
-                <Route path="/inventory/purchase" element={<InventoryDashboard />} />
-                <Route path="/inventory/transfer" element={<InventoryDashboard />} />
-                <Route path="/inventory/alerts" element={<InventoryDashboard />} />
-                <Route path="/inventory/reports" element={<InventoryDashboard />} />
-                <Route path="/inventory/settings" element={<InventoryDashboard />} />
+                <Route path="/inventory/stock" element={<StockOverviewPage />} />
+                <Route path="/inventory/purchase" element={<PurchasePage />} />
+                <Route path="/inventory/transfer" element={<StockTransferPage />} />
+                <Route path="/inventory/alerts" element={<LowStockAlertsPage />} />
+                <Route path="/inventory/reports" element={<UsageReportsPage />} />
+                <Route path="/inventory/settings" element={<InventorySettingsPage />} />
               </Route>
             </Route>
 
