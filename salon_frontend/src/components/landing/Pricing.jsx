@@ -90,11 +90,11 @@ export default function Pricing() {
                 </div>
 
                 {/* Plans Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:grid-cols-2 md:gap-4 items-start">
                     {plans.map((plan) => (
                         <div
                             key={plan.name}
-                            className={`relative rounded-xl p-5 border transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ${plan.popular
+                            className={`relative rounded-xl p-3 md:p-5 border transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] ${plan.popular
                                 ? 'bg-white border-primary shadow-[0_20px_40px_-15px_rgba(0,0,0,0.4)] scale-[1.01]'
                                 : 'bg-white border-border shadow-md hover:border-primary/30'
                                 }`}
@@ -107,29 +107,29 @@ export default function Pricing() {
                                 </div>
                             )}
 
-                            <div className="mb-4">
-                                <h3 className="text-base font-bold text-text">{plan.name}</h3>
-                                <div className="mt-1 flex items-baseline gap-1">
-                                    <span className="text-2xl font-extrabold text-text">{plan.price}</span>
+                            <div className="mb-3 md:mb-4">
+                                <h3 className="text-sm md:text-base font-bold text-text">{plan.name}</h3>
+                                <div className="mt-0.5 md:mt-1 flex items-baseline gap-1">
+                                    <span className="text-xl md:text-2xl font-extrabold text-text">{plan.price}</span>
                                     {plan.period && (
-                                        <span className="text-xs text-text-muted">{plan.period}</span>
+                                        <span className="text-[10px] md:text-xs text-text-muted">{plan.period}</span>
                                     )}
                                 </div>
-                                <p className="mt-1 text-xs text-text-secondary line-clamp-2">{plan.desc}</p>
+                                <p className="mt-0.5 md:mt-1 text-[10px] md:text-xs text-text-secondary line-clamp-1 md:line-clamp-2">{plan.desc}</p>
                             </div>
 
-                            <ul className="space-y-2 mb-6">
+                            <ul className="space-y-1 md:space-y-2 mb-4 md:mb-6">
                                 {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-2">
-                                        <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
-                                        <span className="text-[13px] text-text-secondary">{feature}</span>
+                                    <li key={feature} className="flex items-start gap-1 md:gap-2">
+                                        <Check className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-primary shrink-0 mt-0.5 md:mt-0.5" />
+                                        <span className="text-[10px] md:text-[13px] text-text-secondary line-clamp-1">{feature}</span>
                                     </li>
                                 ))}
                             </ul>
 
                             <Link
                                 to="/register"
-                                className={`block text-center w-full py-2 rounded-lg font-bold text-xs transition-all duration-200 ${plan.popular
+                                className={`block text-center w-full py-1.5 md:py-2 rounded-lg font-bold text-[10px] md:text-xs transition-all duration-200 ${plan.popular
                                     ? 'btn-primary shadow-lg shadow-primary/20'
                                     : 'border-2 border-primary/20 text-primary hover:border-primary hover:bg-primary/5'
                                     }`}
