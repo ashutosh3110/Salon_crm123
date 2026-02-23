@@ -12,7 +12,7 @@ import {
     AlertCircle,
     CheckCircle2
 } from 'lucide-react';
-import api from '../../../services/api';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 const DAYS = [
     { label: 'Mon', full: 'Monday' },
@@ -36,12 +36,12 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
 export default function OutletForm() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { outlets, addOutlet, updateOutlet } = useBusiness();
     const isEdit = !!id;
 
-    const [loading, setLoading] = useState(isEdit);
+    const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
-    const [subscriptionError, setSubscriptionError] = useState(false);
 
     const [form, setForm] = useState({
         name: '',
@@ -59,32 +59,15 @@ export default function OutletForm() {
 
     useEffect(() => {
         if (isEdit) {
-            const fetchOutlet = async () => {
-                try {
-                    const { data } = await api.get(`/outlets/${id}`);
-                    const outlet = data.data || data;
-                    setForm({
-                        name: outlet.name || '',
-                        address: outlet.address || '',
-                        city: outlet.city || '',
-                        state: outlet.state || '',
-                        pincode: outlet.pincode || '',
-                        phone: outlet.phone || '',
-                        email: outlet.email || '',
-                        status: outlet.status || 'active',
-                        workingDays: outlet.workingDays?.map(d => d.day) || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-                        openingTime: outlet.workingHours?.[0]?.openTime || '09:00 AM',
-                        closingTime: outlet.workingHours?.[0]?.closeTime || '09:00 PM',
-                    });
-                } catch (err) {
-                    setError('Failed to load outlet details');
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchOutlet();
+            const found = outlets.find(o => o._id === id);
+            if (found) {
+                setForm({
+                    ...form,
+                    ...found
+                });
+            }
         }
-    }, [id, isEdit]);
+    }, [id, isEdit, outlets]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -100,47 +83,25 @@ export default function OutletForm() {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
-        setSubscriptionError(false);
 
-        try {
-            const payload = {
-                ...form,
-                workingHours: form.workingDays.map(day => ({
-                    day,
-                    isOpen: true,
-                    openTime: form.openingTime,
-                    closeTime: form.closingTime
-                }))
-            };
-
+        // Simulate network delay
+        setTimeout(() => {
             if (isEdit) {
-                await api.patch(`/outlets/${id}`, payload);
+                updateOutlet(id, form);
             } else {
-                await api.post('/outlets', payload);
+                addOutlet(form);
             }
-            navigate('/admin/outlets');
-        } catch (err) {
-            const status = err.response?.status;
-            const errorCode = err.response?.data?.errorCode;
-
-            if (status === 403 && errorCode === 'SUBSCRIPTION_LIMIT_REACHED') {
-                setSubscriptionError(true);
-            } else {
-                setError(err.response?.data?.message || 'Something went wrong. Please try again.');
-            }
-        } finally {
             setSaving(false);
-        }
+            navigate('/admin/outlets');
+        }, 500);
     };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" /></div>;
-
     return (
-        <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-4 duration-500 pb-10">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -151,8 +112,8 @@ export default function OutletForm() {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-text tracking-tight">{isEdit ? 'Edit Outlet' : 'Add New Outlet'}</h1>
-                        <p className="text-sm text-text-secondary mt-1">Configure your business location details.</p>
+                        <h1 className="text-2xl font-bold text-text uppercase">{isEdit ? 'Evolve Unit' : 'Induct New Unit'}</h1>
+                        <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Architect your salon network layout.</p>
                     </div>
                 </div>
             </div>
@@ -161,266 +122,245 @@ export default function OutletForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Basic Information */}
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-5">
-                        <div className="flex items-center gap-2 pb-2 border-b border-border">
-                            <Store className="w-4 h-4 text-primary" />
-                            <h2 className="font-semibold text-text">Basic Information</h2>
+                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6">
+                        <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                <Store className="w-4 h-4" />
+                            </div>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Core Identity</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-text-secondary">Outlet Name *</label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Unit Nomenclature <span className="text-rose-500">*</span></label>
                                 <input
                                     name="name"
                                     required
                                     value={form.name}
                                     onChange={handleChange}
-                                    placeholder="e.g. Downtown Salon & Spa"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                    placeholder="e.g. Grace & Glamour - Mumbai"
+                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 />
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-text-secondary">Contact Number *</label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        name="phone"
-                                        required
-                                        value={form.phone}
-                                        onChange={handleChange}
-                                        placeholder="+91 XXXXX XXXXX"
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                    />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Comm Link <span className="text-rose-500">*</span></label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <input
+                                            name="phone"
+                                            required
+                                            value={form.phone}
+                                            onChange={handleChange}
+                                            placeholder="+91 XXXXX XXXXX"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">POS Digital Path</label>
+                                    <div className="relative">
+                                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            value={form.email}
+                                            onChange={handleChange}
+                                            placeholder="outlet@salon.com"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-text-secondary">Email Address (Optional)</label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        value={form.email}
-                                        onChange={handleChange}
-                                        placeholder="outlet@example.com"
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1.5 pt-2">
-                                <label className="text-sm font-medium text-text-secondary block mb-2">Status</label>
-                                <div className="flex gap-4">
-                                    {['active', 'inactive'].map(status => (
-                                        <label key={status} className="flex items-center gap-2 cursor-pointer group">
-                                            <input
-                                                type="radio"
-                                                name="status"
-                                                value={status}
-                                                checked={form.status === status}
-                                                onChange={handleChange}
-                                                className="w-4 h-4 text-primary border-border focus:ring-primary/30"
-                                            />
-                                            <span className={`text-sm capitalize ${form.status === status ? 'text-text font-semibold' : 'text-text-secondary group-hover:text-text'}`}>
-                                                {status}
-                                            </span>
-                                        </label>
-                                    ))}
+                            <div className="space-y-3 pt-2">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Network Pulse</label>
+                                <div className="flex p-1 bg-slate-50 rounded-2xl border border-border w-fit">
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm({ ...form, status: 'active' })}
+                                        className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${form.status === 'active' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'text-text-muted hover:text-text'}`}
+                                    >
+                                        Live
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm({ ...form, status: 'inactive' })}
+                                        className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${form.status === 'inactive' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-text-muted hover:text-text'}`}
+                                    >
+                                        Standby
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Location Information */}
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-5">
-                        <div className="flex items-center gap-2 pb-2 border-b border-border">
-                            <MapPin className="w-4 h-4 text-primary" />
-                            <h2 className="font-semibold text-text">Location Details</h2>
+                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6">
+                        <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="p-2 rounded-xl bg-orange-50 text-orange-500">
+                                <MapPin className="w-4 h-4" />
+                            </div>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Geo Anchor</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-text-secondary">Full Address *</label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Physical Coordinate <span className="text-rose-500">*</span></label>
                                 <textarea
                                     name="address"
                                     required
                                     rows="1"
                                     value={form.address}
                                     onChange={handleChange}
-                                    placeholder="House/Street, Landmark"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-none"
+                                    placeholder="Shop No, Building, Area Details..."
+                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none min-h-[45px]"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-text-secondary">City *</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Urban Center</label>
                                     <input
                                         name="city"
                                         required
                                         value={form.city}
                                         onChange={handleChange}
-                                        placeholder="City"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                        placeholder="e.g. Mumbai"
+                                        className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-text-secondary">State *</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Zone Code</label>
                                     <input
-                                        name="state"
+                                        name="pincode"
                                         required
-                                        value={form.state}
+                                        value={form.pincode}
                                         onChange={handleChange}
-                                        placeholder="State"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                                        placeholder="Pincode"
+                                        maxLength="6"
+                                        className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5 w-1/2">
-                                <label className="text-sm font-medium text-text-secondary">Pincode *</label>
-                                <input
-                                    name="pincode"
-                                    required
-                                    value={form.pincode}
-                                    onChange={handleChange}
-                                    placeholder="600001"
-                                    maxLength="6"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                                />
+                            <div className="p-3 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                <p className="text-[9px] text-blue-800 font-bold leading-relaxed">
+                                    * These credentials will be etched onto all POS invoice outputs.
+                                </p>
                             </div>
                         </div>
                     </div>
 
                     {/* Operational Hours */}
-                    <div className="bg-white p-6 rounded-2xl border border-border shadow-sm space-y-5 md:col-span-2">
-                        <div className="flex items-center gap-2 pb-2 border-b border-border">
-                            <Clock className="w-4 h-4 text-primary" />
-                            <h2 className="font-semibold text-text">Working Hours</h2>
-                        </div>
+                    <div className="bg-slate-900 text-white p-8 rounded-[32px] shadow-xl md:col-span-2 relative overflow-hidden group">
+                        <div className="relative z-10 flex flex-col md:flex-row gap-8">
+                            <div className="md:w-1/3 space-y-4">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 rounded-xl bg-white/10 border border-white/20">
+                                        <Clock className="w-4 h-4 text-primary" />
+                                    </div>
+                                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">Shift Control</h3>
+                                </div>
+                                <h4 className="text-xl font-bold">Slot Rules</h4>
+                                <p className="text-[10px] text-white/40 leading-relaxed font-bold tracking-tighter uppercase">Define temporal constraints for this unit.</p>
 
-                        <div className="space-y-6">
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary">
-                                    <Calendar className="w-4 h-4" /> Working Days
-                                </label>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="space-y-4 pt-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase">Open Window</label>
+                                        <select
+                                            name="openingTime"
+                                            value={form.openingTime}
+                                            onChange={handleChange}
+                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-bold outline-none appearance-none"
+                                        >
+                                            {TIME_SLOTS.map(t => <option key={t} value={t} className="text-slate-900">{t}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-white/40 uppercase">Close Window</label>
+                                        <select
+                                            name="closingTime"
+                                            value={form.closingTime}
+                                            onChange={handleChange}
+                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-sm font-bold outline-none appearance-none"
+                                        >
+                                            {TIME_SLOTS.map(t => <option key={t} value={t} className="text-slate-900">{t}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="md:w-2/3 space-y-4">
+                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-4">Weekly Cycle</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
                                     {DAYS.map(day => (
                                         <button
                                             key={day.full}
                                             type="button"
                                             onClick={() => handleDayToggle(day.full)}
-                                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${form.workingDays.includes(day.full)
-                                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                                    : 'bg-surface border border-border text-text-secondary hover:bg-secondary'
+                                            className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${form.workingDays.includes(day.full)
+                                                ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 border border-white/20'
+                                                : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10'
                                                 }`}
                                         >
                                             {day.label}
                                         </button>
                                     ))}
                                 </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-text-secondary">Opening Time</label>
-                                    <select
-                                        name="openingTime"
-                                        value={form.openingTime}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition appearance-none"
-                                    >
-                                        {TIME_SLOTS.map(time => (
-                                            <option key={time} value={time}>{time}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-sm font-medium text-text-secondary">Closing Time</label>
-                                    <select
-                                        name="closingTime"
-                                        value={form.closingTime}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition appearance-none"
-                                    >
-                                        {TIME_SLOTS.map(time => (
-                                            <option key={time} value={time}>{time}</option>
-                                        ))}
-                                    </select>
+                                <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center gap-4">
+                                    <div className="p-3 bg-white/10 rounded-xl">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-white uppercase">Protocol Locked</p>
+                                        <p className="text-[9px] text-white/40 font-bold">POS engine will hard-sync with this temporal data.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        {/* decoration */}
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 blur-3xl rounded-full group-hover:bg-primary/20 transition-all pointer-events-none" />
                     </div>
                 </div>
 
                 {error && (
-                    <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-center gap-3 text-error text-sm">
-                        <AlertCircle className="w-5 h-5 shrink-0" />
+                    <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-3 text-rose-600 text-[10px] font-bold uppercase tracking-widest">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
                         {error}
                     </div>
                 )}
 
-                <div className="flex items-center justify-end gap-3 pt-4">
-                    <button
-                        type="button"
-                        onClick={() => navigate('/admin/outlets')}
-                        className="px-6 py-2.5 rounded-xl font-semibold text-text-secondary hover:bg-surface-alt transition-all"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="btn-primary flex items-center gap-2 min-w-[140px] justify-center"
-                    >
-                        {saving ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                <Save className="w-4 h-4" />
-                                {isEdit ? 'Update Outlet' : 'Save Outlet'}
-                            </>
-                        )}
-                    </button>
-                </div>
-            </form>
-
-            {/* Custom Subscription Modal */}
-            {subscriptionError && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setSubscriptionError(false)}
-                    />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300 transform">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center mb-6">
-                                <AlertCircle className="w-10 h-10 text-error" />
-                            </div>
-                            <h3 className="text-2xl font-bold text-text">Limit Reached!</h3>
-                            <p className="text-text-secondary mt-3 leading-relaxed">
-                                Your subscription limit for outlets has been reached. Please upgrade your plan to add more locations.
-                            </p>
-                            <div className="w-full space-y-3 mt-8">
-                                <button
-                                    onClick={() => navigate('/admin/billing/upgrade')}
-                                    className="w-full btn-primary py-3 rounded-2xl shadow-lg shadow-primary/20"
-                                >
-                                    Upgrade Now
-                                </button>
-                                <button
-                                    onClick={() => setSubscriptionError(false)}
-                                    className="w-full py-3 text-text-secondary font-semibold hover:text-text transition-colors"
-                                >
-                                    Maybe Later
-                                </button>
-                            </div>
-                        </div>
+                <div className="flex items-center justify-between gap-3 p-6 bg-slate-50 rounded-3xl border border-border">
+                    <p className="text-[10px] text-text-muted font-bold uppercase hidden sm:block">
+                        Finalize all metadata before executing commit.
+                    </p>
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/outlets')}
+                            className="flex-1 sm:flex-none px-8 py-3 rounded-2xl text-xs font-bold text-text-secondary hover:bg-white transition-all border border-transparent hover:border-border"
+                        >
+                            Abort
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="flex-1 sm:flex-none flex items-center gap-2 px-10 py-3 rounded-2xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {saving ? (
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4" />
+                                    {isEdit ? 'Commit Changes' : 'Execute Induction'}
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
-            )}
+            </form>
         </div>
     );
 }

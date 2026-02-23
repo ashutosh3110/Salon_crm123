@@ -59,7 +59,7 @@ export default function LoginPage() {
 
                     {/* Testimonial Card */}
                     <div className="mt-10 bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                        <p className="text-sm text-white/80 italic leading-relaxed">
+                        <p className="text-sm text-white/80 leading-relaxed">
                             "SalonCRM transformed how we manage our 3 outlets. Booking
                             efficiency is up 40% and our clients love the loyalty program."
                         </p>
@@ -111,7 +111,7 @@ export default function LoginPage() {
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Demo Access</span>
+                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Demo Access</span>
                         </div>
                         <div className="flex flex-col gap-1 relative z-10">
                             <div className="flex justify-between items-center text-xs">

@@ -20,10 +20,11 @@ import {
     AlertCircle,
     RotateCcw
 } from 'lucide-react';
-import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import BookingCalendar from '../../components/admin/BookingCalendar';
 import BookingDetailModal from '../../components/admin/BookingDetailModal';
+import BookingModal from '../../components/admin/BookingModal';
 import MiniCalendar from '../../components/admin/MiniCalendar';
 
 const statusColors = {
@@ -41,11 +42,15 @@ const MOCK_OUTLETS = [
 ];
 
 export default function BookingsPage() {
+    const {
+        bookings: contextBookings,
+        staff: contextStaff,
+        updateBookingStatus
+    } = useBusiness();
+
     const [view, setView] = useState('list'); // 'list' or 'calendar'
-    const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [selectedBooking, setSelectedBooking] = useState(null);
-    const [staff, setStaff] = useState([]);
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
     // Filter states
@@ -55,71 +60,10 @@ export default function BookingsPage() {
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    const fetchBookings = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get('/bookings');
-            const listData = data?.data?.results || data?.data || data || [];
-            const list = Array.isArray(listData) ? listData : [];
-
-            if (list.length === 0) {
-                const mockData = [
-                    {
-                        _id: 'b1',
-                        client: { name: 'Aryan Khan', phone: '+91 99887 76655' },
-                        service: { name: 'Full Haircut & Wash', price: 850 },
-                        staff: { name: 'Rahul Sharma' },
-                        appointmentDate: new Date().setHours(10, 0, 0, 0),
-                        status: 'upcoming',
-                        outletName: 'Downtown Salon',
-                        source: 'Online'
-                    },
-                    {
-                        _id: 'b2',
-                        client: { name: 'Pooja Hegde', phone: '+91 98765 43210' },
-                        service: { name: 'Facial Clean-up', price: 1200 },
-                        staff: { name: 'Anita Verma' },
-                        appointmentDate: new Date().setHours(11, 30, 0, 0),
-                        status: 'completed',
-                        outletName: 'Bandra West',
-                        source: 'Walk-in'
-                    },
-                    {
-                        _id: 'b3',
-                        client: { name: 'Varun Dhawan', phone: '+91 99001 12233' },
-                        service: { name: 'Beard Trim', price: 450 },
-                        staff: { name: 'Rahul Sharma' },
-                        appointmentDate: new Date().setHours(14, 0, 0, 0),
-                        status: 'no-show',
-                        outletName: 'Downtown Salon',
-                        source: 'Online'
-                    }
-                ];
-                setBookings(mockData);
-            } else {
-                setBookings(list);
-            }
-        } catch (err) {
-            console.error('Failed to fetch bookings:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchStaff = async () => {
-        try {
-            const listData = data?.data?.results || data?.results || data?.data || data || [];
-            const list = Array.isArray(listData) ? listData : [];
-            setStaff(list);
-        } catch (err) {
-            console.error('Failed to fetch staff:', err);
-        }
-    };
-
-    useEffect(() => {
-        fetchBookings();
-        fetchStaff();
-    }, []);
+    // Rename for compatibility with existing logic
+    const bookings = contextBookings;
+    const staff = contextStaff;
+    const loading = false; // Always false since we use local state
 
     useEffect(() => {
         if (bookings.length > 0) {
@@ -153,9 +97,7 @@ export default function BookingsPage() {
     }, [bookings]);
 
     const handleUpdateStatus = async (id, status) => {
-        // Logic to update status via API
-        alert(`Booking ${id} status updated to: ${status}`);
-        fetchBookings();
+        updateBookingStatus(id, status);
         setSelectedBooking(null);
     };
 
@@ -168,19 +110,28 @@ export default function BookingsPage() {
                     <p className="text-sm text-text-secondary mt-1">Monitor and manage all salon appointments.</p>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-border shadow-sm">
+                <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setView('calendar')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
+                        onClick={() => setIsBookingModalOpen(true)}
+                        className="flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
                     >
-                        <Calendar className="w-4 h-4" /> CALENDAR
+                        <Plus className="w-4 h-4" /> ADD BOOKING
                     </button>
-                    <button
-                        onClick={() => setView('list')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
-                    >
-                        <List className="w-4 h-4" /> LIST VIEW
-                    </button>
+
+                    <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-border shadow-sm">
+                        <button
+                            onClick={() => setView('calendar')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
+                        >
+                            <Calendar className="w-4 h-4" /> CALENDAR
+                        </button>
+                        <button
+                            onClick={() => setView('list')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
+                        >
+                            <List className="w-4 h-4" /> LIST VIEW
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -300,7 +251,7 @@ export default function BookingsPage() {
                                         return d.getDate() === selectedDate.getDate() &&
                                             d.getMonth() === selectedDate.getMonth();
                                     }).length === 0 ? (
-                                        <p className="text-[11px] text-gray-400 italic px-2">No appointments for this day.</p>
+                                        <p className="text-[11px] text-gray-400 px-2">No appointments for this day.</p>
                                     ) : (
                                         filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
@@ -443,6 +394,12 @@ export default function BookingsPage() {
                     onUpdateStatus={handleUpdateStatus}
                 />
             )}
+
+            {/* Add Booking Modal */}
+            <BookingModal
+                isOpen={isBookingModalOpen}
+                onClose={() => setIsBookingModalOpen(false)}
+            />
         </div>
     );
 }

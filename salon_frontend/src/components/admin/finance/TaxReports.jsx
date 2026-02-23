@@ -68,7 +68,7 @@ export default function TaxReports() {
                                         <span className="font-bold text-primary">₹{row.total.toLocaleString()}</span>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <button className="flex items-center gap-1.5 text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">
+                                        <button className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-600 uppercase tracking-widest hover:underline">
                                             <FileText className="w-3 h-3" />
                                             Download
                                         </button>
@@ -86,7 +86,7 @@ export default function TaxReports() {
                     </div>
                     <div className="space-y-1">
                         <h4 className="text-xs font-bold text-text uppercase tracking-widest">Accounting Notice</h4>
-                        <p className="text-xs text-text-secondary font-medium italic">GST values are calculated based on registered tax rates for products and services. Always reconcile with bank statements before filing.</p>
+                        <p className="text-xs text-text-secondary font-medium">GST values are calculated based on registered tax rates for products and services. Always reconcile with bank statements before filing.</p>
                     </div>
                 </div>
             </div>
@@ -111,7 +111,7 @@ function TaxStatCard({ title, value, icon: Icon, color }) {
             </div>
             <div className="space-y-1">
                 <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">{title}</h3>
-                <div className="text-2xl font-black text-text tracking-tight">{value}</div>
+                <div className="text-2xl font-bold text-text tracking-tight">{value}</div>
             </div>
         </div>
     );

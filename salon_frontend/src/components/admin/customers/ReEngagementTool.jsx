@@ -11,14 +11,19 @@ import {
     ExternalLink
 } from 'lucide-react';
 
-const MOCK_INACTIVE = [
-    { id: '1', name: 'Rahul Verma', phone: '+91 98765 43212', lastVisit: '2024-02-10', lastService: 'Shave', inactiveDays: 41, totalSpend: 1200 },
-    { id: '2', name: 'Vikram Singh', phone: '+91 98765 43214', lastVisit: '2023-12-01', lastService: 'Trim', inactiveDays: 112, totalSpend: 500 },
-    { id: '3', name: 'Suhail Malik', phone: '+91 98765 43218', lastVisit: '2024-01-20', lastService: 'Haircut', inactiveDays: 62, totalSpend: 2400 },
-    { id: '4', name: 'Tanvi Goyal', phone: '+91 98765 43219', lastVisit: '2024-02-25', lastService: 'Facial', inactiveDays: 26, totalSpend: 4500 },
-];
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ReEngagementTool() {
+    const { customers, updateCustomer } = useBusiness();
+
+    const atRiskCustomers = customers.map(c => {
+        const lastVisitDate = new Date(c.lastVisit);
+        const diffTime = Math.abs(new Date() - lastVisitDate);
+        const inactiveDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return { ...c, inactiveDays };
+    }).filter(c => c.inactiveDays > 30).sort((a, b) => b.inactiveDays - a.inactiveDays);
+
+    const totalPotentialRevenue = atRiskCustomers.length * 500; // Mock calculation based on avg spend
     return (
         <div className="p-6 space-y-6 slide-right animate-fadeIn">
             {/* Warning Banner */}
@@ -30,7 +35,7 @@ export default function ReEngagementTool() {
                 <div className="space-y-1 relative z-10 flex-1 text-center md:text-left">
                     <h3 className="text-xl font-bold text-red-900">Retention Opportunity</h3>
                     <p className="text-red-700/80 font-medium text-sm leading-relaxed">
-                        We've identified <span className="text-red-600 font-bold">128 customers</span> who haven't visited in over 30 days. Re-engaging them now could recover up to <span className="text-red-600 font-bold">₹45,000</span> in potential revenue.
+                        We've identified <span className="text-red-600 font-bold">{atRiskCustomers.length} customers</span> who haven't visited in over 30 days. Re-engaging them now could recover up to <span className="text-red-600 font-bold">₹{totalPotentialRevenue.toLocaleString()}</span> in potential revenue.
                     </p>
                 </div>
                 <button className="bg-red-600 text-white px-8 py-3 rounded-xl text-[11px] font-bold shadow-lg shadow-red-600/30 hover:scale-[1.02] transition-all uppercase tracking-widest relative z-10 whitespace-nowrap">
@@ -51,9 +56,9 @@ export default function ReEngagementTool() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-3">
-                    {MOCK_INACTIVE.map((customer) => (
+                    {atRiskCustomers.map((customer) => (
                         <div
-                            key={customer.id}
+                            key={customer._id}
                             className="bg-white border border-border p-5 rounded-2xl shadow-sm hover:shadow-md hover:border-red-100 transition-all group flex flex-col md:flex-row md:items-center justify-between gap-6"
                         >
                             <div className="flex items-center gap-4">
@@ -70,7 +75,7 @@ export default function ReEngagementTool() {
                                         <span>•</span>
                                         <span className="flex items-center gap-1 uppercase tracking-widest text-primary">
                                             <Scissors className="w-3 h-3" />
-                                            {customer.lastService}
+                                            {customer.preferred || 'Any Service'}
                                         </span>
                                     </div>
                                 </div>
@@ -89,7 +94,10 @@ export default function ReEngagementTool() {
                                     <button className="p-2.5 bg-surface text-text-muted hover:bg-primary hover:text-white rounded-xl transition-all border border-border">
                                         <Phone className="w-4 h-4" />
                                     </button>
-                                    <button className="flex items-center gap-2 bg-text text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all shadow-sm active:scale-95">
+                                    <button
+                                        onClick={() => updateCustomer(customer._id, { lastVisit: new Date().toISOString().split('T')[0] })}
+                                        className="flex items-center gap-2 bg-text text-white px-5 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary transition-all shadow-sm active:scale-95"
+                                    >
                                         Mark Contacted
                                         <ArrowUpRight className="w-3 h-3" />
                                     </button>

@@ -92,7 +92,7 @@ export default function POSInvoicesPage() {
                     </table>
                 </div>
             </div>
-            <p className="text-[11px] text-text-muted text-center italic">✨ Invoices are read-only. For editing or creation, please use the POS terminal.</p>
+            <p className="text-[11px] text-text-muted text-center">✨ Invoices are read-only. For editing or creation, please use the POS terminal.</p>
         </div>
     );
 }

@@ -22,7 +22,7 @@ export default function Hero() {
                             Cloud-Based Salon Management
                         </div>
 
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                             Run Your Salon
                             <span className="block text-primary mt-1">Smarter, Not Harder</span>
                         </h1>

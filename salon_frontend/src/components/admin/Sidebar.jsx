@@ -31,7 +31,8 @@ import {
     Wallet,
     ClipboardList,
     Lock,
-    DollarSign
+    DollarSign,
+    Box
 } from 'lucide-react';
 
 const menuItems = [
@@ -43,6 +44,9 @@ const menuItems = [
         subItems: [
             { label: 'Outlets', icon: Store, path: '/admin/outlets' },
             { label: 'Staff', icon: UserCog, path: '/admin/staff' },
+            { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
+            { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
+            { label: 'Service Settings', icon: Settings, path: '/admin/services/settings' },
         ]
     },
     {
@@ -80,6 +84,7 @@ const menuItems = [
         icon: Package,
         path: '/admin/inventory',
         subItems: [
+            { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
             { label: 'Stock Overview', icon: LayoutDashboard, path: '/admin/inventory/overview' },
             { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
             { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
@@ -100,7 +105,18 @@ const menuItems = [
             { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },
         ]
     },
-    { label: 'HR', icon: Briefcase, path: '/admin/hr' },
+    {
+        label: 'HR',
+        icon: Briefcase,
+        path: '/admin/hr',
+        subItems: [
+            { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
+            { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
+            { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
+            { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
+            { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
+        ]
+    },
     {
         label: 'Settings',
         icon: Settings,
@@ -114,7 +130,7 @@ const menuItems = [
 ];
 
 export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHovered, mobileOpen, setMobileOpen }) {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
 
@@ -154,7 +170,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     </div>
                     {!effectiveCollapsed && (
                         <span className="text-lg font-bold text-text whitespace-nowrap tracking-tight">
-                            Salon<span className="text-primary font-extrabold">CRM</span>
+                            Salon<span className="text-primary font-bold">CRM</span>
                         </span>
                     )}
                 </div>
@@ -208,26 +224,28 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
                                 {isExpanded && !effectiveCollapsed && (
                                     <div className="ml-7 pl-2 border-l border-border/60 space-y-1 mt-1 relative">
-                                        {item.subItems.map((sub) => (
-                                            <NavLink
-                                                key={sub.path}
-                                                to={sub.path}
-                                                onClick={() => setMobileOpen(false)}
-                                                className={({ isActive: isSubActive }) =>
-                                                    `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
-                                                        ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
-                                                        : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
-                                                    }`
-                                                }
-                                            >
-                                                <span>{sub.label}</span>
-                                                {sub.badge && (
-                                                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold ${sub.badge.color}`}>
-                                                        {sub.badge.count}
-                                                    </span>
-                                                )}
-                                            </NavLink>
-                                        ))}
+                                        {item.subItems
+                                            .filter(sub => !sub.roles || sub.roles.includes(user?.role))
+                                            .map((sub) => (
+                                                <NavLink
+                                                    key={sub.path}
+                                                    to={sub.path}
+                                                    onClick={() => setMobileOpen(false)}
+                                                    className={({ isActive: isSubActive }) =>
+                                                        `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
+                                                            ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
+                                                            : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
+                                                        }`
+                                                    }
+                                                >
+                                                    <span>{sub.label}</span>
+                                                    {sub.badge && (
+                                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold ${sub.badge.color}`}>
+                                                            {sub.badge.count}
+                                                        </span>
+                                                    )}
+                                                </NavLink>
+                                            ))}
                                     </div>
                                 )}
                             </div>

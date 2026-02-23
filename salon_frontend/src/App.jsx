@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { BusinessProvider } from './contexts/BusinessContext';
 
 // Public pages
+// ... (lines 5-41 remain same)
 import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -43,105 +45,128 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/admin/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
+        <BusinessProvider>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/admin/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
 
-          {/* Admin Routes (Protected) */}
-          <Route
-            element={
-              <ProtectedRoute
-                allowedRoles={['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager']}
-              />
-            }
-          >
-            <Route element={<AdminLayout />}>
-              <Route path="/admin" element={<DashboardPage />} />
-              <Route path="/admin/outlets" element={<OutletsPage />} />
-              <Route path="/admin/outlets/new" element={<OutletForm />} />
-              <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
-              <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
-              <Route path="/admin/staff" element={<StaffPage />} />
+            {/* Admin Routes (Protected) */}
+            <Route
+              element={
+                <ProtectedRoute
+                  allowedRoles={['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager']}
+                />
+              }
+            >
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<DashboardPage />} />
+                <Route path="/admin/outlets" element={<OutletsPage />} />
+                <Route path="/admin/outlets/new" element={<OutletForm />} />
+                <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
+                <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
+                <Route path="/admin/staff" element={<StaffPage />} />
 
-              {/* POS Routes */}
-              <Route path="/admin/pos" element={<POSDashboardPage />} />
-              <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
-              <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
-              <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
-              <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
-              <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
+                {/* POS Routes */}
+                <Route path="/admin/pos" element={<POSDashboardPage />} />
+                <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
+                <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
+                <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
+                <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
+                <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
 
-              <Route path="/admin/bookings" element={<BookingsPage />} />
+                <Route path="/admin/bookings" element={<BookingsPage />} />
 
-              {/* CRM Routes */}
-              <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
-              <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
-              <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
-              <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+                {/* CRM Routes */}
+                <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
+                <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
+                <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
+                <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
 
-              <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
-              <Route path="/admin/clients" element={<ClientsPage />} />
-              <Route path="/admin/products" element={<ProductsPage />} />
+                <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
+                <Route path="/admin/clients" element={<ClientsPage />} />
 
-              {/* Inventory Routes */}
-              <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
-              <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
-              <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
-              <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
-              <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
+                {/* Services Routes */}
+                <Route path="/admin/services" element={<ServicesPage tab="list" />} />
+                <Route path="/admin/services/list" element={<ServicesPage tab="list" />} />
+                <Route path="/admin/services/new" element={<ServicesPage tab="add-service" />} />
+                <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
+                <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
+                <Route path="/admin/services/settings" element={<ServicesPage tab="settings" />} />
 
-              <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
-              <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
-              <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
-              <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
-              <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
-              <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
-              <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
-              <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
-              <Route path="/admin/hr" element={<HRPage />} />
-              <Route path="/admin/promotions" element={<PromotionsPage />} />
-              <Route path="/admin/loyalty" element={<LoyaltyPage />} />
-              <Route path="/admin/invoices" element={<InvoicesPage />} />
-              <Route path="/admin/settings" element={<SettingsPage />}>
-                <Route path="profile" element={<SettingsPage tab="profile" />} />
-                <Route path="notifications" element={<SettingsPage tab="notifications" />} />
-                <Route path="security" element={<SettingsPage tab="security" />} />
+                <Route path="/admin/products" element={<ProductsPage />} />
+
+                {/* Inventory Routes */}
+                <Route
+                  element={<ProtectedRoute allowedRoles={['admin']} />}
+                >
+                  <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
+                  <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
+                </Route>
+
+                <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
+                <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+                <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
+                <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
+                <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
+
+                <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
+                <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
+                <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
+                <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
+                <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
+                <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
+                <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
+                <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+                <Route path="/admin/hr" element={<HRPage tab="staff" />} />
+                <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
+                <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
+                <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
+                <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
+                <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
+                <Route path="/admin/promotions" element={<PromotionsPage />} />
+                <Route path="/admin/loyalty" element={<LoyaltyPage />} />
+                <Route path="/admin/invoices" element={<InvoicesPage />} />
+                <Route path="/admin/settings" element={<SettingsPage />}>
+                  <Route path="profile" element={<SettingsPage tab="profile" />} />
+                  <Route path="notifications" element={<SettingsPage tab="notifications" />} />
+                  <Route path="security" element={<SettingsPage tab="security" />} />
+                </Route>
               </Route>
             </Route>
-          </Route>
 
-          <Route path="/unauthorized" element={
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-              <h1 className="text-4xl font-bold text-text mb-2">403</h1>
-              <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
-              <button onClick={() => window.location.href = '/admin/login'} className="btn-primary">Go to Login</button>
-            </div>
-          } />
+            <Route path="/unauthorized" element={
+              <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+                <h1 className="text-4xl font-bold text-text mb-2">403</h1>
+                <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
+                <button onClick={() => window.location.href = '/admin/login'} className="btn-primary">Go to Login</button>
+              </div>
+            } />
 
-          <Route path="*" element={
-            <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-              <h1 className="text-4xl font-bold text-text mb-2">404</h1>
-              <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
-              <button onClick={() => window.location.href = '/admin'} className="btn-primary">Go to Dashboard</button>
-            </div>
-          } />
+            <Route path="*" element={
+              <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+                <h1 className="text-4xl font-bold text-text mb-2">404</h1>
+                <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
+                <button onClick={() => window.location.href = '/admin'} className="btn-primary">Go to Dashboard</button>
+              </div>
+            } />
 
-          {/* Super Admin Routes (Protected) */}
-          <Route
-            element={
-              <ProtectedRoute allowedRoles={['superadmin']} />
-            }
-          >
-            <Route element={<SuperAdminLayout />}>
-              <Route path="/superadmin" element={<SADashboardPage />} />
-              <Route path="/superadmin/tenants" element={<SATenantsPage />} />
-              <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
+            {/* Super Admin Routes (Protected) */}
+            <Route
+              element={
+                <ProtectedRoute allowedRoles={['superadmin']} />
+              }
+            >
+              <Route element={<SuperAdminLayout />}>
+                <Route path="/superadmin" element={<SADashboardPage />} />
+                <Route path="/superadmin/tenants" element={<SATenantsPage />} />
+                <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
+          </Routes>
+        </BusinessProvider>
       </AuthProvider>
     </Router>
   );

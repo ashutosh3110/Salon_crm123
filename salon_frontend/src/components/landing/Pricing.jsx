@@ -113,7 +113,7 @@ export default function Pricing() {
                             <div className="mb-6">
                                 <h3 className="text-lg font-bold text-text">{plan.name}</h3>
                                 <div className="mt-2 flex items-baseline gap-1">
-                                    <span className="text-3xl font-extrabold text-text">{plan.price}</span>
+                                    <span className="text-3xl font-bold text-text">{plan.price}</span>
                                     {plan.period && (
                                         <span className="text-sm text-text-muted">{plan.period}</span>
                                     )}

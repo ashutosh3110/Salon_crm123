@@ -54,7 +54,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                     </div>
                     {!collapsed && (
                         <span className="text-lg font-bold text-text whitespace-nowrap tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
-                            Super<span className="text-primary font-extrabold">Admin</span>
+                            Super<span className="text-primary font-bold">Admin</span>
                         </span>
                     )}
                 </div>

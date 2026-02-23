@@ -96,7 +96,7 @@ export default function SASubscriptionsPage() {
         <div className="space-y-8 pb-10">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-black text-text tracking-tight">Subscriptions</h1>
+                <h1 className="text-3xl font-bold text-text tracking-tight">Subscriptions</h1>
                 <p className="text-sm text-text-secondary mt-1.5 font-medium max-w-2xl">
                     Configure your platform's pricing strategy and monitor revenue streams across different tenant tiers.
                 </p>
@@ -123,17 +123,17 @@ export default function SASubscriptionsPage() {
                                 </div>
                                 <div className="text-right">
                                     <div className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Active Tenants</div>
-                                    <div className={`text-xl font-black ${plan.popular ? 'text-primary' : 'text-text'}`}>{count}</div>
+                                    <div className={`text-xl font-bold ${plan.popular ? 'text-primary' : 'text-text'}`}>{count}</div>
                                 </div>
                             </div>
 
                             <div className="mb-2">
-                                <h3 className="text-xl font-black text-text tracking-tight">{plan.name}</h3>
+                                <h3 className="text-xl font-bold text-text tracking-tight">{plan.name}</h3>
                                 <p className="text-[11px] text-text-muted font-medium leading-relaxed mt-0.5">{plan.description}</p>
                             </div>
 
                             <div className="flex items-baseline gap-1 mt-4 mb-6">
-                                <span className="text-3xl font-black text-text">{plan.price}</span>
+                                <span className="text-3xl font-bold text-text">{plan.price}</span>
                                 <span className="text-sm font-bold text-text-muted">{plan.period}</span>
                             </div>
 
@@ -175,7 +175,7 @@ export default function SASubscriptionsPage() {
                             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                                 <CreditCard className="w-5 h-5 text-primary" />
                             </div>
-                            <h2 className="text-2xl font-black text-text tracking-tight">Revenue Analytics</h2>
+                            <h2 className="text-2xl font-bold text-text tracking-tight">Revenue Analytics</h2>
                         </div>
                         <p className="text-sm text-text-secondary font-medium">Estimated monthly recurring revenue based on current plan distribution.</p>
 
@@ -186,8 +186,8 @@ export default function SASubscriptionsPage() {
                                 const revenue = count * priceNum;
                                 return (
                                     <div key={plan.id} className="p-5 rounded-3xl bg-surface border border-border/50 transition-colors hover:border-primary/20">
-                                        <div className="text-[10px] font-extrabold text-text-muted uppercase tracking-widest mb-2">{plan.name}</div>
-                                        <div className="text-xl font-black text-text">₹{revenue.toLocaleString('en-IN')}</div>
+                                        <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-2">{plan.name}</div>
+                                        <div className="text-xl font-bold text-text">₹{revenue.toLocaleString('en-IN')}</div>
                                         <div className="text-[10px] text-text-secondary mt-1 font-bold">{count} Subscribers</div>
                                     </div>
                                 );
@@ -200,7 +200,7 @@ export default function SASubscriptionsPage() {
                             <Zap className="w-6 h-6 text-primary-light" />
                         </div>
                         <div className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Total Estimated MRR</div>
-                        <div className="text-4xl font-black tracking-tighter mb-2">
+                        <div className="text-4xl font-bold tracking-tighter mb-2">
                             ₹{plans.reduce((sum, plan) => {
                                 const count = stats?.byPlan?.[plan.id] || 0;
                                 const priceNum = parseInt(plan.price.replace(/[₹,]/g, '')) || 0;
