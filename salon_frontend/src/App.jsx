@@ -1,15 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { AuthProvider } from './contexts/AuthContext';
 import { BusinessProvider } from './contexts/BusinessContext';
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
 
 // Public pages
 import LandingPage from './pages/landing/LandingPage';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
+import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import BlogPage from './pages/landing/BlogPage';
 import BlogPostDetailPage from './pages/landing/BlogPostDetailPage';
@@ -147,9 +145,9 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/admin/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<AuthPage />} />
+              <Route path="/register" element={<AuthPage />} />
+              <Route path="/admin/login" element={<AuthPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:id" element={<BlogPostDetailPage />} />
@@ -162,13 +160,7 @@ function App() {
               {/* ═══════════════════════════════════════════════════════════
                  ADMIN — Salon Owner Panel
                  ═══════════════════════════════════════════════════════════ */}
-              <Route
-                element={
-                  <ProtectedRoute
-                    allowedRoles={['admin']}
-                  />
-                }
-              >
+              <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                 <Route element={<AdminLayout />}>
                   <Route path="/admin" element={<DashboardPage />} />
                   <Route path="/admin/outlets" element={<OutletsPage />} />
@@ -205,6 +197,7 @@ function App() {
                   <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
                   <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
 
+                  {/* Finance Routes */}
                   <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                   <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
                   <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
@@ -214,6 +207,7 @@ function App() {
                   <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
                   <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
 
+                  {/* HR Routes */}
                   <Route path="/admin/hr" element={<HRPage tab="staff" />} />
                   <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
                   <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
@@ -330,11 +324,7 @@ function App() {
               {/* ═══════════════════════════════════════════════════════════
                  POS — Point of Sale (shared by admin, manager, receptionist)
                  ═══════════════════════════════════════════════════════════ */}
-              <Route
-                element={
-                  <ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />
-                }
-              >
+              <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />}>
                 <Route element={<POSLayout />}>
                   <Route path="/pos" element={<POSDashboardPage />} />
                   <Route path="/pos/billing" element={<POSBillingPage />} />

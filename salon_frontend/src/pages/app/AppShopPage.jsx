@@ -1,3 +1,4 @@
+// Forced HMR update
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingBag, Star, Filter, ArrowRight, Heart, ChevronRight, X, Plus, Minus, Info } from 'lucide-react';

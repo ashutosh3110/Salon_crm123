@@ -134,11 +134,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
 
-    // If hovered, we behave as if not collapsed
     const effectiveCollapsed = collapsed && !isHovered;
 
     useEffect(() => {
-        // Auto-expand menu item if a sub-item is active
         menuItems.forEach(item => {
             if (item.subItems && item.subItems.some(sub => location.pathname === sub.path)) {
                 setExpandedItem(item.label);
