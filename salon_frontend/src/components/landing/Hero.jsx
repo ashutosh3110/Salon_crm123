@@ -73,11 +73,6 @@ export default function Hero() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 relative z-10 w-full">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
-<<<<<<< HEAD
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
-                            Run Your Salon
-                            <span className="block text-primary mt-1">Smarter, Not Harder</span>
-=======
                     {/* Left Content */}
                     <motion.div
                         initial={{ opacity: 0, x: -50 }}
@@ -90,7 +85,6 @@ export default function Hero() {
                         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif italic text-text leading-tight tracking-tight">
                             Elevate Your <span className="text-primary not-italic font-black">Salon</span>
                             <span className="block text-primary/80 not-italic font-black mt-1">Smarter, Faster.</span>
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
                         </h1>
 
                         <p className="mt-6 text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80">

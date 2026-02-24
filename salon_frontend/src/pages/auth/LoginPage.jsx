@@ -98,101 +98,6 @@ export default function LoginPage() {
                             <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary rounded-full blur-[120px]" />
                         </div>
 
-<<<<<<< HEAD
-                    <h1 className="text-3xl font-bold leading-tight mb-4">
-                        Welcome back to your salon command center
-                    </h1>
-                    <p className="text-white/70 leading-relaxed">
-                        Manage appointments, track revenue, engage clients, and grow your
-                        business — all from one powerful platform.
-                    </p>
-
-                    {/* Testimonial Card */}
-                    <div className="mt-10 bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                        <p className="text-sm text-white/80 leading-relaxed">
-                            "SalonCRM transformed how we manage our 3 outlets. Booking
-                            efficiency is up 40% and our clients love the loyalty program."
-                        </p>
-                        <div className="mt-3 flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
-                                RS
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold">Riya Shah</div>
-                                <div className="text-xs text-white/50">Owner, Glamour Studio</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right — Login Form */}
-            <div className="flex-1 flex items-center justify-center p-6 sm:p-12 bg-background">
-                <div className="w-full max-w-md">
-                    {/* Mobile Logo */}
-                    <div className="lg:hidden flex items-center gap-2 mb-8">
-                        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-                            <Scissors className="w-5 h-5 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-text">
-                            Salon<span className="text-primary">CRM</span>
-                        </span>
-                    </div>
-
-                    <h2 className="text-2xl font-bold text-text">Sign in to your account</h2>
-                    <p className="mt-2 text-sm text-text-secondary">
-                        Don't have an account?{' '}
-                        <Link to="/register" className="text-primary font-semibold hover:underline">
-                            Start free trial
-                        </Link>
-                    </p>
-
-                    {error && (
-                        <div className="mt-6 flex items-start gap-3 p-4 rounded-lg bg-error/10 border border-error/20 text-error animate-in fade-in slide-in-from-top-2">
-                            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-                            <p className="text-sm font-medium">{error}</p>
-                        </div>
-                    )}
-
-                    {/* Demo Credentials Box */}
-                    <div className="mt-6 p-4 rounded-2xl bg-primary/5 border border-primary/10 flex flex-col gap-2 relative overflow-hidden group hover:border-primary/30 transition-all">
-                        <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <Lock className="w-12 h-12 text-primary" />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Demo Access</span>
-                        </div>
-                        <div className="flex flex-col gap-1 relative z-10">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-text-secondary font-medium">Email:</span>
-                                <span className="font-bold text-text select-all cursor-pointer hover:text-primary transition-colors">admin@test.com</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-text-secondary font-medium">Password:</span>
-                                <span className="font-bold text-text select-all cursor-pointer hover:text-primary transition-colors">admin123</span>
-                            </div>
-                        </div>
-                        <p className="text-[9px] text-text-muted font-medium mt-1 uppercase tracking-tighter">* Backend disconnected. Any credentials will work.</p>
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-                        {/* Email */}
-                        <div>
-                            <label className="block text-sm font-medium text-text-secondary mb-1.5">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={form.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border bg-white text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                                    placeholder="you@yoursalon.com"
-=======
                         <div className="relative z-10 w-full flex flex-col items-center flex-1 justify-center">
                             {/* Arched Image */}
                             <div className="relative w-full aspect-[4/5] rounded-t-full rounded-b-[40px] overflow-hidden border-4 border-white/10 shadow-2xl mb-8 group">
@@ -200,7 +105,6 @@ export default function LoginPage() {
                                     src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1000"
                                     alt="Salon Interior"
                                     className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#4A1D28]/80 via-transparent to-transparent" />
                             </div>

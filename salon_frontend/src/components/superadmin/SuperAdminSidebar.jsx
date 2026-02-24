@@ -53,13 +53,8 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                         <Shield className="w-5 h-5 text-white" />
                     </div>
                     {!collapsed && (
-<<<<<<< HEAD
-                        <span className="text-lg font-bold text-text whitespace-nowrap tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
-                            Super<span className="text-primary font-bold">Admin</span>
-=======
                         <span className="text-lg font-black text-text whitespace-nowrap tracking-tight animate-in fade-in slide-in-from-left-2 duration-300">
                             SUPER<span className="text-primary">ADMIN</span>
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
                         </span>
                     )}
                 </div>

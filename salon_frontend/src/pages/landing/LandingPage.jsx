@@ -1,31 +1,34 @@
-import Navbar from '../../components/landing/Navbar';
-import Hero from '../../components/landing/Hero';
-import Features from '../../components/landing/Features';
-import Pricing from '../../components/landing/Pricing';
-import SpecialOffers from '../../components/landing/SpecialOffers';
-import About from '../../components/landing/About';
-import Contact from '../../components/landing/Contact';
-import FAQ from '../../components/landing/FAQ';
-import Testimonials from '../../components/landing/Testimonials';
-import FeatureGallery from '../../components/landing/FeatureGallery';
-import ContactPreview from '../../components/landing/ContactPreview';
-import Footer from '../../components/landing/Footer';
+import { useState } from 'react';
+import SmoothScroll from '../../components/landing/lumiere/SmoothScroll';
+import LumiereLoader from '../../components/landing/lumiere/LumiereLoader';
+import LumiereNavbar from '../../components/landing/lumiere/LumiereNavbar';
+import HeroScroll from '../../components/landing/lumiere/HeroScroll';
+import Features from '../../components/landing/lumiere/Features';
+import ScissorsMorph from '../../components/landing/lumiere/ScissorsMorph';
+import ChairSection from '../../components/landing/lumiere/ChairSection';
+import LumiereFooter from '../../components/landing/lumiere/LumiereFooter';
 
 export default function LandingPage() {
+    const [loaded, setLoaded] = useState(false);
+
     return (
-        <div className="min-h-screen">
-            <Navbar />
-            <Hero />
-            <Features />
-            <Pricing />
-            <SpecialOffers />
-            <About />
-            <Contact />
-            <FAQ />
-            <Testimonials />
-            <FeatureGallery />
-            <ContactPreview />
-            <Footer />
-        </div>
+        <>
+            {/* Cinematic loader — preloads sequence, then fades out */}
+            <LumiereLoader onComplete={() => setLoaded(true)} />
+
+            {/* Main page content */}
+            <SmoothScroll>
+                <div style={{ background: '#050505', minHeight: '100vh', position: 'relative' }}>
+                    <LumiereNavbar />
+                    <div style={{ paddingTop: '60px' }}>
+                        <HeroScroll />
+                    </div>
+                    <Features />
+                    <ScissorsMorph />
+                    <ChairSection />
+                    <LumiereFooter />
+                </div>
+            </SmoothScroll>
+        </>
     );
 }

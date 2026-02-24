@@ -1,9 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import { BusinessProvider } from './contexts/BusinessContext';
 
 // Public pages
-// ... (lines 5-41 remain same)
 import LandingPage from './pages/landing/LandingPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -84,7 +82,7 @@ import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
 import AppReferralPage from './pages/app/AppReferralPage';
 import AppProfilePage from './pages/app/AppProfilePage';
 
-// ── Phase 6: Role-Specific Layouts & Dashboards ────────────────────────
+// Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
 import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard';
 
@@ -130,22 +128,6 @@ function App() {
     <Router>
       <ScrollToHash />
       <AuthProvider>
-<<<<<<< HEAD
-        <BusinessProvider>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/admin/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
-
-            {/* Admin Routes (Protected) */}
-            <Route
-              element={
-                <ProtectedRoute
-                  allowedRoles={['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager']}
-                />
-=======
         <ThemeProvider>
           <Routes>
             {/* Public Routes */}
@@ -163,12 +145,7 @@ function App() {
             {/* ═══════════════════════════════════════════════════════════
               ADMIN — Salon Owner Panel
               ═══════════════════════════════════════════════════════════ */}
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={['admin']} />
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
-              }
-            >
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<DashboardPage />} />
                 <Route path="/admin/outlets" element={<OutletsPage />} />
@@ -176,16 +153,6 @@ function App() {
                 <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
                 <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
                 <Route path="/admin/staff" element={<StaffPage />} />
-<<<<<<< HEAD
-
-                {/* POS Routes */}
-                <Route path="/admin/pos" element={<POSDashboardPage />} />
-                <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
-                <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
-                <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
-                <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
-                <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
-
                 <Route path="/admin/bookings" element={<BookingsPage />} />
 
                 {/* CRM Routes */}
@@ -193,7 +160,6 @@ function App() {
                 <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
                 <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
                 <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-
                 <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
                 <Route path="/admin/clients" element={<ClientsPage />} />
 
@@ -208,39 +174,15 @@ function App() {
                 <Route path="/admin/products" element={<ProductsPage />} />
 
                 {/* Inventory Routes */}
-                <Route
-                  element={<ProtectedRoute allowedRoles={['admin']} />}
-                >
-                  <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
-                  <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
-                </Route>
-
                 <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
                 <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+                <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
+                <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
                 <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
                 <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
                 <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
 
-=======
-                <Route path="/admin/bookings" element={<BookingsPage />} />
-
-                {/* CRM Routes */}
-                <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
-                <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
-                <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
-                <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-                <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
-                <Route path="/admin/clients" element={<ClientsPage />} />
-                <Route path="/admin/products" element={<ProductsPage />} />
-
-                {/* Inventory Routes */}
-                <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
-                <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
-                <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
-                <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
-                <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
-
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
+                {/* Finance Routes */}
                 <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                 <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
                 <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
@@ -249,59 +191,30 @@ function App() {
                 <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
                 <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
                 <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
-<<<<<<< HEAD
+
+                {/* HR Routes */}
                 <Route path="/admin/hr" element={<HRPage tab="staff" />} />
                 <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
                 <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
                 <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
                 <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
                 <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
-=======
-                <Route path="/admin/hr" element={<HRPage />} />
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
+
                 <Route path="/admin/promotions" element={<PromotionsPage />} />
                 <Route path="/admin/loyalty" element={<LoyaltyPage />} />
                 <Route path="/admin/invoices" element={<InvoicesPage />} />
-                <Route path="/admin/settings" element={<SettingsPage />}>
-                  <Route path="profile" element={<SettingsPage tab="profile" />} />
-                  <Route path="notifications" element={<SettingsPage tab="notifications" />} />
-                  <Route path="security" element={<SettingsPage tab="security" />} />
-                </Route>
+                <Route path="/admin/settings" element={<SettingsPage />} />
+
+                {/* POS Routes inside Admin Layout */}
+                <Route path="/admin/pos" element={<POSDashboardPage />} />
+                <Route path="/admin/pos/dashboard" element={<POSDashboardPage />} />
+                <Route path="/admin/pos/invoices" element={<POSInvoicesPage />} />
+                <Route path="/admin/pos/payments" element={<POSPaymentsPage />} />
+                <Route path="/admin/pos/refunds" element={<POSRefundsPage />} />
+                <Route path="/admin/pos/settings" element={<POSSettingsPage />} />
               </Route>
             </Route>
 
-<<<<<<< HEAD
-            <Route path="/unauthorized" element={
-              <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-                <h1 className="text-4xl font-bold text-text mb-2">403</h1>
-                <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
-                <button onClick={() => window.location.href = '/admin/login'} className="btn-primary">Go to Login</button>
-              </div>
-            } />
-
-            <Route path="*" element={
-              <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-                <h1 className="text-4xl font-bold text-text mb-2">404</h1>
-                <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
-                <button onClick={() => window.location.href = '/admin'} className="btn-primary">Go to Dashboard</button>
-              </div>
-            } />
-
-            {/* Super Admin Routes (Protected) */}
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={['superadmin']} />
-              }
-            >
-              <Route element={<SuperAdminLayout />}>
-                <Route path="/superadmin" element={<SADashboardPage />} />
-                <Route path="/superadmin/tenants" element={<SATenantsPage />} />
-                <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
-              </Route>
-            </Route>
-          </Routes>
-        </BusinessProvider>
-=======
             {/* ═══════════════════════════════════════════════════════════
               MANAGER — Operations Hub
               ═══════════════════════════════════════════════════════════ */}
@@ -393,11 +306,7 @@ function App() {
             {/* ═══════════════════════════════════════════════════════════
               POS — Point of Sale (shared by admin, manager, receptionist)
               ═══════════════════════════════════════════════════════════ */}
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />
-              }
-            >
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />}>
               <Route element={<POSLayout />}>
                 <Route path="/pos" element={<POSDashboardPage />} />
                 <Route path="/pos/billing" element={<POSBillingPage />} />
@@ -443,12 +352,11 @@ function App() {
               <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
                 <h1 className="text-4xl font-bold text-text mb-2">404</h1>
                 <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
-                <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
+                <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Dashboard</button>
               </div>
             } />
           </Routes>
         </ThemeProvider>
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
       </AuthProvider>
     </Router>
   );

@@ -147,9 +147,6 @@ export default function POSInvoicesPage() {
                     </div>
                 )}
             </div>
-<<<<<<< HEAD
-            <p className="text-[11px] text-text-muted text-center">✨ Invoices are read-only. For editing or creation, please use the POS terminal.</p>
-=======
 
             {/* Invoice Detail Modal */}
             {selectedInvoice && (
@@ -231,7 +228,6 @@ export default function POSInvoicesPage() {
                     </div>
                 </div>
             )}
->>>>>>> 2472437bba8d254ed167d6bf76c0bbac8fc03f3f
         </div>
     );
 }
