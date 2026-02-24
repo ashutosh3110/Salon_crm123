@@ -88,9 +88,13 @@ import AppHomePage from './pages/app/AppHomePage';
 import AppServicesPage from './pages/app/AppServicesPage';
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
-import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
 import AppReferralPage from './pages/app/AppReferralPage';
 import AppProfilePage from './pages/app/AppProfilePage';
+import AppShopPage from './pages/app/AppShopPage';
+import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
+import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
+import AppNotificationPage from './pages/app/AppNotificationPage';
+import { CartProvider } from './contexts/CartContext';
 
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
@@ -348,7 +352,9 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
               <Route element={
                 <CustomerAuthProvider>
-                  <Outlet />
+                  <CartProvider>
+                    <Outlet />
+                  </CartProvider>
                 </CustomerAuthProvider>
               }>
                 <Route path="/app/login" element={<AppLoginPage />} />
@@ -357,9 +363,12 @@ function App() {
                   <Route path="/app/services" element={<AppServicesPage />} />
                   <Route path="/app/book" element={<AppBookingPage />} />
                   <Route path="/app/bookings" element={<AppMyBookingsPage />} />
-                  <Route path="/app/loyalty" element={<AppLoyaltyPage />} />
                   <Route path="/app/referrals" element={<AppReferralPage />} />
                   <Route path="/app/profile" element={<AppProfilePage />} />
+                  <Route path="/app/shop" element={<AppShopPage />} />
+                  <Route path="/app/categories" element={<AppProductCategoriesPage />} />
+                  <Route path="/app/product/:id" element={<AppProductDetailsPage />} />
+                  <Route path="/app/notifications" element={<AppNotificationPage />} />
                 </Route>
               </Route>
 

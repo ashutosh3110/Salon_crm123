@@ -2,10 +2,12 @@ import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Bell, Moon, Sun } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function AppHeader() {
     const { customer } = useCustomerAuth();
     const { theme, toggleTheme } = useTheme();
+    const navigate = useNavigate();
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -56,6 +58,7 @@ export default function AppHeader() {
 
                     <motion.button
                         whileTap={{ scale: 0.9 }}
+                        onClick={() => navigate('/app/notifications')}
                         className="relative w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors"
                     >
                         <Bell className="w-5 h-5 text-text-secondary" />

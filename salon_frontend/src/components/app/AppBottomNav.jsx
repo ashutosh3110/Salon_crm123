@@ -1,12 +1,12 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Scissors, CalendarPlus, Star, User } from 'lucide-react';
+import { Home, Scissors, CalendarPlus, ShoppingBag, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
     { id: 'services', label: 'Services', icon: Scissors, path: '/app/services' },
     { id: 'book', label: 'Book', icon: CalendarPlus, path: '/app/book', isCenter: true },
-    { id: 'loyalty', label: 'Loyalty', icon: Star, path: '/app/loyalty' },
+    { id: 'shop', label: 'Shop', icon: ShoppingBag, path: '/app/shop' },
     { id: 'profile', label: 'Profile', icon: User, path: '/app/profile' },
 ];
 

@@ -132,6 +132,7 @@ export default function POSBillingPage() {
     const [selectedClient, setSelectedClient] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [taxPercent, setTaxPercent] = useState(18);
+    const [pendingAppOrder, setPendingAppOrder] = useState(null);
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
@@ -152,6 +153,31 @@ export default function POSBillingPage() {
     const [redeemWallet, setRedeemWallet] = useState(0);
 
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '' });
+
+    // ─── App Integration ────────────────────────────────────
+    useMemo(() => {
+        if (selectedClient) {
+            const saved = localStorage.getItem('pending_pos_cart');
+            if (saved) {
+                setPendingAppOrder(JSON.parse(saved));
+            }
+        } else {
+            setPendingAppOrder(null);
+        }
+    }, [selectedClient]);
+
+    const importAppOrder = () => {
+        if (!pendingAppOrder) return;
+        const newItems = pendingAppOrder.items.map(item => ({
+            ...item,
+            itemId: item._id,
+            type: 'product',
+            staffId: null
+        }));
+        setCart(prev => [...prev, ...newItems]);
+        setPendingAppOrder(null);
+        localStorage.removeItem('pending_pos_cart');
+    };
 
     // ─── Filters & Search ────────────────────────────────────
     const categories = useMemo(() => {
@@ -564,6 +590,27 @@ export default function POSBillingPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Pending App Order Alert */}
+                {pendingAppOrder && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mx-4 p-4 bg-primary/5 border border-primary/20 flex flex-col gap-3"
+                    >
+                        <div className="flex items-center gap-2">
+                            <ShoppingBag className="w-5 h-5 text-primary" />
+                            <p className="text-[10px] font-black uppercase tracking-widest text-primary">Pending App Selection Found</p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold">{pendingAppOrder.items.length} Products • ₹{pendingAppOrder.total}</span>
+                            <button
+                                onClick={importAppOrder}
+                                className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+                            >Add to Bill</button>
+                        </div>
+                    </motion.div>
+                )}
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {cart.length === 0 ? (

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { motion } from 'framer-motion';
-import { Plus, Star, Clock, MapPin, Phone, ChevronRight, Sparkles, Gift, ArrowRight, Calendar } from 'lucide-react';
-import { MOCK_SERVICES, MOCK_BOOKINGS, MOCK_OUTLET, MOCK_PROMOTIONS, MOCK_LOYALTY_WALLET } from '../../data/appMockData';
+import { Plus, Star, Clock, MapPin, Phone, ChevronRight, Sparkles, Gift, ArrowRight, Calendar, ShoppingBag } from 'lucide-react';
+import { MOCK_SERVICES, MOCK_BOOKINGS, MOCK_OUTLET, MOCK_PROMOTIONS, MOCK_LOYALTY_WALLET, PRODUCT_CATEGORIES } from '../../data/appMockData';
 
 export default function AppHomePage() {
     const { customer } = useCustomerAuth();
@@ -72,7 +72,7 @@ export default function AppHomePage() {
                 <motion.div
                     variants={fadeUp}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/app/loyalty')}
+                    onClick={() => navigate('/app/profile')}
                     className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center justify-between cursor-pointer active:bg-surface-alt transition-all"
                 >
                     <div className="flex items-center gap-3">
@@ -199,6 +199,42 @@ export default function AppHomePage() {
                             </div>
                         </motion.div>
                     ))}
+                </div>
+            </motion.div>
+
+            {/* Shop by Category Section */}
+            <motion.div variants={fadeUp} className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Shop Products</h3>
+                    <button onClick={() => navigate('/app/categories')} className="text-[10px] font-bold text-primary bg-primary/5 px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors uppercase tracking-wider font-black">
+                        Categories
+                    </button>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none -mx-4 px-4">
+                    {PRODUCT_CATEGORIES.map((cat, i) => (
+                        <motion.div
+                            key={cat._id}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
+                            className={`${cat.color} min-w-[140px] aspect-[4/5] rounded-[32px] p-5 flex flex-col justify-between cursor-pointer border border-border/10 shadow-sm relative overflow-hidden group`}
+                        >
+                            <div className="text-3xl relative z-10 group-hover:scale-110 transition-transform">{cat.icon}</div>
+                            <div className="relative z-10">
+                                <h4 className="text-sm font-black text-text tracking-tighter leading-tight">{cat.name}</h4>
+                                <p className="text-[9px] font-bold text-text-muted mt-1 uppercase tracking-widest">{cat.count} Items</p>
+                            </div>
+                            <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-white/40 blur-xl rounded-full"></div>
+                        </motion.div>
+                    ))}
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate('/app/shop')}
+                        className="bg-black min-w-[140px] aspect-[4/5] rounded-[32px] p-5 flex flex-col justify-center items-center cursor-pointer relative overflow-hidden group"
+                    >
+                        <ShoppingBag className="w-8 h-8 text-white mb-2" />
+                        <h4 className="text-sm font-black text-white tracking-tighter text-center">Visit Full Shop</h4>
+                        <ArrowRight className="w-5 h-5 text-primary mt-3 group-hover:translate-x-2 transition-transform" />
+                    </motion.div>
                 </div>
             </motion.div>
 

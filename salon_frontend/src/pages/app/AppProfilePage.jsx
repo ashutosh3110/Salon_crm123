@@ -1,8 +1,16 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Star, Users, ChevronRight, LogOut, Shield, HelpCircle, Edit3, Loader2 } from 'lucide-react';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import {
+    Calendar, Star, Users, ChevronRight, LogOut,
+    Shield, HelpCircle, Edit3, Loader2,
+    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp
+} from 'lucide-react';
+import LoyaltyCard from '../../components/app/LoyaltyCard';
+import {
+    MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
+} from '../../data/appMockData';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout } = useCustomerAuth();
@@ -10,12 +18,22 @@ export default function AppProfilePage() {
     const [editing, setEditing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [showHowItWorks, setShowHowItWorks] = useState(false);
     const [form, setForm] = useState({
         name: customer?.name || '',
         email: customer?.email || '',
         gender: customer?.gender || '',
         birthday: customer?.birthday || '',
     });
+
+    // Loyalty Data
+    const wallet = MOCK_LOYALTY_WALLET;
+    const rules = MOCK_LOYALTY_RULES;
+    const transactions = MOCK_LOYALTY_TRANSACTIONS;
+
+    const formatDate = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
 
     const getInitials = (name) => {
         if (!name) return '?';
@@ -38,7 +56,6 @@ export default function AppProfilePage() {
 
     const quickLinks = [
         { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: 'text-blue-500 bg-blue-500/10' },
-        { icon: Star, label: 'Loyalty Points', path: '/app/loyalty', color: 'text-amber-500 bg-amber-500/10' },
         { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: 'text-emerald-500 bg-emerald-500/10' },
     ];
 
@@ -138,6 +155,72 @@ export default function AppProfilePage() {
                         </div>
                     </motion.div>
                 )}
+            </motion.div>
+
+            {/* Loyalty Section */}
+            <motion.div variants={fadeUp} className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Loyalty Rewards</h3>
+                </div>
+
+                <LoyaltyCard points={wallet.totalPoints} redeemRate={rules.redeemRate} />
+
+                <div className="grid grid-cols-2 gap-2.5">
+                    <div className="bg-surface rounded-xl border border-border/60 p-3 text-center bg-white">
+                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Earn Rate</p>
+                        <p className="text-base font-extrabold text-emerald-600">{rules.earnRate}x</p>
+                        <p className="text-[9px] text-text-muted italic">point per ₹1</p>
+                    </div>
+                    <div className="bg-surface rounded-xl border border-border/60 p-3 text-center bg-white">
+                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Redeem Value</p>
+                        <p className="text-base font-extrabold text-primary">₹{rules.redeemRate}</p>
+                        <p className="text-[9px] text-text-muted italic">per point</p>
+                    </div>
+                </div>
+
+                {/* How It Works (Expandable) */}
+                <div className="bg-surface rounded-xl border border-border/60 overflow-hidden bg-white">
+                    <button
+                        onClick={() => setShowHowItWorks(!showHowItWorks)}
+                        className="w-full flex items-center justify-between p-3.5"
+                    >
+                        <span className="flex items-center gap-2 text-xs font-bold text-text">
+                            <Info className="w-3.5 h-3.5 text-primary" /> How It Works
+                        </span>
+                        {showHowItWorks ? <ChevronUp className="w-4 h-4 text-text-muted" /> : <ChevronDown className="w-4 h-4 text-text-muted" />}
+                    </button>
+                    {showHowItWorks && (
+                        <div className="px-3.5 pb-4 space-y-2.5 border-t border-border/20 pt-3">
+                            <div className="flex gap-3 items-start">
+                                <span className="w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-emerald-600">1</span>
+                                <p className="text-[11px] text-text-secondary leading-relaxed">Earn <span className="font-bold">{rules.earnRate} point</span> for every ₹1 spent</p>
+                            </div>
+                            <div className="flex gap-3 items-start">
+                                <span className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">2</span>
+                                <p className="text-[11px] text-text-secondary leading-relaxed">Redeem at <span className="font-bold">₹{rules.redeemRate}/point</span>. Min <span className="font-bold">{rules.minRedeemPoints} pts</span></p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Recent Activity */}
+                <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-1">Recent Activity</p>
+                    {transactions.slice(0, 3).map((tx) => (
+                        <div key={tx._id} className="bg-surface rounded-xl border border-border/60 p-3 flex items-center gap-3 bg-white">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-emerald-500/10' : 'bg-primary/10'}`}>
+                                {tx.type === 'EARN' ? <TrendingUp className="w-4 h-4 text-emerald-500" /> : <TrendingDown className="w-4 h-4 text-primary" />}
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[11px] font-bold text-text truncate">{tx.metadata?.serviceName || tx.type}</p>
+                                <p className="text-[9px] text-text-muted">{formatDate(tx.createdAt)}</p>
+                            </div>
+                            <span className={`text-[11px] font-black ${tx.points > 0 ? 'text-emerald-600' : 'text-primary'}`}>
+                                {tx.points > 0 ? '+' : ''}{tx.points}
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </motion.div>
 
             {/* Quick Links */}

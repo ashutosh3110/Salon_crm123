@@ -222,3 +222,23 @@ export function generateTimeSlots(dayOfWeek, serviceDuration = 30) {
 
 // --- Service Categories ---
 export const SERVICE_CATEGORIES = ['All', 'Hair', 'Skin', 'Nails', 'Spa'];
+
+// --- Mock Products (matches Product model) ---
+export const MOCK_PRODUCTS = [
+    { _id: 'prod-001', name: 'L\'Oréal Professional Shampoo', description: 'Deep nourishing shampoo for dry and damaged hair.', price: 850, image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&h=400&fit=crop', category: 'Hair Care', brand: 'L\'Oréal', rating: 4.8, reviews: 124 },
+    { _id: 'prod-002', name: 'Moroccan Argan Oil', description: 'Premium cold-pressed argan oil for hair and skin.', price: 1200, image: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&h=400&fit=crop', category: 'Hair Care', brand: 'Pure Organics', rating: 4.9, reviews: 89 },
+    { _id: 'prod-003', name: 'Vitamin C Face Cream', description: 'Brightening face cream with pure Vitamin C and Hyaluronic acid.', price: 1500, image: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=400&h=400&fit=crop', category: 'Skin Care', brand: 'DermaX', rating: 4.7, reviews: 256 },
+    { _id: 'prod-004', name: 'Professional Hair Dryer', description: 'High-speed ionic hair dryer for salon-like finish at home.', price: 4500, image: 'https://images.unsplash.com/photo-1522338140262-f46f5912018a?w=400&h=400&fit=crop', category: 'Tools', brand: 'Philips', rating: 4.5, reviews: 540 },
+    { _id: 'prod-005', name: 'Matte Liquid Lipstick', description: 'Long-stay waterproof matte lipstick in 12 shades.', price: 950, image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=400&fit=crop', category: 'Makeup', brand: 'MAC', rating: 4.6, reviews: 110 },
+    { _id: 'prod-006', name: 'Dead Sea Mud Mask', description: 'Detoxifying mud mask for deep pore cleansing.', price: 1800, image: 'https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400&h=400&fit=crop', category: 'Skin Care', brand: 'NaturalSpa', rating: 4.8, reviews: 75 },
+    { _id: 'prod-007', name: 'Ceramic Hair Straightener', description: 'Advanced ceramic plates for smooth, frizz-free hair.', price: 3800, image: 'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=400&h=400&fit=crop', category: 'Tools', brand: 'Braun', rating: 4.4, reviews: 320 },
+    { _id: 'prod-008', name: 'Organic Body Wash', description: 'Lavender and tea tree infused organic body wash.', price: 650, image: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=400&h=400&fit=crop', category: 'Body Care', brand: 'BodyShop', rating: 4.7, reviews: 412 },
+];
+
+export const PRODUCT_CATEGORIES = [
+    { _id: 'cat-1', name: 'Hair Care', icon: '💇‍♀️', description: 'Shampoos, Oils, Serums & Masques', count: 42, color: 'bg-rose-50' },
+    { _id: 'cat-2', name: 'Skin Care', icon: '✨', description: 'Face creams, serums, and masks', count: 35, color: 'bg-blue-50' },
+    { _id: 'cat-3', name: 'Makeup', icon: '💄', description: 'Face, Eyes, Lips and Nails', count: 28, color: 'bg-purple-50' },
+    { _id: 'cat-4', name: 'Tools', icon: '🔌', description: 'Dryers, Straighteners, Trimmers', count: 15, color: 'bg-amber-50' },
+    { _id: 'cat-5', name: 'Body Care', icon: '🧼', description: 'Lotions, Body wash, Fragrances', count: 22, color: 'bg-emerald-50' },
+];
