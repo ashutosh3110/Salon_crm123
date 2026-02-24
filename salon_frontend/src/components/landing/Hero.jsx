@@ -87,13 +87,8 @@ export default function Hero() {
 
 
                         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif italic text-text leading-tight tracking-tight">
-<<<<<<< HEAD
-                            Elevate Your <span className="text-primary not-italic font-black">Salon</span>
-                            <span className="block text-primary/80 not-italic font-black mt-1">Smarter, Faster.</span>
-=======
                             {hero.heading.split(' ').slice(0, -1).join(' ')} <span className="text-primary not-italic font-black">{hero.heading.split(' ').slice(-1)}</span>
                             <span className="block text-primary/80 not-italic font-black mt-1">{hero.subheading}</span>
->>>>>>> db8e10dbe1e7ca645e3bc9e993a7db8214bb4381
                         </h1>
 
 

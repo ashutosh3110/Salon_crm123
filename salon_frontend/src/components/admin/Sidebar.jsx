@@ -195,35 +195,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             {/* Nav Links */}
             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
-<<<<<<< HEAD
-                    const hasSubItems = item.subItems && item.subItems.length > 0;
-                    const isExpanded = expandedItem === item.label && !effectiveCollapsed;
-                    const active = isActive(item.path);
-
-                    if (hasSubItems) {
-                        return (
-                            <div key={item.label} className="space-y-1">
-                                <button
-                                    onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group ${active
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'text-text-secondary hover:bg-surface hover:text-text'
-                                        }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <item.icon
-                                            className={`w-5 h-5 shrink-0 ${active ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'}`}
-                                        />
-                                        {!effectiveCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
-                                    </div>
-                                    {!effectiveCollapsed && (
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-                                    )}
-                                </button>
-
-                                {isExpanded && !effectiveCollapsed && (
-                                    <div className="ml-7 pl-2 border-l border-border/60 space-y-1 mt-1">
-=======
                     if (item.roles && !item.roles.includes(user?.role)) return null;
 
                     const hasSubItems = item.subItems && item.subItems.length > 0;
@@ -253,7 +224,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
                                 {isExpanded && !effectiveCollapsed && (
                                     <div className="ml-7 pl-2 border-l border-border/60 space-y-1 mt-1 relative">
->>>>>>> db8e10dbe1e7ca645e3bc9e993a7db8214bb4381
                                         {item.subItems
                                             .filter(sub => !sub.roles || sub.roles.includes(user?.role))
                                             .map((sub) => (
@@ -262,11 +232,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                     to={sub.path}
                                                     onClick={() => setMobileOpen(false)}
                                                     className={({ isActive: isSubActive }) =>
-<<<<<<< HEAD
-                                                        `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 ${isSubActive
-=======
                                                         `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
->>>>>>> db8e10dbe1e7ca645e3bc9e993a7db8214bb4381
                                                             ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
                                                             : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
                                                         }`
