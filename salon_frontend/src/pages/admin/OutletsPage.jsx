@@ -12,107 +12,38 @@ import {
     Filter,
     Ban,
     ChevronRight,
-    SearchX
+    SearchX,
+    Trash2
 } from 'lucide-react';
-import api from '../../services/api';
-
-const MOCK_OUTLETS = [
-    {
-        _id: 'mock-1',
-        name: 'Grace & Glamour - Downtown',
-        city: 'Mumbai',
-        address: '123, Marine Drive, South Mumbai',
-        staffCount: 15,
-        status: 'active',
-        phone: '+91 98765 43210',
-        email: 'downtown@graceglamour.com'
-    },
-    {
-        _id: 'mock-2',
-        name: 'The Royal Salon - Bandra',
-        city: 'Mumbai',
-        address: 'B-42, Pali Hill, Bandra West',
-        staffCount: 8,
-        status: 'active',
-        phone: '+91 98765 43211',
-        email: 'bandra@royalsalon.com'
-    },
-    {
-        _id: 'mock-3',
-        name: 'Elegance Spa & Unisex Salon',
-        city: 'Pune',
-        address: 'Koregaon Park, Lane 7, Pune',
-        staffCount: 12,
-        status: 'inactive',
-        phone: '+91 98765 43212',
-        email: 'pune@elegance.com'
-    }
-];
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function OutletsPage() {
     const navigate = useNavigate();
-    const [outlets, setOutlets] = useState([]);
-    const [filteredOutlets, setFilteredOutlets] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
+    const { outlets, deleteOutlet, toggleOutletStatus } = useBusiness();
+    const [search, setSearch] = useState('');
+    const [cityFilter, setCityFilter] = useState('all');
+    const [filteredOutlets, setFilteredOutlets] = useState(outlets);
 
-    const fetchOutlets = async () => {
-        try {
-            setLoading(true);
-            const { data } = await api.get('/outlets');
-            const list = data?.data?.results || data?.results || data?.data || data || [];
-
-            let finalData = Array.isArray(list) ? list : [];
-
-            // If API returns no data, use mock data for demonstration
-            if (finalData.length === 0) {
-                finalData = MOCK_OUTLETS;
-            } else {
-                finalData = finalData.map(o => ({
-                    ...o,
-                    staffCount: o.staffCount || Math.floor(Math.random() * 10) + 2
-                }));
-            }
-
-            setOutlets(finalData);
-            setFilteredOutlets(finalData);
-        }
-        catch (err) {
-            console.error('Failed to fetch outlets, using mock data:', err);
-            setOutlets(MOCK_OUTLETS);
-            setFilteredOutlets(MOCK_OUTLETS);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => { fetchOutlets(); }, []);
+    // Get unique cities for filter
+    const cities = ['all', ...new Set(outlets.map(o => o.city))];
 
     useEffect(() => {
         let result = outlets;
-
-        if (searchTerm) {
+        if (search) {
             result = result.filter(o =>
-                o.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (o.city && o.city.toLowerCase().includes(searchTerm.toLowerCase()))
+                o.name.toLowerCase().includes(search.toLowerCase()) ||
+                o.city.toLowerCase().includes(search.toLowerCase())
             );
         }
-
-        if (statusFilter !== 'all') {
-            result = result.filter(o => o.status === statusFilter);
+        if (cityFilter !== 'all') {
+            result = result.filter(o => o.city === cityFilter);
         }
-
         setFilteredOutlets(result);
-    }, [searchTerm, statusFilter, outlets]);
+    }, [search, cityFilter, outlets]);
 
-    const handleToggleStatus = async (id, currentStatus) => {
-        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-        try {
-            await api.patch(`/outlets/${id}`, { status: newStatus });
-            fetchOutlets();
-        } catch {
-            alert('Failed to update status');
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this outlet?')) {
+            deleteOutlet(id);
         }
     };
 
@@ -121,155 +52,121 @@ export default function OutletsPage() {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight">Outlets</h1>
-                    <p className="text-sm text-text-secondary mt-1">Manage your salon business locations.</p>
+                    <h1 className="text-2xl font-bold text-text uppercase">Business Units</h1>
+                    <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Control your salon network from one place</p>
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="btn-salon inline-flex items-center gap-2"
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-95"
                 >
-                    <Plus className="w-4 h-4" /> Add Outlet
+                    <Plus className="w-4 h-4" /> Expand Network
                 </button>
             </div>
 
-            {/* Filters Section */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white p-4 rounded-xl border border-border shadow-sm hover-shine">
-                <div className="relative w-full sm:w-auto">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            {/* Quick Stats & Search */}
+            <div className="bg-white p-4 rounded-3xl border border-border shadow-sm flex flex-col md:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
-                        placeholder="Search outlet..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all input-expand"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Scan for unit name or city..."
+                        className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Filter className="w-4 h-4 text-text-secondary" />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="w-full sm:w-40 px-3 py-2 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                    >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                <div className="flex gap-3">
+                    <div className="relative group">
+                        <Filter className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                        <select
+                            value={cityFilter}
+                            onChange={(e) => setCityFilter(e.target.value)}
+                            className="text-xs font-bold uppercase tracking-widest bg-slate-50 border border-border rounded-2xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none min-w-[140px]"
+                        >
+                            {cities.map(city => (
+                                <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            {/* Table Section */}
-            <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden card-interactive">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-surface border-b border-border">
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Outlet Name</th>
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">City</th>
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Address</th>
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Staff</th>
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border">
-                            {loading ? (
-                                Array(5).fill(0).map((_, i) => (
-                                    <tr key={i}>
-                                        <td colSpan="6" className="px-6 py-4">
-                                            <div className="h-10 bg-surface rounded-lg relative overflow-hidden">
-                                                <div className="absolute inset-0 animate-shimmer"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : filteredOutlets.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center">
-                                        <div className="flex flex-col items-center justify-center">
-                                            <SearchX className="w-12 h-12 text-text-muted mb-4" />
-                                            <h3 className="text-lg font-semibold text-text">No outlets found</h3>
-                                            <p className="text-text-secondary text-sm max-w-xs mx-auto mt-1">
-                                                {searchTerm || statusFilter !== 'all'
-                                                    ? "We couldn't find any outlets matching your filters."
-                                                    : "Create your first outlet to start managing your salon locations."}
-                                            </p>
-                                            {!searchTerm && statusFilter === 'all' && (
-                                                <button
-                                                    onClick={() => navigate('/admin/outlets/new')}
-                                                    className="mt-6 btn-primary"
-                                                >
-                                                    Create First Outlet
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredOutlets.map((o, index) => (
-                                    <tr
-                                        key={o._id}
-                                        style={{ '--delay': `${index * 80}ms` }}
-                                        className="hover:bg-surface/50 active:bg-surface transition-all group cursor-default animate-stagger"
+            {/* Outlets Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredOutlets.length === 0 ? (
+                    <div className="col-span-full py-20 text-center">
+                        <div className="w-16 h-16 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-4 opacity-50">
+                            <SearchX className="w-8 h-8 text-text-muted" />
+                        </div>
+                        <h3 className="text-lg font-bold text-text">No Units Found</h3>
+                        <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-40">Try adjusting your scan parameters</p>
+                    </div>
+                ) : (
+                    filteredOutlets.map((outlet, index) => (
+                        <div
+                            key={outlet._id}
+                            className="group bg-white rounded-[32px] border border-border p-6 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 relative overflow-hidden animate-in fade-in slide-in-from-bottom-4"
+                            style={{ animationDelay: `${index * 100}ms` }}
+                        >
+                            {/* Decorative Sparkle */}
+                            <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
+                                    <Store className="w-6 h-6" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
+                                        className="p-2.5 rounded-xl bg-slate-50 border border-border text-text-muted hover:text-primary hover:bg-white hover:shadow-md transition-all"
                                     >
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                                                    <Store className="w-4 h-4 text-primary" />
-                                                </div>
-                                                <span className="font-semibold text-text">{o.name}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-text-secondary">{o.city || 'N/A'}</td>
-                                        <td className="px-6 py-4 text-sm text-text-muted truncate max-w-[200px]">{o.address}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">
-                                                <Users className="w-3 h-3" /> {o.staffCount}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${o.status === 'active'
-                                                ? 'bg-green-50 text-green-600'
-                                                : 'bg-gray-100 text-gray-500'
-                                                }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${o.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                                <span className="capitalize">{o.status}</span>
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => navigate(`/admin/outlets/${o._id}`)}
-                                                    className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all tooltip"
-                                                    title="View Details"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => navigate(`/admin/outlets/edit/${o._id}`)}
-                                                    className="p-2 rounded-lg text-text-muted hover:text-text hover:bg-surface-alt transition-all"
-                                                    title="Edit"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleToggleStatus(o._id, o.status)}
-                                                    className={`p-2 rounded-lg transition-all ${o.status === 'active'
-                                                        ? 'text-text-muted hover:text-error hover:bg-error/5'
-                                                        : 'text-text-muted hover:text-success hover:bg-success/5'
-                                                        }`}
-                                                    title={o.status === 'active' ? 'Disable' : 'Enable'}
-                                                >
-                                                    <Ban className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                        <Edit className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(outlet._id)}
+                                        className="p-2.5 rounded-xl bg-slate-50 border border-border text-text-muted hover:text-rose-600 hover:bg-white hover:shadow-md transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1 mb-6">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-text group-hover:text-primary transition-colors uppercase tracking-tight leading-tight">
+                                        {outlet.name}
+                                    </h3>
+                                    <span className={`w-2 h-2 rounded-full ${outlet.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-text-muted uppercase tracking-widest opacity-60">
+                                    <MapPin className="w-3 h-3" />
+                                    {outlet.city}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <div className="bg-slate-50 rounded-2xl p-3 border border-border/50">
+                                    <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 opacity-50">Personnel</div>
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-sm font-bold text-text">{outlet.staffCount} Staff</span>
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 rounded-2xl p-3 border border-border/50">
+                                    <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1 opacity-50">Pulse</div>
+                                    <div className="text-sm font-bold text-emerald-600 uppercase">High</div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => navigate(`/admin/outlets/${outlet._id}`)}
+                                className="w-full py-3.5 rounded-2xl border border-primary/20 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
+                            >
+                                Enter Unit Dashboard <ChevronRight className="w-3 h-3" />
+                            </button>
+                        </div>
+                    ))
+                )}
             </div>
         </div>
     );

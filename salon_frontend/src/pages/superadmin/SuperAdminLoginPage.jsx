@@ -155,6 +155,24 @@ export default function SuperAdminLoginPage() {
                                         'Secure Login'
                                     )}
                                 </button>
+
+                                {/* Demo Creds Hint */}
+                                <div className="mt-8 text-center bg-primary/5 rounded-2xl p-4 border border-primary/10">
+                                    <p className="text-[9px] font-black text-primary uppercase tracking-widest mb-1.5 flex items-center justify-center gap-1.5">
+                                        <Shield className="w-3 h-3" /> Demo Credentials
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm({ email: 'superadmin@salon.com', password: 'password' })}
+                                        className="text-[11px] font-bold text-primary hover:underline"
+                                    >
+                                        superadmin@salon.com
+                                    </button>
+                                    <p className="mt-2 text-[9px] text-primary/40 font-bold italic">
+                                        * Use any password. Click to auto-fill.
+                                    </p>
+                                </div>
+
                                 <p className="mt-8 text-[10px] font-bold text-text-muted/40 uppercase tracking-[0.2em]">
                                     Platform Administration Access Only
                                 </p>

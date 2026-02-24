@@ -124,7 +124,7 @@ export default function AppLoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col max-w-lg mx-auto">
+        <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto transition-colors duration-300">
             {/* Brand Hero */}
             <div className="relative bg-gradient-to-br from-primary via-primary-dark to-primary overflow-hidden pt-16 pb-12 px-6">
                 <div className="absolute inset-0 opacity-10">
@@ -138,7 +138,7 @@ export default function AppLoginPage() {
                     transition={{ duration: 0.5 }}
                     className="relative"
                 >
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-5">
+                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-5 border border-white/20">
                         <Sparkles className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-extrabold text-white leading-tight">
@@ -181,7 +181,7 @@ export default function AppLoginPage() {
                                     value={phone}
                                     onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); }}
                                     placeholder="98765 43210"
-                                    className="w-full pl-16 pr-4 py-4 rounded-2xl border-2 border-border bg-surface text-lg font-semibold tracking-wider focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all"
+                                    className="w-full pl-16 pr-4 py-4 rounded-2xl border-2 border-border bg-surface text-lg font-semibold tracking-wider focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all dark:bg-surface-alt dark:border-border/40 text-text"
                                     autoFocus
                                 />
                             </div>
@@ -322,7 +322,7 @@ export default function AppLoginPage() {
                                                 onClick={() => setGender(g)}
                                                 className={`flex-1 py-3 rounded-xl border-2 text-sm font-bold capitalize transition-all ${gender === g
                                                     ? 'border-primary bg-primary/5 text-primary'
-                                                    : 'border-border bg-white text-text-secondary hover:border-primary/30'
+                                                    : 'border-border bg-surface text-text-secondary hover:border-primary/30 dark:bg-surface-alt'
                                                     }`}
                                             >
                                                 {g === 'female' ? '👩 ' : g === 'male' ? '👨 ' : '🧑 '}

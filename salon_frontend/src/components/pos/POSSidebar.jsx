@@ -35,11 +35,11 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
     };
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-white relative">
+        <div className="flex flex-col h-full bg-background transition-colors duration-300 relative">
             {/* Desktop Toggle */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden md:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-border items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
+                className="hidden md:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-surface border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
             >
                 {collapsed ? (
                     <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
@@ -49,18 +49,18 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
             </button>
 
             {/* Logo / Header */}
-            <div className={`flex items-center h-16 border-b border-border transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
+            <div className={`flex items-center h-16 border-b border-border/40 transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
                 {collapsed ? (
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-sm">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20">
                         <Zap className="w-5 h-5 text-white" />
                     </div>
                 ) : (
                     <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-sm">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-lg shadow-primary/20">
                             <Zap className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-bold text-text leading-none">POS Terminal</h2>
+                            <h2 className="text-sm font-black text-text leading-none uppercase tracking-tight">POS Terminal</h2>
                             <p className="text-[10px] text-text-muted mt-0.5">Quick Billing</p>
                         </div>
                     </div>
@@ -68,7 +68,7 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
                 {/* Mobile Close */}
                 <button
                     onClick={() => setMobileOpen(false)}
-                    className="md:hidden w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface transition-colors"
+                    className="md:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-surface transition-colors"
                 >
                     <X className="w-4 h-4 text-text-muted" />
                 </button>
@@ -83,12 +83,12 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
                             key={item.path}
                             to={item.path}
                             onClick={() => setMobileOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group ${active
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all group ${active
                                 ? item.accent
-                                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                                    : 'bg-primary/5 text-primary'
+                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                    : 'bg-primary/10 text-primary'
                                 : item.accent
-                                    ? 'text-primary hover:bg-primary/5'
+                                    ? 'text-primary hover:bg-primary/10'
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
                                 } ${collapsed ? 'justify-center' : ''}`}
                             title={collapsed ? item.label : undefined}
@@ -104,10 +104,10 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
             </nav>
 
             {/* Footer */}
-            <div className={`border-t border-border p-2 ${collapsed ? 'flex justify-center' : ''}`}>
+            <div className={`border-t border-border/40 p-2 ${collapsed ? 'flex justify-center' : ''}`}>
                 <button
                     onClick={handleLogout}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-red-50 hover:text-red-600 transition-all w-full ${collapsed ? 'justify-center' : ''}`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all w-full ${collapsed ? 'justify-center' : ''}`}
                     title={collapsed ? 'Exit POS' : undefined}
                 >
                     <LogOut className="w-[18px] h-[18px]" />
@@ -121,7 +121,7 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
         <>
             {/* Desktop sidebar */}
             <aside
-                className={`hidden md:block fixed top-0 left-0 h-screen z-30 border-r border-border bg-white transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'
+                className={`hidden md:block fixed top-0 left-0 h-screen z-30 border-r border-border/40 bg-background transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60 shadow-2xl shadow-primary/5'
                     }`}
             >
                 {sidebarContent}
@@ -130,8 +130,8 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
             {/* Mobile sidebar overlay */}
             {mobileOpen && (
                 <div className="fixed inset-0 z-40 md:hidden">
-                    <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-                    <aside className="absolute left-0 top-0 h-full w-60 bg-white shadow-xl animate-in slide-in-from-left duration-200">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
+                    <aside className="absolute left-0 top-0 h-full w-64 bg-background shadow-2xl animate-in slide-in-from-left duration-200">
                         {sidebarContent}
                     </aside>
                 </div>

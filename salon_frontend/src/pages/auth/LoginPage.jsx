@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Phone, ArrowRight, Sparkles, Users, Smartphone } from 'lucide-react';
+import { Mail, Lock, Phone, ArrowRight, Sparkles, Users, Smartphone, AlertCircle } from 'lucide-react';
 import { useAuth, getRedirectPath } from '../../contexts/AuthContext';
 import Navbar from '../../components/landing/Navbar';
 
@@ -125,8 +125,8 @@ export default function LoginPage() {
                             <button
                                 onClick={() => switchMode('staff')}
                                 className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs tracking-[0.15em] uppercase transition-all duration-300 font-black ${mode === 'staff'
-                                        ? 'bg-transparent border border-white/80 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                                        : 'text-white/50 hover:text-white border border-transparent hover:border-white/30'
+                                    ? 'bg-transparent border border-white/80 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                                    : 'text-white/50 hover:text-white border border-transparent hover:border-white/30'
                                     }`}
                             >
                                 <Users className="w-3.5 h-3.5" /> STAFF
@@ -134,8 +134,8 @@ export default function LoginPage() {
                             <button
                                 onClick={() => switchMode('customer')}
                                 className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs tracking-[0.15em] uppercase transition-all duration-300 font-black ${mode === 'customer'
-                                        ? 'bg-transparent border border-white/80 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
-                                        : 'text-white/50 hover:text-white border border-transparent hover:border-white/30'
+                                    ? 'bg-transparent border border-white/80 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]'
+                                    : 'text-white/50 hover:text-white border border-transparent hover:border-white/30'
                                     }`}
                             >
                                 <Smartphone className="w-3.5 h-3.5" /> CUSTOMER
@@ -237,6 +237,79 @@ export default function LoginPage() {
                                     >
                                         {loading ? '...' : <><span>LOGIN</span><ArrowRight className="w-3.5 h-3.5" /></>}
                                     </button>
+                                </div>
+
+                                {/* Demo Credentials Info Box */}
+                                <div className="mt-8 bg-gray-50 rounded-3xl p-5 border border-primary/5">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Demo Credentials</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Admin / Owner</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'admin@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                admin@salon.com
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Manager</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'manager@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                manager@salon.com
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Receptionist</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'reception@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                reception@salon.com
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1 text-left">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Stylist</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'stylist@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                stylist@salon.com
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1 text-left border-t border-primary/5 pt-3">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Accountant</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'accounts@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                accounts@salon.com
+                                            </button>
+                                        </div>
+                                        <div className="space-y-1 text-left border-t border-primary/5 pt-3">
+                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">Inventory</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ email: 'inventory@salon.com', password: 'password' })}
+                                                className="text-[11px] font-bold text-primary hover:underline hover:text-primary-dark transition-colors"
+                                            >
+                                                inventory@salon.com
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p className="mt-4 text-[9px] text-gray-400 font-bold italic">
+                                        * Use any password. Click an email to auto-fill.
+                                    </p>
                                 </div>
                             </form>
                         )}

@@ -151,7 +151,7 @@ export default function AppBookingPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="bg-white rounded-2xl border border-border/60 p-4 w-full max-w-xs space-y-2"
+                    className="bg-surface rounded-2xl border border-border/60 p-4 w-full max-w-xs space-y-2"
                 >
                     <div className="flex justify-between text-sm">
                         <span className="text-text-muted">Date</span>
@@ -218,13 +218,12 @@ export default function AppBookingPage() {
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="space-y-4"
                     >
-                        <h2 className="text-lg font-extrabold text-text">Choose a Service</h2>
                         <input
                             type="text"
                             value={serviceSearch}
                             onChange={(e) => setServiceSearch(e.target.value)}
                             placeholder="Search services…"
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-white text-sm focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 transition-all"
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-sm focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 transition-all text-text"
                         />
                         <div className="space-y-2 max-h-[50vh] overflow-y-auto scrollbar-thin pr-1">
                             {filteredServices.map((svc) => (
@@ -234,7 +233,7 @@ export default function AppBookingPage() {
                                     onClick={() => { setSelectedService(svc); goTo(1); }}
                                     className={`w-full text-left p-3.5 rounded-xl border-2 transition-all ${selectedService?._id === svc._id
                                         ? 'border-primary bg-primary/5'
-                                        : 'border-border/60 bg-white hover:border-primary/20'
+                                        : 'border-border/60 bg-surface hover:border-primary/20'
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -278,10 +277,10 @@ export default function AppBookingPage() {
                                     disabled={!d.isOpen}
                                     onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
                                     className={`flex flex-col items-center py-2.5 px-3 rounded-xl min-w-[54px] text-center transition-all border-2 ${!d.isOpen
-                                        ? 'opacity-40 cursor-not-allowed border-transparent bg-surface'
+                                        ? 'opacity-40 cursor-not-allowed border-transparent bg-background/50'
                                         : selectedDate === d
                                             ? 'border-primary bg-primary/5'
-                                            : 'border-border/60 bg-white hover:border-primary/20'
+                                            : 'border-border/60 bg-surface hover:border-primary/20'
                                         }`}
                                 >
                                     <span className="text-[10px] font-bold text-text-muted uppercase">{d.label}</span>
@@ -307,10 +306,10 @@ export default function AppBookingPage() {
                                             disabled={!slot.available}
                                             onClick={() => setSelectedTime(slot.time)}
                                             className={`py-2.5 rounded-xl text-xs font-bold transition-all border-2 ${!slot.available
-                                                ? 'opacity-30 cursor-not-allowed bg-surface border-transparent text-text-muted line-through'
+                                                ? 'opacity-30 cursor-not-allowed bg-background border-transparent text-text-muted line-through'
                                                 : selectedTime === slot.time
                                                     ? 'border-primary bg-primary text-white shadow-sm'
-                                                    : 'border-border/60 bg-white text-text-secondary hover:border-primary/20'
+                                                    : 'border-border/60 bg-surface text-text-secondary hover:border-primary/20'
                                                 }`}
                                         >
                                             {slot.time}
@@ -352,7 +351,7 @@ export default function AppBookingPage() {
                                     onClick={() => setSelectedStaff(s)}
                                     className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border-2 transition-all ${selectedStaff?._id === s._id
                                         ? 'border-primary bg-primary/5'
-                                        : 'border-border/60 bg-white hover:border-primary/20'
+                                        : 'border-border/60 bg-surface hover:border-primary/20'
                                         }`}
                                 >
                                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shrink-0">
@@ -399,7 +398,7 @@ export default function AppBookingPage() {
                     >
                         <h2 className="text-lg font-extrabold text-text">Confirm Booking</h2>
 
-                        <div className="bg-white rounded-2xl border border-border/60 p-5 space-y-4">
+                        <div className="bg-surface rounded-2xl border border-border/60 p-5 space-y-4">
                             <div className="flex items-center gap-3 pb-3 border-b border-border/40">
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                                     <Sparkles className="w-6 h-6 text-primary" />

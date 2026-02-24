@@ -17,6 +17,8 @@ import {
 
 const statusColors = {
     upcoming: 'bg-blue-50 text-blue-600 border-blue-100',
+    confirmed: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    pending: 'bg-yellow-50 text-yellow-600 border-yellow-100',
     completed: 'bg-green-50 text-green-600 border-green-100',
     cancelled: 'bg-gray-100 text-gray-500 border-gray-200',
     'no-show': 'bg-red-50 text-red-600 border-red-100',
@@ -105,6 +107,8 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 block">Status</label>
                             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border font-bold text-xs uppercase tracking-widest ${statusColors[booking.status]}`}>
                                 {booking.status === 'upcoming' && <RotateCcw className="w-3.5 h-3.5" />}
+                                {booking.status === 'confirmed' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                {booking.status === 'pending' && <Clock className="w-3.5 h-3.5" />}
                                 {booking.status === 'completed' && <CheckCircle2 className="w-3.5 h-3.5" />}
                                 {booking.status === 'no-show' && <AlertCircle className="w-3.5 h-3.5" />}
                                 {booking.status === 'cancelled' && <XCircle className="w-3.5 h-3.5" />}
@@ -130,6 +134,14 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                         <section className="space-y-3">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Admin Actions</label>
                             <div className="grid grid-cols-2 gap-2">
+                                {(booking.status === 'upcoming' || booking.status === 'pending') && (
+                                    <button
+                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-50 border border-green-100 text-[11px] font-bold text-green-600 hover:bg-green-100 transition-all col-span-2"
+                                        onClick={() => onUpdateStatus?.(booking._id, 'confirmed')}
+                                    >
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> CONFIRM APPOINTMENT
+                                    </button>
+                                )}
                                 <button
                                     className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-[11px] font-bold text-text hover:bg-surface-alt transition-all"
                                     onClick={() => onReschedule?.(booking)}
@@ -190,7 +202,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                             </div>
                         </div>
                     ) : (
-                        <div className="p-4 rounded-2xl bg-white border border-border/50 text-sm text-text-secondary italic">
+                        <div className="p-4 rounded-2xl bg-white border border-border/50 text-sm text-text-secondary">
                             {notes || 'No internal notes added yet.'}
                         </div>
                     )}

@@ -33,7 +33,7 @@ export default function AppLoyaltyPage() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="bg-white rounded-xl border border-border/60 p-3.5 text-center"
+                    className="bg-surface rounded-xl border border-border/60 p-3.5 text-center"
                 >
                     <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Earn Rate</p>
                     <p className="text-lg font-extrabold text-emerald-600">{rules.earnRate}x</p>
@@ -44,7 +44,7 @@ export default function AppLoyaltyPage() {
                     initial={{ opacity: 0, x: 10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.25 }}
-                    className="bg-white rounded-xl border border-border/60 p-3.5 text-center"
+                    className="bg-surface rounded-xl border border-border/60 p-3.5 text-center"
                 >
                     <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-0.5">Redeem Value</p>
                     <p className="text-lg font-extrabold text-primary">₹{rules.redeemRate}</p>
@@ -57,7 +57,7 @@ export default function AppLoyaltyPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white rounded-xl border border-border/60 overflow-hidden"
+                className="bg-surface rounded-xl border border-border/60 overflow-hidden"
             >
                 <button
                     onClick={() => setShowHowItWorks(!showHowItWorks)}
@@ -80,7 +80,7 @@ export default function AppLoyaltyPage() {
                         >
                             <div className="px-4 pb-4 space-y-2.5">
                                 <div className="flex gap-3 items-start">
-                                    <span className="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 text-xs font-bold text-emerald-600">1</span>
+                                    <span className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 text-xs font-bold text-emerald-600 dark:text-emerald-400">1</span>
                                     <p className="text-xs text-text-secondary leading-relaxed">Earn <span className="font-bold">{rules.earnRate} point</span> for every ₹1 you spend on services</p>
                                 </div>
                                 <div className="flex gap-3 items-start">
@@ -88,7 +88,7 @@ export default function AppLoyaltyPage() {
                                     <p className="text-xs text-text-secondary leading-relaxed">Redeem points at <span className="font-bold">₹{rules.redeemRate}/point</span>. Minimum <span className="font-bold">{rules.minRedeemPoints} points</span> to redeem</p>
                                 </div>
                                 <div className="flex gap-3 items-start">
-                                    <span className="w-6 h-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0 text-xs font-bold text-amber-600">3</span>
+                                    <span className="w-6 h-6 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 text-xs font-bold text-amber-600 dark:text-amber-400">3</span>
                                     <p className="text-xs text-text-secondary leading-relaxed">Points expire after <span className="font-bold">{rules.expiryDays} days</span>. Max <span className="font-bold">{rules.maxEarnPerInvoice} points</span> per visit</p>
                                 </div>
                             </div>
@@ -110,9 +110,9 @@ export default function AppLoyaltyPage() {
                                 initial={{ opacity: 0, y: 8 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 + i * 0.06 }}
-                                className="bg-white rounded-xl border border-border/60 p-3.5 flex items-center gap-3"
+                                className="bg-surface rounded-xl border border-border/60 p-3.5 flex items-center gap-3"
                             >
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-emerald-50' : tx.type === 'REDEEM' ? 'bg-primary/10' : 'bg-gray-100'
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-emerald-500/10' : tx.type === 'REDEEM' ? 'bg-primary/10' : 'bg-surface-alt'
                                     }`}>
                                     {tx.type === 'EARN' ? (
                                         <TrendingUp className="w-5 h-5 text-emerald-500" />

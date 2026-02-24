@@ -34,61 +34,58 @@ export default function AppServicesPage() {
     };
 
     return (
-        <div className="space-y-4">
-            {/* Header */}
-            <div>
-                <h1 className="text-xl font-extrabold text-text">Our Services</h1>
-                <p className="text-xs text-text-muted mt-0.5">Choose from our premium collection</p>
+        <div className="space-y-7 pb-8">
+            {/* Header Area */}
+            <div className="pt-2">
+                <h1 className="text-2xl font-extrabold text-text tracking-tight">Services</h1>
+                <p className="text-xs text-text-muted mt-1 leading-relaxed">Experience premium grooming and care.</p>
             </div>
 
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search services…"
-                    className="w-full pl-10 pr-10 py-3 rounded-xl border border-border bg-white text-sm focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary/10 transition-all"
-                />
-                {searchQuery && (
-                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-surface flex items-center justify-center">
-                        <X className="w-3.5 h-3.5 text-text-muted" />
-                    </button>
-                )}
+            {/* Filter Group */}
+            <div className="space-y-4">
+                {/* Search */}
+                <div className="relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Look for a service..."
+                        className="w-full pl-11 pr-11 py-3.5 rounded-2xl border border-border/60 bg-surface shadow-sm text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/5 transition-all text-text"
+                    />
+                    {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-surface-alt flex items-center justify-center hover:bg-border/20 transition-colors">
+                            <X className="w-3.5 h-3.5 text-text-muted" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Categories */}
+                <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4">
+                    {SERVICE_CATEGORIES.map((cat) => (
+                        <motion.button
+                            key={cat}
+                            whileTap={{ scale: 0.94 }}
+                            onClick={() => setActiveCategory(cat)}
+                            className={`relative px-5 py-2.5 rounded-2xl text-[11px] font-bold whitespace-nowrap tracking-wide transition-all border ${activeCategory === cat
+                                ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                                : 'bg-surface border-border/60 text-text-secondary hover:border-primary/20'
+                                }`}
+                        >
+                            {cat}
+                        </motion.button>
+                    ))}
+                </div>
             </div>
 
-            {/* Category Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-none -mx-1 px-1">
-                {SERVICE_CATEGORIES.map((cat) => (
-                    <motion.button
-                        key={cat}
-                        whileTap={{ scale: 0.93 }}
-                        onClick={() => setActiveCategory(cat)}
-                        className={`relative px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${activeCategory === cat
-                            ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                            : 'bg-white border border-border text-text-secondary hover:border-primary/30'
-                            }`}
-                    >
-                        {cat}
-                        {activeCategory === cat && (
-                            <motion.div
-                                layoutId="serviceCategoryPill"
-                                className="absolute inset-0 bg-primary rounded-xl -z-10"
-                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                            />
-                        )}
-                    </motion.button>
-                ))}
-            </div>
-
-            {/* Results Count */}
-            <p className="text-[11px] text-text-muted font-medium">
-                {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''} found
-            </p>
-
-            {/* Service List */}
-            <div className="space-y-2.5">
+            {/* Service List Area */}
+            <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">Available Services</h3>
+                    <p className="text-[10px] text-text-muted font-bold">
+                        {filteredServices.length} ITEMS
+                    </p>
+                </div>
                 {filteredServices.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0 }}

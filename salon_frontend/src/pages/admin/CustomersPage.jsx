@@ -3,53 +3,58 @@ import {
     Users,
     UserPlus,
     Search,
-    Filter,
     Download,
     TrendingUp,
-    Clock,
     ShieldAlert,
     Star,
-    MoreHorizontal,
     ChevronRight,
-    MapPin,
-    Calendar,
-    DollarSign,
-    Tag
+    Tag,
+    Trash2,
+    DollarSign
 } from 'lucide-react';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
 import SegmentManager from '../../components/admin/customers/SegmentManager';
 import FeedbackList from '../../components/admin/customers/FeedbackList';
 import ReEngagementTool from '../../components/admin/customers/ReEngagementTool';
-const MOCK_CUSTOMERS = [
-    { _id: '1', name: 'Aryan Khan', phone: '+91 98765 43210', lastVisit: '2024-03-15', totalVisits: 12, spend: 15400, preferred: 'Haircut', tags: ['VIP'], status: 'Regular' },
-    { _id: '2', name: 'Ishita Sharma', phone: '+91 98765 43211', lastVisit: '2024-03-20', totalVisits: 5, spend: 8200, preferred: 'Manicure', tags: ['Regular'], status: 'Regular' },
-    { _id: '3', name: 'Rahul Verma', phone: '+91 98765 43212', lastVisit: '2024-02-10', totalVisits: 2, spend: 1200, preferred: 'Shave', tags: ['New'], status: 'Inactive' },
-    { _id: '4', name: 'Simran Jit', phone: '+91 98765 43213', lastVisit: '2024-03-21', totalVisits: 25, spend: 45000, preferred: 'Coloring', tags: ['VIP'], status: 'Regular' },
-    { _id: '5', name: 'Vikram Singh', phone: '+91 98765 43214', lastVisit: '2023-12-01', totalVisits: 1, spend: 500, preferred: 'Trim', tags: ['New'], status: 'Inactive' },
-];
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function CustomersPage({ tab = 'directory' }) {
-    const [searchTerm, setSearchTerm] = useState('');
+    const { customers, addCustomer, deleteCustomer } = useBusiness();
     const [selectedCustomer, setSelectedCustomer] = useState(null);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newCustomerForm, setNewCustomerForm] = useState({
+        name: '',
+        phone: '',
+        preferred: 'Haircut'
+    });
 
-    // Sync activeTab with tab prop
     const activeTab = tab;
+
+    const handleAddCustomer = (e) => {
+        e.preventDefault();
+        addCustomer(newCustomerForm);
+        setShowAddModal(false);
+        setNewCustomerForm({ name: '', phone: '', preferred: 'Haircut' });
+    };
 
     return (
         <div className="space-y-6 animate-reveal">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight">Customer CRM</h1>
-                    <p className="text-sm text-text-secondary mt-1 font-medium">Manage leads, track loyalty, and improve retention.</p>
+                    <h1 className="text-2xl font-bold text-text uppercase">Customer CRM</h1>
+                    <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:bg-secondary transition-all">
+                    <button className="flex items-center gap-2 bg-white border border-border px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:bg-slate-50 transition-all">
                         <Download className="w-4 h-4" />
-                        Export Data
+                        Export
                     </button>
-                    <button className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active">
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-95"
+                    >
                         <UserPlus className="w-4 h-4" />
                         Add Customer
                     </button>
@@ -58,15 +63,21 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard title="Total Customers" value={1250} icon={Users} color="blue" trend="+12% this month" />
-                <KPICard title="Active Segments" value={8} icon={Tag} color="purple" trend="2 new rules" />
-                <KPICard title="Average Spend" value="₹1,250" icon={TrendingUp} color="green" trend="+5% increase" />
-                <KPICard title="At Risk" value={42} icon={ShieldAlert} color="red" trend="Needs attention" />
+                <KPICard title="Total Base" value={customers.length} icon={Users} color="blue" trend="+12%" />
+                <KPICard title="VIP Elite" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="Stable" />
+                <KPICard title="Gross Rev" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="Total" />
+                <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="At Risk" />
             </div>
 
             {/* Content Container */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden min-h-[600px]">
-                {activeTab === 'directory' && <CustomerDirectory onCustomerClick={setSelectedCustomer} />}
+            <div className="bg-white rounded-[32px] border border-border shadow-sm overflow-hidden min-h-[600px]">
+                {activeTab === 'directory' && (
+                    <CustomerDirectory
+                        customers={customers}
+                        onCustomerClick={setSelectedCustomer}
+                        onDelete={deleteCustomer}
+                    />
+                )}
                 {activeTab === 'segments' && <SegmentManager />}
                 {activeTab === 'feedback' && <FeedbackList />}
                 {activeTab === 'reengage' && <ReEngagementTool />}
@@ -78,28 +89,82 @@ export default function CustomersPage({ tab = 'directory' }) {
                 customer={selectedCustomer}
                 onClose={() => setSelectedCustomer(null)}
             />
+
+            {/* Add Customer Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white rounded-[40px] w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center mb-8">
+                            <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                                <UserPlus className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-text uppercase">New Customer</h2>
+                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] opacity-40 mt-1">CRM Onboarding Protocol</p>
+                        </div>
+
+                        <form onSubmit={handleAddCustomer} className="space-y-5">
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Full Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={newCustomerForm.name}
+                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={newCustomerForm.phone}
+                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Preferred Service</label>
+                                    <input
+                                        type="text"
+                                        value={newCustomerForm.preferred}
+                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, preferred: e.target.value })}
+                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 pt-8">
+                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-3xl text-xs font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-slate-50">Abort</button>
+                                <button type="submit" className="flex-1 btn-primary py-4 rounded-3xl shadow-xl shadow-primary/20 text-xs font-bold uppercase tracking-[0.2em]">Induct</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
 
 function KPICard({ title, value, icon: Icon, color, trend }) {
     const colors = {
-        blue: 'bg-primary/5 text-primary',
-        purple: 'bg-purple-50 text-purple-600',
-        green: 'bg-green-50 text-green-600',
-        red: 'bg-red-50 text-red-600'
+        blue: 'bg-primary/5 text-primary border-primary/10',
+        purple: 'bg-purple-50 text-purple-600 border-purple-100',
+        green: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+        red: 'bg-rose-50 text-rose-600 border-rose-100'
     };
 
     return (
-        <div className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group">
+        <div className="bg-white p-5 rounded-3xl border border-border shadow-sm hover:shadow-md transition-all group border-b-4 hover:border-b-primary">
             <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-xl ${colors[color]} group-hover:scale-110 transition-transform`}>
+                <div className={`p-3 rounded-2xl border ${colors[color]} group-hover:scale-110 transition-transform`}>
                     <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[11px] font-bold text-gray-400 capitalize">{trend}</span>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
             </div>
             <div className="space-y-1">
-                <h3 className="text-text-secondary text-sm font-medium">{title}</h3>
+                <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">{title}</h3>
                 <div className="text-2xl font-bold text-text">
                     {typeof value === 'number' ? (
                         <AnimatedCounter value={value} />
@@ -110,111 +175,126 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
     );
 }
 
-function CustomerDirectory({ onCustomerClick }) {
+function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('All');
+
+    const filtered = customers.filter(c => {
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.phone.includes(searchTerm);
+        const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
+        return matchesSearch && matchesStatus;
+    });
+
     return (
         <div className="p-8 flex flex-col h-full gap-8 slide-right overflow-y-auto no-scrollbar">
             {/* Filters Bar */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="relative group">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                <div className="relative group lg:col-span-2">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search name or phone..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                        placeholder="Search Identity (Name or Phone)..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
                 </div>
                 <div className="relative">
-                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
-                        <option>Current Outlet</option>
-                        <option>All Outlets</option>
+                    <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter"
+                    >
+                        <option value="All">All Tiers</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
                 </div>
                 <div className="relative">
-                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
-                        <option>Any Last Visit</option>
-                        <option>7 Days Inactive</option>
-                        <option>30 Days Inactive</option>
-                        <option>60+ Days Inactive</option>
-                    </select>
-                </div>
-                <div className="relative">
-                    <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
-                        <option>Any Spending</option>
-                        <option>₹0 - ₹5k</option>
-                        <option>₹5k - ₹20k</option>
-                        <option>₹20k+ High Spender</option>
+                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <select className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter">
+                        <option>Any Spend</option>
+                        <option>High Value</option>
+                        <option>Mid Range</option>
+                        <option>Low Value</option>
                     </select>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="flex-1 border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="flex-1 border border-border rounded-[32px] overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-surface border-b border-border">
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Customer Name</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Phone</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Last Visit Date</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-center">Total Visits</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Lifetime Spend</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Preferred Services</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider">Tags</th>
-                            <th className="px-6 py-4 text-xs font-bold text-text-secondary uppercase tracking-wider text-right">Actions</th>
+                        <tr className="bg-slate-50 border-b border-border">
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Customer Matrix</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">History</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Finance</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Tiers</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right pr-8">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border bg-white text-sm">
-                        {MOCK_CUSTOMERS.map((customer) => (
+                        {filtered.map((customer, index) => (
                             <tr
                                 key={customer._id}
+                                className="hover:bg-slate-50/50 transition-colors group cursor-pointer border-transparent animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                style={{ animationDelay: `${index * 50}ms` }}
                                 onClick={() => onCustomerClick(customer)}
-                                className="hover:bg-surface/50 transition-colors group cursor-pointer border-transparent"
                             >
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-xs group-hover:scale-105 transition-transform">
+                                <td className="px-6 py-5 pl-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs group-hover:scale-110 transition-transform">
                                             {customer.name.charAt(0)}
                                         </div>
-                                        <span className="font-bold text-text group-hover:text-primary transition-colors tracking-tight text-sm">{customer.name}</span>
+                                        <div>
+                                            <div className="font-bold text-text group-hover:text-primary transition-colors tracking-tight text-sm">{customer.name}</div>
+                                            <div className="text-[10px] text-text-muted font-bold tracking-widest">{customer.phone}</div>
+                                        </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className="text-[11px] text-text-secondary font-medium tracking-wider">{customer.phone}</span>
+                                <td className="px-6 py-5">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-text uppercase">Last Visit</span>
+                                        <span className="text-xs font-bold text-text-secondary">{new Date(customer.lastVisit).toLocaleDateString()}</span>
+                                    </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                    <span className="font-medium text-text-secondary">{new Date(customer.lastVisit).toLocaleDateString()}</span>
+                                <td className="px-6 py-5">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Gross Yield</span>
+                                        <span className="text-sm font-bold text-text">₹{customer.spend.toLocaleString()}</span>
+                                    </div>
                                 </td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className="text-secondary-foreground font-bold">{customer.totalVisits}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className="font-bold text-text">₹{customer.spend.toLocaleString()}</span>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className="text-[10px] text-primary font-bold uppercase tracking-widest opacity-80">{customer.preferred}</span>
-                                </td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-5">
                                     <div className="flex flex-wrap gap-1.5">
                                         {customer.tags.map((tag, i) => (
-                                            <span key={i} className="px-2 py-0.5 bg-surface text-text-secondary text-[9px] font-bold rounded-md uppercase tracking-wider border border-border">
+                                            <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-colors ${tag === 'VIP' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-text-muted border-slate-200'}`}>
                                                 {tag}
                                             </span>
                                         ))}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onCustomerClick(customer);
-                                        }}
-                                        className="flex items-center gap-1.5 ml-auto px-3 py-1.5 rounded-lg text-xs font-bold text-primary hover:bg-primary/10 transition-all border border-transparent hover:border-primary/20"
-                                    >
-                                        <span>View Profile</span>
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </button>
+                                <td className="px-6 py-5 text-right pr-8">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onCustomerClick(customer);
+                                            }}
+                                            className="p-2.5 rounded-xl text-text-muted hover:text-primary hover:bg-white hover:shadow-md border border-transparent hover:border-border transition-all"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(customer._id);
+                                            }}
+                                            className="p-2.5 rounded-xl text-text-muted hover:text-rose-500 hover:bg-white hover:shadow-md border border-transparent hover:border-border transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -222,12 +302,12 @@ function CustomerDirectory({ onCustomerClick }) {
                 </table>
             </div>
 
-            {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-3.5 bg-surface border border-border rounded-xl text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                <span>Showing 5 of 1,250 Elite Customers</span>
-                <div className="flex gap-4">
+            {/* Pagination Footer */}
+            <div className="flex items-center justify-between px-8 py-5 bg-slate-50/50 border border-border rounded-[24px] text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                <span>Displaying {filtered.length} Elite Customer Records</span>
+                <div className="flex gap-6">
                     <button className="hover:text-primary transition-colors disabled:opacity-30" disabled>Previous Page</button>
-                    <button className="hover:text-primary transition-colors">Next Page</button>
+                    <button className="hover:text-primary transition-colors">Next Analytics</button>
                 </div>
             </div>
         </div>

@@ -31,7 +31,8 @@ import {
     Wallet,
     ClipboardList,
     Lock,
-    DollarSign
+    DollarSign,
+    Box
 } from 'lucide-react';
 
 const menuItems = [
@@ -43,6 +44,9 @@ const menuItems = [
         subItems: [
             { label: 'Outlets', icon: Store, path: '/admin/outlets' },
             { label: 'Staff', icon: UserCog, path: '/admin/staff' },
+            { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
+            { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
+            { label: 'Service Settings', icon: Settings, path: '/admin/services/settings' },
         ]
     },
     {
@@ -80,6 +84,7 @@ const menuItems = [
         icon: Package,
         path: '/admin/inventory',
         subItems: [
+            { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
             { label: 'Stock Overview', icon: LayoutDashboard, path: '/admin/inventory/overview' },
             { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
             { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
@@ -100,7 +105,18 @@ const menuItems = [
             { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },
         ]
     },
-    { label: 'HR', icon: Briefcase, path: '/admin/hr' },
+    {
+        label: 'HR',
+        icon: Briefcase,
+        path: '/admin/hr',
+        subItems: [
+            { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
+            { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
+            { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
+            { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
+            { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
+        ]
+    },
     {
         label: 'Settings',
         icon: Settings,
@@ -114,7 +130,7 @@ const menuItems = [
 ];
 
 export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHovered, mobileOpen, setMobileOpen }) {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
 
@@ -145,23 +161,23 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     };
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-slate-50/50">
+        <div className="flex flex-col h-full bg-background transition-colors duration-300">
             {/* Logo */}
             <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
                 <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-sm">
-                        <ScissorsIcon className="w-4 h-4 text-white" />
+                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+                        <ScissorsIcon className="w-5 h-5 text-white" />
                     </div>
                     {!effectiveCollapsed && (
-                        <span className="text-lg font-bold text-text whitespace-nowrap tracking-tight">
-                            Salon<span className="text-primary font-extrabold">CRM</span>
+                        <span className="text-lg font-black text-text whitespace-nowrap tracking-tight">
+                            SALON<span className="text-primary">CRM</span>
                         </span>
                     )}
                 </div>
                 {/* Desktop collapse */}
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="hidden lg:flex w-7 h-7 rounded-md items-center justify-center hover:bg-surface-alt transition-colors"
+                    className="hidden lg:flex w-8 h-8 rounded-xl bg-surface border border-border/40 items-center justify-center hover:bg-surface-alt transition-colors"
                 >
                     {collapsed ? (
                         <ChevronRight className="w-4 h-4 text-text-muted" />
@@ -181,6 +197,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             {/* Nav Links */}
             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
+                    if (item.roles && !item.roles.includes(user?.role)) return null;
+
                     const hasSubItems = item.subItems && item.subItems.length > 0;
                     const isExpanded = expandedItem === item.label && !effectiveCollapsed;
                     const active = isActive(item.path);
@@ -190,9 +208,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             <div key={item.label} className="space-y-1">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group ${active
-                                        ? 'bg-primary/5 text-primary'
-                                        : 'text-text-secondary hover:bg-white hover:shadow-sm hover:text-text'
+                                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group ${active
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'text-text-secondary hover:bg-surface hover:text-text'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -208,26 +226,28 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
                                 {isExpanded && !effectiveCollapsed && (
                                     <div className="ml-7 pl-2 border-l border-border/60 space-y-1 mt-1 relative">
-                                        {item.subItems.map((sub) => (
-                                            <NavLink
-                                                key={sub.path}
-                                                to={sub.path}
-                                                onClick={() => setMobileOpen(false)}
-                                                className={({ isActive: isSubActive }) =>
-                                                    `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
-                                                        ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
-                                                        : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
-                                                    }`
-                                                }
-                                            >
-                                                <span>{sub.label}</span>
-                                                {sub.badge && (
-                                                    <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold ${sub.badge.color}`}>
-                                                        {sub.badge.count}
-                                                    </span>
-                                                )}
-                                            </NavLink>
-                                        ))}
+                                        {item.subItems
+                                            .filter(sub => !sub.roles || sub.roles.includes(user?.role))
+                                            .map((sub) => (
+                                                <NavLink
+                                                    key={sub.path}
+                                                    to={sub.path}
+                                                    onClick={() => setMobileOpen(false)}
+                                                    className={({ isActive: isSubActive }) =>
+                                                        `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
+                                                            ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
+                                                            : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
+                                                        }`
+                                                    }
+                                                >
+                                                    <span>{sub.label}</span>
+                                                    {sub.badge && (
+                                                        <span className={`px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold ${sub.badge.color}`}>
+                                                            {sub.badge.count}
+                                                        </span>
+                                                    )}
+                                                </NavLink>
+                                            ))}
                                     </div>
                                 )}
                             </div>
@@ -241,9 +261,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             end={item.path === '/admin'}
                             onClick={() => setMobileOpen(false)}
                             className={({ isActive: isItemActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group ${isItemActive
-                                    ? 'bg-white text-primary shadow-sm border border-border/50'
-                                    : 'text-text-secondary hover:bg-white hover:text-text hover:shadow-sm'
+                                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group ${isItemActive
+                                    ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
+                                    : 'text-text-secondary hover:bg-surface hover:text-text'
                                 }`
                             }
                         >
@@ -275,7 +295,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             <aside
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                className={`hidden lg:block fixed top-0 left-0 h-screen bg-white border-r border-border z-40 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-60 shadow-xl'
+                className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border/40 z-40 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-64 shadow-2xl shadow-primary/5'
                     }`}
             >
                 {sidebarContent}
@@ -284,14 +304,14 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             {/* Mobile Overlay */}
             {mobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity"
+                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Mobile Sidebar */}
             <aside
-                className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-white border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+                className={`lg:hidden fixed top-0 left-0 h-screen w-64 bg-background border-r border-border/40 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
                     }`}
             >
                 {sidebarContent}
@@ -299,4 +319,3 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
         </>
     );
 }
-

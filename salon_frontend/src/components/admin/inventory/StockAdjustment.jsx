@@ -64,7 +64,7 @@ function AdjustmentHistory() {
                                 <span className="font-bold text-text text-sm">{entry.product}</span>
                             </td>
                             <td className="px-8 py-5">
-                                <span className="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-100 italic">
+                                <span className="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-100">
                                     {entry.quantity} UNITS
                                 </span>
                             </td>
@@ -101,7 +101,7 @@ function AdjustmentForm({ onCancel }) {
                         <AlertOctagon className="w-5 h-5" />
                         <h3 className="text-lg font-bold tracking-tight">Manual Stock Adjustment</h3>
                     </div>
-                    <p className="text-sm text-text-secondary font-medium italic">Warning: Direct adjustments are audited. Use for damage, expiry, or internal use only.</p>
+                    <p className="text-sm text-text-secondary font-medium">Warning: Direct adjustments are audited. Use for damage, expiry, or internal use only.</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">

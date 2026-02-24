@@ -13,7 +13,7 @@ export default function AppLayout() {
     const location = useLocation();
 
     return (
-        <div className="min-h-screen bg-surface max-w-lg mx-auto relative">
+        <div className="min-h-screen bg-background max-w-lg mx-auto relative transition-colors duration-300">
             <AppHeader />
 
             <AnimatePresence mode="wait">

@@ -16,10 +16,33 @@ import {
     ShieldAlert
 } from 'lucide-react';
 
+import { useBusiness } from '../../contexts/BusinessContext';
+
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
+    const { updateCustomer } = useBusiness();
+    const [activeTab, setActiveTab] = useState('history');
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState(null);
+
+    // Initialize edit form when customer changes or editing starts
+    React.useEffect(() => {
+        if (customer) {
+            setEditForm({
+                name: customer.name,
+                phone: customer.phone,
+                preferred: customer.preferred,
+                status: customer.status,
+                tags: customer.tags
+            });
+        }
+    }, [customer, isEditing]);
+
     if (!isOpen || !customer) return null;
 
-    const [activeTab, setActiveTab] = useState('history');
+    const handleSave = () => {
+        updateCustomer(customer._id, editForm);
+        setIsEditing(false);
+    };
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -38,27 +61,63 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                             {customer.name.charAt(0)}
                         </div>
                         <div className="space-y-1">
-                            <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-bold text-text tracking-tight">{customer.name}</h2>
-                                <div className="flex gap-1.5 font-bold uppercase tracking-wider text-[9px]">
-                                    {customer.tags.map((tag, i) => (
-                                        <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/10 rounded-md">
-                                            {tag}
-                                        </span>
-                                    ))}
+                            {isEditing ? (
+                                <div className="space-y-2">
+                                    <input
+                                        type="text"
+                                        value={editForm?.name}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                        className="text-xl font-bold text-text bg-white border border-border px-3 py-1 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
+                                    <input
+                                        type="tel"
+                                        value={editForm?.phone}
+                                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                        className="block font-semibold text-text-muted text-sm bg-white border border-border px-3 py-1 rounded-lg outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
                                 </div>
-                            </div>
-                            <p className="font-semibold text-text-muted text-sm flex items-center gap-2">
-                                {customer.phone} <span className="text-border">|</span> {customer.status} Member
-                            </p>
+                            ) : (
+                                <>
+                                    <div className="flex items-center gap-3">
+                                        <h2 className="text-xl font-bold text-text tracking-tight">{customer.name}</h2>
+                                        <div className="flex gap-1.5 font-bold uppercase tracking-wider text-[9px]">
+                                            {(customer.tags || []).map((tag, i) => (
+                                                <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary border border-primary/10 rounded-md">
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="font-semibold text-text-muted text-sm flex items-center gap-2">
+                                        {customer.phone} <span className="text-border">|</span> {customer.status} Member
+                                    </p>
+                                </>
+                            )}
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-border"
-                    >
-                        <X className="w-5 h-5 text-text-muted" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {isEditing ? (
+                            <button
+                                onClick={handleSave}
+                                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary-dark transition-all"
+                            >
+                                Save Changes
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="flex items-center gap-2 bg-white border border-border px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:bg-slate-50 transition-all"
+                            >
+                                Edit Profile
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-border"
+                        >
+                            <X className="w-5 h-5 text-text-muted" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Sub-KPIs Bar */}
@@ -66,7 +125,22 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                     <ProfileMetric label="LIFETIME SPEND" value={`₹${customer.spend.toLocaleString()}`} icon={DollarSign} color="green" />
                     <ProfileMetric label="TOTAL VISITS" value={customer.totalVisits} icon={History} color="blue" />
                     <ProfileMetric label="AVG. RATING" value="4.8" icon={Star} color="yellow" />
-                    <ProfileMetric label="PREFERRED" value={customer.preferred} icon={Tag} color="purple" />
+                    {isEditing ? (
+                        <div className="px-6 py-4 space-y-1">
+                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">PREFERRED</span>
+                            <div className="flex items-center gap-2">
+                                <Tag className="w-3.5 h-3.5 text-purple-600" />
+                                <input
+                                    type="text"
+                                    value={editForm?.preferred}
+                                    onChange={(e) => setEditForm({ ...editForm, preferred: e.target.value })}
+                                    className="text-sm font-bold text-text bg-white border border-border px-2 py-0.5 rounded outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+                        </div>
+                    ) : (
+                        <ProfileMetric label="PREFERRED" value={customer.preferred} icon={Tag} color="purple" />
+                    )}
                 </div>
 
                 {/* Content Tabs */}

@@ -11,15 +11,10 @@ import {
     Search
 } from 'lucide-react';
 
-const MOCK_FEEDBACK = [
-    { id: '1', customer: 'Aryan Khan', rating: 5, comment: 'Amazing haircut as always! Zoya is very detailed and understands exactly what I want.', service: 'Haircut', staff: 'Zoya Khan', date: '2024-03-22' },
-    { id: '2', customer: 'Ishita Sharma', rating: 2, comment: 'Waiting time was too long even with an appointment. Service was okay but not exceptional.', service: 'Manicure', staff: 'Sneha Rao', date: '2024-03-21' },
-    { id: '3', customer: 'Rahul Verma', rating: 4, comment: 'Good experience, clean place. Will come back.', service: 'Shave', staff: 'Haris Ali', date: '2024-03-20' },
-    { id: '4', customer: 'Simran Jit', rating: 5, comment: 'The new color looks stunning. Best salon in town!', service: 'Hair Coloring', staff: 'Mehak Rizvi', date: '2024-03-19' },
-    { id: '5', customer: 'Suresh Patil', rating: 3, comment: 'Average service. The staff seemed a bit rushed.', service: 'Pedicure', staff: 'Zoya Khan', date: '2024-03-18' },
-];
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function FeedbackList() {
+    const { feedbacks, archiveFeedback } = useBusiness();
     const [ratingFilter, setRatingFilter] = useState('all');
 
     return (
@@ -63,8 +58,8 @@ export default function FeedbackList() {
                             key={type}
                             onClick={() => setRatingFilter(type)}
                             className={`flex-1 md:flex-none px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${ratingFilter === type
-                                    ? 'bg-white text-primary shadow-sm'
-                                    : 'text-text-muted hover:text-text-secondary'
+                                ? 'bg-white text-primary shadow-sm'
+                                : 'text-text-muted hover:text-text-secondary'
                                 }`}
                         >
                             {type}
@@ -83,7 +78,13 @@ export default function FeedbackList() {
 
             {/* Feedback Feed */}
             <div className="space-y-4">
-                {MOCK_FEEDBACK.map((fb) => (
+                {feedbacks.filter(f => f.status === 'active').filter(fb => {
+                    if (ratingFilter === 'all') return true;
+                    if (ratingFilter === 'positive') return fb.rating >= 4;
+                    if (ratingFilter === 'neutral') return fb.rating === 3;
+                    if (ratingFilter === 'negative') return fb.rating <= 2;
+                    return true;
+                }).map((fb) => (
                     <div
                         key={fb.id}
                         className="bg-white border border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden"
@@ -106,7 +107,7 @@ export default function FeedbackList() {
                                             <span className="text-[11px] font-bold text-yellow-600">{fb.rating}</span>
                                         </div>
                                     </div>
-                                    <p className="text-sm text-text-secondary font-medium italic">"{fb.comment}"</p>
+                                    <p className="text-sm text-text-secondary font-medium">"{fb.comment}"</p>
                                 </div>
                             </div>
 
@@ -127,7 +128,12 @@ export default function FeedbackList() {
                         <div className="mt-6 pt-4 border-t border-border flex justify-between items-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
                             <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Internal ID: #FB-{fb.id}</span>
                             <div className="flex gap-3">
-                                <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-border text-text-muted hover:bg-surface transition-all uppercase tracking-widest">Archive</button>
+                                <button
+                                    onClick={() => archiveFeedback(fb.id)}
+                                    className="px-3 py-1.5 rounded-lg text-[10px] font-bold border border-border text-text-muted hover:bg-surface transition-all uppercase tracking-widest"
+                                >
+                                    Archive
+                                </button>
                                 <button className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-primary text-white hover:shadow-lg transition-all uppercase tracking-widest flex items-center gap-2">
                                     View Details
                                     <ArrowUpRight className="w-3 h-3" />

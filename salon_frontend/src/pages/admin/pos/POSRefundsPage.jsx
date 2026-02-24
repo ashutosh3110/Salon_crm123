@@ -60,7 +60,7 @@ export default function POSRefundsPage() {
                                     <td className="px-6 py-4 font-bold text-text">{ref.id}</td>
                                     <td className="px-6 py-4 text-primary font-medium underline cursor-pointer">{ref.inv}</td>
                                     <td className="px-6 py-4 font-medium text-text">{ref.customer}</td>
-                                    <td className="px-6 py-4 text-text-secondary italic max-w-xs truncate">"{ref.reason}"</td>
+                                    <td className="px-6 py-4 text-text-secondary max-w-xs truncate">"{ref.reason}"</td>
                                     <td className="px-6 py-4 text-right font-bold text-error">{ref.amount}</td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ref.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-green-50 text-green-600 border border-green-100'
@@ -112,7 +112,7 @@ export default function POSRefundsPage() {
                             </div>
                             <div className="pt-2 border-t border-border/50">
                                 <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-1">Reason</p>
-                                <p className="text-sm text-text-secondary italic">"{selectedRefund.reason}"</p>
+                                <p className="text-sm text-text-secondary">"{selectedRefund.reason}"</p>
                             </div>
                         </div>
 

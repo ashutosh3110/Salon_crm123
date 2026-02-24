@@ -25,9 +25,9 @@ const recentMovements = [
 ];
 
 const movementStyles = {
-    in: { bg: 'bg-emerald-100', text: 'text-emerald-600', label: 'STOCK IN' },
-    out: { bg: 'bg-red-100', text: 'text-red-600', label: 'USED/SOLD' },
-    transfer: { bg: 'bg-violet-100', text: 'text-violet-600', label: 'TRANSFER' },
+    in: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', label: 'STOCK IN' },
+    out: { bg: 'bg-rose-500/10', text: 'text-rose-500', label: 'USED/SOLD' },
+    transfer: { bg: 'bg-violet-500/10', text: 'text-violet-500', label: 'TRANSFER' },
 };
 
 export default function InventoryDashboard() {
@@ -36,9 +36,9 @@ export default function InventoryDashboard() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {stockStats.map((s) => (
-                    <div key={s.label} className="bg-white rounded-2xl border border-border p-4 flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl bg-${s.color}-100 flex items-center justify-center`}>
-                            <s.icon className={`w-5 h-5 text-${s.color}-500`} />
+                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center gap-3 shadow-sm">
+                        <div className="w-11 h-11 rounded-xl bg-background flex items-center justify-center border border-border/10">
+                            <s.icon className="w-5 h-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-2xl font-black text-text">{s.value}</p>
@@ -50,13 +50,13 @@ export default function InventoryDashboard() {
 
             <div className="grid lg:grid-cols-2 gap-4">
                 {/* Low Stock Alert */}
-                <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-red-500" />
+                <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                    <div className="px-5 py-4 border-b border-border/40 flex items-center gap-2 bg-surface/50">
+                        <AlertTriangle className="w-4 h-4 text-rose-500" />
                         <h2 className="text-sm font-extrabold text-text">Low Stock Alerts</h2>
-                        <span className="px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold bg-red-400 ml-auto">{lowStockItems.length}</span>
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] text-white font-black bg-rose-500 ml-auto shadow-lg shadow-rose-500/20">{lowStockItems.length}</span>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/40">
                         {lowStockItems.map((item) => {
                             const percent = Math.round((item.stock / item.minStock) * 100);
                             return (
@@ -67,11 +67,11 @@ export default function InventoryDashboard() {
                                             <p className="text-[10px] text-text-muted">SKU: {item.sku}</p>
                                         </div>
                                         <div className="text-right shrink-0 ml-3">
-                                            <p className="text-sm font-black text-red-500">{item.stock} <span className="text-text-muted font-normal text-[10px]">/ {item.minStock} {item.unit}</span></p>
+                                            <p className="text-sm font-black text-rose-500">{item.stock} <span className="text-text-muted font-normal text-[10px]">/ {item.minStock} {item.unit}</span></p>
                                         </div>
                                     </div>
-                                    <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden">
-                                        <div className={`h-full rounded-full ${percent <= 25 ? 'bg-red-400' : 'bg-amber-400'}`} style={{ width: `${percent}%` }} />
+                                    <div className="w-full h-1.5 bg-background rounded-full overflow-hidden border border-border/5">
+                                        <div className={`h-full rounded-full ${percent <= 25 ? 'bg-rose-500' : 'bg-amber-500'}`} style={{ width: `${percent}%` }} />
                                     </div>
                                 </div>
                             );
@@ -80,11 +80,11 @@ export default function InventoryDashboard() {
                 </div>
 
                 {/* Recent Stock Movements */}
-                <div className="bg-white rounded-2xl border border-border overflow-hidden">
-                    <div className="px-5 py-4 border-b border-border">
+                <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
+                    <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
                         <h2 className="text-sm font-extrabold text-text">Recent Stock Movements</h2>
                     </div>
-                    <div className="divide-y divide-border">
+                    <div className="divide-y divide-border/40">
                         {recentMovements.map((mv) => {
                             const style = movementStyles[mv.type];
                             return (

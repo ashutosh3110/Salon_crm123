@@ -81,7 +81,7 @@ function AlertCard({ alert }) {
                         </div>
                     </div>
                 </div>
-                <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${isCritical ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                <div className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${isCritical ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
                     {alert.status}
                 </div>
             </div>

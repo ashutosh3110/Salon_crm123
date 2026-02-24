@@ -81,9 +81,9 @@ export default function SupplierInvoices() {
                                     </div>
                                 </td>
                                 <td className="px-8 py-5">
-                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                            inv.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                                'bg-orange-50 text-orange-500 border-orange-100'
+                                    <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest border ${inv.status === 'Paid' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                        inv.status === 'Overdue' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                            'bg-orange-50 text-orange-500 border-orange-100'
                                         }`}>
                                         {inv.status}
                                     </span>

@@ -84,7 +84,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             {/* Collapse toggle */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-border items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
+                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
             >
                 {collapsed
                     ? <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
@@ -113,6 +113,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                         />
                     </div>
                 )}
+                {/* Mobile close button inside the branding area on small screens */}
                 <button
                     onClick={() => setMobileOpen(false)}
                     className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface transition-colors shrink-0"
@@ -139,11 +140,6 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
                                 }`}
                         >
-                            {/* Active left bar */}
-                            {active && !collapsed && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white/60 rounded-r-full" />
-                            )}
-
                             <item.icon className={`shrink-0 w-5 h-5 transition-colors ${active ? 'text-white' : 'text-text-muted group-hover:text-text-secondary'}`} />
 
                             {!collapsed && (
@@ -223,7 +219,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             {/* Mobile overlay */}
             {mobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
                     onClick={() => setMobileOpen(false)}
                 />
             )}

@@ -27,15 +27,15 @@ export default function EndOfDay() {
                     <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-10">
                         <div className="space-y-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Total Daily Sales</span>
-                            <div className="text-4xl font-black tracking-tighter">₹97,650</div>
+                            <div className="text-4xl font-bold tracking-tighter">₹97,650</div>
                         </div>
                         <div className="space-y-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Daily Expenses</span>
-                            <div className="text-4xl font-black tracking-tighter text-rose-400">₹12,850</div>
+                            <div className="text-4xl font-bold tracking-tighter text-rose-400">₹12,850</div>
                         </div>
                         <div className="space-y-2">
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Net Cash in Hand</span>
-                            <div className="text-4xl font-black tracking-tighter text-emerald-400">₹16,600</div>
+                            <div className="text-4xl font-bold tracking-tighter text-emerald-400">₹16,600</div>
                         </div>
                     </div>
                     <div className="absolute top-0 right-0 p-10 opacity-10">
@@ -82,7 +82,7 @@ export default function EndOfDay() {
                         <Lock className="w-10 h-10" />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-black text-rose-900 tracking-tight">Perform Daily Closure</h3>
+                        <h3 className="text-2xl font-bold text-rose-900 tracking-tight">Perform Daily Closure</h3>
                         <p className="text-sm text-rose-700 font-medium max-w-md mx-auto">
                             By closing the day, you lock all financial entries. No further edits will be allowed to POS invoices, expenses, or cash records for today.
                         </p>
@@ -92,12 +92,12 @@ export default function EndOfDay() {
                             <Download className="w-4 h-4 inline-block mr-2" />
                             EOD Report
                         </button>
-                        <button className="px-10 py-4 bg-rose-600 text-white rounded-2xl text-sm font-black hover:shadow-2xl hover:shadow-rose-600/40 transition-all scale-active shadow-lg shadow-rose-200">
+                        <button className="px-10 py-4 bg-rose-600 text-white rounded-2xl text-sm font-bold hover:shadow-2xl hover:shadow-rose-600/40 transition-all scale-active shadow-lg shadow-rose-200">
                             Close Day & Lock System
                             <ArrowRight className="w-4 h-4 inline-block ml-2" />
                         </button>
                     </div>
-                    <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.2em] mt-2 italic">
+                    <p className="text-[10px] font-bold text-rose-500 uppercase tracking-[0.2em] mt-2">
                         Authorized by {`{Admin_Aryan}`} • Terminal {`{POS_01}`}
                     </p>
                 </div>

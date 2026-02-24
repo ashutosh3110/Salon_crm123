@@ -37,9 +37,9 @@ export default function AppProfilePage() {
     };
 
     const quickLinks = [
-        { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: 'text-blue-500 bg-blue-50' },
-        { icon: Star, label: 'Loyalty Points', path: '/app/loyalty', color: 'text-amber-500 bg-amber-50' },
-        { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: 'text-emerald-500 bg-emerald-50' },
+        { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: 'text-blue-500 bg-blue-500/10' },
+        { icon: Star, label: 'Loyalty Points', path: '/app/loyalty', color: 'text-amber-500 bg-amber-500/10' },
+        { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: 'text-emerald-500 bg-emerald-500/10' },
     ];
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -48,7 +48,7 @@ export default function AppProfilePage() {
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-5">
             {/* Profile Card */}
-            <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-border/60 p-5">
+            <motion.div variants={fadeUp} className="bg-surface rounded-2xl border border-border/60 p-5">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center shrink-0">
                         <span className="text-lg font-extrabold text-primary">{getInitials(customer?.name)}</span>
@@ -103,7 +103,7 @@ export default function AppProfilePage() {
                                         onClick={() => setForm({ ...form, gender: g })}
                                         className={`flex-1 py-2 rounded-lg border text-xs font-bold capitalize transition-all ${form.gender === g
                                             ? 'border-primary bg-primary/5 text-primary'
-                                            : 'border-border bg-white text-text-secondary'
+                                            : 'border-border bg-surface text-text-secondary dark:bg-surface-alt'
                                             }`}
                                     >
                                         {g}
@@ -147,7 +147,7 @@ export default function AppProfilePage() {
                         key={link.path}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(link.path)}
-                        className="w-full flex items-center gap-3 bg-white rounded-xl border border-border/60 p-3.5 hover:shadow-sm transition-all"
+                        className="w-full flex items-center gap-3 bg-surface rounded-xl border border-border/60 p-3.5 hover:shadow-sm transition-all"
                     >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${link.color}`}>
                             <link.icon className="w-5 h-5" />
@@ -159,7 +159,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Support & Legal */}
-            <motion.div variants={fadeUp} className="bg-white rounded-2xl border border-border/60 overflow-hidden">
+            <motion.div variants={fadeUp} className="bg-surface rounded-2xl border border-border/60 overflow-hidden">
                 <button className="w-full flex items-center gap-3 p-3.5 border-b border-border/30 hover:bg-surface/50 transition-colors">
                     <HelpCircle className="w-5 h-5 text-text-muted" />
                     <span className="text-sm text-text-secondary flex-1 text-left">Help & Support</span>
@@ -177,7 +177,7 @@ export default function AppProfilePage() {
                 {!showLogoutConfirm ? (
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
-                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
+                        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-red-200/50 text-sm font-bold text-red-500 hover:bg-red-500/5 transition-colors"
                     >
                         <LogOut className="w-4 h-4" /> Log Out
                     </button>

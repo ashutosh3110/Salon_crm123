@@ -47,7 +47,7 @@ export default function CashAndBank() {
                             <SummaryRow label="Cash Expenses (-)" value={system.cash.expenses} color="text-rose-500" />
                             <div className="pt-4 border-t border-border flex justify-between items-center">
                                 <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">System Cash Balance</span>
-                                <span className="text-xl font-black text-text tracking-tight">₹{system.cash.net.toLocaleString()}</span>
+                                <span className="text-xl font-bold text-text tracking-tight">₹{system.cash.net.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -72,7 +72,7 @@ export default function CashAndBank() {
                                         {cashDiff === 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                                         {cashDiff === 0 ? 'Cash Matched' : 'Discrepancy Found'}
                                     </div>
-                                    <span className="font-black">₹{Math.abs(cashDiff).toLocaleString()}</span>
+                                    <span className="font-bold">₹{Math.abs(cashDiff).toLocaleString()}</span>
                                 </div>
                             )}
                         </div>
@@ -95,7 +95,7 @@ export default function CashAndBank() {
                             <SummaryRow label="Bank Expenses (-)" value={system.bank.expenses} color="text-rose-500" />
                             <div className="pt-4 border-t border-border flex justify-between items-center">
                                 <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest">System Bank Balance</span>
-                                <span className="text-xl font-black text-text tracking-tight">₹{system.bank.net.toLocaleString()}</span>
+                                <span className="text-xl font-bold text-text tracking-tight">₹{system.bank.net.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -120,7 +120,7 @@ export default function CashAndBank() {
                                         {bankDiff === 0 ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
                                         {bankDiff === 0 ? 'Bank Matched' : 'Discrepancy Found'}
                                     </div>
-                                    <span className="font-black">₹{Math.abs(bankDiff).toLocaleString()}</span>
+                                    <span className="font-bold">₹{Math.abs(bankDiff).toLocaleString()}</span>
                                 </div>
                             )}
                         </div>
