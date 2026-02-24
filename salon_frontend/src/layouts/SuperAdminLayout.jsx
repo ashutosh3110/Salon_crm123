@@ -8,7 +8,17 @@ export default function SuperAdminLayout() {
     const [mobileOpen, setMobileOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-surface">
+        <div className="sa-panel min-h-screen bg-surface">
+
+            {/* ── Global sharp-edge override for entire Super Admin panel ── */}
+            <style>{`
+                .sa-panel *,
+                .sa-panel *::before,
+                .sa-panel *::after {
+                    border-radius: 0 !important;
+                }
+            `}</style>
+
             <SuperAdminSidebar
                 collapsed={collapsed}
                 setCollapsed={setCollapsed}

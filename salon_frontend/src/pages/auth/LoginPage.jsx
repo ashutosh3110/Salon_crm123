@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Phone, ArrowRight, Sparkles, Users, Smartphone } from 'lucide-react';
+import { Mail, Lock, Phone, ArrowRight, Sparkles, Users, Smartphone, AlertCircle } from 'lucide-react';
 import { useAuth, getRedirectPath } from '../../contexts/AuthContext';
 import Navbar from '../../components/landing/Navbar';
 

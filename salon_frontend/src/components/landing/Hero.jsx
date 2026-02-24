@@ -22,11 +22,15 @@ import {
     Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useContent } from '../../hooks/useContent';
+
 
 const SLIDE_DURATION = 5000;
 
 export default function Hero() {
+    const { hero } = useContent();
     const [currentSlide, setCurrentSlide] = useState(0);
+
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -83,35 +87,42 @@ export default function Hero() {
 
 
                         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif italic text-text leading-tight tracking-tight">
+<<<<<<< HEAD
                             Elevate Your <span className="text-primary not-italic font-black">Salon</span>
                             <span className="block text-primary/80 not-italic font-black mt-1">Smarter, Faster.</span>
+=======
+                            {hero.heading.split(' ').slice(0, -1).join(' ')} <span className="text-primary not-italic font-black">{hero.heading.split(' ').slice(-1)}</span>
+                            <span className="block text-primary/80 not-italic font-black mt-1">{hero.subheading}</span>
+>>>>>>> db8e10dbe1e7ca645e3bc9e993a7db8214bb4381
                         </h1>
 
+
                         <p className="mt-6 text-sm text-text-secondary leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium opacity-80">
-                            The ultimate toolkit for modern salon scaling. Manage appointments,
-                            billing, and analytics with cinematic efficiency.
+                            {hero.description}
                         </p>
+
 
                         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <Link
                                 to="/register"
                                 className="px-8 py-3.5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-none shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
                             >
-                                Get Started Free
+                                {hero.btn_primary}
                             </Link>
                             <Link
                                 to="/#features"
                                 className="px-8 py-3.5 bg-white text-primary font-black text-[10px] uppercase tracking-[0.2em] rounded-none border border-primary/20 shadow-lg shadow-black/5 hover:scale-105 transition-transform"
                             >
-                                Learn More
+                                {hero.btn_secondary}
                             </Link>
                         </div>
 
+
                         <div className="mt-12 grid grid-cols-3 gap-6 max-w-sm mx-auto lg:mx-0 border-t border-black/5 pt-8">
                             {[
-                                { value: '500+', label: 'Salons' },
-                                { value: '50K+', label: 'Bookings' },
-                                { value: '99.9%', label: 'Uptime' },
+                                { value: hero.stat1_value, label: hero.stat1_label },
+                                { value: hero.stat2_value, label: hero.stat2_label },
+                                { value: hero.stat3_value, label: hero.stat3_label },
                             ].map((stat, idx) => (
                                 <div key={stat.label}>
                                     <div className="text-xl font-black text-primary italic">{stat.value}</div>
