@@ -18,7 +18,7 @@ export default function POSLayout() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-surface">
+        <div className="min-h-screen bg-background">
             <POSSidebar
                 collapsed={collapsed}
                 setCollapsed={setCollapsed}

@@ -64,6 +64,8 @@ import POSInvoicesPage from './pages/pos/POSInvoicesPage';
 import POSPaymentsPage from './pages/pos/POSPaymentsPage';
 import POSRefundsPage from './pages/pos/POSRefundsPage';
 import POSSettingsPage from './pages/pos/POSSettingsPage';
+import POSDayEndPage from './pages/pos/POSDayEndPage';
+import POSNotificationsPage from './pages/pos/POSNotificationsPage';
 
 // Super Admin layout & pages
 import SuperAdminLayout from './layouts/SuperAdminLayout';
@@ -335,6 +337,8 @@ function App() {
                   <Route path="/pos/invoices" element={<POSInvoicesPage />} />
                   <Route path="/pos/payments" element={<POSPaymentsPage />} />
                   <Route path="/pos/refunds" element={<POSRefundsPage />} />
+                  <Route path="/pos/notifications" element={<POSNotificationsPage />} />
+                  <Route path="/pos/day-end" element={<POSDayEndPage />} />
                   <Route path="/pos/settings" element={<POSSettingsPage />} />
                 </Route>
               </Route>
