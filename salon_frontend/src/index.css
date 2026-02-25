@@ -8,15 +8,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary: #B85C5C;
-  --color-primary-light: #D4918F;
-  --color-primary-dark: #8E3E3E;
-  --color-secondary: #FFFFFF;
-  --color-secondary-dark: #F9FAFB;
-  --color-background: #FFFFFF;
+  --color-secondary: #E9E9E9;
+  --color-secondary-dark: #D0D0D0;
+  --color-background: #FDF9F8;
   --color-surface: #FFFFFF;
-  --color-surface-alt: #FFFFFF;
-  --color-text: #1A1A1A;
+  --color-surface-alt: #F8FAFC;
+  --color-text: #1e293b;
   --color-text-secondary: #6B7280;
   --color-text-muted: #9CA3AF;
   --color-border: #E5E7EB;
@@ -30,13 +27,20 @@
 
 /* ===== Base Styles ===== */
 @layer base {
+
+  html,
+  body {
+    background-color: #FDF9F8;
+    min-height: 100%;
+  }
+
   body {
     font-family: var(--font-sans);
-    background-color: var(--color-background);
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0;
     @apply bg-background text-foreground;
   }
 
@@ -52,9 +56,17 @@
     --color-secondary-dark: #0B0F1A;
   }
 
+  .new-dark-theme {
+    --color-background: #050505;
+    --color-surface: #0A0A0A;
+    --color-surface-alt: #111111;
+    --color-text: #F5F5F5;
+    background-color: #050505;
+    color: #F5F5F5;
+  }
+
   * {
     @apply border-border outline-ring/50;
-
   }
 }
 

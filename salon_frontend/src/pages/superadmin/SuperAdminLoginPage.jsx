@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Eye, EyeOff, AlertCircle, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
-import LumiereNavbar from '../../components/landing/lumiere/LumiereNavbar';
+import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 
 export default function SuperAdminLoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
@@ -42,7 +42,7 @@ export default function SuperAdminLoginPage() {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <LumiereNavbar />
+            <WapixoNavbar />
 
             {/* Background elements */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">

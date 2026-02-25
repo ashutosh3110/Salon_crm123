@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const PRELOAD_COUNT = 40; // preload first 40 frames of sequence 1
 
-export default function LumiereLoader({ onComplete }) {
+export default function WapixoLoader({ onComplete }) {
     const [visible, setVisible] = useState(true);
     const [progress, setProgress] = useState(0);
 

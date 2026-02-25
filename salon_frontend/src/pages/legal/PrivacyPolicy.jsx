@@ -1,107 +1,93 @@
 import { motion } from 'framer-motion';
-import Navbar from '../../components/landing/Navbar';
-import Footer from '../../components/landing/Footer';
+import { useState, useEffect } from 'react';
+import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
+import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
 const LegalLayout = ({ title, children }) => {
+    useEffect(() => {
+        const originalBg = document.body.style.backgroundColor;
+        document.body.style.backgroundColor = '#050505';
+        return () => {
+            document.body.style.backgroundColor = originalBg;
+        };
+    }, []);
+
     return (
-        <div className="min-h-screen bg-[#FDF9F8] flex flex-col">
-            <Navbar />
+        <div className="new-dark-theme" style={{ background: 'radial-gradient(circle at 50% 0%, #111111 0%, #050505 70%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
+            <WapixoNavbar />
 
-            {/* Elegant Dark Header */}
-            <div className="bg-[#4A1D28] pt-32 pb-20 text-center relative overflow-hidden">
-                {/* Decorative background elements */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl -translate-y-1/2" />
-                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl translate-y-1/2" />
-                </div>
-
+            {/* Elegant Cinematic Header */}
+            <div style={{ paddingTop: 'clamp(80px, 12vw, 100px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative z-10 px-4"
+                    transition={{ duration: 0.8 }}
+                    style={{ position: 'relative', zIndex: 10, padding: '0 1rem' }}
                 >
-                    <h1 className="text-4xl md:text-6xl font-serif italic text-[#D4AF37] leading-tight">
-                        {title}
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block' }}>
+                        Salon Ecosystem
+                    </p>
+                    <h1 style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>
+                        {title}.
                     </h1>
-                    <div className="mt-4 flex items-center justify-center gap-4">
-                        <div className="h-[1px] w-12 bg-[#D4AF37]/40" />
-                        <span className="text-white/60 text-xs font-bold uppercase tracking-[0.3em]">Salon Ecosystem</span>
-                        <div className="h-[1px] w-12 bg-[#D4AF37]/40" />
-                    </div>
                 </motion.div>
             </div>
 
             {/* Main Content Area */}
-            <main className="flex-1 max-w-7xl mx-auto px-4 py-20 w-full">
-                <div className="grid lg:grid-cols-12 gap-12 items-start">
+            <main style={{ flex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 1.5rem) 60px', width: '100%' }}>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true }}
+                    style={{ background: 'rgba(255,255,255,0.02)', padding: 'clamp(2rem, 5vw, 5rem)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px' }}
+                >
+                    <div style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '1.1rem', fontWeight: 300 }} className="legal-content-wapixo">
+                        {children}
+                    </div>
 
-                    {/* Left Side: Decorative Image (Like Ref) */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        className="hidden lg:block lg:col-span-3 space-y-8 sticky top-32"
-                    >
-                        <div className="relative aspect-[3/4] rounded-t-full overflow-hidden border border-primary/10 shadow-2xl">
-                            <img
-                                src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800"
-                                alt="Legal Policy"
-                                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="font-serif italic text-2xl text-primary mb-2">Signature</h3>
-                            <div className="w-8 h-0.5 bg-primary/20 mx-auto" />
-                        </div>
-                    </motion.div>
+                    <style>{`
+                        .legal-content-wapixo h2 {
+                            color: #ffffff;
+                            font-weight: 200;
+                            font-size: 1.5rem;
+                            margin-top: 3rem;
+                            margin-bottom: 1.25rem;
+                            letter-spacing: -0.01em;
+                        }
+                        .legal-content-wapixo p {
+                            margin-bottom: 1.5rem;
+                        }
+                        .legal-content-wapixo ul {
+                            list-style-type: none;
+                            padding-left: 0;
+                            margin-bottom: 1.5rem;
+                        }
+                        .legal-content-wapixo li {
+                            margin-bottom: 0.75rem;
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 0.75rem;
+                        }
+                        .legal-content-wapixo li::before {
+                            content: "—";
+                            color: rgba(255,255,255,0.3);
+                        }
+                    `}</style>
 
-                    {/* Center: Legal Text */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        className="lg:col-span-6 bg-white p-8 md:p-12 shadow-sm border border-black/5 min-h-[600px]"
-                    >
-                        <div className="prose prose-sm prose-slate max-w-none text-text-secondary leading-relaxed space-y-8">
-                            {children}
-                        </div>
-
-                        <div className="mt-16 pt-8 border-t border-black/5 text-center">
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em]">
-                                Last Updated: February 21, 2026
-                            </p>
-                        </div>
-                    </motion.div>
-
-                    {/* Right Side: Decorative Image (Like Ref) */}
-                    <motion.div
-                        initial={{ opacity: 0, x: 30 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        className="hidden lg:block lg:col-span-3 space-y-8 sticky top-32"
-                    >
-                        <div className="relative aspect-[3/4] rounded-b-full overflow-hidden border border-primary/10 shadow-2xl">
-                            <img
-                                src="https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=800"
-                                alt="Legal Policy"
-                                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                            />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="font-serif italic text-2xl text-primary mb-2">Transparency</h3>
-                            <div className="w-8 h-0.5 bg-primary/20 mx-auto" />
-                        </div>
-                    </motion.div>
-
-                </div>
+                    <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                        <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                            Last Updated: February 21, 2026
+                        </p>
+                    </div>
+                </motion.div>
             </main>
 
-            {/* Dark Elegant Section (Like Ref "Nos tarifs") */}
-            <div className="bg-[#4A1D28] py-12 text-center">
-                <h2 className="text-3xl font-serif italic text-[#D4AF37]">Secure & Trusted</h2>
+            {/* Bottom Dark Section */}
+            <div style={{ background: '#050505', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '60px 0', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>Secure & Trusted.</h2>
             </div>
 
-            <Footer />
+            <WapixoFooter />
         </div>
     );
 };
@@ -110,44 +96,39 @@ export default function PrivacyPolicy() {
     return (
         <LegalLayout title="Privacy Policy">
             <section>
-                <h2 className="text-xl font-bold text-text mb-4 uppercase tracking-tighter">1. Introduction</h2>
+                <h2>1. Introduction</h2>
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut nec nunc ipsum. Vivamus volutpat massa at rhoncus aliquam.
-                    Phasellus eu porttitor nibh. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
-                    Nam elit neque, egestas eget hendrerit sit amet, consectetur ut metus. Suspendisse molestie enim mi, nec efficitur orci mattis in.
+                    Welcome to the Salon CRM platform. We are committed to protecting your privacy and ensuring that your personal information is handled in a safe and responsible manner. This Privacy Policy outlines how we collect, use, and safeguard your data.
                 </p>
             </section>
 
             <section>
-                <h2 className="text-xl font-bold text-text mb-4 uppercase tracking-tighter">2. Information Collection</h2>
+                <h2>2. Information Collection</h2>
                 <p>
-                    Vestibulum lobortis orci erat, id interdum enim consectetur in. Donec ornare vel nibh sed scelerisque.
-                    Mauris fermentum feugiat neque, Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae;
-                    Interdum et malesuada fames ac ante ipsum primis in faucibus.
+                    We collect various types of information to provide and improve our services to you:
                 </p>
-                <ul className="list-disc pl-5 space-y-2 mt-4">
-                    <li>Personal identification information (Name, email address, phone number, etc.)</li>
-                    <li>Payment information and transaction history</li>
-                    <li>Usage data and technical device information</li>
-                    <li>Professional salon-related data</li>
+                <ul>
+                    <li>Personal identification information (Name, email address, phone number).</li>
+                    <li>Payment information and transaction history for salon services.</li>
+                    <li>Usage data and technical device information when you access our platform.</li>
+                    <li>Professional salon-related data provided by business owners.</li>
                 </ul>
             </section>
 
             <section>
-                <h2 className="text-xl font-bold text-text mb-4 uppercase tracking-tighter">3. How We Use Your Data</h2>
+                <h2>3. How We Use Your Data</h2>
                 <p>
-                    Phasellus sagittis diam vitae ligula tincidunt rutrum. Suspendisse convallis elit et consectetuer efficitur.
-                    The ultimate toolkit for modern salon scaling. Everything you need to manage your salon efficiently and grow your brand.
+                    Your data is used to facilitate bookings, process transactions, and communicate with you about your appointments. We also use aggregated, non-identifiable data to analyze platform performance and improve our features.
                 </p>
             </section>
 
             <section>
-                <h2 className="text-xl font-bold text-text mb-4 uppercase tracking-tighter">4. Data Security</h2>
+                <h2>4. Data Security</h2>
                 <p>
-                    We implement a variety of security measures to maintain the safety of your personal information.
-                    Your personal information is contained behind secured networks and is only accessible by a limited number of persons.
+                    We implement a variety of security measures to maintain the safety of your personal information. Your personal information is contained behind secured networks and is only accessible by a limited number of persons who have special access rights to such systems.
                 </p>
             </section>
         </LegalLayout>
     );
 }
+
