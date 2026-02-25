@@ -5,7 +5,7 @@ import logoFull from '/2-removebg-preview.png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
-    BarChart3, HeadphonesIcon, PackageOpen, FileText,
+    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare
 } from 'lucide-react';
 
 const menuItems = [
@@ -14,6 +14,13 @@ const menuItems = [
         icon: LayoutDashboard,
         path: '/superadmin',
         badge: null,
+    },
+    {
+        label: 'Inquiries',
+        icon: MessageSquare,
+        path: '/superadmin/inquiries',
+        badge: 1,
+        badgeColor: 'bg-primary/10 text-primary',
     },
     {
         label: 'Salons',

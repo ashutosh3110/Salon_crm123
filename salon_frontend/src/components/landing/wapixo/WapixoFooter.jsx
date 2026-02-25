@@ -7,9 +7,9 @@ const footerLinks = {
     Legal: ['Privacy', 'Terms', 'Cookies'],
 };
 
-export default function LumiereFooter() {
+export default function WapixoFooter() {
     return (
-        <footer className="bg-[#050505] border-t border-white/5 py-12 md:py-24 px-6 md:px-16 lg:px-24">
+        <footer id="contact" className="bg-[#050505] border-t border-white/5 py-12 md:py-24 px-6 md:px-16 lg:px-24">
             <div className="max-w-6xl mx-auto">
                 {/* Top row */}
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-12 md:gap-16 mb-16 md:mb-20 text-center md:text-left">
@@ -19,7 +19,7 @@ export default function LumiereFooter() {
                             <img
                                 src="/1-removebg-preview.png"
                                 alt="Wapixo Logo"
-                                className="h-32 md:h-40 w-auto invert brightness-0"
+                                className="h-20 md:h-32 w-auto invert brightness-0"
                             />
                         </Link>
                         <p className="font-['Inter'] font-light text-[0.82rem] text-white/35 leading-relaxed mt-4">
@@ -37,12 +37,12 @@ export default function LumiereFooter() {
                                 <div className="space-y-3">
                                     {items.map((item) => (
                                         <div key={item}>
-                                            <a
-                                                href={`/${item.toLowerCase()}`}
+                                            <Link
+                                                to={`/${item.toLowerCase()}`}
                                                 className="font-['Inter'] font-light text-[0.85rem] text-white/50 hover:text-white transition-colors decoration-none"
                                             >
                                                 {item}
-                                            </a>
+                                            </Link>
                                         </div>
                                     ))}
                                 </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { BusinessProvider } from './contexts/BusinessContext';
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
@@ -11,15 +12,17 @@ import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import BlogPage from './pages/landing/BlogPage';
 import BlogPostDetailPage from './pages/landing/BlogPostDetailPage';
-import ContactFullPage from './pages/landing/ContactFullPage';
+import WapixoContactPage from './pages/landing/WapixoContactPage';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfService from './pages/legal/TermsOfService';
 import CookiePolicy from './pages/legal/CookiePolicy';
 
 function ScrollToHash() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, state } = useLocation();
 
   useEffect(() => {
+    if (state?.noScroll) return;
+
     if (hash) {
       const element = document.getElementById(hash.replace('#', ''));
       if (element) {
@@ -28,7 +31,7 @@ function ScrollToHash() {
     } else {
       window.scrollTo(0, 0);
     }
-  }, [hash, pathname]);
+  }, [hash, pathname, state]);
 
   return null;
 }
@@ -78,6 +81,7 @@ import SASettingsPage from './pages/superadmin/SASettingsPage';
 import SASupportPage from './pages/superadmin/SASupportPage';
 import SAAnalyticsPage from './pages/superadmin/SAAnalyticsPage';
 import SAContentPage from './pages/superadmin/SAContentPage';
+import SAInquiriesPage from './pages/superadmin/SAInquiriesPage';
 
 // Customer App layout & pages
 import AppLayout from './layouts/AppLayout';
@@ -153,7 +157,7 @@ function App() {
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:id" element={<BlogPostDetailPage />} />
-              <Route path="/contact" element={<ContactFullPage />} />
+              <Route path="/contact" element={<WapixoContactPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
@@ -319,6 +323,7 @@ function App() {
                   <Route path="/superadmin/settings" element={<SASettingsPage />} />
                   <Route path="/superadmin/support" element={<SASupportPage />} />
                   <Route path="/superadmin/content" element={<SAContentPage />} />
+                  <Route path="/superadmin/inquiries" element={<SAInquiriesPage />} />
                 </Route>
               </Route>
 
@@ -370,18 +375,36 @@ function App() {
                  ERROR PAGES
                  ═══════════════════════════════════════════════════════════ */}
               <Route path="/unauthorized" element={
-                <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-                  <h1 className="text-4xl font-bold text-text mb-2">403</h1>
-                  <p className="text-text-secondary mb-6">You don't have permission to access this page.</p>
-                  <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
+                <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center selection:bg-primary/30">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-6"
+                  >
+                    <h1 className="text-8xl font-black text-primary/20 leading-none">403</h1>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-bold text-text uppercase tracking-widest italic">Access Refused.</h2>
+                      <p className="text-text-secondary max-w-xs mx-auto text-sm font-medium">You don't have the required protocols to access this sector.</p>
+                    </div>
+                    <button onClick={() => window.location.href = '/login'} className="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all">Go to Login</button>
+                  </motion.div>
                 </div>
               } />
 
               <Route path="*" element={
-                <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-                  <h1 className="text-4xl font-bold text-text mb-2">404</h1>
-                  <p className="text-text-secondary mb-6">The page you're looking for doesn't exist.</p>
-                  <button onClick={() => window.location.href = '/login'} className="btn-primary">Go to Login</button>
+                <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center selection:bg-primary/30">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-6"
+                  >
+                    <h1 className="text-8xl font-black text-primary/20 leading-none">404</h1>
+                    <div className="space-y-2">
+                      <h2 className="text-2xl font-bold text-text uppercase tracking-widest italic">Lost in Orbit.</h2>
+                      <p className="text-text-secondary max-w-xs mx-auto text-sm font-medium">The coordinates you're looking for do not exist in this system.</p>
+                    </div>
+                    <button onClick={() => window.location.href = '/login'} className="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all">Go to Login</button>
+                  </motion.div>
                 </div>
               } />
             </Routes>

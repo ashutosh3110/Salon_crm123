@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Mail, ArrowRight, ArrowLeft, Lock,
     Eye, EyeOff, CheckCircle, KeyRound, RefreshCw, Sparkles
 } from 'lucide-react';
-import LumiereNavbar from '../../components/landing/lumiere/LumiereNavbar';
+import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 
 /* ─── Step constants ──────────────────────────────────────────────────────── */
 const S_EMAIL = 1;   // Enter email
@@ -39,6 +39,15 @@ const STEP_LABELS = ['Email', 'Verify', 'New', '✓'];
 
 export default function ForgotPasswordPage() {
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const originalBg = document.body.style.backgroundColor;
+        document.body.style.backgroundColor = '#050505';
+        return () => {
+            document.body.style.backgroundColor = originalBg;
+        };
+    }, []);
+
     const [step, setStep] = useState(S_EMAIL);
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState(Array(6).fill(''));
@@ -130,8 +139,8 @@ export default function ForgotPasswordPage() {
     const { title, sub } = COPY[step];
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30 selection:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <LumiereNavbar />
+        <div className="min-h-screen new-dark-theme selection:bg-primary/30 selection:text-white" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <WapixoNavbar />
 
             {/* Background elements */}
             <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
@@ -140,7 +149,7 @@ export default function ForgotPasswordPage() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03]" />
             </div>
 
-            <main className="relative z-10 flex items-center justify-center p-6 pt-32 min-h-screen">
+            <main className="relative z-10 flex items-center justify-center p-4 pt-24 md:pt-32 min-h-screen">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}

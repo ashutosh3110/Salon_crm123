@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../../components/landing/Navbar';
-import Footer from '../../components/landing/Footer';
+import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
+import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
 const blogPosts = [
     {
@@ -58,12 +59,20 @@ export default function BlogPostDetailPage() {
     const navigate = useNavigate();
     const post = blogPosts.find(p => p.id === parseInt(id));
 
+    useEffect(() => {
+        const originalBg = document.body.style.backgroundColor;
+        document.body.style.backgroundColor = '#050505';
+        return () => {
+            document.body.style.backgroundColor = originalBg;
+        };
+    }, []);
+
     if (!post) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#FDF9F8]">
-                <div className="text-center">
-                    <h2 className="text-2xl font-serif italic mb-4">Article Not Found</h2>
-                    <button onClick={() => navigate('/blog')} className="text-primary font-bold uppercase tracking-widest text-xs border-b border-primary">
+            <div className="new-dark-theme" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif" }}>
+                <div style={{ textAlign: 'center' }}>
+                    <h2 style={{ fontSize: '2rem', fontWeight: 200, marginBottom: '2rem' }}>Article Not Found</h2>
+                    <button onClick={() => navigate('/blog')} style={{ background: 'none', border: 'none', borderBottom: '1px solid #ffffff', color: '#ffffff', paddingBottom: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
                         Return to Journal
                     </button>
                 </div>
@@ -72,98 +81,110 @@ export default function BlogPostDetailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#FDF9F8] flex flex-col">
-            <Navbar />
+        <div className="new-dark-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
+            <WapixoNavbar />
 
             {/* Elegant Header - Matching Journal Style */}
-            <div className="bg-[#4A1D28] pt-32 pb-20 text-center relative overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-1/4 w-64 h-64 bg-white rounded-full blur-3xl" />
-                    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white rounded-full blur-3xl" />
+            <div style={{ paddingTop: 'clamp(100px, 15vw, 160px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: '-10%', left: '25%', width: '400px', height: '400px', background: '#ffffff', borderRadius: '50%', filter: 'blur(100px)' }} />
+                    <div style={{ position: 'absolute', bottom: '-10%', right: '25%', width: '500px', height: '500px', background: '#ffffff', borderRadius: '50%', filter: 'blur(120px)' }} />
                 </div>
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="relative z-10 px-4 max-w-4xl mx-auto"
+                    transition={{ duration: 0.8 }}
+                    style={{ position: 'relative', zIndex: 10, padding: '0 1.5rem', maxWidth: '1000px', margin: '0 auto' }}
                 >
-                    <span className="text-[#D4AF37] text-xs font-bold uppercase tracking-[0.4em] mb-4 block">
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block' }}>
                         {post.category} Journal
                     </span>
-                    <h1 className="text-3xl md:text-5xl font-serif italic text-white leading-tight mb-6">
+                    <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 200, color: '#ffffff', lineHeight: 1.1, marginBottom: '2.5rem', letterSpacing: '-0.02em' }}>
                         {post.title}
                     </h1>
-                    <div className="flex items-center justify-center gap-6 text-white/60 text-[10px] font-bold uppercase tracking-[0.2em]">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
                         <span>By {post.author}</span>
-                        <div className="h-4 w-[1px] bg-white/20" />
+                        <div style={{ height: '12px', width: '1px', background: 'rgba(255,255,255,0.15)' }} />
                         <span>{post.date}</span>
                     </div>
                 </motion.div>
             </div>
 
             {/* Content Area */}
-            <main className="flex-1 max-w-7xl mx-auto px-4 py-20 w-full">
-                <div className="grid lg:grid-cols-12 gap-12 items-start">
-
-                    {/* Left Decorative Column */}
-                    <div className="hidden lg:block lg:col-span-2 sticky top-32">
-                        <div className="aspect-[2/3] rounded-t-full overflow-hidden border border-black/5 shadow-xl grayscale">
-                            <img src={post.image} alt="Artistic" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="mt-8 text-center">
-                            <h3 className="font-serif italic text-xl text-primary">Vision 01</h3>
-                        </div>
-                    </div>
+            <main style={{ flex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 1.5rem) 60px', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                     {/* Main Article Content */}
-                    <div className="lg:col-span-8 bg-white p-8 md:p-16 shadow-lg border border-black/5">
-                        <div className="aspect-video overflow-hidden border border-black/5 mb-12">
-                            <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
-                        </div>
+                    <div style={{ width: '100%' }}>
+                        <div style={{ background: 'rgba(255,255,255,0.02)', padding: 'clamp(2rem, 5vw, 5rem)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px' }}>
+                            <div style={{ aspectRatio: '16/9', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '4rem' }}>
+                                <img src={post.image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
 
-                        <div
-                            className="prose prose-lg prose-slate max-w-none text-text-secondary leading-relaxed first-letter:text-5xl first-letter:font-serif first-letter:italic first-letter:text-primary first-letter:mr-3 first-letter:float-left"
-                            dangerouslySetInnerHTML={{ __html: post.content }}
-                        />
+                            <div
+                                style={{
+                                    color: 'rgba(255,255,255,0.6)',
+                                    lineHeight: 1.8,
+                                    fontSize: '1.1rem',
+                                    fontWeight: 300
+                                }}
+                                className="blog-content-wapixo"
+                                dangerouslySetInnerHTML={{ __html: post.content }}
+                            />
 
-                        <div className="mt-20 pt-10 border-t border-black/5 flex justify-between items-center">
-                            <button
-                                onClick={() => navigate('/blog')}
-                                className="text-xs font-black uppercase tracking-[0.2em] flex items-center gap-4 hover:gap-6 transition-all"
-                            >
-                                <span className="h-[1px] w-12 bg-primary" /> Back to Journal
-                            </button>
-                            <div className="flex gap-4">
-                                {/* Share icons could go here */}
-                                <div className="h-8 w-8 rounded-full border border-black/5 flex items-center justify-center hover:bg-[#4A1D28] hover:text-white transition-all cursor-pointer">
-                                    <i className="fab fa-facebook-f text-xs" />
-                                </div>
-                                <div className="h-8 w-8 rounded-full border border-black/5 flex items-center justify-center hover:bg-[#4A1D28] hover:text-white transition-all cursor-pointer">
-                                    <i className="fab fa-twitter text-xs" />
+                            {/* Adding some basic styles for the inner HTML content */}
+                            <style>{`
+                                .blog-content-wapixo h3 {
+                                    color: #ffffff;
+                                    font-weight: 200;
+                                    font-size: 1.75rem;
+                                    margin-top: 3rem;
+                                    margin-bottom: 1.5rem;
+                                }
+                                .blog-content-wapixo p {
+                                    margin-bottom: 1.5rem;
+                                }
+                                .blog-content-wapixo p:first-of-type::first-letter {
+                                    font-size: 3.5rem;
+                                    float: left;
+                                    margin-right: 0.75rem;
+                                    line-height: 1;
+                                    color: #ffffff;
+                                    font-weight: 200;
+                                }
+                            `}</style>
+
+                            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+                                <button
+                                    onClick={() => navigate('/blog')}
+                                    style={{ background: 'none', border: 'none', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '0.7rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em', cursor: 'pointer' }}
+                                    onMouseOver={(e) => e.currentTarget.style.gap = '1.5rem'}
+                                    onMouseOut={(e) => e.currentTarget.style.gap = '1rem'}
+                                >
+                                    <div style={{ height: '1px', width: '40px', background: 'rgba(255,255,255,0.3)' }} /> Back to Journal
+                                </button>
+                                <div style={{ display: 'flex', gap: '1rem', marginLeft: 'auto' }}>
+                                    {[1, 2].map(i => (
+                                        <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.3s ease' }} onMouseOver={(e) => { e.currentTarget.style.background = '#ffffff'; e.currentTarget.style.color = '#050505'; }} onMouseOut={(e) => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#ffffff'; }}>
+                                            <div style={{ fontSize: '10px' }}>{i === 1 ? 'FB' : 'TW'}</div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* Right Decorative Column */}
-                    <div className="hidden lg:block lg:col-span-2 sticky top-32">
-                        <div className="aspect-[2/3] rounded-b-full overflow-hidden border border-black/5 shadow-xl grayscale">
-                            <img src="https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=800" alt="Artistic" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="mt-8 text-center">
-                            <h3 className="font-serif italic text-xl text-primary">Detail</h3>
                         </div>
                     </div>
 
                 </div>
             </main>
 
-            {/* Bottom Dark Section - Matching Ref */}
-            <div className="bg-[#4A1D28] py-12 text-center">
-                <h2 className="text-2xl font-serif italic text-[#D4AF37]">Explore More Insights</h2>
+            {/* Bottom Dark Section */}
+            <div style={{ background: '#050505', borderTop: '1px solid rgba(255,255,255,0.06)', py: '60px', textAlign: 'center', padding: '60px 0' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>Explore More Insights.</h2>
             </div>
 
-            <Footer />
+            <WapixoFooter />
         </div>
     );
 }
+

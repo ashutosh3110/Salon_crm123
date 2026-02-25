@@ -28,45 +28,60 @@ export default function AppMyBookingsPage() {
     const displayBookings = activeTab === 'Upcoming' ? upcoming : past;
 
     return (
-        <div className="space-y-5">
-            <h1 className="text-xl font-extrabold text-text">My Bookings</h1>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-6 px-4 pb-8"
+            style={{ background: '#141414', minHeight: '100svh' }}
+        >
+            <div className="pt-12 pb-2">
+                <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter">My <span className="text-[#C8956C]">Bookings</span></h1>
+                <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Track your sessions</p>
+            </div>
 
             {/* Tab Switcher */}
-            <div className="flex gap-1 bg-surface rounded-xl p-1">
+            <div className="flex gap-1 bg-[#1A1A1A] rounded-2xl p-1 border border-white/5">
                 {tabs.map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`relative flex-1 py-2.5 rounded-lg text-sm font-bold transition-colors ${activeTab === tab ? 'text-primary' : 'text-text-muted'
+                        className={`relative flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'text-white' : 'text-white/30'
                             }`}
                     >
                         {activeTab === tab && (
                             <motion.div
                                 layoutId="bookingsTab"
-                                className="absolute inset-0 bg-background rounded-lg shadow-sm"
+                                className="absolute inset-0 bg-[#C8956C] rounded-xl shadow-lg shadow-[#C8956C]/20"
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         )}
-                        <span className="relative z-10">{tab} ({tab === 'Upcoming' ? upcoming.length : past.length})</span>
+                        <span className="relative z-10">{tab} <span className="opacity-50 ml-1">({tab === 'Upcoming' ? upcoming.length : past.length})</span></span>
                     </button>
                 ))}
             </div>
 
             {/* Bookings List */}
-            <div className="space-y-2.5">
+            <div className="space-y-3">
                 {displayBookings.length === 0 ? (
                     <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-center py-16"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-20 bg-[#1A1A1A] rounded-[2rem] border border-dashed border-white/10"
                     >
-                        <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center mx-auto mb-3">
-                            <CalendarX className="w-8 h-8 text-text-muted" />
+                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                            <CalendarX className="w-8 h-8 text-white/20" />
                         </div>
-                        <p className="text-sm font-bold text-text">No {activeTab.toLowerCase()} bookings</p>
-                        <p className="text-xs text-text-muted mt-1">
-                            {activeTab === 'Upcoming' ? 'Book your next appointment to see it here' : 'Your completed visits will appear here'}
+                        <p className="text-[11px] font-black text-white uppercase tracking-[0.2em]">No {activeTab.toLowerCase()} bookings</p>
+                        <p className="text-[10px] text-white/30 mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">
+                            {activeTab === 'Upcoming' ? 'Book your next session to dominate the field' : 'Your history is currently a clean state'}
                         </p>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/app/book')}
+                            className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all"
+                        >
+                            Book Now
+                        </motion.button>
                     </motion.div>
                 ) : (
                     displayBookings.map((booking, i) => (
@@ -74,6 +89,6 @@ export default function AppMyBookingsPage() {
                     ))
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 }

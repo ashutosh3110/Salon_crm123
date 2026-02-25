@@ -33,31 +33,32 @@ export default function BookingCard({ booking, onTap, index = 0 }) {
             transition={{ delay: index * 0.06, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onTap?.(booking)}
-            className={`bg-surface rounded-2xl border p-4 cursor-pointer hover:shadow-sm transition-all ${booking.status === 'cancelled' ? 'border-border/40 opacity-70' : 'border-border/60'
+            className={`bg-[#1A1A1A] rounded-2xl border p-5 cursor-pointer hover:border-[#C8956C]/30 transition-all ${booking.status === 'cancelled' ? 'border-red-500/10 opacity-70' : 'border-white/5'}
                 }`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-text truncate">{booking.service?.name}</h4>
-                    <p className="text-xs text-text-muted mt-0.5 flex items-center gap-1">
-                        <User className="w-3 h-3" /> {booking.staff?.name}
+                    <h4 className="text-sm font-black text-white uppercase tracking-tight truncate">{booking.service?.name}</h4>
+                    <p className="text-[10px] text-white/40 mt-1 flex items-center gap-1.5 font-bold uppercase tracking-widest">
+                        <User className="w-3 h-3 text-[#C8956C]" /> {booking.staff?.name}
                     </p>
                 </div>
-                <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg shrink-0 ${status.bg} ${status.text}`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shrink-0 border border-current opacity-80 ${status.bg} ${status.text}`}
+                >
                     {status.label}
                 </span>
             </div>
 
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/40">
-                <span className="flex items-center gap-1 text-xs text-text-secondary font-medium">
-                    <Calendar className="w-3 h-3 text-text-muted" />
+            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/5">
+                <span className="flex items-center gap-2 text-[10px] text-white/60 font-black uppercase tracking-widest">
+                    <Calendar className="w-3 h-3 text-[#C8956C]" />
                     {formatDate(booking.appointmentDate)}
                 </span>
-                <span className="flex items-center gap-1 text-xs text-text-secondary font-medium">
-                    <Clock className="w-3 h-3 text-text-muted" />
+                <span className="flex items-center gap-2 text-[10px] text-white/60 font-black uppercase tracking-widest">
+                    <Clock className="w-3 h-3 text-[#C8956C]" />
                     {formatTime(booking.appointmentDate)}
                 </span>
-                <span className="ml-auto text-sm font-extrabold text-primary">₹{booking.price?.toLocaleString()}</span>
+                <span className="ml-auto text-sm font-black text-[#C8956C] tracking-tighter">₹{booking.price?.toLocaleString()}</span>
             </div>
         </motion.div>
     );

@@ -16,6 +16,14 @@ export default function HeroScroll() {
     const currentFrameRef = useRef(0);
     const rafRef = useRef(null);
     const progressMV = useMotionValue(0);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const textOpacity = useTransform(progressMV, [0.5, 0.7], [0, 1]);
     const textY = useTransform(progressMV, [0.5, 0.8], [40, 0]);
@@ -102,7 +110,7 @@ export default function HeroScroll() {
     return (
         <div
             ref={containerRef}
-            style={{ height: '500vh', position: 'relative' }}
+            style={{ height: isMobile ? '300vh' : '500vh', position: 'relative' }}
         >
             {/* Sticky canvas viewport */}
             <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
@@ -183,7 +191,7 @@ export default function HeroScroll() {
                             src="/1-removebg-preview.png"
                             alt="Wapixo"
                             style={{
-                                height: '250px',
+                                height: 'clamp(100px, 18vw, 250px)',
                                 width: 'auto',
                                 filter: 'brightness(0) invert(1)',
                             }}
@@ -210,7 +218,7 @@ export default function HeroScroll() {
                             color: '#ffffff',
                             letterSpacing: '-0.03em',
                             lineHeight: 1.05,
-                            margin: '-6rem 0 0 0', // Adjusted margin to account for new tagline
+                            margin: 'clamp(-3rem, -6vw, -6rem) 0 0 0',
                             padding: '0 1.5rem',
                         }}
                     >

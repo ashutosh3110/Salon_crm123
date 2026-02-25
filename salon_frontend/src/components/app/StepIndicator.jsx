@@ -16,10 +16,10 @@ export default function StepIndicator({ currentStep = 0, steps = defaultSteps })
                             <motion.div
                                 animate={{
                                     scale: isActive ? 1.1 : 1,
-                                    backgroundColor: isCompleted ? '#B85C5C' : isActive ? '#B85C5C' : '#F5F5F5',
+                                    backgroundColor: isCompleted ? '#C8956C' : isActive ? '#C8956C' : '#242424',
                                 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                                className="w-8 h-8 rounded-full flex items-center justify-center relative"
+                                className="w-8 h-8 rounded-full flex items-center justify-center relative border border-white/5"
                             >
                                 {isCompleted ? (
                                     <motion.div
@@ -30,29 +30,29 @@ export default function StepIndicator({ currentStep = 0, steps = defaultSteps })
                                         <Check className="w-4 h-4 text-white" strokeWidth={3} />
                                     </motion.div>
                                 ) : (
-                                    <span className={`text-xs font-bold ${isActive ? 'text-white' : 'text-text-muted'}`}>
+                                    <span className={`text-[10px] font-black ${isActive ? 'text-white' : 'text-white/20'}`}>
                                         {i + 1}
                                     </span>
                                 )}
                                 {isActive && (
                                     <motion.div
                                         layoutId="stepRing"
-                                        className="absolute inset-0 rounded-full border-2 border-primary"
+                                        className="absolute inset-0 rounded-full border-2 border-[#C8956C]"
                                         style={{ margin: -3 }}
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                     />
                                 )}
                             </motion.div>
-                            <span className={`text-[10px] font-medium whitespace-nowrap ${isActive ? 'text-primary font-bold' : isCompleted ? 'text-text-secondary' : 'text-text-muted'}`}>
+                            <span className={`text-[8px] font-black uppercase tracking-widest whitespace-nowrap ${isActive ? 'text-[#C8956C]' : isCompleted ? 'text-white/40' : 'text-white/20'}`}>
                                 {label}
                             </span>
                         </div>
 
                         {/* Connector line */}
                         {i < steps.length - 1 && (
-                            <div className="flex-1 h-0.5 mx-1.5 rounded-full overflow-hidden bg-border/60 mt-[-16px]">
+                            <div className="flex-1 h-[1px] mx-1.5 rounded-full overflow-hidden bg-white/5 mt-[-16px]">
                                 <motion.div
-                                    className="h-full bg-primary rounded-full"
+                                    className="h-full bg-[#C8956C]"
                                     initial={{ width: '0%' }}
                                     animate={{ width: isCompleted ? '100%' : '0%' }}
                                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

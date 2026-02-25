@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useTransform, useMotionValue } from 'framer-motion';
 
 const TOTAL_FRAMES = 120;
@@ -16,6 +16,14 @@ export default function ScissorsMorph() {
     const currentFrameRef = useRef(0);
     const rafRef = useRef(null);
     const progressMV = useMotionValue(0);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const text1Opacity = useTransform(progressMV, [0.2, 0.4, 0.7, 0.85], [0, 1, 1, 0]);
     const text1Y = useTransform(progressMV, [0.2, 0.45], [40, 0]);
@@ -100,7 +108,7 @@ export default function ScissorsMorph() {
     return (
         <div
             ref={containerRef}
-            style={{ height: '400vh', position: 'relative' }}
+            style={{ height: isMobile ? '300vh' : '400vh', position: 'relative' }}
         >
             <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
                 <canvas
