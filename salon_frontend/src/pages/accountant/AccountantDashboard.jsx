@@ -30,10 +30,10 @@ export default function AccountantDashboard() {
                     <p className="text-sm text-text-muted font-medium">Real-time health of your business finances</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface-alt transition-all">
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all">
                         <Calendar className="w-3.5 h-3.5" /> This Quarter
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all text-left">
+                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all text-left">
                         <Download className="w-4 h-4" /> Download Report
                     </button>
                 </div>
@@ -47,14 +47,14 @@ export default function AccountantDashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         key={stat.label}
-                        className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all"
+                        className="p-6 bg-surface rounded-none border border-border shadow-sm relative overflow-hidden group hover:border-primary/20 transition-all"
                     >
                         <div className="flex flex-col h-full justify-between">
                             <div className="flex items-start justify-between mb-4">
-                                <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center shrink-0`}>
+                                <div className={`w-10 h-10 rounded-none ${stat.bg} flex items-center justify-center shrink-0`}>
                                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                                 </div>
-                                <div className={`flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-md ${stat.isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                <div className={`flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-none ${stat.isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                                     {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {stat.change}
                                 </div>
@@ -71,7 +71,7 @@ export default function AccountantDashboard() {
 
             <div className="grid lg:grid-cols-3 gap-6">
                 {/* Cash Flow Chart */}
-                <div className="lg:col-span-2 p-8 bg-surface rounded-[40px] border border-border/40 shadow-sm">
+                <div className="lg:col-span-2 p-8 bg-surface rounded-none border border-border shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h2 className="text-xl font-black text-text tracking-tight uppercase">Cash Flow</h2>
@@ -91,8 +91,8 @@ export default function AccountantDashboard() {
                     <div className="h-64 flex items-end gap-3 px-2">
                         {[40, 60, 45, 90, 65, 80, 55, 75, 85, 45, 70, 95].map((val, i) => (
                             <div key={i} className="flex-1 space-y-1 group relative">
-                                <div className="w-full bg-rose-200/40 rounded-t-md transition-all group-hover:bg-rose-500/10" style={{ height: `${val * 0.4}%` }} />
-                                <div className="w-full bg-primary/10 rounded-t-md transition-all group-hover:bg-primary" style={{ height: `${val * 0.6}%` }} />
+                                <div className="w-full bg-rose-200/40 rounded-none transition-all group-hover:bg-rose-500/10" style={{ height: `${val * 0.4}%` }} />
+                                <div className="w-full bg-primary/10 rounded-none transition-all group-hover:bg-primary" style={{ height: `${val * 0.6}%` }} />
                             </div>
                         ))}
                     </div>
@@ -104,7 +104,7 @@ export default function AccountantDashboard() {
                 </div>
 
                 {/* Expense Splits */}
-                <div className="p-8 bg-surface rounded-[40px] border border-border/40 shadow-sm">
+                <div className="p-8 bg-surface rounded-none border border-border shadow-sm">
                     <h2 className="text-xl font-black text-text tracking-tight uppercase mb-8">Expense Splits</h2>
                     <div className="flex flex-col items-center justify-center h-full max-h-[300px] mb-8 relative">
                         <div className="w-48 h-48 rounded-full border-[12px] border-primary relative flex items-center justify-center border-l-amber-500 border-t-rose-500 border-b-indigo-500 rotate-45">
@@ -134,13 +134,13 @@ export default function AccountantDashboard() {
             </div>
 
             {/* Recent Transaction Log */}
-            <div className="bg-surface rounded-[40px] border border-border/40 overflow-hidden shadow-sm">
+            <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm">
                 <div className="px-8 py-6 border-b border-border/40 flex items-center justify-between bg-surface/50">
                     <div>
                         <h2 className="text-sm font-black text-text uppercase tracking-[0.2em] leading-none">Journal Entry</h2>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Live Transaction Stream</p>
                     </div>
-                    <button className="flex items-center gap-1.5 px-4 py-2 bg-background border border-border/40 rounded-xl text-[10px] font-black text-text-secondary hover:bg-surface-alt transition-all group">
+                    <button className="flex items-center gap-1.5 px-4 py-2 bg-background border border-border/40 rounded-none text-[10px] font-black text-text-secondary hover:bg-surface-alt transition-all group">
                         View Audit Trail <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
                     </button>
                 </div>
@@ -148,7 +148,7 @@ export default function AccountantDashboard() {
                     {recentTransactions.map((txn) => (
                         <div key={txn.id} className="px-8 py-6 flex items-center justify-between hover:bg-surface-alt/30 transition-colors group">
                             <div className="flex items-center gap-4 text-left">
-                                <div className={`w-10 h-10 rounded-xl bg-background border border-border/10 flex items-center justify-center shrink-0 ${txn.type === 'Credit' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                <div className={`w-10 h-10 rounded-none bg-background border border-border/10 flex items-center justify-center shrink-0 ${txn.type === 'Credit' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                     {txn.type === 'Credit' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                                 </div>
                                 <div>

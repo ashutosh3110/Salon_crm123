@@ -46,16 +46,16 @@ export default function CustomersPage({ tab = 'directory' }) {
                     <h1 className="text-2xl font-bold text-text uppercase">Customer CRM</h1>
                     <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
                 </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 bg-white border border-border px-4 py-2 rounded-xl text-xs font-bold text-text-muted hover:bg-slate-50 transition-all">
-                        <Download className="w-4 h-4" />
+                <div className="flex gap-2">
+                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">
+                        <Download className="w-3.5 h-3.5" />
                         Export
                     </button>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-95"
+                        className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
                     >
-                        <UserPlus className="w-4 h-4" />
+                        <UserPlus className="w-3.5 h-3.5" />
                         Add Customer
                     </button>
                 </div>
@@ -70,7 +70,7 @@ export default function CustomersPage({ tab = 'directory' }) {
             </div>
 
             {/* Content Container */}
-            <div className="bg-white rounded-[32px] border border-border shadow-sm overflow-hidden min-h-[600px]">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
                 {activeTab === 'directory' && (
                     <CustomerDirectory
                         customers={customers}
@@ -93,9 +93,9 @@ export default function CustomersPage({ tab = 'directory' }) {
             {/* Add Customer Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white rounded-[40px] w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-surface rounded-none w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center text-center mb-8">
-                            <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-4 border border-primary/20">
                                 <UserPlus className="w-8 h-8" />
                             </div>
                             <h2 className="text-2xl font-bold text-text uppercase">New Customer</h2>
@@ -111,7 +111,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         required
                                         value={newCustomerForm.name}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -121,7 +121,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         required
                                         value={newCustomerForm.phone}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
                                     />
                                 </div>
                                 <div className="space-y-1.5">
@@ -130,14 +130,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         type="text"
                                         value={newCustomerForm.preferred}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, preferred: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-2xl bg-slate-50 border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-8">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-4 rounded-3xl text-xs font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-slate-50">Abort</button>
-                                <button type="submit" className="flex-1 btn-primary py-4 rounded-3xl shadow-xl shadow-primary/20 text-xs font-bold uppercase tracking-[0.2em]">Induct</button>
+                            <div className="flex gap-3 pt-6">
+                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3.5 rounded-none border border-border text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">Abort</button>
+                                <button type="submit" className="flex-1 bg-primary text-white py-3.5 rounded-none shadow-xl shadow-primary/20 text-[10px] font-extrabold uppercase tracking-widest hover:bg-primary-dark transition-all">Induct</button>
                             </div>
                         </form>
                     </div>
@@ -156,10 +156,12 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
     };
 
     return (
-        <div className="bg-white p-5 rounded-3xl border border-border shadow-sm hover:shadow-md transition-all group border-b-4 hover:border-b-primary">
-            <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-2xl border ${colors[color]} group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5" />
+        <div className="bg-surface p-5 rounded-none border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+            <div className="absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+
+            <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className={`p-2.5 rounded-none border ${colors[color]} group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-4 h-4" />
                 </div>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
             </div>
@@ -196,7 +198,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                         placeholder="Search Identity (Name or Phone)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
                 </div>
                 <div className="relative">
@@ -204,7 +206,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                     <select
                         value={filterStatus}
                         onChange={(e) => setFilterStatus(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter"
+                        className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter"
                     >
                         <option value="All">All Tiers</option>
                         <option value="Regular">Regular</option>
@@ -213,7 +215,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                 </div>
                 <div className="relative">
                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <select className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-border rounded-2xl text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter">
+                    <select className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter">
                         <option>Any Spend</option>
                         <option>High Value</option>
                         <option>Mid Range</option>
@@ -223,18 +225,18 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
             </div>
 
             {/* Table */}
-            <div className="flex-1 border border-border rounded-[32px] overflow-hidden">
+            <div className="flex-1 border border-border rounded-none overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-slate-50 border-b border-border">
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Customer Matrix</th>
+                        <tr className="bg-surface-alt border-b border-border">
+                            <th className="px-6 py-5 text-[10px] font-extrabold text-text-muted uppercase tracking-widest pl-8">Customer Matrix</th>
                             <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">History</th>
                             <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Finance</th>
                             <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Tiers</th>
                             <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right pr-8">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border bg-white text-sm">
+                    <tbody className="divide-y divide-border bg-surface text-sm">
                         {filtered.map((customer, index) => (
                             <tr
                                 key={customer._id}
@@ -244,7 +246,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                             >
                                 <td className="px-6 py-5 pl-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs group-hover:scale-110 transition-transform">
+                                        <div className="w-10 h-10 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center text-primary font-bold text-xs group-hover:scale-110 transition-transform">
                                             {customer.name.charAt(0)}
                                         </div>
                                         <div>
@@ -268,7 +270,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                 <td className="px-6 py-5">
                                     <div className="flex flex-wrap gap-1.5">
                                         {customer.tags.map((tag, i) => (
-                                            <span key={i} className={`px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest border transition-colors ${tag === 'VIP' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-50 text-text-muted border-slate-200'}`}>
+                                            <span key={i} className={`px-2 py-0.5 rounded-none text-[9px] font-black uppercase tracking-widest border transition-colors ${tag === 'VIP' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-surface-alt text-text-muted border-border'}`}>
                                                 {tag}
                                             </span>
                                         ))}
@@ -281,7 +283,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                                 e.stopPropagation();
                                                 onCustomerClick(customer);
                                             }}
-                                            className="p-2.5 rounded-xl text-text-muted hover:text-primary hover:bg-white hover:shadow-md border border-transparent hover:border-border transition-all"
+                                            className="p-2.5 rounded-none text-text-muted hover:text-primary hover:bg-surface-alt border border-transparent hover:border-border transition-all"
                                         >
                                             <ChevronRight className="w-4 h-4" />
                                         </button>
@@ -290,7 +292,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                                 e.stopPropagation();
                                                 onDelete(customer._id);
                                             }}
-                                            className="p-2.5 rounded-xl text-text-muted hover:text-rose-500 hover:bg-white hover:shadow-md border border-transparent hover:border-border transition-all"
+                                            className="p-2.5 rounded-none text-text-muted hover:text-rose-500 hover:bg-surface-alt border border-border transition-all"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -303,13 +305,13 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
             </div>
 
             {/* Pagination Footer */}
-            <div className="flex items-center justify-between px-8 py-5 bg-slate-50/50 border border-border rounded-[24px] text-[10px] font-bold text-text-muted uppercase tracking-widest">
+            <div className="flex items-center justify-between px-8 py-5 bg-surface-alt border border-border rounded-none text-[10px] font-bold text-text-muted uppercase tracking-widest">
                 <span>Displaying {filtered.length} Elite Customer Records</span>
                 <div className="flex gap-6">
                     <button className="hover:text-primary transition-colors disabled:opacity-30" disabled>Previous Page</button>
                     <button className="hover:text-primary transition-colors">Next Analytics</button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

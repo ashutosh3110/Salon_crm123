@@ -46,29 +46,37 @@ export default function POSPaymentsPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div>
-                <h1 className="text-2xl font-bold text-text tracking-tight uppercase">Payments</h1>
-                <p className="text-sm text-text-secondary mt-1">Track financial transactions and payment modes.</p>
+        <div className="space-y-8 animate-in fade-in duration-700 pb-10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
+                <div>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Treasury Log</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
+                        Authenticated Financial Node Status
+                    </p>
+                </div>
             </div>
 
             {/* Mode Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {paymentSummary.map((item, i) => (
-                    <div key={i} className="bg-surface py-4 px-5 rounded-none border border-border shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <item.icon className="w-4 h-4 text-text-muted" />
-                                <p className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">{item.mode}</p>
+                    <div key={i} className="bg-surface p-6 rounded-none border border-border shadow-sm hover:border-primary/40 transition-all group overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rotate-45 pointer-events-none group-hover:bg-primary/10 transition-colors" />
+                        <div className="flex items-center justify-between mb-6 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <item.icon className="w-4 h-4 text-primary" />
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{item.mode} PROTOCOL</p>
                             </div>
-                            <span className={`text-[11px] font-bold ${item.trendColor}`}>{item.trend}</span>
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border ${item.trendColor.replace('text-', 'bg-').replace('500', '500/10')} ${item.trendColor} border-current/20`}>
+                                {item.trend}
+                            </span>
                         </div>
-                        <div className="flex items-end justify-between">
+                        <div className="flex items-end justify-between relative z-10">
                             <div>
-                                <h3 className="text-2xl font-bold text-text tracking-tight">₹{item.value.toLocaleString()}</h3>
-                                <p className="text-[10px] text-text-muted mt-0.5">{item.count} Transactions</p>
+                                <h3 className="text-3xl font-black text-text tracking-tighter uppercase">₹{item.value.toLocaleString()}</h3>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">LVL_{i + 1} • {item.count} SEGMENTS</p>
                             </div>
-                            <div className="text-emerald-500/50">
+                            <div className="mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
                                 <Sparkline />
                             </div>
                         </div>
@@ -77,42 +85,56 @@ export default function POSPaymentsPage() {
             </div>
 
             {/* Transaction List */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-border bg-surface">
-                    <h3 className="font-bold text-text uppercase tracking-widest text-xs">Transaction Log</h3>
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col">
+                <div className="px-8 py-6 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                    <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
+                        <Clock className="w-4 h-4 text-primary" /> Multi-Mode Stream
+                    </h3>
+                    <div className="flex items-center gap-4">
+                        <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-none bg-emerald-500" />
+                            Live_Inflow
+                        </div>
+                    </div>
                 </div>
                 {invoices.length === 0 ? (
-                    <div className="py-16 text-center text-text-muted text-sm bg-background">No transactions found.</div>
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Log sequence empty • No active transfers</p>
+                    </div>
                 ) : (
                     <div className="overflow-x-auto bg-background">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-surface-alt text-xs font-bold text-text-secondary uppercase tracking-wider border-b border-border">
-                                    <th className="px-6 py-4">Invoice</th>
-                                    <th className="px-6 py-4">Time</th>
-                                    <th className="px-6 py-4">Client</th>
-                                    <th className="px-6 py-4">Payment Mode</th>
-                                    <th className="px-6 py-4 text-right">Amount</th>
-                                    <th className="px-6 py-4">Status</th>
+                                <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
+                                    <th className="px-8 py-5">NODE_ID</th>
+                                    <th className="px-8 py-5 whitespace-nowrap">TIMESTAMP_UTC</th>
+                                    <th className="px-8 py-5">SOURCE_ENTITY</th>
+                                    <th className="px-8 py-5">TRANSFER_PRTCL</th>
+                                    <th className="px-8 py-5 text-right">VAL_CREDIT</th>
+                                    <th className="px-8 py-5">SIG_STATUS</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/50">
+                            <tbody className="divide-y divide-border/30">
                                 {invoices.map((inv) => (
-                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors text-sm">
-                                        <td className="px-6 py-4 font-bold text-primary">{inv.invoiceNumber}</td>
-                                        <td className="px-6 py-4 text-text-secondary flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {formatTime(inv.createdAt)}</td>
-                                        <td className="px-6 py-4 font-medium text-text">{inv.clientId?.name || 'Walk-in'}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="flex items-center gap-1.5 font-medium text-text capitalize">
-                                                {getMethodIcon(inv.paymentMethod)}
-                                                {inv.paymentMethod === 'online' ? 'UPI' : inv.paymentMethod}
+                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group">
+                                        <td className="px-8 py-5 font-black text-primary uppercase tracking-tighter whitespace-nowrap">{inv.invoiceNumber}</td>
+                                        <td className="px-8 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
+                                            <Clock className="w-3.5 h-3.5 opacity-40" /> {formatTime(inv.createdAt)}
+                                        </td>
+                                        <td className="px-8 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'ANN_GUEST'}</td>
+                                        <td className="px-8 py-5">
+                                            <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
+                                                <div className="p-1 bg-surface-alt border border-border group-hover:bg-background transition-colors">
+                                                    {getMethodIcon(inv.paymentMethod)}
+                                                </div>
+                                                {inv.paymentMethod === 'online' ? 'UPI_INT' : `${inv.paymentMethod?.toUpperCase()}_HND`}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right font-bold text-text">₹{inv.total?.toLocaleString()}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-bold uppercase tracking-wider ${inv.paymentStatus === 'paid' ? 'bg-green-50 dark:bg-green-500/10 text-green-600 border border-green-100 dark:border-green-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 border border-orange-100 dark:border-orange-500/20'}`}>
-                                                <CheckCircle2 className="w-3 h-3" />
-                                                {inv.paymentStatus}
+                                        <td className="px-8 py-5 text-right font-black text-text tracking-tighter text-base">₹{inv.total?.toLocaleString()}</td>
+                                        <td className="px-8 py-5">
+                                            <span className={`inline-flex items-center gap-3 px-4 py-1.5 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                <div className={`w-1.5 h-1.5 rounded-none ${inv.paymentStatus === 'paid' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-500'}`} />
+                                                {inv.paymentStatus === 'paid' ? 'SIG_VERIFIED' : 'PENDING_AUTH'}
                                             </span>
                                         </td>
                                     </tr>

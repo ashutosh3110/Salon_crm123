@@ -26,7 +26,7 @@ export default function PayrollPage() {
                     <p className="text-sm text-text-muted font-medium">Manage staff salaries, incentives, and monthly payouts</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all">
+                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all">
                         <Wallet className="w-4 h-4" /> Process Payouts
                     </button>
                 </div>
@@ -40,7 +40,7 @@ export default function PayrollPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         key={item.label}
-                        className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm group hover:border-primary/20 transition-all"
+                        className="p-6 bg-surface rounded-none border border-border shadow-sm group hover:border-primary/20 transition-all"
                     >
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">{item.label}</p>
                         <h3 className="text-2xl font-black text-text tracking-tight group-hover:text-primary transition-colors">{item.value}</h3>
@@ -50,15 +50,15 @@ export default function PayrollPage() {
             </div>
 
             {/* Payroll Table */}
-            <div className="bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm">
-                <div className="px-6 py-5 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50">
+            <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm">
+                <div className="px-6 py-5 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50">
                     <div className="flex items-center gap-4">
                         <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Staff Salary Register</h2>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-widest">Feb 2024</span>
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-none bg-primary/10 text-primary uppercase tracking-widest">Feb 2024</span>
                     </div>
                     <div className="relative w-full md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input type="text" placeholder="Search employee..." className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none focus:border-primary/50 transition-colors" />
+                        <input type="text" placeholder="Search employee..." className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-none text-[10px] font-extrabold uppercase tracking-widest outline-none focus:border-primary transition-colors" />
                     </div>
                 </div>
 
@@ -80,7 +80,7 @@ export default function PayrollPage() {
                                 <tr key={staff.id} className="hover:bg-surface-alt/50 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-xl bg-background border border-border/10 flex items-center justify-center text-text-muted italic text-xs font-black shrink-0">
+                                            <div className="w-9 h-9 rounded-none bg-background border border-border/10 flex items-center justify-center text-text-muted italic text-xs font-black shrink-0">
                                                 {staff.name.split(' ').map(n => n[0]).join('')}
                                             </div>
                                             <div>
@@ -93,7 +93,7 @@ export default function PayrollPage() {
                                     <td className="px-6 py-4 text-sm font-bold text-emerald-500">{staff.commission}</td>
                                     <td className="px-6 py-4 text-sm font-bold text-rose-500">{staff.deductions}</td>
                                     <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${staff.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${staff.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' :
                                             staff.status === 'Processing' ? 'bg-amber-500/10 text-amber-500' :
                                                 'bg-rose-500/10 text-rose-500'
                                             }`}>
@@ -102,7 +102,7 @@ export default function PayrollPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right font-black text-text">{staff.net}</td>
                                     <td className="px-6 py-4 text-right">
-                                        <button className="p-2 hover:bg-background rounded-lg text-text-muted hover:text-text transition-all">
+                                        <button className="p-2 hover:bg-background rounded-none text-text-muted hover:text-text transition-all">
                                             <MoreHorizontal className="w-4 h-4" />
                                         </button>
                                     </td>

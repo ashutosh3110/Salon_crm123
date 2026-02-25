@@ -27,10 +27,10 @@ export default function RevenuePage() {
                     <p className="text-sm text-text-muted font-medium">Detailed breakdown of income and sales tax</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface-alt transition-all">
+                    <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all">
                         <Calendar className="w-3.5 h-3.5" /> This Month
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all">
+                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all">
                         <Download className="w-4 h-4" /> Export Report
                     </button>
                 </div>
@@ -44,12 +44,12 @@ export default function RevenuePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         key={stat.label}
-                        className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm group hover:border-primary/20 transition-all"
+                        className="p-6 bg-surface rounded-none border border-border shadow-sm group hover:border-primary/20 transition-all"
                     >
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">{stat.label}</p>
                         <div className="flex items-end justify-between">
                             <h3 className="text-xl font-black text-text tracking-tight group-hover:text-primary transition-colors">{stat.value}</h3>
-                            <div className={`flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-md ${stat.isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                            <div className={`flex items-center gap-1 text-[10px] font-black px-1.5 py-0.5 rounded-none ${stat.isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                                 {stat.isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                 {stat.change}
                             </div>
@@ -59,19 +59,19 @@ export default function RevenuePage() {
             </div>
 
             {/* Quick Actions / Filters */}
-            <div className="flex flex-wrap items-center gap-3">
-                <button className="px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md">All Revenue</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Service Sales</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Product Sales</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Memberships</button>
+            <div className="flex flex-wrap items-center gap-2">
+                <button className="px-4 py-2 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-widest shadow-md">All Revenue</button>
+                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Service Sales</button>
+                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Product Sales</button>
+                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Memberships</button>
                 <div className="flex-1" />
-                <button className="flex items-center gap-2 px-4 py-2 bg-surface border border-border/40 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface-alt transition-colors">
+                <button className="flex items-center gap-2 px-4 py-2 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-colors">
                     <Filter className="w-3.5 h-3.5" /> More Filters
                 </button>
             </div>
 
             {/* Revenue Table */}
-            <div className="bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm">
+            <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm">
                 <div className="overflow-x-auto text-left">
                     <table className="w-full">
                         <thead>
@@ -94,10 +94,10 @@ export default function RevenuePage() {
                                     </td>
                                     <td className="px-6 py-4 text-sm font-bold text-emerald-500">{item.tax}</td>
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-background border border-border/10 text-text-secondary">{item.method}</span>
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-none bg-background border border-border/10 text-text-secondary">{item.method}</span>
                                     </td>
                                     <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${item.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${item.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
                                             {item.status}
                                         </span>
                                     </td>

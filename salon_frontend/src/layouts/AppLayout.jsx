@@ -13,7 +13,28 @@ export default function AppLayout() {
     const location = useLocation();
 
     return (
-        <div className="min-h-screen bg-background max-w-lg mx-auto relative transition-colors duration-300">
+        <div className="min-h-screen bg-background max-w-lg mx-auto relative transition-colors duration-300 admin-panel">
+            {/* Global sharp-edge & font override for Customer App panel */}
+            <style>{`
+                .admin-panel *,
+                .admin-panel *::before,
+                .admin-panel *::after {
+                    border-radius: 0 !important;
+                    font-family: 'Open Sans', sans-serif;
+                }
+                .admin-panel h1, 
+                .admin-panel h2, 
+                .admin-panel h3, 
+                .admin-panel h4, 
+                .admin-panel h5, 
+                .admin-panel h6,
+                .admin-panel .font-serif {
+                    font-family: 'Libre Baskerville', 'Noto Serif', serif !important;
+                }
+                .admin-panel .font-sans {
+                    font-family: 'Open Sans', sans-serif !important;
+                }
+            `}</style>
             <AppHeader />
 
             <AnimatePresence mode="wait">

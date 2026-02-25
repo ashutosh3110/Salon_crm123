@@ -26,40 +26,63 @@ export default function InvoicesPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-text">Invoices</h1>
-                <p className="text-sm text-text-secondary mt-1">{invoices.length} total invoices</p>
+                <h1 className="text-2xl font-black text-text uppercase tracking-tight">Financial Ledger</h1>
+                <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{invoices.length} committed transactions</p>
             </div>
 
-            <div className="flex items-center bg-white rounded-lg border border-border px-3 py-2 max-w-md">
-                <Search className="w-4 h-4 text-text-muted mr-2" />
-                <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by invoice # or client..." className="bg-transparent text-sm text-text placeholder-text-muted outline-none w-full" />
+            <div className="flex items-center bg-surface-alt rounded-none border border-border px-4 py-3 max-w-md shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+                <Search className="w-4 h-4 text-text-muted mr-3" />
+                <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Scan by invoice ID or entity..."
+                    className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
+                />
             </div>
 
-            <div className="bg-white rounded-xl border border-border overflow-hidden">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
                 {loading ? (
-                    <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" /></div>
+                    <div className="flex items-center justify-center py-24">
+                        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
+                    </div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-20"><FileText className="w-12 h-12 text-text-muted mx-auto mb-3" /><p className="text-sm text-text-secondary">No invoices found</p></div>
+                    <div className="text-center py-24">
+                        <FileText className="w-12 h-12 text-text-muted mx-auto mb-4 opacity-20" />
+                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Documents Found</h3>
+                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Archival scan complete</p>
+                    </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
-                            <thead><tr className="border-b border-border bg-surface">
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary">Invoice #</th>
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary">Client</th>
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary hidden md:table-cell">Date</th>
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary">Amount</th>
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary">Status</th>
-                                <th className="text-left px-5 py-3 font-semibold text-text-secondary hidden md:table-cell">Payment</th>
+                            <thead><tr className="border-b border-border bg-surface-alt">
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Document ID</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Registry Entity</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Timestamp</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Value pulse</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Status</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Link Protocol</th>
                             </tr></thead>
                             <tbody>
                                 {filtered.map((inv) => (
-                                    <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-surface-alt transition-colors">
-                                        <td className="px-5 py-3 font-mono text-xs font-medium text-primary">{inv.invoiceNumber || inv._id?.slice(-8)}</td>
-                                        <td className="px-5 py-3 font-medium text-text">{inv.client?.name || 'Walk-in'}</td>
-                                        <td className="px-5 py-3 text-text-secondary hidden md:table-cell">{new Date(inv.createdAt).toLocaleDateString('en-IN')}</td>
-                                        <td className="px-5 py-3"><span className="flex items-center gap-0.5 font-semibold"><IndianRupee className="w-3 h-3" />{inv.total || inv.grandTotal || 0}</span></td>
-                                        <td className="px-5 py-3"><span className={`text-xs font-medium px-2 py-1 rounded-md capitalize ${statusColors[inv.paymentStatus] || 'bg-gray-50 text-gray-500'}`}>{inv.paymentStatus || 'paid'}</span></td>
-                                        <td className="px-5 py-3 text-text-secondary hidden md:table-cell capitalize">{inv.paymentMethod || '—'}</td>
+                                    <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-surface-alt transition-all group">
+                                        <td className="px-8 py-5 font-mono text-[10px] font-black text-primary uppercase tracking-widest">{inv.invoiceNumber || inv._id?.slice(-8)}</td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-sm font-black text-text uppercase tracking-tight">{inv.client?.name || 'Walk-in entity'}</span>
+                                        </td>
+                                        <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{new Date(inv.createdAt).toLocaleDateString('en-IN')}</td>
+                                        <td className="px-8 py-5">
+                                            <span className="flex items-center gap-1 font-black text-text text-sm">
+                                                <IndianRupee className="w-3.5 h-3.5 opacity-40" />
+                                                {(inv.total || inv.grandTotal || 0).toLocaleString('en-IN')}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[inv.paymentStatus] || 'bg-slate-50 text-slate-500 border-slate-100'}`}>
+                                                {inv.paymentStatus || 'PAID'}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{inv.paymentMethod || '--'}</td>
                                     </tr>
                                 ))}
                             </tbody>

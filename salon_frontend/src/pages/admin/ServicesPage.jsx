@@ -25,10 +25,10 @@ export default function ServicesPage({ tab = 'list' }) {
     return (
         <div className="space-y-6 animate-reveal">
             {/* Context Navigation - Breadcrumb style */}
-            <div className="flex items-center gap-2 text-[10px] font-bold text-text-secondary uppercase tracking-widest opacity-60">
-                <span>Business Setup</span>
-                <ChevronRight className="w-3 h-3" />
-                <span className="text-primary">Services</span>
+            <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+                <span className="opacity-60">Operations</span>
+                <ChevronRight className="w-3.5 h-3.5 opacity-40" />
+                <span className="text-primary">Service Meta</span>
             </div>
 
             {/* Content Area */}

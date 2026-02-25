@@ -51,27 +51,11 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
     const content = (
         <div className="flex flex-col h-full bg-background transition-colors duration-300">
             <div className={`flex items-center h-16 border-b border-border transition-all ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
-                {!collapsed ? (
-                    <div className="flex items-center gap-2">
-                        <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
-                            style={{ backgroundColor: 'var(--accent-color)' }}
-                        >
-                            <Scissors className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-extrabold text-text leading-none">Stylist</h2>
-                            <p className="text-[10px] text-text-muted">My Workspace</p>
-                        </div>
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                        <img src="/2-removebg-preview.png" alt="Logo" className="w-full h-full object-contain" />
                     </div>
-                ) : (
-                    <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-primary/20"
-                        style={{ backgroundColor: 'var(--accent-color)' }}
-                    >
-                        <Scissors className="w-4 h-4 text-white" />
-                    </div>
-                )}
+                </div>
                 <button onClick={() => setCollapsed(!collapsed)} className="hidden lg:flex w-6 h-6 rounded-full bg-surface items-center justify-center hover:bg-surface-alt">
                     {collapsed ? <ChevronRight className="w-3.5 h-3.5 text-text-muted" /> : <ChevronLeft className="w-3.5 h-3.5 text-text-muted" />}
                 </button>

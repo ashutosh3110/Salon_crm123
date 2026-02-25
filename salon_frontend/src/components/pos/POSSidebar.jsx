@@ -54,25 +54,13 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
 
             {/* Logo / Header */}
             <div className={`flex items-center h-20 border-b border-border/40 transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
-                {collapsed ? (
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <img
                         src="/2-removebg-preview.png"
                         alt="Logo"
-                        className="w-12 h-12 object-contain"
+                        className="w-14 h-14 object-contain"
                     />
-                ) : (
-                    <div className="flex items-center gap-3">
-                        <img
-                            src="/2-removebg-preview.png"
-                            alt="Logo"
-                            className="w-12 h-12 object-contain"
-                        />
-                        <div>
-                            <h2 className="text-sm font-black text-text leading-none uppercase tracking-tight">POS Terminal</h2>
-                            <p className="text-[10px] text-text-muted mt-0.5">Quick Billing</p>
-                        </div>
-                    </div>
-                )}
+                </div>
                 {/* Mobile Close */}
                 <button
                     onClick={() => setMobileOpen(false)}

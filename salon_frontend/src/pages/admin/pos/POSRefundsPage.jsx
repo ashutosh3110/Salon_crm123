@@ -24,60 +24,61 @@ export default function POSRefundsPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-700">
             <div>
-                <h1 className="text-2xl font-bold text-text tracking-tight">Refunds</h1>
-                <p className="text-sm text-text-secondary mt-1">Review and approve service refund requests.</p>
+                <h1 className="text-2xl font-black text-text uppercase tracking-tight">reversal protocols</h1>
+                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Review and authorize service credit requests</p>
             </div>
 
             {/* Coming Soon Banner */}
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-none p-6 flex items-center gap-5">
+                <div className="w-12 h-12 rounded-none bg-amber-500/10 flex items-center justify-center shrink-0">
+                    <AlertCircle className="w-6 h-6 text-amber-600" />
+                </div>
                 <div>
-                    <p className="text-sm font-bold text-amber-800">Coming Soon</p>
-                    <p className="text-xs text-amber-600 mt-0.5">Refund processing is under development. The data below is placeholder.</p>
+                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest">feature phase: alpha</p>
+                    <p className="text-[10px] font-bold text-amber-700/70 mt-1 uppercase tracking-wider">Refund processing architecture is under active development. Current data is simulated.</p>
                 </div>
             </div>
 
             {/* Refunds Table */}
-            <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-surface text-xs font-bold text-text-secondary uppercase tracking-wider border-b border-border">
-                                <th className="px-6 py-4">Refund ID</th>
-                                <th className="px-6 py-4">Invoice</th>
-                                <th className="px-6 py-4">Customer</th>
-                                <th className="px-6 py-4">Reason</th>
-                                <th className="px-6 py-4 text-right">Amount</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4 text-right">Action</th>
+                            <tr className="bg-surface-alt/50 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
+                                <th className="px-8 py-5">REFUND ID</th>
+                                <th className="px-8 py-5">INVOICE LINK</th>
+                                <th className="px-8 py-5">REQUESTER</th>
+                                <th className="px-8 py-5">RATIONALE</th>
+                                <th className="px-8 py-5 text-right">CREDIT VAL</th>
+                                <th className="px-8 py-5">STATUS</th>
+                                <th className="px-8 py-5 text-right">OPERATIONS</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
                             {MOCK_REFUNDS.map((ref) => (
-                                <tr key={ref.id} className="hover:bg-surface/50 transition-colors text-sm">
-                                    <td className="px-6 py-4 font-bold text-text">{ref.id}</td>
-                                    <td className="px-6 py-4 text-primary font-medium underline cursor-pointer">{ref.inv}</td>
-                                    <td className="px-6 py-4 font-medium text-text">{ref.customer}</td>
-                                    <td className="px-6 py-4 text-text-secondary max-w-xs truncate">"{ref.reason}"</td>
-                                    <td className="px-6 py-4 text-right font-bold text-error">{ref.amount}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ref.status === 'Pending' ? 'bg-yellow-50 text-yellow-600 border border-yellow-100' : 'bg-green-50 text-green-600 border border-green-100'
-                                            }`}>
+                                <tr key={ref.id} className="hover:bg-surface-alt transition-all text-sm group">
+                                    <td className="px-8 py-5 font-black text-text uppercase tracking-widest">{ref.id}</td>
+                                    <td className="px-8 py-5 text-primary font-black uppercase tracking-widest cursor-pointer hover:underline">{ref.inv}</td>
+                                    <td className="px-8 py-5 font-black text-text uppercase tracking-widest">{ref.customer}</td>
+                                    <td className="px-8 py-5 text-[11px] font-bold text-text-muted uppercase tracking-tight max-w-xs truncate">"{ref.reason}"</td>
+                                    <td className="px-8 py-5 text-right font-black text-red-600 tracking-tight">{ref.amount}</td>
+                                    <td className="px-8 py-5">
+                                        <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${ref.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'}`}>
                                             {ref.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
+                                    <td className="px-8 py-5 text-right">
                                         {ref.status === 'Pending' ? (
                                             <button
                                                 onClick={() => setSelectedRefund(ref)}
-                                                className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-dark transition-all shadow-sm"
+                                                className="px-6 py-2.5 bg-primary text-white rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
                                             >
-                                                Take Action
+                                                AUTH REQUEST
                                             </button>
                                         ) : (
-                                            <button className="p-2 text-text-muted hover:text-text hover:bg-surface rounded-lg transition-all"><Eye className="w-4 h-4" /></button>
+                                            <button className="w-9 h-9 flex items-center justify-center rounded-none text-text-muted border border-transparent hover:border-primary/20 hover:bg-surface-alt hover:text-text transition-all"><Eye className="w-4 h-4" /></button>
                                         )}
                                     </td>
                                 </tr>
@@ -89,64 +90,64 @@ export default function POSRefundsPage() {
 
             {/* Approval Modal */}
             {selectedRefund && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
-                                <RefreshCcw className="w-6 h-6" />
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface rounded-none border border-border w-full max-w-lg p-10 shadow-2xl animate-in zoom-in-95 duration-300 relative">
+                        <div className="flex items-center gap-5 mb-10">
+                            <div className="w-14 h-14 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                                <RefreshCcw className="w-7 h-7" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-bold text-text">Refund Review</h2>
-                                <p className="text-sm text-text-secondary">{selectedRefund.id} for {selectedRefund.customer}</p>
+                                <h2 className="text-xl font-black text-text uppercase tracking-widest">Protocol Override</h2>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-1">{selectedRefund.id} | SUBJECT: {selectedRefund.customer}</p>
                             </div>
                         </div>
 
-                        <div className="bg-surface rounded-2xl p-4 mb-6 space-y-3">
-                            <div className="flex justify-between text-sm">
-                                <span className="text-text-secondary">Amount to Refund</span>
-                                <span className="font-bold text-error">{selectedRefund.amount}</span>
+                        <div className="bg-surface-alt border border-border p-6 mb-8 space-y-4 shadow-inner">
+                            <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em]">
+                                <span className="text-text-muted">CREDIT REVERSAL VALUE</span>
+                                <span className="text-red-600">{selectedRefund.amount}</span>
                             </div>
-                            <div className="flex justify-between text-sm">
-                                <span className="text-text-secondary">Original Invoice</span>
-                                <span className="font-medium text-primary underline">{selectedRefund.inv}</span>
+                            <div className="flex justify-between text-[11px] font-black uppercase tracking-[0.2em]">
+                                <span className="text-text-muted">SOURCE INVOICE NODE</span>
+                                <span className="text-primary hover:underline cursor-pointer">{selectedRefund.inv}</span>
                             </div>
-                            <div className="pt-2 border-t border-border/50">
-                                <p className="text-xs text-text-muted font-bold uppercase tracking-widest mb-1">Reason</p>
-                                <p className="text-sm text-text-secondary">"{selectedRefund.reason}"</p>
+                            <div className="pt-4 border-t border-border">
+                                <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.3em] mb-2">CLAIM RATIONALE</p>
+                                <p className="text-[11px] font-bold text-text uppercase leading-relaxed">"{selectedRefund.reason}"</p>
                             </div>
                         </div>
 
-                        <div className="space-y-2 mb-8">
-                            <label className="text-sm font-bold text-text flex items-center gap-2">
-                                <MessageSquare className="w-4 h-4 text-primary" /> Admin Remark
+                        <div className="space-y-4 mb-10">
+                            <label className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-3">
+                                <MessageSquare className="w-4 h-4 text-primary" /> AUTH REMARK / AUDIT LOG
                             </label>
                             <textarea
                                 value={remark}
                                 onChange={(e) => setRemark(e.target.value)}
-                                placeholder="Add internal remark or reason..."
-                                className="w-full h-24 px-4 py-3 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition resize-none"
+                                placeholder="Documentation required for protocol override..."
+                                className="w-full h-32 px-5 py-4 rounded-none border border-border bg-surface text-[11px] font-bold uppercase tracking-widest focus:ring-1 focus:ring-primary/40 outline-none transition-all resize-none placeholder:text-text-muted/40 shadow-inner"
                             />
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-4">
                             <button
                                 onClick={() => handleAction('Rejected')}
-                                className="flex-1 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-sm hover:bg-red-100 transition flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-3"
                             >
-                                <XCircle className="w-4 h-4" /> Reject
+                                <XCircle className="w-4 h-4" /> DENY REQUEST
                             </button>
                             <button
                                 onClick={() => handleAction('Approved')}
-                                className="flex-1 py-3 bg-green-50 text-green-600 rounded-xl font-bold text-sm hover:bg-green-100 transition flex items-center justify-center gap-2"
+                                className="flex-1 py-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-3"
                             >
-                                <CheckCircle2 className="w-4 h-4" /> Approve
+                                <CheckCircle2 className="w-4 h-4" /> AUTHORIZE
                             </button>
                         </div>
                         <button
                             onClick={() => setSelectedRefund(null)}
-                            className="w-full mt-4 text-text-muted text-xs font-medium hover:text-text transition-colors"
+                            className="w-full mt-8 text-text-muted text-[10px] font-black uppercase tracking-[0.2em] hover:text-primary transition-all text-center"
                         >
-                            Back to list
+                            CANCEL INSPECTION
                         </button>
                     </div>
                 </div>

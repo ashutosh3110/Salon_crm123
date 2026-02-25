@@ -106,30 +106,30 @@ export default function BookingsPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight">Booking Management</h1>
-                    <p className="text-sm text-text-secondary mt-1">Monitor and manage all salon appointments.</p>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Booking Protocols</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Real-time scheduling intelligence</p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsBookingModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-2 rounded-2xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+                        className="flex items-center gap-2 px-6 py-2 rounded-none bg-primary text-white text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
                     >
                         <Plus className="w-4 h-4" /> ADD BOOKING
                     </button>
 
-                    <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border border-border shadow-sm">
+                    <div className="flex items-center gap-2 bg-surface-alt p-1 rounded-none border border-border">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface'}`}
                         >
-                            <Calendar className="w-4 h-4" /> CALENDAR
+                            <Calendar className="w-3.5 h-3.5" /> CALENDAR
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:bg-surface'}`}
+                            className={`flex items-center gap-2 px-6 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface'}`}
                         >
-                            <List className="w-4 h-4" /> LIST VIEW
+                            <List className="w-3.5 h-3.5" /> LIST ARRAY
                         </button>
                     </div>
                 </div>
@@ -138,36 +138,48 @@ export default function BookingsPage() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 rounded-2xl border border-border shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-                        <div>
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</p>
-                            <h3 className="text-2xl font-bold text-text mt-1">
-                                <AnimatedCounter value={stat.value} />
-                            </h3>
-                        </div>
-                        <div className={`p-3 rounded-xl bg-surface-alt ${stat.color} group-hover:scale-110 transition-transform`}>
-                            <stat.icon className="w-5 h-5" />
+                    <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2.5">
+                                    <stat.icon className={`w-4 h-4 ${stat.color} transition-colors`} />
+                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-end justify-between mt-auto">
+                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                    <AnimatedCounter value={stat.value} />
+                                </h3>
+                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary/40">
+                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-2xl border border-border shadow-sm flex flex-col xl:flex-row gap-4 hover-shine">
+            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col xl:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                     <input
                         type="text"
                         placeholder="Search by customer name or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all input-expand"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-none border border-border bg-surface text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2">
                     <select
-                        className="px-3 py-2.5 rounded-xl border border-border text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                         value={dateFilter}
                         onChange={(e) => setDateFilter(e.target.value)}
                     >
@@ -178,29 +190,29 @@ export default function BookingsPage() {
                     </select>
 
                     <select
-                        className="px-3 py-2.5 rounded-xl border border-border text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                         value={outletFilter}
                         onChange={(e) => setOutletFilter(e.target.value)}
                     >
-                        <option value="all">All Outlets</option>
+                        <option value="all">Every Outlet</option>
                         {MOCK_OUTLETS.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                     </select>
 
                     <select
-                        className="px-3 py-2.5 rounded-xl border border-border text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                         value={staffFilter}
                         onChange={(e) => setStaffFilter(e.target.value)}
                     >
-                        <option value="all">All Staff</option>
+                        <option value="all">Every Staff</option>
                         {staff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                     </select>
 
                     <select
-                        className="px-3 py-2.5 rounded-xl border border-border text-xs font-bold outline-none focus:ring-2 focus:ring-primary/20"
+                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
-                        <option value="all">All Status</option>
+                        <option value="all">Every Status</option>
                         <option value="upcoming">Upcoming</option>
                         <option value="completed">Completed</option>
                         <option value="cancelled">Cancelled</option>
@@ -211,14 +223,14 @@ export default function BookingsPage() {
 
             {/* Content Area */}
             {view === 'calendar' ? (
-                <div className="flex bg-[#f3f3f3] rounded-3xl border border-border overflow-hidden shadow-2xl h-[800px] animate-reveal">
+                <div className="flex bg-surface-alt rounded-none border border-border overflow-hidden shadow-2xl h-[800px] animate-reveal">
                     {/* Windows-style Light Sidebar */}
-                    <div className="w-80 bg-white/50 backdrop-blur-xl flex flex-col border-r border-gray-100">
+                    <div className="w-80 bg-surface flex flex-col border-r border-border">
                         {/* Sidebar Header */}
-                        <div className="p-6 border-b border-gray-100 bg-white/40">
-                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-[#0078d4]" />
-                                Appointments
+                        <div className="p-8 border-b border-border bg-surface-alt/50">
+                            <h3 className="text-[11px] font-black text-text uppercase tracking-widest flex items-center gap-3">
+                                <Calendar className="w-4 h-4 text-primary" />
+                                Sequence Map
                             </h3>
                         </div>
 
@@ -234,15 +246,15 @@ export default function BookingsPage() {
                         <div className="flex-1 overflow-y-auto px-6 py-2 space-y-8 scroll-smooth no-scrollbar">
                             <div className="space-y-5">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <h4 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
                                         {selectedDate.toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}
                                     </h4>
-                                    <span className="text-[10px] font-bold text-[#0078d4] bg-[#0078d4]/10 px-2 py-0.5 rounded-md">
+                                    <span className="text-[9px] font-black text-primary bg-primary/10 px-2.5 py-1 rounded-none uppercase tracking-widest border border-primary/20">
                                         {filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
                                             return d.getDate() === selectedDate.getDate() &&
                                                 d.getMonth() === selectedDate.getMonth();
-                                        }).length} Events
+                                        }).length} Pulse
                                     </span>
                                 </div>
                                 <div className="space-y-4">
@@ -258,17 +270,17 @@ export default function BookingsPage() {
                                             return d.getDate() === selectedDate.getDate() &&
                                                 d.getMonth() === selectedDate.getMonth();
                                         }).map((b, i) => (
-                                            <div key={i} className="flex gap-4 px-3 group cursor-pointer hover:bg-white py-2 rounded-xl transition-all shadow-sm border border-transparent hover:border-gray-100">
-                                                <div className="flex flex-col items-center gap-1 mt-1">
-                                                    <div className="w-2 h-2 rounded-full bg-[#0078d4] shadow-[0_0_8px_rgba(0,120,212,0.3)]" />
-                                                    <div className="w-[1px] h-full bg-gray-100" />
+                                            <div key={i} className="flex gap-4 px-4 group cursor-pointer hover:bg-surface-alt/50 py-3 rounded-none transition-all border border-transparent hover:border-border">
+                                                <div className="flex flex-col items-center gap-1.5 mt-1.5">
+                                                    <div className="w-2 h-2 rounded-none bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.3)]" />
+                                                    <div className="w-[1px] h-full bg-border" />
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-bold text-gray-900">
+                                                    <span className="text-[11px] font-black text-text uppercase">
                                                         {new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
-                                                    <span className="text-[11px] text-gray-500 font-medium">{b.client?.name}</span>
-                                                    <span className="text-[9px] text-[#0078d4] font-bold uppercase mt-0.5">{b.service?.name}</span>
+                                                    <span className="text-[11px] text-text-muted font-bold tracking-tight mt-0.5">{b.client?.name}</span>
+                                                    <span className="text-[9px] text-primary font-black uppercase tracking-widest mt-1.5">{b.service?.name}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -298,7 +310,7 @@ export default function BookingsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden card-interactive">
+                <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
@@ -351,24 +363,24 @@ export default function BookingsPage() {
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-[10px] font-bold text-primary">
+                                                    <div className="w-10 h-10 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
                                                         {b.client?.name?.[0] || 'C'}
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-text">{b.client?.name || 'Unknown Client'}</span>
-                                                        <span className="text-[10px] text-text-muted">{b.client?.phone || 'No phone'}</span>
+                                                        <span className="text-sm font-black text-text uppercase tracking-tight">{b.client?.name || 'Unknown Entity'}</span>
+                                                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{b.client?.phone || 'NO COMMS'}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-sm font-bold text-text-secondary">{b.service?.name}</td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 rounded-lg bg-surface-alt text-[10px] font-bold uppercase tracking-wider">{b.source || 'Online'}</span>
+                                            <td className="px-6 py-5 text-[11px] font-black text-text-muted uppercase tracking-widest">{b.service?.name}</td>
+                                            <td className="px-6 py-5 text-center">
+                                                <span className="px-3 py-1.5 rounded-none bg-surface-alt border border-border text-[9px] font-black uppercase tracking-[0.2em] text-text-muted">{b.source || 'SYS'}</span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider ${statusColors[b.status]}`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${b.status === 'upcoming' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                            <td className="px-6 py-5">
+                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status]}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-none ${b.status === 'upcoming' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
                                                     {b.status}
                                                 </span>
                                             </td>

@@ -184,7 +184,6 @@ function App() {
                   <Route path="/admin/services/new" element={<ServicesPage tab="add-service" />} />
                   <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
                   <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
-                  <Route path="/admin/services/settings" element={<ServicesPage tab="settings" />} />
 
                   <Route path="/admin/products" element={<ProductsPage />} />
 

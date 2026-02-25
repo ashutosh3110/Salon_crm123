@@ -17,9 +17,30 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
 
     return (
         <div
-            className="min-h-screen bg-background flex text-text transition-colors duration-300"
+            className="min-h-screen bg-white flex text-text transition-colors duration-300 admin-panel"
             style={{ '--accent-color': activeAccentColor }}
         >
+            {/* Global sharp-edge override for entire panel */}
+            <style>{`
+                .admin-panel *,
+                .admin-panel *::before,
+                .admin-panel *::after {
+                    border-radius: 0 !important;
+                    font-family: 'Open Sans', sans-serif;
+                }
+                .admin-panel h1, 
+                .admin-panel h2, 
+                .admin-panel h3, 
+                .admin-panel h4, 
+                .admin-panel h5, 
+                .admin-panel h6,
+                .admin-panel .font-serif {
+                    font-family: 'Libre Baskerville', 'Noto Serif', serif !important;
+                }
+                .admin-panel .font-sans {
+                    font-family: 'Open Sans', sans-serif !important;
+                }
+            `}</style>
             {/* Sidebar */}
             <SidebarComponent
                 collapsed={collapsed}

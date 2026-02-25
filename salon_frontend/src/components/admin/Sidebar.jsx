@@ -46,7 +46,6 @@ const menuItems = [
             { label: 'Staff', icon: UserCog, path: '/admin/staff' },
             { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
             { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
-            { label: 'Service Settings', icon: Settings, path: '/admin/services/settings' },
         ]
     },
     {
@@ -161,16 +160,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const sidebarContent = (
         <div className="flex flex-col h-full bg-background transition-colors duration-300">
             {/* Logo */}
-            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
-                <div className="flex items-center gap-2 overflow-hidden">
-                    <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-                        <ScissorsIcon className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-between h-16 px-6 border-b border-border/40">
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                        <img
+                            src="/2-removebg-preview.png"
+                            alt="Logo"
+                            className="w-full h-full object-contain"
+                        />
                     </div>
-                    {!effectiveCollapsed && (
-                        <span className="text-lg font-black text-text whitespace-nowrap tracking-tight">
-                            SALON<span className="text-primary">CRM</span>
-                        </span>
-                    )}
                 </div>
                 {/* Desktop collapse */}
                 <button
@@ -193,7 +191,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             </div>
 
             {/* Nav Links */}
-            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
                     if (item.roles && !item.roles.includes(user?.role)) return null;
 
@@ -206,7 +204,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             <div key={item.label} className="space-y-1">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group ${active
+                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${active
                                         ? 'bg-primary/10 text-primary'
                                         : 'text-text-secondary hover:bg-surface hover:text-text'
                                         }`}
@@ -259,7 +257,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             end={item.path === '/admin'}
                             onClick={() => setMobileOpen(false)}
                             className={({ isActive: isItemActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group ${isItemActive
+                                `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${isItemActive
                                     ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
                                 }`
@@ -275,10 +273,10 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             </nav>
 
             {/* Logout */}
-            <div className="p-4 border-t border-border">
+            <div className="p-2 border-t border-border">
                 <button
                     onClick={logout}
-                    className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold text-text-secondary hover:bg-error/10 hover:text-error transition-all duration-300 group"
+                    className="flex items-center gap-3 w-full px-4 py-2 rounded-xl text-sm font-semibold text-text-secondary hover:bg-error/10 hover:text-error transition-all duration-300 group"
                 >
                     <LogOut className="w-5 h-5 shrink-0 text-text-muted group-hover:text-error" />
                     {!effectiveCollapsed && <span>Logout</span>}

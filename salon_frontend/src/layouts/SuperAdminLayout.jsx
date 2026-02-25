@@ -16,6 +16,19 @@ export default function SuperAdminLayout() {
                 .sa-panel *::before,
                 .sa-panel *::after {
                     border-radius: 0 !important;
+                    font-family: 'Open Sans', sans-serif;
+                }
+                .sa-panel h1, 
+                .sa-panel h2, 
+                .sa-panel h3, 
+                .sa-panel h4, 
+                .sa-panel h5, 
+                .sa-panel h6,
+                .sa-panel .font-serif {
+                    font-family: 'Libre Baskerville', 'Noto Serif', serif !important;
+                }
+                .sa-panel .font-sans {
+                    font-family: 'Open Sans', sans-serif !important;
                 }
             `}</style>
 

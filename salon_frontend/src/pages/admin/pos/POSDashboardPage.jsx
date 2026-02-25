@@ -72,29 +72,33 @@ export default function POSDashboardPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[60vh]">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <div className="flex flex-col items-center gap-6">
+                    <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Syncing Terminal Core...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-700">
             <div>
-                <h1 className="text-2xl font-bold text-text tracking-tight">POS Dashboard</h1>
-                <p className="text-sm text-text-secondary mt-1">Real-time sales overview for today.</p>
+                <h1 className="text-2xl font-black text-text uppercase tracking-tight">Performance Matrix</h1>
+                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Real-time operational telemetry for current cycle</p>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {dashStats.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 rounded-2xl border border-border shadow-sm group hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${stat.color} transition-colors`}>
+                    <div key={i} className="bg-surface rounded-none border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-none rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
+                        <div className="flex items-center justify-between mb-6">
+                            <div className={`w-10 h-10 rounded-none border border-border flex items-center justify-center bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-white`}>
                                 <stat.icon className="w-5 h-5" />
                             </div>
                         </div>
-                        <p className="text-sm text-text-secondary font-medium">{stat.label}</p>
-                        <h3 className="text-2xl font-bold text-text mt-1">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1">{stat.label}</p>
+                        <h3 className="text-3xl font-black text-text tracking-tight">
                             <AnimatedCounter
                                 value={stat.value}
                                 prefix={stat.prefix}
@@ -107,56 +111,70 @@ export default function POSDashboardPage() {
 
             {/* Payment Split */}
             {stats && (stats.cashTotal > 0 || stats.cardTotal > 0 || stats.onlineTotal > 0) && (
-                <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
-                    <h3 className="font-bold text-text mb-4">Payment Method Breakdown</h3>
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="text-center p-4 bg-green-50 rounded-xl border border-green-100">
-                            <Banknote className="w-5 h-5 text-green-600 mx-auto mb-2" />
-                            <p className="text-xs text-green-700 font-semibold mb-1">Cash</p>
-                            <p className="text-lg font-bold text-green-600">₹{(stats.cashTotal || 0).toLocaleString()}</p>
+                <div className="bg-surface rounded-none border border-border shadow-sm p-8">
+                    <h3 className="text-sm font-black text-text uppercase tracking-widest mb-8 border-b border-border pb-4">Revenue Auth Breakdown</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="p-6 bg-emerald-500/5 rounded-none border border-emerald-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-none bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                <Banknote className="w-6 h-6 text-emerald-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-emerald-700 font-black uppercase tracking-widest mb-1">Cash Inflow</p>
+                                <p className="text-xl font-black text-emerald-600 tracking-tight">₹{(stats.cashTotal || 0).toLocaleString()}</p>
+                            </div>
                         </div>
-                        <div className="text-center p-4 bg-blue-50 rounded-xl border border-blue-100">
-                            <CreditCard className="w-5 h-5 text-blue-600 mx-auto mb-2" />
-                            <p className="text-xs text-blue-700 font-semibold mb-1">Card</p>
-                            <p className="text-lg font-bold text-blue-600">₹{(stats.cardTotal || 0).toLocaleString()}</p>
+                        <div className="p-6 bg-blue-500/5 rounded-none border border-blue-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-none bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                                <CreditCard className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-blue-700 font-black uppercase tracking-widest mb-1">Credit/Debit Loop</p>
+                                <p className="text-xl font-black text-blue-600 tracking-tight">₹{(stats.cardTotal || 0).toLocaleString()}</p>
+                            </div>
                         </div>
-                        <div className="text-center p-4 bg-purple-50 rounded-xl border border-purple-100">
-                            <Smartphone className="w-5 h-5 text-purple-600 mx-auto mb-2" />
-                            <p className="text-xs text-purple-700 font-semibold mb-1">UPI/Online</p>
-                            <p className="text-lg font-bold text-purple-600">₹{(stats.onlineTotal || 0).toLocaleString()}</p>
+                        <div className="p-6 bg-purple-500/5 rounded-none border border-purple-500/10 flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-none bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <Smartphone className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] text-purple-700 font-black uppercase tracking-widest mb-1">UPI/Online Vector</p>
+                                <p className="text-xl font-black text-purple-600 tracking-tight">₹{(stats.onlineTotal || 0).toLocaleString()}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Recent Invoices */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <h3 className="font-bold text-text">Recent Invoices Today</h3>
-                    <a href="/admin/pos/invoices" className="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
-                        View All <ChevronRight className="w-4 h-4" />
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
+                <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
+                    <h3 className="text-sm font-black text-text uppercase tracking-widest">Live Transaction Stream</h3>
+                    <a href="/admin/pos/invoices" className="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:underline flex items-center gap-2">
+                        Audit All <ChevronRight className="w-4 h-4" />
                     </a>
                 </div>
                 {recentInvoices.length === 0 ? (
-                    <div className="py-12 text-center text-text-muted text-sm">No invoices created today yet.</div>
+                    <div className="py-20 text-center bg-surface-alt/10">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Zero transactions detected in current session</p>
+                    </div>
                 ) : (
                     <div className="divide-y divide-border">
                         {recentInvoices.map((inv) => (
-                            <div key={inv._id} className="px-6 py-4 flex items-center justify-between hover:bg-surface/50 transition-colors">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center shrink-0">
-                                        <Receipt className="w-4 h-4 text-primary" />
+                            <div key={inv._id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all group">
+                                <div className="flex items-center gap-5 min-w-0">
+                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                                        <Receipt className="w-5 h-5" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold text-primary truncate">{inv.invoiceNumber}</p>
-                                        <p className="text-[11px] text-text-muted">{inv.clientId?.name || 'Walk-in'}</p>
+                                        <p className="text-[11px] font-black text-primary uppercase tracking-widest truncate">{inv.invoiceNumber}</p>
+                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">{inv.clientId?.name || 'Walk-in Entity'}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-6 shrink-0">
-                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${inv.paymentStatus === 'paid' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
-                                        {inv.paymentStatus}
+                                <div className="flex items-center gap-8 shrink-0">
+                                    <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                        {inv.paymentStatus || 'PAID'}
                                     </span>
-                                    <span className="text-sm font-bold text-text">₹{inv.total?.toLocaleString()}</span>
+                                    <span className="text-sm font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</span>
                                 </div>
                             </div>
                         ))}

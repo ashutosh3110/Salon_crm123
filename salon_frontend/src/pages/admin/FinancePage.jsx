@@ -32,15 +32,15 @@ export default function FinancePage({ tab = 'dashboard' }) {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight">Finance Management</h1>
-                    <p className="text-sm text-text-secondary mt-1 font-medium">Monitor revenue, track expenses, and manage supplier settlements.</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Finance Management</h1>
+                    <p className="text-sm text-text-muted font-medium mt-1">Monitor revenue, track expenses, and manage supplier settlements.</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-lg text-sm font-semibold text-text-secondary hover:bg-secondary transition-all">
+                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all">
                         <DownloadCloud className="w-4 h-4" />
                         Download PDF
                     </button>
-                    <button className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active">
+                    <button className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all">
                         <Calendar className="w-4 h-4" />
                         Select Period
                     </button>
@@ -56,7 +56,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
             </div>
 
             {/* Main Panel */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden min-h-[650px]">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[650px]">
                 {activeTab === 'dashboard' && <FinanceDashboard />}
                 {activeTab === 'suppliers' && <SupplierManager />}
                 {activeTab === 'invoices' && <SupplierInvoices />}
@@ -71,25 +71,25 @@ export default function FinancePage({ tab = 'dashboard' }) {
 
 function FinanceKPICard({ title, value, icon: Icon, color, trend }) {
     const colors = {
-        blue: 'bg-primary/5 text-primary',
-        rose: 'bg-rose-50 text-rose-600',
-        orange: 'bg-orange-50 text-orange-600',
-        emerald: 'bg-emerald-50 text-emerald-600'
+        blue: 'text-primary',
+        rose: 'text-rose-500',
+        orange: 'text-orange-500',
+        emerald: 'text-emerald-500'
     };
 
     return (
-        <div className="bg-white p-5 rounded-2xl border border-border shadow-sm hover:shadow-md transition-all group">
-            <div className="flex justify-between items-start mb-4">
-                <div className={`p-3 rounded-xl ${colors[color]} group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5" />
+        <div className="bg-surface p-5 rounded-none border border-border shadow-sm hover:shadow-md transition-all group">
+            <div className="flex justify-between items-start mb-6">
+                <div className={`p-2.5 rounded-none ${colors[color]} border border-current bg-opacity-5 group-hover:scale-110 transition-transform`}>
+                    <Icon className="w-4 h-4" />
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${color === 'rose' || color === 'orange' ? 'text-rose-500' : 'text-text-muted'}`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-none ${color === 'rose' || color === 'orange' ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
                     {trend}
                 </span>
             </div>
             <div className="space-y-1">
-                <h3 className="text-text-secondary text-xs font-semibold uppercase tracking-widest opacity-60">{title}</h3>
-                <div className="text-2xl font-bold text-text">{value}</div>
+                <h3 className="text-text-muted text-[10px] font-black uppercase tracking-[0.2em]">{title}</h3>
+                <div className="text-2xl font-black text-text tracking-tight">{value}</div>
             </div>
         </div>
     );

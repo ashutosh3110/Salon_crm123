@@ -94,25 +94,13 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
 
             {/* ── Logo ── */}
             <div className={`flex items-center border-b border-border transition-all duration-300 ${collapsed ? 'justify-center h-16 px-2' : 'px-5 h-20 justify-between'}`}>
-                {collapsed ? (
-                    /* Collapsed: just the logo, no box */
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img
-                            src={logoFull}
-                            alt="Logo"
-                            className="w-full h-full object-contain"
-                        />
-                    </div>
-                ) : (
-                    /* Expanded: full brand logo — big and centered */
-                    <div className="flex items-center justify-center w-full">
-                        <img
-                            src={logoFull}
-                            alt="Wapix Logo"
-                            className="h-14 w-auto object-contain animate-in fade-in duration-300"
-                        />
-                    </div>
-                )}
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <img
+                        src={logoFull}
+                        alt="Logo"
+                        className="h-14 w-auto object-contain animate-in fade-in duration-300"
+                    />
+                </div>
                 {/* Mobile close button inside the branding area on small screens */}
                 <button
                     onClick={() => setMobileOpen(false)}

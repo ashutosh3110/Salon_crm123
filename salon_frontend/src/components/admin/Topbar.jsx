@@ -17,7 +17,7 @@ export default function Topbar({ onMenuClick }) {
         : 'U';
 
     return (
-        <header className="h-16 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30">
+        <header className="h-16 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 sticky top-0 z-30">
             {/* Left */}
             <div className="flex items-center gap-3">
                 <button

@@ -18,7 +18,28 @@ export default function POSLayout() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background admin-panel">
+            {/* Global sharp-edge override for POS panel */}
+            <style>{`
+                .admin-panel *,
+                .admin-panel *::before,
+                .admin-panel *::after {
+                    border-radius: 0 !important;
+                    font-family: 'Open Sans', sans-serif;
+                }
+                .admin-panel h1, 
+                .admin-panel h2, 
+                .admin-panel h3, 
+                .admin-panel h4, 
+                .admin-panel h5, 
+                .admin-panel h6,
+                .admin-panel .font-serif {
+                    font-family: 'Libre Baskerville', 'Noto Serif', serif !important;
+                }
+                .admin-panel .font-sans {
+                    font-family: 'Open Sans', sans-serif !important;
+                }
+            `}</style>
             <POSSidebar
                 collapsed={collapsed}
                 setCollapsed={setCollapsed}

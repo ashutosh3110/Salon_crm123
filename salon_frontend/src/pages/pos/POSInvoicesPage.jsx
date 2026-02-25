@@ -184,81 +184,96 @@ export default function POSInvoicesPage() {
     };
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-700 pb-10">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight uppercase">Invoices</h1>
-                    <p className="text-sm text-text-secondary mt-1">View and search all billing invoices.</p>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Ledger Registry</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
+                        Authenticated Transaction Sequence
+                    </p>
                 </div>
-                <div className="flex bg-surface p-1 border border-border">
+                <div className="flex bg-surface p-1 border border-border shadow-sm">
                     <button
                         onClick={() => { setDateFilter('today'); setPage(1); }}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[11px] font-black uppercase tracking-wider transition-all ${dateFilter === 'today' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                     >
-                        <Calendar className="w-3.5 h-3.5" /> Today
+                        <Calendar className="w-4 h-4" /> Loop_Today
                     </button>
                     <button
                         onClick={() => { setDateFilter('all'); setPage(1); }}
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[11px] font-black uppercase tracking-wider transition-all ${dateFilter === 'all' ? 'bg-primary text-white' : 'text-text-secondary hover:text-text'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                     >
-                        <FileText className="w-3.5 h-3.5" /> All
+                        <FileText className="w-4 h-4" /> Recursive_All
                     </button>
                 </div>
             </div>
 
             {/* Search */}
-            <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <div className="relative max-w-xl group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="Search by invoice, client, or phone..."
-                    className="w-full pl-10 pr-4 py-2.5 rounded-none border border-border bg-surface text-sm font-medium focus:outline-none focus:border-primary transition-all"
+                    placeholder="QUERY: INVOICE_ID, ENTITY_NAME, OR CONTACT_STR"
+                    className="w-full pl-12 pr-6 py-4 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest placeholder:opacity-30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all shadow-sm"
                 />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-muted opacity-40 group-focus-within:opacity-100 uppercase tracking-widest">
+                    Scan_Active
+                </div>
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col">
                 {paginated.length === 0 ? (
-                    <div className="py-16 text-center text-text-muted text-sm bg-background">No invoices found.</div>
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
+                        <div className="w-16 h-16 bg-surface border border-border flex items-center justify-center mb-4 opacity-50">
+                            <Search className="w-8 h-8 text-text-muted" />
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No matching segments found in current registry</p>
+                    </div>
                 ) : (
-                    <div className="overflow-x-auto bg-background">
-                        <table className="w-full text-left border-collapse min-w-[900px]">
+                    <div className="overflow-x-auto bg-background flex-1">
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
-                                <tr className="bg-surface-alt text-[11px] font-bold text-text-secondary uppercase tracking-wider border-b border-border">
-                                    <th className="px-6 py-4">Invoice #</th>
-                                    <th className="px-6 py-4">Date</th>
-                                    <th className="px-6 py-4">Client</th>
-                                    <th className="px-6 py-4">Outlet</th>
-                                    <th className="px-6 py-4">Payment</th>
-                                    <th className="px-6 py-4 text-right">Amount</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Action</th>
+                                <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
+                                    <th className="px-6 py-5">NODE_ID</th>
+                                    <th className="px-6 py-5 whitespace-nowrap">TIMESTAMP_UTC</th>
+                                    <th className="px-6 py-5">SOURCE_ENTITY</th>
+                                    <th className="px-6 py-5">LOC_ORIGIN</th>
+                                    <th className="px-6 py-5">TRANSFER_PRTCL</th>
+                                    <th className="px-6 py-5 text-right">VAL_CREDIT</th>
+                                    <th className="px-6 py-5">SIG_STATUS</th>
+                                    <th className="px-6 py-5 text-center">OPS</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/50">
+                            <tbody className="divide-y divide-border/30">
                                 {paginated.map(inv => (
-                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors text-sm">
-                                        <td className="px-6 py-4 font-bold text-primary">{inv.invoiceNumber}</td>
-                                        <td className="px-6 py-4 text-text-secondary flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {formatDate(inv.createdAt)}</td>
-                                        <td className="px-6 py-4 font-medium text-text">{inv.clientId?.name || 'Walk-in'}</td>
-                                        <td className="px-6 py-4 text-text-secondary">{inv.outletId?.name || '-'}</td>
-                                        <td className="px-6 py-4">
-                                            <span className="flex items-center gap-1.5 font-medium text-text capitalize">
-                                                {getMethodIcon(inv.paymentMethod)}
-                                                {inv.paymentMethod === 'online' ? 'UPI' : inv.paymentMethod}
+                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors group">
+                                        <td className="px-6 py-5 font-black text-primary uppercase tracking-tighter whitespace-nowrap">{inv.invoiceNumber}</td>
+                                        <td className="px-6 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
+                                            <Clock className="w-3.5 h-3.5 opacity-40" /> {formatDate(inv.createdAt)}
+                                        </td>
+                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'ANN_GUEST'}</td>
+                                        <td className="px-6 py-5 text-text-muted text-[10px] font-black uppercase tracking-widest">{inv.outletId?.name || '---'}</td>
+                                        <td className="px-6 py-5">
+                                            <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
+                                                <div className="p-1 bg-surface-alt border border-border group-hover:bg-background transition-colors">
+                                                    {getMethodIcon(inv.paymentMethod)}
+                                                </div>
+                                                {inv.paymentMethod === 'online' ? 'UPI_INT' : `${inv.paymentMethod?.toUpperCase()}_HND`}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right font-bold text-text">₹{inv.total?.toLocaleString()}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-none text-[10px] font-black uppercase tracking-wider border ${inv.paymentStatus === 'paid' ? 'bg-green-50 dark:bg-green-500/10 text-green-600 border-green-100 dark:border-green-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 border-orange-100 dark:border-orange-500/20'}`}>
-                                                {inv.paymentStatus}
+                                        <td className="px-6 py-5 text-right font-black text-text tracking-tighter text-base">₹{inv.total?.toLocaleString()}</td>
+                                        <td className="px-6 py-5">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                {inv.paymentStatus === 'paid' ? 'SIG_VERIFIED' : 'PENDING_AUTH'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button onClick={() => setSelectedInvoice(inv)} className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 transition-all">
+                                        <td className="px-6 py-5 text-center">
+                                            <button onClick={() => setSelectedInvoice(inv)} className="p-2 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all group/btn active:scale-95 shadow-sm">
                                                 <Eye className="w-4 h-4" />
                                             </button>
                                         </td>
@@ -271,16 +286,16 @@ export default function POSInvoicesPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface">
-                        <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider">{filtered.length} invoices found</p>
-                        <div className="flex gap-1">
-                            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded-none border border-border bg-background text-text-secondary hover:text-primary hover:border-primary disabled:opacity-30 transition-all">
+                    <div className="px-8 py-6 border-t border-border flex items-center justify-between bg-surface-alt/30">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Registry Range: {filtered.length} Segments Identified</p>
+                        <div className="flex gap-2">
+                            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-none border border-border bg-surface text-text-muted hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <div className="px-4 py-1.5 rounded-none border border-border bg-background flex items-center">
-                                <span className="text-xs font-black text-text-secondary">{page} <span className="text-text-muted mx-1">/</span> {totalPages}</span>
+                            <div className="px-6 py-2 rounded-none border border-border bg-surface flex items-center shadow-sm">
+                                <span className="text-[10px] font-black text-text uppercase tracking-widest">Page {page} <span className="text-text-muted mx-2 opacity-30">/</span> {totalPages}</span>
                             </div>
-                            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded-none border border-border bg-background text-text-secondary hover:text-primary hover:border-primary disabled:opacity-30 transition-all">
+                            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)} className="px-4 py-2 rounded-none border border-border bg-surface text-text-muted hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
@@ -290,74 +305,103 @@ export default function POSInvoicesPage() {
 
             {/* Invoice Detail Modal */}
             {selectedInvoice && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface rounded-none w-full max-w-lg p-0 shadow-2xl animate-in zoom-in-95 duration-200 border border-border overflow-hidden">
-                        <div className="flex items-center justify-between p-6 bg-surface-alt border-b border-border">
-                            <div>
-                                <h2 className="text-xl font-black text-text uppercase tracking-tight">{selectedInvoice.invoiceNumber}</h2>
-                                <p className="text-[11px] font-bold text-text-secondary mt-0.5">{formatDate(selectedInvoice.createdAt)}</p>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-surface rounded-none w-full max-w-2xl p-0 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300 border border-border overflow-hidden">
+                        <div className="flex items-center justify-between p-8 bg-surface-alt border-b border-border relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-12 -mt-12 rotate-45 pointer-events-none" />
+                            <div className="relative z-10">
+                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">Segment_Metadata</p>
+                                <h2 className="text-3xl font-black text-text uppercase tracking-tighter">{selectedInvoice.invoiceNumber}</h2>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                                    <Clock className="w-3.5 h-3.5" /> Commited At: {formatDate(selectedInvoice.createdAt)}
+                                </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="p-2 hover:bg-background transition-colors">
-                                <X className="w-5 h-5 text-text-muted" />
+                            <button onClick={() => setSelectedInvoice(null)} className="p-3 bg-surface border border-border hover:bg-background transition-all group active:scale-90 relative z-10 shadow-sm">
+                                <X className="w-6 h-6 text-text-muted group-hover:text-text" />
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto scrollbar-thin">
-                            <div className="bg-background p-4 space-y-3">
-                                <div className="flex justify-between items-center"><span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Client</span><span className="text-sm font-bold text-text">{selectedInvoice.clientId?.name || 'Walk-in'}</span></div>
-                                <div className="flex justify-between items-center"><span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Outlet</span><span className="text-sm font-bold text-text">{selectedInvoice.outletId?.name || '-'}</span></div>
-                                <div className="flex justify-between items-center"><span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Assigned At</span><span className="text-sm font-bold text-text">{selectedInvoice.staffId?.name || '-'}</span></div>
+                        <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto scrollbar-thin bg-background">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-surface-alt/50 border border-border p-4">
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Source_Entity</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.clientId?.name || 'ANN_GUEST'}</p>
+                                </div>
+                                <div className="bg-surface-alt/50 border border-border p-4">
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Origin_Node</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.outletId?.name || 'LOCAL_SRV'}</p>
+                                </div>
+                                <div className="bg-surface-alt/50 border border-border p-4">
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Ops_Executive</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.staffId?.name || 'SYS_AUTO'}</p>
+                                </div>
                             </div>
 
-                            <div className="space-y-3">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border pb-1">Line Items</p>
-                                {selectedInvoice.items?.map((item, i) => (
-                                    <div key={i} className="flex justify-between items-center py-1 text-sm">
-                                        <div>
-                                            <p className="font-bold text-text uppercase text-xs tracking-tight">{item.name}</p>
-                                            <p className="text-[10px] text-text-muted font-medium capitalize">{item.type} × {item.quantity}</p>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-px bg-border flex-1" />
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Payload_Segments</p>
+                                    <div className="h-px bg-border flex-1" />
+                                </div>
+                                <div className="space-y-3">
+                                    {selectedInvoice.items?.map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center p-4 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
+                                            <div>
+                                                <p className="font-black text-text uppercase text-xs tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
+                                                <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.1em] mt-1 italic">Type: {item.type} • Units: {item.quantity}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <span className="font-black text-text text-lg tracking-tighter">₹{item.total?.toLocaleString()}</span>
+                                            </div>
                                         </div>
-                                        <span className="font-black text-text">₹{item.total?.toLocaleString()}</span>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
 
-                            <div className="border-t border-dashed border-border pt-4 space-y-2">
-                                <div className="flex justify-between text-xs font-bold text-text-secondary"><span>Subtotal</span><span>₹{selectedInvoice.subTotal?.toLocaleString()}</span></div>
-                                <div className="flex justify-between text-xs font-bold text-text-secondary"><span>Tax Amt</span><span>+₹{selectedInvoice.tax?.toLocaleString()}</span></div>
+                            <div className="bg-surface-alt/30 border border-border p-6 space-y-4">
+                                <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
+                                    <span>Sub_Total_Aggregate</span>
+                                    <span>₹{selectedInvoice.subTotal?.toLocaleString()}</span>
+                                </div>
+                                <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
+                                    <span>Tax_Surcharge (GST)</span>
+                                    <span>+₹{selectedInvoice.tax?.toLocaleString()}</span>
+                                </div>
                                 {selectedInvoice.discount > 0 && (
-                                    <div className="flex justify-between text-xs font-bold text-emerald-500"><span>Discount Applied</span><span>-₹{selectedInvoice.discount?.toLocaleString()}</span></div>
+                                    <div className="flex justify-between text-xs font-black text-emerald-600 uppercase tracking-widest">
+                                        <span>Incentive_Credit</span>
+                                        <span>-₹{selectedInvoice.discount?.toLocaleString()}</span>
+                                    </div>
                                 )}
-                                <div className="flex justify-between text-xl font-black text-text border-t border-border pt-3 mt-2">
-                                    <span className="uppercase tracking-tighter">Total</span>
-                                    <span className="text-primary tracking-tight">₹{selectedInvoice.total?.toLocaleString()}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between bg-surface-alt border border-border p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 bg-background border border-border ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>
-                                        {getMethodIcon(selectedInvoice.paymentMethod)}
-                                    </div>
+                                <div className="border-t border-border pt-4 mt-2 flex justify-between items-end">
                                     <div>
-                                        <p className="text-[10px] font-black text-text-muted uppercase">Paid Via</p>
-                                        <p className="text-xs font-bold text-text uppercase">{selectedInvoice.paymentMethod === 'online' ? 'UPI / Online' : selectedInvoice.paymentMethod}</p>
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Total_Liability</p>
+                                        <p className="text-3xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Net_Credit: <span className="text-primary tracking-tighter">₹{selectedInvoice.total?.toLocaleString()}</span></p>
+                                    </div>
+                                    <div className="flex items-center gap-4 bg-background border border-border p-4 shadow-sm group/sig">
+                                        <div className={`p-2 border border-border group-hover/sig:border-primary/40 transition-colors ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
+                                            {getMethodIcon(selectedInvoice.paymentMethod)}
+                                        </div>
+                                        <div className="text-right">
+                                            <p className={`text-[9px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'SIG_OK' : 'SIG_REQ'}</p>
+                                            <p className="text-[11px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI_INT' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <span className={`text-[10px] font-black uppercase px-2.5 py-1 ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'}`}>
-                                    {selectedInvoice.paymentStatus}
-                                </span>
                             </div>
                         </div>
 
-                        <div className="p-6 bg-surface-alt border-t border-border">
+                        <div className="p-8 bg-surface-alt border-t border-border flex gap-4">
                             <button
                                 disabled={isGeneratingPDF}
                                 onClick={handleDownloadPDF}
-                                className="w-full py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest hover:bg-primary-dark transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-primary/20"
+                                className="flex-1 py-4 bg-primary text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-xl shadow-primary/20 active:scale-95"
                             >
-                                {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                                {isGeneratingPDF ? 'Generating Document...' : 'Download PDF Invoice'}
+                                {isGeneratingPDF ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
+                                {isGeneratingPDF ? 'Compiling_Assets...' : 'Export_Registry_Blob (PDF)'}
+                            </button>
+                            <button onClick={() => setSelectedInvoice(null)} className="px-8 py-4 border border-border bg-surface text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
+                                Dismiss
                             </button>
                         </div>
                     </div>

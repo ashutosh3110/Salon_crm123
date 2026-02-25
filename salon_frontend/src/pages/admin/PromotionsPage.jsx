@@ -44,60 +44,97 @@ export default function PromotionsPage() {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div><h1 className="text-2xl font-bold text-text">Promotions</h1><p className="text-sm text-text-secondary mt-1">{promos.length} promotions</p></div>
-                <button onClick={() => { setEditing(null); setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true }); setShowModal(true); }} className="btn-primary inline-flex items-center gap-2"><Plus className="w-4 h-4" /> Add Promotion</button>
+                <div>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Campaign Matrix</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{promos.length} active protocols</p>
+                </div>
+                <button
+                    onClick={() => { setEditing(null); setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true }); setShowModal(true); }}
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                >
+                    <Plus className="w-4 h-4" /> Add Protocol
+                </button>
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {loading ? (
-                    <div className="col-span-full flex justify-center py-20"><div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" /></div>
+                    <div className="col-span-full flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>
                 ) : promos.length === 0 ? (
-                    <div className="col-span-full text-center py-20"><Tag className="w-12 h-12 text-text-muted mx-auto mb-3" /><p className="text-sm text-text-secondary">No promotions yet</p></div>
+                    <div className="col-span-full text-center py-24 bg-surface border border-border">
+                        <Tag className="w-12 h-12 text-text-muted mx-auto mb-6 opacity-20" />
+                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Active Protocols</h3>
+                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mt-2">Ready to broadcast new campaigns</p>
+                    </div>
                 ) : (
                     promos.map((p) => (
-                        <div key={p._id} className="bg-white rounded-xl border border-border p-5 hover:shadow-md transition-shadow group">
-                            <div className="flex items-start justify-between mb-3">
-                                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${typeColors[p.type] || 'bg-gray-50 text-gray-500'}`}>{typeLabels[p.type]}</span>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-secondary"><Edit className="w-4 h-4 text-text-secondary" /></button>
-                                    <button onClick={() => handleDelete(p._id)} className="p-1.5 rounded-lg hover:bg-error/10"><Trash2 className="w-4 h-4 text-text-secondary" /></button>
+                        <div key={p._id} className="bg-surface rounded-none border border-border p-6 hover:shadow-2xl hover:shadow-primary/5 transition-all group relative overflow-hidden">
+                            <div className="flex items-start justify-between mb-6">
+                                <span className={`text-[9px] font-black px-2.5 py-1 rounded-none uppercase tracking-widest ${typeColors[p.type] || 'bg-gray-50 text-gray-500'} bg-opacity-10 border border-current`}>{typeLabels[p.type]}</span>
+                                <div className="flex gap-2">
+                                    <button onClick={() => openEdit(p)} className="p-2 rounded-none bg-surface-alt border border-border text-text-muted hover:text-primary transition-all"><Edit className="w-4 h-4" /></button>
+                                    <button onClick={() => handleDelete(p._id)} className="p-2 rounded-none bg-surface-alt border border-border text-text-muted hover:text-rose-600 transition-all"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                             </div>
-                            <h3 className="font-semibold text-text">{p.name}</h3>
-                            <div className="text-2xl font-bold text-primary mt-1">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
-                            <div className="flex items-center gap-2 mt-3 text-xs text-text-muted">
-                                <Calendar className="w-3 h-3" />
-                                {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} — {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
+                            <h3 className="text-lg font-black text-text uppercase tracking-tight">{p.name}</h3>
+                            <div className="text-3xl font-black text-primary mt-1 tracking-tighter">{p.type === 'percentage' ? `${p.value}%` : `₹${p.value}`}</div>
+                            <div className="flex items-center gap-2 mt-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} // {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                             </div>
-                            {p.usageLimit && <p className="text-xs text-text-muted mt-1">Usage limit: {p.usageLimit}</p>}
-                            <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full mt-2 ${p.isActive ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500'}`}>{p.isActive ? 'Active' : 'Inactive'}</span>
+                            {p.usageLimit && <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1.5 opacity-60">Limit: {p.usageLimit} pulses</p>}
+                            <span className={`inline-block text-[9px] font-black px-2 py-0.5 rounded-none mt-4 uppercase tracking-widest border ${p.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-surface-alt text-text-muted border-border'}`}>{p.isActive ? 'Operational' : 'Archived'}</span>
                         </div>
                     ))
                 )}
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-                        <h2 className="text-lg font-bold text-text mb-5">{editing ? 'Edit Promotion' : 'Add Promotion'}</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div><label className="block text-sm font-medium text-text-secondary mb-1">Name *</label><input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" /></div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-medium text-text-secondary mb-1">Type *</label>
-                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition">
-                                        <option value="percentage">Percentage</option><option value="flat">Flat Amount</option><option value="combo">Combo</option>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+                    <div className="bg-surface rounded-none w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center mb-10">
+                            <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20">
+                                <Percent className="w-8 h-8" />
+                            </div>
+                            <h2 className="text-2xl font-black text-text uppercase tracking-tight">{editing ? 'Edit Protocol' : 'Add Protocol'}</h2>
+                            <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Configure marketing mechanics</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Protocol Name *</label>
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Logic Type *</label>
+                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                        <option value="percentage">Percentage</option>
+                                        <option value="flat">Flat Amount</option>
+                                        <option value="combo">Combo</option>
                                     </select>
                                 </div>
-                                <div><label className="block text-sm font-medium text-text-secondary mb-1">Value *</label><input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" /></div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Value Magnitude *</label>
+                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div><label className="block text-sm font-medium text-text-secondary mb-1">Start Date</label><input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" /></div>
-                                <div><label className="block text-sm font-medium text-text-secondary mb-1">End Date</label><input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" /></div>
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Activation Date</label>
+                                    <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Termination Date</label>
+                                    <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                </div>
                             </div>
-                            <div><label className="block text-sm font-medium text-text-secondary mb-1">Usage Limit</label><input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-4 py-2.5 rounded-lg border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition" placeholder="Leave empty for unlimited" /></div>
-                            <div className="flex gap-3 pt-2">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-text-secondary hover:bg-surface transition">Cancel</button>
-                                <button type="submit" className="flex-1 btn-primary py-2.5">{editing ? 'Update' : 'Add Promotion'}</button>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Pulse Limit</label>
+                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" placeholder="Unlimited if null" />
+                            </div>
+                            <div className="flex gap-4 pt-6">
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
+                                <button type="submit" className="flex-1 py-4.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all">{editing ? 'Commit' : 'Deploy Protocol'}</button>
                             </div>
                         </form>
                     </div>

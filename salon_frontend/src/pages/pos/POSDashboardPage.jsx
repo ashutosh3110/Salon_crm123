@@ -70,55 +70,59 @@ export default function POSDashboardPage() {
     );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-700 pb-10">
             {/* Dashboard Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-text tracking-tight">Today Summary</h1>
-                    <p className="text-sm text-text-secondary mt-1">Reception terminal overview for {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long' })}</p>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Terminal Overview</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" />
+                        Active Session Loop • {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button onClick={() => navigate('/pos/refunds')} className="px-4 py-2.5 bg-surface border border-border text-text-secondary font-bold text-sm hover:bg-surface-alt transition-all rounded-none shadow-sm flex items-center gap-2">
-                        <RefreshCcw className="w-4 h-4" /> Refund
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate('/pos/refunds')} className="px-6 py-3 bg-surface border border-border text-text-muted font-black text-[10px] uppercase tracking-[0.2em] hover:bg-surface-alt transition-all shadow-sm flex items-center gap-3 active:scale-95">
+                        <RefreshCcw className="w-4 h-4" /> Auth Refund
                     </button>
-                    <button onClick={() => navigate('/pos/billing')} className="px-5 py-2.5 bg-primary text-white font-bold text-sm hover:bg-primary-dark transition-all rounded-none shadow-lg shadow-primary/20 flex items-center gap-2">
-                        <Zap className="w-4 h-4" /> New Bill
+                    <button onClick={() => navigate('/pos/billing')} className="px-8 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3 active:scale-95">
+                        <Zap className="w-4 h-4" /> Genesis Bill
                     </button>
                 </div>
             </div>
 
             {/* Stock Alerts */}
             {lowStockItems.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-none flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-100 flex items-center justify-center rounded-none">
-                            <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <div className="bg-amber-500/5 border border-amber-500/20 p-5 rounded-none flex items-center justify-between">
+                    <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                            <AlertTriangle className="w-6 h-6 text-amber-600" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-amber-900">Low Stock Alert</p>
-                            <p className="text-xs text-amber-700">{lowStockItems.length} items are running below threshold.</p>
+                            <p className="text-[11px] font-black text-amber-800 uppercase tracking-widest">Inventory Threshold Breach</p>
+                            <p className="text-[10px] text-amber-700/70 font-bold uppercase tracking-wider mt-1">{lowStockItems.length} SKUs operating at critical levels</p>
                         </div>
                     </div>
-                    <button className="text-xs font-bold text-amber-800 hover:underline">View All</button>
+                    <button className="text-[10px] font-black text-amber-800 uppercase tracking-widest hover:underline px-4 py-2 border border-amber-500/20 active:scale-95 transition-all">Audit Stock</button>
                 </div>
             )}
 
-
-
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((s, i) => (
-                    <div key={i} className="bg-surface py-4 px-5 rounded-none border border-border shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2.5">
-                                <s.icon className="w-4 h-4 text-text-muted" />
-                                <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest">{s.label}</p>
+                    <div key={i} className="bg-surface p-6 rounded-none border border-border shadow-sm hover:border-primary/40 transition-all group overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rotate-45 pointer-events-none group-hover:bg-primary/10 transition-colors" />
+                        <div className="flex items-center justify-between mb-6 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <s.icon className="w-4 h-4 text-primary" />
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{s.label}</p>
                             </div>
-                            <span className={`text-[11px] font-bold ${s.trendColor}`}>{s.trend}</span>
+                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border ${s.trendColor.replace('text-', 'bg-').replace('500', '500/10')} ${s.trendColor} border-current/20`}>
+                                {s.trend}
+                            </span>
                         </div>
-                        <div className="flex items-end justify-between">
-                            <h3 className="text-3xl font-extrabold text-text tracking-tight">{s.value}</h3>
-                            <div className="-mb-1">
+                        <div className="flex items-end justify-between relative z-10">
+                            <h3 className="text-3xl font-black text-text tracking-tighter uppercase">{s.value}</h3>
+                            <div className="mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
                                 <Sparkline />
                             </div>
                         </div>
@@ -126,98 +130,140 @@ export default function POSDashboardPage() {
                 ))}
             </div>
 
-            {/* Payment Mode Breakdown */}
-            <div className="bg-surface rounded-none border border-border shadow-sm p-5">
-                <h3 className="text-sm font-bold text-text mb-5 uppercase tracking-wider">Payment Mode Breakdown</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {paymentBreakdown.map((pm, i) => (
-                        <div key={i} className="flex items-center gap-4 p-3 rounded-none bg-surface-alt border border-border hover:border-text-muted transition-all group">
-                            <div className={`w-10 h-10 rounded-none flex items-center justify-center shrink-0 ${pm.color} bg-background shadow-sm border border-border group-hover:scale-110 transition-transform`}>
-                                <pm.icon className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] text-text-secondary font-bold uppercase tracking-wider">{pm.label}</p>
-                                <p className="text-lg font-bold text-text">₹{pm.value.toLocaleString()}</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Recent Invoices */}
+                <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm overflow-hidden flex flex-col">
+                    <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
+                        <h3 className="text-[11px] font-black text-text tracking-[0.2em] uppercase flex items-center gap-3">
+                            <Receipt className="w-4 h-4 text-primary" /> Transaction Ledger
+                        </h3>
+                        <button
+                            onClick={() => navigate('/pos/invoices')}
+                            className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2 hover:underline"
+                        >
+                            Complete Registry <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                    </div>
+                    <div className="overflow-x-auto scrollbar-thin flex-1 bg-background">
+                        <table className="w-full text-left min-w-[600px] border-collapse">
+                            <thead>
+                                <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
+                                    <th className="px-6 py-4">ID_NODE</th>
+                                    <th className="px-6 py-4">TIMESTAMP</th>
+                                    <th className="px-6 py-4">ENTITY</th>
+                                    <th className="px-6 py-4">PROTOCOL</th>
+                                    <th className="px-6 py-4 text-right">VAL_CREDIT</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/30">
+                                {invoices.slice(0, 6).map(inv => (
+                                    <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors text-sm group">
+                                        <td className="px-6 py-4 font-black text-primary uppercase tracking-tighter">{inv.invoiceNumber}</td>
+                                        <td className="px-6 py-4 text-text-muted flex items-center gap-2 text-[11px] font-bold uppercase tracking-tight">
+                                            <Clock className="w-3.5 h-3.5 opacity-40" /> {formatTime(inv.createdAt)}
+                                        </td>
+                                        <td className="px-6 py-4 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'ANN_GUEST'}</td>
+                                        <td className="px-6 py-4 text-text-muted text-[10px] font-black uppercase tracking-widest">
+                                            {inv.paymentMethod === 'online' ? 'UPI_INT' : `${inv.paymentMethod?.toUpperCase()}_HND`}
+                                        </td>
+                                        <td className="px-6 py-4 text-right font-black text-text tracking-tighter">₹{inv.total?.toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    {invoices.length === 0 && (
+                        <div className="py-20 text-center bg-background border-t border-border">
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Log sequence empty</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column: Payment Breakdown & Actions */}
+                <div className="space-y-8">
+                    <div className="bg-surface rounded-none border border-border shadow-sm p-6 space-y-6">
+                        <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3 border-b border-border pb-4">
+                            <Wallet className="w-4 h-4 text-primary" /> Multi-Mode Inflow
+                        </h3>
+                        <div className="grid grid-cols-1 gap-4">
+                            {paymentBreakdown.map((pm, i) => (
+                                <div key={i} className="flex items-center gap-4 p-4 bg-surface-alt/50 border border-border hover:border-primary/20 transition-all group cursor-default">
+                                    <div className={`w-12 h-12 rounded-none flex items-center justify-center shrink-0 ${pm.color.replace('bg-', 'bg-').replace('50', '20')} border border-border group-hover:scale-110 transition-transform`}>
+                                        <pm.icon className="w-5 h-5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[9px] text-text-muted font-black uppercase tracking-[0.2em]">{pm.label} PROTOCOL</p>
+                                        <p className="text-xl font-black text-text tracking-tighter">₹{pm.value.toLocaleString()}</p>
+                                    </div>
+                                    <div className="text-[10px] font-black text-primary px-3 py-1 bg-primary/5 border border-primary/10">
+                                        LVL {i + 1}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Quick Access Grid */}
+                    <div className="bg-text p-6 rounded-none text-background shadow-2xl relative overflow-hidden group">
+                        <div className="relative z-10 space-y-6">
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Quick Execution</h3>
+                            <div className="grid grid-cols-2 gap-3">
+                                {quickActions.map((action, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={action.onClick || (() => navigate(action.path))}
+                                        className="p-4 bg-white/5 hover:bg-white/15 border border-white/10 flex flex-col items-center gap-3 transition-all active:scale-95"
+                                    >
+                                        <action.icon className="w-5 h-5 text-primary" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-center">{action.label}</span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Recent Invoices */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-text tracking-wider uppercase">Recent Invoices</h3>
-                    <button
-                        onClick={() => navigate('/pos/invoices')}
-                        className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
-                    >
-                        View All <ArrowRight className="w-3 h-3" />
-                    </button>
-                </div>
-                <div className="overflow-x-auto scrollbar-thin">
-                    <table className="w-full text-left min-w-[600px]">
-                        <thead>
-                            <tr className="bg-surface-alt text-[11px] font-bold text-text-secondary uppercase tracking-wider border-b border-border">
-                                <th className="px-5 py-3">Invoice</th>
-                                <th className="px-5 py-3">Time</th>
-                                <th className="px-5 py-3">Client</th>
-                                <th className="px-5 py-3">Method</th>
-                                <th className="px-5 py-3 text-right">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border/50">
-                            {invoices.slice(0, 5).map(inv => (
-                                <tr key={inv._id} className="hover:bg-surface-alt/50 transition-colors text-sm">
-                                    <td className="px-5 py-3 font-bold text-primary">{inv.invoiceNumber}</td>
-                                    <td className="px-5 py-3 text-text-secondary flex items-center gap-1.5">
-                                        <Clock className="w-3.5 h-3.5" /> {formatTime(inv.createdAt)}
-                                    </td>
-                                    <td className="px-5 py-3 font-medium text-text">{inv.clientId?.name || 'Walk-in'}</td>
-                                    <td className="px-5 py-3 text-text-secondary capitalize">
-                                        {inv.paymentMethod === 'online' ? 'UPI' : inv.paymentMethod}
-                                    </td>
-                                    <td className="px-5 py-3 text-right font-bold text-text">₹{inv.total?.toLocaleString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                        <Zap className="absolute -right-8 -bottom-8 w-40 h-40 opacity-[0.03] group-hover:scale-110 transition-transform" />
+                    </div>
                 </div>
             </div>
 
             {/* Appointments Modal */}
             {showAppointments && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-md rounded-none shadow-2xl p-6 border border-slate-100 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-primary" /> Today's Appointments
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-surface w-full max-w-lg rounded-none shadow-2xl p-0 border border-border animate-in zoom-in-95 duration-300">
+                        <div className="flex items-center justify-between p-6 border-b border-border bg-surface-alt">
+                            <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
+                                <Calendar className="w-5 h-5 text-primary" /> Pending Appointment Queue
                             </h3>
-                            <button onClick={() => setShowAppointments(false)} className="p-2 hover:bg-slate-50 transition-colors">
-                                <X className="w-5 h-5 text-slate-400" />
+                            <button onClick={() => setShowAppointments(false)} className="p-2 hover:bg-background border border-border transition-colors group">
+                                <X className="w-5 h-5 text-text-muted group-hover:text-text" />
                             </button>
                         </div>
-                        <div className="space-y-3">
+                        <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto scrollbar-thin bg-background">
                             {appointments.length === 0 ? (
-                                <p className="text-center py-8 text-sm text-slate-500">No appointments for today.</p>
+                                <div className="py-12 text-center">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Queue Clear • No active targets</p>
+                                </div>
                             ) : (
                                 appointments.map(app => (
-                                    <div key={app._id} className="p-4 bg-slate-50 border border-slate-100 flex items-center justify-between group hover:border-primary/30 transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-white border border-slate-200 flex items-center justify-center text-xs font-bold text-primary">
+                                    <div key={app._id} className="p-5 bg-surface border border-border flex items-center justify-between group hover:border-primary/40 transition-all transition-all">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-14 h-14 bg-surface-alt border border-border flex items-center justify-center text-xs font-black text-primary flex-col leading-none">
+                                                <span className="opacity-50 text-[8px] mb-1">EXEC_T</span>
                                                 {app.time}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-slate-800">{app.clientName}</p>
-                                                <p className="text-xs text-slate-500">{app.service}</p>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{app.clientName}</p>
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1 italic">{app.service}</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Checkout
+                                        <button onClick={() => { navigate('/pos/billing'); setShowAppointments(false); }} className="px-6 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95">
+                                            Init Billing
                                         </button>
                                     </div>
                                 ))
                             )}
+                        </div>
+                        <div className="p-6 border-t border-border bg-surface-alt flex justify-end">
+                            <button onClick={() => setShowAppointments(false)} className="px-8 py-3 text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-text transition-colors">Close Monitor</button>
                         </div>
                     </div>
                 </div>

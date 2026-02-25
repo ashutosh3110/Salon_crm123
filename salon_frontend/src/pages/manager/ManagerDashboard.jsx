@@ -1,4 +1,5 @@
-import { Users, BarChart3, Star, Target, Clock, TrendingUp, Award, ArrowUpRight } from 'lucide-react';
+import { Users, BarChart3, Star, Target, Clock, TrendingUp, Award, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 // ── Mock Data ──────────────────────────────────────────────────────────
 const overviewStats = [
@@ -28,23 +29,46 @@ export default function ManagerDashboard() {
             {/* Top Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {overviewStats.map((s) => (
-                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-xl bg-background flex items-center justify-center border border-border/10">
-                            <s.icon className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-black text-text">{s.value}</p>
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">{s.label}</p>
+                    <div key={s.label} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                        {/* Soft Glow Effect */}
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2.5">
+                                    <s.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
+                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
+                                </div>
+                                <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
+                                    <ArrowUpRight className="w-3 h-3" />
+                                    +14.5%
+                                </div>
+                            </div>
+
+                            <div className="flex items-end justify-between mt-auto">
+                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                    <AnimatedCounter
+                                        value={typeof s.value === 'string' ? parseFloat(s.value.replace(/[₹%,]/g, '')) : s.value}
+                                        prefix={typeof s.value === 'string' && s.value.includes('₹') ? '₹' : ''}
+                                        suffix={typeof s.value === 'string' && s.value.includes('%') ? '%' : ''}
+                                    />
+                                </h3>
+                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-emerald-400">
+                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Staff Performance Table */}
-            <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
-                <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-surface/50">
-                    <h2 className="text-sm font-extrabold text-text">Staff Performance (This Month)</h2>
-                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest bg-background px-2 py-1 rounded-md">Feb 2026</span>
+            <div className="bg-white rounded-none border border-border/60 overflow-hidden shadow-none">
+                <div className="px-5 py-4 border-b border-border/40 flex items-center justify-between bg-white">
+                    <h2 className="text-sm font-extrabold text-text uppercase tracking-widest">Staff Performance (This Month)</h2>
+                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest bg-white border border-border/20 px-2 py-1">Feb 2026</span>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
@@ -94,9 +118,9 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Recent Feedback */}
-            <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm">
-                <div className="px-5 py-4 border-b border-border/40 bg-surface/50">
-                    <h2 className="text-sm font-extrabold text-text">Latest Customer Feedback</h2>
+            <div className="bg-white rounded-none border border-border/60 overflow-hidden shadow-none">
+                <div className="px-5 py-4 border-b border-border/40 bg-white">
+                    <h2 className="text-sm font-extrabold text-text uppercase tracking-widest">Latest Customer Feedback</h2>
                 </div>
                 <div className="divide-y divide-border/40">
                     {recentFeedback.map((fb) => (
