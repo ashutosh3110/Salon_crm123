@@ -99,6 +99,7 @@ import AppNotificationPage from './pages/app/AppNotificationPage';
 import GenderSelectPage from './pages/app/GenderSelectPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
+import CustomerAppWrapper from './layouts/CustomerAppWrapper';
 
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
@@ -346,15 +347,7 @@ function App() {
               {/* ═══════════════════════════════════════════════════════════
                  CUSTOMER APP — Mobile-First Experience
                  ═══════════════════════════════════════════════════════════ */}
-              <Route element={
-                <CustomerAuthProvider>
-                  <GenderProvider>
-                    <CartProvider>
-                      <Outlet />
-                    </CartProvider>
-                  </GenderProvider>
-                </CustomerAuthProvider>
-              }>
+              <Route element={<CustomerAppWrapper />}>
                 <Route path="/app/login" element={<AppLoginPage />} />
                 <Route path="/app/gender" element={<GenderSelectPage />} />
                 <Route element={<AppLayout />}>

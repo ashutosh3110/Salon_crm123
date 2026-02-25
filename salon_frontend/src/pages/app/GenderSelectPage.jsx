@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useGender } from '../../contexts/GenderContext';
-import { ArrowRight } from 'lucide-react';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 const MEN_IMG = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=600&q=80';
 const WOMEN_IMG = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80';
@@ -9,262 +10,118 @@ const WOMEN_IMG = 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?
 export default function GenderSelectPage() {
     const navigate = useNavigate();
     const { setGender } = useGender();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     const pick = (g) => {
         setGender(g);
         navigate('/app', { replace: true });
     };
 
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        text: isLight ? '#1A1A1A' : '#ffffff',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        card: isLight ? '#FFFFFF' : '#1A1A1A',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+    };
+
     return (
-        <div style={{
-            minHeight: '100svh',
-            background: '#0E0E0E',
-            display: 'flex',
-            flexDirection: 'column',
-            fontFamily: "'Open Sans', 'Noto Serif', sans-serif",
-            overflow: 'hidden',
-            position: 'relative',
-        }}>
+        <div
+            className="min-h-screen flex flex-col relative overflow-hidden"
+            style={{ background: colors.bg, color: colors.text, fontFamily: "'Inter', sans-serif" }}
+        >
+            {/* Ambient Background Effects */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50vh] opacity-20 pointer-events-none">
+                <div
+                    className="absolute inset-0 blur-[100px]"
+                    style={{ background: `radial-gradient(circle at center, #C8956C 0%, transparent 70%)` }}
+                />
+            </div>
 
-            {/* ── AMBIENT GLOW ── */}
-            <div style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
-                background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(200,149,108,0.08) 0%, transparent 70%)',
-            }} />
-
-            {/* ── HEADER ── */}
-            <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
-                style={{ padding: '56px 24px 32px', textAlign: 'center', position: 'relative', zIndex: 1 }}
-            >
-                {/* Logo mark */}
+            {/* Header */}
+            <header className="pt-20 px-8 pb-10 text-center relative z-10 transition-all">
                 <motion.div
-                    initial={{ scale: 0.7, opacity: 0 }}
+                    initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                    style={{
-                        width: '52px', height: '52px',
-                        borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #C8956C, #8c5c35)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 20px',
-                        boxShadow: '0 8px 24px rgba(200,149,108,0.3)',
-                        fontSize: '22px',
-                    }}
+                    className="w-16 h-16 rounded-[2rem] bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-[#C8956C]/20"
                 >
-                    💇
+                    <Sparkles className="text-white w-8 h-8" />
                 </motion.div>
 
                 <motion.h1
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    style={{ fontSize: '26px', fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em' }}
+                    className="text-3xl font-black italic tracking-tighter mb-2"
+                    style={{ fontFamily: "'Playfair Display', serif" }}
                 >
-                    Your Style, Your Way
+                    Personalize <span className="text-[#C8956C]">Experience</span>
                 </motion.h1>
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', margin: 0 }}
+                    className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40"
                 >
-                    Choose your preference to personalize the experience
+                    Select your ritual preference
                 </motion.p>
-            </motion.div>
+            </header>
 
-            {/* ── GENDER CARDS ── */}
-            <div style={{
-                flex: 1, display: 'flex', flexDirection: 'column',
-                gap: '14px', padding: '0 20px 40px', position: 'relative', zIndex: 1,
-            }}>
-
-                {/* ─── MEN CARD ─── */}
-                <motion.button
-                    initial={{ opacity: 0, x: -40 }}
+            {/* Selection Areas */}
+            <div className="flex-1 flex flex-col gap-4 px-6 pb-12 relative z-10">
+                {/* Men Option */}
+                <motion.div
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.55, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    whileTap={{ scale: 0.97 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => pick('men')}
-                    style={{
-                        flex: 1,
-                        borderRadius: '24px',
-                        overflow: 'hidden',
-                        border: 'none',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        background: 'none',
-                        minHeight: '0',
-                    }}
+                    className="flex-1 relative rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-2xl shadow-black/10"
                 >
-                    {/* Background image */}
-                    <img src={MEN_IMG} alt="Men"
-                        style={{
-                            position: 'absolute', inset: 0,
-                            width: '100%', height: '100%',
-                            objectFit: 'cover', display: 'block',
-                        }}
-                    />
-                    {/* Dark gradient overlay */}
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(to top, rgba(10,6,2,0.92) 0%, rgba(10,6,2,0.3) 50%, rgba(10,6,2,0.1) 100%)',
-                    }} />
-                    {/* Amber glow at bottom */}
-                    <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
-                        background: 'linear-gradient(to top, rgba(200,149,108,0.12) 0%, transparent 100%)',
-                    }} />
-
-                    {/* Content */}
-                    <div style={{
-                        position: 'relative', zIndex: 2,
-                        display: 'flex', flexDirection: 'column',
-                        height: '100%', justifyContent: 'flex-end',
-                        padding: '24px',
-                        textAlign: 'left',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <img src={MEN_IMG} alt="Men" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div className="flex items-end justify-between">
                             <div>
-                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600 }}>
-                                    I'm looking for
-                                </p>
-                                <h2 style={{ fontSize: '34px', fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.03em' }}>Men</h2>
-                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0' }}>
-                                    Haircuts · Beard · Grooming
-                                </p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1">Curation for</p>
+                                <h2 className="text-4xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>Gentlemen</h2>
                             </div>
-                            <div style={{
-                                width: '48px', height: '48px',
-                                borderRadius: '50%',
-                                background: 'rgba(255,255,255,0.12)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(255,255,255,0.15)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                flexShrink: 0,
-                            }}>
-                                <ArrowRight size={20} color="#fff" />
+                            <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-[#C8956C] transition-all duration-300">
+                                <ArrowRight className="text-white w-6 h-6" />
                             </div>
-                        </div>
-
-                        {/* Pills */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            {['Haircut', 'Beard Trim', 'Hair Spa', 'Massage'].map(tag => (
-                                <span key={tag} style={{
-                                    background: 'rgba(255,255,255,0.1)',
-                                    backdropFilter: 'blur(6px)',
-                                    border: '1px solid rgba(255,255,255,0.12)',
-                                    borderRadius: '20px', padding: '5px 12px',
-                                    fontSize: '11px', color: 'rgba(255,255,255,0.7)',
-                                    fontWeight: 500,
-                                }}>
-                                    {tag}
-                                </span>
-                            ))}
                         </div>
                     </div>
-                </motion.button>
+                </motion.div>
 
-                {/* ─── WOMEN CARD ─── */}
-                <motion.button
-                    initial={{ opacity: 0, x: 40 }}
+                {/* Women Option */}
+                <motion.div
+                    initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.55, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                    whileTap={{ scale: 0.97 }}
+                    transition={{ delay: 0.1 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => pick('women')}
-                    style={{
-                        flex: 1,
-                        borderRadius: '24px',
-                        overflow: 'hidden',
-                        border: 'none',
-                        cursor: 'pointer',
-                        position: 'relative',
-                        background: 'none',
-                        minHeight: '0',
-                    }}
+                    className="flex-1 relative rounded-[2.5rem] overflow-hidden group cursor-pointer shadow-2xl shadow-black/10"
                 >
-                    <img src={WOMEN_IMG} alt="Women"
-                        style={{
-                            position: 'absolute', inset: 0,
-                            width: '100%', height: '100%',
-                            objectFit: 'cover', display: 'block',
-                        }}
-                    />
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        background: 'linear-gradient(to top, rgba(10,6,2,0.92) 0%, rgba(10,6,2,0.3) 50%, rgba(10,6,2,0.1) 100%)',
-                    }} />
-                    <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
-                        background: 'linear-gradient(to top, rgba(200,149,108,0.12) 0%, transparent 100%)',
-                    }} />
-
-                    <div style={{
-                        position: 'relative', zIndex: 2,
-                        display: 'flex', flexDirection: 'column',
-                        height: '100%', justifyContent: 'flex-end',
-                        padding: '24px',
-                        textAlign: 'left',
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <img src={WOMEN_IMG} alt="Women" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+                    <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div className="flex items-end justify-between">
                             <div>
-                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600 }}>
-                                    I'm looking for
-                                </p>
-                                <h2 style={{ fontSize: '34px', fontWeight: 800, color: '#fff', margin: 0, letterSpacing: '-0.03em' }}>Women</h2>
-                                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', margin: '4px 0 0' }}>
-                                    Hair · Skin · Nails · Spa
-                                </p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1">Curation for</p>
+                                <h2 className="text-4xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>Ladiess</h2>
                             </div>
-                            <div style={{
-                                width: '48px', height: '48px',
-                                borderRadius: '50%',
-                                background: 'rgba(200,149,108,0.2)',
-                                backdropFilter: 'blur(8px)',
-                                border: '1px solid rgba(200,149,108,0.3)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                flexShrink: 0,
-                            }}>
-                                <ArrowRight size={20} color="#C8956C" />
+                            <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-[#C8956C] transition-all duration-300">
+                                <ArrowRight className="text-white w-6 h-6" />
                             </div>
-                        </div>
-
-                        {/* Pills */}
-                        <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                            {['Bridal', 'Facial', 'Nail Art', 'Hair Color', 'Spa'].map(tag => (
-                                <span key={tag} style={{
-                                    background: 'rgba(200,149,108,0.12)',
-                                    backdropFilter: 'blur(6px)',
-                                    border: '1px solid rgba(200,149,108,0.2)',
-                                    borderRadius: '20px', padding: '5px 12px',
-                                    fontSize: '11px', color: '#C8956C',
-                                    fontWeight: 500,
-                                }}>
-                                    {tag}
-                                </span>
-                            ))}
                         </div>
                     </div>
-                </motion.button>
+                </motion.div>
             </div>
 
-            {/* ── FOOTER NOTE ── */}
-            <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                style={{
-                    textAlign: 'center',
-                    fontSize: '11px',
-                    color: 'rgba(255,255,255,0.2)',
-                    padding: '0 24px 28px',
-                    position: 'relative', zIndex: 1,
-                }}
-            >
-                You can change this anytime from your profile
-            </motion.p>
+            {/* Footer */}
+            <footer className="text-center py-8 px-6 opacity-30">
+                <p className="text-[9px] font-black uppercase tracking-[0.3em]">
+                    Settings can be adjusted in your profile at any time
+                </p>
+            </footer>
         </div>
     );
 }

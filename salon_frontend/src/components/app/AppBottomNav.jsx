@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Scissors, CalendarPlus, ShoppingBag, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
@@ -13,6 +14,8 @@ const tabs = [
 export default function AppBottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     const isActive = (path) => {
         if (path === '/app') return location.pathname === '/app';
@@ -27,8 +30,8 @@ export default function AppBottomNav() {
             transform: 'translateX(-50%)',
             width: '100%',
             maxWidth: '430px',
-            background: '#1A1A1A',
-            borderTop: '1px solid rgba(255,255,255,0.07)',
+            background: isLight ? '#FFFFFF' : '#1A1A1A',
+            borderTop: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.07)',
             paddingBottom: 'env(safe-area-inset-bottom)',
             zIndex: 100,
         }}>
@@ -115,12 +118,12 @@ export default function AppBottomNav() {
                             <Icon
                                 size={21}
                                 strokeWidth={active ? 2.2 : 1.6}
-                                color={active ? '#C8956C' : 'rgba(255,255,255,0.32)'}
+                                color={active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.32)')}
                             />
                             <span style={{
                                 fontSize: '10px',
                                 fontWeight: active ? 600 : 400,
-                                color: active ? '#C8956C' : 'rgba(255,255,255,0.32)',
+                                color: active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.32)'),
                                 letterSpacing: '0.02em',
                             }}>
                                 {tab.label}
