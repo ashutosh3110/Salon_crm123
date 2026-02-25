@@ -1,200 +1,251 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useGender } from '../../contexts/GenderContext';
 import { motion } from 'framer-motion';
-import { Plus, Star, Clock, MapPin, Phone, ChevronRight, Sparkles, Gift, ArrowRight, Calendar, ShoppingBag } from 'lucide-react';
-import { MOCK_SERVICES, MOCK_BOOKINGS, MOCK_OUTLET, MOCK_PROMOTIONS, MOCK_LOYALTY_WALLET, PRODUCT_CATEGORIES } from '../../data/appMockData';
+import {
+    MapPin, Bell, SlidersHorizontal, Heart, Star, ArrowRight
+} from 'lucide-react';
+import { MOCK_OUTLET, PRODUCT_CATEGORIES } from '../../data/appMockData';
+
+/* ── Gender-specific data ── */
+const GENDER_DATA = {
+    men: {
+        label: 'Men',
+        emoji: '🧔',
+        promo: { title: '20% Off Grooming\nPackages', img: 'https://images.unsplash.com/photo-1622296089720-b72267bdc5a6?w=500&q=80' },
+        salons: [
+            { id: 1, name: 'Kobike Barber Shop', address: '12 Main St, Chicago', rating: 4.8, dist: '1.2 km', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80' },
+            { id: 2, name: 'Classic Cuts Studio', address: '45 Park Ave, Chicago', rating: 4.6, dist: '2.4 km', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80' },
+            { id: 3, name: 'Gentlemens Lounge', address: '88 River Rd, Chicago', rating: 4.7, dist: '3.1 km', img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80' },
+        ],
+        experts: [
+            { id: 1, name: 'Jake Rivera', role: 'Master Barber', rating: 4.9, img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80' },
+            { id: 2, name: 'Carlos Mendez', role: 'Hair Stylist', rating: 4.7, img: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=200&q=80' },
+            { id: 3, name: 'Dan Fisher', role: 'Beard Expert', rating: 4.8, img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80' },
+            { id: 4, name: 'Mark Chen', role: 'Colorist', rating: 4.6, img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80' },
+        ],
+        categories: [
+            { id: 1, name: 'Haircut', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&q=80', count: 82 },
+            { id: 2, name: 'Beard', img: 'https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?w=200&q=80', count: 54 },
+            { id: 3, name: 'Massage', img: 'https://images.unsplash.com/photo-1544161515-4af6b1d462c2?w=200&q=80', count: 38 },
+            { id: 4, name: 'Facials', img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?w=200&q=80', count: 24 },
+            { id: 5, name: 'Color', img: 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=200&q=80', count: 19 },
+        ],
+        offers: [
+            { id: 1, title: 'Kobike Barber', tag: 'Weekend Deal!', discount: '-20%', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80' },
+            { id: 2, title: 'Classic Cuts', tag: 'Flash Sale!', discount: '-15%', img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80' },
+        ],
+    },
+    women: {
+        label: 'Women',
+        emoji: '💇',
+        promo: { title: '20% Off Facial\nTreatments', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80' },
+        salons: [
+            { id: 1, name: 'Brett Gomez Salon', address: '817 Rebecca Lodge', rating: 4.5, dist: '4.5 km', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=300&q=80' },
+            { id: 2, name: 'Gimabel Hair Style', address: 'Park View Plaza', rating: 4.5, dist: '2.8 km', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80' },
+            { id: 3, name: 'Beauty Women Salon', address: 'Lakeshore Drive', rating: 4.7, dist: '1.9 km', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80' },
+        ],
+        experts: [
+            { id: 1, name: 'Sofiya Liss', role: 'Stylist', rating: 4.9, img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80' },
+            { id: 2, name: 'Adrin Ross', role: 'Colorist', rating: 4.7, img: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80' },
+            { id: 3, name: 'Nina Patel', role: 'Nail Artist', rating: 4.8, img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80' },
+            { id: 4, name: 'Priya Kapoor', role: 'Skin Expert', rating: 4.6, img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80' },
+        ],
+        categories: [
+            { id: 1, name: 'Haircut', img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200&q=80', count: 85 },
+            { id: 2, name: 'Skin Care', img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200&q=80', count: 65 },
+            { id: 3, name: 'Nail Art', img: 'https://images.unsplash.com/photo-1604654894610-df49ff66a7cb?w=200&q=80', count: 48 },
+            { id: 4, name: 'Makeup', img: 'https://images.unsplash.com/photo-1522338221021-0209f984ca57?w=200&q=80', count: 32 },
+            { id: 5, name: 'Massage', img: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=200&q=80', count: 27 },
+        ],
+        offers: [
+            { id: 1, title: 'Pagliber Beauty', tag: 'Summer Event!!', discount: '-15%', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80' },
+            { id: 2, title: 'Glam Studio', tag: 'Bridal Special', discount: '-25%', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80' },
+        ],
+    },
+};
+
+/* ── Styles ── */
+const S = {
+    page: { background: '#141414', minHeight: '100svh', color: '#fff' },
+    section: { padding: '20px 16px 0' },
+    row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' },
+    label: { fontSize: '16px', fontWeight: 700, color: '#fff' },
+    seeAll: { fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' },
+    card: {
+        background: '#1E1E1E', borderRadius: '16px',
+        overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
+    },
+};
+
+function HeartBtn({ size = 20 }) {
+    const [liked, setLiked] = useState(false);
+    return (
+        <motion.button
+            whileTap={{ scale: 0.75 }}
+            onClick={(e) => { e.stopPropagation(); setLiked(l => !l); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}
+        >
+            <Heart size={size} strokeWidth={2}
+                color={liked ? '#e53e3e' : 'rgba(255,255,255,0.55)'}
+                fill={liked ? '#e53e3e' : 'none'}
+            />
+        </motion.button>
+    );
+}
+
+function StarRow({ rating }) {
+    return (
+        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Star size={11} fill="#C8956C" color="#C8956C" />
+            <span style={{ fontSize: '11px', color: '#C8956C', fontWeight: 600 }}>{rating}</span>
+        </span>
+    );
+}
 
 export default function AppHomePage() {
     const { customer } = useCustomerAuth();
     const navigate = useNavigate();
+    const { gender, setGender } = useGender();
 
-    // TODO: Replace with api.get('/bookings?clientId=...&status=pending,confirmed')
-    const upcomingBooking = MOCK_BOOKINGS.find(b => ['pending', 'confirmed'].includes(b.status) && new Date(b.appointmentDate) > new Date());
+    // Fallback if gender is null
+    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
+    const d = GENDER_DATA[g];
 
-    // TODO: Replace with api.get('/services?status=active&limit=4')
-    const featuredServices = MOCK_SERVICES.slice(0, 4);
-
-    // TODO: Replace with api.get('/promotions?isActive=true')
-    const activePromos = MOCK_PROMOTIONS.filter(p => p.isActive);
-
-    // TODO: Replace with api.get('/loyalty/wallet/:customerId')
-    const loyaltyPoints = MOCK_LOYALTY_WALLET.totalPoints;
-
-    const formatDate = (dateStr) => {
-        const date = new Date(dateStr);
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1);
-
-        if (date.toDateString() === today.toDateString()) return 'Today';
-        if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-        return date.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
-    };
-
-    const formatTime = (dateStr) => {
-        return new Date(dateStr).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-    };
-
-    const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-    const fadeUp = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
+    const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
+    const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-8 pb-10">
-            {/* Hero & Quick Actions Group */}
-            <div className="space-y-4">
-                {/* Quick Book CTA */}
+        <motion.div variants={stagger} initial="hidden" animate="show" style={S.page}>
+
+            {/* ── TOP HEADER ── */}
+            <motion.div variants={fadeUp} style={{ padding: '52px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div>
+                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.2 }}>
+                        Hi {customer?.name?.split(' ')[0] || 'Jackson'},
+                    </h1>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                        <MapPin size={13} color="#C8956C" />
+                        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>
+                            {MOCK_OUTLET?.address?.split(',')[0] || '301 Chicago'}
+                        </span>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                    <motion.button
+                        whileTap={{ scale: 0.88 }}
+                        onClick={() => navigate('/app/notifications')}
+                        style={{ position: 'relative', background: '#242424', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                        <Bell size={18} color="#fff" />
+                        <span style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#C8956C', border: '2px solid #141414' }} />
+                    </motion.button>
+                    {/* Mascot / avatar */}
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #C8956C, #a06844)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                        💇
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* ── SEARCH BAR ── */}
+            <motion.div variants={fadeUp} style={{ padding: '0 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ flex: 1, background: '#242424', borderRadius: '12px', display: 'flex', alignItems: 'center', padding: '0 14px', height: '46px', gap: '10px' }}>
+                    <span style={{ fontSize: '16px' }}>🔍</span>
+                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.3)' }}>Find a salon, specialists,...</span>
+                </div>
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    style={{ background: '#242424', border: 'none', borderRadius: '12px', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                >
+                    <SlidersHorizontal size={18} color="rgba(255,255,255,0.55)" />
+                </motion.button>
+            </motion.div>
+
+            {/* ── GENDER TABS ── */}
+            <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                {['men', 'women'].map((tab) => (
+                    <motion.button
+                        key={tab}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setGender(tab)}
+                        style={{
+                            flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
+                            fontSize: '15px', fontWeight: g === tab ? 700 : 400,
+                            color: g === tab ? '#fff' : 'rgba(255,255,255,0.35)',
+                            borderBottom: g === tab ? '2.5px solid #C8956C' : '2.5px solid transparent',
+                            transition: 'all 0.2s', textTransform: 'capitalize',
+                        }}
+                    >
+                        {tab === 'men' ? '🧔 Men' : '💇 Women'}
+                    </motion.button>
+                ))}
+            </motion.div>
+
+            {/* ── PROMO BANNER ── */}
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
                 <motion.div
-                    variants={fadeUp}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => navigate('/app/book')}
-                    className="bg-gradient-to-br from-primary via-primary to-primary-dark rounded-3xl p-6 text-white cursor-pointer relative overflow-hidden shadow-xl shadow-primary/20"
+                    style={{
+                        borderRadius: '20px', overflow: 'hidden', position: 'relative',
+                        height: '160px', cursor: 'pointer',
+                        background: 'linear-gradient(135deg, #2A1F15 0%, #3D2A18 50%, #1a1008 100%)',
+                        display: 'flex', alignItems: 'flex-end',
+                    }}
                 >
-                    <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/10 -translate-y-12 translate-x-12 blur-2xl" />
-                    <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5 translate-y-8 -translate-x-8 blur-xl" />
-
-                    <div className="relative">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-                                <Plus className="w-4 h-4 text-white" />
-                            </div>
-                            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/90">Quick Booking</span>
-                        </div>
-                        <h3 className="text-2xl font-extrabold leading-tight tracking-tight">Ready for a<br />new look?</h3>
-                        <p className="text-white/70 text-sm mt-2 max-w-[180px] leading-relaxed">Book elite grooming services in seconds.</p>
-
-                        <div className="flex items-center gap-2 mt-5 bg-white/20 backdrop-blur-md w-fit pl-4 pr-3 py-2 rounded-xl text-xs font-bold border border-white/10">
-                            Book Now <ArrowRight className="w-4 h-4" />
-                        </div>
+                    <img
+                        src={d.promo.img}
+                        alt="Promo"
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45, borderRadius: '20px' }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(20,10,0,0.9) 45%, rgba(0,0,0,0.1) 100%)', borderRadius: '20px' }} />
+                    <div style={{ position: 'relative', padding: '20px', zIndex: 2 }}>
+                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Special Offer</p>
+                        <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 10px', lineHeight: 1.2 }}>
+                            {d.promo.title.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
+                        </h3>
+                        <button style={{
+                            background: '#C8956C', border: 'none', borderRadius: '8px',
+                            padding: '7px 16px', color: '#fff', fontSize: '12px', fontWeight: 700,
+                            cursor: 'pointer', letterSpacing: '0.02em',
+                        }}>
+                            Explore
+                        </button>
                     </div>
                 </motion.div>
+            </motion.div>
 
-                {/* Loyalty Mini Strip */}
-                <motion.div
-                    variants={fadeUp}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/app/profile')}
-                    className="bg-surface rounded-2xl border border-border/40 p-4 flex items-center justify-between cursor-pointer active:bg-surface-alt transition-all"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                            <Star className="w-5 h-5 text-amber-500" fill="currentColor" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Loyalty Rewards</p>
-                            <p className="text-base font-extrabold text-text">{loyaltyPoints} <span className="text-[10px] font-bold text-text-muted">POINTS</span></p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-alt border border-border/60">
-                        <span className="text-[10px] font-bold text-primary">REDEEM</span>
-                        <ChevronRight className="w-3 h-3 text-primary" />
-                    </div>
-                </motion.div>
-            </div>
-
-            {/* Upcoming Appointment */}
-            {upcomingBooking && (
-                <motion.div variants={fadeUp} className="space-y-3">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em] px-1">Upcoming</h3>
-                    <motion.div
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate('/app/bookings')}
-                        className="bg-surface rounded-3xl border border-border/40 p-5 shadow-sm active:bg-surface-alt transition-all relative overflow-hidden group"
-                    >
-                        <div className="absolute top-0 right-0 p-4">
-                            <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${upcomingBooking.status === 'confirmed' ? 'bg-blue-500/10 text-blue-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                {upcomingBooking.status}
-                            </span>
-                        </div>
-
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                                <Clock className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <h4 className="text-base font-extrabold text-text leading-tight">{upcomingBooking.service?.name}</h4>
-                                <p className="text-xs text-text-muted font-medium mt-0.5">with {upcomingBooking.staff?.name}</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 pt-4 border-t border-border/40">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center shrink-0">
-                                    <Calendar className="w-4 h-4 text-text-muted" />
-                                </div>
-                                <span className="text-xs font-bold text-text-secondary">{formatDate(upcomingBooking.appointmentDate)}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-lg bg-surface-alt flex items-center justify-center shrink-0">
-                                    <Clock className="w-4 h-4 text-text-muted" />
-                                </div>
-                                <span className="text-xs font-bold text-text-secondary">{formatTime(upcomingBooking.appointmentDate)}</span>
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-
-            {/* Active Promotions */}
-            {activePromos.length > 0 && (
-                <motion.div variants={fadeUp} className="space-y-4">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em] px-1">Exclusive Offers</h3>
-                    <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none -mx-4 px-4">
-                        {activePromos.map((promo, i) => (
-                            <motion.div
-                                key={promo._id}
-                                className="flex-shrink-0 w-[280px] bg-surface-alt rounded-3xl border border-border/40 p-5 relative overflow-hidden group"
-                            >
-                                <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
-
-                                <div className="flex items-center gap-2 mb-3">
-                                    <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                                        <Sparkles className="w-4 h-4 text-primary" />
-                                    </div>
-                                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                                        {promo.type === 'PERCENTAGE' ? `${promo.value}% SAVINGS` : `₹${promo.value} OFF`}
-                                    </span>
-                                </div>
-                                <h4 className="text-lg font-extrabold text-text leading-tight">{promo.name}</h4>
-                                <p className="text-xs text-text-muted mt-2 line-clamp-2 leading-relaxed">{promo.description}</p>
-
-                                {promo.couponCode && (
-                                    <div className="mt-4 flex items-center justify-between">
-                                        <div className="px-3 py-1.5 rounded-lg border border-dashed border-primary/30 bg-primary/5">
-                                            <span className="text-xs font-bold text-primary tracking-widest">{promo.couponCode}</span>
-                                        </div>
-                                        <span className="text-[10px] font-bold text-text-muted flex items-center gap-1 uppercase">TAP TO COPY <ArrowRight className="w-3 h-3" /></span>
-                                    </div>
-                                )}
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Popular Services Section */}
-            <motion.div variants={fadeUp} className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Popular Services</h3>
-                    <button onClick={() => navigate('/app/services')} className="text-[10px] font-bold text-primary bg-primary/5 px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors uppercase tracking-wider">
-                        Explore All
+            {/* ── NEAREST TO YOU ── */}
+            <motion.div variants={fadeUp} style={S.section}>
+                <div style={S.row}>
+                    <span style={S.label}>Nearest To You</span>
+                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
+                        <ArrowRight size={16} />
                     </button>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                    {featuredServices.map((service, i) => (
+                <div className="app-scroll" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    {d.salons.map((salon) => (
                         <motion.div
-                            key={service._id}
-                            whileTap={{ scale: 0.96 }}
-                            onClick={() => navigate(`/app/book?serviceId=${service._id}`)}
-                            className="bg-surface rounded-3xl border border-border/40 p-4 cursor-pointer hover:border-primary/30 transition-all shadow-sm group"
+                            key={salon.id}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate('/app/book')}
+                            style={{ ...S.card, width: '160px' }}
                         >
-                            <div className="w-10 h-10 rounded-2xl bg-surface-alt flex items-center justify-center mb-3 group-hover:bg-primary/10 transition-colors">
-                                <Sparkles className="w-5 h-5 text-primary/40 group-hover:text-primary transition-colors" />
+                            <div style={{ position: 'relative' }}>
+                                <img src={salon.img} alt={salon.name}
+                                    style={{ width: '100%', height: '110px', objectFit: 'cover', display: 'block' }}
+                                />
+                                <div style={{ position: 'absolute', top: 8, right: 8 }}>
+                                    <HeartBtn size={16} />
+                                </div>
                             </div>
-                            <h4 className="text-sm font-extrabold text-text line-clamp-1">{service.name}</h4>
-                            <div className="flex items-center justify-between mt-3">
-                                <span className="text-base font-extrabold text-primary">₹{service.price}</span>
-                                <div className="w-6 h-6 rounded-lg bg-surface-alt flex items-center justify-center">
-                                    <ChevronRight className="w-4 h-4 text-text-muted" />
+                            <div style={{ padding: '10px 10px 12px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
+                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: '0 0 7px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <StarRow rating={salon.rating} />
+                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>• {salon.dist}</span>
                                 </div>
                             </div>
                         </motion.div>
@@ -202,64 +253,228 @@ export default function AppHomePage() {
                 </div>
             </motion.div>
 
-            {/* Shop by Category Section */}
-            <motion.div variants={fadeUp} className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Shop Products</h3>
-                    <button onClick={() => navigate('/app/categories')} className="text-[10px] font-bold text-primary bg-primary/5 px-3 py-1.5 rounded-full hover:bg-primary/10 transition-colors uppercase tracking-wider font-black">
-                        Categories
+            {/* ── CATEGORIES ── */}
+            <motion.div variants={fadeUp} style={S.section}>
+                <div style={S.row}>
+                    <span style={S.label}>Categories</span>
+                    <button style={S.seeAll} onClick={() => navigate('/app/categories')}>See All</button>
+                </div>
+                <div className="app-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    {d.categories.map((cat) => (
+                        <motion.div
+                            key={cat.id}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/app/services')}
+                            style={{
+                                flexShrink: 0, width: '82px',
+                                padding: '12px 4px', textAlign: 'center', cursor: 'pointer',
+                            }}
+                        >
+                            <div style={{
+                                width: '48px', height: '48px', borderRadius: '50%',
+                                overflow: 'hidden', margin: '0 auto 10px',
+                                border: '2px solid rgba(200,149,172,0.1)',
+                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                            }}>
+                                <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#fff', margin: '0 0 2px', whiteSpace: 'nowrap' }}>{cat.name}</p>
+                            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>{cat.count} Places</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* ── SPECIAL OFFERS ── */}
+            <motion.div variants={fadeUp} style={S.section}>
+                <div style={S.row}>
+                    <span style={S.label}>Special Offers</span>
+                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
+                        <ArrowRight size={16} />
                     </button>
                 </div>
-                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none -mx-4 px-4">
-                    {PRODUCT_CATEGORIES.map((cat, i) => (
+                <div className="app-scroll" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    {d.offers.map((offer) => (
+                        <motion.div
+                            key={offer.id}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate('/app/book')}
+                            style={{ ...S.card, width: '180px', position: 'relative' }}
+                        >
+                            <div style={{ position: 'relative' }}>
+                                <img src={offer.img} alt={offer.title}
+                                    style={{ width: '100%', height: '140px', objectFit: 'cover', display: 'block' }}
+                                />
+                                {/* Discount badge */}
+                                <div style={{
+                                    position: 'absolute', top: 10, left: 10,
+                                    background: 'rgba(0,0,0,0.6)', borderRadius: '6px',
+                                    padding: '3px 8px', fontSize: '11px', fontWeight: 700, color: '#fff',
+                                    backdropFilter: 'blur(8px)',
+                                }}>
+                                    {offer.discount}
+                                </div>
+                                {/* Heart */}
+                                <div style={{ position: 'absolute', top: 10, right: 10 }}>
+                                    <HeartBtn size={16} />
+                                </div>
+                            </div>
+                            <div style={{ padding: '10px' }}>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{offer.title}</p>
+                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{offer.tag}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* ── POPULAR EXPERTS ── */}
+            <motion.div variants={fadeUp} style={S.section}>
+                <div style={S.row}>
+                    <span style={S.label}>Popular Experts</span>
+                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
+                        <ArrowRight size={16} />
+                    </button>
+                </div>
+                <div className="app-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    {d.experts.map((expert) => (
+                        <motion.div
+                            key={expert.id}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={() => navigate('/app/book')}
+                            style={{ ...S.card, width: '120px', textAlign: 'center', paddingBottom: '12px' }}
+                        >
+                            <div style={{ position: 'relative', padding: '10px 10px 0' }}>
+                                <img
+                                    src={expert.img} alt={expert.name}
+                                    style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
+                                />
+                                <div style={{
+                                    position: 'absolute', top: 14, right: 14,
+                                    background: '#C8956C', borderRadius: '8px',
+                                    padding: '2px 5px', display: 'flex', alignItems: 'center', gap: '2px',
+                                }}>
+                                    <Star size={8} fill="#fff" color="#fff" />
+                                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff' }}>{expert.rating}</span>
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '12px', fontWeight: 700, color: '#fff', margin: '8px 6px 2px' }}>{expert.name}</p>
+                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{expert.role}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* ── SHOP PRODUCTS ── */}
+            <motion.div variants={fadeUp} style={S.section}>
+                <div style={S.row}>
+                    <span style={S.label}>Shop Products</span>
+                    <button style={S.seeAll} onClick={() => navigate('/app/categories')}>See All</button>
+                </div>
+                <div className="app-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    {PRODUCT_CATEGORIES.slice(0, 5).map((cat) => (
                         <motion.div
                             key={cat._id}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={{ scale: 0.94 }}
                             onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
-                            className={`${cat.color} min-w-[140px] aspect-[4/5] rounded-[32px] p-5 flex flex-col justify-between cursor-pointer border border-border/10 shadow-sm relative overflow-hidden group`}
+                            style={{
+                                background: '#1E1E1E',
+                                borderRadius: '16px',
+                                padding: '16px 14px',
+                                minWidth: '110px',
+                                textAlign: 'center',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                border: '1px solid rgba(255,255,255,0.05)',
+                            }}
                         >
-                            <div className="text-3xl relative z-10 group-hover:scale-110 transition-transform">{cat.icon}</div>
-                            <div className="relative z-10">
-                                <h4 className="text-sm font-black text-text tracking-tighter leading-tight">{cat.name}</h4>
-                                <p className="text-[9px] font-bold text-text-muted mt-1 uppercase tracking-widest">{cat.count} Items</p>
-                            </div>
-                            <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-white/40 blur-xl rounded-full"></div>
+                            <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
+                            <p style={{ fontSize: '12px', fontWeight: 600, color: '#fff', margin: '0 0 3px', whiteSpace: 'nowrap' }}>{cat.name}</p>
+                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>{cat.count} Items</p>
                         </motion.div>
                     ))}
+                    {/* Visit Full Shop CTA */}
                     <motion.div
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={{ scale: 0.94 }}
                         onClick={() => navigate('/app/shop')}
-                        className="bg-black min-w-[140px] aspect-[4/5] rounded-[32px] p-5 flex flex-col justify-center items-center cursor-pointer relative overflow-hidden group"
+                        style={{
+                            background: 'linear-gradient(135deg, #C8956C, #a06844)',
+                            borderRadius: '16px',
+                            padding: '16px 14px',
+                            minWidth: '110px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                        }}
                     >
-                        <ShoppingBag className="w-8 h-8 text-white mb-2" />
-                        <h4 className="text-sm font-black text-white tracking-tighter text-center">Visit Full Shop</h4>
-                        <ArrowRight className="w-5 h-5 text-primary mt-3 group-hover:translate-x-2 transition-transform" />
+                        <span style={{ fontSize: '24px' }}>🛍️</span>
+                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#fff', margin: 0 }}>Full Shop</p>
+                        <ArrowRight size={14} color="#fff" />
                     </motion.div>
                 </div>
             </motion.div>
 
-            {/* Minimal Footer / Salon Info */}
-            <motion.div variants={fadeUp} className="bg-surface-alt rounded-3xl p-6 space-y-5 border border-border/20">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-surface flex items-center justify-center shadow-sm">
-                        <MapPin className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-bold text-text">Our Location</h3>
-                        <p className="text-[11px] text-text-muted mt-0.5 leading-relaxed">{MOCK_OUTLET.address}</p>
-                    </div>
-                </div>
+            {/* ── LOYALTY + REFERRAL QUICK ACCESS ── */}
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    {/* Loyalty Card */}
+                    <motion.div
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => navigate('/app/profile')}
+                        style={{
+                            flex: 1,
+                            background: '#1E1E1E',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            cursor: 'pointer',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                        }}
+                    >
+                        <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
+                        <div>
+                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
+                            <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>
+                                250 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>pts</span>
+                            </p>
+                        </div>
+                    </motion.div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border/10">
-                    <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-text-muted" />
-                        <span className="text-[10px] font-bold text-text-secondary uppercase">Open Now</span>
-                    </div>
-                    <a href={`tel:${MOCK_OUTLET.phone}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20">
-                        <Phone className="w-3.5 h-3.5" /> Call Us
-                    </a>
+                    {/* Referral Card */}
+                    <motion.div
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => navigate('/app/referrals')}
+                        style={{
+                            flex: 1,
+                            background: '#1E1E1E',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            cursor: 'pointer',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                        }}
+                    >
+                        <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
+                        <div>
+                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
+                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>Earn ₹200</p>
+                        </div>
+                    </motion.div>
                 </div>
             </motion.div>
+
+            {/* Bottom padding for nav */}
+            <div style={{ height: '24px' }} />
+
         </motion.div>
     );
 }

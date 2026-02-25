@@ -236,9 +236,9 @@ export const MOCK_PRODUCTS = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-    { _id: 'cat-1', name: 'Hair Care', icon: '💇‍♀️', description: 'Shampoos, Oils, Serums & Masques', count: 42, color: 'bg-rose-50' },
-    { _id: 'cat-2', name: 'Skin Care', icon: '✨', description: 'Face creams, serums, and masks', count: 35, color: 'bg-blue-50' },
-    { _id: 'cat-3', name: 'Makeup', icon: '💄', description: 'Face, Eyes, Lips and Nails', count: 28, color: 'bg-purple-50' },
-    { _id: 'cat-4', name: 'Tools', icon: '🔌', description: 'Dryers, Straighteners, Trimmers', count: 15, color: 'bg-amber-50' },
-    { _id: 'cat-5', name: 'Body Care', icon: '🧼', description: 'Lotions, Body wash, Fragrances', count: 22, color: 'bg-emerald-50' },
+    { _id: 'cat-1', name: 'Hair Care', icon: '💇‍♀️', img: 'https://images.unsplash.com/photo-1543873400-f96f9268f703?w=200&q=80', description: 'Shampoos, Oils, Serums & Masques', count: 42, color: 'bg-rose-50' },
+    { _id: 'cat-2', name: 'Skin Care', icon: '✨', img: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=200&q=80', description: 'Face creams, serums, and masks', count: 35, color: 'bg-blue-50' },
+    { _id: 'cat-3', name: 'Makeup', icon: '💄', img: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=200&q=80', description: 'Face, Eyes, Lips and Nails', count: 28, color: 'bg-purple-50' },
+    { _id: 'cat-4', name: 'Tools', icon: '🔌', img: 'https://images.unsplash.com/photo-1522338140262-f46f5912018a?w=200&q=80', description: 'Dryers, Straighteners, Trimmers', count: 15, color: 'bg-amber-50' },
+    { _id: 'cat-5', name: 'Body Care', icon: '🧼', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80', description: 'Lotions, Body wash, Fragrances', count: 22, color: 'bg-emerald-50' },
 ];

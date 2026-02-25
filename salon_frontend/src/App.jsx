@@ -92,7 +92,9 @@ import AppShopPage from './pages/app/AppShopPage';
 import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
 import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
 import AppNotificationPage from './pages/app/AppNotificationPage';
+import GenderSelectPage from './pages/app/GenderSelectPage';
 import { CartProvider } from './contexts/CartContext';
+import { GenderProvider } from './contexts/GenderContext';
 
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
@@ -341,12 +343,15 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
               <Route element={
                 <CustomerAuthProvider>
-                  <CartProvider>
-                    <Outlet />
-                  </CartProvider>
+                  <GenderProvider>
+                    <CartProvider>
+                      <Outlet />
+                    </CartProvider>
+                  </GenderProvider>
                 </CustomerAuthProvider>
               }>
                 <Route path="/app/login" element={<AppLoginPage />} />
+                <Route path="/app/gender" element={<GenderSelectPage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/app" element={<AppHomePage />} />
                   <Route path="/app/services" element={<AppServicesPage />} />
