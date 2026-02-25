@@ -103,6 +103,12 @@ import { GenderProvider } from './contexts/GenderContext';
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
 import ReceptionistDashboard from './pages/receptionist/ReceptionistDashboard';
+import AppointmentsPage from './pages/receptionist/AppointmentsPage';
+import QueuePage from './pages/receptionist/QueuePage';
+import CheckInPage from './pages/receptionist/CheckInPage';
+import ReceptionistInvoicesPage from './pages/receptionist/InvoicesPage';
+import PaymentsPage from './pages/receptionist/PaymentsPage';
+import ReceptionistSettingsPage from './pages/receptionist/ReceptionistSettingsPage';
 
 import StylistLayout from './layouts/StylistLayout';
 import StylistDashboard from './pages/stylist/StylistDashboard';
@@ -253,12 +259,12 @@ function App() {
               <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
                 <Route element={<ReceptionistLayout />}>
                   <Route path="/receptionist" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/appointments" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/queue" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/checkin" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/invoices" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/payments" element={<ReceptionistDashboard />} />
-                  <Route path="/receptionist/settings" element={<ReceptionistDashboard />} />
+                  <Route path="/receptionist/appointments" element={<AppointmentsPage />} />
+                  <Route path="/receptionist/queue" element={<QueuePage />} />
+                  <Route path="/receptionist/checkin" element={<CheckInPage />} />
+                  <Route path="/receptionist/invoices" element={<ReceptionistInvoicesPage />} />
+                  <Route path="/receptionist/payments" element={<PaymentsPage />} />
+                  <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
                 </Route>
               </Route>
 
