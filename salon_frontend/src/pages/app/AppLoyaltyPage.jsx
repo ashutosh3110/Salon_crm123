@@ -134,7 +134,6 @@ const AppLoyaltyPage = () => {
             >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                     <h3 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>Redeem Rewards</h3>
-                    <p style={{ fontSize: '12px', color: colors.accent, fontWeight: 700 }}>Browse All</p>
                 </div>
 
                 <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px' }}>
