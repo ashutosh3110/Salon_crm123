@@ -1,16 +1,30 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import BookingCard from '../../components/app/BookingCard';
 import { MOCK_BOOKINGS } from '../../data/appMockData';
 import { CalendarX } from 'lucide-react';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 const tabs = ['Upcoming', 'Past'];
 
 export default function AppMyBookingsPage() {
     const [activeTab, setActiveTab] = useState('Upcoming');
+    const navigate = useNavigate();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     // TODO: Replace with api.get('/bookings?clientId=...')
     const bookings = MOCK_BOOKINGS;
+
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        card: isLight ? '#FFFFFF' : '#1A1A1A',
+        text: isLight ? '#1A1A1A' : '#ffffff',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+        toggle: isLight ? '#EDF0F2' : '#1A1A1A',
+    };
 
     const { upcoming, past } = useMemo(() => {
         const now = new Date();
@@ -32,20 +46,22 @@ export default function AppMyBookingsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-6 px-4 pb-8"
-            style={{ background: '#141414', minHeight: '100svh' }}
+            style={{ background: colors.bg, minHeight: '100svh' }}
         >
             <div className="pt-12 pb-2">
-                <h1 className="text-2xl font-black text-white italic uppercase tracking-tighter">My <span className="text-[#C8956C]">Bookings</span></h1>
-                <p className="text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Track your sessions</p>
+                <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
+                    My <span className="text-[#C8956C]">Bookings</span>
+                </h1>
+                <p className="text-xs uppercase tracking-widest mt-1 opacity-60" style={{ color: colors.textMuted }}>Track your sessions</p>
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex gap-1 bg-[#1A1A1A] rounded-2xl p-1 border border-white/5">
+            <div style={{ background: colors.toggle, border: `1px solid ${colors.border}` }} className="flex gap-1 rounded-2xl p-1 shadow-sm">
                 {tabs.map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`relative flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'text-white' : 'text-white/30'
+                        className={`relative flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'text-white' : (isLight ? 'text-gray-400' : 'text-white/30')
                             }`}
                     >
                         {activeTab === tab && (
@@ -66,19 +82,20 @@ export default function AppMyBookingsPage() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-center py-20 bg-[#1A1A1A] rounded-[2rem] border border-dashed border-white/10"
+                        style={{ background: colors.card, border: `1px dashed ${colors.border}` }}
+                        className="text-center py-20 rounded-3xl"
                     >
-                        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4 border border-white/5">
-                            <CalendarX className="w-8 h-8 text-white/20" />
+                        <div style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <CalendarX className="w-8 h-8 opacity-20" style={{ color: colors.text }} />
                         </div>
-                        <p className="text-[11px] font-black text-white uppercase tracking-[0.2em]">No {activeTab.toLowerCase()} bookings</p>
-                        <p className="text-[10px] text-white/30 mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">
-                            {activeTab === 'Upcoming' ? 'Book your next session to dominate the field' : 'Your history is currently a clean state'}
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>No {activeTab.toLowerCase()} bookings</p>
+                        <p className="text-[10px] mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed opacity-40" style={{ color: colors.textMuted }}>
+                            {activeTab === 'Upcoming' ? 'Book your next session to enjoy top-tier service' : 'Your history is currently a clean state'}
                         </p>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => navigate('/app/book')}
-                            className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all"
+                            className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-[#C8956C]/20"
                         >
                             Book Now
                         </motion.button>

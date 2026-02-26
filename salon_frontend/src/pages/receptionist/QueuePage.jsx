@@ -191,7 +191,9 @@ export default function QueuePage() {
                                     <button
                                         onClick={() => handleFloorRotation(st.name)}
                                         disabled={rotatingStylist === st.name}
-                                        className={`px-3 py-1.5 text-[8px] font-black uppercase border tracking-widest transition-all ${st.status === 'Available' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20' : 'bg-rose-500/10 border-rose-500/20 text-rose-500 cursor-not-allowed opacity-50'
+                                        className={`px-3 py-1.5 text-[8px] font-black uppercase border tracking-widest transition-all ${st.status === 'Available'
+                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20'
+                                                : 'bg-rose-500/10 border-rose-500/20 text-rose-500 cursor-not-allowed opacity-50'
                                             }`}
                                     >
                                         {rotatingStylist === st.name ? <Loader2 className="w-3 h-3 animate-spin inline-block mr-1" /> : null} {st.status}
@@ -257,95 +259,99 @@ export default function QueuePage() {
                 </div>
             </div>
             {/* Modals Interface */}
-            {isWelcomeOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Smile className="w-4 h-4 text-primary" /> WELCOME PROTOCOL
-                            </h3>
-                            <button onClick={() => setIsWelcomeOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
-                            </button>
-                        </div>
-                        <div className="p-8 space-y-6 text-center">
-                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Coffee className="w-10 h-10 text-primary" />
-                            </div>
-                            <div className="space-y-2">
-                                <h4 className="text-xl font-black text-text uppercase tracking-tight">Hospitality Sequence</h4>
-                                <p className="text-[11px] text-text-muted font-bold uppercase tracking-widest leading-relaxed">
-                                    Guest detected at front terminal. Offer beverage selection and initiate waiting lounge protocol.
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button onClick={() => setIsWelcomeOpen(false)} className="py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">DEFER</button>
-                                <button onClick={() => { alert('Guest Logged'); setIsWelcomeOpen(false); }} className="py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">COMPLETE SEQUENCE</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {isAddGuestOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <UserPlus className="w-4 h-4 text-primary" /> WALK-IN REGISTRATION
-                            </h3>
-                            <button onClick={() => setIsAddGuestOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
-                            </button>
-                        </div>
-                        <div className="p-8 space-y-5 text-left">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Guest Name</label>
-                                <div className="relative group">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                    <input type="text" id="guestName" autoFocus placeholder="ENTER GUEST NAME" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Matrix</label>
-                                    <div className="relative">
-                                        <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <select id="guestService" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            <option>Men's Cut</option>
-                                            <option>Hair Blow</option>
-                                            <option>Manicure</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Priority Key</label>
-                                    <div className="relative">
-                                        <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <select id="guestPriority" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            <option value="false">Standard</option>
-                                            <option value="true">High Priority</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="pt-4 border-t border-border flex gap-4">
-                                <button onClick={() => setIsAddGuestOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">ABORT</button>
-                                <button
-                                    onClick={() => handleAddGuest({
-                                        name: document.getElementById('guestName').value || 'New Guest',
-                                        service: document.getElementById('guestService').value,
-                                        priority: document.getElementById('guestPriority').value === 'true'
-                                    })}
-                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
-                                >
-                                    SYNCHRONIZE
+            {
+                isWelcomeOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                        <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
+                            <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                                <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
+                                    <Smile className="w-4 h-4 text-primary" /> WELCOME PROTOCOL
+                                </h3>
+                                <button onClick={() => setIsWelcomeOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                                    <X className="w-5 h-5 text-text-muted" />
                                 </button>
                             </div>
+                            <div className="p-8 space-y-6 text-center">
+                                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Coffee className="w-10 h-10 text-primary" />
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="text-xl font-black text-text uppercase tracking-tight">Hospitality Sequence</h4>
+                                    <p className="text-[11px] text-text-muted font-bold uppercase tracking-widest leading-relaxed">
+                                        Guest detected at front terminal. Offer beverage selection and initiate waiting lounge protocol.
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button onClick={() => setIsWelcomeOpen(false)} className="py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">DEFER</button>
+                                    <button onClick={() => { alert('Guest Logged'); setIsWelcomeOpen(false); }} className="py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">COMPLETE SEQUENCE</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+
+            {
+                isAddGuestOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                        <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
+                            <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                                <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
+                                    <UserPlus className="w-4 h-4 text-primary" /> WALK-IN REGISTRATION
+                                </h3>
+                                <button onClick={() => setIsAddGuestOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                                    <X className="w-5 h-5 text-text-muted" />
+                                </button>
+                            </div>
+                            <div className="p-8 space-y-5 text-left">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Guest Name</label>
+                                    <div className="relative group">
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                        <input type="text" id="guestName" autoFocus placeholder="ENTER GUEST NAME" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Matrix</label>
+                                        <div className="relative">
+                                            <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                            <select id="guestService" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
+                                                <option>Men's Cut</option>
+                                                <option>Hair Blow</option>
+                                                <option>Manicure</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Priority Key</label>
+                                        <div className="relative">
+                                            <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                            <select id="guestPriority" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
+                                                <option value="false">Standard</option>
+                                                <option value="true">High Priority</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="pt-4 border-t border-border flex gap-4">
+                                    <button onClick={() => setIsAddGuestOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">ABORT</button>
+                                    <button
+                                        onClick={() => handleAddGuest({
+                                            name: document.getElementById('guestName').value || 'New Guest',
+                                            service: document.getElementById('guestService').value,
+                                            priority: document.getElementById('guestPriority').value === 'true'
+                                        })}
+                                        className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                    >
+                                        SYNCHRONIZE
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 }

@@ -159,9 +159,9 @@ export default function AppointmentsPage() {
                                             <div className="space-y-1.5">
                                                 <p className="text-[10px] font-black text-text-muted tracking-widest">{apt.id}</p>
                                                 <span className={`inline-flex px-2 py-0.5 text-[8px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                    apt.status === 'Cancelled' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
-                                                        apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
-                                                            'bg-surface-alt border-border text-text-muted'
+                                                        apt.status === 'Cancelled' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
+                                                            apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
+                                                                'bg-surface-alt border-border text-text-muted'
                                                     }`}>
                                                     {apt.status}
                                                 </span>

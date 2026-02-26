@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, MapPin, Heart, SlidersHorizontal, Map } from 'lucide-react';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 /* ── Mock salon data ── */
 const SALONS = [
@@ -21,7 +22,7 @@ function HeartBtn() {
             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', lineHeight: 1 }}
         >
             <Heart size={18} strokeWidth={2}
-                color={liked ? '#e53e3e' : 'rgba(255,255,255,0.55)'}
+                color={liked ? '#e53e3e' : 'rgba(150,150,150,0.5)'}
                 fill={liked ? '#e53e3e' : 'none'}
             />
         </motion.button>
@@ -31,42 +32,54 @@ function HeartBtn() {
 export default function AppServicesPage() {
     const navigate = useNavigate();
     const [mapView, setMapView] = useState(false);
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        card: isLight ? '#FFFFFF' : '#1C1C1C',
+        text: isLight ? '#1A1A1A' : '#FFFFFF',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+        toggle: isLight ? '#EDF0F2' : '#242424',
+    };
+
     return (
-        <div style={{ background: '#141414', minHeight: '100svh', color: '#fff', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ background: colors.bg, minHeight: '100svh', color: colors.text, fontFamily: "'Open Sans', sans-serif" }}>
 
             {/* ── HEADER ── */}
-            <div style={{ padding: '52px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: 0 }}>Salon Near by</h1>
+            <div style={{ padding: '24px 16px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h1 style={{ fontSize: '22px', fontWeight: 800, color: colors.text, margin: 0, fontFamily: "'Playfair Display', serif" }}>Salon Near by</h1>
                 {/* Map View toggle */}
                 <motion.button
                     whileTap={{ scale: 0.92 }}
                     onClick={() => setMapView(m => !m)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: '6px',
-                        background: mapView ? '#C8956C' : '#242424',
+                        background: mapView ? '#C8956C' : colors.toggle,
                         border: 'none', borderRadius: '20px',
                         padding: '8px 14px', cursor: 'pointer',
                         fontSize: '13px', fontWeight: 600,
-                        color: mapView ? '#fff' : 'rgba(255,255,255,0.6)',
+                        color: mapView ? '#fff' : colors.textMuted,
                         transition: 'all 0.2s',
+                        boxShadow: isLight && !mapView ? '0 2px 8px rgba(0,0,0,0.03)' : 'none',
                     }}
                 >
                     <Map size={14} /> Map View
                     {/* Toggle pill */}
                     <div style={{
                         width: '30px', height: '16px', borderRadius: '8px',
-                        background: mapView ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)',
+                        background: mapView ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.1)',
                         position: 'relative', marginLeft: '2px',
                     }}>
                         <motion.div
                             animate={{ x: mapView ? 14 : 0 }}
                             style={{
-                                width: '14px', height: '14px', borderRadius: '50%',
-                                background: '#fff', position: 'absolute', top: 1, left: 1,
+                                width: '12px', height: '12px', borderRadius: '50%',
+                                background: '#fff', position: 'absolute', top: 2, left: 2,
                             }}
                             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                         />
@@ -86,7 +99,7 @@ export default function AppServicesPage() {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate('/app/book')}
                         style={{
-                            background: '#1C1C1C',
+                            background: colors.card,
                             borderRadius: '16px',
                             marginBottom: '12px',
                             overflow: 'hidden',
@@ -95,7 +108,8 @@ export default function AppServicesPage() {
                             alignItems: 'center',
                             padding: '12px',
                             gap: '14px',
-                            border: '1px solid rgba(255,255,255,0.05)',
+                            border: `1px solid ${colors.border}`,
+                            boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.02)' : 'none',
                         }}
                     >
                         {/* Image */}
@@ -105,10 +119,10 @@ export default function AppServicesPage() {
                         />
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
+                            <p style={{ fontSize: '15px', fontWeight: 700, color: colors.text, margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
-                                <MapPin size={11} color="rgba(255,255,255,0.35)" />
-                                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</span>
+                                <MapPin size={11} color={colors.textMuted} />
+                                <span style={{ fontSize: '12px', color: colors.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -118,7 +132,7 @@ export default function AppServicesPage() {
                                     <Star size={11} fill="none" color="#C8956C" strokeWidth={1.5} />
                                     <span style={{ fontSize: '11px', color: '#C8956C', fontWeight: 600, marginLeft: '2px' }}>{salon.rating}</span>
                                 </div>
-                                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>• {salon.dist}</span>
+                                <span style={{ fontSize: '11px', color: colors.textMuted }}>• {salon.dist}</span>
                             </div>
                         </div>
                         {/* Heart */}
@@ -132,17 +146,18 @@ export default function AppServicesPage() {
                 position: 'fixed', bottom: '80px',
                 left: '50%', transform: 'translateX(-50%)',
                 width: 'calc(100% - 32px)', maxWidth: '398px',
-                background: '#1E1E1E',
+                background: colors.card,
                 borderRadius: '16px',
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: `1px solid ${colors.border}`,
                 padding: '14px 16px',
                 display: 'flex', alignItems: 'center', gap: '10px',
                 backdropFilter: 'blur(20px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                boxShadow: isLight ? '0 8px 32px rgba(0,0,0,0.05)' : '0 8px 32px rgba(0,0,0,0.4)',
                 zIndex: 50,
+                transition: 'all 0.3s ease',
             }}>
                 <MapPin size={16} color="#C8956C" />
-                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', flex: 1 }}>Chicago, Illinois, US.</span>
+                <span style={{ fontSize: '13px', color: colors.textMuted, flex: 1 }}>Chicago, Illinois, US.</span>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
@@ -8,61 +9,6 @@ const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 240 : -240, opacity: 0 }),
     center: { x: 0, opacity: 1 },
     exit: (dir) => ({ x: dir > 0 ? -240 : 240, opacity: 0 }),
-};
-
-/* ── Shared styles ── */
-const S = {
-    page: {
-        minHeight: '100svh',
-        background: '#141414',
-        color: '#fff',
-        fontFamily: "'Open Sans', 'Noto Serif', sans-serif",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 32px',
-    },
-    input: {
-        width: '100%',
-        background: '#1E1E1E',
-        border: '1.5px solid rgba(255,255,255,0.1)',
-        borderRadius: '14px',
-        padding: '14px 16px',
-        fontSize: '16px',
-        color: '#fff',
-        outline: 'none',
-        fontFamily: "'Inter', sans-serif",
-    },
-    btn: {
-        width: '100%',
-        background: '#C8956C',
-        border: 'none',
-        borderRadius: '14px',
-        padding: '15px',
-        fontSize: '16px',
-        fontWeight: 700,
-        color: '#fff',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        letterSpacing: '0.02em',
-        transition: 'opacity 0.2s',
-    },
-    ghost: {
-        background: 'none',
-        border: 'none',
-        color: 'rgba(255,255,255,0.5)',
-        cursor: 'pointer',
-        fontSize: '14px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        padding: 0,
-        fontFamily: "'Inter', sans-serif",
-    },
 };
 
 export default function AppLoginPage() {
@@ -78,6 +24,8 @@ export default function AppLoginPage() {
     const otpRefs = [useRef(), useRef(), useRef(), useRef()];
     const navigate = useNavigate();
     const { requestOtp, customerLogin, completeProfile } = useCustomerAuth();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     useEffect(() => {
         if (countdown > 0) {
@@ -87,6 +35,16 @@ export default function AppLoginPage() {
     }, [countdown]);
 
     const goTo = (s) => { setDir(s > step ? 1 : -1); setError(''); setStep(s); };
+
+    /* ── Theme based colors ── */
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        card: isLight ? '#FFFFFF' : '#1E1E1E',
+        text: isLight ? '#1A1A1A' : '#FFFFFF',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+        inputBg: isLight ? '#FFFFFF' : '#1E1E1E',
+    };
 
     const handleSendOtp = async () => {
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
@@ -135,6 +93,60 @@ export default function AppLoginPage() {
 
     const fmtPhone = (p) => p.length > 5 ? `+91 ${p.slice(0, 5)} ${p.slice(5)}` : `+91 ${p}`;
 
+    const S = {
+        page: {
+            minHeight: '100svh',
+            background: colors.bg,
+            color: colors.text,
+            fontFamily: "'Open Sans', sans-serif",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '40px 32px',
+            transition: 'background 0.3s ease',
+        },
+        input: {
+            width: '100%',
+            background: colors.inputBg,
+            border: `1.5px solid ${colors.border}`,
+            borderRadius: '14px',
+            padding: '14px 16px',
+            fontSize: '16px',
+            color: colors.text,
+            outline: 'none',
+            fontFamily: "'Inter', sans-serif",
+        },
+        btn: {
+            width: '100%',
+            background: '#C8956C',
+            border: 'none',
+            borderRadius: '14px',
+            padding: '15px',
+            fontSize: '16px',
+            fontWeight: 700,
+            color: '#fff',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            letterSpacing: '0.02em',
+            transition: 'opacity 0.2s',
+            boxShadow: '0 4px 12px rgba(200,149,108,0.2)',
+        },
+        ghost: {
+            background: 'none',
+            border: 'none',
+            color: colors.textMuted,
+            cursor: 'pointer',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center', gap: '6px', padding: 0,
+            fontFamily: "'Inter', sans-serif",
+        },
+    };
+
     return (
         <div style={S.page}>
             <AnimatePresence mode="wait" custom={direction}>
@@ -148,24 +160,24 @@ export default function AppLoginPage() {
                     >
                         {/* Logo */}
                         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'linear-gradient(135deg, #C8956C, #a06844)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', margin: '0 auto 16px' }}>
+                            <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'linear-gradient(135deg, #C8956C, #a06844)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(200,149,108,0.3)' }}>
                                 💇
                             </div>
-                            <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>
+                            <h1 style={{ fontSize: '26px', fontWeight: 800, color: colors.text, margin: '0 0 6px', fontFamily: "'Playfair Display', serif" }}>
                                 Welcome Back
                             </h1>
-                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                            <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0 }}>
                                 Sign in to access your account
                             </p>
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '8px' }}>
+                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '8px', fontWeight: 600 }}>
                                 Phone Number
                             </label>
-                            <div style={{ display: 'flex', gap: '0', background: '#1E1E1E', borderRadius: '14px', border: '1.5px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                                <div style={{ padding: '0 14px', display: 'flex', alignItems: 'center', borderRight: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-                                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>+91</span>
+                            <div style={{ display: 'flex', gap: '0', background: colors.inputBg, borderRadius: '14px', border: `1.5px solid ${colors.border}`, overflow: 'hidden', boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.02)' : 'none' }}>
+                                <div style={{ padding: '0 14px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${colors.border}`, flexShrink: 0 }}>
+                                    <span style={{ fontSize: '14px', color: colors.textMuted, fontWeight: 700 }}>+91</span>
                                 </div>
                                 <input
                                     type="tel" inputMode="numeric" maxLength={10}
@@ -173,12 +185,12 @@ export default function AppLoginPage() {
                                     onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); }}
                                     placeholder="98765 43210"
                                     autoFocus
-                                    style={{ flex: 1, background: 'none', border: 'none', padding: '14px 16px', fontSize: '16px', color: '#fff', outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em' }}
+                                    style={{ flex: 1, background: 'none', border: 'none', padding: '14px 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em' }}
                                 />
                             </div>
                         </div>
 
-                        {error && <p style={{ fontSize: '13px', color: '#ff6b6b', marginBottom: '12px' }}>{error}</p>}
+                        {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
 
                         <motion.button
                             whileTap={{ scale: 0.97 }}
@@ -189,10 +201,10 @@ export default function AppLoginPage() {
                             {loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}
                         </motion.button>
 
-                        <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: '24px' }}>
+                        <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>
                             By continuing, you agree to our{' '}
-                            <a href="/terms" style={{ color: '#C8956C' }}>Terms</a> &{' '}
-                            <a href="/privacy" style={{ color: '#C8956C' }}>Privacy Policy</a>
+                            <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> &{' '}
+                            <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a>
                         </p>
                     </motion.div>
                 )}
@@ -211,15 +223,15 @@ export default function AppLoginPage() {
 
                         {/* Title */}
                         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', margin: '0 0 10px' }}>
+                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>
                                 Phone Verification
                             </h2>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.6 }}>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0, lineHeight: 1.6 }}>
                                 Enter your OTP code here
                             </p>
-                            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: '6px 0 0' }}>
                                 Sent to{' '}
-                                <span style={{ color: '#C8956C', fontWeight: 600 }}>{fmtPhone(phone)}</span>
+                                <span style={{ color: '#C8956C', fontWeight: 700 }}>{fmtPhone(phone)}</span>
                             </p>
                         </div>
 
@@ -242,17 +254,18 @@ export default function AppLoginPage() {
                                         autoFocus={i === 0}
                                         style={{
                                             width: '54px', height: '60px',
-                                            background: digit ? '#C8956C' : '#1E1E1E',
+                                            background: digit ? '#C8956C' : colors.inputBg,
                                             border: '1.5px solid',
-                                            borderColor: digit ? '#C8956C' : 'rgba(255,255,255,0.12)',
+                                            borderColor: digit ? '#C8956C' : colors.border,
                                             borderRadius: '14px',
                                             textAlign: 'center',
                                             fontSize: '22px', fontWeight: 800,
-                                            color: digit ? '#fff' : 'rgba(255,255,255,0.6)',
+                                            color: digit ? '#fff' : colors.text,
                                             outline: 'none',
                                             fontFamily: "'Inter', sans-serif",
                                             cursor: 'text',
                                             transition: 'all 0.2s',
+                                            boxShadow: isLight && !digit ? '0 2px 8px rgba(0,0,0,0.02)' : 'none',
                                         }}
                                     />
                                 </motion.div>
@@ -260,17 +273,17 @@ export default function AppLoginPage() {
                         </div>
 
                         {/* Countdown */}
-                        <p style={{ textAlign: 'center', fontSize: '14px', color: 'rgba(255,255,255,0.4)', marginBottom: '24px' }}>
+                        <p style={{ textAlign: 'center', fontSize: '14px', color: colors.textMuted, marginBottom: '24px' }}>
                             {countdown > 0 ? (
                                 <>
-                                    <span style={{ fontFamily: 'monospace', fontSize: '16px', color: '#fff', fontWeight: 700 }}>
+                                    <span style={{ fontFamily: 'monospace', fontSize: '16px', color: colors.text, fontWeight: 700 }}>
                                         {String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}
                                     </span>
                                 </>
                             ) : null}
                         </p>
 
-                        {error && <p style={{ fontSize: '13px', color: '#ff6b6b', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
+                        {error && <p style={{ fontSize: '13px', color: '#ff4757', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
 
                         <motion.button
                             whileTap={{ scale: 0.97 }}
@@ -281,27 +294,16 @@ export default function AppLoginPage() {
                             {loading ? <Loader2 size={20} className="animate-spin" /> : 'Verify'}
                         </motion.button>
 
-                        <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(255,255,255,0.35)' }}>
+                        <p style={{ textAlign: 'center', fontSize: '13px', color: colors.textMuted }}>
                             Didn't receive any code?{' '}
                             {countdown > 0 ? (
-                                <span style={{ color: 'rgba(255,255,255,0.35)' }}>Wait {countdown}s</span>
+                                <span style={{ color: colors.textMuted }}>Wait {countdown}s</span>
                             ) : (
                                 <button onClick={handleSendOtp} style={{ ...S.ghost, display: 'inline', color: '#C8956C', fontWeight: 600 }}>
-                                    Resend a new code
+                                    Resend code
                                 </button>
                             )}
                         </p>
-
-                        {/* Demo hint */}
-                        <div style={{
-                            marginTop: '20px', background: '#1E1E1E',
-                            borderRadius: '12px', padding: '10px 14px',
-                            textAlign: 'center',
-                        }}>
-                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-                                💡 Demo OTP: <span style={{ color: '#C8956C', fontWeight: 700 }}>1234</span>
-                            </p>
-                        </div>
                     </motion.div>
                 )}
 
@@ -314,12 +316,12 @@ export default function AppLoginPage() {
                     >
                         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                             <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>Almost There!</h2>
-                            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Tell us a bit about yourself</p>
+                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 8px', fontFamily: "'Playfair Display', serif" }}>Almost There!</h2>
+                            <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0 }}>Tell us a bit about yourself</p>
                         </div>
 
                         <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '8px' }}>Your Name</label>
+                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '8px', fontWeight: 600 }}>Your Name</label>
                             <input
                                 type="text" value={name} autoFocus
                                 onChange={e => { setName(e.target.value); setError(''); }}
@@ -329,8 +331,8 @@ export default function AppLoginPage() {
                         </div>
 
                         <div style={{ marginBottom: '24px' }}>
-                            <label style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '10px' }}>
-                                Gender <span style={{ color: 'rgba(255,255,255,0.25)' }}>(optional)</span>
+                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '10px', fontWeight: 600 }}>
+                                Gender <span style={{ color: colors.textMuted, opacity: 0.6, fontWeight: 400 }}>(optional)</span>
                             </label>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 {['female', 'male', 'other'].map(g => (
@@ -339,14 +341,16 @@ export default function AppLoginPage() {
                                         onClick={() => setGender(g)}
                                         style={{
                                             flex: 1, padding: '10px 0',
-                                            background: gender === g ? '#C8956C' : '#1E1E1E',
+                                            background: gender === g ? '#C8956C' : colors.inputBg,
                                             border: '1.5px solid',
-                                            borderColor: gender === g ? '#C8956C' : 'rgba(255,255,255,0.1)',
+                                            borderColor: gender === g ? '#C8956C' : colors.border,
                                             borderRadius: '12px',
-                                            color: '#fff', fontSize: '13px', fontWeight: 600,
+                                            color: gender === g ? '#fff' : colors.text,
+                                            fontSize: '13px', fontWeight: 600,
                                             cursor: 'pointer', textTransform: 'capitalize',
                                             fontFamily: "'Inter', sans-serif",
                                             transition: 'all 0.2s',
+                                            boxShadow: isLight && gender !== g ? '0 2px 8px rgba(0,0,0,0.02)' : 'none',
                                         }}
                                     >
                                         {g === 'female' ? '👩 ' : g === 'male' ? '👨 ' : '🧑 '}{g}
@@ -355,7 +359,7 @@ export default function AppLoginPage() {
                             </div>
                         </div>
 
-                        {error && <p style={{ fontSize: '13px', color: '#ff6b6b', marginBottom: '12px' }}>{error}</p>}
+                        {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
 
                         <motion.button
                             whileTap={{ scale: 0.97 }}

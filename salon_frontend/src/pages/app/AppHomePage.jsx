@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion } from 'framer-motion';
 import {
-    MapPin, Bell, SlidersHorizontal, Heart, Star, ArrowRight
+    MapPin, SlidersHorizontal, Heart, Star, ArrowRight
 } from 'lucide-react';
 import { MOCK_OUTLET, PRODUCT_CATEGORIES } from '../../data/appMockData';
 
@@ -66,19 +67,6 @@ const GENDER_DATA = {
     },
 };
 
-/* ── Styles ── */
-const S = {
-    page: { background: '#141414', minHeight: '100svh', color: '#fff' },
-    section: { padding: '20px 16px 0' },
-    row: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' },
-    label: { fontSize: '16px', fontWeight: 700, color: '#fff' },
-    seeAll: { fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' },
-    card: {
-        background: '#1E1E1E', borderRadius: '16px',
-        overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
-    },
-};
-
 function HeartBtn({ size = 20 }) {
     const [liked, setLiked] = useState(false);
     return (
@@ -108,6 +96,8 @@ export default function AppHomePage() {
     const { customer } = useCustomerAuth();
     const navigate = useNavigate();
     const { gender, setGender } = useGender();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
 
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
@@ -116,54 +106,50 @@ export default function AppHomePage() {
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
     const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
 
-    return (
-        <motion.div variants={stagger} initial="hidden" animate="show" style={S.page}>
+    /* ── Theme based colors ── */
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        card: isLight ? '#FFFFFF' : '#1E1E1E',
+        text: isLight ? '#1A1A1A' : '#FFFFFF',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        input: isLight ? '#EDF0F2' : '#242424',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
+    };
 
-            {/* ── TOP HEADER ── */}
-            <motion.div variants={fadeUp} style={{ padding: '52px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+    return (
+        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh', color: colors.text }}>
+
+            {/* ── GREETING SECTION ── */}
+            <motion.div variants={fadeUp} style={{ padding: '24px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
                 <div>
-                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.2 }}>
-                        Hi {customer?.name?.split(' ')[0] || 'Jackson'},
+                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: colors.text, margin: 0, lineHeight: 1.2 }}>
+                        Hi {customer?.name?.split(' ')[0] || 'Guest'},
                     </h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                         <MapPin size={13} color="#C8956C" />
-                        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>
+                        <span style={{ fontSize: '13px', color: colors.textMuted, fontWeight: 400 }}>
                             {MOCK_OUTLET?.address?.split(',')[0] || '301 Chicago'}
                         </span>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-                    <motion.button
-                        whileTap={{ scale: 0.88 }}
-                        onClick={() => navigate('/app/notifications')}
-                        style={{ position: 'relative', background: '#242424', border: 'none', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    >
-                        <Bell size={18} color="#fff" />
-                        <span style={{ position: 'absolute', top: 8, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#C8956C', border: '2px solid #141414' }} />
-                    </motion.button>
-                    {/* Mascot / avatar */}
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #C8956C, #a06844)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                        💇
                     </div>
                 </div>
             </motion.div>
 
             {/* ── SEARCH BAR ── */}
             <motion.div variants={fadeUp} style={{ padding: '0 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <div style={{ flex: 1, background: '#242424', borderRadius: '12px', display: 'flex', alignItems: 'center', padding: '0 14px', height: '46px', gap: '10px' }}>
+                <div style={{ flex: 1, background: colors.input, borderRadius: '12px', display: 'flex', alignItems: 'center', padding: '0 14px', height: '46px', gap: '10px' }}>
                     <span style={{ fontSize: '16px' }}>🔍</span>
-                    <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.3)' }}>Find a salon, specialists,...</span>
+                    <span style={{ fontSize: '14px', color: colors.textMuted }}>Find a salon, specialists,...</span>
                 </div>
                 <motion.button
                     whileTap={{ scale: 0.9 }}
-                    style={{ background: '#242424', border: 'none', borderRadius: '12px', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                    style={{ background: colors.input, border: 'none', borderRadius: '12px', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
                 >
-                    <SlidersHorizontal size={18} color="rgba(255,255,255,0.55)" />
+                    <SlidersHorizontal size={18} color={isLight ? '#444' : 'rgba(255,255,255,0.55)'} />
                 </motion.button>
             </motion.div>
 
             {/* ── GENDER TABS ── */}
-            <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
                 {['men', 'women'].map((tab) => (
                     <motion.button
                         key={tab}
@@ -172,7 +158,7 @@ export default function AppHomePage() {
                         style={{
                             flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
                             fontSize: '15px', fontWeight: g === tab ? 700 : 400,
-                            color: g === tab ? '#fff' : 'rgba(255,255,255,0.35)',
+                            color: g === tab ? (isLight ? '#000' : '#fff') : colors.textMuted,
                             borderBottom: g === tab ? '2.5px solid #C8956C' : '2.5px solid transparent',
                             transition: 'all 0.2s', textTransform: 'capitalize',
                         }}
@@ -217,10 +203,10 @@ export default function AppHomePage() {
             </motion.div>
 
             {/* ── NEAREST TO YOU ── */}
-            <motion.div variants={fadeUp} style={S.section}>
-                <div style={S.row}>
-                    <span style={S.label}>Nearest To You</span>
-                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Nearest To You</span>
+                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/services')}>
                         <ArrowRight size={16} />
                     </button>
                 </div>
@@ -230,7 +216,7 @@ export default function AppHomePage() {
                             key={salon.id}
                             whileTap={{ scale: 0.97 }}
                             onClick={() => navigate('/app/book')}
-                            style={{ ...S.card, width: '160px' }}
+                            style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '160px', border: `1px solid ${colors.border}` }}
                         >
                             <div style={{ position: 'relative' }}>
                                 <img src={salon.img} alt={salon.name}
@@ -241,11 +227,11 @@ export default function AppHomePage() {
                                 </div>
                             </div>
                             <div style={{ padding: '10px 10px 12px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
-                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: '0 0 7px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</p>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
+                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: '0 0 7px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</p>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <StarRow rating={salon.rating} />
-                                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>• {salon.dist}</span>
+                                    <span style={{ fontSize: '10px', color: colors.textMuted }}>• {salon.dist}</span>
                                 </div>
                             </div>
                         </motion.div>
@@ -254,10 +240,10 @@ export default function AppHomePage() {
             </motion.div>
 
             {/* ── CATEGORIES ── */}
-            <motion.div variants={fadeUp} style={S.section}>
-                <div style={S.row}>
-                    <span style={S.label}>Categories</span>
-                    <button style={S.seeAll} onClick={() => navigate('/app/categories')}>See All</button>
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Categories</span>
+                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
                 </div>
                 <div className="app-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                     {d.categories.map((cat) => (
@@ -273,66 +259,23 @@ export default function AppHomePage() {
                             <div style={{
                                 width: '48px', height: '48px', borderRadius: '50%',
                                 overflow: 'hidden', margin: '0 auto 10px',
-                                border: '2px solid rgba(200,149,172,0.1)',
-                                boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                                border: isLight ? '2px solid rgba(200,149,108,0.2)' : '2px solid rgba(200,149,172,0.1)',
+                                boxShadow: isLight ? '0 4px 10px rgba(0,0,0,0.05)' : '0 4px 10px rgba(0,0,0,0.3)',
                             }}>
                                 <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
-                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#fff', margin: '0 0 2px', whiteSpace: 'nowrap' }}>{cat.name}</p>
-                            <p style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>{cat.count} Places</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── SPECIAL OFFERS ── */}
-            <motion.div variants={fadeUp} style={S.section}>
-                <div style={S.row}>
-                    <span style={S.label}>Special Offers</span>
-                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
-                        <ArrowRight size={16} />
-                    </button>
-                </div>
-                <div className="app-scroll" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                    {d.offers.map((offer) => (
-                        <motion.div
-                            key={offer.id}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => navigate('/app/book')}
-                            style={{ ...S.card, width: '180px', position: 'relative' }}
-                        >
-                            <div style={{ position: 'relative' }}>
-                                <img src={offer.img} alt={offer.title}
-                                    style={{ width: '100%', height: '140px', objectFit: 'cover', display: 'block' }}
-                                />
-                                {/* Discount badge */}
-                                <div style={{
-                                    position: 'absolute', top: 10, left: 10,
-                                    background: 'rgba(0,0,0,0.6)', borderRadius: '6px',
-                                    padding: '3px 8px', fontSize: '11px', fontWeight: 700, color: '#fff',
-                                    backdropFilter: 'blur(8px)',
-                                }}>
-                                    {offer.discount}
-                                </div>
-                                {/* Heart */}
-                                <div style={{ position: 'absolute', top: 10, right: 10 }}>
-                                    <HeartBtn size={16} />
-                                </div>
-                            </div>
-                            <div style={{ padding: '10px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{offer.title}</p>
-                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{offer.tag}</p>
-                            </div>
+                            <p style={{ fontSize: '11px', fontWeight: 700, color: colors.text, margin: '0 0 2px', whiteSpace: 'nowrap' }}>{cat.name}</p>
+                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>{cat.count} Places</p>
                         </motion.div>
                     ))}
                 </div>
             </motion.div>
 
             {/* ── POPULAR EXPERTS ── */}
-            <motion.div variants={fadeUp} style={S.section}>
-                <div style={S.row}>
-                    <span style={S.label}>Popular Experts</span>
-                    <button style={S.seeAll} onClick={() => navigate('/app/services')}>
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Popular Experts</span>
+                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/services')}>
                         <ArrowRight size={16} />
                     </button>
                 </div>
@@ -342,7 +285,7 @@ export default function AppHomePage() {
                             key={expert.id}
                             whileTap={{ scale: 0.96 }}
                             onClick={() => navigate('/app/book')}
-                            style={{ ...S.card, width: '120px', textAlign: 'center', paddingBottom: '12px' }}
+                            style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '120px', textAlign: 'center', paddingBottom: '12px', border: `1px solid ${colors.border}` }}
                         >
                             <div style={{ position: 'relative', padding: '10px 10px 0' }}>
                                 <img
@@ -358,18 +301,18 @@ export default function AppHomePage() {
                                     <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff' }}>{expert.rating}</span>
                                 </div>
                             </div>
-                            <p style={{ fontSize: '12px', fontWeight: 700, color: '#fff', margin: '8px 6px 2px' }}>{expert.name}</p>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{expert.role}</p>
+                            <p style={{ fontSize: '12px', fontWeight: 700, color: colors.text, margin: '8px 6px 2px' }}>{expert.name}</p>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{expert.role}</p>
                         </motion.div>
                     ))}
                 </div>
             </motion.div>
 
             {/* ── SHOP PRODUCTS ── */}
-            <motion.div variants={fadeUp} style={S.section}>
-                <div style={S.row}>
-                    <span style={S.label}>Shop Products</span>
-                    <button style={S.seeAll} onClick={() => navigate('/app/categories')}>See All</button>
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Shop Products</span>
+                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
                 </div>
                 <div className="app-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                     {PRODUCT_CATEGORIES.slice(0, 5).map((cat) => (
@@ -378,102 +321,57 @@ export default function AppHomePage() {
                             whileTap={{ scale: 0.94 }}
                             onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
                             style={{
-                                background: '#1E1E1E',
+                                background: colors.card,
                                 borderRadius: '16px',
                                 padding: '16px 14px',
                                 minWidth: '110px',
                                 textAlign: 'center',
                                 cursor: 'pointer',
                                 flexShrink: 0,
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                border: `1px solid ${colors.border}`,
                             }}
                         >
                             <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
-                            <p style={{ fontSize: '12px', fontWeight: 600, color: '#fff', margin: '0 0 3px', whiteSpace: 'nowrap' }}>{cat.name}</p>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', margin: 0 }}>{cat.count} Items</p>
+                            <p style={{ fontSize: '12px', fontWeight: 600, color: colors.text, margin: '0 0 3px', whiteSpace: 'nowrap' }}>{cat.name}</p>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{cat.count} Items</p>
                         </motion.div>
                     ))}
-                    {/* Visit Full Shop CTA */}
-                    <motion.div
-                        whileTap={{ scale: 0.94 }}
-                        onClick={() => navigate('/app/shop')}
-                        style={{
-                            background: 'linear-gradient(135deg, #C8956C, #a06844)',
-                            borderRadius: '16px',
-                            padding: '16px 14px',
-                            minWidth: '110px',
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                        }}
-                    >
-                        <span style={{ fontSize: '24px' }}>🛍️</span>
-                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#fff', margin: 0 }}>Full Shop</p>
-                        <ArrowRight size={14} color="#fff" />
-                    </motion.div>
                 </div>
             </motion.div>
 
-            {/* ── LOYALTY + REFERRAL QUICK ACCESS ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+            {/* ── LOYALTY + REFERRAL ── */}
+            <motion.div variants={fadeUp} style={{ padding: '20px 16px 32px' }}>
                 <div style={{ display: 'flex', gap: '12px' }}>
-                    {/* Loyalty Card */}
                     <motion.div
                         whileTap={{ scale: 0.97 }}
                         onClick={() => navigate('/app/profile')}
                         style={{
-                            flex: 1,
-                            background: '#1E1E1E',
-                            borderRadius: '16px',
-                            padding: '16px',
-                            cursor: 'pointer',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
+                            flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
+                            border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
                         }}
                     >
                         <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
                         <div>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
-                            <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>
-                                250 <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>pts</span>
-                            </p>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
+                            <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>250 pts</p>
                         </div>
                     </motion.div>
-
-                    {/* Referral Card */}
                     <motion.div
                         whileTap={{ scale: 0.97 }}
                         onClick={() => navigate('/app/referrals')}
                         style={{
-                            flex: 1,
-                            background: '#1E1E1E',
-                            borderRadius: '16px',
-                            padding: '16px',
-                            cursor: 'pointer',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
+                            flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
+                            border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
                         }}
                     >
                         <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
                         <div>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
-                            <p style={{ fontSize: '13px', fontWeight: 700, color: '#fff', margin: 0 }}>Earn ₹200</p>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
+                            <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹200</p>
                         </div>
                     </motion.div>
                 </div>
             </motion.div>
-
-            {/* Bottom padding for nav */}
-            <div style={{ height: '24px' }} />
 
         </motion.div>
     );

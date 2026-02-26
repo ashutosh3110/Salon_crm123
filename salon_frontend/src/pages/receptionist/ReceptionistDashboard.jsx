@@ -144,7 +144,9 @@ export default function ReceptionistDashboard() {
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <p className="text-sm font-black text-text uppercase tracking-tight">{apt.client}</p>
-                                                <span className={`text-[8px] font-black uppercase px-2 py-0.5 border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-surface-alt border-border text-text-muted'
+                                                <span className={`text-[8px] font-black uppercase px-2 py-0.5 border ${apt.status === 'Arrived'
+                                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+                                                        : 'bg-surface-alt border-border text-text-muted'
                                                     }`}>
                                                     {apt.status}
                                                 </span>

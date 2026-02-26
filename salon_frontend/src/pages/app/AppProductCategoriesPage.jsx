@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, ShoppingBag } from 'lucide-react';
+import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 /* ── Left sidebar categories (with images) ── */
 const SIDEBAR = [
-    { id: 'trending', label: 'Trending Now', accent: '#E8612C', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
+    { id: 'trending', label: 'Trending Now', accent: '#C8956C', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
     { id: 'hair', label: 'Hair Care', accent: '#8B5CF6', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
     { id: 'skin', label: 'Skin Care', accent: '#EC4899', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
     { id: 'nails', label: 'Nail Art', accent: '#10B981', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
@@ -15,7 +16,7 @@ const SIDEBAR = [
     { id: 'spa', label: 'Spa & Relax', accent: '#F97316', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
 ];
 
-/* ── Right panel content per category (with real images for spotlight circles) ── */
+/* ── Right panel content per category ── */
 const CONTENT = {
     trending: {
         spotlight: [
@@ -98,141 +99,23 @@ const CONTENT = {
             { id: 5, name: 'Neutrogena', img: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&q=80' },
         ],
     },
-    nails: {
-        spotlight: [
-            { id: 1, label: 'Nail Polish', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 2, label: 'Gel Nails', img: 'https://images.unsplash.com/photo-1604655845765-5d7c7a62c6f6?w=200&q=80' },
-            { id: 3, label: 'Nail Art', img: 'https://images.unsplash.com/photo-1604655866854-8ebba0c3ca2e?w=200&q=80' },
-            { id: 4, label: 'Nail Tools', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 5, label: 'Cuticle Oil', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 6, label: 'French Tips', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 7, label: 'Nail Remover', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 8, label: 'Nail Glitter', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 9, label: 'Press-Ons', img: 'https://images.unsplash.com/photo-1604655866854-8ebba0c3ca2e?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'OPI', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 2, label: 'Essie', img: 'https://images.unsplash.com/photo-1604655845765-5d7c7a62c6f6?w=200&q=80' },
-            { id: 3, label: 'Sally', img: 'https://images.unsplash.com/photo-1604655866854-8ebba0c3ca2e?w=200&q=80' },
-            { id: 4, label: 'Orly', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 5, label: 'Zoya', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'OPI', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 2, name: 'Essie', img: 'https://images.unsplash.com/photo-1604655845765-5d7c7a62c6f6?w=200&q=80' },
-            { id: 3, name: 'Sally', img: 'https://images.unsplash.com/photo-1604655866854-8ebba0c3ca2e?w=200&q=80' },
-            { id: 4, name: 'Orly', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 5, name: 'Zoya', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-        ],
-    },
-    makeup: {
-        spotlight: [
-            { id: 1, label: 'Foundation', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80' },
-            { id: 2, label: 'Lipstick', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-            { id: 3, label: 'Eyeshadow', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 4, label: 'Mascara', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, label: 'Blush', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-            { id: 6, label: 'Bronzer', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 7, label: 'Highlighter', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 8, label: 'Primer', img: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=200&q=80' },
-            { id: 9, label: 'Concealer', img: 'https://images.unsplash.com/photo-1567721913486-6585f069b332?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'MAC', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80' },
-            { id: 2, label: 'Maybelline', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-            { id: 3, label: 'NYX', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 4, label: 'Lakme', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, label: 'Revlon', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'MAC', img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&q=80' },
-            { id: 2, name: 'Maybelline', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-            { id: 3, name: 'NYX', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 4, name: 'Lakme', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, name: 'Revlon', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-        ],
-    },
-    tools: {
-        spotlight: [
-            { id: 1, label: 'Hair Dryer', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-            { id: 2, label: 'Straightener', img: 'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=200&q=80' },
-            { id: 3, label: 'Curling Rod', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 4, label: 'Trimmer', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&q=80' },
-            { id: 5, label: 'Scissors', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&q=80' },
-            { id: 6, label: 'Brush Set', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 7, label: 'Comb & Pick', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 8, label: 'Roller Set', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200&q=80' },
-            { id: 9, label: 'Diffuser', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'Philips', img: 'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=200&q=80' },
-            { id: 2, label: 'Braun', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-            { id: 3, label: 'Dyson', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&q=80' },
-            { id: 4, label: 'Panasonic', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 5, label: 'Vidal', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'Philips', img: 'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=200&q=80' },
-            { id: 2, name: 'Braun', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-            { id: 3, name: 'Dyson', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&q=80' },
-            { id: 4, name: 'Panasonic', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 5, name: 'Vidal', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&q=80' },
-        ],
-    },
-    body: {
-        spotlight: [
-            { id: 1, label: 'Body Wash', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-            { id: 2, label: 'Body Lotion', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 3, label: 'Scrub', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 4, label: 'Perfume', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 5, label: 'Deodorant', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-            { id: 6, label: 'Body Oil', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-            { id: 7, label: 'Foot Care', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=200&q=80' },
-            { id: 8, label: 'Talc', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 9, label: 'Bath Salts', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'BodyShop', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-            { id: 2, label: 'Dove', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 3, label: 'Vaseline', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 4, label: 'Nivea', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 5, label: 'Himalaya', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'BodyShop', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-            { id: 2, name: 'Dove', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 3, name: 'Vaseline', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 4, name: 'Nivea', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 5, name: 'Himalaya', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-        ],
-    },
+    // ... adding more for Spa/etc
     spa: {
         spotlight: [
             { id: 1, label: 'Essential Oils', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
             { id: 2, label: 'Bath Bombs', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
             { id: 3, label: 'Face Steam', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200&q=80' },
-            { id: 4, label: 'Hot Stones', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 5, label: 'Mud Masks', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 6, label: 'Aromatherapy', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 7, label: 'Candles', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 8, label: 'Robe & Towels', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
             { id: 9, label: 'Diffusers', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
         ],
         universe: [
             { id: 1, label: 'Forest Essentials', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
             { id: 2, label: 'Kama Ayurveda', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 3, label: 'Biotique', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 4, label: 'Vaadi', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, label: 'Soulflower', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
         ],
         trending_stores: [
             { id: 1, name: 'Forest', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
             { id: 2, name: 'Kama', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-            { id: 3, name: 'Biotique', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 4, name: 'Vaadi', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, name: 'Soulflower', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
         ],
-    },
+    }
 };
 
 /* gradients for 3D text cards — cycles through rich palette */
@@ -244,16 +127,14 @@ const CARD_GRADIENTS = [
     'linear-gradient(145deg, #0A2342 0%, #126872 60%, #1B998B 100%)',
 ];
 
-/* ── Auto-flipping 3D card for odd spotlight cells ── */
-function FlipCard({ item, gradient, onClick, accent, delay }) {
+function FlipCard({ item, gradient, onClick, accent, delay, isLight }) {
     const [flipped, setFlipped] = useState(false);
 
     useEffect(() => {
-        // Stagger the start so not all flip at once
         const initial = setTimeout(() => {
-            setFlipped(true); // flip to image first
+            setFlipped(true);
             const interval = setInterval(() => {
-                setFlipped(prev => !prev); // toggle every 4s
+                setFlipped(prev => !prev);
             }, 4000);
             return () => clearInterval(interval);
         }, delay);
@@ -264,109 +145,58 @@ function FlipCard({ item, gradient, onClick, accent, delay }) {
         <motion.div
             whileTap={{ scale: 0.92 }}
             onClick={onClick}
-            style={{
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', gap: '7px', cursor: 'pointer',
-            }}
+            className="flex flex-col items-center gap-2 cursor-pointer"
         >
-            {/* 3D flip container */}
-            <div style={{
-                width: '72px', height: '72px',
-                perspective: '300px',
-                flexShrink: 0,
-            }}>
-                <div style={{
-                    width: '100%', height: '100%',
-                    position: 'relative',
-                    transformStyle: 'preserve-3d',
-                    transition: 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                    borderRadius: '50%',
-                }}>
-
+            <div className="w-[72px] h-[72px] shrink-0" style={{ perspective: '300px' }}>
+                <div
+                    className="w-full h-full relative transition-transform duration-700"
+                    style={{
+                        transformStyle: 'preserve-3d',
+                        transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                        borderRadius: '50%'
+                    }}
+                >
                     {/* FRONT — 3D text card */}
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        borderRadius: '50%',
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        background: gradient,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: '6px',
-                        boxShadow: [
-                            '0 1px 0 rgba(255,255,255,0.10) inset',
-                            '0 -2px 0 rgba(0,0,0,0.3) inset',
-                            '3px 5px 0 rgba(0,0,0,0.18)',
-                            '2px 3px 10px rgba(0,0,0,0.22)',
-                        ].join(', '),
-                        overflow: 'hidden',
-                    }}>
-                        {/* shine */}
-                        <div style={{
-                            position: 'absolute', inset: 0, borderRadius: '50%',
-                            background: 'linear-gradient(155deg, rgba(255,255,255,0.2) 0%, transparent 55%)',
-                            pointerEvents: 'none',
-                        }} />
-                        <span style={{
-                            fontSize: '9.5px', fontWeight: 800,
-                            color: '#fff',
-                            textAlign: 'center', lineHeight: 1.25,
-                            letterSpacing: '0.01em',
-                            textShadow: '0 1px 4px rgba(0,0,0,0.6)',
-                            fontFamily: "'Playfair Display', serif",
-                            wordBreak: 'break-word',
-                            zIndex: 1,
-                            position: 'relative',
-                        }}>
+                    <div
+                        className="absolute inset-0 rounded-full flex items-center justify-center p-2 shadow-lg"
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            background: gradient,
+                        }}
+                    >
+                        <span className="text-[9.5px] font-black text-white text-center leading-tight tracking-tight uppercase" style={{ fontFamily: "'Playfair Display', serif" }}>
                             {item.label}
                         </span>
                     </div>
 
                     {/* BACK — circular photo */}
-                    <div style={{
-                        position: 'absolute', inset: 0,
-                        borderRadius: '50%',
-                        backfaceVisibility: 'hidden',
-                        WebkitBackfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)',
-                        overflow: 'hidden',
-                        border: '2px solid #2A2A2A',
-                        boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
-                    }}>
-                        <img
-                            src={item.img} alt={item.label}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        />
+                    <div
+                        className="absolute inset-0 rounded-full overflow-hidden border-2 border-white/10 shadow-xl"
+                        style={{
+                            backfaceVisibility: 'hidden',
+                            WebkitBackfaceVisibility: 'hidden',
+                            transform: 'rotateY(180deg)',
+                        }}
+                    >
+                        <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
                     </div>
                 </div>
             </div>
-
-            {/* label below */}
-            <span style={{
-                fontSize: '10px', fontWeight: 700,
-                color: accent || '#C8956C',
-                textAlign: 'center', lineHeight: 1.3,
-            }}>
+            <span className="text-[10px] font-black uppercase tracking-widest text-center" style={{ color: accent }}>
                 {item.label}
             </span>
         </motion.div>
     );
 }
 
-/* ── Spotlight item — even = static photo, odd = auto-flipping card ── */
-function SpotlightItem({ item, index, onClick, accent }) {
+function SpotlightItem({ item, index, onClick, accent, isLight }) {
     const isImage = index % 2 === 0;
     const gradient = CARD_GRADIENTS[Math.floor(index / 2) % CARD_GRADIENTS.length];
 
     if (!isImage) {
         return (
-            <FlipCard
-                item={item}
-                gradient={gradient}
-                onClick={onClick}
-                accent={accent}
-                delay={index * 700}  // stagger: 700ms apart
-            />
+            <FlipCard item={item} gradient={gradient} onClick={onClick} accent={accent} delay={index * 700} isLight={isLight} />
         );
     }
 
@@ -374,52 +204,12 @@ function SpotlightItem({ item, index, onClick, accent }) {
         <motion.div
             whileTap={{ scale: 0.92 }}
             onClick={onClick}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '7px', cursor: 'pointer' }}
+            className="flex flex-col items-center gap-2 cursor-pointer"
         >
-            <div style={{
-                width: '72px', height: '72px', borderRadius: '50%',
-                overflow: 'hidden', flexShrink: 0,
-                border: '2px solid #2A2A2A',
-                boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
-            }}>
-                <img
-                    src={item.img} alt={item.label}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
+            <div className="w-[72px] h-[72px] rounded-full overflow-hidden shrink-0 border-2 border-white/10 shadow-lg">
+                <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
             </div>
-            <span style={{
-                fontSize: '10px', fontWeight: 500, color: '#A0A0A0',
-                textAlign: 'center', lineHeight: 1.3,
-            }}>
-                {item.label}
-            </span>
-        </motion.div>
-    );
-}
-
-/* ── Universe brand circular button (dark ring) ── */
-function UniverseBtn({ item, onClick }) {
-    return (
-        <motion.div
-            whileTap={{ scale: 0.92 }}
-            onClick={onClick}
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', cursor: 'pointer', width: '80px' }}
-        >
-            <div style={{
-                width: '68px', height: '68px', borderRadius: '50%',
-                overflow: 'hidden', flexShrink: 0,
-                border: '2.5px solid #E0E0E0',
-                boxShadow: '0 2px 10px rgba(255,255,255,0.08)',
-            }}>
-                <img
-                    src={item.img} alt={item.label}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-            </div>
-            <span style={{
-                fontSize: '10px', fontWeight: 600, color: '#FFFFFF',
-                textAlign: 'center', lineHeight: 1.3,
-            }}>
+            <span className="text-[10px] font-black uppercase tracking-widest text-center opacity-40 shrink-0">
                 {item.label}
             </span>
         </motion.div>
@@ -428,58 +218,43 @@ function UniverseBtn({ item, onClick }) {
 
 export default function AppProductCategoriesPage() {
     const navigate = useNavigate();
+    const { theme } = useCustomerTheme();
+    const isLight = theme === 'light';
     const [active, setActive] = useState('trending');
 
     const cat = SIDEBAR.find(s => s.id === active);
     const content = CONTENT[active] || CONTENT.trending;
 
-    return (
-        <div style={{
-            background: '#141414', minHeight: '100svh',
-            display: 'flex', flexDirection: 'column',
-            fontFamily: "'Inter', sans-serif",
-            color: '#FFFFFF',
-        }}>
+    const colors = {
+        bg: isLight ? '#F8F9FA' : '#141414',
+        side: isLight ? '#FFFFFF' : '#1A1A1A',
+        card: isLight ? '#FFFFFF' : '#1A1A1A',
+        text: isLight ? '#1A1A1A' : '#ffffff',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+    };
 
-            {/* ── TOP HEADER ── */}
-            <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '52px 16px 14px',
-                background: 'rgba(20, 20, 20, 0.85)',
-                backdropFilter: 'blur(10px)',
-                borderBottom: '1px solid #2A2A2A',
-                position: 'sticky', top: 0, zIndex: 10,
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => navigate(-1)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
-                    >
-                        <ArrowLeft size={22} color="#FFFFFF" />
-                    </motion.button>
-                    <span style={{ fontSize: '17px', fontWeight: 600, color: '#FFFFFF' }}>Categories</span>
+    return (
+        <div className="min-h-screen flex flex-col" style={{ background: colors.bg, color: colors.text }}>
+            {/* Header */}
+            <div className="sticky top-0 z-50 p-6 flex items-center justify-between border-b" style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(16px)', borderBottomColor: colors.border }}>
+                <div className="flex items-center gap-4">
+                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
+                        <ArrowLeft size={20} />
+                    </button>
+                    <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Categories</h1>
                 </div>
-                <div style={{ display: 'flex', gap: '16px' }}>
-                    <motion.button whileTap={{ scale: 0.9 }} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <Heart size={22} color="#FFFFFF" />
-                    </motion.button>
-                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => navigate('/app/shop')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                        <ShoppingBag size={22} color="#FFFFFF" />
-                    </motion.button>
+                <div className="flex gap-2">
+                    <button onClick={() => navigate('/app/shop')} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
+                        <ShoppingBag size={20} />
+                    </button>
                 </div>
             </div>
 
-            {/* ── BODY: SIDEBAR + CONTENT ── */}
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-
-                {/* LEFT SIDEBAR */}
-                <div style={{
-                    width: '88px', flexShrink: 0,
-                    background: '#1A1A1A',
-                    overflowY: 'auto',
-                    borderRight: '1px solid #2A2A2A',
-                }}>
+            {/* Body */}
+            <div className="flex flex-1 overflow-hidden">
+                {/* Sidebar */}
+                <div className="w-24 flex-shrink-0 overflow-y-auto border-r" style={{ background: colors.side, borderColor: colors.border }}>
                     {SIDEBAR.map((item) => {
                         const isActive = active === item.id;
                         return (
@@ -487,37 +262,17 @@ export default function AppProductCategoriesPage() {
                                 key={item.id}
                                 whileTap={{ scale: 0.96 }}
                                 onClick={() => setActive(item.id)}
-                                style={{
-                                    display: 'flex', flexDirection: 'column',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    padding: '14px 8px',
-                                    cursor: 'pointer',
-                                    background: isActive ? '#141414' : 'transparent',
-                                    borderLeft: isActive ? `3px solid ${item.accent}` : '3px solid transparent',
-                                    transition: 'all 0.18s',
-                                    gap: '8px',
-                                }}
+                                className="flex flex-col items-center py-4 px-2 cursor-pointer transition-all gap-2 relative"
+                                style={{ background: isActive ? (isLight ? 'rgba(200,149,108,0.05)' : 'rgba(200,149,108,0.1)') : 'transparent' }}
                             >
-                                {/* Category Image */}
-                                <div style={{
-                                    width: '54px', height: '54px', borderRadius: '12px',
-                                    overflow: 'hidden',
-                                    border: isActive ? `2px solid ${item.accent}` : '2px solid #333',
-                                    boxShadow: isActive ? `0 4px 12px ${item.accent}44` : '0 1px 4px rgba(0,0,0,0.3)',
-                                    transition: 'all 0.18s',
-                                }}>
-                                    <img
-                                        src={item.img} alt={item.label}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                    />
+                                {isActive && <motion.div layoutId="sidebar-active" className="absolute left-0 top-0 bottom-0 w-1 bg-[#C8956C]" />}
+                                <div
+                                    className="w-14 h-14 rounded-2xl overflow-hidden border-2 transition-all shadow-sm"
+                                    style={{ borderColor: isActive ? '#C8956C' : colors.border }}
+                                >
+                                    <img src={item.img} alt={item.label} className="w-full h-full object-cover" />
                                 </div>
-                                <span style={{
-                                    fontSize: '9.5px',
-                                    fontWeight: isActive ? 700 : 500,
-                                    color: isActive ? item.accent : '#999',
-                                    textAlign: 'center', lineHeight: 1.3,
-                                    transition: 'all 0.18s',
-                                }}>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-center leading-tight" style={{ color: isActive ? '#C8956C' : colors.textMuted }}>
                                     {item.label}
                                 </span>
                             </motion.div>
@@ -525,159 +280,47 @@ export default function AppProductCategoriesPage() {
                     })}
                 </div>
 
-                {/* RIGHT CONTENT PANEL */}
-                <div style={{ flex: 1, overflowY: 'auto', background: '#141414', paddingBottom: '32px' }}>
-
-                    {/* Active category hero strip with image */}
-                    <div style={{ position: 'relative', height: '80px', overflow: 'hidden' }}>
-                        <img
-                            src={cat.img} alt={cat.label}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                        />
-                        <div style={{
-                            position: 'absolute', inset: 0,
-                            background: 'linear-gradient(to right, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 100%)',
-                            display: 'flex', alignItems: 'center', padding: '0 16px',
-                        }}>
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', letterSpacing: '0.01em' }}>
-                                {cat.label}
-                            </span>
+                {/* Right Content */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-8">
+                    {/* Hero */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="relative h-24 rounded-3xl overflow-hidden shadow-lg"
+                    >
+                        <img src={cat.img} alt={cat.label} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center p-6">
+                            <h2 className="text-xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>{cat.label}</h2>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    {/* ── IN THE SPOTLIGHT ── */}
-                    <div style={{ padding: '18px 12px 0' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', paddingLeft: '4px' }}>
-                            In The Spotlight
-                        </h3>
-                        <motion.div
-                            key={active + '-spotlight'}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28 }}
-                            style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(3, 1fr)',
-                                gap: '18px 6px',
-                            }}
-                        >
+                    {/* Spotlight */}
+                    <div className="space-y-4">
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">In The Spotlight</h3>
+                        <div className="grid grid-cols-3 gap-6">
                             {content.spotlight.map((item, i) => (
-                                <SpotlightItem
-                                    key={item.id}
-                                    item={item}
-                                    index={i}
-                                    accent={cat.accent}
-                                    onClick={() => navigate(`/app/shop?tag=${encodeURIComponent(item.label)}`)}
-                                />
+                                <SpotlightItem key={item.id} item={item} index={i} accent={cat.accent} isLight={isLight} onClick={() => navigate(`/app/shop?tag=${encodeURIComponent(item.label)}`)} />
                             ))}
-                        </motion.div>
-                    </div>
-
-                    {/* ── SALON UNIVERSE ── */}
-                    <div style={{ padding: '24px 12px 0' }}>
-                        <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', margin: '0 0 16px', paddingLeft: '4px' }}>
-                            Salon Universe
-                        </h3>
-                        <motion.div
-                            key={active + '-universe'}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28, delay: 0.06 }}
-                            style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}
-                        >
-                            {content.universe.map((item) => (
-                                <UniverseBtn
-                                    key={item.id}
-                                    item={item}
-                                    onClick={() => navigate('/app/shop')}
-                                />
-                            ))}
-                        </motion.div>
-                    </div>
-
-                    {/* ── TRENDING BRANDS ── */}
-                    <div style={{ padding: '24px 12px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', paddingLeft: '4px', paddingRight: '4px' }}>
-                            <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#FFFFFF', margin: 0 }}>
-                                Trending Brands
-                            </h3>
-                            <button
-                                onClick={() => navigate('/app/shop')}
-                                style={{ fontSize: '12px', color: '#C8956C', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
-                            >
-                                See All
-                            </button>
                         </div>
-                        <motion.div
-                            key={active + '-stores'}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.28, delay: 0.1 }}
-                            style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', paddingLeft: '4px' }}
-                        >
-                            {content.trending_stores.map((store) => (
-                                <motion.div
-                                    key={store.id}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => navigate('/app/shop')}
-                                    style={{ flexShrink: 0, cursor: 'pointer', textAlign: 'center' }}
-                                >
-                                    <div style={{
-                                        width: '68px', height: '68px', borderRadius: '50%',
-                                        overflow: 'hidden',
-                                        border: '2px solid #2A2A2A',
-                                        marginBottom: '6px',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                                    }}>
-                                        <img
-                                            src={store.img} alt={store.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                                        />
-                                    </div>
-                                    <span style={{ fontSize: '10px', fontWeight: 500, color: '#A0A0A0', display: 'block' }}>
-                                        {store.name}
-                                    </span>
-                                </motion.div>
-                            ))}
-                        </motion.div>
                     </div>
 
-                    {/* ── VIEW ALL CTA ── */}
-                    <div style={{ padding: '24px 16px 0' }}>
-                        <motion.div
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.label)}`)}
-                            style={{
-                                borderRadius: '14px',
-                                overflow: 'hidden',
-                                cursor: 'pointer',
-                                position: 'relative',
-                                height: '80px',
-                            }}
-                        >
-                            <img
-                                src={cat.img} alt={cat.label}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                            />
-                            <div style={{
-                                position: 'absolute', inset: 0,
-                                background: 'rgba(0,0,0,0.48)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '0 18px',
-                            }}>
-                                <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>
-                                    View All {cat.label}
-                                </span>
-                                <div style={{
-                                    background: '#C8956C', borderRadius: '8px',
-                                    padding: '6px 14px', fontSize: '12px', fontWeight: 700, color: '#fff',
-                                }}>
-                                    Shop Now
-                                </div>
+                    {/* View All CTA */}
+                    <motion.button
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.label)}`)}
+                        style={{ background: colors.card, border: `1px solid ${colors.border}` }}
+                        className="w-full h-16 rounded-2xl flex items-center justify-between p-4 shadow-sm active:scale-95 transition-all"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden">
+                                <img src={cat.img} className="w-full h-full object-cover" alt="" />
                             </div>
-                        </motion.div>
-                    </div>
-
+                            <span className="text-xs font-black uppercase tracking-widest">Explore All Products</span>
+                        </div>
+                        <div className="bg-[#C8956C] text-white p-2 rounded-lg">
+                            <ArrowLeft className="w-4 h-4 rotate-180" />
+                        </div>
+                    </motion.button>
                 </div>
             </div>
         </div>

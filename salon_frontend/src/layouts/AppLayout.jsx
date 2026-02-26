@@ -2,105 +2,119 @@ import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import AppBottomNav from '../components/app/AppBottomNav';
+import AppHeader from '../components/app/AppHeader';
 import { useGender } from '../contexts/GenderContext';
+import { useCustomerAuth } from '../contexts/CustomerAuthContext';
+import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 
 const pageVariants = {
-    initial: { opacity: 0, y: 14 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -8 },
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
 };
 
 export default function AppLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const { gender } = useGender();
+    const { customer } = useCustomerAuth();
+    const { theme } = useCustomerTheme();
 
-    // First-time visit: redirect to gender selection
+    const isLight = theme === 'light';
+
+    // Check authentication and gender selection
     useEffect(() => {
-        if (!gender) {
+        if (!customer) {
+            navigate('/app/login', { replace: true });
+        } else if (!gender && location.pathname !== '/app/gender') {
             navigate('/app/gender', { replace: true });
         }
-    }, [gender, navigate]);
+    }, [customer, gender, navigate, location.pathname]);
 
-    if (!gender) return null; // don't flash content while redirecting
+    const hideNavPaths = ['/app/product', '/app/notifications', '/app/referral'];
+    const searchParams = new URLSearchParams(location.search);
+    const hasProductModal = searchParams.get('product');
+    const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
+
+    // Apply global body background based on theme
+    useEffect(() => {
+        document.body.style.background = isLight ? '#F8F9FA' : '#141414';
+    }, [isLight]);
+
+    if (!customer || (!gender && location.pathname !== '/app/gender')) return null;
 
     return (
         <div style={{
             minHeight: '100svh',
-            background: '#141414',
+            background: isLight ? '#F8F9FA' : '#141414',
             maxWidth: '430px',
             margin: '0 auto',
             position: 'relative',
-            fontFamily: "'Open Sans', 'Noto Serif', sans-serif",
+            fontFamily: "'Inter', sans-serif",
+            transition: 'background 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
-            {/* App-wide CSS + Font System */}
+            {/* App-wide CSS Variable System + Font System */}
             <style>{`
-                /* ── Google Font imports applied to app shell ── */
+                :root {
+                    --app-bg: ${isLight ? '#F8F9FA' : '#141414'};
+                    --app-text: ${isLight ? '#1A1A1A' : '#FFFFFF'};
+                    --app-text-muted: ${isLight ? '#666666' : 'rgba(255,255,255,0.4)'};
+                    --app-border: ${isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'};
+                    --app-accent: #C8956C;
+                }
+
                 .app-shell {
-                    font-family: 'Open Sans', 'Noto Serif', sans-serif;
+                    font-family: 'Inter', sans-serif;
                     box-sizing: border-box;
-                }
-                .app-shell *, .app-shell *::before, .app-shell *::after {
-                    box-sizing: border-box;
-                    font-family: inherit;
+                    color: var(--app-text);
                 }
 
-                /* ── Headings → Playfair Display (elegant & premium) ── */
-                .app-shell h1,
-                .app-shell h2 {
-                    font-family: 'Playfair Display', 'Libre Baskerville', serif;
-                    font-weight: 700;
+                .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
+                    font-family: 'Playfair Display', serif !important;
                 }
 
-                /* ── Sub-headings → Libre Baskerville ── */
-                .app-shell h3,
-                .app-shell h4 {
-                    font-family: 'Libre Baskerville', 'Playfair Display', serif;
-                    font-weight: 700;
+                /* ── Custom Scrollbar ── */
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'};
+                    border-radius: 10px;
                 }
 
-                /* ── Small text, labels, buttons → Open Sans ── */
-                .app-shell h5,
-                .app-shell h6,
-                .app-shell p,
-                .app-shell span,
-                .app-shell button,
-                .app-shell input,
-                .app-shell select,
-                .app-shell label,
-                .app-shell a {
-                    font-family: 'Open Sans', 'Noto Serif', sans-serif;
+                /* ── Hide scrollbar for elements that need it ── */
+                .no-scrollbar::-webkit-scrollbar { display: none; }
+                .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+                /* ── Smooth Inputs ── */
+                input, select, textarea {
+                    font-family: 'Inter', sans-serif !important;
                 }
-
-                /* ── Utility classes for manual font control ── */
-                .app-shell .font-playfair  { font-family: 'Playfair Display', serif !important; }
-                .app-shell .font-baskerville { font-family: 'Libre Baskerville', serif !important; }
-                .app-shell .font-noto      { font-family: 'Noto Serif', serif !important; }
-                .app-shell .font-open-sans { font-family: 'Open Sans', sans-serif !important; }
-
-                /* ── Scrollbar hiding ── */
-                .app-shell::-webkit-scrollbar { display: none; }
-                .app-shell { -ms-overflow-style: none; scrollbar-width: none; }
-                .app-scroll::-webkit-scrollbar { display: none; }
-                .app-scroll { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
 
-            <div className="app-shell" style={{ minHeight: '100svh', background: '#141414' }}>
-                <AnimatePresence mode="wait">
+            <div className="app-shell" style={{ minHeight: '100svh' }}>
+                <AppHeader />
+
+                <AnimatePresence mode="wait" initial={false}>
                     <motion.main
                         key={location.pathname}
                         variants={pageVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                        style={{ paddingBottom: '80px', minHeight: '100svh' }}
+                        style={{ paddingBottom: shouldHideNav ? '0' : '90px' }}
                     >
                         <Outlet />
                     </motion.main>
                 </AnimatePresence>
 
-                <AppBottomNav />
+                {!shouldHideNav && <AppBottomNav />}
+
+                {/* Modal Root for Portals */}
+                <div id="app-portal-root" />
             </div>
         </div>
     );
