@@ -1,71 +1,21 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-    MapPin, SlidersHorizontal, Heart, Star, ArrowRight
+    MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
+    Moon, Bell, Sun, Search, Clock
 } from 'lucide-react';
-import { MOCK_OUTLET, PRODUCT_CATEGORIES } from '../../data/appMockData';
+import { MOCK_OUTLET, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
+import homeData from '../../data/appHomeData.json';
+import logoLightMode from '/2-removebg-preview.png';
+import logoDarkMode from '/1-removebg-preview.png';
+import boyIcon from '/gender/boy.png';
+import girlIcon from '/gender/girl.png';
 
-/* ── Gender-specific data ── */
-const GENDER_DATA = {
-    men: {
-        label: 'Men',
-        emoji: '🧔',
-        promo: { title: '20% Off Grooming\nPackages', img: 'https://images.unsplash.com/photo-1622296089720-b72267bdc5a6?w=500&q=80' },
-        salons: [
-            { id: 1, name: 'Kobike Barber Shop', address: '12 Main St, Chicago', rating: 4.8, dist: '1.2 km', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80' },
-            { id: 2, name: 'Classic Cuts Studio', address: '45 Park Ave, Chicago', rating: 4.6, dist: '2.4 km', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80' },
-            { id: 3, name: 'Gentlemens Lounge', address: '88 River Rd, Chicago', rating: 4.7, dist: '3.1 km', img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80' },
-        ],
-        experts: [
-            { id: 1, name: 'Jake Rivera', role: 'Master Barber', rating: 4.9, img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80' },
-            { id: 2, name: 'Carlos Mendez', role: 'Hair Stylist', rating: 4.7, img: 'https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=200&q=80' },
-            { id: 3, name: 'Dan Fisher', role: 'Beard Expert', rating: 4.8, img: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80' },
-            { id: 4, name: 'Mark Chen', role: 'Colorist', rating: 4.6, img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80' },
-        ],
-        categories: [
-            { id: 1, name: 'Haircut', img: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=200&q=80', count: 82 },
-            { id: 2, name: 'Beard', img: 'https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?w=200&q=80', count: 54 },
-            { id: 3, name: 'Massage', img: 'https://images.unsplash.com/photo-1544161515-4af6b1d462c2?w=200&q=80', count: 38 },
-            { id: 4, name: 'Facials', img: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?w=200&q=80', count: 24 },
-            { id: 5, name: 'Color', img: 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=200&q=80', count: 19 },
-        ],
-        offers: [
-            { id: 1, title: 'Kobike Barber', tag: 'Weekend Deal!', discount: '-20%', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80' },
-            { id: 2, title: 'Classic Cuts', tag: 'Flash Sale!', discount: '-15%', img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80' },
-        ],
-    },
-    women: {
-        label: 'Women',
-        emoji: '💇',
-        promo: { title: '20% Off Facial\nTreatments', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80' },
-        salons: [
-            { id: 1, name: 'Brett Gomez Salon', address: '817 Rebecca Lodge', rating: 4.5, dist: '4.5 km', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=300&q=80' },
-            { id: 2, name: 'Gimabel Hair Style', address: 'Park View Plaza', rating: 4.5, dist: '2.8 km', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80' },
-            { id: 3, name: 'Beauty Women Salon', address: 'Lakeshore Drive', rating: 4.7, dist: '1.9 km', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80' },
-        ],
-        experts: [
-            { id: 1, name: 'Sofiya Liss', role: 'Stylist', rating: 4.9, img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80' },
-            { id: 2, name: 'Adrin Ross', role: 'Colorist', rating: 4.7, img: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80' },
-            { id: 3, name: 'Nina Patel', role: 'Nail Artist', rating: 4.8, img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80' },
-            { id: 4, name: 'Priya Kapoor', role: 'Skin Expert', rating: 4.6, img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80' },
-        ],
-        categories: [
-            { id: 1, name: 'Haircut', img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200&q=80', count: 85 },
-            { id: 2, name: 'Skin Care', img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200&q=80', count: 65 },
-            { id: 3, name: 'Nail Art', img: 'https://images.unsplash.com/photo-1604654894610-df49ff66a7cb?w=200&q=80', count: 48 },
-            { id: 4, name: 'Makeup', img: 'https://images.unsplash.com/photo-1522338221021-0209f984ca57?w=200&q=80', count: 32 },
-            { id: 5, name: 'Massage', img: 'https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=200&q=80', count: 27 },
-        ],
-        offers: [
-            { id: 1, title: 'Pagliber Beauty', tag: 'Summer Event!!', discount: '-15%', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80' },
-            { id: 2, title: 'Glam Studio', tag: 'Bridal Special', discount: '-25%', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80' },
-        ],
-    },
-};
+const { MEMBERSHIP_PLANS, RUNNING_OFFERS, GENDER_DATA } = homeData;
 
 function HeartBtn({ size = 20 }) {
     const [liked, setLiked] = useState(false);
@@ -92,287 +42,731 @@ function StarRow({ rating }) {
     );
 }
 
+const Particle = ({ i }) => {
+    const size = Math.random() * 3 + 1;
+    return (
+        <motion.div
+            initial={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                opacity: 0
+            }}
+            animate={{
+                y: [null, Math.random() * -100 - 50],
+                opacity: [0, 0.6, 0]
+            }}
+            transition={{
+                duration: Math.random() * 3 + 2,
+                repeat: Infinity,
+                delay: Math.random() * 2
+            }}
+            style={{
+                position: 'fixed',
+                width: size,
+                height: size,
+                background: '#C8956C',
+                borderRadius: '50%',
+                pointerEvents: 'none',
+                zIndex: 1001,
+            }}
+        />
+    );
+};
+
 export default function AppHomePage() {
     const { customer } = useCustomerAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const { gender, setGender } = useGender();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
+    const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
+    const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
+
+    const placeholders = [
+        "Search categories...",
+        "Search for salons...",
+        "Search specialists...",
+        "Search for offers...",
+        "Search hair styles..."
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+        }, 2000);
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        if (showWelcome) {
+            const timer = setTimeout(() => setShowWelcome(false), 3500);
+            return () => clearTimeout(timer);
+        }
+    }, [showWelcome]);
+
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
     const d = GENDER_DATA[g];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentPromoIndex(prev => (prev + 1) % d.promos.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [d.promos.length, g]);
+
+    // Reset index when gender changes
+    useEffect(() => {
+        setCurrentPromoIndex(0);
+    }, [g]);
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
     const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
 
     /* ── Theme based colors ── */
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1E1E1E',
         text: isLight ? '#1A1A1A' : '#FFFFFF',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
         input: isLight ? '#EDF0F2' : '#242424',
         border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
+        accent: '#C8956C'
     };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh', color: colors.text }}>
-
-            {/* ── GREETING SECTION ── */}
-            <motion.div variants={fadeUp} style={{ padding: '24px 16px 16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div>
-                    <h1 style={{ fontSize: '24px', fontWeight: 700, color: colors.text, margin: 0, lineHeight: 1.2 }}>
-                        Hi {customer?.name?.split(' ')[0] || 'Guest'},
-                    </h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                        <MapPin size={13} color="#C8956C" />
-                        <span style={{ fontSize: '13px', color: colors.textMuted, fontWeight: 400 }}>
-                            {MOCK_OUTLET?.address?.split(',')[0] || '301 Chicago'}
-                        </span>
-                    </div>
-                </div>
-            </motion.div>
-
-            {/* ── SEARCH BAR ── */}
-            <motion.div variants={fadeUp} style={{ padding: '0 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <div style={{ flex: 1, background: colors.input, borderRadius: '12px', display: 'flex', alignItems: 'center', padding: '0 14px', height: '46px', gap: '10px' }}>
-                    <span style={{ fontSize: '16px' }}>🔍</span>
-                    <span style={{ fontSize: '14px', color: colors.textMuted }}>Find a salon, specialists,...</span>
-                </div>
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    style={{ background: colors.input, border: 'none', borderRadius: '12px', width: 46, height: 46, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-                >
-                    <SlidersHorizontal size={18} color={isLight ? '#444' : 'rgba(255,255,255,0.55)'} />
-                </motion.button>
-            </motion.div>
-
-            {/* ── GENDER TABS ── */}
-            <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
-                {['men', 'women'].map((tab) => (
-                    <motion.button
-                        key={tab}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setGender(tab)}
+        <div style={{ position: 'relative', overflow: 'hidden' }}>
+            <style>{`
+                .search-input::placeholder {
+                    color: ${isLight ? '#555' : 'rgba(255,255,255,0.6)'};
+                    opacity: 0.8;
+                }
+            `}</style>
+            <AnimatePresence>
+                {showWelcome && (
+                    <motion.div
+                        key="premium-welcome-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, transition: { duration: 0.8, ease: 'easeInOut' } }}
                         style={{
-                            flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
-                            fontSize: '15px', fontWeight: g === tab ? 700 : 400,
-                            color: g === tab ? (isLight ? '#000' : '#fff') : colors.textMuted,
-                            borderBottom: g === tab ? '2.5px solid #C8956C' : '2.5px solid transparent',
-                            transition: 'all 0.2s', textTransform: 'capitalize',
+                            position: 'fixed',
+                            inset: 0,
+                            zIndex: 2000,
+                            background: '#0a0a0a',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden'
                         }}
                     >
-                        {tab === 'men' ? '🧔 Men' : '💇 Women'}
-                    </motion.button>
-                ))}
-            </motion.div>
+                        {/* Dynamic Background */}
+                        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+                            <motion.div
+                                animate={{
+                                    scale: [1, 1.3, 1],
+                                    x: [0, 50, 0],
+                                    y: [0, -30, 0]
+                                }}
+                                transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+                                style={{
+                                    position: 'absolute', width: '600px', height: '600px',
+                                    background: 'radial-gradient(circle, rgba(200,149,108,0.12) 0%, transparent 70%)',
+                                    filter: 'blur(80px)', top: '-10%', left: '-10%'
+                                }}
+                            />
+                            <motion.div
+                                animate={{
+                                    scale: [1.3, 1, 1.3],
+                                    x: [0, -40, 0],
+                                    y: [0, 40, 0]
+                                }}
+                                transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+                                style={{
+                                    position: 'absolute', width: '700px', height: '700px',
+                                    background: 'radial-gradient(circle, rgba(160,104,68,0.08) 0%, transparent 70%)',
+                                    filter: 'blur(100px)', bottom: '-15%', right: '-15%'
+                                }}
+                            />
+                        </div>
 
-            {/* ── PROMO BANNER ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                <motion.div
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => navigate('/app/book')}
-                    style={{
-                        borderRadius: '20px', overflow: 'hidden', position: 'relative',
-                        height: '160px', cursor: 'pointer',
-                        background: 'linear-gradient(135deg, #2A1F15 0%, #3D2A18 50%, #1a1008 100%)',
-                        display: 'flex', alignItems: 'flex-end',
-                    }}
-                >
-                    <img
-                        src={d.promo.img}
-                        alt="Promo"
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45, borderRadius: '20px' }}
-                    />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(20,10,0,0.9) 45%, rgba(0,0,0,0.1) 100%)', borderRadius: '20px' }} />
-                    <div style={{ position: 'relative', padding: '20px', zIndex: 2 }}>
-                        <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Special Offer</p>
-                        <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 10px', lineHeight: 1.2 }}>
-                            {d.promo.title.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
-                        </h3>
-                        <button style={{
-                            background: '#C8956C', border: 'none', borderRadius: '8px',
-                            padding: '7px 16px', color: '#fff', fontSize: '12px', fontWeight: 700,
-                            cursor: 'pointer', letterSpacing: '0.02em',
-                        }}>
-                            Explore
+                        {/* Particles */}
+                        {[...Array(15)].map((_, i) => <Particle key={i} i={i} />)}
+
+                        {/* Main Content Card */}
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                            style={{
+                                textAlign: 'center',
+                                zIndex: 20,
+                                position: 'relative',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center'
+                            }}
+                        >
+                            {/* Sophisticated Icon Container */}
+                            <motion.div
+                                initial={{ rotate: -15, scale: 0.5, opacity: 0 }}
+                                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.3, type: "spring", stiffness: 100, damping: 15 }}
+                                style={{ position: 'relative', marginBottom: '40px' }}
+                            >
+                                <div style={{
+                                    width: '140px',
+                                    height: '140px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    position: 'relative'
+                                }}>
+                                    <img
+                                        src={logoDarkMode}
+                                        alt="Logo"
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                    />
+
+                                    {/* Ambient Glow */}
+                                    <motion.div
+                                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
+                                        transition={{ duration: 3, repeat: Infinity }}
+                                        style={{
+                                            position: 'absolute',
+                                            inset: -10,
+                                            background: 'radial-gradient(circle, rgba(200,149,108,0.3) 0%, transparent 70%)',
+                                            zIndex: -1
+                                        }}
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {/* Text Content */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.6, duration: 0.8 }}
+                            >
+                                <motion.span
+                                    initial={{ letterSpacing: '0.1em' }}
+                                    animate={{ letterSpacing: '0.4em' }}
+                                    transition={{ delay: 0.8, duration: 1.5, ease: 'easeOut' }}
+                                    style={{
+                                        display: 'block',
+                                        color: '#C8956C',
+                                        fontSize: '11px',
+                                        fontWeight: 800,
+                                        textTransform: 'uppercase',
+                                        marginBottom: '16px',
+                                        opacity: 0.8
+                                    }}
+                                >
+                                    Welcome To Luxury
+                                </motion.span>
+
+                                <h1 style={{
+                                    fontSize: '44px',
+                                    fontWeight: 800,
+                                    margin: 0,
+                                    color: '#FFFFFF',
+                                    fontFamily: "'Playfair Display', serif",
+                                    letterSpacing: '-0.02em',
+                                    lineHeight: 1
+                                }}>
+                                    {customer?.name?.split(' ')[0] || 'Jagrati'}
+                                </h1>
+
+                                <motion.div
+                                    initial={{ width: 0, opacity: 0 }}
+                                    animate={{ width: 80, opacity: 1 }}
+                                    transition={{ delay: 1.2, duration: 1, ease: 'easeInOut' }}
+                                    style={{
+                                        height: '1px',
+                                        background: 'linear-gradient(90deg, transparent, #C8956C, transparent)',
+                                        margin: '30px auto',
+                                    }}
+                                />
+
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 1.5, duration: 1 }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}
+                                >
+                                    <ShieldCheck size={14} />
+                                    <span>Verified Premium Member</span>
+                                </motion.div>
+                            </motion.div>
+                        </motion.div>
+
+                        {/* Subtle Loader */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 2, duration: 1 }}
+                            style={{
+                                position: 'absolute',
+                                bottom: '60px',
+                                width: '200px',
+                                height: '2px',
+                                background: 'rgba(255,255,255,0.05)',
+                                borderRadius: '1px',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <motion.div
+                                initial={{ x: '-100%' }}
+                                animate={{ x: '100%' }}
+                                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                                style={{
+                                    width: '100px',
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, transparent, #C8956C, transparent)'
+                                }}
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <motion.div
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                style={{
+                    background: colors.bg,
+                    minHeight: '100svh',
+                    color: colors.text,
+                    filter: showWelcome ? 'blur(10px) brightness(0.5)' : 'none',
+                    scale: showWelcome ? 0.98 : 1,
+                    transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+            >
+                {/* ── SEARCH BAR ── */}
+                <motion.div variants={fadeUp} style={{ padding: '10px 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <div
+                        style={{
+                            flex: 1,
+                            background: isLight
+                                ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                            boxShadow: isLight
+                                ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
+                                : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                            borderRadius: '20px 6px 20px 6px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0 14px',
+                            height: '42px',
+                            gap: '10px',
+                            border: isFocused ? `1.5px solid ${colors.accent}` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                        }}
+                    >
+                        <Search size={18} color={isFocused ? colors.accent : (isLight ? '#444' : 'rgba(255,255,255,0.7)')} />
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder={placeholders[placeholderIndex]}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                outline: 'none',
+                                color: isLight ? '#000' : '#FFF',
+                                fontSize: '14px',
+                                width: '100%',
+                                height: '100%',
+                                fontWeight: 500
+                            }}
+                        />
+                    </div>
+                </motion.div>
+
+                {/* ── GENDER TABS ── */}
+                <motion.div variants={fadeUp} style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
+                    {['men', 'women'].map((tab) => (
+                        <motion.button
+                            key={tab}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setGender(tab)}
+                            style={{
+                                flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
+                                fontSize: '15px', fontWeight: g === tab ? 700 : 400,
+                                color: g === tab ? (isLight ? '#000' : '#fff') : colors.textMuted,
+                                transition: 'all 0.2s', textTransform: 'capitalize',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                                position: 'relative'
+                            }}
+                        >
+                            <img
+                                src={tab === 'men' ? boyIcon : girlIcon}
+                                alt={tab}
+                                style={{ width: '28px', height: '28px', objectFit: 'contain' }}
+                            />
+                            {tab === 'men' ? 'Men' : 'Women'}
+                            {g === tab && (
+                                <motion.div
+                                    layoutId="genderUnderline"
+                                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                                    style={{
+                                        position: 'absolute', bottom: '-1px', left: '15%', right: '15%', height: '3px', background: '#C8956C', borderRadius: '4px',
+                                        zIndex: 1
+                                    }}
+                                />
+                            )}
+                        </motion.button>
+                    ))}
+                </motion.div>
+
+                {/* ── PROMO BANNER (CAROUSEL) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0', position: 'relative' }}>
+                    <div style={{ position: 'relative', height: '170px', borderRadius: '24px', overflow: 'hidden' }}>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`${g}-${currentPromoIndex}`}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.5, ease: "easeOut" }}
+                                onClick={() => navigate('/app/book')}
+                                style={{
+                                    position: 'absolute', inset: 0, cursor: 'pointer',
+                                    background: 'linear-gradient(135deg, #2A1F15 0%, #3D2A18 50%, #1a1008 100%)',
+                                    display: 'flex', alignItems: 'flex-end',
+                                }}
+                            >
+                                <img
+                                    src={d.promos[currentPromoIndex].img}
+                                    alt="Promo"
+                                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45, borderRadius: '24px' }}
+                                />
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(20,10,0,0.9) 45%, rgba(0,0,0,0.1) 100%)', borderRadius: '24px' }} />
+                                <div style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%' }}>
+                                    <p style={{ fontSize: '11px', color: colors.accent, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800 }}>
+                                        {d.promos[currentPromoIndex].subtitle}
+                                    </p>
+                                    <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 12px', lineHeight: 1.2 }}>
+                                        {d.promos[currentPromoIndex].title.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
+                                    </h3>
+                                    <button style={{
+                                        background: colors.accent, border: 'none', borderRadius: '24px 6px 24px 6px',
+                                        padding: '10px 24px', color: '#fff', fontSize: '12px', fontWeight: 700,
+                                        cursor: 'pointer', boxShadow: '0 8px 20px rgba(200,149,108,0.4)'
+                                    }}>
+                                        {d.promos[currentPromoIndex].btnText}
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+
+                    </div>
+                </motion.div>
+
+                {/* ── CATEGORIES (ORIGINAL) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Categories</span>
+                        <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
+                    </div>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '15px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {d.categories.map((cat) => (
+                            <motion.div
+                                key={cat.id}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/app/book')}
+                                style={{
+                                    flexShrink: 0, width: '90px',
+                                    padding: '12px 4px', textAlign: 'center', cursor: 'pointer',
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{
+                                    width: '64px', height: '64px', borderRadius: '50%',
+                                    overflow: 'hidden', margin: '0 auto 0',
+                                    border: isLight ? '2.5px solid rgba(200,149,108,0.2)' : '2.5px solid rgba(200,149,172,0.1)',
+                                    boxShadow: isLight ? '0 6px 15px rgba(0,0,0,0.08)' : '0 6px 15px rgba(0,0,0,0.4)',
+                                }}>
+                                    <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <div style={{
+                                    padding: '5px 14px',
+                                    borderRadius: '16px 4px 16px 4px',
+                                    background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
+                                    position: 'absolute',
+                                    bottom: '-8px',
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    zIndex: 2,
+                                    boxShadow: '0 6px 15px rgba(200,149,108,0.4)',
+                                    width: 'max-content'
+                                }}>
+                                    <p style={{ fontSize: '9px', fontWeight: 800, color: '#FFFFFF', margin: 0, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>{cat.name}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+
+
+
+
+                {/* ── RUNNING OFFERS (NEW) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Ticket size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Exclusive Offers</span>
+                        </div>
+                    </div>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {RUNNING_OFFERS.map(offer => (
+                            <motion.div
+                                key={offer.id}
+                                whileTap={{ scale: 0.97 }}
+                                style={{
+                                    flexShrink: 0, width: '220px', background: colors.card, borderRadius: '18px', padding: '16px',
+                                    border: `1px dashed ${colors.accent}`, display: 'flex', flexDirection: 'column', gap: '6px',
+                                    position: 'relative'
+                                }}
+                            >
+                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>{offer.subtitle}</p>
+                                <h4 style={{ fontSize: '16px', color: colors.text, margin: 0, fontWeight: 800 }}>{offer.discount}</h4>
+                                <div style={{ background: colors.input, padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, color: colors.accent, alignSelf: 'flex-start', marginTop: '4px' }}>
+                                    {offer.code}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* ── LOYALTY POINTS SUMMARY CARD (NEW) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                    <motion.div
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/app/loyalty')}
+                        style={{
+                            cursor: 'pointer',
+                            background: isLight ? 'linear-gradient(135deg, #1e1e1e, #333)' : 'linear-gradient(135deg, #242424, #1a1a1a)',
+                            borderRadius: '24px', padding: '20px', position: 'relative', overflow: 'hidden',
+                            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: `1px solid ${colors.border}`
+                        }}
+                    >
+                        <motion.div
+                            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.2, 1] }}
+                            transition={{ duration: 5, repeat: Infinity }}
+                            style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, background: colors.accent, borderRadius: '50%', filter: 'blur(40px)', opacity: 0.3 }}
+                        />
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                <div>
+                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '0 0 4px' }}>Gold Loyalty Member</p>
+                                    <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: 800, margin: 0 }}>2,450 <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>Points</span></h2>
+                                </div>
+                            </div>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Next reward at 3000 pts</span>
+                                    <span style={{ color: colors.accent, fontSize: '12px', fontWeight: 700 }}>82%</span>
+                                </div>
+                                <div style={{ height: '6px', width: '100%', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '82%' }}
+                                        transition={{ duration: 1.5, ease: 'easeOut' }}
+                                        style={{ height: '100%', background: colors.accent, borderRadius: '3px' }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                </motion.div>
+
+
+
+                {/* ── POPULAR SERVICES (NEW) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Zap size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Popular Services</span>
+                        </div>
+                        <button
+                            style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none' }}
+                            onClick={() => navigate('/app/services')}
+                        >
+                            View All
                         </button>
+                    </div>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {MOCK_SERVICES.slice(0, 6).map(service => (
+                            <motion.div
+                                key={service._id}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => navigate(`/app/book?serviceId=${service._id}`)}
+                                style={{
+                                    flexShrink: 0, width: '160px', background: colors.card, borderRadius: '24px', overflow: 'hidden',
+                                    border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column'
+                                }}
+                            >
+                                <div style={{ height: '100px', width: '100%', position: 'relative' }}>
+                                    <img src={service.image} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '2px 6px', borderRadius: '6px', fontSize: '9px', fontWeight: 800, color: '#fff' }}>
+                                        ₹{service.price}
+                                    </div>
+                                </div>
+                                <div style={{ padding: '10px' }}>
+                                    <p style={{ fontSize: '10px', color: colors.accent, fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px', letterSpacing: '0.05em' }}>{service.category}</p>
+                                    <h4 style={{ fontSize: '12px', color: colors.text, margin: 0, fontWeight: 800, lineClamp: 1, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>{service.name}</h4>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                                        <Clock size={10} color={colors.textMuted} />
+                                        <span style={{ fontSize: '10px', color: colors.textMuted }}>{service.duration} mins</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* ── MEMBERSHIP PLANS (NEW) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Crown size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Membership Hub</span>
+                        </div>
+                    </div>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {MEMBERSHIP_PLANS.map(plan => {
+                            const isPlatinum = plan.name.toLowerCase().includes('platinum');
+                            const isGold = plan.name.toLowerCase().includes('gold');
+                            const isSilver = plan.name.toLowerCase().includes('silver');
+
+                            const planGradient = isPlatinum
+                                ? 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)'
+                                : isGold
+                                    ? 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)'
+                                    : 'linear-gradient(135deg, #E0E0E0 0%, #B0B0B0 100%)';
+
+                            const textColor = (isGold || isSilver) ? '#000' : '#FFF';
+                            const mutedColor = (isGold || isSilver) ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
+
+                            return (
+                                <motion.div
+                                    key={plan.id}
+                                    whileTap={{ scale: 0.97 }}
+                                    onClick={() => navigate('/app/membership')}
+                                    style={{
+                                        cursor: 'pointer',
+                                        flexShrink: 0, width: '185px',
+                                        background: planGradient,
+                                        borderRadius: '18px', padding: '15px 16px',
+                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.1)' : '0 10px 20px rgba(0,0,0,0.4)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    {/* Subtle Overlay Glow */}
+                                    <div style={{
+                                        position: 'absolute', top: '-10%', right: '-10%',
+                                        width: '80px', height: '80px',
+                                        background: 'rgba(255,255,255,0.2)',
+                                        filter: 'blur(25px)', borderRadius: '50%'
+                                    }} />
+
+                                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: textColor, margin: '0 0 3px', fontFamily: "'Playfair Display', serif" }}>{plan.name}</h3>
+                                    <div style={{ color: isPlatinum ? colors.accent : (isGold ? '#6B4F00' : '#444'), fontWeight: 900, fontSize: '18px', marginBottom: '8px' }}>{plan.price}</div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        {plan.benefits.map((b, i) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <div style={{ width: '3.5px', height: '3.5px', borderRadius: '50%', background: textColor }} />
+                                                <p style={{ fontSize: '10px', color: mutedColor, margin: 0, fontWeight: 500 }}>{b}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                </motion.div>
+
+                {/* ── POPULAR EXPERTS (ORIGINAL) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Popular Experts</span>
+                    </div>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {d.experts.map((expert) => (
+                            <motion.div
+                                key={expert.id}
+                                whileTap={{ scale: 0.96 }}
+                                onClick={() => navigate('/app/book')}
+                                style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '120px', textAlign: 'center', paddingBottom: '12px', border: `1px solid ${colors.border}` }}
+                            >
+                                <div style={{ position: 'relative', padding: '10px 10px 0' }}>
+                                    <img
+                                        src={expert.img} alt={expert.name}
+                                        style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
+                                    />
+                                    <div style={{
+                                        position: 'absolute', top: 14, right: 14,
+                                        background: '#C8956C', borderRadius: '8px',
+                                        padding: '2px 5px', display: 'flex', alignItems: 'center', gap: '2px',
+                                    }}>
+                                        <Star size={8} fill="#fff" color="#fff" />
+                                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff' }}>{expert.rating}</span>
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: '12px', fontWeight: 700, color: colors.text, margin: '8px 6px 2px' }}>{expert.name}</p>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{expert.role}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+
+
+                {/* ── LOYALTY + REFERRAL (ORIGINAL BOTTOM STYLE) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '20px 16px 32px' }}>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <motion.div
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate('/app/profile')}
+                            style={{
+                                flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
+                                border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
+                            }}
+                        >
+                            <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
+                            <div>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
+                                <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>250 pts</p>
+                            </div>
+                        </motion.div>
+                        <motion.div
+                            whileTap={{ scale: 0.97 }}
+                            onClick={() => navigate('/app/referrals')}
+                            style={{
+                                flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
+                                border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
+                            }}
+                        >
+                            <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
+                            <div>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹200</p>
+                            </div>
+                        </motion.div>
                     </div>
                 </motion.div>
             </motion.div>
-
-            {/* ── NEAREST TO YOU ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Nearest To You</span>
-                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/services')}>
-                        <ArrowRight size={16} />
-                    </button>
-                </div>
-                <div className="app-scroll" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                    {d.salons.map((salon) => (
-                        <motion.div
-                            key={salon.id}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => navigate('/app/book')}
-                            style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '160px', border: `1px solid ${colors.border}` }}
-                        >
-                            <div style={{ position: 'relative' }}>
-                                <img src={salon.img} alt={salon.name}
-                                    style={{ width: '100%', height: '110px', objectFit: 'cover', display: 'block' }}
-                                />
-                                <div style={{ position: 'absolute', top: 8, right: 8 }}>
-                                    <HeartBtn size={16} />
-                                </div>
-                            </div>
-                            <div style={{ padding: '10px 10px 12px' }}>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: '0 0 3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.name}</p>
-                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: '0 0 7px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{salon.address}</p>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <StarRow rating={salon.rating} />
-                                    <span style={{ fontSize: '10px', color: colors.textMuted }}>• {salon.dist}</span>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── CATEGORIES ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Categories</span>
-                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
-                </div>
-                <div className="app-scroll" style={{ display: 'flex', gap: '8px', overflowX: 'auto', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                    {d.categories.map((cat) => (
-                        <motion.div
-                            key={cat.id}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => navigate('/app/services')}
-                            style={{
-                                flexShrink: 0, width: '82px',
-                                padding: '12px 4px', textAlign: 'center', cursor: 'pointer',
-                            }}
-                        >
-                            <div style={{
-                                width: '48px', height: '48px', borderRadius: '50%',
-                                overflow: 'hidden', margin: '0 auto 10px',
-                                border: isLight ? '2px solid rgba(200,149,108,0.2)' : '2px solid rgba(200,149,172,0.1)',
-                                boxShadow: isLight ? '0 4px 10px rgba(0,0,0,0.05)' : '0 4px 10px rgba(0,0,0,0.3)',
-                            }}>
-                                <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            </div>
-                            <p style={{ fontSize: '11px', fontWeight: 700, color: colors.text, margin: '0 0 2px', whiteSpace: 'nowrap' }}>{cat.name}</p>
-                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>{cat.count} Places</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── POPULAR EXPERTS ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Popular Experts</span>
-                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/services')}>
-                        <ArrowRight size={16} />
-                    </button>
-                </div>
-                <div className="app-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                    {d.experts.map((expert) => (
-                        <motion.div
-                            key={expert.id}
-                            whileTap={{ scale: 0.96 }}
-                            onClick={() => navigate('/app/book')}
-                            style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '120px', textAlign: 'center', paddingBottom: '12px', border: `1px solid ${colors.border}` }}
-                        >
-                            <div style={{ position: 'relative', padding: '10px 10px 0' }}>
-                                <img
-                                    src={expert.img} alt={expert.name}
-                                    style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', display: 'block', margin: '0 auto' }}
-                                />
-                                <div style={{
-                                    position: 'absolute', top: 14, right: 14,
-                                    background: '#C8956C', borderRadius: '8px',
-                                    padding: '2px 5px', display: 'flex', alignItems: 'center', gap: '2px',
-                                }}>
-                                    <Star size={8} fill="#fff" color="#fff" />
-                                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#fff' }}>{expert.rating}</span>
-                                </div>
-                            </div>
-                            <p style={{ fontSize: '12px', fontWeight: 700, color: colors.text, margin: '8px 6px 2px' }}>{expert.name}</p>
-                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{expert.role}</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── SHOP PRODUCTS ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Shop Products</span>
-                    <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
-                </div>
-                <div className="app-scroll" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                    {PRODUCT_CATEGORIES.slice(0, 5).map((cat) => (
-                        <motion.div
-                            key={cat._id}
-                            whileTap={{ scale: 0.94 }}
-                            onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
-                            style={{
-                                background: colors.card,
-                                borderRadius: '16px',
-                                padding: '16px 14px',
-                                minWidth: '110px',
-                                textAlign: 'center',
-                                cursor: 'pointer',
-                                flexShrink: 0,
-                                border: `1px solid ${colors.border}`,
-                            }}
-                        >
-                            <div style={{ fontSize: '28px', marginBottom: '8px' }}>{cat.icon}</div>
-                            <p style={{ fontSize: '12px', fontWeight: 600, color: colors.text, margin: '0 0 3px', whiteSpace: 'nowrap' }}>{cat.name}</p>
-                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{cat.count} Items</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* ── LOYALTY + REFERRAL ── */}
-            <motion.div variants={fadeUp} style={{ padding: '20px 16px 32px' }}>
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <motion.div
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => navigate('/app/profile')}
-                        style={{
-                            flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
-                            border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
-                        }}
-                    >
-                        <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
-                        <div>
-                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
-                            <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>250 pts</p>
-                        </div>
-                    </motion.div>
-                    <motion.div
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => navigate('/app/referrals')}
-                        style={{
-                            flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
-                            border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
-                        }}
-                    >
-                        <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
-                        <div>
-                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
-                            <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹200</p>
-                        </div>
-                    </motion.div>
-                </div>
-            </motion.div>
-
-        </motion.div>
+        </div>
     );
 }

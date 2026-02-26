@@ -122,7 +122,7 @@ export default function AppNotificationPage() {
     const isLight = theme === 'light';
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',

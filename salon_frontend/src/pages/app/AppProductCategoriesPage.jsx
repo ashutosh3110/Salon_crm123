@@ -226,7 +226,7 @@ export default function AppProductCategoriesPage() {
     const content = CONTENT[active] || CONTENT.trending;
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         side: isLight ? '#FFFFFF' : '#1A1A1A',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',

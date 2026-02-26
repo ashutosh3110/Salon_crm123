@@ -37,27 +37,29 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
                     {product.brand}
                 </div>
             </div>
-            <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-center gap-1 mb-1.5">
-                    <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                    <span className="text-[10px] font-bold" style={{ color: colors.textMuted }}>{product.rating}</span>
+            <div className="p-3 flex flex-col flex-1">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                    <h3
+                        onClick={() => onQuickView(product)}
+                        style={{ color: colors.text }}
+                        className="font-bold text-[13px] leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-2 cursor-pointer flex-1"
+                    >
+                        {product.name}
+                    </h3>
+                    <div className="flex items-center gap-0.5 shrink-0 mt-0.5">
+                        <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                        <span className="text-[10px] font-bold" style={{ color: colors.textMuted }}>{product.rating}</span>
+                    </div>
                 </div>
-                <h3
-                    onClick={() => onQuickView(product)}
-                    style={{ color: colors.text }}
-                    className="font-bold text-sm leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-2 min-h-[40px] cursor-pointer"
-                >
-                    {product.name}
-                </h3>
-                <div className="mt-auto pt-3 flex items-center justify-between">
+                <div className="mt-auto pt-2 flex items-center justify-between">
                     <div>
                         <span className="text-sm font-black tracking-tighter" style={{ color: colors.text }}>₹ {product.price}</span>
                     </div>
                     <button
                         onClick={(e) => onAddToCart(product, e)}
-                        className="w-9 h-9 rounded-xl bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
+                        className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
                     >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4" />
                     </button>
                 </div>
             </div>
@@ -324,6 +326,24 @@ export default function AppShopPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
+    const [rotations, setRotations] = useState({});
+
+    const placeholders = [
+        "Search products...",
+        "Search brands...",
+        "Search skincare...",
+        "Search haircare...",
+        "Search makeup..."
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setPlaceholderIndex((prev) => (prev + 1) % placeholders.length);
+        }, 2000);
+        return () => clearInterval(timer);
+    }, []);
 
     const selectedProductId = searchParams.get('product');
     const selectedProduct = useMemo(() =>
@@ -331,7 +351,7 @@ export default function AppShopPage() {
         [selectedProductId]);
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
@@ -340,11 +360,15 @@ export default function AppShopPage() {
         input: isLight ? '#FFFFFF' : '#1A1A1A',
     };
 
-    const handleCategoryChange = (cat) => {
-        setActiveCategory(cat);
+    const handleCategoryChange = (val) => {
+        setActiveCategory(val);
+        setRotations(prev => ({
+            ...prev,
+            [val]: (prev[val] || 0) + 360
+        }));
         const newParams = new URLSearchParams(searchParams);
-        if (cat === 'All') newParams.delete('category');
-        else newParams.set('category', cat);
+        if (val === 'All') newParams.delete('category');
+        else newParams.set('category', val);
         setSearchParams(newParams);
     };
 
@@ -404,43 +428,118 @@ export default function AppShopPage() {
     };
 
     return (
-        <div className="space-y-8 pb-32" style={{ background: colors.bg, minHeight: '100svh' }}>
+        <div className="space-y-8 pb-32" style={{ background: colors.bg, minHeight: '100svh', overflowX: 'hidden' }}>
+            <style>{`
+                .search-input::placeholder {
+                    color: ${isLight ? '#555' : 'rgba(255,255,255,0.6)'};
+                    opacity: 0.8;
+                }
+            `}</style>
             {/* Header */}
-            <div className="sticky top-0 z-50 pt-4 pb-4 px-1" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
-                <div className="flex gap-2 items-center">
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors" style={{ color: colors.textMuted }} />
+            <div className="sticky top-0 z-50 pt-2 pb-2 px-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="flex gap-3 items-center">
+                    <div className="relative flex-1" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 14px',
+                        height: '42px',
+                        background: isLight
+                            ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                            : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                        boxShadow: isLight
+                            ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
+                            : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                        borderRadius: '20px 6px 20px 6px',
+                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                    }}>
+                        <Search className="w-4 h-4 mr-2" style={{ color: isFocused ? '#C8956C' : colors.textMuted }} />
                         <input
                             type="text"
-                            placeholder="SEARCH RITUALS..."
+                            className="search-input"
+                            placeholder={placeholders[placeholderIndex]}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ background: colors.input, border: `1px solid ${colors.border}`, color: colors.text }}
-                            className="w-full h-[60px] pl-14 pr-6 rounded-[1.5rem] focus:outline-none transition-all text-[11px] font-black uppercase tracking-[0.2em] placeholder:opacity-20 shadow-sm"
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            style={{ background: 'transparent', border: 'none', color: colors.text, outline: 'none', width: '100%', fontSize: '14px', fontWeight: 500 }}
                         />
                     </div>
                     <motion.div
                         ref={cartIconRef}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => setIsCartOpen(true)}
-                        className="w-14 h-14 rounded-[1.5rem] bg-[#C8956C] text-white flex items-center justify-center relative group shrink-0 shadow-lg shadow-[#C8956C]/20"
+                        style={{
+                            background: '#C8956C',
+                            borderRadius: '14px 4px 14px 4px',
+                            width: 42,
+                            height: 42,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            position: 'relative',
+                            boxShadow: '0 10px 20px rgba(200,149,108,0.2)'
+                        }}
                     >
-                        <ShoppingBag className="w-5 h-5" />
-                        {cartCount > 0 && <span className="absolute top-0 right-0 w-6 h-6 bg-white text-[#C8956C] text-[10px] font-black flex items-center justify-center">{cartCount}</span>}
+                        <ShoppingBag size={18} color="#FFF" />
+                        {cartCount > 0 && <span className="absolute top-[-5px] right-[-5px] w-5 h-5 bg-black text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg">{cartCount}</span>}
                     </motion.div>
                 </div>
             </div>
 
-            <div className="flex gap-5 overflow-x-auto pb-4 scrollbar-none px-1">
+            <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px', marginTop: '-35px' }}>
                 {categories.map((cat) => (
-                    <motion.button key={cat.name} whileTap={{ scale: 0.95 }} onClick={() => handleCategoryChange(cat.name)} className="flex flex-col items-center gap-3 shrink-0">
-                        <div style={{ width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden', border: activeCategory === cat.name ? '2px solid #C8956C' : `1px solid ${colors.border}`, padding: '3px' }}>
-                            <div className="w-full h-full rounded-full overflow-hidden">
-                                <img src={cat.img} alt={cat.name} className="w-full h-full object-cover" />
-                            </div>
+                    <motion.div
+                        key={cat.name}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleCategoryChange(cat.name)}
+                        style={{
+                            flexShrink: 0, width: '90px',
+                            padding: '12px 4px', textAlign: 'center', cursor: 'pointer',
+                            position: 'relative'
+                        }}
+                    >
+                        <motion.div
+                            animate={{ rotateY: rotations[cat.name] || 0 }}
+                            transition={{ duration: 0.6, type: 'spring', damping: 20, stiffness: 100 }}
+                            style={{
+                                width: '64px', height: '64px', borderRadius: '50%',
+                                overflow: 'hidden', margin: '0 auto 0',
+                                border: activeCategory === cat.name ? '2.5px solid #C8956C' : (isLight ? '2.5px solid rgba(0,0,0,0.05)' : '2.5px solid rgba(255,255,255,0.1)'),
+                                boxShadow: isLight ? '0 6px 15px rgba(0,0,0,0.08)' : '0 6px 15px rgba(0,0,0,0.4)',
+                                padding: '2px',
+                                perspective: '1000px'
+                            }}>
+                            <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                        </motion.div>
+                        <div style={{
+                            padding: '5px 14px',
+                            borderRadius: '16px 4px 16px 4px',
+                            background: activeCategory === cat.name ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : (isLight ? '#FDF6F0' : 'rgba(200, 149, 108, 0.15)'),
+                            position: 'absolute',
+                            bottom: '-4px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            zIndex: 2,
+                            boxShadow: activeCategory === cat.name ? '0 6px 15px rgba(200,149,108,0.4)' : 'none',
+                            width: 'max-content',
+                            border: activeCategory === cat.name ? 'none' : `1px solid ${colors.border}`
+                        }}>
+                            <p style={{
+                                fontSize: '9px',
+                                fontWeight: 800,
+                                color: activeCategory === cat.name ? '#FFFFFF' : (isLight ? '#8B6B54' : '#C8956C'),
+                                margin: 0,
+                                whiteSpace: 'nowrap',
+                                letterSpacing: '0.01em',
+                                textTransform: 'uppercase'
+                            }}>
+                                {cat.name}
+                            </p>
                         </div>
-                        <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${activeCategory === cat.name ? 'text-[#C8956C]' : (isLight ? 'text-[#888]' : 'text-gray-500')}`}>{cat.name}</span>
-                    </motion.button>
+                    </motion.div>
                 ))}
             </div>
 

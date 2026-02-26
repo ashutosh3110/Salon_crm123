@@ -1,15 +1,16 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Bell, Search, MapPin } from 'lucide-react';
+import { Sun, Moon, Bell } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import logoLightMode from '/2-removebg-preview.png';
+import logoDarkMode from '/1-removebg-preview.png';
 
 export default function AppHeader() {
     const { theme, toggleTheme } = useCustomerTheme();
+    const { customer } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
-
-    // Hide header on login/auth pages if needed, but the prompt asked for it in user app
-    // Usually header is on Home, Shop, etc.
 
     const isLight = theme === 'light';
 
@@ -18,9 +19,8 @@ export default function AppHeader() {
             position: location.pathname === '/app/shop' ? 'relative' : 'sticky',
             top: 0,
             zIndex: 1000,
-            background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(20, 20, 20, 0.8)',
-            backdropFilter: 'blur(12px)',
-            borderBottom: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid rgba(255,255,255,0.05)',
+            background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(20, 20, 20, 0.85)',
+            backdropFilter: 'blur(16px)',
             padding: '12px 16px',
             display: 'flex',
             alignItems: 'center',
@@ -38,25 +38,26 @@ export default function AppHeader() {
                 }}
             >
                 <div style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #C8956C, #A06844)',
+                    width: '38px',
+                    height: '38px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '18px',
-                    boxShadow: '0 4px 12px rgba(200, 149, 108, 0.3)'
+                    overflow: 'hidden'
                 }}>
-                    💇
+                    <img
+                        src={isLight ? logoLightMode : logoDarkMode}
+                        alt="Wapixo Logo"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
                 </div>
                 <span style={{
                     fontSize: '18px',
-                    fontWeight: 800,
+                    fontWeight: 700,
                     color: isLight ? '#000' : '#fff',
-                    fontFamily: "'Playfair Display', serif"
+                    letterSpacing: '-0.01em'
                 }}>
-                    Wapixo
+                    Hi, {customer?.name?.split(' ')[0] || 'Guest'}
                 </span>
             </div>
 
@@ -70,7 +71,7 @@ export default function AppHeader() {
                         width: '38px',
                         height: '38px',
                         borderRadius: '12px',
-                        background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)',
+                        background: 'none',
                         border: 'none',
                         display: 'flex',
                         alignItems: 'center',
@@ -100,7 +101,7 @@ export default function AppHeader() {
                         width: '38px',
                         height: '38px',
                         borderRadius: '12px',
-                        background: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.05)',
+                        background: 'none',
                         border: 'none',
                         display: 'flex',
                         alignItems: 'center',

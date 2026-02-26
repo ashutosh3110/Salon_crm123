@@ -19,7 +19,7 @@ export default function GenderSelectPage() {
     };
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
         card: isLight ? '#FFFFFF' : '#1A1A1A',

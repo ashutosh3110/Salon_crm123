@@ -29,9 +29,10 @@ export default function AppProfilePage() {
         gender: customer?.gender || '',
         birthday: customer?.birthday || '',
     });
+    const [focusedField, setFocusedField] = useState(null);
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
@@ -113,39 +114,85 @@ export default function AppProfilePage() {
                     >
                         <div>
                             <label className="text-[10px] font-black uppercase mb-1.5 block tracking-widest" style={{ color: colors.textMuted }}>Name</label>
-                            <input
-                                type="text"
-                                value={form.name}
-                                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                                style={{ background: colors.input, border: `1px solid ${colors.border}`, color: colors.text }}
-                                className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-[#C8956C] transition-all"
-                            />
+                            <div
+                                style={{
+                                    background: isLight
+                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                                    boxShadow: isLight
+                                        ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
+                                        : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    border: focusedField === 'name' ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    padding: '0 16px',
+                                    height: '48px',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <input
+                                    type="text"
+                                    value={form.name}
+                                    onFocus={() => setFocusedField('name')}
+                                    onBlur={() => setFocusedField(null)}
+                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '14px', fontWeight: 600 }}
+                                />
+                            </div>
                         </div>
                         <div>
                             <label className="text-[10px] font-black uppercase mb-1.5 block tracking-widest" style={{ color: colors.textMuted }}>Email</label>
-                            <input
-                                type="email"
-                                value={form.email}
-                                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                                placeholder="your@email.com"
-                                style={{ background: colors.input, border: `1px solid ${colors.border}`, color: colors.text }}
-                                className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-[#C8956C] transition-all"
-                            />
+                            <div
+                                style={{
+                                    background: isLight
+                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                                    boxShadow: isLight
+                                        ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
+                                        : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    border: focusedField === 'email' ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    padding: '0 16px',
+                                    height: '48px',
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                <input
+                                    type="email"
+                                    value={form.email}
+                                    onFocus={() => setFocusedField('email')}
+                                    onBlur={() => setFocusedField(null)}
+                                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                    placeholder="your@email.com"
+                                    style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '14px', fontWeight: 600 }}
+                                />
+                            </div>
                         </div>
                         <div>
                             <label className="text-[10px] font-black uppercase mb-1.5 block tracking-widest" style={{ color: colors.textMuted }}>Gender</label>
                             <div className="flex gap-2">
-                                {['female', 'male', 'other'].map((g) => (
+                                {['female', 'male'].map((g) => (
                                     <button
                                         key={g}
                                         onClick={() => setForm({ ...form, gender: g })}
-                                        className={`flex-1 py-3 rounded-xl border text-[11px] font-black uppercase tracking-wider transition-all ${form.gender === g
-                                            ? 'border-[#C8956C] bg-[#C8956C]/10 text-[#C8956C]'
-                                            : `border-transparent bg-black/5 dark:bg-white/5 text-muted`
-                                            }`}
                                         style={{
+                                            flex: 1,
+                                            padding: '12px 0',
+                                            borderRadius: '16px 4px 16px 4px',
+                                            background: form.gender === g
+                                                ? (isLight ? '#FDF6F0' : 'rgba(200,149,108,0.1)')
+                                                : (isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'rgba(255,255,255,0.05)'),
+                                            border: form.gender === g ? '1.5px solid #C8956C' : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
                                             color: form.gender === g ? '#C8956C' : colors.textMuted,
-                                            background: form.gender === g ? 'rgba(200,149,108,0.1)' : colors.input
+                                            fontSize: '11px',
+                                            fontWeight: 800,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em',
+                                            boxShadow: isLight && form.gender !== g ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'none',
+                                            transition: 'all 0.3s'
                                         }}
                                     >
                                         {g}
@@ -153,11 +200,20 @@ export default function AppProfilePage() {
                                 ))}
                             </div>
                         </div>
-                        <div className="flex gap-2 pt-1">
+                        <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => setEditing(false)}
-                                style={{ border: `1px solid ${colors.border}`, color: colors.textMuted }}
-                                className="flex-1 py-3 rounded-xl text-[11px] font-black uppercase hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                                style={{
+                                    flex: 1,
+                                    padding: '14px 0',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    border: `1.5px solid ${isLight ? '#E8ECEF' : 'rgba(255,255,255,0.1)'}`,
+                                    color: colors.textMuted,
+                                    fontSize: '12px',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                    background: 'transparent'
+                                }}
                             >
                                 Cancel
                             </button>
@@ -165,9 +221,23 @@ export default function AppProfilePage() {
                                 whileTap={{ scale: 0.97 }}
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="flex-1 py-3 rounded-xl bg-[#C8956C] text-white text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-lg shadow-[#C8956C]/20 transition-all"
+                                style={{
+                                    flex: 1,
+                                    padding: '14px 0',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    background: '#C8956C',
+                                    color: '#FFFFFF',
+                                    fontSize: '12px',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                    boxShadow: '0 8px 20px rgba(200,149,108,0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px'
+                                }}
                             >
-                                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Changes'}
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
                             </motion.button>
                         </div>
                     </motion.div>
@@ -262,12 +332,18 @@ export default function AppProfilePage() {
 
             {/* Support & Legal */}
             <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm">
-                <button className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <button
+                    onClick={() => navigate('/app/help')}
+                    className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
                     <HelpCircle className="w-5 h-5 opacity-40" />
                     <span className="text-sm font-bold flex-1 text-left opacity-60" style={{ color: colors.text }}>Help & Support</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />
                 </button>
-                <button className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                <button
+                    onClick={() => navigate('/app/privacy')}
+                    className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                >
                     <Shield className="w-5 h-5 opacity-40" />
                     <span className="text-sm font-bold flex-1 text-left opacity-60" style={{ color: colors.text }}>Privacy Policy</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />

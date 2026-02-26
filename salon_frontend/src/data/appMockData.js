@@ -18,27 +18,27 @@ export const MOCK_CUSTOMER = {
 
 // --- Mock Services (matches Service model) ---
 export const MOCK_SERVICES = [
-    { _id: 'srv-001', name: 'Classic Haircut', description: 'Precision cut with wash & style finish', price: 500, duration: 45, category: 'Hair', status: 'active' },
-    { _id: 'srv-002', name: 'Hair Coloring', description: 'Full head premium color with ammonia-free products', price: 2500, duration: 120, category: 'Hair', status: 'active' },
-    { _id: 'srv-003', name: 'Keratin Treatment', description: 'Deep keratin smoothing for frizz-free hair', price: 4500, duration: 180, category: 'Hair', status: 'active' },
-    { _id: 'srv-004', name: 'Bridal Makeup', description: 'HD bridal makeup with airbrush finish', price: 8000, duration: 150, category: 'Skin', status: 'active' },
-    { _id: 'srv-005', name: 'Facial — Gold', description: 'Luxurious gold facial for radiant glow', price: 1800, duration: 60, category: 'Skin', status: 'active' },
-    { _id: 'srv-006', name: 'Manicure Deluxe', description: 'Spa manicure with paraffin wax treatment', price: 800, duration: 45, category: 'Nails', status: 'active' },
-    { _id: 'srv-007', name: 'Pedicure Deluxe', description: 'Relaxing spa pedicure with scrub & massage', price: 1000, duration: 60, category: 'Nails', status: 'active' },
-    { _id: 'srv-008', name: 'Full Body Massage', description: '60-minute deep tissue relaxation massage', price: 2000, duration: 60, category: 'Spa', status: 'active' },
-    { _id: 'srv-009', name: 'Aroma Therapy', description: 'Essential oils aromatherapy with hot stones', price: 2800, duration: 90, category: 'Spa', status: 'active' },
-    { _id: 'srv-010', name: 'Threading — Full Face', description: 'Eyebrow, upper lip, forehead & chin threading', price: 250, duration: 20, category: 'Skin', status: 'active' },
-    { _id: 'srv-011', name: 'Hair Spa', description: 'Deep conditioning spa treatment for damaged hair', price: 1500, duration: 60, category: 'Hair', status: 'active' },
-    { _id: 'srv-012', name: 'Nail Art', description: 'Custom nail art with gel polish', price: 1200, duration: 60, category: 'Nails', status: 'active' },
+    { _id: 'srv-001', name: 'Classic Haircut', description: 'Precision cut with wash & style finish', price: 500, duration: 45, category: 'Hair', status: 'active', image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400&q=80' },
+    { _id: 'srv-002', name: 'Hair Coloring', description: 'Full head premium color with ammonia-free products', price: 2500, duration: 120, category: 'Hair', status: 'active', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80' },
+    { _id: 'srv-003', name: 'Keratin Treatment', description: 'Deep keratin smoothing for frizz-free hair', price: 4500, duration: 180, category: 'Hair', status: 'active', image: 'https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&q=80' },
+    { _id: 'srv-004', name: 'Bridal Makeup', description: 'HD bridal makeup with airbrush finish', price: 8000, duration: 150, category: 'Skin', status: 'active', image: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&q=80' },
+    { _id: 'srv-005', name: 'Facial — Gold', description: 'Luxurious gold facial for radiant glow', price: 1800, duration: 60, category: 'Skin', status: 'active', image: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?w=400&q=80' },
+    { _id: 'srv-006', name: 'Manicure Deluxe', description: 'Spa manicure with paraffin wax treatment', price: 800, duration: 45, category: 'Nails', status: 'active', image: 'https://images.unsplash.com/photo-1604654894610-df490c4228d5?w=400&q=80' },
+    { _id: 'srv-007', name: 'Pedicure Deluxe', description: 'Relaxing spa pedicure with scrub & massage', price: 1000, duration: 60, category: 'Nails', status: 'active', image: 'https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=400&q=80' },
+    { _id: 'srv-008', name: 'Full Body Massage', description: '60-minute deep tissue relaxation massage', price: 2000, duration: 60, category: 'Spa', status: 'active', image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400&q=80' },
+    { _id: 'srv-009', name: 'Aroma Therapy', description: 'Essential oils aromatherapy with hot stones', price: 2800, duration: 90, category: 'Spa', status: 'active', image: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&q=80' },
+    { _id: 'srv-010', name: 'Threading — Full Face', description: 'Eyebrow, upper lip, forehead & chin threading', price: 250, duration: 20, category: 'Skin', status: 'active', image: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=80' },
+    { _id: 'srv-011', name: 'Hair Spa', description: 'Deep conditioning spa treatment for damaged hair', price: 1500, duration: 60, category: 'Hair', status: 'active', image: 'https://images.unsplash.com/photo-1527799822367-4748a1a3bb77?w=400&q=80' },
+    { _id: 'srv-012', name: 'Nail Art', description: 'Custom nail art with gel polish', price: 1200, duration: 60, category: 'Nails', status: 'active', image: 'https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=400&q=80' },
 ];
 
 // --- Mock Staff (matches User model) ---
 export const MOCK_STAFF = [
-    { _id: 'staff-001', name: 'Anita Verma', role: 'stylist', specialization: 'Hair' },
-    { _id: 'staff-002', name: 'Ritu Kapoor', role: 'stylist', specialization: 'Skin' },
-    { _id: 'staff-003', name: 'Deepa Nair', role: 'stylist', specialization: 'Nails' },
-    { _id: 'staff-004', name: 'Meera Joshi', role: 'stylist', specialization: 'Spa' },
-    { _id: 'staff-005', name: 'Kavita Singh', role: 'stylist', specialization: 'Hair' },
+    { _id: 'staff-001', name: 'Anita Verma', role: 'stylist', specialization: 'Hair Specialist', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80' },
+    { _id: 'staff-002', name: 'Ritu Kapoor', role: 'stylist', specialization: 'Skin Specialist', image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80' },
+    { _id: 'staff-003', name: 'Deepa Nair', role: 'stylist', specialization: 'Nails Specialist', image: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=400&q=80' },
+    { _id: 'staff-004', name: 'Meera Joshi', role: 'stylist', specialization: 'Spa Specialist', image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80' },
+    { _id: 'staff-005', name: 'Kavita Singh', role: 'stylist', specialization: 'Hair Specialist', image: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80' },
 ];
 
 // --- Mock Outlet (matches Outlet model) ---

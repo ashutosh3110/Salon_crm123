@@ -38,7 +38,7 @@ export default function AppLoginPage() {
 
     /* ── Theme based colors ── */
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1E1E1E',
         text: isLight ? '#1A1A1A' : '#FFFFFF',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
@@ -73,7 +73,7 @@ export default function AppLoginPage() {
         setLoading(true); setError('');
         try {
             const c = await customerLogin(phone, code);
-            if (c.isNewUser) goTo(3); else navigate('/app');
+            if (c.isNewUser) goTo(3); else navigate('/app', { state: { justLoggedIn: true } });
         } catch (e) {
             setError(e.message || 'Invalid OTP');
             setOtp(['', '', '', '']);
@@ -86,7 +86,7 @@ export default function AppLoginPage() {
         setLoading(true); setError('');
         try {
             await completeProfile({ name: name.trim(), gender });
-            navigate('/app');
+            navigate('/app', { state: { justLoggedIn: true } });
         } catch (e) { setError(e.message || 'Something went wrong'); }
         finally { setLoading(false); }
     };

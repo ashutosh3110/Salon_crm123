@@ -5,7 +5,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
-    { id: 'services', label: 'Explore', icon: Scissors, path: '/app/services' },
+    { id: 'services', label: 'Services', icon: Scissors, path: '/app/services' },
     { id: 'book', label: 'Book', icon: CalendarPlus, path: '/app/book' },
     { id: 'shop', label: 'Shop', icon: ShoppingBag, path: '/app/shop' },
     { id: 'profile', label: 'Profile', icon: User, path: '/app/profile' },

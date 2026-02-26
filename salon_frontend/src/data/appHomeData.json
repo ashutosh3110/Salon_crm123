@@ -1,0 +1,346 @@
+{
+    "MEMBERSHIP_PLANS": [
+        {
+            "id": 1,
+            "name": "Silver Elite",
+            "price": "₹999",
+            "period": "month",
+            "color": "#C0C0C0",
+            "benefits": [
+                "10% Off all services",
+                "1 Free Haircut"
+            ],
+            "icon": "🛡️"
+        },
+        {
+            "id": 2,
+            "name": "Gold Premium",
+            "price": "₹1999",
+            "period": "month",
+            "color": "#D4AF37",
+            "benefits": [
+                "20% Off all services",
+                "Priority Booking",
+                "Free Facial"
+            ],
+            "icon": "🏆"
+        },
+        {
+            "id": 3,
+            "name": "Platinum Royal",
+            "price": "₹4999",
+            "period": "quarter",
+            "color": "#E5E4E2",
+            "benefits": [
+                "Unlimited Haircuts",
+                "30% Off products",
+                "VIP Lounge Access"
+            ],
+            "icon": "👑"
+        }
+    ],
+    "RUNNING_OFFERS": [
+        {
+            "id": 1,
+            "title": "Happy Hours",
+            "subtitle": "Mon-Thu, 11am - 4pm",
+            "discount": "Flat 30% OFF",
+            "code": "HAPPY30",
+            "color": "#4F46E5"
+        },
+        {
+            "id": 2,
+            "title": "First Visit",
+            "subtitle": "On your first service",
+            "discount": "₹200 Cashback",
+            "code": "WELCOME200",
+            "color": "#10B981"
+        },
+        {
+            "id": 3,
+            "title": "Birthday Month",
+            "subtitle": "Treat yourself!",
+            "discount": "Gift Voucher Worth ₹500",
+            "code": "BDAYLOVE",
+            "color": "#EC4899"
+        }
+    ],
+    "GENDER_DATA": {
+        "men": {
+            "label": "Men",
+            "emoji": "🧔",
+            "promos": [
+                {
+                    "id": 1,
+                    "title": "20% Off Grooming\nPackages",
+                    "subtitle": "Exclusive Offer",
+                    "img": "https://images.unsplash.com/photo-1622296089720-b72267bdc5a6?w=500&q=80",
+                    "btnText": "Book Now"
+                },
+                {
+                    "id": 2,
+                    "title": "Master Beard\nStyling",
+                    "subtitle": "New Trend",
+                    "img": "https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?w=500&q=80",
+                    "btnText": "Explore"
+                },
+                {
+                    "id": 3,
+                    "title": "Summer Haircut\nSpecial",
+                    "subtitle": "Flat ₹200 OFF",
+                    "img": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=500&q=80",
+                    "btnText": "Claim Now"
+                },
+                {
+                    "id": 4,
+                    "title": "Elite Lounge\nExperience",
+                    "subtitle": "VIP Access",
+                    "img": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=500&q=80",
+                    "btnText": "Join Club"
+                }
+            ],
+            "salons": [
+                {
+                    "id": 1,
+                    "name": "Kobike Barber Shop",
+                    "address": "12 Main St, Chicago",
+                    "rating": 4.8,
+                    "dist": "1.2 km",
+                    "img": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80"
+                },
+                {
+                    "id": 2,
+                    "name": "Classic Cuts Studio",
+                    "address": "45 Park Ave, Chicago",
+                    "rating": 4.6,
+                    "dist": "2.4 km",
+                    "img": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80"
+                },
+                {
+                    "id": 3,
+                    "name": "Gentlemens Lounge",
+                    "address": "88 River Rd, Chicago",
+                    "rating": 4.7,
+                    "dist": "3.1 km",
+                    "img": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80"
+                }
+            ],
+            "experts": [
+                {
+                    "id": 1,
+                    "name": "Jake Rivera",
+                    "role": "Master Barber",
+                    "rating": 4.9,
+                    "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
+                },
+                {
+                    "id": 2,
+                    "name": "Carlos Mendez",
+                    "role": "Hair Stylist",
+                    "rating": 4.7,
+                    "img": "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=200&q=80"
+                },
+                {
+                    "id": 3,
+                    "name": "Dan Fisher",
+                    "role": "Beard Expert",
+                    "rating": 4.8,
+                    "img": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80"
+                },
+                {
+                    "id": 4,
+                    "name": "Mark Chen",
+                    "role": "Colorist",
+                    "rating": 4.6,
+                    "img": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80"
+                }
+            ],
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Haircut",
+                    "img": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=300&q=80",
+                    "count": 82
+                },
+                {
+                    "id": 2,
+                    "name": "Beard",
+                    "img": "https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?w=200&q=80",
+                    "count": 54
+                },
+                {
+                    "id": 3,
+                    "name": "Massage",
+                    "img": "https://images.unsplash.com/photo-1544161515-4af6b1d462c2?w=200&q=80",
+                    "count": 38
+                },
+                {
+                    "id": 4,
+                    "name": "Facials",
+                    "img": "https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?w=200&q=80",
+                    "count": 24
+                },
+                {
+                    "id": 5,
+                    "name": "Color",
+                    "img": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=200&q=80",
+                    "count": 19
+                }
+            ],
+            "offers": [
+                {
+                    "id": 1,
+                    "title": "Kobike Barber",
+                    "tag": "Weekend Deal!",
+                    "discount": "-20%",
+                    "img": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300&q=80"
+                },
+                {
+                    "id": 2,
+                    "title": "Classic Cuts",
+                    "tag": "Flash Sale!",
+                    "discount": "-15%",
+                    "img": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80"
+                }
+            ]
+        },
+        "women": {
+            "label": "Women",
+            "emoji": "💇",
+            "promos": [
+                {
+                    "id": 1,
+                    "title": "20% Off Facial\nTreatments",
+                    "subtitle": "Skin Glow",
+                    "img": "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&q=80",
+                    "btnText": "Explore"
+                },
+                {
+                    "id": 2,
+                    "title": "Bridal Makeup\nArtistry",
+                    "subtitle": "Special Season",
+                    "img": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500&q=80",
+                    "btnText": "Book Now"
+                },
+                {
+                    "id": 3,
+                    "title": "Luxury Nail\nExtensions",
+                    "subtitle": "Combo Deal",
+                    "img": "https://images.unsplash.com/photo-1604654894610-df49ff66a7cb?w=500&q=80",
+                    "btnText": "Claim Now"
+                },
+                {
+                    "id": 4,
+                    "title": "Premium Hair\nSpa Therapy",
+                    "subtitle": "Relax More",
+                    "img": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80",
+                    "btnText": "Book Trial"
+                }
+            ],
+            "salons": [
+                {
+                    "id": 1,
+                    "name": "Brett Gomez Salon",
+                    "address": "817 Rebecca Lodge",
+                    "rating": 4.5,
+                    "dist": "4.5 km",
+                    "img": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=300&q=80"
+                },
+                {
+                    "id": 2,
+                    "name": "Gimabel Hair Style",
+                    "address": "Park View Plaza",
+                    "rating": 4.5,
+                    "dist": "2.8 km",
+                    "img": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80"
+                },
+                {
+                    "id": 3,
+                    "name": "Beauty Women Salon",
+                    "address": "Lakeshore Drive",
+                    "rating": 4.7,
+                    "dist": "1.9 km",
+                    "img": "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80"
+                }
+            ],
+            "experts": [
+                {
+                    "id": 1,
+                    "name": "Sofiya Liss",
+                    "role": "Stylist",
+                    "rating": 4.9,
+                    "img": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80"
+                },
+                {
+                    "id": 2,
+                    "name": "Adrin Ross",
+                    "role": "Colorist",
+                    "rating": 4.7,
+                    "img": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80"
+                },
+                {
+                    "id": 3,
+                    "name": "Nina Patel",
+                    "role": "Nail Artist",
+                    "rating": 4.8,
+                    "img": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80"
+                },
+                {
+                    "id": 4,
+                    "name": "Priya Kapoor",
+                    "role": "Skin Expert",
+                    "rating": 4.6,
+                    "img": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80"
+                }
+            ],
+            "categories": [
+                {
+                    "id": 1,
+                    "name": "Haircut",
+                    "img": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=200&q=80",
+                    "count": 85
+                },
+                {
+                    "id": 2,
+                    "name": "Skin Care",
+                    "img": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=200&q=80",
+                    "count": 65
+                },
+                {
+                    "id": 3,
+                    "name": "Nail Art",
+                    "img": "https://images.unsplash.com/photo-1604654894610-df49ff66a7cb?w=200&q=80",
+                    "count": 48
+                },
+                {
+                    "id": 4,
+                    "name": "Makeup",
+                    "img": "https://images.unsplash.com/photo-1522338221021-0209f984ca57?w=200&q=80",
+                    "count": 32
+                },
+                {
+                    "id": 5,
+                    "name": "Massage",
+                    "img": "https://images.unsplash.com/photo-1519823551278-64ac92734fb1?w=200&q=80",
+                    "count": 27
+                }
+            ],
+            "offers": [
+                {
+                    "id": 1,
+                    "title": "Pagliber Beauty",
+                    "tag": "Summer Event!!",
+                    "discount": "-15%",
+                    "img": "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300&q=80"
+                },
+                {
+                    "id": 2,
+                    "title": "Glam Studio",
+                    "tag": "Bridal Special",
+                    "discount": "-25%",
+                    "img": "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80"
+                }
+            ]
+        }
+    }
+}

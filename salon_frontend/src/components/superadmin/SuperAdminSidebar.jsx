@@ -63,12 +63,6 @@ const menuItems = [
         badgeColor: 'bg-amber-100 text-amber-700',
         badgeTitle: '6 open errors',
     },
-    {
-        label: 'Content',
-        icon: FileText,
-        path: '/superadmin/content',
-        badge: null,
-    },
 ];
 
 export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {

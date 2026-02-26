@@ -15,12 +15,13 @@ export default function AppReferralPage() {
     const referrals = MOCK_REFERRALS;
 
     const colors = {
-        bg: isLight ? '#F8F9FA' : '#141414',
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
         border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
         toggle: isLight ? '#EDF0F2' : '#242424',
+        accent: '#C8956C',
     };
 
     // Generate a referral code from customer id
@@ -66,42 +67,61 @@ export default function AppReferralPage() {
     const fadeUp = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-20">
+        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-6 px-4">
             <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
                 Refer & <span className="text-[#C8956C]">Earn</span>
             </h1>
 
-            {/* Hero Card */}
+            {/* Hero Card - Replicating Home Page Exclusive Offer Style (Compact) */}
             <motion.div
                 variants={fadeUp}
-                className="bg-gradient-to-br from-[#C8956C] via-[#A06844] to-[#C8956C] rounded-[2rem] p-6 text-white relative overflow-hidden shadow-xl shadow-[#C8956C]/20"
+                style={{
+                    background: colors.card,
+                    borderRadius: '18px',
+                    padding: '16px',
+                    border: `1.5px dashed ${colors.accent}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}
             >
-                <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-white/10 -translate-y-10 translate-x-10" />
-                <div className="absolute bottom-0 left-0 w-20 h-20 rounded-full bg-white/5 translate-y-6 -translate-x-4" />
-                <div className="relative">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Gift className="w-5 h-5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Premium Rewards</span>
-                    </div>
-                    <h3 className="text-xl font-black leading-tight italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>
-                        Earn 50 Points<br />per successful referral
+                <div className="relative z-10">
+                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 4px', fontWeight: 500 }}>Premium Rewards</p>
+                    <h3 className="text-lg font-black mb-4" style={{ color: colors.text, fontFamily: "'Playfair Display', serif", lineHeight: 1.3 }}>
+                        Earn 50 Points<br />
+                        <span style={{ color: colors.accent }}>per success</span>
                     </h3>
-                    <p className="text-[10px] uppercase font-black tracking-widest text-white/60 mt-2">Your friends also get exclusive welcome perks</p>
+
+                    <div className="flex items-center justify-between">
+                        <div style={{ background: isLight ? '#F5F5F7' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '8px', fontSize: '9px', fontWeight: 800, color: colors.accent, letterSpacing: '0.02em' }}>
+                            JOIN INNER CIRCLE
+                        </div>
+                        <div style={{ fontSize: '9px', fontWeight: 900, color: colors.text, letterSpacing: '0.05em', opacity: 0.8 }}>
+                            EXCLUSIVE
+                        </div>
+                    </div>
                 </div>
             </motion.div>
 
-            {/* Referral Code */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-4 shadow-sm">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Your Referral Code</p>
-                <div className="flex items-center gap-3">
-                    <div style={{ background: colors.toggle, borderColor: '#C8956C' }} className="flex-1 rounded-2xl px-4 py-4 border-2 border-dashed text-center">
-                        <span className="text-xl font-black tracking-[0.3em] text-[#C8956C] uppercase">{referralCode}</span>
+            {/* Referral Code - Matching Style (Compact) */}
+            <motion.div
+                variants={fadeUp}
+                style={{
+                    background: colors.card,
+                    border: `1.5px dashed ${colors.accent}`,
+                    borderRadius: '18px'
+                }}
+                className="p-4 space-y-3 shadow-sm"
+            >
+                <p className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Your Referral Code</p>
+                <div className="flex items-center gap-2">
+                    <div style={{ background: colors.toggle, borderRadius: '10px' }} className="flex-1 px-3 py-3 border-2 border-dashed border-[#C8956C]/30 text-center">
+                        <span className="text-lg font-black tracking-[0.3em] text-[#C8956C] uppercase">{referralCode}</span>
                     </div>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={handleCopy}
-                        style={{ background: colors.toggle, border: `1px solid ${colors.border}` }}
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center transition-colors"
+                        style={{ background: colors.toggle, border: `1px solid ${colors.border}`, borderRadius: '10px' }}
+                        className="w-12 h-12 flex items-center justify-center transition-colors shrink-0"
                     >
                         {copied ? (
                             <Check className="w-5 h-5 text-emerald-500" />
@@ -114,9 +134,9 @@ export default function AppReferralPage() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleShare}
-                    className="w-full py-4 rounded-2xl bg-[#C8956C] text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
+                    className="w-full py-3 rounded-xl bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
                 >
-                    <Share2 className="w-4 h-4" /> Invite Your Inner Circle
+                    <Share2 className="w-3.5 h-3.5" /> Invite Your Inner Circle
                 </motion.button>
             </motion.div>
 
@@ -124,22 +144,22 @@ export default function AppReferralPage() {
             <motion.div variants={fadeUp} className="grid grid-cols-3 gap-3">
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl p-4 text-center shadow-sm">
                     <p className="text-xl font-black italic tracking-tighter" style={{ color: colors.text }}>{completedCount + pendingCount}</p>
-                    <p className="text-[8px] font-black uppercase tracking-widest mt-1 opacity-40" style={{ color: colors.textMuted }}>Referred</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest mt-1 opacity-80" style={{ color: colors.text }}>Referred</p>
                 </div>
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl p-4 text-center shadow-sm">
                     <p className="text-xl font-black italic tracking-tighter text-emerald-500">{completedCount}</p>
-                    <p className="text-[8px] font-black uppercase tracking-widest mt-1 opacity-40" style={{ color: colors.textMuted }}>Joined</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest mt-1 opacity-80" style={{ color: colors.text }}>Joined</p>
                 </div>
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl p-4 text-center shadow-sm">
                     <p className="text-xl font-black italic tracking-tighter text-[#C8956C]">{totalEarned}</p>
-                    <p className="text-[8px] font-black uppercase tracking-widest mt-1 opacity-40" style={{ color: colors.textMuted }}>Earned</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest mt-1 opacity-80" style={{ color: colors.text }}>Earned</p>
                 </div>
             </motion.div>
 
             {/* Referral List */}
             {referrals.length > 0 && (
                 <motion.div variants={fadeUp} className="space-y-4 pt-2">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 px-1" style={{ color: colors.textMuted }}>Your Status List</h3>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] opacity-80 px-1" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Your Status List</h3>
                     <div className="space-y-3">
                         {referrals.map((ref, i) => (
                             <motion.div
@@ -154,7 +174,7 @@ export default function AppReferralPage() {
                                     <UserPlus className={`w-5 h-5 ${ref.status === 'COMPLETED' ? 'text-emerald-500' : 'text-amber-500'}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black uppercase tracking-tight italic truncate" style={{ color: colors.text }}>{ref.referredName}</p>
+                                    <p className="text-sm font-black uppercase tracking-tight italic truncate" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>{ref.referredName}</p>
                                     <p className="text-[9px] font-black uppercase tracking-widest mt-1 opacity-40" style={{ color: colors.textMuted }}>
                                         {ref.status === 'COMPLETED' ? 'BOOKING SECURED' : 'INVITATION SENT'}
                                     </p>

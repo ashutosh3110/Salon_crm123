@@ -80,23 +80,29 @@ import SABillingPage from './pages/superadmin/SABillingPage';
 import SASettingsPage from './pages/superadmin/SASettingsPage';
 import SASupportPage from './pages/superadmin/SASupportPage';
 import SAAnalyticsPage from './pages/superadmin/SAAnalyticsPage';
-import SAContentPage from './pages/superadmin/SAContentPage';
 import SAInquiriesPage from './pages/superadmin/SAInquiriesPage';
 
 // Customer App layout & pages
 import AppLayout from './layouts/AppLayout';
 import AppLoginPage from './pages/app/AppLoginPage';
 import AppHomePage from './pages/app/AppHomePage';
-import AppServicesPage from './pages/app/AppServicesPage';
+
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
+import AppServicesPage from './pages/app/AppServicesPage';
 import AppReferralPage from './pages/app/AppReferralPage';
 import AppProfilePage from './pages/app/AppProfilePage';
 import AppShopPage from './pages/app/AppShopPage';
 import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
 import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
 import AppNotificationPage from './pages/app/AppNotificationPage';
+import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
+import AppMembershipPage from './pages/app/AppMembershipPage';
+import AppMembershipCheckoutPage from './pages/app/AppMembershipCheckoutPage';
+import AppMembershipSuccessPage from './pages/app/AppMembershipSuccessPage';
 import GenderSelectPage from './pages/app/GenderSelectPage';
+import AppHelpSupportPage from './pages/app/AppHelpSupportPage';
+import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
 import CustomerAppWrapper from './layouts/CustomerAppWrapper';
@@ -329,7 +335,6 @@ function App() {
                   <Route path="/superadmin/analytics" element={<SAAnalyticsPage />} />
                   <Route path="/superadmin/settings" element={<SASettingsPage />} />
                   <Route path="/superadmin/support" element={<SASupportPage />} />
-                  <Route path="/superadmin/content" element={<SAContentPage />} />
                   <Route path="/superadmin/inquiries" element={<SAInquiriesPage />} />
                 </Route>
               </Route>
@@ -358,8 +363,9 @@ function App() {
                 <Route path="/app/gender" element={<GenderSelectPage />} />
                 <Route element={<AppLayout />}>
                   <Route path="/app" element={<AppHomePage />} />
-                  <Route path="/app/services" element={<AppServicesPage />} />
+
                   <Route path="/app/book" element={<AppBookingPage />} />
+                  <Route path="/app/services" element={<AppServicesPage />} />
                   <Route path="/app/bookings" element={<AppMyBookingsPage />} />
                   <Route path="/app/referrals" element={<AppReferralPage />} />
                   <Route path="/app/profile" element={<AppProfilePage />} />
@@ -367,6 +373,12 @@ function App() {
                   <Route path="/app/categories" element={<AppProductCategoriesPage />} />
                   <Route path="/app/product/:id" element={<AppProductDetailsPage />} />
                   <Route path="/app/notifications" element={<AppNotificationPage />} />
+                  <Route path="/app/loyalty" element={<AppLoyaltyPage />} />
+                  <Route path="/app/membership" element={<AppMembershipPage />} />
+                  <Route path="/app/membership/checkout" element={<AppMembershipCheckoutPage />} />
+                  <Route path="/app/membership/success" element={<AppMembershipSuccessPage />} />
+                  <Route path="/app/help" element={<AppHelpSupportPage />} />
+                  <Route path="/app/privacy" element={<AppPrivacyPolicyPage />} />
                 </Route>
               </Route>
 
