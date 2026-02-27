@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, User } from 'lucide-react';
 
 const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 240 : -240, opacity: 0 }),
@@ -20,6 +20,7 @@ export default function AppLoginPage() {
     const [gender, setGender] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
     const [countdown, setCd] = useState(0);
     const otpRefs = [useRef(), useRef(), useRef(), useRef()];
     const navigate = useNavigate();
@@ -33,6 +34,20 @@ export default function AppLoginPage() {
             return () => clearTimeout(t);
         }
     }, [countdown]);
+
+    // Auto-submit Phone
+    useEffect(() => {
+        if (phone.length === 10 && step === 1 && !loading) {
+            handleSendOtp();
+        }
+    }, [phone]);
+
+    // Auto-submit OTP
+    useEffect(() => {
+        if (otp.join('').length === 4 && step === 2 && !loading) {
+            handleVerifyOtp();
+        }
+    }, [otp]);
 
     const goTo = (s) => { setDir(s > step ? 1 : -1); setError(''); setStep(s); };
 
@@ -96,15 +111,15 @@ export default function AppLoginPage() {
     const S = {
         page: {
             minHeight: '100svh',
+            width: '100%',
             background: colors.bg,
             color: colors.text,
             fontFamily: "'Open Sans', sans-serif",
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px 32px',
+            display: 'grid',
+            placeItems: 'center',
+            padding: '24px',
             transition: 'background 0.3s ease',
+            overflow: 'hidden'
         },
         input: {
             width: '100%',
@@ -159,33 +174,64 @@ export default function AppLoginPage() {
                         style={{ width: '100%', maxWidth: '360px' }}
                     >
                         {/* Logo */}
-                        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-                            <div style={{ width: '64px', height: '64px', borderRadius: '20px', background: 'linear-gradient(135deg, #C8956C, #a06844)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '30px', margin: '0 auto 16px', boxShadow: '0 8px 24px rgba(200,149,108,0.3)' }}>
-                                💇
+                        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                            <div className="mx-auto mb-5">
+                                <img
+                                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                                    alt="Salon Logo"
+                                    className="h-20 w-auto mx-auto object-contain"
+                                />
                             </div>
-                            <h1 style={{ fontSize: '26px', fontWeight: 800, color: colors.text, margin: '0 0 6px', fontFamily: "'Playfair Display', serif" }}>
+                            <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>
                                 Welcome Back
                             </h1>
-                            <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0 }}>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>
                                 Sign in to access your account
                             </p>
                         </div>
 
-                        <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px', paddingLeft: '4px' }}>
                                 Phone Number
                             </label>
-                            <div style={{ display: 'flex', gap: '0', background: colors.inputBg, borderRadius: '14px', border: `1.5px solid ${colors.border}`, overflow: 'hidden', boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.02)' : 'none' }}>
-                                <div style={{ padding: '0 14px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${colors.border}`, flexShrink: 0 }}>
-                                    <span style={{ fontSize: '14px', color: colors.textMuted, fontWeight: 700 }}>+91</span>
+                            <div
+                                style={{
+                                    background: isLight
+                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    height: '52px',
+                                    border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`, flexShrink: 0, height: '60%' }}>
+                                    <span style={{ fontSize: '14px', color: isFocused ? '#C8956C' : colors.textMuted, fontWeight: 800 }}>+91</span>
                                 </div>
                                 <input
                                     type="tel" inputMode="numeric" maxLength={10}
                                     value={phone}
                                     onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); }}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={() => setIsFocused(false)}
                                     placeholder="98765 43210"
                                     autoFocus
-                                    style={{ flex: 1, background: 'none', border: 'none', padding: '14px 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em' }}
+                                    style={{
+                                        flex: 1,
+                                        background: 'transparent',
+                                        border: 'none',
+                                        padding: '0 16px',
+                                        fontSize: '16px',
+                                        color: colors.text,
+                                        outline: 'none',
+                                        fontFamily: "'Inter', sans-serif",
+                                        letterSpacing: '0.1em',
+                                        fontWeight: 600
+                                    }}
                                 />
                             </div>
                         </div>
@@ -312,63 +358,154 @@ export default function AppLoginPage() {
                     <motion.div key="profile" custom={direction} variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                        style={{ width: '100%', maxWidth: '360px' }}
+                        style={{ width: '100%', maxWidth: '400px' }}
+                        className="py-4"
                     >
-                        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-                            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🎉</div>
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 8px', fontFamily: "'Playfair Display', serif" }}>Almost There!</h2>
-                            <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0 }}>Tell us a bit about yourself</p>
+                        {/* Header Inspired by GenderSelectPage */}
+                        <div className="text-center mb-6">
+                            <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="mx-auto mb-4"
+                            >
+                                <img
+                                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                                    alt="Salon Logo"
+                                    className="h-22 w-auto mx-auto object-contain"
+                                />
+                            </motion.div>
+                            <motion.h1
+                                animate={{
+                                    opacity: [1, 0.7, 1],
+                                    filter: ["brightness(1)", "brightness(1.4)", "brightness(1)"],
+                                    scale: [1, 1.01, 1]
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                style={{
+                                    fontSize: '22px',
+                                    fontWeight: 900,
+                                    color: colors.text,
+                                    margin: '0 0 6px',
+                                    fontFamily: "'Playfair Display', serif",
+                                    fontStyle: 'italic',
+                                    letterSpacing: '-0.02em',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                Personalize <span style={{ color: '#C8956C' }}>Experience</span>
+                            </motion.h1>
+                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                                Select your ritual preference
+                            </p>
                         </div>
 
+                        {/* Name Input - Home Page Search Bar Style */}
                         <div style={{ marginBottom: '16px' }}>
-                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '8px', fontWeight: 600 }}>Your Name</label>
-                            <input
-                                type="text" value={name} autoFocus
-                                onChange={e => { setName(e.target.value); setError(''); }}
-                                placeholder="Enter your name"
-                                style={S.input}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '24px' }}>
-                            <label style={{ fontSize: '13px', color: colors.textMuted, display: 'block', marginBottom: '10px', fontWeight: 600 }}>
-                                Gender <span style={{ color: colors.textMuted, opacity: 0.6, fontWeight: 400 }}>(optional)</span>
-                            </label>
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                {['female', 'male', 'other'].map(g => (
-                                    <motion.button
-                                        key={g} whileTap={{ scale: 0.94 }}
-                                        onClick={() => setGender(g)}
-                                        style={{
-                                            flex: 1, padding: '10px 0',
-                                            background: gender === g ? '#C8956C' : colors.inputBg,
-                                            border: '1.5px solid',
-                                            borderColor: gender === g ? '#C8956C' : colors.border,
-                                            borderRadius: '12px',
-                                            color: gender === g ? '#fff' : colors.text,
-                                            fontSize: '13px', fontWeight: 600,
-                                            cursor: 'pointer', textTransform: 'capitalize',
-                                            fontFamily: "'Inter', sans-serif",
-                                            transition: 'all 0.2s',
-                                            boxShadow: isLight && gender !== g ? '0 2px 8px rgba(0,0,0,0.02)' : 'none',
-                                        }}
-                                    >
-                                        {g === 'female' ? '👩 ' : g === 'male' ? '👨 ' : '🧑 '}{g}
-                                    </motion.button>
-                                ))}
+                            <div className="flex items-center justify-between mb-1.5 px-1">
+                                <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name</label>
+                            </div>
+                            <div
+                                style={{
+                                    background: isLight
+                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                                    borderRadius: '20px 6px 20px 6px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '0 16px',
+                                    height: '52px',
+                                    gap: '12px',
+                                    border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)'
+                                }}
+                            >
+                                <User size={18} color={isFocused ? '#C8956C' : (isLight ? '#666' : 'rgba(255,255,255,0.6)')} />
+                                <input
+                                    type="text" value={name} autoFocus
+                                    onChange={e => { setName(e.target.value); setError(''); }}
+                                    onFocus={() => setIsFocused(true)}
+                                    onBlur={() => setIsFocused(false)}
+                                    placeholder="Enter your full name"
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        color: colors.text,
+                                        fontSize: '14px',
+                                        width: '100%',
+                                        height: '100%',
+                                        fontWeight: 600
+                                    }}
+                                />
                             </div>
                         </div>
 
-                        {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
+                        {/* Premium Gender Selection Cards */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
+                            {[
+                                { id: 'male', label: 'Gentlemen', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&q=80' },
+                                { id: 'female', label: 'Ladies', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=80' }
+                            ].map(g => (
+                                <motion.div
+                                    key={g.id}
+                                    whileTap={{ scale: 0.96 }}
+                                    onClick={() => setGender(g.id)}
+                                    style={{
+                                        position: 'relative',
+                                        height: '140px',
+                                        borderRadius: '20px',
+                                        overflow: 'hidden',
+                                        cursor: 'pointer',
+                                        border: `2px solid ${gender === g.id ? '#C8956C' : 'transparent'}`,
+                                        transition: 'all 0.3s ease',
+                                        boxShadow: gender === g.id ? '0 8px 20px rgba(200,149,108,0.2)' : 'none'
+                                    }}
+                                >
+                                    <img src={g.img} alt={g.label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: gender === g.id ? 1 : 0.7 }} />
+                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
+                                    <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
+                                        <p style={{ fontSize: '8px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '1px', letterSpacing: '0.05em' }}>Curation for</p>
+                                        <p style={{ fontSize: '15px', fontWeight: 900, color: '#fff', fontFamily: "'Playfair Display', serif" }}>{g.label}</p>
+                                    </div>
+                                    {gender === g.id && (
+                                        <div style={{ position: 'absolute', top: '8px', right: '8px', width: '20px', height: '20px', background: '#C8956C', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <span style={{ color: '#fff', fontSize: '10px' }}>✓</span>
+                                        </div>
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
+
+                        {error && <p style={{ fontSize: '12px', color: '#ff4757', marginBottom: '16px', textAlign: 'center' }}>{error}</p>}
 
                         <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={handleProfile}
-                            disabled={loading || !name.trim()}
-                            style={{ ...S.btn, opacity: (loading || !name.trim()) ? 0.5 : 1 }}
+                            disabled={loading || !name.trim() || !gender}
+                            style={{
+                                ...S.btn,
+                                borderRadius: '16px',
+                                height: '52px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.12em',
+                                fontSize: '13px',
+                                fontWeight: 900,
+                                opacity: (loading || !name.trim() || !gender) ? 0.5 : 1
+                            }}
                         >
-                            {loading ? <Loader2 size={20} className="animate-spin" /> : 'Get Started ✨'}
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : 'Get Started'}
                         </motion.button>
+
+                        <div style={{ textAlign: 'center', marginTop: '16px', opacity: 0.4 }}>
+                            <p style={{ fontSize: '8px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                                Settings can be adjusted in profile
+                            </p>
+                        </div>
                     </motion.div>
                 )}
 

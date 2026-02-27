@@ -1,28 +1,32 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 export default function AppSplashScreen({ onComplete }) {
     const [progress, setProgress] = useState(0);
     const { theme } = useCustomerTheme();
+    const navigate = useNavigate();
     const isLight = theme === 'light';
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(timer);
-                    setTimeout(() => {
-                        onComplete && onComplete();
-                    }, 500);
-                    return 100;
-                }
-                return prev + 2.5;
-            });
-        }, 25);
-
-        return () => clearInterval(timer);
+        // We will now handle completion based on video duration
+        // Progress will be updated via onTimeUpdate event
     }, [onComplete]);
+
+    const handleVideoTimeUpdate = (e) => {
+        const video = e.target;
+        const currentProgress = (video.currentTime / video.duration) * 100;
+        setProgress(currentProgress);
+    };
+
+    const handleVideoEnded = () => {
+        setProgress(100);
+        setTimeout(() => {
+            navigate('/app/login');
+            onComplete && onComplete();
+        }, 800);
+    };
 
     const colors = {
         bg: isLight ? '#FFFFFF' : '#141414',
@@ -35,97 +39,68 @@ export default function AppSplashScreen({ onComplete }) {
         <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             style={{
                 position: 'fixed',
                 inset: 0,
                 zIndex: 10000,
-                background: colors.bg,
+                background: '#000',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                padding: '2rem'
+                overflow: 'hidden'
             }}
         >
-            {/* Logo Animation */}
-            <motion.div
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                transition={{
-                    duration: 1.2,
-                    ease: [0.16, 1, 0.3, 1]
+            {/* Background Video */}
+            <video
+                autoPlay
+                muted
+                playsInline
+                onTimeUpdate={handleVideoTimeUpdate}
+                onEnded={handleVideoEnded}
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    opacity: 0.6
                 }}
-                className="flex flex-col items-center gap-4 mb-16"
             >
-                <div className="relative">
-                    <motion.div
-                        animate={{
-                            opacity: [0.5, 1, 0.5],
-                            scale: [1, 1.05, 1]
-                        }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 blur-2xl opacity-20"
-                        style={{ background: colors.accent }}
-                    />
-                    <img
-                        src="/wapixo-logo.svg"
-                        alt="Wapixo Logo"
-                        className="relative"
-                        style={{
-                            height: '60px',
-                            width: 'auto',
-                        }}
-                    />
-                </div>
-                <h2 className="text-xl font-black italic tracking-tighter" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
-                    Signature <span className="text-[#C8956C]">Rituals</span>
-                </h2>
-            </motion.div>
+                <source src="/video/WhatsApp Video 2026-02-27 at 11.53.58 AM (3).mp4" type="video/mp4" />
+            </video>
 
-            {/* Loading Container */}
-            <div className="w-56 space-y-4">
-                {/* Progress Bar */}
-                <div className="w-full h-[3px] rounded-full overflow-hidden relative" style={{ background: colors.bar }}>
-                    <motion.div
-                        style={{
-                            height: '100%',
-                            background: colors.accent,
-                            boxShadow: `0 0 20px ${colors.accent}44`
-                        }}
-                        initial={{ width: '0%' }}
-                        animate={{ width: `${progress}%` }}
-                        transition={{ ease: "linear" }}
-                    />
-                </div>
+            {/* Dark Overlay for better contrast */}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 40%, rgba(0,0,0,0.7) 100%)', zIndex: 1 }} />
 
-                {/* Loading Text */}
-                <div className="flex justify-between items-center px-1">
-                    <motion.span
-                        animate={{ opacity: [0.4, 1, 0.4] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-[9px] font-black uppercase tracking-[0.3em]"
-                        style={{ color: colors.text }}
-                    >
-                        Awakening
-                    </motion.span>
-                    <span className="text-[9px] font-black tracking-widest opacity-40" style={{ color: colors.text }}>
-                        {Math.floor(progress)}%
-                    </span>
-                </div>
-            </div>
-
-            {/* Bottom Tagline */}
+            {/* Top Logo Section */}
             <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.15 }}
-                transition={{ delay: 1, duration: 1.5 }}
-                className="absolute bottom-12 text-center"
+                initial={{ y: -50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: 0,
+                    right: 0,
+                    textAlign: 'center',
+                    zIndex: 10
+                }}
             >
-                <p className="text-[8px] font-black uppercase tracking-[0.4em]" style={{ color: colors.text }}>
-                    The Art of Personal Grooming
-                </p>
+                <img
+                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                    alt="Salon Logo"
+                    style={{
+                        height: '110px',
+                        width: 'auto',
+                        margin: '0 auto',
+                        filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))'
+                    }}
+                />
             </motion.div>
+
+
         </motion.div>
     );
 }

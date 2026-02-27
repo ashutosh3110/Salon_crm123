@@ -83,10 +83,12 @@ export default function AppHeader() {
                             exit={{ y: -20, opacity: 0, rotateX: 90 }}
                             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                             style={{
-                                fontSize: '15px',
-                                fontWeight: 800,
-                                color: isLight ? '#000' : '#fff',
-                                letterSpacing: '-0.01em',
+                                fontSize: showThought ? '14px' : '15px',
+                                fontWeight: showThought ? 600 : 800,
+                                fontStyle: showThought ? 'italic' : 'normal',
+                                fontFamily: showThought ? "'Playfair Display', serif" : "'Inter', sans-serif",
+                                color: showThought ? (isLight ? '#C8956C' : '#E6B98D') : (isLight ? '#000' : '#fff'),
+                                letterSpacing: showThought ? '0.02em' : '-0.01em',
                                 whiteSpace: 'nowrap',
                                 transformOrigin: 'center'
                             }}

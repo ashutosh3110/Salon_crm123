@@ -266,42 +266,45 @@ export default function AppHomePage() {
                                 transition={{ delay: 0.6, duration: 0.8 }}
                             >
                                 <motion.span
-                                    initial={{ letterSpacing: '0.1em' }}
-                                    animate={{ letterSpacing: '0.4em' }}
+                                    initial={{ letterSpacing: '0.2em', opacity: 0 }}
+                                    animate={{ letterSpacing: '0.5em', opacity: 0.8 }}
                                     transition={{ delay: 0.8, duration: 1.5, ease: 'easeOut' }}
                                     style={{
                                         display: 'block',
                                         color: '#C8956C',
-                                        fontSize: '11px',
-                                        fontWeight: 800,
+                                        fontSize: '10px',
+                                        fontWeight: 900,
                                         textTransform: 'uppercase',
-                                        marginBottom: '16px',
-                                        opacity: 0.8
+                                        marginBottom: '12px',
+                                        fontFamily: "'Inter', sans-serif"
                                     }}
                                 >
-                                    Welcome To Luxury
+                                    Experience The Ritual
                                 </motion.span>
 
                                 <h1 style={{
-                                    fontSize: '44px',
-                                    fontWeight: 800,
+                                    fontSize: '52px',
+                                    fontWeight: 900,
                                     margin: 0,
                                     color: '#FFFFFF',
                                     fontFamily: "'Playfair Display', serif",
-                                    letterSpacing: '-0.02em',
-                                    lineHeight: 1
+                                    letterSpacing: '-0.03em',
+                                    lineHeight: 1,
+                                    fontStyle: 'italic',
+                                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))'
                                 }}>
                                     {customer?.name?.split(' ')[0] || 'Jagrati'}
                                 </h1>
 
                                 <motion.div
                                     initial={{ width: 0, opacity: 0 }}
-                                    animate={{ width: 80, opacity: 1 }}
-                                    transition={{ delay: 1.2, duration: 1, ease: 'easeInOut' }}
+                                    animate={{ width: 120, opacity: 1 }}
+                                    transition={{ delay: 1.2, duration: 1.2, ease: 'easeInOut' }}
                                     style={{
                                         height: '1px',
-                                        background: 'linear-gradient(90deg, transparent, #C8956C, transparent)',
-                                        margin: '30px auto',
+                                        background: 'linear-gradient(90deg, transparent, #C8956C, #A06844, transparent)',
+                                        margin: '24px auto',
+                                        boxShadow: '0 0 10px rgba(200,149,108,0.3)'
                                     }}
                                 />
 

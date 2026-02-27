@@ -38,7 +38,27 @@ export default function AppPrivacyPolicyPage() {
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh', color: colors.text }}>
-
+            {/* Header */}
+            <div style={{
+                padding: '20px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+                position: 'sticky',
+                top: 0,
+                background: colors.bg,
+                zIndex: 10,
+                borderBottom: `1px solid ${colors.border}`
+            }}>
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate(-1)}
+                    style={{ background: 'none', border: 'none', padding: 0 }}
+                >
+                    <ArrowLeft size={20} />
+                </motion.button>
+                <h1 style={{ fontSize: '18px', fontWeight: 800 }}>Privacy Policy</h1>
+            </div>
 
             <div style={{ padding: '24px 16px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '32px' }}>

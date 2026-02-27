@@ -13,7 +13,7 @@ const MOCK_NOTIFICATIONS = [
         time: '2 mins ago',
         isRead: false,
         icon: Calendar,
-        color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400',
+        color: 'text-emerald-500 dark:text-emerald-400',
     },
     {
         id: 2,
@@ -23,7 +23,7 @@ const MOCK_NOTIFICATIONS = [
         time: '1 hour ago',
         isRead: false,
         icon: Tag,
-        color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400',
+        color: 'text-amber-500 dark:text-amber-400',
     },
     {
         id: 3,
@@ -33,7 +33,7 @@ const MOCK_NOTIFICATIONS = [
         time: '5 hours ago',
         isRead: true,
         icon: Package,
-        color: 'text-blue-500 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400',
+        color: 'text-blue-500 dark:text-blue-400',
     },
     {
         id: 4,
@@ -43,7 +43,7 @@ const MOCK_NOTIFICATIONS = [
         time: 'Yesterday',
         isRead: true,
         icon: Star,
-        color: 'text-[#C8956C] bg-[#C8956C]/10 dark:bg-[#C8956C]/10 dark:text-[#C8956C]',
+        color: 'text-[#C8956C]',
     },
     {
         id: 5,
@@ -53,7 +53,7 @@ const MOCK_NOTIFICATIONS = [
         time: '2 days ago',
         isRead: true,
         icon: Shield,
-        color: 'text-rose-500 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400',
+        color: 'text-rose-500 dark:text-rose-400',
     }
 ];
 
@@ -63,52 +63,55 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) =
     return (
         <motion.div
             layout
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             style={{
-                background: !notification.isRead ? (isLight ? 'rgba(200, 149, 108, 0.05)' : 'rgba(200, 149, 108, 0.08)') : colors.card,
-                borderBottom: `1px solid ${colors.border}`,
-                borderLeft: !notification.isRead ? '4px solid #C8956C' : '4px solid transparent'
+                background: colors.card,
+                borderRadius: '12px',
+                border: `1px solid ${colors.border}`,
+                marginBottom: '8px',
+                overflow: 'hidden',
+                position: 'relative'
             }}
-            className="relative group transition-all duration-300"
+            className="group"
         >
-            <div className="p-6 flex gap-5">
-                <div className={`w-14 h-14 shrink-0 flex items-center justify-center rounded-2xl shadow-sm ${notification.color}`}>
-                    <Icon className="w-6 h-6" />
-                </div>
+            {!notification.isRead && (
+                <div style={{ position: 'absolute', top: 0, left: 0, width: '3px', height: '100%', background: '#C8956C' }} />
+            )}
 
-                <div className="flex-1 min-w-0 pt-0.5">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <h3 className="text-sm font-black uppercase tracking-widest leading-none" style={{ color: !notification.isRead ? colors.text : colors.textMuted }}>
+            <div className="p-3 flex gap-3">
+                <Icon className={`w-6 h-6 shrink-0 ${notification.color}`} />
+
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <h3 className="text-[10px] font-black uppercase tracking-wider truncate" style={{ color: colors.text }}>
                             {notification.title}
                         </h3>
-                        <span className="text-[10px] font-bold uppercase tracking-widest tabular-nums opacity-40" style={{ color: colors.textMuted }}>
+                        <span className="text-[8px] font-bold opacity-40 shrink-0 uppercase tracking-tighter" style={{ color: colors.textMuted }}>
                             {notification.time}
                         </span>
                     </div>
-                    <p className="text-xs font-medium leading-relaxed" style={{ color: !notification.isRead ? (isLight ? '#444' : 'rgba(255,255,255,0.7)') : colors.textMuted }}>
+                    <p className="text-[9px] font-medium leading-tight opacity-70" style={{ color: colors.text }}>
                         {notification.message}
                     </p>
 
-                    {!notification.isRead && (
+                    <div className="flex items-center justify-between mt-2">
+                        {!notification.isRead ? (
+                            <button
+                                onClick={() => onRead(notification.id)}
+                                className="flex items-center gap-1 text-[8px] font-black text-[#C8956C] uppercase tracking-widest hover:opacity-80 transition-opacity"
+                            >
+                                <CheckCircle2 className="w-3 h-3" /> Mark read
+                            </button>
+                        ) : <div />}
                         <button
-                            onClick={() => onRead(notification.id)}
-                            className="mt-3 flex items-center gap-1.5 text-[10px] font-black text-[#C8956C] uppercase tracking-widest hover:opacity-80 transition-opacity"
+                            onClick={() => onDelete(notification.id)}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity"
                         >
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Mark as read
+                            <Trash2 className="w-3 h-3 text-rose-500/50 hover:text-rose-500" />
                         </button>
-                    )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                    <button
-                        onClick={() => onDelete(notification.id)}
-                        className="w-8 h-8 flex items-center justify-center transition-colors opacity-20 group-hover:opacity-100"
-                        style={{ color: colors.textMuted }}
-                    >
-                        <Trash2 className="w-4 h-4 hover:text-rose-500" />
-                    </button>
+                    </div>
                 </div>
             </div>
         </motion.div>
@@ -123,11 +126,10 @@ export default function AppNotificationPage() {
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
+        card: isLight ? '#FFFFFF' : '#161616',
         text: isLight ? '#1A1A1A' : '#ffffff',
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        toggle: isLight ? '#EDF0F2' : '#242424',
+        border: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)',
     };
 
     const markAsRead = (id) => {
@@ -149,43 +151,44 @@ export default function AppNotificationPage() {
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
-        <div className="pb-32 min-h-screen" style={{ background: colors.bg }}>
-            {/* Header */}
-            <div style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${colors.border}` }} className="sticky top-0 z-50 p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
-                        <ArrowLeft size={20} />
+        <div className="pb-24 min-h-screen" style={{ background: colors.bg }}>
+            {/* Minimal Header */}
+            <div style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(20px)' }} className="sticky top-0 z-50 px-4 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-all">
+                        <ArrowLeft size={18} />
                     </button>
-                    <h1 className="text-xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
-                        Inbox <span className="text-[#C8956C]">{unreadCount > 0 ? `(${unreadCount})` : ''}</span>
-                    </h1>
+                    <div>
+                        <h1 className="text-base font-black tracking-tight leading-none" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
+                            Notifications
+                        </h1>
+                        <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#C8956C] mt-0.5">
+                            {unreadCount > 0 ? `${unreadCount} Unread Updates` : 'Fully Synchronized'}
+                        </p>
+                    </div>
                 </div>
 
                 {notifications.length > 0 && (
                     <div className="flex items-center gap-2">
                         <button
                             onClick={markAllAsRead}
-                            style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)' }}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-90 ${unreadCount > 0 ? 'text-[#C8956C]' : 'opacity-20 pointer-events-none'}`}
-                            title="Mark all as read"
+                            className={`w-8 h-8 flex items-center justify-center transition-all active:scale-90 ${unreadCount > 0 ? 'text-[#C8956C]' : 'opacity-20 pointer-events-none'}`}
                         >
-                            <CheckCircle className="w-5 h-5" />
+                            <CheckCircle className="w-4 h-4" />
                         </button>
                         <button
                             onClick={clearAll}
-                            style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)' }}
-                            className="w-10 h-10 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all active:scale-90"
-                            title="Clear all"
+                            className="w-8 h-8 flex items-center justify-center text-rose-500 active:scale-90 transition-all"
                         >
-                            <Trash2 className="w-5 h-5" />
+                            <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* Content */}
-            <div className="max-w-lg mx-auto">
-                <AnimatePresence mode="popLayout">
+            {/* List */}
+            <div className="px-3 max-w-lg mx-auto">
+                <AnimatePresence mode="popLayout" initial={false}>
                     {notifications.length > 0 ? (
                         notifications.map((n) => (
                             <NotificationCard
@@ -199,23 +202,17 @@ export default function AppNotificationPage() {
                         ))
                     ) : (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="py-32 flex flex-col items-center text-center px-10 space-y-6"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="py-24 flex flex-col items-center text-center space-y-4"
                         >
-                            <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="w-24 h-24 rounded-[2rem] flex items-center justify-center shadow-sm">
-                                <Bell className="w-10 h-10 opacity-20" style={{ color: colors.text }} />
+                            <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-lg shadow-black/5">
+                                <Bell className="w-6 h-6 opacity-10" style={{ color: colors.text }} />
                             </div>
-                            <div className="space-y-2">
-                                <h3 className="text-2xl font-black italic tracking-tighter uppercase" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Silent Mode</h3>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mx-auto max-w-[200px]" style={{ color: colors.textMuted }}>No updates at the moment. You're all caught up with your rituals.</p>
+                            <div className="space-y-0.5">
+                                <h3 className="text-lg font-black italic tracking-tighter uppercase" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Silent Boutique</h3>
+                                <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: colors.textMuted }}>Your timeline is momentarily still.</p>
                             </div>
-                            <button
-                                onClick={() => navigate('/app/shop')}
-                                className="px-10 py-4 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-widest shadow-xl shadow-[#C8956C]/20 rounded-xl active:scale-95 transition-all"
-                            >
-                                Explorer Boutique
-                            </button>
                         </motion.div>
                     )}
                 </AnimatePresence>
