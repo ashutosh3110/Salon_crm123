@@ -31,14 +31,35 @@ export default function AuthPage() {
     const [otp, setOtp] = useState('');
     const [otpSent, setOtpSent] = useState(false);
 
-    // Sync view with URL
+    // Sync view with URL and handle auto-fill role from Launchpad
     useEffect(() => {
         const currentView = location.pathname === '/register' ? 'signup' : 'signin';
         if (currentView !== view) {
             setView(currentView);
             setError('');
         }
-    }, [location.pathname]);
+
+        // Auto-fill mock credentials based on role from Launchpad
+        const params = new URLSearchParams(location.search);
+        const roleParam = params.get('role');
+        if (roleParam && view === 'signin') {
+            const MOCK_CREDENTIALS = {
+                admin: { e: 'admin@salon.com', p: 'password' },
+                manager: { e: 'manager@salon.com', p: 'password' },
+                receptionist: { e: 'reception@salon.com', p: 'password' },
+                stylist: { e: 'stylist@salon.com', p: 'password' },
+                accountant: { e: 'accounts@salon.com', p: 'password' },
+                inventory_manager: { e: 'inventory@salon.com', p: 'password' },
+                superadmin: { e: 'superadmin@salon.com', p: 'password' },
+            };
+
+            const creds = MOCK_CREDENTIALS[roleParam];
+            if (creds) {
+                setSigninForm({ email: creds.e, password: creds.p });
+                setMode('staff');
+            }
+        }
+    }, [location.pathname, location.search, view]);
 
     const handleSigninChange = (e) => {
         setSigninForm({ ...signinForm, [e.target.name]: e.target.value });
@@ -293,35 +314,46 @@ export default function AuthPage() {
                                                     {loading ? 'Authenticating...' : 'Initialize Session'}
                                                 </button>
 
-                                                {/* Expanded Quick Access Box */}
+                                                {/* Expanded Quick Access Box - Filtered by role from Launchpad */}
                                                 <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] space-y-3">
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-2">
                                                             <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 italic">Quick Access</span>
+                                                            <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 italic">Verified Identity</span>
                                                         </div>
-                                                        <span className="text-[7px] font-bold text-white/20 uppercase tracking-[0.2em]">Dev Mode</span>
+                                                        <span className="text-[7px] font-bold text-white/20 uppercase tracking-[0.2em]">Secure Access</span>
                                                     </div>
 
-                                                    <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                                                    <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
                                                         {[
                                                             { r: 'admin', e: 'admin@salon.com' },
                                                             { r: 'manager', e: 'manager@salon.com' },
-                                                            { r: 'reception', e: 'reception@salon.com' },
+                                                            { r: 'receptionists', e: 'reception@salon.com' },
                                                             { r: 'stylist', e: 'stylist@salon.com' },
                                                             { r: 'accountant', e: 'accounts@salon.com' },
-                                                            { r: 'inventory', e: 'inventory@salon.com' },
-                                                            { r: 'super', e: 'superadmin@salon.com' },
-                                                        ].map((item) => (
-                                                            <button
-                                                                key={item.e} type="button"
-                                                                onClick={() => setSigninForm({ email: item.e, password: 'password' })}
-                                                                className="flex flex-col items-start p-2.5 bg-black/40 border border-white/5 hover:border-primary/50 transition-all rounded-2xl group text-left"
-                                                            >
-                                                                <span className="text-[8px] font-black uppercase text-white/40 group-hover:text-primary/80 transition-colors uppercase">{item.r}</span>
-                                                                <span className="text-[9px] font-bold text-white/60 truncate w-full group-hover:text-white transition-colors">{item.e}</span>
-                                                            </button>
-                                                        ))}
+                                                            { r: 'inventory_manager', e: 'inventory@salon.com' },
+                                                            { r: 'superadmin', e: 'superadmin@salon.com' },
+                                                            { r: 'pos', e: 'admin@salon.com' },
+                                                        ]
+                                                            .filter(item => {
+                                                                const params = new URLSearchParams(location.search);
+                                                                const roleParam = params.get('role');
+                                                                if (!roleParam) return true; // Show all if no role in URL
+                                                                // Match the role parameter (handling special cases like pos)
+                                                                if (roleParam === 'pos') return item.r === 'admin';
+                                                                if (roleParam === 'receptionist') return item.r === 'receptionists';
+                                                                return item.r === roleParam;
+                                                            })
+                                                            .map((item) => (
+                                                                <button
+                                                                    key={item.e + item.r} type="button"
+                                                                    onClick={() => setSigninForm({ email: item.e, password: 'password' })}
+                                                                    className="flex flex-col items-start p-3 bg-black/40 border border-white/5 hover:border-primary/50 transition-all rounded-2xl group text-left"
+                                                                >
+                                                                    <span className="text-[8px] font-black uppercase text-white/40 group-hover:text-primary/80 transition-colors uppercase">{item.r.replace('_', ' ')} Portal</span>
+                                                                    <span className="text-[10px] font-bold text-white/60 truncate w-full group-hover:text-white transition-colors">{item.e}</span>
+                                                                </button>
+                                                            ))}
                                                     </div>
                                                 </div>
                                             </form>

@@ -16,6 +16,7 @@ import WapixoContactPage from './pages/landing/WapixoContactPage';
 import PrivacyPolicy from './pages/legal/PrivacyPolicy';
 import TermsOfService from './pages/legal/TermsOfService';
 import CookiePolicy from './pages/legal/CookiePolicy';
+import PanelLaunchpad from './pages/PanelLaunchpad';
 
 function ScrollToHash() {
   const { pathname, hash, state } = useLocation();
@@ -175,6 +176,7 @@ function App() {
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
+              <Route path="/launchpad" element={<PanelLaunchpad />} />
 
               {/* ═══════════════════════════════════════════════════════════
                  ADMIN — Salon Owner Panel
