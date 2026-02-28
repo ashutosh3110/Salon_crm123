@@ -4,34 +4,34 @@
  */
 
 export const MOCK_SERVICES = [
-    { _id: 's1', name: 'Haircut – Men', price: 400, duration: 30, category: 'Hair', status: 'active', commission: 20 },
-    { _id: 's2', name: 'Haircut – Women', price: 600, duration: 45, category: 'Hair', status: 'active', commission: 20 },
-    { _id: 's3', name: 'Hair Coloring', price: 2500, duration: 90, category: 'Hair', status: 'active', commission: 15 },
-    { _id: 's4', name: 'Keratin Treatment', price: 5000, duration: 120, category: 'Hair', status: 'active', commission: 10 },
-    { _id: 's5', name: 'Hair Spa', price: 1200, duration: 60, category: 'Hair', status: 'active', commission: 20 },
-    { _id: 's6', name: 'Blow Dry & Styling', price: 500, duration: 30, category: 'Hair', status: 'active', commission: 25 },
-    { _id: 's7', name: 'Classic Facial', price: 800, duration: 45, category: 'Skin', status: 'active', commission: 25 },
-    { _id: 's8', name: 'Gold Facial', price: 1500, duration: 60, category: 'Skin', status: 'active', commission: 20 },
-    { _id: 's9', name: 'Cleanup', price: 500, duration: 30, category: 'Skin', status: 'active', commission: 30 },
-    { _id: 's10', name: 'Manicure', price: 350, duration: 30, category: 'Nails', status: 'active', commission: 30 },
-    { _id: 's11', name: 'Pedicure', price: 450, duration: 40, category: 'Nails', status: 'active', commission: 30 },
-    { _id: 's12', name: 'Gel Nails', price: 1200, duration: 60, category: 'Nails', status: 'active', commission: 15 },
-    { _id: 's13', name: 'Full Body Wax', price: 2000, duration: 60, category: 'Waxing', status: 'active', commission: 25 },
-    { _id: 's14', name: 'Half Arms Wax', price: 300, duration: 15, category: 'Waxing', status: 'active', commission: 35 },
-    { _id: 's15', name: 'Eyebrow Threading', price: 50, duration: 10, category: 'Threading', status: 'active', commission: 40 },
-    { _id: 's16', name: 'Upper Lip Threading', price: 30, duration: 5, category: 'Threading', status: 'active', commission: 40 },
-    { _id: 's17', name: 'Bridal Makeup', price: 8000, duration: 120, category: 'Makeup', status: 'active', commission: 10 },
-    { _id: 's18', name: 'Party Makeup', price: 3000, duration: 60, category: 'Makeup', status: 'active', commission: 15 },
+    { _id: 's1', name: 'Haircut – Men', price: 400, duration: 30, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
+    { _id: 's2', name: 'Haircut – Women', price: 600, duration: 45, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
+    { _id: 's3', name: 'Hair Coloring', price: 2500, duration: 90, category: 'Hair', status: 'active', commission: 15, hsnCode: '9983' },
+    { _id: 's4', name: 'Keratin Treatment', price: 5000, duration: 120, category: 'Hair', status: 'active', commission: 10, hsnCode: '9983' },
+    { _id: 's5', name: 'Hair Spa', price: 1200, duration: 60, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
+    { _id: 's6', name: 'Blow Dry & Styling', price: 500, duration: 30, category: 'Hair', status: 'active', commission: 25, hsnCode: '9983' },
+    { _id: 's7', name: 'Classic Facial', price: 800, duration: 45, category: 'Skin', status: 'active', commission: 25, hsnCode: '9983' },
+    { _id: 's8', name: 'Gold Facial', price: 1500, duration: 60, category: 'Skin', status: 'active', commission: 20, hsnCode: '9983' },
+    { _id: 's9', name: 'Cleanup', price: 500, duration: 30, category: 'Skin', status: 'active', commission: 30, hsnCode: '9983' },
+    { _id: 's10', name: 'Manicure', price: 350, duration: 30, category: 'Nails', status: 'active', commission: 30, hsnCode: '9983' },
+    { _id: 's11', name: 'Pedicure', price: 450, duration: 40, category: 'Nails', status: 'active', commission: 30, hsnCode: '9983' },
+    { _id: 's12', name: 'Gel Nails', price: 1200, duration: 60, category: 'Nails', status: 'active', commission: 15, hsnCode: '9983' },
+    { _id: 's13', name: 'Full Body Wax', price: 2000, duration: 60, category: 'Waxing', status: 'active', commission: 25, hsnCode: '9983' },
+    { _id: 's14', name: 'Half Arms Wax', price: 300, duration: 15, category: 'Waxing', status: 'active', commission: 35, hsnCode: '9983' },
+    { _id: 's15', name: 'Eyebrow Threading', price: 50, duration: 10, category: 'Threading', status: 'active', commission: 40, hsnCode: '9983' },
+    { _id: 's16', name: 'Upper Lip Threading', price: 30, duration: 5, category: 'Threading', status: 'active', commission: 40, hsnCode: '9983' },
+    { _id: 's17', name: 'Bridal Makeup', price: 8000, duration: 120, category: 'Makeup', status: 'active', commission: 10, hsnCode: '9983' },
+    { _id: 's18', name: 'Party Makeup', price: 3000, duration: 60, category: 'Makeup', status: 'active', commission: 15, hsnCode: '9983' },
 ];
 
 export const MOCK_PRODUCTS = [
-    { _id: 'p1', name: 'L\'Oréal Hair Serum', sku: 'LOR-SRM-001', price: 650, category: 'Hair Care', status: 'active', stock: 12, lowStockLevel: 5 },
-    { _id: 'p2', name: 'Moroccan Argan Oil', sku: 'MAO-OIL-001', price: 950, category: 'Hair Care', status: 'active', stock: 2, lowStockLevel: 5 },
-    { _id: 'p3', name: 'Keratin Shampoo', sku: 'KRT-SHP-001', price: 480, category: 'Hair Care', status: 'active', stock: 15, lowStockLevel: 5 },
-    { _id: 'p4', name: 'Anti-Dandruff Shampoo', sku: 'ADS-SHP-001', price: 320, category: 'Hair Care', status: 'active', stock: 3, lowStockLevel: 5 },
-    { _id: 'p5', name: 'Vitamin C Face Serum', sku: 'VTC-SRM-001', price: 890, category: 'Skin Care', status: 'active', stock: 8, lowStockLevel: 5 },
-    { _id: 'p6', name: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', price: 550, category: 'Skin Care', status: 'active', stock: 20, lowStockLevel: 5 },
-    { _id: 'p10', name: 'Hair Styling Gel', sku: 'HSG-GEL-001', price: 280, category: 'Styling', status: 'active', stock: 1, lowStockLevel: 3 },
+    { _id: 'p1', name: 'L\'Oréal Hair Serum', sku: 'LOR-SRM-001', hsnCode: '3304', price: 650, category: 'Hair Care', status: 'active', stock: 12, lowStockLevel: 5 },
+    { _id: 'p2', name: 'Moroccan Argan Oil', sku: 'MAO-OIL-001', hsnCode: '3304', price: 950, category: 'Hair Care', status: 'active', stock: 2, lowStockLevel: 5 },
+    { _id: 'p3', name: 'Keratin Shampoo', sku: 'KRT-SHP-001', hsnCode: '3305', barcode: '123456789012', price: 480, category: 'Hair Care', status: 'active', stock: 15, lowStockLevel: 5 },
+    { _id: 'p4', name: 'Anti-Dandruff Shampoo', sku: 'ADS-SHP-001', hsnCode: '3305', barcode: '223456789012', price: 320, category: 'Hair Care', status: 'active', stock: 3, lowStockLevel: 5 },
+    { _id: 'p5', name: 'Vitamin C Face Serum', sku: 'VTC-SRM-001', hsnCode: '3304', barcode: '323456789012', price: 890, category: 'Skin Care', status: 'active', stock: 8, lowStockLevel: 5 },
+    { _id: 'p6', name: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', hsnCode: '3304', barcode: '423456789012', price: 550, category: 'Skin Care', status: 'active', stock: 20, lowStockLevel: 5 },
+    { _id: 'p10', name: 'Hair Styling Gel', sku: 'HSG-GEL-001', hsnCode: '3305', barcode: '523456789012', price: 280, category: 'Styling', status: 'active', stock: 1, lowStockLevel: 3 },
 ];
 
 export const MOCK_CLIENTS = [
@@ -58,32 +58,53 @@ export const MOCK_OUTLETS = [
 export const MOCK_STAFF = [
     { _id: 'u1', name: 'Ravi Sharma', role: 'stylist', specialty: 'Hair' },
     { _id: 'u2', name: 'Neha Gupta', role: 'stylist', specialty: 'Skin' },
-    { _id: 'u3', name: 'Amit Patel', role: 'stylist', specialty: 'Nails' },
-    { _id: 'u4', name: 'Meera Singh', role: 'stylist', specialty: 'Hair' },
+    { _id: 'u3', name: 'Vikram Singh', role: 'stylist', specialty: 'Hair' },
 ];
 
 export const MOCK_PROMOTIONS = [
-    { _id: 'pr1', name: 'First Visit – 10% Off', discountType: 'percentage', discountValue: 10 },
-    { _id: 'pr2', name: 'Flat ₹200 Off (Above ₹1500)', discountType: 'fixed', discountValue: 200 },
+    { _id: 'pr1', name: 'Summer Special', discountType: 'percentage', discountValue: 10, minBill: 1000, description: '10% off on bills above ₹1000' },
+    { _id: 'pr2', name: 'First Visit', discountType: 'fixed', discountValue: 200, minBill: 1500, description: '₹200 flat off on first visit' },
+    { _id: 'pr3', name: 'Bulk Offer', discountType: 'percentage', discountValue: 20, minBill: 5000, description: '20% off on bills above ₹5000' }
 ];
 
-export const MOCK_APPOINTMENTS = [
-    { _id: 'a1', clientName: 'Aman Verma', phone: '9876543210', time: '14:30', service: 'Haircut', status: 'confirmed' },
-    { _id: 'a2', clientName: 'Sonal Jha', phone: '9876543211', time: '16:00', service: 'Facial', status: 'pending' },
-    { _id: 'a3', clientName: 'Unknown Walk-in', phone: '9123456789', time: '17:30', service: 'Manicure', status: 'confirmed' },
+export const MOCK_VOUCHERS = [
+    { code: 'GIFT500', value: 500, type: 'fixed', status: 'active', expiry: '2026-12-31' },
+    { code: 'OFF20', value: 20, type: 'percentage', status: 'active', expiry: '2026-10-31' },
+    { code: 'WELCOME', value: 300, type: 'fixed', status: 'active', expiry: '2026-06-30' }
 ];
 
 export const MOCK_INVOICES = [
     {
-        _id: 'inv1', invoiceNumber: 'INV-2026-001', createdAt: new Date().toISOString(),
-        clientId: { _id: 'c1', name: 'Aman Verma', phone: '9876543210' },
-        outletId: { _id: 'o1', name: 'Downtown Studio' },
-        staffId: { _id: 'u1', name: 'Ravi Sharma' },
-        items: [
-            { type: 'service', itemId: 's1', name: 'Haircut – Men', price: 400, quantity: 1, total: 400 },
-            { type: 'service', itemId: 's9', name: 'Cleanup', price: 500, quantity: 1, total: 500 },
-        ],
-        subTotal: 900, tax: 162, discount: 0, total: 1062,
-        paymentMethod: 'cash', paymentStatus: 'paid',
+        _id: 'inv1', invoiceNumber: 'INV-3482', createdAt: new Date().toISOString(),
+        clientId: { name: 'Aman Verma', phone: '9876543210' },
+        total: 1062, subTotal: 900, tax: 162, discount: 0,
+        paymentStatus: 'paid', paymentMethod: 'online',
+        outletId: { name: 'Lucknow Branch' },
+        staffId: { name: 'Ravi Sharma' },
+        items: [{ name: 'Haircut', price: 400, quantity: 1, total: 400, type: 'service' }]
     },
+    {
+        _id: 'inv2', invoiceNumber: 'INV-3483', createdAt: new Date().toISOString(),
+        clientId: { name: 'Sonal Jha', phone: '9876543211' },
+        total: 3402, subTotal: 2883, tax: 519, discount: 0,
+        paymentStatus: 'paid', paymentMethod: 'card',
+        outletId: { name: 'Lucknow Branch' },
+        staffId: { name: 'Neha Gupta' },
+        items: [{ name: 'Global Coloring', price: 3000, quantity: 1, total: 3000, type: 'service' }]
+    },
+    {
+        _id: 'inv3', invoiceNumber: 'INV-3484', createdAt: new Date().toISOString(),
+        clientId: { name: 'Deepika Sharma', phone: '9876543213' },
+        total: 500, subTotal: 423, tax: 77, discount: 0,
+        paymentStatus: 'unpaid', paymentMethod: 'cash',
+        outletId: { name: 'Lucknow Branch' },
+        staffId: { name: 'Vikram Singh' },
+        items: [{ name: 'Cleanup', price: 500, quantity: 1, total: 500, type: 'service' }]
+    },
+];
+
+export const MOCK_APPOINTMENTS = [
+    { _id: 'app1', time: '10:30 AM', clientName: 'Karan Mehra', service: 'Mens Style Cut' },
+    { _id: 'app2', time: '11:15 AM', clientName: 'Anjali Shah', service: 'Hydra Facial' },
+    { _id: 'app3', time: '12:00 PM', clientName: 'Suresh Raina', service: 'Hair Spa + Trim' },
 ];

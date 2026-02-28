@@ -191,13 +191,7 @@ export default function SADashboardPage() {
                     <p className="text-sm text-text-secondary mt-0.5">Real-time overview of all salons, revenue & platform health.</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    {/* System health badge */}
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold border ${systemOk ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200'
-                        }`}>
-                        <Wifi className="w-3.5 h-3.5" />
-                        {systemOk ? 'All Systems Normal' : 'System Issue'}
-                        <span className={`w-1.5 h-1.5 rounded-full ${systemOk ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
-                    </div>
+
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}

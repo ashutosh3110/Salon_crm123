@@ -159,7 +159,7 @@ export default function SAInquiriesPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
-                                            <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end gap-1 opacity-100 group-hover:opacity-100 transition-opacity">
                                                 {item.status === 'new' && (
                                                     <button
                                                         onClick={() => updateStatus(item.id, 'contacted')}
@@ -175,9 +175,6 @@ export default function SAInquiriesPage() {
                                                     title="Delete Inquiry"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
-                                                </button>
-                                                <button className="p-2 hover:bg-primary/5 text-primary transition-colors" title="View Details">
-                                                    <ArrowUpRight className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </td>

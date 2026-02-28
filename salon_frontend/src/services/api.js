@@ -9,10 +9,23 @@ const api = axios.create({
     },
 });
 
+// Helper to get role from current path
+const getCurrentRole = () => {
+    const path = window.location.pathname;
+    if (path.startsWith('/superadmin')) return 'superadmin';
+    if (path.startsWith('/manager')) return 'manager';
+    if (path.startsWith('/receptionist')) return 'receptionist';
+    if (path.startsWith('/stylist')) return 'stylist';
+    if (path.startsWith('/inventory')) return 'inventory_manager';
+    if (path.startsWith('/accountant')) return 'accountant';
+    return 'admin';
+};
+
 // Request interceptor — attach JWT token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const role = getCurrentRole();
+        const token = localStorage.getItem(`auth_token_${role}`);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -26,9 +39,10 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/admin/login';
+            const role = getCurrentRole();
+            localStorage.removeItem(`auth_token_${role}`);
+            localStorage.removeItem(`auth_user_${role}`);
+            window.location.href = '/login';
         }
         return Promise.reject(error);
     }

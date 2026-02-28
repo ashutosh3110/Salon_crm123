@@ -1,16 +1,30 @@
 import { useState } from 'react';
 import { ArrowLeftRight, Plus, MapPin, Package, Calendar, MoreHorizontal, ChevronRight, Search, X, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useInventory } from '../../contexts/InventoryContext';
 
-const transfers = [
-    { id: 'TR089', item: 'L\'Oréal Hair Colour', qty: 12, from: 'Main Storage', to: 'Outlet 1 - Styling Hub', date: 'Today, 2:30 PM', status: 'In Transit' },
+const initialTransfers = [
+    { id: 'TR089', item: "L'Oréal Hair Colour", qty: 12, from: 'Main Storage', to: 'Outlet 1 - Styling Hub', date: 'Today, 2:30 PM', status: 'In Transit' },
     { id: 'TR088', item: 'Schwarzkopf Shampoo', qty: 5, from: 'Main Storage', to: 'Outlet 2 - Express', date: 'Yesterday', status: 'Received' },
-    { id: 'TR087', item: 'OPI Nail Polish', qty: 24, from: 'Outlet 1', to: 'Main Storage', date: '21 Feb 2024', status: 'Received' },
-    { id: 'TR086', item: 'Matrix Hair Serum', qty: 10, from: 'Main Storage', to: 'Outlet 1 - Styling Hub', date: '20 Feb 2024', status: 'Received' },
 ];
 
 export default function StockTransferPage() {
+    const { products, updateStock } = useInventory();
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+    const [transfers, setTransfers] = useState(initialTransfers);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredTransfers = transfers.filter(t =>
+        t.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleTransfer = (e) => {
+        e.preventDefault();
+        // Mock transfer logic for UI
+        setIsTransferModalOpen(false);
+        alert('Stock transfer initiated successfully!');
+    };
 
     return (
         <div className="space-y-6">
@@ -56,12 +70,13 @@ export default function StockTransferPage() {
                     <h2 className="text-sm font-black text-text uppercase tracking-widest">Transfer Logs</h2>
                     <div className="relative w-full md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input type="text" placeholder="Search logs..." className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none focus:border-primary/50 transition-colors" />
+                        <input type="text" placeholder="Search logs..." className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none focus:border-primary/50 transition-colors"
+                            value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     </div>
                 </div>
 
                 <div className="divide-y divide-border/40 text-left">
-                    {transfers.map((tr) => (
+                    {filteredTransfers.map((tr) => (
                         <div key={tr.id} className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-surface-alt/30 transition-colors group">
                             <div className="flex items-center gap-4 flex-1">
                                 <div className="w-12 h-12 rounded-2xl bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-sm relative overflow-hidden group-hover:border-primary/20 transition-all">
@@ -146,7 +161,7 @@ export default function StockTransferPage() {
                                     </button>
                                 </div>
 
-                                <form className="space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); setIsTransferModalOpen(false); }}>
+                                <form className="space-y-6 text-left" onSubmit={handleTransfer}>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Select Product</label>
                                         <div className="relative">

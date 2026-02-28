@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Clock,
     ArrowUpRight,
@@ -8,13 +8,17 @@ import {
     Calendar,
     Scissors,
     ShieldAlert,
-    ExternalLink
+    ExternalLink,
+    X,
+    CheckCircle2
 } from 'lucide-react';
 
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ReEngagementTool() {
     const { customers, updateCustomer } = useBusiness();
+    const [showCampaignModal, setShowCampaignModal] = useState(false);
+    const [campaignStatus, setCampaignStatus] = useState('idle'); // idle, sending, complete
 
     const atRiskCustomers = customers.map(c => {
         const lastVisitDate = new Date(c.lastVisit);
@@ -24,6 +28,38 @@ export default function ReEngagementTool() {
     }).filter(c => c.inactiveDays > 30).sort((a, b) => b.inactiveDays - a.inactiveDays);
 
     const totalPotentialRevenue = atRiskCustomers.length * 500; // Mock calculation based on avg spend
+
+    const handleStartCampaign = () => {
+        setShowCampaignModal(true);
+        setCampaignStatus('idle');
+    };
+
+    const runCampaign = () => {
+        setCampaignStatus('sending');
+        setTimeout(() => {
+            setCampaignStatus('complete');
+        }, 3000);
+    };
+
+    const handleWhatsApp = (customer) => {
+        const message = `Hi ${customer.name}, we miss you at Grace & Glamour! We have a special 20% discount waiting for your next ${customer.preferred || 'service'}. Book now!`;
+        window.open(`https://wa.me/${customer.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    const handleCall = (phone) => {
+        window.location.href = `tel:${phone}`;
+    };
+
+    const handleExport = () => {
+        const data = atRiskCustomers.map(c => `${c.name},${c.phone},${c.inactiveDays}`).join('\n');
+        const blob = new Blob([`Name,Phone,Days Inactive\n${data}`], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'at_risk_customers.csv';
+        a.click();
+    };
+
     return (
         <div className="p-6 space-y-6 slide-right animate-fadeIn">
             {/* Warning Banner */}
@@ -38,7 +74,10 @@ export default function ReEngagementTool() {
                         We've identified <span className="text-red-600 font-bold">{atRiskCustomers.length} customers</span> who haven't visited in over 30 days. Re-engaging them now could recover up to <span className="text-red-600 font-bold">₹{totalPotentialRevenue.toLocaleString()}</span> in potential revenue.
                     </p>
                 </div>
-                <button className="bg-red-600 text-white px-8 py-3 rounded-xl text-[11px] font-bold shadow-lg shadow-red-600/30 hover:scale-[1.02] transition-all uppercase tracking-widest relative z-10 whitespace-nowrap">
+                <button
+                    onClick={handleStartCampaign}
+                    className="bg-red-600 text-white px-8 py-3 rounded-xl text-[11px] font-bold shadow-lg shadow-red-600/30 hover:scale-[1.02] transition-all uppercase tracking-widest relative z-10 whitespace-nowrap"
+                >
                     Start Campaign
                 </button>
             </div>
@@ -50,7 +89,10 @@ export default function ReEngagementTool() {
                         <Clock className="w-4 h-4" />
                         At-Risk Customers (Sorted by Inactivity)
                     </h4>
-                    <button className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
+                    <button
+                        onClick={handleExport}
+                        className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline flex items-center gap-1"
+                    >
                         EXPORT LIST <ExternalLink className="w-3 h-3" />
                     </button>
                 </div>
@@ -88,10 +130,16 @@ export default function ReEngagementTool() {
                                 </div>
 
                                 <div className="flex gap-2">
-                                    <button className="p-2.5 bg-surface text-text-muted hover:bg-[#25D366] hover:text-white rounded-xl transition-all border border-border">
+                                    <button
+                                        onClick={() => handleWhatsApp(customer)}
+                                        className="p-2.5 bg-surface text-text-muted hover:bg-[#25D366] hover:text-white rounded-xl transition-all border border-border"
+                                    >
                                         <MessageSquare className="w-4 h-4" />
                                     </button>
-                                    <button className="p-2.5 bg-surface text-text-muted hover:bg-primary hover:text-white rounded-xl transition-all border border-border">
+                                    <button
+                                        onClick={() => handleCall(customer.phone)}
+                                        className="p-2.5 bg-surface text-text-muted hover:bg-primary hover:text-white rounded-xl transition-all border border-border"
+                                    >
                                         <Phone className="w-4 h-4" />
                                     </button>
                                     <button
@@ -113,6 +161,70 @@ export default function ReEngagementTool() {
                     Load More At-Risk Customers...
                 </button>
             </div>
+
+            {/* Campaign Modal */}
+            {showCampaignModal && (
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20">
+                    <div className="bg-white rounded-none w-full max-w-md p-10 shadow-2xl relative animate-in slide-in-from-top-4 duration-300 text-center">
+                        <button
+                            onClick={() => setShowCampaignModal(false)}
+                            className="absolute right-6 top-6 p-2 hover:bg-slate-100 transition-all"
+                        >
+                            <X className="w-5 h-5 text-text-muted" />
+                        </button>
+
+                        {campaignStatus === 'idle' && (
+                            <>
+                                <div className="w-24 h-24 bg-red-50 text-red-600 border border-red-100 flex items-center justify-center mx-auto mb-8 shadow-inner">
+                                    <ShieldAlert className="w-12 h-12" />
+                                </div>
+                                <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-3">Execute Retention?</h3>
+                                <p className="text-[10px] text-text-secondary font-extrabold uppercase tracking-[0.2em] mb-10 leading-relaxed max-w-xs mx-auto">
+                                    Initiating automated broadcast to <span className="text-red-600 font-black">{atRiskCustomers.length} targeted nodes</span>.
+                                </p>
+                                <div className="space-y-4">
+                                    <button
+                                        onClick={runCampaign}
+                                        className="w-full py-5 bg-text text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-text/20 hover:bg-red-600 transition-all active:scale-[0.98]"
+                                    >
+                                        CONFIRM PROTOCOL
+                                    </button>
+                                    <button
+                                        onClick={() => setShowCampaignModal(false)}
+                                        className="w-full py-5 border border-border bg-white text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:bg-surface transition-all active:scale-[0.98]"
+                                    >
+                                        ABORT OPERATION
+                                    </button>
+                                </div>
+                            </>
+                        )}
+
+                        {campaignStatus === 'sending' && (
+                            <div className="py-20 text-center">
+                                <div className="w-20 h-20 border-t-2 border-primary border-r-2 border-surface-alt rounded-full animate-spin mx-auto mb-8"></div>
+                                <h3 className="text-xl font-black text-text uppercase tracking-[0.2em]">Transmitting...</h3>
+                                <p className="text-[10px] font-extrabold text-primary uppercase tracking-[0.3em] mt-4">Syncing {atRiskCustomers.length} Identity Ports</p>
+                            </div>
+                        )}
+
+                        {campaignStatus === 'complete' && (
+                            <div className="py-20 text-center">
+                                <div className="w-24 h-24 bg-emerald-50 text-emerald-500 border border-emerald-100 flex items-center justify-center mx-auto mb-8">
+                                    <CheckCircle2 className="w-12 h-12" />
+                                </div>
+                                <h3 className="text-2xl font-black text-emerald-900 uppercase tracking-tight mb-3">Dispatch Confirmed</h3>
+                                <p className="text-[10px] text-emerald-700/70 font-extrabold uppercase tracking-[0.2em] mb-10">All communications have been successfully relayed.</p>
+                                <button
+                                    onClick={() => setShowCampaignModal(false)}
+                                    className="w-full py-5 bg-emerald-600 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-[0.98]"
+                                >
+                                    TERMINATE
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

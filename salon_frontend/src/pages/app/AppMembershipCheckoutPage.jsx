@@ -77,7 +77,6 @@ const AppMembershipCheckoutPage = () => {
                 gap: '16px',
                 position: 'sticky',
                 top: 0,
-                background: colors.bg,
                 zIndex: 10,
                 backdropFilter: 'blur(10px)',
                 background: isLight ? 'rgba(252, 249, 246, 0.8)' : 'rgba(15, 15, 15, 0.8)'

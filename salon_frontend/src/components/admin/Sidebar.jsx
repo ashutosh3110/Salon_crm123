@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard,
+    Layout,
     Scissors as ScissorsIcon,
     Package,
     Store,
@@ -32,7 +33,10 @@ import {
     ClipboardList,
     Lock,
     DollarSign,
-    Box
+    Box,
+    Megaphone,
+    Percent,
+    Smartphone
 } from 'lucide-react';
 
 const menuItems = [
@@ -65,6 +69,17 @@ const menuItems = [
         icon: Calendar,
         path: '/admin/bookings',
         roles: ['admin', 'manager', 'staff']
+    },
+    {
+        label: 'Marketing',
+        icon: Megaphone,
+        path: '/admin/marketing',
+        roles: ['admin', 'manager'],
+        subItems: [
+            { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
+            { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms' },
+            { label: 'Coupon Codes', icon: Percent, path: '/admin/promotions' },
+        ]
     },
     {
         label: 'CRM',

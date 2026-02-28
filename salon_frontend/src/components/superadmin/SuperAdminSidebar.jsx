@@ -5,7 +5,7 @@ import logoFull from '/2-removebg-preview.png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
-    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare
+    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout
 } from 'lucide-react';
 
 const menuItems = [
@@ -48,6 +48,19 @@ const menuItems = [
         icon: BarChart3,
         path: '/superadmin/analytics',
         badge: null,
+    },
+    {
+        label: 'Landing CMS',
+        icon: Layout,
+        path: '/superadmin/cms',
+        badge: null,
+    },
+    {
+        label: 'Blog Manager',
+        icon: FileText,
+        path: '/superadmin/blogs',
+        badge: 3,
+        badgeColor: 'bg-primary/10 text-primary',
     },
     {
         label: 'Settings',

@@ -10,6 +10,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend, ComposedChart, Scatter,
 } from 'recharts';
+import { exportToExcel } from '../../utils/exportUtils';
 
 /* ─── Dataset ────────────────────────────────────────────────────────── */
 const MRR_TREND = [
@@ -194,7 +195,10 @@ export default function SAAnalyticsPage() {
                             </button>
                         ))}
                     </div>
-                    <button onClick={() => showToast('Analytics report exported!')}
+                    <button onClick={() => {
+                        exportToExcel(MRR_TREND, 'Wapixo_MRR_Analytics', 'MRR_Waterfall');
+                        showToast('Analytics report exported as Excel!');
+                    }}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
@@ -343,8 +347,8 @@ export default function SAAnalyticsPage() {
                                 </div>
                                 <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                                     <div className={`h-full rounded-full transition-all duration-700 ${f.usage >= 80 ? 'bg-emerald-500' :
-                                            f.usage >= 55 ? 'bg-blue-500' :
-                                                f.usage >= 35 ? 'bg-amber-500' : 'bg-slate-400'
+                                        f.usage >= 55 ? 'bg-blue-500' :
+                                            f.usage >= 35 ? 'bg-amber-500' : 'bg-slate-400'
                                         }`} style={{ width: `${f.usage}%` }} />
                                 </div>
                             </div>

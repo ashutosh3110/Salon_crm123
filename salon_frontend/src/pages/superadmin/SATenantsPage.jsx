@@ -8,6 +8,8 @@ import {
     Crown, Clock, AlertTriangle, XCircle, Layers,
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
+import { exportToExcel } from '../../utils/exportUtils';
+import { Download } from 'lucide-react';
 
 /* ─── Mock data ─────────────────────────────────────────────────────────── */
 const MOCK_TENANTS = [
@@ -109,6 +111,55 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
                     ))}
                 </div>
             )}
+        </div>
+    );
+}
+
+/* ─── Plan Change Modal (Fast Access) ─────────────────────────────────────── */
+function PlanChangeModal({ tenant, onClose, onSave }) {
+    if (!tenant) return null;
+    return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <div className="bg-white rounded-2xl border border-border w-full max-w-lg shadow-2xl relative overflow-hidden">
+                <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                    <div>
+                        <h3 className="font-bold text-text truncate max-w-[200px]">Upgrade {tenant.name}</h3>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">Assign new subscription tier</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-surface rounded-xl transition-colors">
+                        <XCircle className="w-5 h-5 text-text-muted" />
+                    </button>
+                </div>
+                <div className="p-6 space-y-3">
+                    {[
+                        { id: 'free', name: 'Free Starter', price: 0, color: 'slate' },
+                        { id: 'basic', name: 'Basic Growth', price: 1999, color: 'blue' },
+                        { id: 'pro', name: 'Pro Business', price: 4999, color: 'primary' },
+                        { id: 'enterprise', name: 'Enterprise Power', price: 12999, color: 'amber' },
+                    ].map((p) => (
+                        <button
+                            key={p.id}
+                            onClick={() => onSave(tenant._id, p.id)}
+                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${tenant.subscriptionPlan === p.id
+                                ? 'border-primary bg-primary/[0.02] ring-2 ring-primary/10'
+                                : 'border-border hover:border-primary/40 hover:bg-surface/50'
+                                }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${planColors[p.color]}`}>
+                                    <Crown className="w-4 h-4" />
+                                </div>
+                                <div className="text-sm font-bold text-text">{p.name}</div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-sm font-black text-text">₹{p.price.toLocaleString('en-IN')}</div>
+                                <div className="text-[9px] text-text-muted font-bold">MONTHLY</div>
+                            </div>
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
@@ -236,7 +287,8 @@ export default function SATenantsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatus] = useState('');
     const [planFilter, setPlan] = useState('');
-    const [modal, setModal] = useState(null); // null | { mode: 'create'|'edit', tenant? }
+    const [modal, setModal] = useState(null); // null | { mode: 'create'|'edit'|'plan', tenant? }
+    const [planModalData, setPlanModalData] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
 
@@ -276,6 +328,12 @@ export default function SATenantsPage() {
         setModal(null);
     };
 
+    const handleQuickPlanUpdate = (tenantId, newPlan) => {
+        setTenants(prev => prev.map(t => t._id === tenantId ? { ...t, subscriptionPlan: newPlan } : t));
+        showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
+        setModal(null);
+    };
+
     const handleSuspend = async (tenant) => {
         const action = tenant.status === 'suspended' ? 'reactivate' : 'suspend';
         if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} "${tenant.name}"?`)) return;
@@ -312,11 +370,21 @@ export default function SATenantsPage() {
                     <h1 className="text-2xl font-black text-text tracking-tight">Salon Management</h1>
                     <p className="text-sm text-text-secondary mt-0.5">Manage all onboarded salons — {tenants.length} total</p>
                 </div>
-                <button
-                    onClick={() => setModal({ mode: 'create' })}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
-                    <Plus className="w-4 h-4" /> Create Salon
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => {
+                            exportToExcel(tenants, 'Wapixo_Onboarded_Salons', 'Tenants');
+                            showToast('Salons list exported as Excel!', 'info');
+                        }}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                        <Download className="w-4 h-4" /> Export
+                    </button>
+                    <button
+                        onClick={() => setModal({ mode: 'create' })}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
+                        <Plus className="w-4 h-4" /> Create Salon
+                    </button>
+                </div>
             </div>
 
             {/* ── Status filter tabs ── */}
@@ -447,7 +515,7 @@ export default function SATenantsPage() {
                                             <td className="px-4 py-3.5 text-right">
                                                 <ActionMenu
                                                     tenant={t}
-                                                    onEdit={(ten) => setModal({ mode: 'edit', tenant: ten })}
+                                                    onEdit={(ten, type) => setModal({ mode: type === 'plan' ? 'plan' : 'edit', tenant: ten })}
                                                     onSuspend={handleSuspend}
                                                     onDelete={handleDelete}
                                                     onImpersonate={handleImpersonate}
@@ -470,7 +538,15 @@ export default function SATenantsPage() {
             )}
 
             {/* ── Modal ── */}
-            {modal && (
+            {modal?.mode === 'plan' && (
+                <PlanChangeModal
+                    tenant={modal.tenant}
+                    onClose={() => setModal(null)}
+                    onSave={handleQuickPlanUpdate}
+                />
+            )}
+
+            {modal && modal.mode !== 'plan' && (
                 <SalonModal
                     mode={modal.mode}
                     tenant={modal.tenant}

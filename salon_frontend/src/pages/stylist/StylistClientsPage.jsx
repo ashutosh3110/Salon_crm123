@@ -50,7 +50,7 @@ export default function StylistClientsPage() {
                                 <div>
                                     <h3 className="font-bold text-text group-hover:text-primary transition-colors">{client.name}</h3>
                                     <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${client.status === 'VIP' ? 'bg-amber-500/10 text-amber-500' :
-                                            client.status === 'Regular' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                                        client.status === 'Regular' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
                                         }`}>
                                         {client.status}
                                     </span>

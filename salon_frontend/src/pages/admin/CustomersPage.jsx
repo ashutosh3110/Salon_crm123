@@ -33,9 +33,26 @@ export default function CustomersPage({ tab = 'directory' }) {
 
     const handleAddCustomer = (e) => {
         e.preventDefault();
-        addCustomer(newCustomerForm);
-        setShowAddModal(false);
+        addCustomer({
+            ...newCustomerForm,
+            totalVisits: 0,
+            spend: 0,
+            status: 'Regular',
+            tags: [],
+            lastVisit: new Date().toISOString()
+        });
         setNewCustomerForm({ name: '', phone: '', preferred: 'Haircut' });
+        setShowAddModal(false);
+    };
+
+    const handleExport = () => {
+        const data = customers.map(c => `${c.name},${c.phone},${c.totalVisits},${c.spend},${c.status}`).join('\n');
+        const blob = new Blob([`Name,Phone,Visits,Spend,Status\n${data}`], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'customer_database.csv';
+        a.click();
     };
 
     return (
@@ -47,7 +64,10 @@ export default function CustomersPage({ tab = 'directory' }) {
                     <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all"
+                    >
                         <Download className="w-3.5 h-3.5" />
                         Export
                     </button>
@@ -92,52 +112,55 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* Add Customer Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-surface rounded-none w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-col items-center text-center mb-8">
-                            <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-4 border border-primary/20">
-                                <UserPlus className="w-8 h-8" />
+                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex flex-col items-center text-center mb-10">
+                            <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
+                                <UserPlus className="w-10 h-10" />
                             </div>
-                            <h2 className="text-2xl font-bold text-text uppercase">New Customer</h2>
-                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] opacity-40 mt-1">CRM Onboarding Protocol</p>
+                            <h2 className="text-3xl font-black text-text uppercase tracking-tight">Induct Customer</h2>
+                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">New Identity Matrix Registration</p>
                         </div>
 
-                        <form onSubmit={handleAddCustomer} className="space-y-5">
-                            <div className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Full Name</label>
+                        <form onSubmit={handleAddCustomer} className="space-y-6">
+                            <div className="space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Full Identification</label>
                                     <input
                                         type="text"
                                         required
+                                        placeholder="e.g. ADITYA_SHARMA"
                                         value={newCustomerForm.name}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Phone Number</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Node</label>
                                     <input
                                         type="tel"
                                         required
+                                        placeholder="+91 00000 00000"
                                         value={newCustomerForm.phone}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
                                     />
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Preferred Service</label>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Preference Vector</label>
                                     <input
                                         type="text"
+                                        placeholder="HAIRCUT / STYLING"
                                         value={newCustomerForm.preferred}
                                         onChange={(e) => setNewCustomerForm({ ...newCustomerForm, preferred: e.target.value })}
-                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:ring-4 focus:ring-primary/5 transition-all"
+                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-3 pt-6">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-3.5 rounded-none border border-border text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 bg-primary text-white py-3.5 rounded-none shadow-xl shadow-primary/20 text-[10px] font-extrabold uppercase tracking-widest hover:bg-primary-dark transition-all">Induct</button>
+                            <div className="flex gap-4 pt-8">
+                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all active:scale-[0.98]">ABORT</button>
+                                <button type="submit" className="flex-1 bg-text text-white py-5 rounded-none shadow-2xl shadow-text/20 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all active:scale-[0.98]">INITIALIZE</button>
                             </div>
                         </form>
                     </div>
@@ -180,11 +203,20 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
 function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
+    const [spendFilter, setSpendFilter] = useState('All');
 
     const filtered = customers.filter(c => {
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.phone.includes(searchTerm);
-        const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
-        return matchesSearch && matchesStatus;
+
+        const matchesStatus = filterStatus === 'All' ||
+            (filterStatus === 'VIP' ? c.tags.includes('VIP') : c.status === filterStatus);
+
+        let matchesSpend = true;
+        if (spendFilter === 'High') matchesSpend = c.spend > 10000;
+        else if (spendFilter === 'Mid') matchesSpend = c.spend >= 1000 && c.spend <= 10000;
+        else if (spendFilter === 'Low') matchesSpend = c.spend < 1000;
+
+        return matchesSearch && matchesStatus && matchesSpend;
     });
 
     return (
@@ -211,15 +243,20 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                         <option value="All">All Tiers</option>
                         <option value="Regular">Regular</option>
                         <option value="Inactive">Inactive</option>
+                        <option value="VIP">VIP Elite</option>
                     </select>
                 </div>
                 <div className="relative">
                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <select className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter">
-                        <option>Any Spend</option>
-                        <option>High Value</option>
-                        <option>Mid Range</option>
-                        <option>Low Value</option>
+                    <select
+                        value={spendFilter}
+                        onChange={(e) => setSpendFilter(e.target.value)}
+                        className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold appearance-none outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase tracking-tighter"
+                    >
+                        <option value="All">Any Spend</option>
+                        <option value="High">High Value ({">"}₹10k)</option>
+                        <option value="Mid">Mid Range (₹1k-10k)</option>
+                        <option value="Low">Low Value ({"<"}₹1k)</option>
                     </select>
                 </div>
             </div>

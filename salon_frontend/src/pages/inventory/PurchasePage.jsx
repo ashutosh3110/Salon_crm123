@@ -1,16 +1,30 @@
 import { useState } from 'react';
-import { Truck, Plus, Search, Calendar, FileText, CheckCircle2, Clock, MapPin, DollarSign, X, Package, ShieldCheck } from 'lucide-react';
+import { Truck, Plus, Search, Calendar, FileText, CheckCircle2, X, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const recentPurchases = [
-    { id: 'PUR001', supplier: 'Beauty Hub Supplies', date: 'Feb 22, 2024', amount: '₹12,500', items: 8, status: 'Received' },
-    { id: 'PUR002', supplier: 'Lotus Cosmetics', date: 'Feb 20, 2024', amount: '₹8,900', items: 12, status: 'Received' },
-    { id: 'PUR003', supplier: 'Matrix Distribution', date: 'Feb 18, 2024', amount: '₹15,200', items: 5, status: 'Pending' },
-    { id: 'PUR004', supplier: 'Beauty Hub Supplies', date: 'Feb 15, 2024', amount: '₹4,500', items: 3, status: 'Received' },
-];
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function PurchasePage() {
+    const { purchases, addPurchase, updateStock } = useInventory();
     const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+    // Stock-In Form State
+    const [stockIn, setStockIn] = useState({
+        supplier: '',
+        sku: '',
+        qty: '',
+        price: ''
+    });
+
+    const handleStockIn = (e) => {
+        e.preventDefault();
+        const success = updateStock(stockIn.sku, Number(stockIn.qty), 'in', stockIn.supplier);
+        if (success) {
+            alert('Stock updated successfully!');
+            setStockIn({ supplier: '', sku: '', qty: '', price: '' });
+        } else {
+            alert('Product SKU not found!');
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -33,11 +47,12 @@ export default function PurchasePage() {
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-surface rounded-3xl border border-border/40 p-6 shadow-sm">
                         <h2 className="text-sm font-black text-text uppercase tracking-widest mb-4">Stock-In Entry</h2>
-                        <div className="space-y-4 text-left">
+                        <form className="space-y-4 text-left" onSubmit={handleStockIn}>
                             <div className="space-y-2 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Supplier</label>
-                                <select className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors appearance-none scrollbar-hide">
-                                    <option>Select Supplier</option>
+                                <select required className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors appearance-none scrollbar-hide"
+                                    value={stockIn.supplier} onChange={(e) => setStockIn({ ...stockIn, supplier: e.target.value })}>
+                                    <option value="">Select Supplier</option>
                                     <option>Beauty Hub Supplies</option>
                                     <option>Lotus Cosmetics</option>
                                     <option>Matrix Distribution</option>
@@ -47,26 +62,29 @@ export default function PurchasePage() {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Product SKU / Tag</label>
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input type="text" placeholder="Scan or type SKU..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                                    <input required type="text" placeholder="Scan or type SKU..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors"
+                                        value={stockIn.sku} onChange={(e) => setStockIn({ ...stockIn, sku: e.target.value })} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-2 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Quantity</label>
-                                    <input type="number" placeholder="0" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                                    <input required type="number" placeholder="0" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors"
+                                        value={stockIn.qty} onChange={(e) => setStockIn({ ...stockIn, qty: e.target.value })} />
                                 </div>
                                 <div className="space-y-2 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Unit Price</label>
                                     <div className="relative">
                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted">₹</span>
-                                        <input type="text" placeholder="0.00" className="w-full pl-8 pr-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                                        <input required type="number" placeholder="0.00" className="w-full pl-8 pr-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors"
+                                            value={stockIn.price} onChange={(e) => setStockIn({ ...stockIn, price: e.target.value })} />
                                     </div>
                                 </div>
                             </div>
-                            <button className="w-full py-4 bg-background text-primary border-2 border-primary/20 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
-                                Add to Batch
+                            <button type="submit" className="w-full py-4 bg-background text-primary border-2 border-primary/20 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
+                                Submit Stock-In
                             </button>
-                        </div>
+                        </form>
                     </div>
 
                     <div className="bg-emerald-500/5 rounded-3xl border border-emerald-500/10 p-5 flex items-center gap-4">
@@ -86,7 +104,7 @@ export default function PurchasePage() {
                         <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">View All Orders</button>
                     </div>
                     <div className="divide-y divide-border/40 whitespace-nowrap overflow-x-auto text-left">
-                        {recentPurchases.map((order) => (
+                        {purchases.map((order) => (
                             <div key={order.id} className="p-6 flex items-center justify-between hover:bg-surface-alt/30 transition-colors group">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-2xl bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform">
@@ -108,7 +126,7 @@ export default function PurchasePage() {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-black text-text">{order.amount}</p>
+                                    <p className="text-sm font-black text-text">₹{order.amount.toLocaleString()}</p>
                                     <button className="text-[10px] font-black text-primary uppercase tracking-widest mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Details →</button>
                                 </div>
                             </div>
@@ -153,7 +171,19 @@ export default function PurchasePage() {
                                     </button>
                                 </div>
 
-                                <form className="space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); setIsOrderModalOpen(false); }}>
+                                <form className="space-y-6 text-left" onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const supplier = e.target[0].value;
+                                    const date = e.target[1].value;
+                                    addPurchase({
+                                        supplier,
+                                        date: new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                                        amount: 0,
+                                        items: 0,
+                                        status: 'Pending'
+                                    });
+                                    setIsOrderModalOpen(false);
+                                }}>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Supplier</label>

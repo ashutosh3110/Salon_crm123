@@ -22,8 +22,6 @@ const menuItems = [
     { label: 'Payments', icon: CreditCard, path: '/pos/payments' },
     { label: 'Refunds', icon: RefreshCcw, path: '/pos/refunds' },
     { label: 'Notifications', icon: Bell, path: '/pos/notifications' },
-    { label: 'Day End', icon: CalendarDays, path: '/pos/day-end' },
-    { label: 'Settings', icon: Settings, path: '/pos/settings' },
 ];
 
 export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {

@@ -4,21 +4,24 @@ import {
     Crown, X, ChevronDown, Zap, Users, Home, MessageSquare,
     HardDrive, Activity, BarChart2, Smartphone, Heart, Target,
     Star, Package, Flame, DollarSign, ArrowRight, Info,
-    ToggleLeft, ToggleRight, Trash2,
+    ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 
 /* ─── Feature definitions ─────────────────────────────────────────────── */
 const ALL_FEATURES = [
-    { key: 'pos', label: 'POS', icon: DollarSign, desc: 'Point of sale & invoicing' },
-    { key: 'inventory', label: 'Inventory', icon: Package, desc: 'Stock & product management' },
-    { key: 'marketing', label: 'Marketing', icon: Target, desc: 'Campaigns & promotions' },
-    { key: 'payroll', label: 'Payroll', icon: Users, desc: 'Staff salary & commissions' },
-    { key: 'crm', label: 'CRM', icon: Heart, desc: 'Client management & history' },
-    { key: 'mobileApp', label: 'Mobile App', icon: Smartphone, desc: 'Customer booking app' },
-    { key: 'reports', label: 'Reports', icon: BarChart2, desc: 'Analytics & reporting' },
-    { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'WhatsApp notifications' },
-    { key: 'loyalty', label: 'Loyalty', icon: Star, desc: 'Points & rewards program' },
+    { key: 'pos', label: 'POS Terminal', icon: CreditCard, desc: 'High-speed billing & terminals' },
+    { key: 'appointments', label: 'Appointments', icon: Calendar, desc: 'Real-time booking & calendar' },
+    { key: 'inventory', label: 'Inventory Pro', icon: Package, desc: 'Stock management & POs' },
+    { key: 'crm', label: 'CRM & Clients', icon: Heart, desc: 'History & membership tracking' },
+    { key: 'marketing', label: 'Marketing Hub', icon: Target, desc: 'SMS campaigns & promotions' },
+    { key: 'payroll', label: 'Staff & HR', icon: Users, desc: 'Attendance & commissions' },
+    { key: 'mobileApp', label: 'Customer App', icon: Smartphone, desc: 'Branded mobile booking app' },
+    { key: 'finance', label: 'Finance Hub', icon: DollarSign, desc: 'Tax reports & reconciliation' },
+    { key: 'reports', label: 'Analytics AI', icon: BarChart2, desc: 'Business insights & performance' },
+    { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'Automated confirmations' },
+    { key: 'loyalty', label: 'Loyalty Flow', icon: Star, desc: 'Points, rewards & cashback' },
+    { key: 'feedback', label: 'Feedback Loop', icon: Activity, desc: 'Automated reviews & ratings' },
 ];
 
 /* ─── Mock plan data ─────────────────────────────────────────────────── */
@@ -26,28 +29,28 @@ const INITIAL_PLANS = [
     {
         id: 'p1', name: 'Free', tag: 'Starter', color: 'slate', active: true, popular: false,
         monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
-        features: { pos: true, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false },
+        features: { pos: true, appointments: true, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
         limits: { staffLimit: 3, outletLimit: 1, smsCredits: 0, storageGB: 1, apiCalls: 1000 },
         salonsCount: 38,
     },
     {
         id: 'p2', name: 'Basic', tag: 'Growth', color: 'blue', active: true, popular: false,
         monthlyPrice: 1999, yearlyPrice: 19990, trialDays: 14,
-        features: { pos: true, inventory: true, marketing: false, payroll: false, crm: true, mobileApp: false, reports: true, whatsapp: false, loyalty: false },
+        features: { pos: true, appointments: true, inventory: true, marketing: false, payroll: false, crm: true, mobileApp: false, reports: true, whatsapp: false, loyalty: false, finance: true, feedback: false },
         limits: { staffLimit: 10, outletLimit: 2, smsCredits: 200, storageGB: 5, apiCalls: 10000 },
         salonsCount: 27,
     },
     {
         id: 'p3', name: 'Pro', tag: 'Popular', color: 'primary', active: true, popular: true,
         monthlyPrice: 4999, yearlyPrice: 49990, trialDays: 7,
-        features: { pos: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: false, loyalty: true },
+        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: false, loyalty: true, finance: true, feedback: true },
         limits: { staffLimit: 25, outletLimit: 5, smsCredits: 1000, storageGB: 20, apiCalls: 100000 },
         salonsCount: 22,
     },
     {
         id: 'p4', name: 'Enterprise', tag: 'Unlimited', color: 'amber', active: true, popular: false,
         monthlyPrice: 12999, yearlyPrice: 129990, trialDays: 0,
-        features: { pos: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: true, loyalty: true },
+        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: true, loyalty: true, finance: true, feedback: true },
         limits: { staffLimit: 999, outletLimit: 999, smsCredits: 10000, storageGB: 100, apiCalls: 999999 },
         salonsCount: 13,
     },
@@ -65,13 +68,13 @@ const COLOR = {
 const EMPTY_PLAN = {
     id: '', name: '', tag: '', color: 'blue', active: true, popular: false,
     monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
-    features: { pos: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false },
+    features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
     limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000 },
     salonsCount: 0,
 };
 
 /* ─── Plan card ──────────────────────────────────────────────────────── */
-function PlanCard({ plan, onEdit, onClone, onToggleActive }) {
+function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
     const c = COLOR[plan.color] || COLOR.blue;
     const featOn = Object.values(plan.features).filter(Boolean).length;
     const featOff = Object.values(plan.features).filter(v => !v).length;
@@ -155,17 +158,21 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive }) {
             {/* Actions */}
             <div className="flex border-t border-border divide-x divide-border">
                 <button onClick={() => onEdit(plan)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-text-secondary hover:text-primary hover:bg-primary/5 transition-all">
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-text-secondary hover:text-primary hover:bg-primary/5 transition-all">
                     <Edit3 className="w-3.5 h-3.5" /> Edit
                 </button>
                 <button onClick={() => onClone(plan)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold text-text-secondary hover:text-blue-500 hover:bg-blue-50 transition-all">
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-text-secondary hover:text-blue-500 hover:bg-blue-50 transition-all">
                     <Copy className="w-3.5 h-3.5" /> Clone
                 </button>
                 <button onClick={() => onToggleActive(plan)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-semibold transition-all ${plan.active ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'}`}>
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold transition-all ${plan.active ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'}`}>
                     {plan.active ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
                     {plan.active ? 'Disable' : 'Enable'}
+                </button>
+                <button onClick={() => onDelete(plan)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-all">
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
                 </button>
             </div>
         </div>
@@ -373,13 +380,19 @@ export default function SAPlansPage() {
         showToast(`Plan "${plan.name}" ${plan.active ? 'disabled' : 'enabled'}.`, plan.active ? 'error' : 'success');
     };
 
+    const handleDelete = (plan) => {
+        if (window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
+            setPlans(p => p.filter(pl => pl.id !== plan.id));
+            showToast(`Plan "${plan.name}" deleted.`, 'error');
+        }
+    };
+
     const activePlans = plans.filter(p => p.active).length;
     const totalSalons = plans.reduce((a, p) => a + p.salonsCount, 0);
     const totalRevenue = plans.reduce((a, p) => a + p.salonsCount * p.monthlyPrice, 0);
 
     return (
         <div className="space-y-6 pb-8">
-
             {/* Toast */}
             {toast && (
                 <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'
@@ -410,7 +423,7 @@ export default function SAPlansPage() {
                     { label: 'Salons on Plans', value: totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
                     { label: 'Est. MRR', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
                 ].map(k => (
-                    <div key={k.label} className="bg-white rounded-2xl border border-border shadow-sm p-4 flex items-center gap-3">
+                    <div key={k.label} className="bg-white rounded-2xl border-border border shadow-sm p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl ${k.color} flex items-center justify-center shrink-0`}>
                             <k.icon className="w-5 h-5" />
                         </div>
@@ -431,6 +444,7 @@ export default function SAPlansPage() {
                         onEdit={p => setModal(p)}
                         onClone={handleClone}
                         onToggleActive={handleToggleActive}
+                        onDelete={handleDelete}
                     />
                 ))}
             </div>

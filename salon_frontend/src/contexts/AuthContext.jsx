@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AuthContext = createContext(null);
 
@@ -34,24 +34,38 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { pathname } = useLocation();
+
+    // Determine current panel role from URL
+    const getCurrentPanel = (path) => {
+        if (path.startsWith('/superadmin')) return 'superadmin';
+        if (path.startsWith('/manager')) return 'manager';
+        if (path.startsWith('/receptionist')) return 'receptionist';
+        if (path.startsWith('/stylist')) return 'stylist';
+        if (path.startsWith('/inventory')) return 'inventory_manager';
+        if (path.startsWith('/accountant')) return 'accountant';
+        if (path.startsWith('/admin')) return 'admin';
+        return 'admin'; // default
+    };
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
+        const role = getCurrentPanel(window.location.pathname);
+        const storedUser = localStorage.getItem(`auth_user_${role}`);
+        const token = localStorage.getItem(`auth_token_${role}`);
+
         if (storedUser && token) {
             try {
                 setUser(JSON.parse(storedUser));
             } catch (e) {
                 console.error('[AuthContext] Failed to parse stored user:', e);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
+                localStorage.removeItem(`auth_user_${role}`);
+                localStorage.removeItem(`auth_token_${role}`);
             }
         }
         setLoading(false);
-    }, []);
+    }, [pathname]);
 
     const login = async (email, password) => {
-        // TODO: Replace with api.post('/auth/login', { email, password })
         console.log('[Auth] Mock Login active for:', email);
 
         const mockInfo = MOCK_USERS[email] || { role: 'admin', name: (email || 'admin').split('@')[0] };
@@ -65,15 +79,15 @@ export function AuthProvider({ children }) {
         };
         const mockToken = `mock-token-${Date.now()}`;
 
-        localStorage.clear();
-        localStorage.setItem('token', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
+        // Save session specific to the role
+        localStorage.setItem(`auth_token_${mockUser.role}`, mockToken);
+        localStorage.setItem(`auth_user_${mockUser.role}`, JSON.stringify(mockUser));
+
         setUser(mockUser);
         return { accessToken: mockToken, user: mockUser };
     };
 
     const register = async (payload) => {
-        // TODO: Replace with api.post('/auth/register', payload)
         console.log('[Auth] Mock Registration active for:', payload.email);
 
         const mockUser = {
@@ -85,16 +99,17 @@ export function AuthProvider({ children }) {
         };
         const mockToken = `mock-token-${Date.now()}`;
 
-        localStorage.clear();
-        localStorage.setItem('token', mockToken);
-        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem(`auth_token_${mockUser.role}`, mockToken);
+        localStorage.setItem(`auth_user_${mockUser.role}`, JSON.stringify(mockUser));
+
         setUser(mockUser);
         return { accessToken: mockToken, user: mockUser };
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        const role = user?.role || 'admin';
+        localStorage.removeItem(`auth_token_${role}`);
+        localStorage.removeItem(`auth_user_${role}`);
         setUser(null);
         navigate('/login');
     };

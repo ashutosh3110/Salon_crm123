@@ -6,8 +6,9 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
-    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp
+    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare
 } from 'lucide-react';
+import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
 import {
     MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
@@ -23,6 +24,10 @@ export default function AppProfilePage() {
     const [saving, setSaving] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
+    const { addFeedback } = useBusiness();
+    const [review, setReview] = useState({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+    const [reviewSubmitted, setReviewSubmitted] = useState(false);
     const [form, setForm] = useState({
         name: customer?.name || '',
         email: customer?.email || '',
@@ -64,6 +69,32 @@ export default function AppProfilePage() {
             console.error('Failed to update profile');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleReviewSubmit = async (e) => {
+        e.preventDefault();
+        if (!review.comment.trim()) return;
+
+        setIsSubmittingReview(true);
+        try {
+            // Simulated delay for premium feel
+            await new Promise(r => setTimeout(r, 1200));
+
+            addFeedback({
+                customer: customer?.name || 'Anonymous Customer',
+                rating: review.rating,
+                comment: review.comment,
+                service: review.service,
+                staff: review.staff,
+            });
+
+            setReviewSubmitted(true);
+            setReview({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
+        } finally {
+            setIsSubmittingReview(false);
+            // Hide success message after 3 seconds
+            setTimeout(() => setReviewSubmitted(false), 3000);
         }
     };
 
@@ -308,6 +339,91 @@ export default function AppProfilePage() {
                             </span>
                         </div>
                     ))}
+                </div>
+            </motion.div>
+
+            {/* Testimonial / Review Section */}
+            <motion.div variants={fadeUp} className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
+                </div>
+
+                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl p-6 shadow-sm">
+                    {reviewSubmitted ? (
+                        <div className="py-8 text-center animate-in zoom-in duration-300">
+                            <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring' }}>
+                                    <Star className="w-8 h-8 text-emerald-500 fill-emerald-500" />
+                                </motion.div>
+                            </div>
+                            <h4 className="text-base font-black uppercase tracking-tight" style={{ color: colors.text }}>Thank You!</h4>
+                            <p className="text-xs mt-1" style={{ color: colors.textMuted }}>Your feedback helps us shine brighter.</p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleReviewSubmit} className="space-y-5">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setReview({ ...review, rating: star })}
+                                            className="transition-transform active:scale-90"
+                                        >
+                                            <Star
+                                                className={`w-8 h-8 ${star <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`}
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: colors.textMuted }}>
+                                    {review.rating === 5 && 'Absolutely Loved It! ✨'}
+                                    {review.rating === 4 && 'Pretty Great! 👍'}
+                                    {review.rating === 3 && 'it was okay. 🙂'}
+                                    {review.rating === 2 && 'Could be better. 😕'}
+                                    {review.rating === 1 && 'Disappointing. 😞'}
+                                </p>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <div
+                                    style={{
+                                        background: isLight ? '#F9F9F9' : '#141414',
+                                        borderRadius: '16px 4px 16px 4px',
+                                        padding: '16px',
+                                        border: `1.5px solid ${isLight ? '#E8ECEF' : 'rgba(255,255,255,0.05)'}`,
+                                    }}
+                                >
+                                    <textarea
+                                        placeholder="Tell us about your technical execution, service quality, or staff behavior..."
+                                        value={review.comment}
+                                        onChange={(e) => setReview({ ...review, comment: e.target.value })}
+                                        className="w-full bg-transparent border-none outline-none text-xs font-bold resize-none h-24 placeholder:opacity-30"
+                                        style={{ color: colors.text }}
+                                    />
+                                </div>
+                            </div>
+
+                            <motion.button
+                                whileTap={{ scale: 0.97 }}
+                                disabled={isSubmittingReview || !review.comment.trim()}
+                                className="w-full py-4 rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all disabled:opacity-30"
+                                style={{
+                                    background: isLight ? '#1A1A1A' : '#C8956C',
+                                    color: '#FFFFFF',
+                                    boxShadow: isLight ? '0 8px 20px rgba(0,0,0,0.1)' : '0 8px 20px rgba(200,149,108,0.2)'
+                                }}
+                            >
+                                {isSubmittingReview ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <>
+                                        <MessageSquare className="w-4 h-4" /> Submit Testimonial
+                                    </>
+                                )}
+                            </motion.button>
+                        </form>
+                    )}
                 </div>
             </motion.div>
 

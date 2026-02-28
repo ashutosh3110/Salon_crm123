@@ -1,36 +1,17 @@
 import { Package, AlertTriangle, Truck, ArrowLeftRight, TrendingDown, BarChart3 } from 'lucide-react';
 
-// ── Mock Data ──────────────────────────────────────────────────────────
-const stockStats = [
-    { label: 'Total Products', value: 248, icon: Package, color: 'amber' },
-    { label: 'Low Stock', value: 12, icon: AlertTriangle, color: 'red' },
-    { label: 'Pending Orders', value: 3, icon: Truck, color: 'blue' },
-    { label: 'Transfers', value: 2, icon: ArrowLeftRight, color: 'violet' },
-];
-
-const lowStockItems = [
-    { id: 1, name: 'L\'Oréal Hair Colour — Black', sku: 'LOR-HC-001', stock: 2, minStock: 10, unit: 'pcs' },
-    { id: 2, name: 'Schwarzkopf Shampoo 500ml', sku: 'SCH-SH-002', stock: 3, minStock: 8, unit: 'bottles' },
-    { id: 3, name: 'OPI Gel Nail Polish — Red', sku: 'OPI-NP-005', stock: 1, minStock: 5, unit: 'pcs' },
-    { id: 4, name: 'Wella Conditioner 1L', sku: 'WEL-CD-003', stock: 4, minStock: 10, unit: 'bottles' },
-    { id: 5, name: 'Disposable Capes (50 pcs)', sku: 'DSP-CP-010', stock: 1, minStock: 5, unit: 'packs' },
-];
-
-const recentMovements = [
-    { id: 1, type: 'in', product: 'Matrix Hair Serum', qty: 20, source: 'Beauty Hub Supplies', time: 'Today' },
-    { id: 2, type: 'out', product: 'L\'Oréal Hair Colour', qty: 3, source: 'Service Usage', time: 'Today' },
-    { id: 3, type: 'transfer', product: 'Schwarzkopf Shampoo', qty: 5, source: 'Outlet 1 → Outlet 2', time: 'Yesterday' },
-    { id: 4, type: 'in', product: 'OPI Gel Nail Polish', qty: 12, source: 'Lotus Cosmetics', time: 'Yesterday' },
-    { id: 5, type: 'out', product: 'Wella Conditioner', qty: 2, source: 'Retail Sale', time: 'Yesterday' },
-];
-
-const movementStyles = {
-    in: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', label: 'STOCK IN' },
-    out: { bg: 'bg-rose-500/10', text: 'text-rose-500', label: 'USED/SOLD' },
-    transfer: { bg: 'bg-violet-500/10', text: 'text-violet-500', label: 'TRANSFER' },
-};
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function InventoryDashboard() {
+    const { stats, lowStockItems, movements } = useInventory();
+
+    const stockStats = [
+        { label: 'Total Products', value: stats.totalProducts, icon: Package, color: 'amber' },
+        { label: 'Low Stock', value: stats.lowStockCount, icon: AlertTriangle, color: 'red' },
+        { label: 'Pending Orders', value: stats.pendingOrders, icon: Truck, color: 'blue' },
+        { label: 'Inventory Value', value: `₹${(stats.totalValue / 1000).toFixed(1)}k`, icon: BarChart3, color: 'violet' },
+    ];
+
     return (
         <div className="space-y-6">
             {/* Stats */}
@@ -85,7 +66,12 @@ export default function InventoryDashboard() {
                         <h2 className="text-sm font-extrabold text-text">Recent Stock Movements</h2>
                     </div>
                     <div className="divide-y divide-border/40">
-                        {recentMovements.map((mv) => {
+                        {movements.map((mv) => {
+                            const movementStyles = {
+                                in: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', label: 'STOCK IN' },
+                                out: { bg: 'bg-rose-500/10', text: 'text-rose-500', label: 'USED/SOLD' },
+                                transfer: { bg: 'bg-violet-500/10', text: 'text-violet-500', label: 'TRANSFER' },
+                            };
                             const style = movementStyles[mv.type];
                             return (
                                 <div key={mv.id} className="px-5 py-3.5 flex items-center gap-3">

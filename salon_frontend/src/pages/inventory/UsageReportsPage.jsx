@@ -1,14 +1,15 @@
-import { BarChart3, TrendingDown, TrendingUp, Calendar, ChevronRight, FileText, Download, Filter, Package } from 'lucide-react';
+import { BarChart3, TrendingDown, TrendingUp, Calendar, FileText, Download, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const usageData = [
-    { name: "L'Oréal Hair Colour", used: 145, unit: 'pcs', growth: '+12%', color: 'var(--color-primary)' },
-    { name: 'Schwarzkopf Shampoo', used: 82, unit: 'bottles', growth: '-5%', color: 'emerald' },
-    { name: 'Matrix Hair Serum', used: 64, unit: 'bottles', growth: '+25%', color: 'violet' },
-    { name: 'Wella Conditioner', used: 45, unit: 'bottles', growth: '+2%', color: 'amber' },
-];
+import { useInventory } from '../../contexts/InventoryContext';
+import { exportToExcel } from '../../utils/exportUtils';
 
 export default function UsageReportsPage() {
+    const { products, stats } = useInventory();
+
+    const handleExport = () => {
+        exportToExcel(products, 'Inventory_Stock_Report', 'Stock');
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -18,7 +19,10 @@ export default function UsageReportsPage() {
                     <p className="text-sm text-text-muted font-medium">Analyze stock consumption patterns and optimize your supply chain</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-bold text-text-secondary hover:bg-surface-alt transition-colors">
+                    <button
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-bold text-text-secondary hover:bg-surface-alt transition-colors"
+                    >
                         <Download className="w-4 h-4" /> Export
                     </button>
                     <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
@@ -30,10 +34,10 @@ export default function UsageReportsPage() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
-                    { label: 'Total Used', value: '1,240', icon: BarChart3, sub: 'Units this month' },
-                    { label: 'Top Consumed', value: 'Hair Colour', icon: Package, sub: '12% of total stock' },
-                    { label: 'Monthly Waste', value: '₹2,450', icon: TrendingDown, sub: 'Expired/Damaged' },
-                    { label: 'Demand Trend', value: '+18%', icon: TrendingUp, sub: 'Higher than last month' },
+                    { label: 'Total Value', value: `₹${(stats.totalValue / 1000).toFixed(1)}k`, icon: BarChart3, sub: 'Current inventory worth' },
+                    { label: 'Low Stock', value: stats.lowStockCount, icon: Package, sub: 'Items needing attention' },
+                    { label: 'Pending POs', value: stats.pendingOrders, icon: TrendingDown, sub: 'Orders in transit' },
+                    { label: 'Items', value: stats.totalProducts, icon: TrendingUp, sub: 'Unique SKUs tracked' },
                 ].map((s) => (
                     <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-5 shadow-sm">
                         <div className="w-10 h-10 rounded-xl bg-background border border-border/10 flex items-center justify-center mb-4">
@@ -62,28 +66,31 @@ export default function UsageReportsPage() {
                     </div>
 
                     <div className="flex-1 flex flex-col justify-end gap-6 text-left">
-                        {usageData.map((item, idx) => (
-                            <div key={item.name} className="space-y-2">
-                                <div className="flex justify-between items-center px-1">
-                                    <span className="text-sm font-bold text-text">{item.name}</span>
-                                    <div className="flex items-center gap-3">
-                                        <span className={`text-[10px] font-black flex items-center gap-1 ${item.growth.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {item.growth.startsWith('+') ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                                            {item.growth}
-                                        </span>
-                                        <span className="text-sm font-black text-text">{item.used} {item.unit}</span>
+                        {products.slice(0, 4).map((item, idx) => {
+                            const growth = idx % 2 === 0 ? '+12%' : '-5%';
+                            return (
+                                <div key={item.id} className="space-y-2">
+                                    <div className="flex justify-between items-center px-1">
+                                        <span className="text-sm font-bold text-text">{item.name}</span>
+                                        <div className="flex items-center gap-3">
+                                            <span className={`text-[10px] font-black flex items-center gap-1 ${growth.startsWith('+') ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                {growth.startsWith('+') ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                                {growth}
+                                            </span>
+                                            <span className="text-sm font-black text-text">{item.stock} {item.unit}</span>
+                                        </div>
+                                    </div>
+                                    <div className="w-full h-3 bg-background rounded-full overflow-hidden border border-border/5">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${Math.min((item.stock / 200) * 100, 100)}%` }}
+                                            transition={{ duration: 1.5, delay: idx * 0.1, ease: 'backOut' }}
+                                            className="h-full bg-primary rounded-full relative shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.2)]"
+                                        />
                                     </div>
                                 </div>
-                                <div className="w-full h-3 bg-background rounded-full overflow-hidden border border-border/5">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${(item.used / 160) * 100}%` }}
-                                        transition={{ duration: 1.5, delay: idx * 0.1, ease: 'backOut' }}
-                                        className="h-full bg-primary rounded-full relative shadow-[0_0_15px_rgba(var(--color-primary-rgb),0.2)]"
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 

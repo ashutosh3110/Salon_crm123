@@ -1,14 +1,13 @@
-import { AlertTriangle, Package, ShoppingCart, TrendingDown, RefreshCw, ChevronRight, Search, Zap } from 'lucide-react';
+import { AlertTriangle, Package, ShoppingCart, RefreshCw, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-const criticalItems = [
-    { id: 1, name: "L'Oréal Hair Colour — Black", sku: 'LOR-HC-001', stock: 2, minStock: 10, unit: 'pcs', lastOrdered: '12 days ago' },
-    { id: 2, name: 'Schwarzkopf Shampoo 500ml', sku: 'SCH-SH-002', stock: 3, minStock: 8, unit: 'bottles', lastOrdered: '22 days ago' },
-    { id: 3, name: 'OPI Gel Nail Polish — Red', sku: 'OPI-NP-005', stock: 1, minStock: 5, unit: 'pcs', lastOrdered: '5 days ago' },
-    { id: 6, name: 'Disposable Capes (50 pcs)', sku: 'DSP-CP-010', stock: 3, minStock: 5, unit: 'packs', lastOrdered: '1 month ago' },
-];
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function LowStockAlertsPage() {
+    const { lowStockItems, stats } = useInventory();
+
+    // Filter critical (<= 50% of minStock) vs low stock
+    const criticalCount = lowStockItems.filter(p => p.stock <= p.minStock * 0.5).length;
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -33,7 +32,7 @@ export default function LowStockAlertsPage() {
                         </div>
                         <span className="text-[10px] font-black uppercase group-hover:text-white/80 tracking-widest bg-rose-500/10 group-hover:bg-white/20 px-2 py-1 rounded-lg transition-colors">Immediate Action</span>
                     </div>
-                    <p className="text-4xl font-black text-rose-500 group-hover:text-white transition-colors">4</p>
+                    <p className="text-4xl font-black text-rose-500 group-hover:text-white transition-colors">{criticalCount}</p>
                     <p className="text-xs font-bold text-text-secondary group-hover:text-white/80 uppercase tracking-widest mt-1">Critical Shortage Items</p>
                 </div>
 
@@ -44,7 +43,7 @@ export default function LowStockAlertsPage() {
                         </div>
                         <span className="text-[10px] font-black uppercase group-hover:text-white/80 tracking-widest bg-amber-500/10 group-hover:bg-white/20 px-2 py-1 rounded-lg transition-colors">On Order</span>
                     </div>
-                    <p className="text-4xl font-black text-amber-500 group-hover:text-white transition-colors">2</p>
+                    <p className="text-4xl font-black text-amber-500 group-hover:text-white transition-colors">{stats.pendingOrders}</p>
                     <p className="text-xs font-bold text-text-secondary group-hover:text-white/80 uppercase tracking-widest mt-1">Pending Replenishments</p>
                 </div>
 
@@ -53,16 +52,16 @@ export default function LowStockAlertsPage() {
                         <div className="w-12 h-12 rounded-2xl bg-primary/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
                             <Package className="w-6 h-6 text-primary group-hover:text-white" />
                         </div>
-                        <span className="text-[10px] font-black uppercase group-hover:text-white/80 tracking-widest bg-primary/10 group-hover:bg-white/20 px-2 py-1 rounded-lg transition-colors">Weekly Target</span>
+                        <span className="text-[10px] font-black uppercase group-hover:text-white/80 tracking-widest bg-primary/10 group-hover:bg-white/20 px-2 py-1 rounded-lg transition-colors">Order Value</span>
                     </div>
-                    <p className="text-4xl font-black text-primary group-hover:text-white transition-colors">₹4.2k</p>
+                    <p className="text-4xl font-black text-primary group-hover:text-white transition-colors">₹{(lowStockItems.length * 1500 / 1000).toFixed(1)}k</p>
                     <p className="text-xs font-bold text-text-secondary group-hover:text-white/80 uppercase tracking-widest mt-1">Est. Fulfillment Cost</p>
                 </div>
             </div>
 
             {/* Critical List */}
             <div className="grid gap-4">
-                {criticalItems.map((item, idx) => {
+                {lowStockItems.map((item, idx) => {
                     const progress = Math.round((item.stock / item.minStock) * 100);
                     return (
                         <motion.div
@@ -107,7 +106,7 @@ export default function LowStockAlertsPage() {
                             <div className="flex items-center justify-between md:justify-end gap-6 md:w-64">
                                 <div className="text-right flex-1 md:flex-none">
                                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-0.5 whitespace-nowrap">Last Purchased</p>
-                                    <p className="text-xs font-bold text-text whitespace-nowrap">{item.lastOrdered}</p>
+                                    <p className="text-xs font-bold text-text whitespace-nowrap">{item.lastOrdered || 'Not recorded'}</p>
                                 </div>
                                 <button className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-md shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
                                     Re-order

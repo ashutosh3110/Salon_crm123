@@ -15,6 +15,7 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Barcode from 'react-barcode';
 
 export default function AddProductForm({ onSave }) {
     const navigate = useNavigate();
@@ -211,6 +212,23 @@ export default function AddProductForm({ onSave }) {
                                     <RefreshCw className="w-4 h-4" />
                                 </button>
                             </div>
+
+                            {formData.barcode && (
+                                <div className="mt-2 p-4 bg-slate-50 border border-border rounded-xl flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
+                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-border/50">
+                                        <Barcode
+                                            value={formData.barcode}
+                                            width={1.2}
+                                            height={40}
+                                            fontSize={10}
+                                            background="#ffffff"
+                                            lineColor="#000000"
+                                            margin={0}
+                                        />
+                                    </div>
+                                    <p className="text-[8px] font-bold text-text-muted mt-2 uppercase tracking-widest">Active Scan Protocol Link</p>
+                                </div>
+                            )}
                         </div>
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">SKU (Internal Code) <span className="text-rose-500">*</span></label>

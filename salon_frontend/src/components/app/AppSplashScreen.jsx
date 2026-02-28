@@ -59,6 +59,7 @@ export default function AppSplashScreen({ onComplete }) {
                 playsInline
                 onTimeUpdate={handleVideoTimeUpdate}
                 onEnded={handleVideoEnded}
+                onError={handleVideoEnded}
                 style={{
                     position: 'absolute',
                     inset: 0,
@@ -68,7 +69,7 @@ export default function AppSplashScreen({ onComplete }) {
                     opacity: 0.6
                 }}
             >
-                <source src="/video/WhatsApp Video 2026-02-27 at 11.53.58 AM (3).mp4" type="video/mp4" />
+                <source src="/video/splash_video.mp4" type="video/mp4" />
             </video>
 
             {/* Dark Overlay for better contrast */}

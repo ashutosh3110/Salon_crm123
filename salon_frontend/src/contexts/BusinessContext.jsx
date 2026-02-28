@@ -237,6 +237,12 @@ export function BusinessProvider({ children }) {
     const updateSupplier = (id, data) => setSuppliers(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
     const deleteSupplier = (id) => setSuppliers(prev => prev.filter(s => s.id !== id));
 
+    const addFeedback = (feedback) => setFeedbacks(prev => [{
+        ...feedback,
+        id: Date.now().toString(),
+        status: 'active',
+        date: new Date().toISOString().split('T')[0]
+    }, ...prev]);
     const archiveFeedback = (id) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: 'archived' } : f));
     const deleteFeedback = (id) => setFeedbacks(prev => prev.filter(f => f.id !== id));
 
@@ -254,7 +260,7 @@ export function BusinessProvider({ children }) {
         addCategory, deleteCategory, toggleCategoryStatus,
         addProduct, deleteProduct, toggleProductStatus,
         addCustomer, updateCustomer, deleteCustomer,
-        feedbacks, archiveFeedback, deleteFeedback,
+        feedbacks, addFeedback, archiveFeedback, deleteFeedback,
         suppliers, addSupplier, updateSupplier, deleteSupplier,
         segments, addSegment, deleteSegment,
         bookings, addBooking, updateBookingStatus

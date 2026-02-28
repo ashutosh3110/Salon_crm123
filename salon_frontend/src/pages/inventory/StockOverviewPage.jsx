@@ -1,19 +1,52 @@
 import { useState } from 'react';
-import { Search, Filter, Plus, FileText, BarChart3, ChevronRight, MoreHorizontal, ArrowUpDown, X, Package, ShieldCheck } from 'lucide-react';
+import { Search, Filter, Plus, MoreHorizontal, ArrowUpDown, X, Package, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const stockData = [
-    { id: 1, name: "L'Oréal Hair Colour - Black", sku: 'LOR-HC-001', category: 'Hair Colour', brand: "L'Oréal", stock: 124, unit: 'pcs', price: 450, status: 'In Stock' },
-    { id: 2, name: 'Schwarzkopf Shampoo 500ml', sku: 'SCH-SH-002', category: 'Shampoo', brand: 'Schwarzkopf', stock: 45, unit: 'bottles', price: 850, status: 'In Stock' },
-    { id: 3, name: 'OPI Gel Nail Polish - Red', sku: 'OPI-NP-005', category: 'Nail Polish', brand: 'OPI', stock: 8, unit: 'pcs', price: 1200, status: 'Low Stock' },
-    { id: 4, name: 'Wella Conditioner 1L', sku: 'WEL-CD-003', category: 'Conditioner', brand: 'Wella', stock: 12, unit: 'bottles', price: 1500, status: 'Low Stock' },
-    { id: 5, name: 'Matrix Hair Serum', sku: 'MAT-HS-009', category: 'Serum', brand: 'Matrix', stock: 65, unit: 'bottles', price: 950, status: 'In Stock' },
-    { id: 6, name: 'Disposable Capes (50 pcs)', sku: 'DSP-CP-010', category: 'Consumables', brand: 'Generic', stock: 3, unit: 'packs', price: 300, status: 'Critical' },
-];
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function StockOverviewPage() {
+    const { products, addProduct } = useInventory();
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    // Form state for add product
+    const [newProduct, setNewProduct] = useState({
+        name: '',
+        sku: '',
+        category: 'Hair Colour',
+        brand: '',
+        stock: 0,
+        minStock: 10,
+        unit: 'pcs',
+        price: 0
+    });
+
+    const filteredProducts = products.filter(p =>
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const handleAddProduct = (e) => {
+        e.preventDefault();
+        addProduct({
+            ...newProduct,
+            stock: Number(newProduct.stock),
+            minStock: Number(newProduct.minStock),
+            price: Number(newProduct.price),
+            status: 'In Stock'
+        });
+        setIsAddModalOpen(false);
+        setNewProduct({
+            name: '',
+            sku: '',
+            category: 'Hair Colour',
+            brand: '',
+            stock: 0,
+            minStock: 10,
+            unit: 'pcs',
+            price: 0
+        });
+    };
 
     return (
         <div className="space-y-6">
@@ -70,7 +103,7 @@ export default function StockOverviewPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40">
-                            {stockData.map((item) => (
+                            {filteredProducts.map((item) => (
                                 <tr key={item.id} className="hover:bg-surface-alt/50 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -86,12 +119,12 @@ export default function StockOverviewPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-sm font-bold text-text-secondary">{item.category}</td>
-                                    <td className="px-6 py-4 text-sm font-bold text-text-secondary">{item.brand}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-text-secondary">{item.brand || '—'}</td>
                                     <td className="px-6 py-4">
                                         <div className="space-y-1.5">
                                             <div className="flex justify-between items-center text-[10px] font-bold">
                                                 <span className="text-text">{item.stock} {item.unit}</span>
-                                                <span className="text-text-muted italic">Min: 10</span>
+                                                <span className="text-text-muted italic">Min: {item.minStock}</span>
                                             </div>
                                             <div className="w-24 h-1.5 bg-background rounded-full overflow-hidden border border-border/5">
                                                 <div
@@ -158,19 +191,22 @@ export default function StockOverviewPage() {
                                     </button>
                                 </div>
 
-                                <form className="space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); setIsAddModalOpen(false); }}>
+                                <form className="space-y-6 text-left" onSubmit={handleAddProduct}>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Product Name</label>
-                                            <input required type="text" placeholder="e.g. Matrix Serum" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all" />
+                                            <input required type="text" placeholder="e.g. Matrix Serum" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">SKU Code</label>
-                                            <input required type="text" placeholder="SKU-XXX-000" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all" />
+                                            <input required type="text" placeholder="SKU-XXX-000" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.sku} onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Category</label>
-                                            <select className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                            <select className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                                value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}>
                                                 <option>Hair Colour</option>
                                                 <option>Shampoo</option>
                                                 <option>Conditioner</option>
@@ -178,21 +214,34 @@ export default function StockOverviewPage() {
                                             </select>
                                         </div>
                                         <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Brand</label>
+                                            <input required type="text" placeholder="e.g. Matrix" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.brand} onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Initial Stock</label>
-                                            <input required type="number" placeholder="0" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all" />
+                                            <input required type="number" placeholder="0" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.stock} onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Min. Alert Level</label>
-                                            <input required type="number" defaultValue="10" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all" />
+                                            <input required type="number" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.minStock} onChange={(e) => setNewProduct({ ...newProduct, minStock: e.target.value })} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Unit Type</label>
-                                            <select className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                            <select className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                                value={newProduct.unit} onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}>
                                                 <option>Pieces (pcs)</option>
                                                 <option>Bottles</option>
                                                 <option>Packs</option>
                                                 <option>Litres</option>
                                             </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Purchase Price (₹)</label>
+                                            <input required type="number" placeholder="0" className="w-full px-5 py-3.5 rounded-2xl bg-background border border-border/40 text-sm font-bold focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                                value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} />
                                         </div>
                                     </div>
 

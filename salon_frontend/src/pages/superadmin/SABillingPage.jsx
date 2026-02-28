@@ -11,6 +11,7 @@ import {
     Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from 'recharts';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
+import { exportToExcel } from '../../utils/exportUtils';
 
 /* ─── Mock data ─────────────────────────────────────────────────────── */
 const MOCK_PAYMENTS = [
@@ -227,7 +228,10 @@ export default function SABillingPage() {
                     <p className="text-sm text-text-secondary mt-0.5">Track payments, invoices and platform revenue</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={() => showToast('Report exported as CSV!', 'info')}
+                    <button onClick={() => {
+                        exportToExcel(MOCK_PAYMENTS, 'Wapixo_Billing_Transactions', 'Payments');
+                        showToast('Report exported as Excel!', 'info');
+                    }}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
@@ -526,7 +530,10 @@ export default function SABillingPage() {
                                     </div>
                                 ))}
                             </div>
-                            <button onClick={() => showToast('Tax report exported!', 'info')}
+                            <button onClick={() => {
+                                exportToExcel(MOCK_INVOICES, 'Wapixo_GST_Tax_Report', 'Taxes');
+                                showToast('Tax report exported as Excel!', 'info');
+                            }}
                                 className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-primary/30 hover:text-primary transition-all">
                                 <Download className="w-3.5 h-3.5" /> Export GST Report
                             </button>
