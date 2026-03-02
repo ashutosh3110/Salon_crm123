@@ -49,7 +49,6 @@ import OutletsPage from './pages/admin/OutletsPage';
 import StaffPage from './pages/admin/StaffPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import PromotionsPage from './pages/admin/PromotionsPage';
-import LoyaltyPage from './pages/admin/LoyaltyPage';
 import InvoicesPage from './pages/admin/InvoicesPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import FinancePage from './pages/admin/FinancePage';
@@ -59,6 +58,7 @@ import OutletDetailPage from './pages/admin/OutletDetailPage';
 import InventoryPage from './pages/admin/InventoryPage';
 import MarketingCMSPage from './pages/admin/MarketingCMSPage';
 import MarketingHubPage from './pages/admin/MarketingHubPage';
+import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -241,7 +241,12 @@ function App() {
                     <Route path="/admin/promotions" element={<PromotionsPage />} />
                     <Route path="/admin/marketing" element={<MarketingHubPage />} />
                     <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
-                    <Route path="/admin/loyalty" element={<LoyaltyPage />} />
+                    <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
+                    <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
+                    <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
+                    <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
+                    <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
+                    <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
                     <Route path="/admin/invoices" element={<InvoicesPage />} />
                     <Route path="/admin/settings" element={<SettingsPage />}>
                       <Route path="profile" element={<SettingsPage tab="profile" />} />

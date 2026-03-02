@@ -176,6 +176,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         status: tenant?.status || 'trial',
         trialDays: tenant?.trialDays ?? 14,
         outletsCount: tenant?.outletsCount || 1,
+        gstNumber: tenant?.gstNumber || '',
     });
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -219,6 +220,10 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         <div>
                             <label className={labelCls}>Phone</label>
                             <input type="tel" className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="10-digit number" />
+                        </div>
+                        <div>
+                            <label className={labelCls}>GST Number</label>
+                            <input className={inputCls} value={form.gstNumber} onChange={e => set('gstNumber', e.target.value)} placeholder="15-digit GSTIN" />
                         </div>
                         <div>
                             <label className={labelCls}>City</label>

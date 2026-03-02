@@ -17,6 +17,7 @@ const MOCK_DB = {
         _id: 't1', name: 'Glam Studio', slug: 'glam-studio',
         ownerName: 'Priya Shah', email: 'priya@glam.com', phone: '9876543210',
         city: 'Mumbai', address: '14 Linking Road, Bandra West, Mumbai 400050',
+        gstNumber: '27AAAAA0000A1Z5',
         subscriptionPlan: 'pro', status: 'active',
         outletsCount: 3, staffCount: 12, trialDays: 0,
         createdAt: '2026-01-15T10:00:00Z',
@@ -49,6 +50,7 @@ const MOCK_DB = {
         _id: 't2', name: 'The Barber Room', slug: 'barber-room',
         ownerName: 'Raj Mehta', email: 'raj@barber.com', phone: '9123456780',
         city: 'Delhi', address: '7 Connaught Place, New Delhi 110001',
+        gstNumber: '07BBBBB1111B1Z2',
         subscriptionPlan: 'basic', status: 'trial',
         outletsCount: 1, staffCount: 4, trialDays: 8,
         createdAt: '2026-02-10T08:30:00Z',
@@ -501,6 +503,7 @@ export default function SATenantDetailPage() {
                             { label: 'City', value: selectedTenant.city },
                             { label: 'Full Address', value: selectedTenant.address },
                             { label: 'Slug', value: `/${selectedTenant.slug}`, mono: true },
+                            { label: 'GST Number', value: selectedTenant.gstNumber || 'Not Provided' },
                         ].map(r => (
                             <div key={r.label} className="flex justify-between gap-4">
                                 <span className="text-xs text-text-muted font-semibold uppercase tracking-wider shrink-0">{r.label}</span>

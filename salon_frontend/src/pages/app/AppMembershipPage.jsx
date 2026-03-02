@@ -27,41 +27,29 @@ const AppMembershipPage = () => {
         border: isLight ? '#F0F0F0' : 'rgba(255,255,255,0.05)',
     };
 
-    const MEMBERSHIP_TIERS = [
-        {
-            id: 'silver',
-            name: 'Silver Lounge',
-            price: '₹999',
-            period: '/month',
-            color: '#A0A0A0',
-            gradient: 'linear-gradient(135deg, #B0B0B0 0%, #707070 100%)',
-            benefits: ['5% Off on all services', '1 Free Hair Wash monthly', 'Priority Booking', 'Valid for 30 days'],
-            icon: <Star size={24} />,
-            popular: false
-        },
-        {
-            id: 'gold',
-            name: 'Gold Elite',
-            price: '₹1,999',
-            period: '/month',
-            color: '#D4AF37',
-            gradient: 'linear-gradient(135deg, #FFD700 0%, #B8860B 100%)',
-            benefits: ['15% Off on all services', '2 Free Stylings monthly', '1 Free Facial monthly', 'No-Wait Entry', 'Birthday Special Gift'],
-            icon: <Crown size={24} />,
-            popular: true
-        },
-        {
-            id: 'platinum',
-            name: 'Royal Platinum',
-            price: '₹4,499',
-            period: '/month',
-            color: '#1A1A1A',
-            gradient: 'linear-gradient(135deg, #2C2C2C 0%, #000000 100%)',
-            benefits: ['30% Off on all services', 'Unlimited Hair Wash', 'Home Service Available', 'Personal Style Consultant', 'Valet Parking Included'],
-            icon: <Gem size={24} />,
-            popular: false
+    const [membershipPlans, setMembershipPlans] = React.useState([]);
+
+    React.useEffect(() => {
+        const savedPlans = localStorage.getItem('salon_membership_plans');
+        if (savedPlans) {
+            setMembershipPlans(JSON.parse(savedPlans).filter(p => p.isActive));
+        } else {
+            const DEFAULT_PLANS = [
+                { id: 'silver', name: 'Silver Lounge', price: 999, benefits: ['5% Off on all services', '1 Free Hair Wash monthly', 'Priority Booking'], icon: 'star', gradient: 'linear-gradient(135deg, #B0B0B0 0%, #707070 100%)' },
+                { id: 'gold', name: 'Gold Elite', price: 1999, benefits: ['15% Off on all services', '2 Free Stylings monthly', '1 Free Facial monthly', 'Birthday Special Gift'], icon: 'crown', gradient: 'linear-gradient(135deg, #FFD700 0%, #B8860B 100%)', popular: true },
+                { id: 'platinum', name: 'Royal Platinum', price: 4499, benefits: ['30% Off on all services', 'Unlimited Hair Wash', 'Home Service Available', 'Personal Style Consultant'], icon: 'gem', gradient: 'linear-gradient(135deg, #2C2C2C 0%, #000000 100%)' }
+            ];
+            setMembershipPlans(DEFAULT_PLANS);
         }
-    ];
+    }, []);
+
+    const getIcon = (iconName) => {
+        switch (iconName) {
+            case 'crown': return <Crown size={24} />;
+            case 'gem': return <Gem size={24} />;
+            default: return <Star size={24} />;
+        }
+    };
 
     const fadeUp = {
         initial: { opacity: 0, y: 20 },

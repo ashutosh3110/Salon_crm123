@@ -36,7 +36,9 @@ import {
     Box,
     Megaphone,
     Percent,
-    Smartphone
+    Smartphone,
+    Crown,
+    ArrowDownUp
 } from 'lucide-react';
 
 const menuItems = [
@@ -91,6 +93,19 @@ const menuItems = [
             { label: 'Segments', icon: Tag, path: '/admin/crm/segments' },
             { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
             { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
+        ]
+    },
+    {
+        label: 'Loyalty & Membership',
+        icon: Crown,
+        path: '/admin/loyalty',
+        roles: ['admin'],
+        subItems: [
+            { label: 'Loyalty Rules', icon: Gift, path: '/admin/loyalty/rules' },
+            { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
+            { label: 'Members', icon: Users, path: '/admin/loyalty/members' },
+            { label: 'Transactions', icon: ArrowDownUp, path: '/admin/loyalty/transactions' },
+            { label: 'Referral', icon: Star, path: '/admin/loyalty/referral' },
         ]
     },
     {
@@ -219,9 +234,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             <div key={item.label} className="space-y-1">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${active
-                                        ? 'bg-primary/10 text-primary'
-                                        : 'text-text-secondary hover:bg-surface hover:text-text'
+                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-surface hover:text-text'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">

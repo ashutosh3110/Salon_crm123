@@ -14,15 +14,15 @@ export default function WapixoFooter() {
                 {/* Top row */}
                 <div className="flex flex-col md:flex-row justify-between items-center md:items-start gap-12 md:gap-16 mb-16 md:mb-20 text-center md:text-left">
                     {/* Brand */}
-                    <div className="max-w-[320px] flex flex-col items-center md:items-start">
+                    <div className="max-w-[600px] flex flex-col items-center md:items-start -mt-8 md:-mt-16">
                         <Link to="/" className="flex items-center">
                             <img
                                 src="/1-removebg-preview.png"
                                 alt="Wapixo Logo"
-                                className="h-20 md:h-32 w-auto invert brightness-0"
+                                className="h-44 md:h-80 w-auto invert brightness-0"
                             />
                         </Link>
-                        <p className="font-['Inter'] font-light text-[0.82rem] text-white/35 leading-relaxed mt-4">
+                        <p className="font-['Inter'] font-light text-[0.82rem] text-white/50 leading-relaxed mt-4">
                             Powering smart businesses with intelligent salon management.
                         </p>
                     </div>
@@ -31,7 +31,7 @@ export default function WapixoFooter() {
                     <div className="flex flex-wrap justify-center md:justify-start gap-10 md:gap-20">
                         {Object.entries(footerLinks).map(([group, items]) => (
                             <div key={group} className="min-w-[100px]">
-                                <p className="font-['Inter'] font-light text-[0.7rem] text-white/35 tracking-[0.25em] uppercase mb-4">
+                                <p className="font-['Inter'] font-black text-[0.75rem] text-white tracking-[0.3em] uppercase mb-5 border-b border-white/10 pb-2">
                                     {group}
                                 </p>
                                 <div className="space-y-3">
@@ -39,7 +39,7 @@ export default function WapixoFooter() {
                                         <div key={item}>
                                             <Link
                                                 to={`/${item.toLowerCase()}`}
-                                                className="font-['Inter'] font-light text-[0.85rem] text-white/50 hover:text-white transition-colors decoration-none"
+                                                className="font-['Inter'] font-light text-[0.85rem] text-white/70 hover:text-white transition-colors decoration-none"
                                             >
                                                 {item}
                                             </Link>

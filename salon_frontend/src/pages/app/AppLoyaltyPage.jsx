@@ -12,6 +12,7 @@ import {
     Zap
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import api from '../../services/api';
 
 const AppLoyaltyPage = () => {
     const navigate = useNavigate();
@@ -34,25 +35,43 @@ const AppLoyaltyPage = () => {
         transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
     };
 
-    const LOYALTY_STATS = {
-        currentPoints: 2450,
+    const [loyaltyStats, setLoyaltyStats] = React.useState({
+        currentPoints: 0,
         nextTier: 3000,
-        currentTier: 'Gold Member',
-        potentialSavings: '₹450',
-        history: [
-            { id: 1, action: 'Haircut & Styling', date: '24 Feb, 2026', points: '+150', type: 'earn' },
-            { id: 2, action: 'Facial Treatment', date: '12 Feb, 2026', points: '+300', type: 'earn' },
-            { id: 3, action: 'Points Redeemed', date: '01 Feb, 2026', points: '-500', type: 'redeem' },
-            { id: 4, action: 'Referral Bonus', date: '15 Jan, 2026', points: '+200', type: 'earn' },
-        ],
+        currentTier: 'Basic Member',
+        potentialSavings: '₹0',
+        history: [],
         rewards: [
             { id: 1, title: 'Free Haircut', points: 1000, icon: <Star size={16} /> },
             { id: 2, title: '20% Off Services', points: 500, icon: <Zap size={16} /> },
             { id: 3, title: 'Luxury Spa Kit', points: 2500, icon: <Gift size={16} /> },
         ]
-    };
+    });
+    const [loading, setLoading] = React.useState(true);
 
-    const progressPercentage = (LOYALTY_STATS.currentPoints / LOYALTY_STATS.nextTier) * 100;
+    React.useEffect(() => {
+        const fetchWallet = async () => {
+            try {
+                // Fetch real wallet from backend
+                const { data } = await api.get('/loyalty/wallet');
+                const wallet = data.data || data;
+                setLoyaltyStats(prev => ({
+                    ...prev,
+                    currentPoints: wallet.points || 0,
+                    currentTier: wallet.points >= 5000 ? 'Platinum Member' : (wallet.points >= 2000 ? 'Gold Member' : 'Silver Member'),
+                    history: wallet.history || prev.history
+                }));
+            } catch (err) {
+                console.error('Wallet fetch error:', err);
+                // Fallback to demo data if needed
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchWallet();
+    }, []);
+
+    const progressPercentage = (loyaltyStats.currentPoints / loyaltyStats.nextTier) * 100;
 
     return (
         <div style={{
@@ -137,7 +156,7 @@ const AppLoyaltyPage = () => {
                 </div>
 
                 <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px' }}>
-                    {LOYALTY_STATS.rewards.map(reward => (
+                    {loyaltyStats.rewards.map(reward => (
                         <motion.div
                             key={reward.id}
                             whileTap={{ scale: 0.97 }}
@@ -178,10 +197,10 @@ const AppLoyaltyPage = () => {
                 </div>
 
                 <div style={{ background: colors.card, borderRadius: '24px', padding: '8px', border: `1px solid ${colors.border}` }}>
-                    {LOYALTY_STATS.history.map((item, idx) => (
-                        <div key={item.id} style={{
+                    {loyaltyStats.history.length > 0 ? loyaltyStats.history.map((item, idx) => (
+                        <div key={item.id || idx} style={{
                             display: 'flex', alignItems: 'center', gap: '12px', padding: '16px',
-                            borderBottom: idx === LOYALTY_STATS.history.length - 1 ? 'none' : `1px solid ${colors.border}`
+                            borderBottom: idx === loyaltyStats.history.length - 1 ? 'none' : `1px solid ${colors.border}`
                         }}>
                             <div style={{
                                 width: 40, height: 40, borderRadius: '12px',
@@ -192,17 +211,22 @@ const AppLoyaltyPage = () => {
                                 {item.type === 'earn' ? <CheckCircle2 size={18} /> : <Zap size={18} />}
                             </div>
                             <div style={{ flex: 1 }}>
-                                <p style={{ fontSize: '14px', fontWeight: 700, color: colors.text, margin: '0 0 2px' }}>{item.action}</p>
-                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>{item.date}</p>
+                                <p style={{ fontSize: '14px', fontWeight: 700, color: colors.text, margin: '0 0 2px' }}>{item.action || 'Transaction'}</p>
+                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>{new Date(item.date || item.createdAt).toLocaleDateString()}</p>
                             </div>
                             <p style={{
                                 fontSize: '14px', fontWeight: 800,
-                                color: item.type === 'earn' ? '#22c55e' : '#ef4444'
+                                color: (item.points > 0 || item.type === 'earn') ? '#22c55e' : '#ef4444'
                             }}>
-                                {item.points}
+                                {item.points > 0 ? '+' : ''}{item.points}
                             </p>
                         </div>
-                    ))}
+                    )) : (
+                        <div style={{ padding: '40px 20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px', fontWeight: 700 }}>
+                            <p>No transaction history discovered yet.</p>
+                            <p style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Transactions will materialize here after your first service.</p>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 
