@@ -9,6 +9,7 @@ import {
     MOCK_SERVICES, MOCK_PRODUCTS, MOCK_CLIENTS,
     MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS
 } from '../../data/posData';
+import { useInventory } from '../../contexts/InventoryContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, CreditCard, Ticket, Gift, History, Calendar } from 'lucide-react';
 import {
@@ -129,6 +130,7 @@ const InvoicePDF = ({ invoice }) => (
 );
 
 export default function POSBillingPage() {
+    const { addSaleRecord } = useInventory();
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
@@ -149,6 +151,7 @@ export default function POSBillingPage() {
     const [showClientInfo, setShowClientInfo] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [mobileView, setMobileView] = useState('items'); // 'items' | 'cart'
+    const [showCameraScanner, setShowCameraScanner] = useState(false);
 
     // Discount/Redemption
     const [manualDiscount, setManualDiscount] = useState({ type: 'fixed', value: 0 });
@@ -164,6 +167,65 @@ export default function POSBillingPage() {
     // Refs
     const searchInputRef = useRef(null);
     const clientInputRef = useRef(null);
+    const html5QrScannerRef = useRef(null);
+
+    // ─── Camera Scanner (html5-qrcode) ──────────────────────────────
+    const openCameraScanner = () => {
+        setShowCameraScanner(true);
+    };
+
+    const closeCameraScanner = async () => {
+        if (html5QrScannerRef.current) {
+            try {
+                await html5QrScannerRef.current.stop();
+                html5QrScannerRef.current.clear();
+            } catch (_) { /* scanner may already be stopped */ }
+            html5QrScannerRef.current = null;
+        }
+        setShowCameraScanner(false);
+    };
+
+    // Start html5-qrcode after DOM element is mounted
+    useEffect(() => {
+        if (!showCameraScanner) return;
+
+        let mounted = true;
+        import('html5-qrcode').then(({ Html5Qrcode }) => {
+            if (!mounted) return;
+            const scanner = new Html5Qrcode('qr-scanner-region');
+            html5QrScannerRef.current = scanner;
+
+            scanner.start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                (decodedText) => {
+                    // Barcode successfully scanned!
+                    closeCameraScanner();
+                    const product = MOCK_PRODUCTS.find(p => p.barcode === decodedText || p.sku === decodedText);
+                    if (product) {
+                        addToCart(product, 'product');
+                    } else {
+                        setSearchItem(decodedText); // Show in search if not found
+                    }
+                },
+                (_errorMsg) => { /* frame decode errors are normal, ignore */ }
+            ).catch((err) => {
+                console.error('Scanner start failed:', err);
+                alert('Camera access denied. Please allow camera permission and try again.');
+                setShowCameraScanner(false);
+            });
+        });
+
+        return () => {
+            mounted = false;
+            if (html5QrScannerRef.current) {
+                html5QrScannerRef.current.stop().catch(() => { }).finally(() => {
+                    html5QrScannerRef.current?.clear();
+                    html5QrScannerRef.current = null;
+                });
+            }
+        };
+    }, [showCameraScanner]);
 
     // ─── Calculations ──────────────────────────────────────
     const totals = useMemo(() => {
@@ -389,6 +451,34 @@ export default function POSBillingPage() {
                     wallet: redeemWallet
                 }
             });
+
+            // ── Phase 3: Record each item into Inventory Reconciliation log ──
+            const invoiceNum = `INV-${Date.now().toString().slice(-4)}`;
+            const saleEntries = cart
+                .filter(item => !item.isPackageRedemption)
+                .map(item => {
+                    const isProduct = item.type === 'product';
+                    // Find matching POS product to get SKU
+                    const posProduct = MOCK_PRODUCTS.find(p => p._id === item.itemId || p._id === item._id);
+                    if (!posProduct) return null;
+                    return {
+                        invoiceId: invoiceNum,
+                        productName: item.name,
+                        sku: posProduct.sku,
+                        subType: isProduct ? 'retail_sale' : 'service_usage',
+                        qty: item.quantity,
+                        unitPrice: item.price,
+                        total: item.price * item.quantity,
+                        staffId: item.staffId,
+                        outletId: 'outlet-1',
+                    };
+                })
+                .filter(Boolean);
+
+            if (saleEntries.length > 0) {
+                addSaleRecord(saleEntries);
+            }
+
             setCheckingOut(false);
         }, 1200);
     };
@@ -644,6 +734,7 @@ export default function POSBillingPage() {
                                 onChange={(e) => setSearchItem(e.target.value)}
                             />
                             <button
+                                onClick={openCameraScanner}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-primary/10 text-primary transition-all active:scale-90"
                                 title="Open Camera Scanner"
                             >
@@ -707,6 +798,9 @@ export default function POSBillingPage() {
                                 <div>
                                     <h4 className="text-xs font-extrabold text-text line-clamp-2 uppercase tracking-tight leading-tight">{item.name}</h4>
                                     <p className="text-sm font-black text-primary mt-1">₹{item.price}</p>
+                                    {item.barcode && (
+                                        <p className="text-[8px] font-mono text-text-muted/60 mt-0.5 truncate">{item.barcode}</p>
+                                    )}
                                 </div>
                             </button>
                         ))}
@@ -1089,6 +1183,53 @@ export default function POSBillingPage() {
                     </div>
                 </div>
             )}
+            {/* ─── Camera Scanner Modal (html5-qrcode) ─── */}
+            {showCameraScanner && (
+                <div className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[70] flex flex-col items-center justify-center">
+                    {/* Header */}
+                    <div className="w-full max-w-sm px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                            <p className="text-[11px] font-black uppercase tracking-widest text-white">Scanner Active</p>
+                        </div>
+                        <button
+                            onClick={closeCameraScanner}
+                            className="p-2 bg-white/10 hover:bg-white/20 transition-all rounded-full active:scale-90"
+                        >
+                            <X className="w-5 h-5 text-white" />
+                        </button>
+                    </div>
+
+                    {/* html5-qrcode mounts camera view here */}
+                    <div className="w-full max-w-sm px-4 relative">
+                        <div className="absolute inset-4 pointer-events-none z-10 flex items-center justify-center">
+                            <div className="relative w-52 h-52">
+                                <span className="absolute top-0 left-0 w-8 h-8 border-t-[3px] border-l-[3px] border-primary" />
+                                <span className="absolute top-0 right-0 w-8 h-8 border-t-[3px] border-r-[3px] border-primary" />
+                                <span className="absolute bottom-0 left-0 w-8 h-8 border-b-[3px] border-l-[3px] border-primary" />
+                                <span className="absolute bottom-0 right-0 w-8 h-8 border-b-[3px] border-r-[3px] border-primary" />
+                                <div
+                                    className="absolute left-1 right-1 h-[2px] bg-primary/90"
+                                    style={{ animation: 'scanline 2s ease-in-out infinite' }}
+                                />
+                            </div>
+                        </div>
+                        <div
+                            id="qr-scanner-region"
+                            className="w-full overflow-hidden [&_video]:w-full [&_video]:rounded-none [&_img]:hidden [&_select]:hidden [&_button]:hidden [&_span]:hidden"
+                            style={{ minHeight: '280px' }}
+                        />
+                    </div>
+
+                    <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-4 text-center px-4">
+                        Point camera at barcode • Auto-detect enabled
+                    </p>
+                    <p className="text-white/25 text-[9px] font-bold mt-1 text-center">
+                        Supports EAN-13, EAN-8, QR, Code 128, UPC
+                    </p>
+                </div>
+            )}
+
             {/* New Client Modal */}
             {showNewClient && (
                 <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">

@@ -25,13 +25,13 @@ export const MOCK_SERVICES = [
 ];
 
 export const MOCK_PRODUCTS = [
-    { _id: 'p1', name: 'L\'Oréal Hair Serum', sku: 'LOR-SRM-001', hsnCode: '3304', price: 650, category: 'Hair Care', status: 'active', stock: 12, lowStockLevel: 5 },
-    { _id: 'p2', name: 'Moroccan Argan Oil', sku: 'MAO-OIL-001', hsnCode: '3304', price: 950, category: 'Hair Care', status: 'active', stock: 2, lowStockLevel: 5 },
-    { _id: 'p3', name: 'Keratin Shampoo', sku: 'KRT-SHP-001', hsnCode: '3305', barcode: '123456789012', price: 480, category: 'Hair Care', status: 'active', stock: 15, lowStockLevel: 5 },
-    { _id: 'p4', name: 'Anti-Dandruff Shampoo', sku: 'ADS-SHP-001', hsnCode: '3305', barcode: '223456789012', price: 320, category: 'Hair Care', status: 'active', stock: 3, lowStockLevel: 5 },
-    { _id: 'p5', name: 'Vitamin C Face Serum', sku: 'VTC-SRM-001', hsnCode: '3304', barcode: '323456789012', price: 890, category: 'Skin Care', status: 'active', stock: 8, lowStockLevel: 5 },
-    { _id: 'p6', name: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', hsnCode: '3304', barcode: '423456789012', price: 550, category: 'Skin Care', status: 'active', stock: 20, lowStockLevel: 5 },
-    { _id: 'p10', name: 'Hair Styling Gel', sku: 'HSG-GEL-001', hsnCode: '3305', barcode: '523456789012', price: 280, category: 'Styling', status: 'active', stock: 1, lowStockLevel: 3 },
+    { _id: 'p1', name: "L'Oréal Hair Serum", sku: 'LOR-SRM-001', barcode: '8901030112233', hsnCode: '3304', price: 650, category: 'Hair Care', status: 'active', stock: 12, lowStockLevel: 5 },
+    { _id: 'p2', name: 'Moroccan Argan Oil', sku: 'MAO-OIL-001', barcode: '8901030223344', hsnCode: '3304', price: 950, category: 'Hair Care', status: 'active', stock: 2, lowStockLevel: 5 },
+    { _id: 'p3', name: 'Keratin Shampoo', sku: 'KRT-SHP-001', barcode: '8901234560012', hsnCode: '3305', price: 480, category: 'Hair Care', status: 'active', stock: 15, lowStockLevel: 5 },
+    { _id: 'p4', name: 'Anti-Dandruff Shampoo', sku: 'ADS-SHP-001', barcode: '8902234560010', hsnCode: '3305', price: 320, category: 'Hair Care', status: 'active', stock: 3, lowStockLevel: 5 },
+    { _id: 'p5', name: 'Vitamin C Face Serum', sku: 'VTC-SRM-001', barcode: '8903234560019', hsnCode: '3304', price: 890, category: 'Skin Care', status: 'active', stock: 8, lowStockLevel: 5 },
+    { _id: 'p6', name: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', barcode: '4234567890123', hsnCode: '3304', price: 550, category: 'Skin Care', status: 'active', stock: 20, lowStockLevel: 5 },
+    { _id: 'p10', name: 'Hair Styling Gel', sku: 'HSG-GEL-001', barcode: '5234567890124', hsnCode: '3305', price: 280, category: 'Styling', status: 'active', stock: 1, lowStockLevel: 3 },
 ];
 
 export const MOCK_CLIENTS = [

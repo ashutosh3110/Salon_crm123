@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-    LayoutDashboard, Calendar, Users, DollarSign, Image,
+    LayoutDashboard, Calendar, Users, DollarSign,
     Clock, Settings, LogOut, ChevronLeft, ChevronRight, X, Scissors, ChevronDown, User, Shield, Bell
 } from 'lucide-react';
 
@@ -10,7 +10,6 @@ const menuItems = [
     { label: 'My Schedule', icon: Calendar, path: '/stylist' },
     { label: "Today's Clients", icon: Users, path: '/stylist/clients' },
     { label: 'Commissions', icon: DollarSign, path: '/stylist/commissions' },
-    { label: 'Gallery', icon: Image, path: '/stylist/gallery' },
     { label: 'Time Off', icon: Clock, path: '/stylist/timeoff' },
     {
         label: 'Settings',

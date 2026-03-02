@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import AppBottomNav from '../components/app/AppBottomNav';
@@ -8,9 +8,9 @@ import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 
 const pageVariants = {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    exit: { opacity: 0 },
+    initial: { opacity: 0, x: 0 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: 0 },
 };
 
 export default function AppLayout() {
@@ -188,14 +188,22 @@ export default function AppLayout() {
 
                 <AppHeader />
 
-                <AnimatePresence mode="wait" initial={false}>
+                <AnimatePresence mode="popLayout" initial={false}>
                     <motion.main
                         key={location.pathname}
                         variants={pageVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
-                        style={{ paddingBottom: shouldHideNav ? '0' : '90px' }}
+                        transition={{
+                            opacity: { duration: 0.2 },
+                            ease: "easeInOut"
+                        }}
+                        style={{
+                            paddingBottom: shouldHideNav ? '0' : '90px',
+                            minHeight: '100svh',
+                            width: '100%'
+                        }}
                     >
                         <Outlet />
                     </motion.main>
