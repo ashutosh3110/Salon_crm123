@@ -1,6 +1,14 @@
 import { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, Search, Filter, CheckCircle2, XCircle, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+    PieChart,
+    Pie,
+    Cell,
+    ResponsiveContainer,
+    Tooltip,
+    Legend
+} from 'recharts';
 
 const INITIAL_ATTENDANCE = [
     { id: 1, staff: 'Ananya Sharma', role: 'Stylist', checkIn: '09:15 AM', checkOut: '06:30 PM', status: 'present', hours: '9.2', outlet: 'Main Branch' },
@@ -13,11 +21,11 @@ const INITIAL_ATTENDANCE = [
 ];
 
 const STATUS_META = {
-    present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
-    late: { label: 'Late', cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20' },
-    absent: { label: 'Absent', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20' },
-    'half-day': { label: 'Half Day', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
-    leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20' },
+    present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
+    late: { label: 'Late', cls: 'bg-amber-500/10 text-amber-600 border-amber-500/20', color: '#f59e0b' },
+    absent: { label: 'Absent', cls: 'bg-rose-500/10 text-rose-600 border-rose-500/20', color: '#ef4444' },
+    'half-day': { label: 'Half Day', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20', color: '#3b82f6' },
+    leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', color: '#8b5cf6' },
 };
 
 export default function AttendanceTracker() {
@@ -25,7 +33,7 @@ export default function AttendanceTracker() {
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
-    const [remarkModal, setRemarkModal] = useState(null);  // staff record for remark
+    const [remarkModal, setRemarkModal] = useState(null);
     const [remark, setRemark] = useState('');
     const [changeStatusModal, setChangeStatusModal] = useState(null);
     const [bulkModal, setBulkModal] = useState(false);
@@ -49,12 +57,24 @@ export default function AttendanceTracker() {
     }), [records, searchTerm, filterStatus]);
 
     // Stats
-    const stats = useMemo(() => ({
-        present: records.filter(r => r.status === 'present').length,
-        late: records.filter(r => r.status === 'late').length,
-        absent: records.filter(r => r.status === 'absent').length,
-        leave: records.filter(r => r.status === 'leave').length,
-    }), [records]);
+    const stats = useMemo(() => {
+        const counts = {
+            present: records.filter(r => r.status === 'present').length,
+            late: records.filter(r => r.status === 'late').length,
+            absent: records.filter(r => r.status === 'absent').length,
+            'half-day': records.filter(r => r.status === 'half-day').length,
+            leave: records.filter(r => r.status === 'leave').length,
+        };
+        return counts;
+    }, [records]);
+
+    const chartData = useMemo(() => [
+        { name: 'Present', value: stats.present, color: STATUS_META.present.color },
+        { name: 'Late', value: stats.late, color: STATUS_META.late.color },
+        { name: 'Absent', value: stats.absent, color: STATUS_META.absent.color },
+        { name: 'Half Day', value: stats['half-day'], color: STATUS_META['half-day'].color },
+        { name: 'On Leave', value: stats.leave, color: STATUS_META.leave.color },
+    ].filter(d => d.value > 0), [stats]);
 
     // Change status for single record
     const applyStatusChange = (e) => {
@@ -94,122 +114,152 @@ export default function AttendanceTracker() {
     };
 
     return (
-        <div className="space-y-5">
-            {/* Header card */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2 bg-surface p-5 rounded-3xl border border-border/40 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-5">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-                            <CalendarIcon className="w-5 h-5" />
+        <div className="space-y-6 font-black text-left">
+            {/* Header card with Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left font-black">
+                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-8 text-left">
+                    <div className="flex items-center gap-6 text-left font-black">
+                        <div className="p-4 rounded-none bg-primary/10 text-primary border border-primary/20 shrink-0">
+                            <CalendarIcon className="w-6 h-6" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Attendance Date</p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <button onClick={() => changeDate(-1)} className="p-1 rounded-lg hover:bg-surface-alt transition-colors text-text-muted hover:text-text"><ChevronLeft className="w-4 h-4" /></button>
+                        <div className="text-left">
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Date</p>
+                            <div className="flex items-center gap-3 mt-1 text-left font-black">
+                                <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
                                 <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                                    className="text-base font-black text-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none" />
-                                <button onClick={() => changeDate(1)} className="p-1 rounded-lg hover:bg-surface-alt transition-colors text-text-muted hover:text-text"><ChevronRight className="w-4 h-4" /></button>
+                                    className="text-lg font-black text-text bg-transparent border-none p-0 focus:ring-0 cursor-pointer outline-none uppercase" />
+                                <button onClick={() => changeDate(1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronRight className="w-4 h-4" /></button>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-5 border-t sm:border-t-0 sm:border-l border-border/40 pt-4 sm:pt-0 sm:pl-6">
+
+                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={chartData}
+                                    innerRadius={35}
+                                    outerRadius={55}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                    stroke="transparent"
+                                >
+                                    {chartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--surface)',
+                                        border: '1px solid var(--border)',
+                                        borderRadius: '0px',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        textTransform: 'uppercase'
+                                    }}
+                                />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black">
                         {[
-                            { label: 'Present', value: stats.present, color: 'text-emerald-600' },
-                            { label: 'Late', value: stats.late, color: 'text-amber-600' },
-                            { label: 'Absent', value: stats.absent, color: 'text-rose-600' },
-                            { label: 'Leave', value: stats.leave, color: 'text-violet-600' },
+                            { label: 'Present', value: stats.present, color: 'text-emerald-500' },
+                            { label: 'Late', value: stats.late, color: 'text-amber-500' },
+                            { label: 'Absent', value: stats.absent, color: 'text-rose-500' },
+                            { label: 'Leave', value: stats.leave, color: 'text-violet-500' },
                         ].map(s => (
-                            <div key={s.label} className="text-center">
-                                <p className="text-[9px] font-black text-text-muted uppercase tracking-tighter">{s.label}</p>
+                            <div key={s.label} className="text-left font-black">
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.1em]">{s.label}</p>
                                 <p className={`text-xl font-black mt-0.5 ${s.color}`}>{s.value}</p>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="bg-primary p-5 rounded-3xl shadow-xl shadow-primary/20 relative overflow-hidden flex flex-col justify-between">
-                    <div className="relative z-10 text-white">
-                        <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Quick Actions</p>
-                        <h3 className="text-base font-black mt-1">Bulk Attendance</h3>
+                <div className="bg-text p-8 rounded-none shadow-xl shadow-text/10 relative overflow-hidden flex flex-col justify-between text-left font-black">
+                    <div className="relative z-10 text-background text-left">
+                        <p className="text-[10px] font-black text-background/60 uppercase tracking-[0.3em]">System Protocol</p>
+                        <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Command</h3>
                     </div>
-                    <button onClick={() => setBulkModal(true)} className="relative z-10 mt-4 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/20 text-white text-xs font-black uppercase tracking-wider hover:bg-white/30 transition-all border border-white/20">
-                        <Check className="w-4 h-4" /> Mark All
+                    <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
+                        <Check className="w-4 h-4" /> Initialize Mark All
                     </button>
-                    <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-white/10 blur-2xl" />
+                    <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-none bg-white/5 rotate-45" />
                 </div>
             </div>
 
             {/* Toolbar */}
-            <div className="bg-surface p-4 rounded-2xl border border-border/40 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="Search staff..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border/40 text-sm font-bold focus:outline-none focus:border-primary transition-all"
+            <div className="bg-surface p-5 rounded-none border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
+                <div className="relative flex-1 max-w-sm text-left">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <input type="text" placeholder="QUERY STAFF REGISTRY..."
+                        className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                    {/* Status filter chips */}
+                <div className="flex items-center gap-2 flex-wrap text-left">
                     {['All', 'present', 'late', 'absent', 'half-day', 'leave'].map(s => (
                         <button key={s} onClick={() => setFilterStatus(s)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider border transition-all ${filterStatus === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border/40 hover:border-primary/40'}`}>
-                            {s === 'All' ? 'All' : STATUS_META[s]?.label}
+                            className={`px-4 py-2 rounded-none text-[9px] font-black uppercase tracking-[0.1em] border transition-all ${filterStatus === s ? 'bg-primary text-white border-primary' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
+                            {s === 'All' ? 'Full View' : STATUS_META[s]?.label}
                         </button>
                     ))}
-                    <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border/40 text-[10px] font-black uppercase tracking-wider text-text-muted hover:border-primary/40 transition-all">
-                        <Download className="w-3 h-3" /> Export
+                    <div className="w-[1px] h-6 bg-border mx-2" />
+                    <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-[9px] font-black uppercase tracking-[0.1em] text-text-muted hover:bg-surface-alt transition-all">
+                        <Download className="w-3.5 h-3.5" /> Output Data
                     </button>
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-3xl border border-border/40 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
+                <div className="overflow-x-auto text-left font-black">
+                    <table className="w-full text-left font-black">
                         <thead>
-                            <tr className="bg-background/60 border-b border-border/40">
-                                {['Employee', 'Check-In', 'Check-Out', 'Hours', 'Status', 'Actions'].map(h => (
-                                    <th key={h} className={`px-5 py-3.5 text-[10px] font-black text-text-muted uppercase tracking-widest ${h === 'Actions' ? 'text-right' : ''}`}>{h}</th>
+                            <tr className="bg-surface-alt/50 border-b border-border text-left">
+                                {['Employee_node', 'Check_In', 'Check_Out', 'Intensity', 'Status_Bit', 'Control'].map(h => (
+                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : ''}`}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/40">
+                        <tbody className="divide-y divide-border/40 text-left font-black">
                             {filtered.map(record => (
-                                <tr key={record.id} className="hover:bg-surface-alt/30 transition-colors group">
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-surface border border-border/20 flex items-center justify-center text-text-secondary font-black text-xs">
+                                <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
+                                    <td className="px-6 py-5 text-left">
+                                        <div className="flex items-center gap-4 text-left">
+                                            <div className="w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0">
                                                 {record.staff.split(' ').map(n => n[0]).join('')}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-bold text-text">{record.staff}</p>
-                                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-tighter">{record.outlet}</p>
+                                            <div className="text-left">
+                                                <p className="text-xs font-black text-text uppercase tracking-tight text-left">{record.staff}</p>
+                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">{record.outlet}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-text">
+                                    <td className="px-6 py-5 text-left font-black">
+                                        <div className="flex items-center gap-3 text-[11px] font-black text-text uppercase text-left">
                                             <Clock className="w-3.5 h-3.5 text-text-muted" />{record.checkIn}
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-text">
+                                    <td className="px-6 py-5 text-left font-black">
+                                        <div className="flex items-center gap-3 text-[11px] font-black text-text uppercase text-left">
                                             <Clock className="w-3.5 h-3.5 text-text-muted" />{record.checkOut}
                                         </div>
                                     </td>
-                                    <td className="px-5 py-4 text-xs font-black text-primary">{record.hours}h</td>
-                                    <td className="px-5 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${STATUS_META[record.status]?.cls || ''}`}>
+                                    <td className="px-6 py-5 text-[11px] font-black text-primary uppercase text-left">{record.hours}HRS</td>
+                                    <td className="px-6 py-5 text-left font-black">
+                                        <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${STATUS_META[record.status]?.cls || ''}`}>
                                             {STATUS_META[record.status]?.label}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <td className="px-6 py-5 text-right font-black">
+                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button onClick={() => { setChangeStatusModal(record); setNewStatus(record.status); }}
-                                                title="Change Status" className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-500/10 transition-all">
+                                                className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </button>
                                             <button onClick={() => { setRemarkModal(record); setRemark(''); }}
-                                                title="Add Remark" className="p-1.5 rounded-lg text-amber-600 hover:bg-amber-500/10 transition-all">
+                                                className="p-2 rounded-none text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all">
                                                 <MessageSquare className="w-4 h-4" />
                                             </button>
                                         </div>
@@ -219,102 +269,100 @@ export default function AttendanceTracker() {
                         </tbody>
                     </table>
                 </div>
-                <div className="px-5 py-3.5 border-t border-border/40 bg-background/40 flex items-center gap-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-text-muted" />
-                    <p className="text-[10px] text-text-muted font-bold">Attendance records auto-lock at 11:59 PM. Manual overrides require Admin approval.</p>
+                <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center gap-3 font-black">
+                    <AlertCircle className="w-4 h-4 text-primary" />
+                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none">Security loop: Logs auto-seal at 23:59:59 daily. manual override requires root access.</p>
                 </div>
             </div>
 
-            {/* ── Change Status Modal ── */}
+            {/* Modals remain similarly styled but with sharp industrial themes */}
             <AnimatePresence>
                 {changeStatusModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setChangeStatusModal(null)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setChangeStatusModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-[24px] border border-border/40 shadow-2xl relative p-6">
-                            <div className="flex items-center justify-between mb-5">
+                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
+                            <div className="flex items-center justify-between mb-8">
                                 <div>
-                                    <h2 className="text-base font-black text-text uppercase">Change Status</h2>
-                                    <p className="text-[10px] font-bold text-primary mt-0.5">{changeStatusModal.staff}</p>
+                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Override Status</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">{changeStatusModal.staff}</p>
                                 </div>
-                                <button onClick={() => setChangeStatusModal(null)} className="w-8 h-8 rounded-full bg-background border border-border/10 flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                                <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
                             </div>
-                            <form onSubmit={applyStatusChange} className="space-y-4">
-                                <div className="grid grid-cols-2 gap-2">
+                            <form onSubmit={applyStatusChange} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-3">
                                     {Object.entries(STATUS_META).map(([key, val]) => (
                                         <button key={key} type="button" onClick={() => setNewStatus(key)}
-                                            className={`py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider border transition-all ${newStatus === key ? 'bg-primary text-white border-primary' : `${val.cls} border-current`}`}>
+                                            className={`py-3 px-3 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all ${newStatus === key ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface text-text-muted border-border hover:border-primary'}`}>
                                             {val.label}
                                         </button>
                                     ))}
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Check-In</label>
-                                        <input type="time" className="w-full px-3 py-2.5 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">In_Bound</label>
+                                        <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
-                                    <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Check-Out</label>
-                                        <input type="time" className="w-full px-3 py-2.5 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none" />
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Out_Bound</label>
+                                        <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full py-3 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md shadow-primary/20 hover:scale-[1.01] transition-all">Apply Change</button>
+                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Execute Change</button>
                             </form>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* ── Remark Modal ── */}
+            {/* Remark Modal, Bulk Modal and Toast styled similarly ... */}
             <AnimatePresence>
                 {remarkModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setRemarkModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-[24px] border border-border/40 shadow-2xl relative p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-base font-black text-text uppercase">Add Remark</h2>
-                                <button onClick={() => setRemarkModal(null)} className="w-8 h-8 rounded-full bg-background border border-border/10 flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Attach Remark</h2>
+                                <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-5 h-5" /></button>
                             </div>
-                            <p className="text-xs font-bold text-primary mb-3">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
-                            <form onSubmit={saveRemark} className="space-y-4">
-                                <textarea required rows={4} placeholder="Enter attendance remark or reason..."
-                                    className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none resize-none"
+                            <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
+                            <form onSubmit={saveRemark} className="space-y-6">
+                                <textarea required rows={4} placeholder="ENTER LOG DETAIL..."
+                                    className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none"
                                     value={remark} onChange={e => setRemark(e.target.value)} />
-                                <button type="submit" className="w-full py-3 bg-amber-500 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md shadow-amber-500/20 hover:scale-[1.01] transition-all">Save Remark</button>
+                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Submit Entry</button>
                             </form>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* ── Bulk Modal ── */}
             <AnimatePresence>
                 {bulkModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBulkModal(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-xs rounded-[24px] border border-border/40 shadow-2xl relative p-6 text-center">
-                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-background border border-border/10 flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
-                            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4"><Users className="w-5 h-5 text-primary" /></div>
-                            <h3 className="text-base font-black text-text uppercase">Bulk Mark</h3>
-                            <p className="text-xs text-text-muted mt-1 mb-5">Apply status to all {records.length} staff for {selectedDate}</p>
-                            <div className="flex gap-2">
-                                <button onClick={bulkMarkPresent} className="flex-1 py-2.5 bg-emerald-500 text-white rounded-xl text-xs font-black uppercase shadow-md shadow-emerald-500/20 hover:scale-[1.02] transition-all">All Present</button>
-                                <button onClick={bulkMarkAbsent} className="flex-1 py-2.5 bg-rose-500 text-white rounded-xl text-xs font-black uppercase shadow-md shadow-rose-500/20 hover:scale-[1.02] transition-all">All Absent</button>
+                            className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-8 text-center">
+                            <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                            <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
+                            <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Global Override</h3>
+                            <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest">Applying status to all sequence nodes for {selectedDate}</p>
+                            <div className="flex flex-col gap-3">
+                                <button onClick={bulkMarkPresent} className="w-full py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Force Present</button>
+                                <button onClick={bulkMarkAbsent} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Force Absent</button>
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* Toast */}
             <AnimatePresence>
                 {toast && (
                     <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-5 py-3 bg-surface border border-border/40 rounded-2xl shadow-2xl">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <p className="text-sm font-bold text-text">{toast}</p>
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
                     </motion.div>
                 )}
             </AnimatePresence>

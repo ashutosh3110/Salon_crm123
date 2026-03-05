@@ -6,7 +6,6 @@ import {
     Calendar,
     Clock,
     User,
-    Filter,
     List,
     ChevronRight,
     MapPin,
@@ -18,8 +17,22 @@ import {
     CheckCircle2,
     XCircle,
     AlertCircle,
-    RotateCcw
+    RotateCcw,
+    PieChart as PieIcon,
+    BarChart3
 } from 'lucide-react';
+import {
+    PieChart,
+    Pie,
+    Cell,
+    ResponsiveContainer,
+    Tooltip,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid
+} from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import BookingCalendar from '../../components/admin/BookingCalendar';
@@ -34,6 +47,14 @@ const statusColors = {
     completed: 'bg-green-50 text-green-600 border-green-100',
     cancelled: 'bg-gray-100 text-gray-500 border-gray-200',
     'no-show': 'bg-red-50 text-red-600 border-red-100',
+};
+
+const CHART_COLORS = {
+    upcoming: '#3b82f6',
+    completed: '#10b981',
+    cancelled: '#94a3b8',
+    'no-show': '#ef4444',
+    pending: '#f59e0b'
 };
 
 const MOCK_OUTLETS = [
@@ -63,13 +84,7 @@ export default function BookingsPage() {
     // Rename for compatibility with existing logic
     const bookings = contextBookings;
     const staff = contextStaff;
-    const loading = false; // Always false since we use local state
-
-    useEffect(() => {
-        if (bookings.length > 0) {
-            console.log('[BookingsPage] Sample Booking:', bookings[0]);
-        }
-    }, [bookings]);
+    const loading = false;
 
     const filteredBookings = useMemo(() => {
         if (!Array.isArray(bookings)) return [];
@@ -85,14 +100,38 @@ export default function BookingsPage() {
         });
     }, [bookings, searchTerm, statusFilter, staffFilter]);
 
-    // Summary calculations
+    // Analytics Calculations
+    const statusData = useMemo(() => {
+        const counts = {};
+        bookings.forEach(b => {
+            counts[b.status] = (counts[b.status] || 0) + 1;
+        });
+        return Object.keys(counts).map(status => ({
+            name: status.toUpperCase(),
+            value: counts[status],
+            color: CHART_COLORS[status] || '#cbd5e1'
+        }));
+    }, [bookings]);
+
+    const sourceData = useMemo(() => {
+        const counts = {};
+        bookings.forEach(b => {
+            const src = b.source || 'SYSTEM';
+            counts[src] = (counts[src] || 0) + 1;
+        });
+        return Object.keys(counts).map(src => ({
+            name: src,
+            count: counts[src]
+        }));
+    }, [bookings]);
+
     const stats = useMemo(() => {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
-            { label: "Today's Total", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
+            { label: "Total Load", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
             { label: 'Upcoming', value: safeBookings.filter(b => b.status === 'upcoming').length, icon: RotateCcw, color: 'text-blue-500' },
-            { label: 'Cancelled', value: safeBookings.filter(b => b.status === 'cancelled').length, icon: XCircle, color: 'text-gray-400' },
-            { label: 'No-Shows', value: safeBookings.filter(b => b.status === 'no-show').length, icon: AlertCircle, color: 'text-red-500' },
+            { label: 'Success Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
+            { label: 'Risk Factor', value: safeBookings.filter(b => b.status === 'no-show').length, icon: AlertCircle, color: 'text-rose-500' },
         ];
     }, [bookings]);
 
@@ -102,32 +141,32 @@ export default function BookingsPage() {
     };
 
     return (
-        <div className="space-y-6 animate-reveal">
+        <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Booking Protocols</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Real-time scheduling intelligence</p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+                <div className="text-left font-black leading-none">
+                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Booking Protocols</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: scheduling_intelligence_active // global_sync</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4 text-left font-black">
                     <button
                         onClick={() => setIsBookingModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-2 rounded-none bg-primary text-white text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                        className="flex items-center gap-3 px-8 py-3.5 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
                     >
                         <Plus className="w-4 h-4" /> ADD BOOKING
                     </button>
 
-                    <div className="flex items-center gap-2 bg-surface-alt p-1 rounded-none border border-border">
+                    <div className="flex items-center gap-2 bg-surface p-1 rounded-none border border-border">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <Calendar className="w-3.5 h-3.5" /> CALENDAR
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-2 px-6 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <List className="w-3.5 h-3.5" /> LIST ARRAY
                         </button>
@@ -135,98 +174,120 @@ export default function BookingsPage() {
                 </div>
             </div>
 
-            {/* Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat, i) => (
-                    <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <stat.icon className={`w-4 h-4 ${stat.color} transition-colors`} />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+            {/* Top Analytics Cluster */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
+                <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+                    {stats.map((stat, i) => (
+                        <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
+                            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
+                            <div className="relative z-10 flex flex-col justify-between h-full text-left">
+                                <div className="flex items-center justify-between mb-4 text-left">
+                                    <div className="flex items-center gap-3 text-left">
+                                        <stat.icon className={`w-5 h-5 ${stat.color} transition-colors`} />
+                                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
-                                    <AnimatedCounter value={stat.value} />
-                                </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary/40">
-                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                <div className="flex items-end justify-between text-left">
+                                    <h3 className="text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">
+                                        {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
+                                    </h3>
+                                    <div className="opacity-20 group-hover:opacity-100 transition-opacity stroke-[3px]">
+                                        <svg width="40" height="12" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
+                                            <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    ))}
+                </div>
+
+                {/* Status Composition Chart */}
+                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4 text-left">
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Status Matrix</span>
+                        <PieIcon className="w-4 h-4 text-primary" />
                     </div>
-                ))}
+                    <div className="h-[120px] w-full text-left">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie data={statusData} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
+                                    {statusData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2 text-left">
+                        {statusData.map(d => (
+                            <div key={d.name} className="flex items-center gap-1.5 text-left">
+                                <div className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
+                                <span className="text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Source Intelligence Chart */}
+                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4 text-left">
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Source Vectors</span>
+                        <BarChart3 className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="h-[120px] w-full text-left">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={sourceData}>
+                                <Bar dataKey="count" fill="var(--primary)" radius={0}>
+                                    {sourceData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={index % 2 === 0 ? 'var(--primary)' : '#8B1A2D'} />
+                                    ))}
+                                </Bar>
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Entry Point Analysis</div>
+                </div>
             </div>
 
-            {/* Filters */}
-            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col xl:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+            {/* Filters Row */}
+            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col xl:flex-row gap-4 items-center font-black">
+                <div className="relative flex-1 w-full text-left">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search by customer name or phone..."
+                        placeholder="Search system registry (name/comm)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-none border border-border bg-surface text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full pl-12 pr-4 py-3.5 rounded-none border border-border bg-background text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                     />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <select
-                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                        value={dateFilter}
-                        onChange={(e) => setDateFilter(e.target.value)}
-                    >
-                        <option value="today">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="custom">Custom Range</option>
-                    </select>
-
-                    <select
-                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                        value={outletFilter}
-                        onChange={(e) => setOutletFilter(e.target.value)}
-                    >
-                        <option value="all">Every Outlet</option>
-                        {MOCK_OUTLETS.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-                    </select>
-
-                    <select
-                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                        value={staffFilter}
-                        onChange={(e) => setStaffFilter(e.target.value)}
-                    >
-                        <option value="all">Every Staff</option>
-                        {staff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                    </select>
-
-                    <select
-                        className="px-4 py-2.5 rounded-none border border-border bg-surface text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="all">Every Status</option>
-                        <option value="upcoming">Upcoming</option>
-                        <option value="completed">Completed</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="no-show">No-Show</option>
-                    </select>
+                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto font-black">
+                    {[
+                        { value: dateFilter, onChange: setDateFilter, options: [{ v: 'today', l: 'Today' }, { v: 'week', l: 'Week' }, { v: 'month', l: 'Month' }] },
+                        { value: staffFilter, onChange: setStaffFilter, options: [{ v: 'all', l: 'Every Staff' }, ...staff.map(s => ({ v: s._id, l: s.name }))] },
+                        { value: statusFilter, onChange: setStatusFilter, options: [{ v: 'all', l: 'Every Status' }, { v: 'upcoming', l: 'Upcoming' }, { v: 'completed', l: 'Completed' }, { v: 'cancelled', l: 'Cancelled' }, { v: 'no-show', l: 'No-Show' }] }
+                    ].map((sel, idx) => (
+                        <select
+                            key={idx}
+                            className="px-6 py-3.5 rounded-none border border-border bg-background text-[9px] font-black uppercase tracking-[0.2em] outline-none focus:border-primary cursor-pointer transition-all"
+                            value={sel.value}
+                            onChange={(e) => sel.onChange(e.target.value)}
+                        >
+                            {sel.options.map(opt => <option key={opt.v} value={opt.v}>{opt.l.toUpperCase()}</option>)}
+                        </select>
+                    ))}
                 </div>
             </div>
 
             {/* Content Area */}
             {view === 'calendar' ? (
                 <div className="flex bg-surface-alt rounded-none border border-border overflow-hidden shadow-2xl h-[800px] animate-reveal">
-                    {/* Windows-style Light Sidebar */}
+                    {/* Calendar Sidebar */}
                     <div className="w-80 bg-surface flex flex-col border-r border-border">
-                        {/* Sidebar Header */}
                         <div className="p-8 border-b border-border bg-surface-alt/50">
                             <h3 className="text-[11px] font-black text-text uppercase tracking-widest flex items-center gap-3">
                                 <Calendar className="w-4 h-4 text-primary" />
@@ -234,7 +295,6 @@ export default function BookingsPage() {
                             </h3>
                         </div>
 
-                        {/* Mini Calendar */}
                         <div className="p-4">
                             <MiniCalendar
                                 selectedDate={selectedDate}
@@ -242,7 +302,6 @@ export default function BookingsPage() {
                             />
                         </div>
 
-                        {/* Schedule List */}
                         <div className="flex-1 overflow-y-auto px-6 py-2 space-y-8 scroll-smooth no-scrollbar">
                             <div className="space-y-5">
                                 <div className="flex items-center justify-between">
@@ -263,24 +322,24 @@ export default function BookingsPage() {
                                         return d.getDate() === selectedDate.getDate() &&
                                             d.getMonth() === selectedDate.getMonth();
                                     }).length === 0 ? (
-                                        <p className="text-[11px] text-gray-400 px-2">No appointments for this day.</p>
+                                        <p className="text-[11px] text-gray-400 px-2 font-black uppercase mt-10 text-center italic opacity-40 italic">Null Data Stream.</p>
                                     ) : (
                                         filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
                                             return d.getDate() === selectedDate.getDate() &&
                                                 d.getMonth() === selectedDate.getMonth();
                                         }).map((b, i) => (
-                                            <div key={i} className="flex gap-4 px-4 group cursor-pointer hover:bg-surface-alt/50 py-3 rounded-none transition-all border border-transparent hover:border-border">
-                                                <div className="flex flex-col items-center gap-1.5 mt-1.5">
-                                                    <div className="w-2 h-2 rounded-none bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.3)]" />
+                                            <div key={i} className="flex gap-4 px-4 group cursor-pointer hover:bg-surface-alt/50 py-4 rounded-none transition-all border border-transparent hover:border-border">
+                                                <div className="flex flex-col items-center gap-2 mt-2">
+                                                    <div className="w-2.5 h-2.5 rounded-none bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.4)]" />
                                                     <div className="w-[1px] h-full bg-border" />
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[11px] font-black text-text uppercase">
+                                                <div className="flex flex-col text-left">
+                                                    <span className="text-[11px] font-black text-text uppercase tracking-tighter leading-none">
                                                         {new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
-                                                    <span className="text-[11px] text-text-muted font-bold tracking-tight mt-0.5">{b.client?.name}</span>
-                                                    <span className="text-[9px] text-primary font-black uppercase tracking-widest mt-1.5">{b.service?.name}</span>
+                                                    <span className="text-sm font-black text-text-secondary tracking-tight mt-1 leading-none uppercase">{b.client?.name}</span>
+                                                    <span className="text-[9px] text-primary font-black uppercase tracking-[0.15em] mt-2 leading-none">{b.service?.name}</span>
                                                 </div>
                                             </div>
                                         ))
@@ -289,17 +348,15 @@ export default function BookingsPage() {
                             </div>
                         </div>
 
-                        {/* Calendar Source */}
-                        <div className="p-6 border-t border-gray-100 bg-white/40">
-                            <div className="flex items-center gap-3 text-[11px] font-bold text-gray-500">
-                                <div className="w-2.5 h-2.5 rounded-sm bg-[#0078d4]" />
-                                <span>Salon Primary Calendar</span>
+                        <div className="p-6 border-t border-border bg-surface-alt/30">
+                            <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                <div className="w-3 h-3 rounded-none bg-primary" />
+                                <span>Core Synchronization Hub</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Main Calendar Grid */}
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className="flex-1 flex flex-col bg-background">
                         <BookingCalendar
                             bookings={filteredBookings}
                             staff={staff}
@@ -310,37 +367,27 @@ export default function BookingsPage() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
+                    <div className="overflow-x-auto text-left">
+                        <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-surface border-b border-border">
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Booking ID</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Date & Time</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Customer</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Service</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-center">Source</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Internal ID</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Signal Time</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Identity</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Service Logic</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Entry</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Protocol Status</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Operations</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border">
-                                {loading ? (
-                                    Array(5).fill(0).map((_, i) => (
-                                        <tr key={i}>
-                                            <td colSpan="7" className="px-6 py-4">
-                                                <div className="h-10 bg-surface rounded-xl relative overflow-hidden">
-                                                    <div className="absolute inset-0 animate-shimmer"></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : filteredBookings.length === 0 ? (
+                            <tbody className="divide-y divide-border/40 text-left font-black">
+                                {filteredBookings.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center justify-center opacity-40">
-                                                <Calendar className="w-12 h-12 mb-2" />
-                                                <p className="text-sm font-bold">No bookings found</p>
+                                        <td colSpan="7" className="px-8 py-32 text-center">
+                                            <div className="flex flex-col items-center justify-center opacity-20">
+                                                <RotateCcw className="w-16 h-16 mb-6 animate-spin-slow" />
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">No Bookings Detected in Current Matrix.</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -348,44 +395,43 @@ export default function BookingsPage() {
                                     filteredBookings.map((b, index) => (
                                         <tr
                                             key={b._id}
-                                            style={{ '--delay': `${index * 50}ms` }}
-                                            className="hover:bg-surface/50 transition-all cursor-pointer group animate-stagger"
+                                            className="hover:bg-surface-alt/50 transition-all cursor-pointer group text-left"
                                             onClick={() => setSelectedBooking(b)}
                                         >
-                                            <td className="px-6 py-4 text-[11px] font-bold text-text-muted">#{b._id?.slice(-6).toUpperCase() || 'N/A'}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-text">
+                                            <td className="px-8 py-6 text-[11px] font-black text-text-muted/60 uppercase tracking-widest text-left">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</td>
+                                            <td className="px-8 py-6 text-left">
+                                                <div className="flex flex-col text-left">
+                                                    <span className="text-xs font-black text-text uppercase leading-none">
                                                         {b.appointmentDate ? new Date(b.appointmentDate).toDateString() : 'N/A'}
                                                     </span>
-                                                    <span className="text-[10px] text-text-secondary font-medium uppercase">
+                                                    <span className="text-[10px] text-primary font-black uppercase tracking-widest mt-2 leading-none">
                                                         {b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
+                                            <td className="px-8 py-6 text-left">
+                                                <div className="flex items-center gap-4 text-left">
+                                                    <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary shadow-inner">
                                                         {b.client?.name?.[0] || 'C'}
                                                     </div>
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-black text-text uppercase tracking-tight">{b.client?.name || 'Unknown Entity'}</span>
-                                                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{b.client?.phone || 'NO COMMS'}</span>
+                                                    <div className="flex flex-col text-left">
+                                                        <span className="text-sm font-black text-text uppercase tracking-tight leading-none mb-1">{b.client?.name || 'UNKNOWN'}</span>
+                                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.1em] leading-none">{b.client?.phone || 'NO_COMMS'}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-5 text-[11px] font-black text-text-muted uppercase tracking-widest">{b.service?.name}</td>
-                                            <td className="px-6 py-5 text-center">
-                                                <span className="px-3 py-1.5 rounded-none bg-surface-alt border border-border text-[9px] font-black uppercase tracking-[0.2em] text-text-muted">{b.source || 'SYS'}</span>
+                                            <td className="px-8 py-6 text-[10px] font-black text-text uppercase tracking-wider text-left">{b.service?.name}</td>
+                                            <td className="px-8 py-6 text-center text-left">
+                                                <span className="px-3 py-1.5 rounded-none bg-background border border-border text-[9px] font-black uppercase tracking-[0.2em] text-text-muted">{b.source || 'SYS'}</span>
                                             </td>
-                                            <td className="px-6 py-5">
-                                                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status]}`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-none ${b.status === 'upcoming' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                                            <td className="px-8 py-6 text-left">
+                                                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status] || 'bg-surface text-text'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-none ${b.status === 'upcoming' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button className="p-2 rounded-lg hover:bg-surface tracking-widest text-text-muted group-hover:text-primary transition-all">
+                                            <td className="px-8 py-6 text-right">
+                                                <button className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all">
                                                     <MoreVertical className="w-4 h-4" />
                                                 </button>
                                             </td>
@@ -398,7 +444,7 @@ export default function BookingsPage() {
                 </div>
             )}
 
-            {/* Detail Modal */}
+            {/* Modals */}
             {selectedBooking && (
                 <BookingDetailModal
                     booking={selectedBooking}
@@ -407,7 +453,6 @@ export default function BookingsPage() {
                 />
             )}
 
-            {/* Add Booking Modal */}
             <BookingModal
                 isOpen={isBookingModalOpen}
                 onClose={() => setIsBookingModalOpen(false)}
