@@ -1,0 +1,59 @@
+[
+    {
+        "label": "Dashboard",
+        "iconName": "LayoutDashboard",
+        "path": "/stylist"
+    },
+    {
+        "label": "Schedule Matrix",
+        "iconName": "Calendar",
+        "path": "/stylist"
+    },
+    {
+        "label": "Attendance Protocol",
+        "iconName": "UserCheck",
+        "path": "/stylist/attendance"
+    },
+    {
+        "label": "Personnel Matrix",
+        "iconName": "Users",
+        "path": "/stylist/clients"
+    },
+    {
+        "label": "Credit Stream",
+        "iconName": "DollarSign",
+        "path": "/stylist/commissions"
+    },
+    {
+        "label": "Protocol Pause",
+        "iconName": "Clock",
+        "path": "/stylist/timeoff"
+    },
+    {
+        "label": "System Prefs",
+        "iconName": "Settings",
+        "path": "/stylist/settings",
+        "subItems": [
+            {
+                "label": "Bio Profile",
+                "iconName": "User",
+                "path": "/stylist/settings/profile"
+            },
+            {
+                "label": "Skill Vectors",
+                "iconName": "Scissors",
+                "path": "/stylist/settings/skills"
+            },
+            {
+                "label": "Uptime Setup",
+                "iconName": "Bell",
+                "path": "/stylist/settings/availability"
+            },
+            {
+                "label": "Access Keys",
+                "iconName": "Shield",
+                "path": "/stylist/settings/security"
+            }
+        ]
+    }
+]

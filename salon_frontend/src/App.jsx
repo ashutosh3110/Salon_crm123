@@ -129,6 +129,7 @@ import StylistDashboard from './pages/stylist/StylistDashboard';
 import StylistClientsPage from './pages/stylist/StylistClientsPage';
 import StylistCommissionsPage from './pages/stylist/StylistCommissionsPage';
 import StylistTimeOffPage from './pages/stylist/StylistTimeOffPage';
+import StylistAttendance from './pages/stylist/StylistAttendance';
 import StylistSettingsPage from './pages/stylist/StylistSettingsPage';
 
 import AccountantLayout from './layouts/AccountantLayout';
@@ -306,6 +307,7 @@ function App() {
                       <Route path="/stylist/clients" element={<StylistClientsPage />} />
                       <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />
                       <Route path="/stylist/timeoff" element={<StylistTimeOffPage />} />
+                      <Route path="/stylist/attendance" element={<StylistAttendance />} />
                       <Route path="/stylist/settings" element={<StylistSettingsPage />} />
                       <Route path="/stylist/settings/:section" element={<StylistSettingsPage />} />
                     </Route>

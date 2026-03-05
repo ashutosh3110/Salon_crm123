@@ -1,90 +1,302 @@
 import { useState } from 'react';
-import { Search, User, Mail, Phone, Calendar, Star, ChevronRight, History, Heart } from 'lucide-react';
+import { Search, User, Mail, Phone, Calendar, Star, ChevronRight, History, Heart, UserPlus, Filter, Shield, X, CheckCircle2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const myClients = [
-    { id: 1, name: 'Priya Sharma', visits: 12, lastService: 'Feb 15, 2024', status: 'VIP', rating: 4.9, preferences: 'Low heat, side part' },
-    { id: 2, name: 'Meera Patel', visits: 5, lastService: 'Jan 28, 2024', status: 'Regular', rating: 4.7, preferences: 'Ammonia-free color only' },
-    { id: 3, name: 'Sneha Reddy', visits: 8, lastService: 'Feb 02, 2024', status: 'Regular', rating: 4.8, preferences: 'Loves head massage' },
-    { id: 4, name: 'Ritu Singh', visits: 3, lastService: 'Dec 20, 2023', status: 'At Risk', rating: 4.5, preferences: 'Natural looks' },
-    { id: 5, name: 'Kavya Iyer', visits: 15, lastService: 'Feb 20, 2024', status: 'VIP', rating: 5.0, preferences: 'Regular root touchup' },
+    { id: 1, name: 'PRIYA SHARMA', visits: 12, lastService: 'FEB 15_24', status: 'VIP_PROTOCOL', rating: 4.9, preferences: 'LOW_HEAT, SIDE_PART', email: 'p.sharma@nexus.com' },
+    { id: 2, name: 'MEERA PATEL', visits: 5, lastService: 'JAN 28_24', status: 'STANDARD_UNIT', rating: 4.7, preferences: 'AMMONIA-FREE_COLOR_ONLY', email: 'meera.p@uplink.io' },
+    { id: 3, name: 'SNEHA REDDY', visits: 8, lastService: 'FEB 02_24', status: 'STANDARD_UNIT', rating: 4.8, preferences: 'LOVES_HEAD_MASSAGE', email: 'sneha.r@gmail.com' },
+    { id: 4, name: 'RITU SINGH', visits: 3, lastService: 'DEC 20_23', status: 'LOW_ACTIVITY', rating: 4.5, preferences: 'NATURAL_LOOKS', email: 'ritu_s@outlook.com' },
+    { id: 5, name: 'KAVYA IYER', visits: 15, lastService: 'FEB 20_24', status: 'VIP_PROTOCOL', rating: 5.0, preferences: 'REGULAR_ROOT_TOUCHUP', email: 'kavya.i@protonmail.com' },
 ];
 
 export default function StylistClientsPage() {
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('name');
+    const [showEnrollModal, setShowEnrollModal] = useState(false);
+    const [selectedClient, setSelectedClient] = useState(null);
+    const [toast, setToast] = useState(null);
 
-    const filteredClients = myClients.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const filteredClients = myClients
+        .filter(c =>
+            c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            if (sortBy === 'visits') return b.visits - a.visits;
+            if (sortBy === 'rating') return b.rating - a.rating;
+            return 0;
+        });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 font-black text-left">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-black text-text tracking-tight uppercase">My Clients</h1>
-                <p className="text-sm text-text-muted font-medium">Manage your personal client base and their preferences</p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
+                <div>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-4 h-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Security_Zone</span>
+                    </div>
+                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Personnel Matrix</h1>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Authorized_Base_Only</p>
+                </div>
+                <button
+                    onClick={() => setShowEnrollModal(true)}
+                    className="flex items-center gap-3 px-6 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:bg-primary-dark transition-all active:scale-95"
+                >
+                    <UserPlus className="w-4 h-4" /> Enroll_Unit
+                </button>
             </div>
 
             {/* Search & Filter */}
-            <div className="bg-surface rounded-2xl border border-border/40 p-3 flex gap-3">
+            <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
-                        placeholder="Search by name..."
-                        className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-sm outline-none focus:border-primary/50 transition-colors"
+                        placeholder="SCAN_DATA_BYTES..."
+                        className="w-full pl-12 pr-4 py-4 bg-surface border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
+                <div className="flex gap-2">
+                    {['name', 'visits', 'rating'].map(criteria => (
+                        <button
+                            key={criteria}
+                            onClick={() => setSortBy(criteria)}
+                            className={`px-6 py-4 border border-border flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${sortBy === criteria ? 'bg-primary text-white border-primary shadow-lg shadow-primary/10' : 'bg-surface text-text-muted hover:text-text'}`}
+                        >
+                            Sort_{criteria}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {/* Clients Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
+            {/* Clients Matrix Grid */}
+            <div className="grid md:grid-cols-2 gap-6">
                 {filteredClients.map((client) => (
-                    <div key={client.id} className="bg-surface rounded-2xl border border-border/40 p-5 hover:border-primary/30 transition-all shadow-sm group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary text-xl font-black uppercase">
+                    <div key={client.id} className="bg-surface border border-border p-8 hover:border-primary/40 transition-all group relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -translate-y-12 translate-x-12 rotate-45" />
+
+                        <div className="flex items-start justify-between mb-8 relative z-10">
+                            <div className="flex items-center gap-6">
+                                <div className="w-16 h-16 bg-background border border-border flex items-center justify-center text-primary text-xl font-black uppercase shadow-inner">
                                     {client.name.split(' ').map(n => n[0]).join('')}
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-text group-hover:text-primary transition-colors">{client.name}</h3>
-                                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter ${client.status === 'VIP' ? 'bg-amber-500/10 text-amber-500' :
-                                        client.status === 'Regular' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
-                                        }`}>
-                                        {client.status}
-                                    </span>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-black text-text group-hover:text-primary transition-colors tracking-tight uppercase">{client.name}</h3>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`text-[8px] font-black px-2 py-0.5 border uppercase tracking-widest ${client.status.includes('VIP') ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                            client.status.includes('STANDARD') ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                                            }`}>
+                                            {client.status}
+                                        </div>
+                                        <div className="flex items-center gap-1 text-[10px] font-black text-text">
+                                            <Star className="w-3 h-3 fill-primary text-primary" /> {client.rating}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                                <span className="text-sm font-bold text-text">{client.rating}</span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                            <div className="bg-background rounded-xl p-3 border border-border/10">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Visits</p>
-                                <p className="text-sm font-bold text-text">{client.visits}</p>
-                            </div>
-                            <div className="bg-background rounded-xl p-3 border border-border/10">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Last Visit</p>
-                                <p className="text-sm font-bold text-text">{client.lastService}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-start gap-2">
-                                <Heart className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
-                                <p className="text-xs text-text-secondary leading-relaxed"><span className="font-bold">Preferences:</span> {client.preferences}</p>
-                            </div>
-                            <button className="w-full flex items-center justify-center gap-2 py-2  bg-surface-alt border border-border/40 rounded-xl text-xs font-bold text-text-secondary hover:bg-white hover:text-primary transition-all">
-                                <History className="w-3.5 h-3.5" /> View Service History
+                            <button
+                                onClick={() => setSelectedClient(client)}
+                                className="p-2 border border-border hover:bg-surface-alt transition-all group-hover:border-primary/40"
+                            >
+                                <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary" />
                             </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
+                            <div className="bg-background border border-border p-4 shadow-sm">
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 italic">Total_Cycles</p>
+                                <p className="text-sm font-black text-text">{client.visits} ITERATIONS</p>
+                            </div>
+                            <div className="bg-background border border-border p-4 shadow-sm">
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 italic">Last_Sync</p>
+                                <p className="text-sm font-black text-text">{client.lastService}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 relative z-10">
+                            <div className="flex items-start gap-3 p-4 bg-primary/5 border border-primary/10">
+                                <Heart className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1">Pref_Logic_Vector</p>
+                                    <p className="text-[10px] text-text font-black uppercase tracking-tight">{client.preferences}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setSelectedClient(client)}
+                                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-alt border border-border text-[9px] font-black text-text-muted uppercase tracking-widest hover:bg-surface hover:text-primary transition-all active:scale-95"
+                                >
+                                    <History className="w-3.5 h-3.5" /> Service_Log
+                                </button>
+                                <button
+                                    onClick={() => showToast(`COMM_LINK initiated for ${client.name}`)}
+                                    className="px-4 py-3 bg-surface-alt border border-border text-[9px] font-black text-text-muted uppercase tracking-widest hover:bg-surface hover:text-rose-500 transition-all active:scale-95"
+                                >
+                                    <Mail className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Enroll Modal */}
+            <AnimatePresence>
+                {showEnrollModal && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowEnrollModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
+                                <UserPlus className="w-32 h-32 text-primary" />
+                            </div>
+                            <div className="flex items-center justify-between mb-10 relative z-10">
+                                <div>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Client Induction</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol_049: Unit Enrollment</p>
+                                </div>
+                                <button onClick={() => setShowEnrollModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    setShowEnrollModal(false);
+                                    showToast("Human Asset successfully enrolled in Personnel Matrix.");
+                                }}
+                                className="space-y-6 relative z-10"
+                            >
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Asset_Identity</label>
+                                    <input required type="text" placeholder="Full Legal Name" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Digital_Link</label>
+                                        <input required type="email" placeholder="Email@Matrix.net" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Comm_Channel</label>
+                                        <input required type="tel" placeholder="+91 XXX XXX XXXX" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Preference_Profile</label>
+                                    <textarea placeholder="Specify logical preferences and requirements..." className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none" />
+                                </div>
+                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Execute Induction Protocol</button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Service Log Modal */}
+            <AnimatePresence>
+                {selectedClient && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedClient(null)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-surface w-full max-w-2xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden"
+                        >
+                            <div className="p-10 border-b border-border bg-background/50 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-6">
+                                    <div className="w-16 h-16 bg-surface border border-border flex items-center justify-center text-primary text-2xl font-black uppercase shadow-2xl">
+                                        {selectedClient.name.split(' ').map(n => n[0]).join('')}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-black text-text uppercase tracking-tight">{selectedClient.name}</h2>
+                                        <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-widest italic">{selectedClient.email}</p>
+                                    </div>
+                                </div>
+                                <button onClick={() => setSelectedClient(null)} className="w-12 h-12 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div className="bg-background border border-border p-6 text-center">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Persistence</p>
+                                        <p className="text-2xl font-black text-text tracking-tighter">{selectedClient.visits}</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Total_Iterations</p>
+                                    </div>
+                                    <div className="bg-background border border-border p-6 text-center">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Reputation</p>
+                                        <p className="text-2xl font-black text-primary tracking-tighter">{selectedClient.rating}</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Trust_Metric</p>
+                                    </div>
+                                    <div className="bg-background border border-border p-6 text-center">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Last_Contact</p>
+                                        <p className="text-lg font-black text-text tracking-tight uppercase">{selectedClient.lastService}</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Sync_Timestamp</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
+                                        <Calendar className="w-4 h-4" /> Historical_Service_Grid
+                                    </h4>
+                                    <div className="border border-border divide-y divide-border/30">
+                                        {[
+                                            { date: '15 FEB_24', service: 'Precision_Cut + Ombre_Matrix', cost: '₹4,500', tech: 'Self' },
+                                            { date: '02 DEC_23', service: 'Keratin_Bonding', cost: '₹8,400', tech: 'Self' },
+                                            { date: '18 SEP_23', service: 'Deep_Hydration_Protocol', cost: '₹2,200', tech: 'Self' },
+                                        ].map((log, idx) => (
+                                            <div key={idx} className="p-6 bg-background/30 flex items-center justify-between hover:bg-background/60 transition-colors group">
+                                                <div>
+                                                    <p className="text-xs font-black text-text uppercase tracking-tight">{log.service}</p>
+                                                    <p className="text-[9px] text-text-muted uppercase tracking-widest mt-1 italic">{log.date} · Tech: {log.tech}</p>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-sm font-black text-primary tracking-tighter">{log.cost}</p>
+                                                    <p className="text-[8px] text-emerald-500 font-bold uppercase tracking-widest">SETTLED</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-primary/5 border border-primary/20">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <Heart className="w-4 h-4 text-primary" />
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Active_Preferences</span>
+                                    </div>
+                                    <p className="text-[11px] text-text-muted uppercase leading-relaxed font-bold tracking-tight italic">
+                                        {selectedClient.preferences}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="p-10 border-t border-border bg-background/50 shrink-0">
+                                <button className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Schedule New Iteration</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+

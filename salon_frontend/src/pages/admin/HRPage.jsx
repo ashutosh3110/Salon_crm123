@@ -84,18 +84,24 @@ export default function HRPage({ tab = 'staff' }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-surface-alt p-1 rounded-none border border-border">
+                <div className="flex items-center gap-2 bg-surface p-1.5 rounded-none border border-border shadow-2xl shadow-primary/5 backdrop-blur-xl">
                     {HR_TABS.map((t) => (
                         <button
                             key={t.id}
                             onClick={() => navigate(`/admin/hr/${t.id}`)}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest transition-all ${tab === t.id
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-100'
-                                : 'text-text-muted hover:text-text hover:bg-surface'
+                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab ${tab === t.id
+                                ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-100'
+                                : 'text-text-muted hover:text-text hover:bg-surface-alt'
                                 }`}
                         >
-                            <t.icon className={`w-3.5 h-3.5 ${tab === t.id ? 'text-white' : 'text-text-muted'}`} />
-                            <span className="hidden sm:inline">{t.label} Protocol</span>
+                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-white' : 'text-primary/60'}`} />
+                            <span className="hidden lg:inline">{t.label} Protocol</span>
+                            {tab === t.id && (
+                                <>
+                                    <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-white/40" />
+                                    <div className="absolute -bottom-[1px] -right-[1px] w-2 h-2 border-b-2 border-r-2 border-white/40" />
+                                </>
+                            )}
                         </button>
                     ))}
                 </div>

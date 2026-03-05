@@ -89,25 +89,54 @@ export default function PettyCashPage() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden group">
+                <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden group min-h-[160px] flex flex-col justify-between">
                     <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                         <Wallet className="w-24 h-24 text-text" />
                     </div>
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4">Cash Hand Balance</p>
-                    <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-text tracking-tighter">₹{currentBalance.toLocaleString()}</h3>
-                        <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[9px] font-black">
-                            <TrendingUp className="w-2.5 h-2.5" /> 12%
+                    <div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 text-left">Cash Hand Balance</p>
+                        <div className="flex items-baseline gap-2">
+                            <h3 className="text-4xl font-black text-text tracking-tighter">₹{currentBalance.toLocaleString()}</h3>
+                            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[9px] font-black">
+                                <TrendingUp className="w-2.5 h-2.5" /> 12%
+                            </div>
                         </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-border/10 flex items-center justify-between">
-                        <span className="text-[9px] font-bold text-text-muted uppercase">System Liquid Cash</span>
-                        <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30" />
+
+                    {closingLogs.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-border/10">
+                            <details className="group/notes">
+                                <summary className="flex items-center justify-between cursor-pointer list-none">
+                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                                        <Banknote className="w-3 h-3" /> Last Note Audit
+                                    </span>
+                                    <ArrowRight className="w-3 h-3 text-text-muted group-open/notes:rotate-90 transition-transform" />
+                                </summary>
+                                <div className="mt-3 grid grid-cols-4 gap-2">
+                                    {Object.entries(closingLogs[0].denominations)
+                                        .filter(([_, count]) => count && count > 0)
+                                        .map(([d, count]) => (
+                                            <div key={d} className="bg-background/50 border border-border/5 p-1.5 rounded-lg text-center">
+                                                <p className="text-[8px] font-black text-text-muted">₹{d}</p>
+                                                <p className="text-[10px] font-black text-primary leading-none">x{count}</p>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </details>
                         </div>
-                    </div>
+                    )}
+
+                    {!closingLogs.length && (
+                        <div className="mt-4 pt-4 border-t border-border/10 flex items-center justify-between">
+                            <span className="text-[9px] font-bold text-text-muted uppercase">System Liquid Cash</span>
+                            <div className="flex gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30" />
+                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/30" />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden">
@@ -481,18 +510,22 @@ function ExpenseModal({ categories, onClose, onSave }) {
                             className="hidden"
                             accept="image/*,.pdf"
                         />
-                        <div className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all ${file ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'} ${uploading ? 'animate-pulse' : ''}`}>
+                        <div className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all overflow-hidden border border-border/10 ${file ? 'bg-emerald-500/10 text-emerald-500' : 'bg-primary/10 text-primary'} ${uploading ? 'animate-pulse' : ''}`}>
                             {uploading ? (
                                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                             ) : (
-                                file ? <CheckCircle2 className="w-5 h-5 transition-transform scale-110" /> : <Receipt className="w-5 h-5" />
+                                file ? (
+                                    file.type.startsWith('image/') ?
+                                        <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="Preview" /> :
+                                        <CheckCircle2 className="w-5 h-5 transition-transform scale-110" />
+                                ) : <Receipt className="w-5 h-5" />
                             )}
                         </div>
-                        <div className="flex-1 overflow-hidden">
+                        <div className="flex-1 overflow-hidden text-left">
                             <p className="text-[10px] font-black text-text uppercase truncate">
                                 {uploading ? 'Processing File...' : (file ? file.name : 'Attach Bill Image')}
                             </p>
-                            <p className="text-[9px] text-text-muted font-bold mt-0.5">
+                            <p className="text-[9px] text-text-muted font-bold mt-0.5 uppercase tracking-widest">
                                 {file ? `${(file.size / 1024).toFixed(1)} KB` : 'JPEG or PDF · Max 10MB'}
                             </p>
                         </div>

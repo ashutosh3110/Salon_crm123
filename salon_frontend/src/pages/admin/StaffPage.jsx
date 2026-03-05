@@ -49,6 +49,9 @@ export default function StaffPage() {
         phone: '',
         role: 'stylist',
         outletId: '',
+        dob: '',
+        pan: '',
+        address: '',
         password: ''
     });
 
@@ -118,6 +121,9 @@ export default function StaffPage() {
             phone: u.phone || '',
             role: u.role,
             outletId: u.outletId || '',
+            dob: u.dob || '',
+            pan: u.pan || '',
+            address: u.address || '',
             password: ''
         });
         setShowModal(true);
@@ -374,6 +380,36 @@ export default function StaffPage() {
                                             ))}
                                         </select>
                                     </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-1.5 px-1">
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Birth_Epoch (DOB)</label>
+                                        <input
+                                            type="date"
+                                            value={form.dob || ''}
+                                            onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                                            className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5 px-1">
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Tax_Identifier (PAN)</label>
+                                        <input
+                                            type="text"
+                                            value={form.pan || ''}
+                                            onChange={(e) => setForm({ ...form, pan: e.target.value })}
+                                            placeholder="PAN Number"
+                                            className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5 px-1">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Physical_Node (Address)</label>
+                                    <textarea
+                                        value={form.address || ''}
+                                        onChange={(e) => setForm({ ...form, address: e.target.value })}
+                                        placeholder="Full Residential Address"
+                                        className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30 h-20 resize-none"
+                                    />
                                 </div>
                                 {!editing && (
                                     <div className="space-y-1.5 px-1">

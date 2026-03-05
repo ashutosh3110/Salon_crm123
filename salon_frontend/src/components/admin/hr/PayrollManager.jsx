@@ -15,11 +15,11 @@ import {
 const MONTHS = ['January 2025', 'February 2025', 'March 2025', 'April 2025', 'May 2025', 'June 2025', 'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025', 'December 2025'];
 
 const INITIAL_PAYROLL = [
-    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', base: 25000, days: 28, commission: 4500, deductions: 500, net: 29000, status: 'paid' },
-    { id: 2, staff: 'Rahul Verma', role: 'Barber', base: 18000, days: 26, commission: 3200, deductions: 200, net: 21000, status: 'approved' },
-    { id: 3, staff: 'Sneha Kapur', role: 'Reception', base: 15000, days: 30, commission: 0, deductions: 100, net: 14900, status: 'draft' },
-    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', base: 45000, days: 29, commission: 12000, deductions: 1000, net: 56000, status: 'approved' },
-    { id: 5, staff: 'Priya Singh', role: 'Nail Tech', base: 16000, days: 24, commission: 1500, deductions: 0, net: 17500, status: 'draft' },
+    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', base: 25000, days: 28, commission: 4500, deductions: 500, net: 29000, status: 'paid', bankName: 'HDFC Bank', accountNo: '501004231988', ifsc: 'HDFC0001234' },
+    { id: 2, staff: 'Rahul Verma', role: 'Barber', base: 18000, days: 26, commission: 3200, deductions: 200, net: 21000, status: 'approved', bankName: 'ICICI Bank', accountNo: '001205006789', ifsc: 'ICIC0000012' },
+    { id: 3, staff: 'Sneha Kapur', role: 'Reception', base: 15000, days: 30, commission: 0, deductions: 100, net: 14900, status: 'draft', bankName: 'SBI', accountNo: '31245566778', ifsc: 'SBIN0004567' },
+    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', base: 45000, days: 29, commission: 12000, deductions: 1000, net: 56000, status: 'approved', bankName: 'Axis Bank', accountNo: '912010088776655', ifsc: 'UTIB0000123' },
+    { id: 5, staff: 'Priya Singh', role: 'Nail Tech', base: 16000, days: 24, commission: 1500, deductions: 0, net: 17500, status: 'draft', bankName: 'HDFC Bank', accountNo: '502000554433', ifsc: 'HDFC0001234' },
 ];
 
 const STATUS_META = {
@@ -100,6 +100,10 @@ export default function PayrollManager() {
             '------------------------------------',
             `NET PAYABLE   : ₹${rec.net.toLocaleString()}`,
             `Status        : ${rec.status.toUpperCase()}`,
+            '------------------------------------',
+            `Bank Name     : ${rec.bankName || 'N/A'}`,
+            `A/C Number    : ${rec.accountNo || 'N/A'}`,
+            `IFSC Code     : ${rec.ifsc || 'N/A'}`,
             '====================================',
         ].join('\n');
         const blob = new Blob([content], { type: 'text/plain' });
@@ -195,19 +199,24 @@ export default function PayrollManager() {
                     <div className="relative z-10 text-left">
                         <div className="flex items-center justify-between mb-4 text-left">
                             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Protocol Isolation</span>
-                            {isLocked ? <Lock className="w-5 h-5 text-rose-500" /> : <Unlock className="w-5 h-5 text-emerald-500" />}
+                            <button onClick={() => setIsLocked(v => !v)} className="transition-transform active:scale-95">
+                                {isLocked ? <Lock className="w-5 h-5 text-rose-500" /> : <Unlock className="w-5 h-5 text-emerald-500" />}
+                            </button>
                         </div>
-                        <h3 className="text-lg font-black text-text uppercase tracking-tight">Finalize Command</h3>
-                        <p className="text-[10px] text-text-muted mt-2 leading-relaxed font-bold uppercase tracking-widest">Locked state restricts all entry modifications.</p>
+                        <h3 className="text-lg font-black text-text uppercase tracking-tight">System Payout</h3>
+                        <p className="text-[10px] text-text-muted mt-2 leading-relaxed font-bold uppercase tracking-widest">Global disbursement and record locking.</p>
                     </div>
                     <div className="flex flex-col gap-3 mt-8 relative z-10 text-left font-black">
-                        <button onClick={() => setIsLocked(v => !v)}
-                            className={`w-full flex items-center justify-center gap-3 py-4 rounded-none font-black text-[10px] uppercase tracking-[0.2em] transition-all ${isLocked ? 'bg-rose-500 text-white hover:bg-rose-600 shadow-xl shadow-rose-500/10' : 'bg-primary text-white hover:bg-primary-dark shadow-xl shadow-primary/10'}`}>
-                            {isLocked ? 'Initiate Unlock' : 'Apply Multi-Lock'} <ArrowRight className="w-4 h-4" />
+                        <button onClick={() => {
+                            showToast('Generating Payroll Drafts...');
+                            setTimeout(() => showToast('Sync Complete: 5 Nodes Populated'), 1500);
+                        }} disabled={isLocked}
+                            className="w-full flex items-center justify-center gap-3 py-4 rounded-none font-black text-[10px] uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5 disabled:opacity-30">
+                            <Calculator className="w-4 h-4" /> Run Generation Run
                         </button>
                         <button onClick={() => setPayAllConfirm(true)} disabled={isLocked}
                             className="w-full flex items-center justify-center gap-3 py-4 rounded-none font-black text-[10px] uppercase tracking-[0.2em] bg-emerald-500 text-white hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                            <CheckCircle2 className="w-4 h-4" /> Execute Payout
+                            <CheckCircle2 className="w-4 h-4" /> Finalize & Disburse
                         </button>
                     </div>
                 </div>
@@ -339,37 +348,70 @@ export default function PayrollManager() {
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewModal(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-10">
-                            <button onClick={() => setViewModal(null)} className="absolute top-6 right-6 w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-5 h-5" /></button>
-                            <div className="text-center mb-10">
-                                <div className="w-16 h-16 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-2xl border border-primary/10 mx-auto mb-6 shadow-2xl shadow-primary/5">
-                                    {viewModal.staff.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <h2 className="text-lg font-black text-text uppercase tracking-tight">{viewModal.staff}</h2>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-2 italic">{viewModal.role} · {MONTHS[monthIdx]}</p>
-                                <span className={`inline-block mt-4 px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border ${STATUS_META[viewModal.status]?.cls}`}>{STATUS_META[viewModal.status]?.label}</span>
-                            </div>
-                            <div className="space-y-4">
-                                {[
-                                    { label: 'Primary Base', value: `₹${viewModal.base.toLocaleString()}`, cls: 'text-text' },
-                                    { label: 'Commission', value: `+₹${viewModal.commission.toLocaleString()}`, cls: 'text-emerald-500' },
-                                    { label: 'Deductions', value: `-₹${viewModal.deductions.toLocaleString()}`, cls: 'text-rose-500' },
-                                    { label: 'Active Cycle', value: `${viewModal.days} DAYS`, cls: 'text-text' },
-                                ].map(row => (
-                                    <div key={row.label} className="flex justify-between items-center py-3 border-b border-border/40">
-                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{row.label}</span>
-                                        <span className={`text-sm font-black uppercase ${row.cls}`}>{row.value}</span>
+                            className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
+                            <div className="p-10 border-b border-border bg-surface-alt/10 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-6 text-left font-black">
+                                    <div className="w-16 h-16 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-2xl border border-primary/10 shadow-2xl shadow-primary/5">
+                                        {viewModal.staff.split(' ').map(n => n[0]).join('')}
                                     </div>
-                                ))}
-                                <div className="flex justify-between items-center py-5 bg-primary/5 rounded-none px-5 border border-primary/20 mt-6 shadow-lg shadow-primary/5">
-                                    <span className="text-[10px] font-black text-text uppercase tracking-[0.2em]">Net settlement</span>
-                                    <span className="text-2xl font-black text-primary tracking-tighter">₹{viewModal.net.toLocaleString()}</span>
+                                    <div className="text-left font-black">
+                                        <h2 className="text-lg font-black text-text uppercase tracking-tight leading-none">{viewModal.staff}</h2>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-2 italic">{viewModal.role} · {MONTHS[monthIdx]}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 font-black">
+                                    <span className={`px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border ${STATUS_META[viewModal.status]?.cls}`}>{STATUS_META[viewModal.status]?.label}</span>
+                                    <button onClick={() => setViewModal(null)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
                                 </div>
                             </div>
-                            <button onClick={() => { downloadPayslip(viewModal); setViewModal(null); }}
-                                className="w-full mt-8 flex items-center justify-center gap-3 py-4 bg-background border border-border rounded-none text-[10px] font-black text-text uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
-                                <Download className="w-4 h-4 text-primary" /> Generate PDF Output
-                            </button>
+
+                            <div className="p-10 overflow-y-auto space-y-8 flex-1 font-black">
+                                <div className="grid grid-cols-2 gap-10 text-left font-black">
+                                    <div className="space-y-4 font-black">
+                                        <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4 border-b border-border/10 pb-2">Salary Architecture</div>
+                                        {[
+                                            { label: 'Primary Base', value: `₹${viewModal.base.toLocaleString()}`, cls: 'text-text' },
+                                            { label: 'Commission', value: `+₹${viewModal.commission.toLocaleString()}`, cls: 'text-emerald-500' },
+                                            { label: 'Deductions', value: `-₹${viewModal.deductions.toLocaleString()}`, cls: 'text-rose-500' },
+                                            { label: 'Active Cycle', value: `${viewModal.days} DAYS`, cls: 'text-text' },
+                                        ].map(row => (
+                                            <div key={row.label} className="flex justify-between items-center py-2 text-left font-black">
+                                                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{row.label}</span>
+                                                <span className={`text-[11px] font-black uppercase ${row.cls}`}>{row.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4 font-black">
+                                        <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4 border-b border-border/10 pb-2">Financial Logistics</div>
+                                        {[
+                                            { label: 'Bank Name', value: viewModal.bankName || 'NULL' },
+                                            { label: 'A/C Number', value: viewModal.accountNo || 'XXXXXXXXXXXX' },
+                                            { label: 'IFSC Code', value: viewModal.ifsc || 'XXXX0000XXX' },
+                                        ].map(row => (
+                                            <div key={row.label} className="flex flex-col gap-1 py-1 text-left font-black">
+                                                <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{row.label}</span>
+                                                <span className="text-[11px] font-black text-text uppercase tracking-widest font-mono">{row.value}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-between items-center py-6 bg-primary/5 rounded-none px-8 border border-primary/20 mt-6 shadow-xl shadow-primary/5">
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-1">Total Net Settlement</p>
+                                        <p className="text-[10px] text-text-muted/60 uppercase font-bold italic tracking-widest">Base + Commission - Deductions</p>
+                                    </div>
+                                    <span className="text-3xl font-black text-primary tracking-tighter">₹{viewModal.net.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <div className="p-10 border-t border-border bg-surface-alt/5 shrink-0 font-black">
+                                <button onClick={() => { downloadPayslip(viewModal); setViewModal(null); }}
+                                    className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                                    <Download className="w-5 h-5" /> Generate Encrypted Payslip
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

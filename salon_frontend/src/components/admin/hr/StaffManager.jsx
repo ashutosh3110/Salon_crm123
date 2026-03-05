@@ -15,18 +15,32 @@ const OUTLETS = ['Main Branch', 'City Center', 'West End', 'Bandra Branch'];
 const PAGE_SIZE = 5;
 
 const INITIAL_STAFF = [
-    { id: 1, name: 'Ananya Sharma', role: 'Senior Stylist', outlet: 'Main Branch', status: 'active', email: 'ananya@salon.com', phone: '+91 98765 43210', joined: '2023-05-15', salary: 25000 },
-    { id: 2, name: 'Rahul Verma', role: 'Hair Specialist', outlet: 'City Center', status: 'active', email: 'rahul@salon.com', phone: '+91 98765 43211', joined: '2023-06-20', salary: 18000 },
-    { id: 3, name: 'Priya Singh', role: 'Makeup Artist', outlet: 'Main Branch', status: 'inactive', email: 'priya@salon.com', phone: '+91 98765 43212', joined: '2023-01-10', salary: 20000 },
-    { id: 4, name: 'Vikram Malhotra', role: 'Manager', outlet: 'West End', status: 'active', email: 'vikram@salon.com', phone: '+91 98765 43213', joined: '2022-11-05', salary: 45000 },
-    { id: 5, name: 'Sneha Kapur', role: 'Receptionist', outlet: 'City Center', status: 'active', email: 'sneha@salon.com', phone: '+91 98765 43214', joined: '2023-08-12', salary: 15000 },
-    { id: 6, name: 'Amit Sharma', role: 'Barber', outlet: 'Main Branch', status: 'active', email: 'amit@salon.com', phone: '+91 98765 43215', joined: '2023-09-01', salary: 17000 },
-    { id: 7, name: 'Kavita Patel', role: 'Nail Technician', outlet: 'Bandra Branch', status: 'active', email: 'kavita@salon.com', phone: '+91 98765 43216', joined: '2024-01-15', salary: 16000 },
+    {
+        id: 1, name: 'Ananya Sharma', role: 'Senior Stylist', outlet: 'Main Branch', status: 'active',
+        email: 'ananya@salon.com', phone: '+91 98765 43210', joined: '2023-05-15', salary: 25000,
+        dob: '1995-08-22', pan: 'ABCDE1234F', address: '123, Lotus Apartment, Mumbai',
+        bankName: 'HDFC Bank', accountNo: '501004561234', ifsc: 'HDFC0001234'
+    },
+    {
+        id: 2, name: 'Rahul Verma', role: 'Hair Specialist', outlet: 'City Center', status: 'active',
+        email: 'rahul@salon.com', phone: '+91 98765 43211', joined: '2023-06-20', salary: 18000,
+        dob: '1992-03-15', pan: 'FGHIJ5678K', address: 'B-42, Residency Road, Mumbai',
+        bankName: 'ICICI Bank', accountNo: '001205004567', ifsc: 'ICIC0000012'
+    },
+    {
+        id: 3, name: 'Priya Singh', role: 'Makeup Artist', outlet: 'Main Branch', status: 'inactive',
+        email: 'priya@salon.com', phone: '+91 98765 43212', joined: '2023-01-10', salary: 20000,
+        dob: '1998-11-05', pan: 'LMNOP9012Q', address: 'Flat 101, Sea View, Bandra',
+        bankName: 'SBI', accountNo: '31234567890', ifsc: 'SBIN0001234'
+    },
 ];
 
 const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#ec4899'];
 
-const EMPTY_FORM = { name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: '', salary: '', status: 'active' };
+const EMPTY_FORM = {
+    name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: '', salary: '', status: 'active',
+    dob: '', pan: '', address: '', bankName: '', accountNo: '', ifsc: ''
+};
 
 export default function StaffManager() {
     const [staff, setStaff] = useState(INITIAL_STAFF);
@@ -296,7 +310,7 @@ export default function StaffManager() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModal(false)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-2xl rounded-none border border-border shadow-2xl relative max-h-[95vh] flex flex-col">
+                            className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative max-h-[90vh] flex flex-col">
                             <div className="px-10 py-8 border-b border-border flex items-center justify-between">
                                 <div className="text-left font-black">
                                     <h2 className="text-lg font-black text-text uppercase tracking-tight">{editTarget ? 'Edit Personnel Data' : 'New Enrollment'}</h2>
@@ -305,8 +319,10 @@ export default function StaffManager() {
                                 <button onClick={() => setModal(false)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-6 h-6" /></button>
                             </div>
                             <form onSubmit={saveStaff} className="flex flex-col flex-1 overflow-hidden font-black">
-                                <div className="p-10 space-y-8 overflow-y-auto flex-1 text-left">
-                                    <div className="grid grid-cols-2 gap-8 text-left">
+                                <div className="p-8 space-y-6 overflow-y-auto flex-1 text-left">
+                                    <div className="grid grid-cols-2 gap-x-6 gap-y-5 text-left">
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">Audit Identity & Protocol</div>
+
                                         <div className="col-span-2 space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Legal Identity *</label>
                                             <input required type="text" placeholder="FULL_NAME"
@@ -339,17 +355,26 @@ export default function StaffManager() {
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
                                         </div>
+
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Personnel Metadata</div>
+
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Genesis Date</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Genesis Date (Joining)</label>
                                             <input type="date"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.joined} onChange={e => setForm(f => ({ ...f, joined: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Credit Allocation (₹)</label>
-                                            <input type="number" placeholder="SALARY_VAL"
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Birth Cycle (DOB)</label>
+                                            <input type="date"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />
+                                                value={form.dob} onChange={e => setForm(f => ({ ...f, dob: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Tax ID (PAN)</label>
+                                            <input type="text" placeholder="PAN_IDENTIFIER"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left font-black">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Bit</label>
@@ -358,6 +383,39 @@ export default function StaffManager() {
                                                 <option value="active">Active State</option>
                                                 <option value="inactive">Dormant State</option>
                                             </select>
+                                        </div>
+                                        <div className="col-span-2 space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Logistics (Address)</label>
+                                            <textarea placeholder="FULL_PHYSICAL_LOCATION"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-20 resize-none"
+                                                value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}></textarea>
+                                        </div>
+
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Financial Settlement Details</div>
+
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Credit (Salary)</label>
+                                            <input type="number" placeholder="CURRENCY_VAL"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Banking Institution</label>
+                                            <input type="text" placeholder="BANK_NAME"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">A/C Sequence</label>
+                                            <input type="text" placeholder="ACCOUNT_NUMBER"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.accountNo} onChange={e => setForm(f => ({ ...f, accountNo: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Route Index (IFSC)</label>
+                                            <input type="text" placeholder="IFSC_CODE"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.ifsc} onChange={e => setForm(f => ({ ...f, ifsc: e.target.value }))} />
                                         </div>
                                     </div>
                                 </div>
@@ -378,36 +436,83 @@ export default function StaffManager() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewModal(null)} className="absolute inset-0 bg-black/70 backdrop-blur-md" />
                         <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-10 text-left">
-                            <button onClick={() => setViewModal(null)} className="absolute top-6 right-6 w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-5 h-5" /></button>
-                            <div className="text-center mb-8">
-                                <div className="w-20 h-20 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 mx-auto mb-6 shadow-2xl shadow-primary/5">
-                                    {viewModal.name.split(' ').map(n => n[0]).join('')}
-                                </div>
-                                <h2 className="text-xl font-black text-text uppercase tracking-tight">{viewModal.name}</h2>
-                                <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/5 text-violet-500 border border-violet-500/10 text-[10px] font-black uppercase tracking-widest mt-3 italic"><Shield className="w-3 h-3" />{viewModal.role}</span>
-                            </div>
-                            <div className="space-y-3">
-                                {[
-                                    { icon: Building2, label: 'Assigned Node', value: viewModal.outlet },
-                                    { icon: Mail, label: 'Digital Uplink', value: viewModal.email },
-                                    { icon: Phone, label: 'Comm_Freq', value: viewModal.phone },
-                                    { icon: Calendar, label: 'Joined Cycle', value: viewModal.joined ? new Date(viewModal.joined).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'NULL' },
-                                    { icon: CheckCircle2, label: 'Monthly Credit', value: `₹${(viewModal.salary || 0).toLocaleString()}` },
-                                ].map(row => (
-                                    <div key={row.label} className="flex items-center gap-4 p-4 bg-background border border-border/40 text-left">
-                                        <row.icon className="w-4 h-4 text-text-muted shrink-0" />
-                                        <div className="text-left leading-none">
-                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">{row.label}</p>
-                                            <p className="text-[11px] font-black text-text uppercase leading-none">{row.value}</p>
-                                        </div>
+                            className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
+                            <div className="p-10 border-b border-border bg-surface-alt/10 flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-6 text-left font-black">
+                                    <div className="w-20 h-20 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 shadow-2xl shadow-primary/5">
+                                        {viewModal.name.split(' ').map(n => n[0]).join('')}
                                     </div>
-                                ))}
+                                    <div className="text-left font-black">
+                                        <h2 className="text-xl font-black text-text uppercase tracking-tight leading-none">{viewModal.name}</h2>
+                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/5 text-violet-500 border border-violet-500/10 text-[10px] font-black uppercase tracking-widest mt-3 italic"><Shield className="w-3 h-3" />{viewModal.role}</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => setViewModal(null)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-6 h-6" /></button>
                             </div>
-                            <button onClick={() => { openEdit(viewModal); setViewModal(null); }}
-                                className="w-full mt-8 py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:bg-primary-dark transition-all">
-                                Protocol Edit
-                            </button>
+
+                            <div className="p-10 overflow-y-auto space-y-8 flex-1 font-black">
+                                <div className="grid grid-cols-2 gap-x-10 gap-y-6 text-left">
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 border-b border-border/10 pb-2">Operational Context</div>
+
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Building2 className="w-3 h-3" /> Assigned Node</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.outlet}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Genesis Date</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.joined ? new Date(viewModal.joined).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'NULL'}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Mail className="w-3 h-3" /> Digital Uplink</p>
+                                        <p className="text-[11px] font-black text-text lowercase truncate leading-none">{viewModal.email}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Phone className="w-3 h-3" /> Comm_Freq</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.phone}</p>
+                                    </div>
+
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Personnel Metadata</div>
+
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Birth Cycle</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.dob || 'NOT_DECLARED'}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Shield className="w-3 h-3" /> Tax ID (PAN)</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.pan || 'NOT_FOUND'}</p>
+                                    </div>
+                                    <div className="col-span-2 text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3 h-3" /> Physical Logistics</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.address || 'NO_PHYSICAL_RECORD'}</p>
+                                    </div>
+
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Financial Architecture</div>
+
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Banking Institution</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.bankName || 'NULL'}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">A/C Sequence</p>
+                                        <p className="text-[11px] font-black text-text uppercase tracking-widest font-mono leading-none">{viewModal.accountNo || 'XXXXXXXXXXXX'}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Route Index (IFSC)</p>
+                                        <p className="text-[11px] font-black text-text uppercase tracking-widest font-mono leading-none">{viewModal.ifsc || 'XXXX0000XXX'}</p>
+                                    </div>
+                                    <div className="text-left font-black">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Status Bit</p>
+                                        <p className={`text-[11px] font-black uppercase leading-none ${viewModal.status === 'active' ? 'text-emerald-500' : 'text-rose-500'}`}>{viewModal.status} STATE</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-10 border-t border-border bg-surface-alt/5 shrink-0">
+                                <button onClick={() => { openEdit(viewModal); setViewModal(null); }}
+                                    className="w-full py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                                    Initiate Protocol Edit
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}

@@ -1,36 +1,30 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import * as Icons from 'lucide-react';
 import {
-    LayoutDashboard, Calendar, Users, DollarSign,
-    Clock, Settings, LogOut, ChevronLeft, ChevronRight, X, Scissors, ChevronDown, User, Shield, Bell
+    ChevronLeft, ChevronRight, X, ChevronDown, LogOut
 } from 'lucide-react';
+import stylistMenuData from '../../data/stylistMenu.json';
 
-const menuItems = [
-    { label: 'My Schedule', icon: Calendar, path: '/stylist' },
-    { label: "Today's Clients", icon: Users, path: '/stylist/clients' },
-    { label: 'Commissions', icon: DollarSign, path: '/stylist/commissions' },
-    { label: 'Time Off', icon: Clock, path: '/stylist/timeoff' },
-    {
-        label: 'Settings',
-        icon: Settings,
-        path: '/stylist/settings',
-        subItems: [
-            { label: 'Profile', icon: User, path: '/stylist/settings/profile' },
-            { label: 'Skills', icon: Scissors, path: '/stylist/settings/skills' },
-            { label: 'Availability', icon: Bell, path: '/stylist/settings/availability' },
-            { label: 'Security', icon: Shield, path: '/stylist/settings/security' },
-        ]
-    },
-];
+// Map icon names from JSON to actual Lucide components
+const menuItems = stylistMenuData.map(item => ({
+    ...item,
+    icon: Icons[item.iconName] || Icons.HelpCircle,
+    subItems: item.subItems?.map(sub => ({
+        ...sub,
+        icon: Icons[sub.iconName] || Icons.HelpCircle
+    }))
+}));
 
-export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
-    const { logout } = useAuth();
+export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
+    const { logout, user } = useAuth();
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
 
+    const effectiveCollapsed = collapsed && !isHovered;
+
     useEffect(() => {
-        // Auto-expand menu item if a sub-item is active
         menuItems.forEach(item => {
             if (item.subItems && item.subItems.some(sub => location.pathname === sub.path)) {
                 setExpandedItem(item.label);
@@ -39,7 +33,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
     }, [location.pathname]);
 
     const toggleExpand = (label) => {
-        if (collapsed) {
+        if (effectiveCollapsed) {
             setCollapsed(false);
             setExpandedItem(label);
         } else {
@@ -47,70 +41,85 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
         }
     };
 
-    const content = (
+    const isActive = (path) => {
+        if (path === '/stylist' && location.pathname === '/stylist') return true;
+        if (path !== '/stylist' && location.pathname.startsWith(path)) return true;
+        return false;
+    };
+
+    const sidebarContent = (
         <div className="flex flex-col h-full bg-background transition-colors duration-300">
-            <div className={`flex items-center h-16 border-b border-border transition-all ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
+            {/* Logo */}
+            <div className="flex items-center justify-between h-16 px-6 border-b border-border/40">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-12 h-12 flex items-center justify-center shrink-0">
-                        <img src="/2-removebg-preview.png" alt="Logo" className="w-full h-full object-contain" />
+                        <img
+                            src="/2-removebg-preview.png"
+                            alt="Logo"
+                            className="w-full h-full object-contain"
+                        />
                     </div>
                 </div>
-                <button onClick={() => setCollapsed(!collapsed)} className="hidden lg:flex w-6 h-6 rounded-full bg-surface items-center justify-center hover:bg-surface-alt">
-                    {collapsed ? <ChevronRight className="w-3.5 h-3.5 text-text-muted" /> : <ChevronLeft className="w-3.5 h-3.5 text-text-muted" />}
+                {/* Desktop collapse */}
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="hidden lg:flex w-8 h-8 rounded-xl bg-surface border border-border/40 items-center justify-center hover:bg-surface-alt transition-colors"
+                >
+                    {collapsed ? (
+                        <ChevronRight className="w-4 h-4 text-text-muted" />
+                    ) : (
+                        <ChevronLeft className="w-4 h-4 text-text-muted" />
+                    )}
                 </button>
-                <button onClick={() => setMobileOpen(false)} className="lg:hidden w-6 h-6 rounded-full flex items-center justify-center hover:bg-surface-alt">
+                {/* Mobile close */}
+                <button
+                    onClick={() => setMobileOpen(false)}
+                    className="lg:hidden w-7 h-7 rounded-md flex items-center justify-center hover:bg-surface-alt transition-colors"
+                >
                     <X className="w-4 h-4 text-text-muted" />
                 </button>
             </div>
 
-            <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto custom-scrollbar">
+            {/* Nav Links */}
+            <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
                     const hasSubItems = item.subItems && item.subItems.length > 0;
-                    const isExpanded = expandedItem === item.label && !collapsed;
-                    const isActive = location.pathname === item.path || (hasSubItems && item.subItems.some(sub => location.pathname === sub.path));
+                    const isExpanded = expandedItem === item.label && !effectiveCollapsed;
+                    const active = isActive(item.path);
 
                     if (hasSubItems) {
                         return (
                             <div key={item.label} className="space-y-1">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all group ${isActive
-                                        ? 'text-primary bg-primary/5'
-                                        : 'text-text-secondary hover:bg-surface hover:text-text'
-                                        } ${collapsed ? 'justify-center' : ''}`}
-                                    style={{
-                                        color: isActive ? 'var(--accent-color)' : undefined,
-                                        backgroundColor: isActive ? 'color-mix(in srgb, var(--accent-color), transparent 90%)' : undefined
-                                    }}
+                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-surface hover:text-text'
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <item.icon className="w-[18px] h-[18px] shrink-0" />
-                                        {!collapsed && <span>{item.label}</span>}
+                                        <item.icon
+                                            className={`w-5 h-5 shrink-0 ${active ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'}`}
+                                        />
+                                        {!effectiveCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
                                     </div>
-                                    {!collapsed && (
+                                    {!effectiveCollapsed && (
                                         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                                     )}
                                 </button>
 
-                                {isExpanded && !collapsed && (
-                                    <div className="ml-4 pl-4 border-l border-border/60 space-y-1 mt-1">
+                                {isExpanded && !effectiveCollapsed && (
+                                    <div className="ml-7 pl-2 border-l border-border/60 space-y-1 mt-1 relative">
                                         {item.subItems.map((sub) => (
                                             <NavLink
                                                 key={sub.path}
                                                 to={sub.path}
                                                 onClick={() => setMobileOpen(false)}
                                                 className={({ isActive: isSubActive }) =>
-                                                    `flex items-center gap-3 py-2 px-3 rounded-lg text-xs font-bold transition-all ${isSubActive
-                                                        ? 'text-primary bg-primary/5'
-                                                        : 'text-text-muted hover:text-text hover:bg-surface'
+                                                    `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
+                                                        ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
+                                                        : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
                                                     }`
                                                 }
-                                                style={({ isActive: isSubActive }) => ({
-                                                    color: isSubActive ? 'var(--accent-color)' : undefined,
-                                                    backgroundColor: isSubActive ? 'color-mix(in srgb, var(--accent-color), transparent 90%)' : undefined
-                                                })}
                                             >
-                                                <sub.icon className="w-3.5 h-3.5" />
                                                 <span>{sub.label}</span>
                                             </NavLink>
                                         ))}
@@ -121,31 +130,35 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
                     }
 
                     return (
-                        <NavLink key={item.path} to={item.path} end={item.path === '/stylist'}
+                        <NavLink
+                            key={item.label}
+                            to={item.path}
+                            end={item.path === '/stylist'}
                             onClick={() => setMobileOpen(false)}
                             className={({ isActive: isItemActive }) =>
-                                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-bold transition-all group ${isItemActive
-                                    ? 'text-white'
+                                `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300 group ${isItemActive
+                                    ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
-                                } ${collapsed ? 'justify-center' : ''}`}
-                            title={collapsed ? item.label : undefined}
-                            style={({ isActive: isItemActive }) => ({
-                                backgroundColor: isItemActive ? 'var(--accent-color)' : undefined,
-                                color: isItemActive ? '#fff' : undefined,
-                                boxShadow: isItemActive ? '0 10px 15px -3px color-mix(in srgb, var(--accent-color), transparent 70%)' : undefined
-                            })}
+                                }`
+                            }
                         >
-                            <item.icon className="w-[18px] h-[18px] shrink-0" />
-                            {!collapsed && <span>{item.label}</span>}
+                            <item.icon
+                                className={`w-5 h-5 shrink-0 ${isActive(item.path) ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'}`}
+                            />
+                            {!effectiveCollapsed && <span className="whitespace-nowrap">{item.label}</span>}
                         </NavLink>
                     );
                 })}
             </nav>
 
-            <div className={`border-t border-border p-2 ${collapsed ? 'flex justify-center' : ''}`}>
-                <button onClick={logout} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-text-secondary hover:bg-red-50 hover:text-red-600 transition-all w-full ${collapsed ? 'justify-center' : ''}`}>
-                    <LogOut className="w-[18px] h-[18px]" />
-                    {!collapsed && <span>Logout</span>}
+            {/* Logout */}
+            <div className="p-2 border-t border-border">
+                <button
+                    onClick={logout}
+                    className="flex items-center gap-3 w-full px-4 py-2 rounded-xl text-sm font-semibold text-text-secondary hover:bg-error/10 hover:text-error transition-all duration-300 group"
+                >
+                    <LogOut className="w-5 h-5 shrink-0 text-text-muted group-hover:text-error" />
+                    {!effectiveCollapsed && <span>Logout</span>}
                 </button>
             </div>
         </div>
@@ -153,9 +166,28 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
 
     return (
         <>
-            <aside className={`hidden lg:block fixed top-0 left-0 h-screen z-40 border-r border-border/40 bg-background transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}>{content}</aside>
-            {mobileOpen && <div className="lg:hidden fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />}
-            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-background border-r border-border/40 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>{content}</aside>
+            <aside
+                onMouseEnter={() => setIsHovered?.(true)}
+                onMouseLeave={() => setIsHovered?.(false)}
+                className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border/40 z-40 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-64 shadow-2xl shadow-primary/5'
+                    }`}
+            >
+                {sidebarContent}
+            </aside>
+
+            {mobileOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
+                    onClick={() => setMobileOpen(false)}
+                />
+            )}
+
+            <aside
+                className={`lg:hidden fixed top-0 left-0 h-screen w-64 bg-background border-r border-border/40 z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'
+                    }`}
+            >
+                {sidebarContent}
+            </aside>
         </>
     );
 }

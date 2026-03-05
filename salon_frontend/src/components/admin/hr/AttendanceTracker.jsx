@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Calendar as CalendarIcon, Search, Filter, CheckCircle2, XCircle, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download } from 'lucide-react';
+import { Calendar as CalendarIcon, Search, Filter, CheckCircle2, XCircle, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download, Laptop, Smartphone, Fingerprint, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     PieChart,
@@ -11,13 +11,13 @@ import {
 } from 'recharts';
 
 const INITIAL_ATTENDANCE = [
-    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', checkIn: '09:15 AM', checkOut: '06:30 PM', status: 'present', hours: '9.2', outlet: 'Main Branch' },
-    { id: 2, staff: 'Rahul Verma', role: 'Barber', checkIn: '09:45 AM', checkOut: '07:00 PM', status: 'late', hours: '9.2', outlet: 'City Center' },
-    { id: 3, staff: 'Sneha Kapur', role: 'Reception', checkIn: '09:00 AM', checkOut: '06:00 PM', status: 'present', hours: '9.0', outlet: 'Main Branch' },
-    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', checkIn: '-', checkOut: '-', status: 'absent', hours: '0', outlet: 'West End' },
-    { id: 5, staff: 'Priya Singh', role: 'Technician', checkIn: '10:30 AM', checkOut: '04:30 PM', status: 'half-day', hours: '6.0', outlet: 'Main Branch' },
-    { id: 6, staff: 'Amit Sharma', role: 'Barber', checkIn: '09:05 AM', checkOut: '06:00 PM', status: 'present', hours: '8.9', outlet: 'Main Branch' },
-    { id: 7, staff: 'Kavita Patel', role: 'Nail Tech', checkIn: '-', checkOut: '-', status: 'leave', hours: '0', outlet: 'Bandra Branch' },
+    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', checkIn: '09:15 AM', checkOut: '06:30 PM', status: 'present', hours: '9.2', outlet: 'Main Branch', inSource: 'Web', loc: '28.6139, 77.2090' },
+    { id: 2, staff: 'Rahul Verma', role: 'Barber', checkIn: '09:45 AM', checkOut: '07:00 PM', status: 'late', hours: '9.2', outlet: 'City Center', inSource: 'Mobile', loc: '28.5355, 77.3910' },
+    { id: 3, staff: 'Sneha Kapur', role: 'Reception', checkIn: '09:00 AM', checkOut: '06:00 PM', status: 'present', hours: '9.0', outlet: 'Main Branch', inSource: 'Biometric', loc: '28.6139, 77.2090' },
+    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', checkIn: '-', checkOut: '-', status: 'absent', hours: '0', outlet: 'West End', inSource: '-', loc: '-' },
+    { id: 5, staff: 'Priya Singh', role: 'Technician', checkIn: '10:30 AM', checkOut: '04:30 PM', status: 'half-day', hours: '6.0', outlet: 'Main Branch', inSource: 'Web', loc: '28.6139, 77.2090' },
+    { id: 6, staff: 'Amit Sharma', role: 'Barber', checkIn: '09:05 AM', checkOut: '06:00 PM', status: 'present', hours: '8.9', outlet: 'Main Branch', inSource: 'Biometric', loc: '28.6139, 77.2090' },
+    { id: 7, staff: 'Kavita Patel', role: 'Nail Tech', checkIn: '-', checkOut: '-', status: 'leave', hours: '0', outlet: 'Bandra Branch', inSource: '-', loc: '-' },
 ];
 
 const STATUS_META = {
@@ -216,23 +216,23 @@ export default function AttendanceTracker() {
                 <div className="overflow-x-auto text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
-                            <tr className="bg-surface-alt/50 border-b border-border text-left">
-                                {['Employee_node', 'Check_In', 'Check_Out', 'Intensity', 'Status_Bit', 'Control'].map(h => (
-                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : ''}`}>{h}</th>
+                            <tr className="bg-surface-alt/50 border-b border-border text-left font-black">
+                                {['Employee_node', 'Check_In', 'Check_Out', 'Intensity', 'Geolocation', 'Status_Bit', 'Control'].map(h => (
+                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : 'text-left'}`}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left font-black">
                             {filtered.map(record => (
-                                <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
-                                    <td className="px-6 py-5 text-left">
-                                        <div className="flex items-center gap-4 text-left">
+                                <tr key={record.id} className="hover:bg-surface-alt/20 transition-colors group text-left font-black">
+                                    <td className="px-6 py-5 text-left font-black">
+                                        <div className="flex items-center gap-4 text-left font-black">
                                             <div className="w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0">
                                                 {record.staff.split(' ').map(n => n[0]).join('')}
                                             </div>
-                                            <div className="text-left">
-                                                <p className="text-xs font-black text-text uppercase tracking-tight text-left">{record.staff}</p>
-                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">{record.outlet}</p>
+                                            <div className="text-left font-black">
+                                                <p className="text-xs font-black text-text uppercase tracking-tight text-left leading-none">{record.staff}</p>
+                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left mt-1.5 leading-none">{record.outlet}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -246,14 +246,20 @@ export default function AttendanceTracker() {
                                             <Clock className="w-3.5 h-3.5 text-text-muted" />{record.checkOut}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-5 text-[11px] font-black text-primary uppercase text-left">{record.hours}HRS</td>
+                                    <td className="px-6 py-5 text-[11px] font-black text-primary uppercase text-left font-black">{record.hours}HRS</td>
+                                    <td className="px-6 py-5 text-left font-black">
+                                        <div className="flex items-center gap-2.5 text-[10px] font-black text-text-muted uppercase text-left group-hover:text-primary transition-colors">
+                                            <MapPin className="w-3.5 h-3.5" />
+                                            {record.loc || '-'}
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-5 text-left font-black">
                                         <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${STATUS_META[record.status]?.cls || ''}`}>
                                             {STATUS_META[record.status]?.label}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity font-black">
                                             <button onClick={() => { setChangeStatusModal(record); setNewStatus(record.status); }}
                                                 className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
                                                 <CheckCircle2 className="w-4 h-4" />

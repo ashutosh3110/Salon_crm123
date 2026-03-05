@@ -1,20 +1,23 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus, ShieldAlert, Activity, Zap, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const skills = [
-    { name: 'Hair Coloring', level: 'Expert', icon: '🎨' },
-    { name: 'Bridal Styling', level: 'Expert', icon: '👰' },
-    { name: 'Keratin Treatment', level: 'Intermediate', icon: '✨' },
-    { name: 'Gents Fade', level: 'Expert', icon: '💇‍♂️' },
-    { name: 'Beard Grooming', level: 'Intermediate', icon: '🧔' },
+    { name: 'HAIR_COLORING', level: 'EXPERT_UNIT', icon: '🎨' },
+    { name: 'BRIDAL_STYLING', level: 'EXPERT_UNIT', icon: '👰' },
+    { name: 'KERATIN_TREATMENT', level: 'INT_NODE', icon: '✨' },
+    { name: 'GENTS_FADE', level: 'EXPERT_UNIT', icon: '💇‍♂️' },
+    { name: 'BEARD_GROOMING', level: 'INT_NODE', icon: '🧔' },
 ];
 
 export default function StylistSettingsPage() {
     const { section } = useParams();
     const navigate = useNavigate();
-    const activeTab = section ? section.charAt(0).toUpperCase() + section.slice(1) : 'Profile';
+    // Debugging protocol
+    useEffect(() => {
+        console.log(`[SYSTEM_SYNC] Entering sector: ${section || 'ROOT'}`);
+    }, [section]);
 
     // Redirect to default section if none provided
     useEffect(() => {
@@ -23,117 +26,239 @@ export default function StylistSettingsPage() {
         }
     }, [section, navigate]);
 
-    return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div>
-                <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Account & Preferences</h2>
-                <h1 className="text-2xl font-black text-text tracking-tight uppercase">{activeTab} Settings</h1>
-            </div>
+    const tabLabels = {
+        'profile': 'BIO_PROFILE',
+        'skills': 'SKILL_VECTORS',
+        'availability': 'UPTIME_SETUP',
+        'security': 'ACCESS_KEYS'
+    };
 
-            <div className="bg-surface rounded-3xl border border-border/40 p-6 md:p-8 shadow-sm overflow-hidden text-left">
-                {activeTab === 'Profile' && (
+    const renderContent = () => {
+        switch (section) {
+            case 'profile':
+                return (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-8"
+                        key="profile"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-10"
                     >
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-8 border-b border-border/10 pb-10">
                             <div className="relative group">
-                                <div className="w-24 h-24 rounded-[32px] bg-primary/10 flex items-center justify-center text-3xl font-black text-primary border-4 border-white shadow-xl overflow-hidden">
+                                <div className="w-28 h-28 bg-background border border-border flex items-center justify-center text-4xl font-black text-primary group-hover:border-primary/50 transition-all shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
                                     AN
                                 </div>
-                                <button className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center border-4 border-surface shadow-lg hover:scale-110 transition-transform">
-                                    <Plus className="w-4 h-4" />
+                                <button className="absolute -bottom-2 -right-2 w-10 h-10 border border-border bg-surface text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all">
+                                    <Plus className="w-5 h-5" />
                                 </button>
                             </div>
                             <div>
-                                <h2 className="text-xl font-black text-text">Anita Stylist</h2>
-                                <p className="text-sm text-primary font-bold">Senior Creative Stylist</p>
-                                <p className="text-xs text-text-muted mt-1">Staff ID: #ST-4029</p>
+                                <h2 className="text-2xl font-black text-text tracking-tighter">ANITA_STYLIST</h2>
+                                <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mt-1 italic">Senior_Creative_Lead</p>
+                                <p className="text-[9px] text-text-muted mt-2 font-black uppercase tracking-widest opacity-60">Unit_ID: #ST-4029_ALPHA</p>
                             </div>
                         </div>
 
-                        <div className="grid sm:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Full Name</label>
-                                <input type="text" defaultValue="Anita Stylist" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                        <div className="grid sm:grid-cols-2 gap-x-10 gap-y-8">
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Unit_Identity</label>
+                                <input type="text" defaultValue="ANITA STYLIST" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Email</label>
-                                <input type="email" defaultValue="stylist@salon.com" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Comms_Channel</label>
+                                <input type="email" defaultValue="STYLIST@NEXUS.SALON" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Phone</label>
-                                <input type="tel" defaultValue="+91 98765 43212" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Signal_Address</label>
+                                <input type="tel" defaultValue="+91 98765 43212" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Experience</label>
-                                <input type="text" defaultValue="8 Years" className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors" />
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Runtime_History</label>
+                                <input type="text" defaultValue="8 YEARS_OPS" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Birth_Epoch</label>
+                                <input type="date" defaultValue="1995-05-15" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Tax_Identifier (PAN)</label>
+                                <input type="text" defaultValue="ABCDE1234F" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                            </div>
+                            <div className="sm:col-span-2 space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Physical_Node (Address)</label>
+                                <textarea defaultValue="42 CYBER STREET, TECH DISTRICT, NEO-MUMBAI" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all h-24 resize-none" />
                             </div>
                         </div>
 
-                        <button className="bg-primary text-white px-8 py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                            Save Changes
+                        <button className="bg-primary text-white px-10 py-4 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                            Finalize_Changes
                         </button>
                     </motion.div>
-                )}
-
-                {activeTab === 'Skills' && (
+                );
+            case 'skills':
+                return (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-6"
+                        key="skills"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-8"
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-sm font-black text-text uppercase tracking-widest">Mastered Skills</h3>
-                            <button className="text-xs font-black text-primary uppercase tracking-widest hover:underline">+ Add New</button>
+                        <div className="flex items-center justify-between border-b border-border/10 pb-6">
+                            <div className="flex items-center gap-3">
+                                <Scissors className="w-4 h-4 text-primary" />
+                                <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Mastery_Index</h3>
+                            </div>
+                            <button className="text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:bg-primary/5 px-4 py-2 border border-transparent hover:border-primary/20 transition-all">+ Inject_New_Vector</button>
                         </div>
-                        <div className="grid gap-3">
+                        <div className="grid gap-4">
                             {skills.map((skill) => (
-                                <div key={skill.name} className="flex items-center justify-between p-4 bg-background rounded-2xl border border-border/10 hover:border-primary/20 transition-all group">
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-2xl">{skill.icon}</span>
+                                <div key={skill.name} className="flex items-center justify-between p-6 bg-background border border-border hover:border-primary/40 transition-all group relative overflow-hidden">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-12 h-12 bg-surface flex items-center justify-center text-2xl border border-border/10">
+                                            {skill.icon}
+                                        </div>
                                         <div>
-                                            <p className="text-sm font-bold text-text">{skill.name}</p>
-                                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{skill.level}</p>
+                                            <p className="text-sm font-black text-text tracking-tight uppercase">{skill.name}</p>
+                                            <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mt-1">{skill.level}</p>
                                         </div>
                                     </div>
-                                    <div className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                        <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-1 w-24 bg-border/20 rounded-full overflow-hidden hidden md:block">
+                                            <div className={`h-full bg-primary ${skill.level.includes('EXPERT') ? 'w-full' : 'w-2/3'}`} />
+                                        </div>
+                                        <div className="w-8 h-8 bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                                            <Check className="w-4 h-4 text-emerald-500" />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </motion.div>
-                )}
-
-                {activeTab === 'Availability' && (
+                );
+            case 'availability':
+                return (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-6"
+                        key="availability"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-8"
                     >
-                        <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                            <Bell className="w-5 h-5 text-primary" />
-                            <p className="text-xs font-bold text-text-secondary">Availability & notification preferences settings are under maintenance.</p>
+                        <div className="flex items-center justify-between border-b border-border/10 pb-6">
+                            <div className="flex items-center gap-3">
+                                <Clock className="w-4 h-4 text-primary" />
+                                <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Operational_Uptime</h3>
+                            </div>
+                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 border border-emerald-500/20">Sync_Active</span>
+                        </div>
+
+                        <div className="grid gap-4">
+                            {['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'].map((day) => (
+                                <div key={day} className="flex items-center justify-between p-6 bg-background border border-border hover:border-primary/20 transition-all group">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        <span className="text-[10px] font-black text-text uppercase tracking-widest">{day}</span>
+                                    </div>
+                                    <div className="flex items-center gap-8">
+                                        <div className="text-right">
+                                            <p className="text-[8px] text-text-muted uppercase font-bold mb-1">Shift_Vector</p>
+                                            <p className="text-[10px] font-black text-text">10:00 AM - 08:00 PM</p>
+                                        </div>
+                                        <button className="w-12 h-6 bg-primary/20 border border-primary/30 p-1 flex items-center justify-end">
+                                            <div className="w-4 h-4 bg-primary" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-8 bg-surface-alt border border-border space-y-4">
+                            <div className="flex items-center gap-3">
+                                <Zap className="w-4 h-4 text-primary" />
+                                <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em]">Emergency_Bypass</h4>
+                            </div>
+                            <p className="text-[10px] text-text-muted uppercase leading-relaxed font-bold tracking-tight">
+                                Toggle temporary downtime for immediate protocol suspension. All queued iterations will be marked for redistribution.
+                            </p>
+                            <button className="px-6 py-3 border border-rose-500/30 text-rose-500 font-black text-[9px] uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all">Enable_Emergency_Lock</button>
                         </div>
                     </motion.div>
-                )}
-
-                {activeTab === 'Security' && (
+                );
+            case 'security':
+                return (
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="space-y-6"
+                        key="security"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="space-y-10"
                     >
-                        <div className="flex items-center gap-3 p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10">
-                            <Shield className="w-5 h-5 text-amber-500" />
-                            <p className="text-xs font-bold text-text-secondary">Security settings (Password changes, 2FA) are coming soon.</p>
+                        <div className="flex items-center gap-3 border-b border-border/10 pb-6">
+                            <Shield className="w-4 h-4 text-primary" />
+                            <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Access_Credential_Rotation</h3>
+                        </div>
+
+                        <div className="space-y-6 max-w-xl">
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 italic">Current_Key</label>
+                                <input type="password" placeholder="••••••••••••" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all" />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 italic">New_Vector_Hash</label>
+                                <input type="password" placeholder="MIN_12_CHARS" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all" />
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 italic">Confirm_New_Vector</label>
+                                <input type="password" placeholder="RE-ENTER_HASH" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all" />
+                            </div>
+
+                            <button className="px-10 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Rotate_Access_Keys</button>
+                        </div>
+
+                        <div className="p-8 border border-border relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-8 opacity-5">
+                                <ShieldAlert className="w-16 h-16 text-primary" />
+                            </div>
+                            <div className="relative z-10 flex items-start gap-6">
+                                <div className="p-3 bg-primary/10 border border-primary/20">
+                                    <Activity className="w-6 h-6 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em] mb-2">Two-Factor_Authentication (2FA)</h4>
+                                    <p className="text-[10px] text-text-muted uppercase font-bold tracking-tight mb-4">Hardened security layer for session initiation. Biometric or Token bypass required.</p>
+                                    <button className="text-[9px] font-black text-primary border-b border-primary/20 pb-1 hover:border-primary transition-all uppercase tracking-widest">Setup_MFA_Protocol</button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
-                )}
+                );
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className="space-y-6 font-black text-left">
+            {/* Header */}
+            <div className="border-b border-border/20 pb-6">
+                <div className="flex items-center gap-2 mb-2">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">System_Parameters</span>
+                </div>
+                <h1 className="text-3xl font-black text-text tracking-tighter uppercase">{tabLabels[section] || 'Unit'} Settings</h1>
+                <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic italic">Configuration_Interface</p>
+            </div>
+
+            <div className="bg-surface border border-border p-8 md:p-10 relative overflow-hidden min-h-[500px]">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -translate-y-16 translate-x-16 rotate-45" />
+
+                <AnimatePresence mode="wait">
+                    {renderContent()}
+                </AnimatePresence>
             </div>
         </div>
     );
 }
+

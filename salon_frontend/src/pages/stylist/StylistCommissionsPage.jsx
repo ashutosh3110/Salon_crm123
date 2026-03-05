@@ -1,71 +1,132 @@
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, ChevronRight, Award, Zap, CreditCard } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Award, Zap, CreditCard, Activity, Target, Shield, X, CheckCircle2, ChevronDown, Award as AwardIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const earningsHistory = [
-    { date: 'Today', services: 5, revenue: 4200, commission: 840 },
-    { date: 'Yesterday', services: 8, revenue: 7500, commission: 1500 },
-    { date: '21 Feb', services: 6, revenue: 5100, commission: 1020 },
-    { date: '20 Feb', services: 7, revenue: 6200, commission: 1240 },
-    { date: '19 Feb', services: 4, revenue: 3800, commission: 760 },
+    { date: 'TODAY', services: 5, revenue: 4200, commission: 840, status: 'PROCESSING' },
+    { date: 'YESTERDAY', services: 8, revenue: 7500, commission: 1500, status: 'SETTLED' },
+    { date: '21 FEB_24', services: 6, revenue: 5100, commission: 1020, status: 'SETTLED' },
+    { date: '20 FEB_24', services: 7, revenue: 6200, commission: 1240, status: 'SETTLED' },
+    { date: '19 FEB_24', services: 4, revenue: 3800, commission: 760, status: 'SETTLED' },
+];
+
+const fiscalPeriods = ['CURRENT_CYCLE', 'PREVIOUS_CYCLE', 'FISCAL_YTD', 'CUSTOM_RANGE'];
+
+const incentiveSlabs = [
+    { tier: 'STANDARD_UNIT', range: '₹0 - ₹25,000', yield: '15%', status: 'ACTIVE' },
+    { tier: 'POWER_UNIT', range: '₹25,001 - ₹50,000', yield: '20%', status: 'UPCOMING' },
+    { tier: 'SUPERSTAR_PROTOCOL', range: '₹50,001+', yield: '25%', status: 'LOCKED' },
 ];
 
 export default function StylistCommissionsPage() {
+    const [period, setPeriod] = useState(fiscalPeriods[0]);
+    const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+    const [showSlabModal, setShowSlabModal] = useState(false);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3000);
+    };
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 font-black text-left">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">My Commissions</h1>
-                    <p className="text-sm text-text-muted font-medium">Track your earnings and performance rewards</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Activity className="w-4 h-4 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Fiscal_Stream</span>
+                    </div>
+                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Credit Stream</h1>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Real-time_Liquidity_Audit</p>
                 </div>
-                <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-bold text-text-secondary hover:bg-surface-alt transition-colors">
-                        <Calendar className="w-4 h-4" /> This Month
+                <div className="flex gap-3 relative">
+                    <button
+                        onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+                        className="flex items-center gap-3 px-6 py-3 bg-surface border border-border text-[9px] font-black text-text-muted hover:text-text hover:border-primary/50 transition-all uppercase tracking-[0.2em]"
+                    >
+                        <Calendar className="w-4 h-4" /> {period.replace('_', ' ')} <ChevronDown className="w-3.5 h-3.5 ml-2" />
                     </button>
+
+                    <AnimatePresence>
+                        {showPeriodDropdown && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute top-full right-0 mt-2 w-56 bg-surface border border-border shadow-2xl z-50 py-2"
+                            >
+                                {fiscalPeriods.map(p => (
+                                    <button
+                                        key={p}
+                                        onClick={() => {
+                                            setPeriod(p);
+                                            setShowPeriodDropdown(false);
+                                            showToast(`Fiscal sequence synchronized: ${p}`);
+                                        }}
+                                        className={`w-full px-6 py-4 text-left text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt transition-colors ${period === p ? 'text-primary' : 'text-text-muted'}`}
+                                    >
+                                        {p.replace('_', ' ')}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Total Earned', value: '₹12,450', icon: DollarSign, color: 'text-emerald-500' },
-                    { label: 'Services done', value: '42', icon: Zap, color: 'text-primary' },
-                    { label: 'Points Earned', value: '1,250', icon: Award, color: 'text-amber-500' },
-                    { label: 'Base Pay', value: '₹25,000', icon: CreditCard, color: 'text-blue-500' },
+                    { label: 'Total_Earned', value: '₹12,450', icon: DollarSign, color: 'text-emerald-500', sub: 'Gross Settled' },
+                    { label: 'Yield_Units', value: '42 OPS', icon: Zap, color: 'text-primary', sub: 'Service Cycles' },
+                    { label: 'Rep_Index', value: '1,250 XP', icon: Award, color: 'text-amber-500', sub: 'Performance Points' },
+                    { label: 'Base_Allocation', value: '₹25,000', icon: CreditCard, color: 'text-blue-500', sub: 'Minimum Protocol' },
                 ].map((s) => (
-                    <div key={s.label} className="bg-surface rounded-2xl border border-border/40 p-4 shadow-sm">
-                        <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center border border-border/10 mb-3">
+                    <div key={s.label} className="bg-surface border border-border p-6 relative overflow-hidden group hover:border-primary/30 transition-all">
+                        <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
+                        <div className="w-10 h-10 bg-background border border-border flex items-center justify-center mb-4 text-primary shadow-inner">
                             <s.icon className={`w-4 h-4 ${s.color}`} />
                         </div>
-                        <p className="text-xl font-black text-text">{s.value}</p>
-                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{s.label}</p>
+                        <p className="text-2xl font-black text-text tracking-tighter uppercase">{s.value}</p>
+                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1 italic">{s.label}</p>
+                        <p className="text-[7px] text-text-muted/60 uppercase mt-1 italic tracking-widest">{s.sub}</p>
                     </div>
                 ))}
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
-                {/* Commission Breakdown */}
-                <div className="lg:col-span-2 bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm">
-                    <div className="px-6 py-5 border-b border-border/40 bg-surface/50">
-                        <h2 className="text-sm font-black text-text uppercase tracking-widest">Recent Earnings</h2>
+                {/* Iteration Log */}
+                <div className="lg:col-span-2 bg-surface border border-border overflow-hidden">
+                    <div className="px-8 py-6 border-b border-border/20 bg-background/50 flex items-center justify-between">
+                        <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Iteration_Log</h2>
+                        <span className="text-[8px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 border border-primary/20">Authorized_Stream</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="border-b border-border/40">
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Date</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Services</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Total Revenue</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Commission</th>
+                                <tr className="border-b border-border/20 bg-background/30 font-black">
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Timestamp</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Cycles</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Revenue_Flow</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em] text-right">Credit_Yield</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border/40">
+                            <tbody className="divide-y divide-border/10">
                                 {earningsHistory.map((row, idx) => (
-                                    <tr key={idx} className="hover:bg-surface-alt/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-bold text-text-secondary">{row.date}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-text">{row.services}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-text">₹{row.revenue.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-sm font-black text-emerald-500 text-right">₹{row.commission.toLocaleString()}</td>
+                                    <tr key={idx} className="hover:bg-surface-alt/50 transition-all group font-black">
+                                        <td className="px-8 py-5 text-[10px] text-text-muted group-hover:text-text transition-colors uppercase">{row.date}</td>
+                                        <td className="px-8 py-5 text-[10px] text-text uppercase">{row.services} OPS</td>
+                                        <td className="px-8 py-5 text-[10px] text-text uppercase">₹{row.revenue.toLocaleString()}</td>
+                                        <td className="px-8 py-5 text-right font-black">
+                                            <div className="flex flex-col items-end">
+                                                <span className="text-[11px] text-emerald-500 font-black tracking-tight">₹{row.commission.toLocaleString()}</span>
+                                                <span className={`text-[7px] uppercase tracking-widest mt-1 font-bold ${row.status === 'SETTLED' ? 'text-primary/70' : 'text-amber-500 animate-pulse'}`}>
+                                                    [{row.status}]
+                                                </span>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -73,36 +134,116 @@ export default function StylistCommissionsPage() {
                     </div>
                 </div>
 
-                {/* Target Scorecard */}
-                <div className="bg-surface rounded-3xl border border-border/40 p-6 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <div className="flex items-center gap-2 mb-6">
+                {/* Performance Vector */}
+                <div className="bg-surface border border-border p-8 flex flex-col justify-between relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Target className="w-24 h-24 text-primary" />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-8">
                             <TrendingUp className="w-4 h-4 text-primary" />
-                            <h2 className="text-sm font-black text-text uppercase tracking-widest">Monthly Bonus Target</h2>
+                            <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Yield_Vector</h2>
                         </div>
-                        <div className="space-y-6">
-                            <div className="text-center">
-                                <p className="text-4xl font-black text-text">85%</p>
-                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Target Achievement</p>
+
+                        <div className="space-y-10">
+                            <div className="text-center relative">
+                                <div className="absolute inset-0 flex items-center justify-center opacity-5">
+                                    <div className="w-32 h-32 border-4 border-primary rounded-full shadow-2xl" />
+                                </div>
+                                <p className="text-6xl font-black text-text tracking-tighter">85%</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2 italic">Achievement_Matrix</p>
                             </div>
-                            <div className="h-4 bg-background border border-border/10 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: '85%' }}
-                                    transition={{ duration: 1, delay: 0.2 }}
-                                    className="h-full bg-primary"
-                                />
+
+                            <div className="space-y-3">
+                                <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-text-muted">
+                                    <span>Quota_Progress</span>
+                                    <span className="text-primary">850/1000 UNT</span>
+                                </div>
+                                <div className="h-4 bg-background border border-border p-0.5 shadow-inner">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: '85%' }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                        className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
+                                    />
+                                </div>
                             </div>
-                            <p className="text-xs text-text-secondary text-center leading-relaxed">
-                                You need <span className="font-bold text-primary">₹15,000</span> more in revenue to unlock the <span className="font-bold text-emerald-500">Superstar Bonus</span>.
-                            </p>
+
+                            <div className="p-6 bg-primary/5 border border-primary/20 text-center relative overflow-hidden">
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.1em] font-bold leading-relaxed italic relative z-10">
+                                    Generate <span className="text-primary font-black">₹15,000</span> additional revenue to bypass <span className="text-white bg-primary px-1.5 py-0.5 mx-1 shadow-lg shadow-primary/20">SUPERSTAR_PROTOCOL</span> threshold.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                    <button className="mt-8 w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-98 transition-all">
-                        View Incentive Slab
+
+                    <button
+                        onClick={() => setShowSlabModal(true)}
+                        className="mt-10 w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all group"
+                    >
+                        View Incentive Slab <ArrowUpRight className="inline w-3.5 h-3.5 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                     </button>
                 </div>
             </div>
+
+            {/* Slab Modal */}
+            <AnimatePresence>
+                {showSlabModal && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowSlabModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
+                        >
+                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
+                                <AwardIcon className="w-32 h-32 text-primary" />
+                            </div>
+                            <div className="flex items-center justify-between mb-10 relative z-10">
+                                <div>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Yield Hierarchy</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol: Incentive_Matrix_V4</p>
+                                </div>
+                                <button onClick={() => setShowSlabModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-4 relative z-10">
+                                {incentiveSlabs.map((slab, idx) => (
+                                    <div key={idx} className={`p-6 border flex items-center justify-between transition-all ${slab.status === 'ACTIVE' ? 'bg-primary/10 border-primary/30 shadow-lg shadow-primary/5' : 'bg-background/50 border-border/40 opacity-50'}`}>
+                                        <div>
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${slab.status === 'ACTIVE' ? 'text-primary' : 'text-text-muted'}`}>{slab.tier}</p>
+                                            <p className="text-sm font-black text-text mt-1 uppercase tracking-tight">{slab.range}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-2xl font-black text-text tracking-tighter">{slab.yield}</p>
+                                            <p className="text-[8px] font-black text-primary uppercase italic">{slab.status}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="mt-10 p-5 bg-surface-alt border border-border flex items-center gap-4 relative z-10">
+                                <Shield className="w-5 h-5 text-primary shrink-0" />
+                                <p className="text-[9px] font-black text-text-muted uppercase leading-relaxed tracking-widest italic">
+                                    Commissions are finalized on a <span className="text-text">bi-weekly sequence</span>. Tier upgrades bypass occurs immediately upon threshold clearance.
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
