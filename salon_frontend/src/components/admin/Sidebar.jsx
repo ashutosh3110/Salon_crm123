@@ -129,6 +129,7 @@ const menuItems = [
             { label: 'Suppliers', icon: Users, path: '/admin/finance/suppliers' },
             { label: 'Supplier Invoices', icon: FileText, path: '/admin/finance/invoices' },
             { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
+            { label: 'Petty Cash', icon: Wallet, path: '/accountant/petty-cash' },
             { label: 'Cash & Bank', icon: Wallet, path: '/admin/finance/reconciliation' },
             { label: 'GST / Tax Reports', icon: ClipboardList, path: '/admin/finance/tax' },
             { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },

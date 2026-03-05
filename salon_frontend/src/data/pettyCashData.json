@@ -1,0 +1,55 @@
+{
+    "transactions": [
+        {
+            "id": "TXN_1001",
+            "type": "FUND_ADDED",
+            "category": "Initial Fund",
+            "amount": 5000,
+            "description": "Initial petty cash fund setup",
+            "staff": "Owner",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T09:00:00Z"
+        },
+        {
+            "id": "TXN_1002",
+            "type": "EXPENSE",
+            "category": "Staff Refreshment",
+            "amount": 100,
+            "description": "Tea for staff members",
+            "staff": "Receptionist",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T11:30:00Z"
+        },
+        {
+            "id": "TXN_1003",
+            "type": "EXPENSE",
+            "category": "Cleaning Supplies",
+            "amount": 200,
+            "description": "Cleaning liquid for floor",
+            "staff": "Receptionist",
+            "date": "2026-03-05",
+            "timestamp": "2026-03-05T14:45:00Z"
+        }
+    ],
+    "closingLogs": [],
+    "categories": [
+        "Staff Refreshment",
+        "Cleaning Supplies",
+        "Office & Stationery",
+        "Transport / Conveyance",
+        "Repair & Maintenance",
+        "Miscellaneous"
+    ],
+    "denominations": [
+        2000,
+        500,
+        200,
+        100,
+        50,
+        20,
+        10,
+        5,
+        2,
+        1
+    ]
+}

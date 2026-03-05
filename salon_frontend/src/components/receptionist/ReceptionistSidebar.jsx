@@ -13,6 +13,7 @@ const menuItems = [
     { label: 'Check-in/Out', icon: UserCheck, path: '/receptionist/checkin' },
     { label: 'Invoices', icon: ClipboardList, path: '/receptionist/invoices' },
     { label: 'Payments', icon: CreditCard, path: '/receptionist/payments' },
+    { label: 'Petty Cash', icon: ClipboardList, path: '/receptionist/petty-cash' },
     { label: 'Settings', icon: Settings, path: '/receptionist/settings' },
 ];
 

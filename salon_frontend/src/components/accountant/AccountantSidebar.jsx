@@ -11,8 +11,9 @@ const menuItems = [
     { label: 'Expenses', icon: DollarSign, path: '/accountant/expenses' },
     { label: 'Supplier Invoices', icon: FileText, path: '/accountant/invoices' },
     { label: 'Payroll', icon: Wallet, path: '/accountant/payroll' },
+    { label: 'Petty Cash', icon: Calculator, path: '/accountant/petty-cash' },
     { label: 'GST / Tax', icon: ClipboardList, path: '/accountant/tax' },
-    { label: 'Reconciliation', icon: Calculator, path: '/accountant/reconciliation' },
+    { label: 'Reconciliation', icon: DollarSign, path: '/accountant/reconciliation' },
     { label: 'Settings', icon: Settings, path: '/accountant/settings' },
 ];
 
