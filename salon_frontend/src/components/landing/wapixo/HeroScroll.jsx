@@ -15,6 +15,7 @@ export default function HeroScroll() {
     const imagesRef = useRef([]);
     const currentFrameRef = useRef(0);
     const rafRef = useRef(null);
+    const rafScheduledRef = useRef(false);
     const progressMV = useMotionValue(0);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -27,6 +28,7 @@ export default function HeroScroll() {
 
     const textOpacity = useTransform(progressMV, [0.5, 0.7], [0, 1]);
     const textY = useTransform(progressMV, [0.5, 0.8], [40, 0]);
+    const initialHeadlineOpacity = useTransform(progressMV, [0, 0.15], [1, 0]);
 
     // Preload all frames
     useEffect(() => {
@@ -60,9 +62,10 @@ export default function HeroScroll() {
         ctx.drawImage(img, dx, dy, dw, dh);
     };
 
-    // Scroll handler
+    // Scroll handler: RAF-throttled so we only read layout + update once per frame (fixes scroll lag)
     useEffect(() => {
-        const handleScroll = () => {
+        const tick = () => {
+            rafScheduledRef.current = false;
             const container = containerRef.current;
             if (!container) return;
 
@@ -80,15 +83,21 @@ export default function HeroScroll() {
 
             if (frameIndex !== currentFrameRef.current) {
                 currentFrameRef.current = frameIndex;
-                cancelAnimationFrame(rafRef.current);
-                rafRef.current = requestAnimationFrame(() => drawFrame(frameIndex));
+                drawFrame(frameIndex);
             }
+        };
+
+        const handleScroll = () => {
+            if (rafScheduledRef.current) return;
+            rafScheduledRef.current = true;
+            rafRef.current = requestAnimationFrame(tick);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
         return () => {
             window.removeEventListener('scroll', handleScroll);
+            rafScheduledRef.current = false;
             cancelAnimationFrame(rafRef.current);
         };
     }, []);
@@ -112,8 +121,8 @@ export default function HeroScroll() {
             ref={containerRef}
             style={{ height: isMobile ? '300vh' : '500vh', position: 'relative' }}
         >
-            {/* Sticky canvas viewport */}
-            <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
+            {/* Sticky canvas viewport — will-change promotes layer to reduce scroll repaints */}
+            <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', willChange: 'transform' }}>
                 <canvas
                     ref={canvasRef}
                     style={{
@@ -169,7 +178,7 @@ export default function HeroScroll() {
                         right: 0,
                         transform: 'translateY(-50%)',
                         textAlign: 'center',
-                        opacity: useTransform(progressMV, [0, 0.15], [1, 0]),
+                        opacity: initialHeadlineOpacity,
                         pointerEvents: 'none',
                     }}
                 >

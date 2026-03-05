@@ -53,7 +53,8 @@ export default function ScissorsMorph() {
         const scale = Math.max(cw / iw, ch / ih);
         const dw = iw * scale;
         const dh = ih * scale;
-        const dx = (cw - dw) / 2;
+        const horizontalOffset = cw * 0.06;
+        const dx = (cw - dw) / 2 - horizontalOffset;
         const dy = (ch - dh) / 2;
 
         ctx.clearRect(0, 0, cw, ch);
