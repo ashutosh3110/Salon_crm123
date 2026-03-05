@@ -113,22 +113,44 @@ export default function WapixoPricing() {
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1, duration: 0.8 }}
                             style={{
-                                background: plan.popular ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)',
-                                border: plan.popular ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.06)',
+                                '--spotlight-x': '50%',
+                                '--spotlight-y': '0%',
+                                '--spotlight-opacity': 0,
+                                background:
+                                    'radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(255,255,255,var(--spotlight-opacity)), transparent 65%), ' +
+                                    (plan.popular ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'),
+                                border: plan.popular
+                                    ? '1px solid rgba(255,255,255,0.15)'
+                                    : '1px solid rgba(255,255,255,0.06)',
                                 borderRadius: '4px',
                                 padding: '2rem 1.75rem',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 transition: 'all 0.3s ease',
                                 position: 'relative',
+                                overflow: 'hidden',
+                                boxShadow: '0 0 0 rgba(0,0,0,0)',
                             }}
-                            onMouseOver={(e) => {
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                            onMouseMove={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = e.clientX - rect.left;
+                                const y = e.clientY - rect.top;
+                                e.currentTarget.style.setProperty('--spotlight-x', `${x}px`);
+                                e.currentTarget.style.setProperty('--spotlight-y', `${y}px`);
                             }}
-                            onMouseOut={(e) => {
-                                e.currentTarget.style.background = plan.popular ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)';
-                                e.currentTarget.style.borderColor = plan.popular ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)';
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.setProperty('--spotlight-opacity', '0.22');
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+                                e.currentTarget.style.boxShadow = '0 18px 45px rgba(0,0,0,0.7)';
+                                e.currentTarget.style.transform = 'translateY(-4px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.setProperty('--spotlight-opacity', '0');
+                                e.currentTarget.style.borderColor = plan.popular
+                                    ? 'rgba(255,255,255,0.15)'
+                                    : 'rgba(255,255,255,0.06)';
+                                e.currentTarget.style.boxShadow = '0 0 0 rgba(0,0,0,0)';
+                                e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
                             {plan.popular && (
