@@ -4,8 +4,9 @@ import {
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
     Eye, BarChart2, Smartphone, Facebook, Instagram,
     Zap, Calendar, Layout, Trash2, Edit3, ArrowRight,
-    QrCode, Globe, Percent, XCircle
+    QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, SmartphoneIcon, Target, Megaphone
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer, BarChart, Bar
@@ -119,6 +120,8 @@ export default function MarketingHub() {
         { id: 'dashboard', label: 'Dashboard', icon: Layout },
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
         { id: 'email', label: 'Email Center', icon: Mail },
+        { id: 'automations', label: 'Automations', icon: Zap },
+        { id: 'presence', label: 'Digital Presence', icon: Globe },
     ];
 
     return (
@@ -171,6 +174,38 @@ export default function MarketingHub() {
                     {activeTab === 'dashboard' && <DashboardContent />}
                     {activeTab === 'whatsapp' && <WhatsAppContent onNew={() => startCampaign()} />}
                     {activeTab === 'email' && <EmailContent onOpen={() => setIsEmailModalOpen(true)} />}
+                    {activeTab === 'presence' && (
+                        <div className="space-y-6">
+                            <div className="bg-primary/5 rounded-[2.5rem] p-10 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-10">
+                                <div className="max-w-md">
+                                    <div className="w-16 h-16 rounded-2xl bg-white border border-primary/20 flex items-center justify-center text-primary shadow-sm mb-6">
+                                        <Globe className="w-8 h-8" />
+                                    </div>
+                                    <h2 className="text-3xl font-black text-text uppercase tracking-tight mb-4">Your Digital Catalogue</h2>
+                                    <p className="text-text-secondary font-medium leading-relaxed mb-8">
+                                        Create a stunning service menu that customers can browse online. Share it on social media, via WhatsApp, or through a QR code at your salon.
+                                    </p>
+                                    <Link
+                                        to="/admin/digital-presence"
+                                        className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/25 hover:brightness-110 active:scale-95 transition-all"
+                                    >
+                                        GO TO BUILDER <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+                                <div className="relative group">
+                                    <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full group-hover:bg-primary/30 transition-colors" />
+                                    <div className="relative bg-white rounded-[2rem] border border-border p-4 shadow-2xl w-64 aspect-[9/16] overflow-hidden">
+                                        <div className="w-full h-full bg-slate-50 flex items-center justify-center border-2 border-dashed border-border rounded-[1.5rem]">
+                                            <div className="text-center p-4">
+                                                <Layout className="w-10 h-10 text-slate-300 mx-auto mb-4" />
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Preview Interface</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </motion.div>
             </AnimatePresence>
 

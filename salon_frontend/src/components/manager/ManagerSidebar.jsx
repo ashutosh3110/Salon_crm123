@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard, Users, BarChart3, CalendarCheck, Star,
-    Clock, Target, Settings, LogOut, ChevronLeft, ChevronRight, X, Briefcase
+    Clock, Target, Settings, LogOut, ChevronLeft, ChevronRight, X, Briefcase, Globe
 } from 'lucide-react';
 
 const menuItems = [
@@ -13,6 +13,7 @@ const menuItems = [
     { label: 'Targets', icon: Target, path: '/manager/targets' },
     { label: 'Feedback', icon: Star, path: '/manager/feedback' },
     { label: 'Shift Planning', icon: Clock, path: '/manager/shifts' },
+    { label: 'Digital Presence', icon: Globe, path: '/admin/digital-presence' },
     { label: 'Settings', icon: Settings, path: '/manager/settings' },
 ];
 

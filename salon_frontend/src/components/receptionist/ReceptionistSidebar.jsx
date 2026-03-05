@@ -2,7 +2,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard, Calendar, Users, CreditCard, ClipboardList,
-    UserCheck, Settings, LogOut, ChevronLeft, ChevronRight, X, Zap
+    UserCheck, Settings, LogOut, ChevronLeft, ChevronRight, X, Zap, Globe
 } from 'lucide-react';
 
 const menuItems = [
@@ -11,6 +11,7 @@ const menuItems = [
     { label: 'Walk-in Queue', icon: Users, path: '/receptionist/queue' },
     { label: 'Quick Bill (POS)', icon: Zap, path: '/pos/billing', accent: true },
     { label: 'Check-in/Out', icon: UserCheck, path: '/receptionist/checkin' },
+    { label: 'Digital Presence', icon: Globe, path: '/admin/digital-presence' },
     { label: 'Invoices', icon: ClipboardList, path: '/receptionist/invoices' },
     { label: 'Payments', icon: CreditCard, path: '/receptionist/payments' },
     { label: 'Petty Cash', icon: ClipboardList, path: '/receptionist/petty-cash' },

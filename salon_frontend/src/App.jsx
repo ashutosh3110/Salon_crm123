@@ -59,6 +59,8 @@ import InventoryPage from './pages/admin/InventoryPage';
 import MarketingCMSPage from './pages/admin/MarketingCMSPage';
 import MarketingHubPage from './pages/admin/MarketingHubPage';
 import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
+import DigitalPresencePage from './pages/admin/DigitalPresencePage';
+import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -183,6 +185,7 @@ function App() {
                   <Route path="/cookies" element={<CookiePolicy />} />
                   <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
                   <Route path="/launchpad" element={<PanelLaunchpad />} />
+                  <Route path="/c/:slug" element={<PublicCataloguePage />} />
 
                   {/* ═══════════════════════════════════════════════════════════
                  ADMIN — Salon Owner Panel
@@ -243,6 +246,7 @@ function App() {
 
                       <Route path="/admin/promotions" element={<PromotionsPage />} />
                       <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                      <Route path="/admin/digital-presence" element={<DigitalPresencePage />} />
                       <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
                       <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                       <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
@@ -272,6 +276,7 @@ function App() {
                       <Route path="/manager/feedback" element={<FeedbackPage />} />
                       <Route path="/manager/shifts" element={<ShiftsPage />} />
                       <Route path="/manager/settings" element={<ManagerSettingsPage />} />
+                      <Route path="/manager/digital-presence" element={<DigitalPresencePage />} />
                     </Route>
                   </Route>
 
@@ -288,6 +293,7 @@ function App() {
                       <Route path="/receptionist/payments" element={<PaymentsPage />} />
                       <Route path="/receptionist/petty-cash" element={<PettyCashPage />} />
                       <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
+                      <Route path="/receptionist/digital-presence" element={<DigitalPresencePage />} />
                     </Route>
                   </Route>
 

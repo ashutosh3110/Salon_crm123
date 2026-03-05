@@ -38,7 +38,8 @@ import {
     Percent,
     Smartphone,
     Crown,
-    ArrowDownUp
+    ArrowDownUp,
+    Globe
 } from 'lucide-react';
 
 const menuItems = [
@@ -82,6 +83,12 @@ const menuItems = [
             { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms' },
             { label: 'Coupon Codes', icon: Percent, path: '/admin/promotions' },
         ]
+    },
+    {
+        label: 'Digital Presence',
+        icon: Globe,
+        path: '/admin/digital-presence',
+        roles: ['admin', 'manager', 'receptionist']
     },
     {
         label: 'CRM',
