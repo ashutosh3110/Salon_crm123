@@ -164,6 +164,12 @@ export default function POSBillingPage() {
 
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '' });
 
+    // Billing & Payment System Updates
+    const [includePreviousDue, setIncludePreviousDue] = useState(false);
+    const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+    const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
+    const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
+
     // Refs
     const searchInputRef = useRef(null);
     const clientInputRef = useRef(null);
@@ -253,10 +259,13 @@ export default function POSBillingPage() {
 
         const taxable = Math.max(0, subtotal - discount - (redeemPoints || 0) - (redeemWallet || 0));
         const tax = (taxable * taxPercent) / 100;
-        const total = taxable + tax;
+        const currentBillTotal = taxable + tax;
 
-        return { subtotal, discount, tax, total, taxable };
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent]);
+        const previousDue = (selectedClient?.dueAmount || 0);
+        const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
+
+        return { subtotal, discount, tax, total: grandTotal, taxable, currentBillTotal, previousDue };
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent, selectedClient, includePreviousDue]);
 
     // Update auto-payment if single payment
     useMemo(() => {
@@ -423,13 +432,15 @@ export default function POSBillingPage() {
         if (!selectedClient) return alert('Select a client first');
         if (cart.length === 0) return alert('Cart is empty');
         const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
-        if (paidAmount !== totals.total) return alert('Total payment must match bill amount');
+
+        // Allow partial payment
+        const balanceDue = totals.total - paidAmount;
 
         setCheckingOut(true);
         setTimeout(() => {
-            setSuccessInvoice({
+            const invoiceData = {
                 number: `INV-${Date.now().toString().slice(-4)}`,
-                date: new Date().toLocaleString('en-IN', {
+                date: new Date(paymentDate).toLocaleString('en-IN', {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hour12: true
                 }),
@@ -440,25 +451,32 @@ export default function POSBillingPage() {
                     ...item,
                     staffName: MOCK_STAFF.find(s => s._id === item.staffId)?.name || 'Unknown'
                 })),
-                totals: { ...totals },
+                totals: { ...totals, paidAmount, balanceDue },
                 payments: payments,
-                loyaltyEarned: Math.floor(totals.total / 100),
+                loyaltyEarned: Math.floor(totals.currentBillTotal / 100),
                 discounts: {
                     manual: manualDiscount,
                     promotion: appliedPromotion,
                     voucher: appliedVoucher,
                     points: redeemPoints,
                     wallet: redeemWallet
-                }
-            });
+                },
+                paymentDate: paymentDate
+            };
+
+            setSuccessInvoice(invoiceData);
+
+            // WhatsApp Auto-Send logic
+            if (autoSendWhatsApp) {
+                sendWhatsAppBill(invoiceData);
+            }
 
             // ── Phase 3: Record each item into Inventory Reconciliation log ──
-            const invoiceNum = `INV-${Date.now().toString().slice(-4)}`;
+            const invoiceNum = invoiceData.number;
             const saleEntries = cart
                 .filter(item => !item.isPackageRedemption)
                 .map(item => {
                     const isProduct = item.type === 'product';
-                    // Find matching POS product to get SKU
                     const posProduct = MOCK_PRODUCTS.find(p => p._id === item.itemId || p._id === item._id);
                     if (!posProduct) return null;
                     return {
@@ -481,6 +499,17 @@ export default function POSBillingPage() {
 
             setCheckingOut(false);
         }, 1200);
+    };
+
+    const sendWhatsAppBill = (invoice) => {
+        setIsWhatsAppSending(true);
+        const text = `*Hello ${invoice.client.name}!* \n\nThank you for visiting *XYZ SALON & SPA*. \n\n*Bill Summary:* \nInvoice: #${invoice.number}\nDate: ${invoice.date}\nTotal: ₹${invoice.totals.total.toFixed(0)}\nPaid: ₹${invoice.totals.paidAmount.toFixed(0)}\n${invoice.totals.balanceDue > 0 ? `*Balance Due: ₹${invoice.totals.balanceDue.toFixed(0)}*` : 'Payment Received'}\n\nHope to see you again soon!`;
+        const encodedText = encodeURIComponent(text);
+        const whatsappUrl = `https://wa.me/91${invoice.client.phone}?text=${encodedText}`;
+
+        // Open WhatsApp
+        window.open(whatsappUrl, '_blank');
+        setIsWhatsAppSending(false);
     };
 
     const handleQuickCreate = (e) => {
@@ -635,10 +664,22 @@ export default function POSBillingPage() {
                                 <span>₹{p.amount.toFixed(0)}</span>
                             </div>
                         ))}
+                        <div className="flex justify-between border-t border-dashed border-black mt-1 pt-1 font-bold">
+                            <span>PAID:</span>
+                            <span>₹{successInvoice.totals.paidAmount.toFixed(0)}</span>
+                        </div>
+                        {successInvoice.totals.balanceDue > 0 && (
+                            <div className="flex justify-between text-red-600 font-bold">
+                                <span>BALANCE DUE:</span>
+                                <span>₹{successInvoice.totals.balanceDue.toFixed(0)}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mt-2 text-center">
-                        <p className="font-bold">LOYALTY EARNED: {successInvoice.loyaltyEarned} PTS</p>
+                        <p className="font-bold uppercase tracking-wider">
+                            {successInvoice.totals.balanceDue > 0 ? '* PENDING PAYMENT *' : 'LOYALTY EARNED: ' + successInvoice.loyaltyEarned + ' PTS'}
+                        </p>
                         <p className="mt-4 font-bold uppercase tracking-widest">Thank You! Visit Again 🙂</p>
                     </div>
                 </div>
@@ -670,8 +711,11 @@ export default function POSBillingPage() {
                         </button>
 
                         <div className="grid grid-cols-2 gap-2">
-                            <button className="bg-[#25D366] text-white p-3 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:opacity-90 transition-all rounded-none">
-                                <Smartphone className="w-3.5 h-3.5" /> WhatsApp
+                            <button
+                                onClick={() => sendWhatsAppBill(successInvoice)}
+                                className="bg-[#25D366] text-white p-3 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:opacity-90 transition-all rounded-none"
+                            >
+                                <Smartphone className="w-3.5 h-3.5" /> {isWhatsAppSending ? 'Sending...' : 'WhatsApp'}
                             </button>
                             <button className="bg-primary/10 text-primary border border-primary/20 p-3 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:bg-primary/20 transition-all rounded-none">
                                 <FileText className="w-3.5 h-3.5" /> Email
@@ -713,6 +757,21 @@ export default function POSBillingPage() {
                         </span>
                     )}
                 </button>
+            </div>
+
+            {/* Main Header with Return Option */}
+            <div className="flex items-center justify-between px-4 py-2 bg-surface-alt border-b border-border mb-2">
+                <h1 className="text-sm font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                    <CreditCard className="w-4 h-4" /> POS Terminal
+                </h1>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => window.location.href = '/pos/refunds'}
+                        className="px-4 py-1.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                    >
+                        <History className="w-3.5 h-3.5" /> Return / Refund
+                    </button>
+                </div>
             </div>
 
             {/* Main Content */}
@@ -888,7 +947,7 @@ export default function POSBillingPage() {
 
                         {selectedClient && showClientInfo && (
                             <div className="bg-slate-900 border border-slate-800 p-4 space-y-3 animate-in slide-in-from-top-4 duration-300">
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-2 gap-2">
                                     <div className="bg-white/5 p-2 text-center">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Loyalty</p>
                                         <p className="text-sm font-black text-amber-400">{selectedClient.loyaltyPoints} pts</p>
@@ -897,9 +956,19 @@ export default function POSBillingPage() {
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Wallet</p>
                                         <p className="text-sm font-black text-emerald-400">₹{selectedClient.walletBalance}</p>
                                     </div>
-                                    <div className="bg-white/5 p-2 text-center">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Visits</p>
-                                        <p className="text-sm font-black text-blue-400">{selectedClient.history.length}</p>
+                                    <div className="bg-rose-500/10 p-2 text-center border border-rose-500/20 col-span-2">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-[9px] font-bold text-rose-400 uppercase text-left">Previous Due</p>
+                                                <p className="text-base font-black text-rose-500 text-left">₹{selectedClient.dueAmount || 0}</p>
+                                            </div>
+                                            <button
+                                                onClick={() => setIncludePreviousDue(!includePreviousDue)}
+                                                className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${includePreviousDue ? 'bg-rose-500 text-white border-rose-500' : 'bg-transparent text-rose-500 border-rose-500/50 hover:bg-rose-500/10'}`}
+                                            >
+                                                {includePreviousDue ? 'Added' : 'Add to Bill'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -984,18 +1053,24 @@ export default function POSBillingPage() {
                     <div className="p-4 bg-surface-alt border-t border-border space-y-4">
                         <div className="space-y-1.5 border-b border-border pb-3">
                             <div className="flex justify-between text-xs font-bold text-text-secondary">
-                                <span>SUBTOTAL</span>
-                                <span>₹{totals.subtotal.toLocaleString()}</span>
+                                <span>CURRENT BILL</span>
+                                <span>₹{totals.currentBillTotal.toFixed(0)}</span>
                             </div>
+                            {includePreviousDue && (
+                                <div className="flex justify-between text-xs font-bold text-rose-500">
+                                    <span>PREVIOUS DUE</span>
+                                    <span>₹{totals.previousDue.toFixed(0)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-xs font-bold text-text-secondary">
                                 <span>GST ({taxPercent}%)</span>
-                                <span>₹{totals.tax.toLocaleString()}</span>
+                                <span>₹{totals.tax.toFixed(0)}</span>
                             </div>
                         </div>
 
                         <div className="flex items-center justify-between">
-                            <h4 className="text-sm font-black text-text uppercase tracking-widest">Total Amount</h4>
-                            <span className="text-2xl font-black text-primary tracking-tight">₹{totals.total.toLocaleString()}</span>
+                            <h4 className="text-sm font-black text-text uppercase tracking-widest">Grand Total</h4>
+                            <span className="text-2xl font-black text-primary tracking-tight">₹{totals.total.toFixed(0)}</span>
                         </div>
 
                         <div className="flex flex-col gap-3">
@@ -1029,9 +1104,37 @@ export default function POSBillingPage() {
                                         </div>
                                     ))}
                                 </div>
-                                {payments.reduce((s, p) => s + p.amount, 0) !== totals.total && (
-                                    <p className="text-[9px] font-bold text-rose-500 italic">Remaining: ₹{totals.total - payments.reduce((s, p) => s + p.amount, 0)}</p>
+                                {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
+                                    <p className="text-[9px] font-bold text-amber-500 italic flex items-center gap-1">
+                                        <Info className="w-3 h-3" /> Remaining: ₹{totals.total - payments.reduce((s, p) => s + p.amount, 0)} (will be marked as Pending)
+                                    </p>
                                 )}
+                            </div>
+
+                            <div className="flex items-center justify-between py-2 border-y border-border/50">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="w-3.5 h-3.5 text-text-muted" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Payment Date:</span>
+                                </div>
+                                <input
+                                    type="date"
+                                    className="bg-transparent text-[11px] font-black text-text outline-none focus:text-primary"
+                                    value={paymentDate}
+                                    onChange={(e) => setPaymentDate(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between mb-1">
+                                <div className="flex items-center gap-2">
+                                    <Smartphone className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Auto WhatsApp:</span>
+                                </div>
+                                <button
+                                    onClick={() => setAutoSendWhatsApp(!autoSendWhatsApp)}
+                                    className={`w-8 h-4 rounded-full relative transition-all ${autoSendWhatsApp ? 'bg-emerald-500' : 'bg-border'}`}
+                                >
+                                    <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all ${autoSendWhatsApp ? 'right-0.5' : 'left-0.5'}`} />
+                                </button>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2">
@@ -1040,7 +1143,7 @@ export default function POSBillingPage() {
                                 </button>
                                 <button
                                     onClick={handleCheckout}
-                                    disabled={cart.length === 0 || checkingOut || payments.reduce((s, p) => s + p.amount, 0) !== totals.total}
+                                    disabled={cart.length === 0 || checkingOut}
                                     className="py-2.5 bg-primary text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-primary-dark active:scale-95 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
                                 >
                                     {checkingOut ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}

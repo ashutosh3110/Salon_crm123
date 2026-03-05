@@ -10,7 +10,13 @@ import {
     ChevronRight,
     Tag,
     Trash2,
-    DollarSign
+    DollarSign,
+    Cake,
+    Calendar,
+    MapPin,
+    FileText,
+    Layers,
+    MessageSquare
 } from 'lucide-react';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
@@ -23,10 +29,16 @@ export default function CustomersPage({ tab = 'directory' }) {
     const { customers, addCustomer, deleteCustomer } = useBusiness();
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [whatsappModal, setWhatsappModal] = useState({ isOpen: false, customer: null, message: '' });
     const [newCustomerForm, setNewCustomerForm] = useState({
         name: '',
         phone: '',
-        preferred: 'Haircut'
+        preferred: 'Haircut',
+        dob: '',
+        anniversary: '',
+        address: '',
+        remarks: '',
+        category: 'Regular'
     });
 
     const activeTab = tab;
@@ -41,7 +53,7 @@ export default function CustomersPage({ tab = 'directory' }) {
             tags: [],
             lastVisit: new Date().toISOString()
         });
-        setNewCustomerForm({ name: '', phone: '', preferred: 'Haircut' });
+        setNewCustomerForm({ name: '', phone: '', preferred: 'Haircut', dob: '', anniversary: '', address: '', remarks: '', category: 'Regular' });
         setShowAddModal(false);
     };
 
@@ -56,116 +68,291 @@ export default function CustomersPage({ tab = 'directory' }) {
     };
 
     return (
-        <div className="space-y-6 animate-reveal">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-text uppercase">Customer CRM</h1>
-                    <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
+        <>
+            <div className="space-y-6 animate-reveal">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-text uppercase">Customer CRM</h1>
+                        <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all"
+                        >
+                            <Download className="w-3.5 h-3.5" />
+                            Export
+                        </button>
+                        <button
+                            onClick={() => setShowAddModal(true)}
+                            className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                        >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            Add Customer
+                        </button>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleExport}
-                        className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all"
-                    >
-                        <Download className="w-3.5 h-3.5" />
-                        Export
-                    </button>
-                    <button
-                        onClick={() => setShowAddModal(true)}
-                        className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
-                    >
-                        <UserPlus className="w-3.5 h-3.5" />
-                        Add Customer
-                    </button>
+
+                {/* Celebration Reminders */}
+                <CelebrationReminders
+                    customers={customers}
+                    onSendWhatsApp={(c, msg) => setWhatsappModal({ isOpen: true, customer: c, message: msg })}
+                />
+
+                {/* KPI Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <KPICard title="Total Base" value={customers.length} icon={Users} color="blue" trend="+12%" />
+                    <KPICard title="VIP Elite" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="Stable" />
+                    <KPICard title="Gross Rev" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="Total" />
+                    <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="At Risk" />
                 </div>
-            </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard title="Total Base" value={customers.length} icon={Users} color="blue" trend="+12%" />
-                <KPICard title="VIP Elite" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="Stable" />
-                <KPICard title="Gross Rev" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="Total" />
-                <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="At Risk" />
-            </div>
+                {/* Content Container */}
+                <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
+                    {activeTab === 'directory' && (
+                        <CustomerDirectory
+                            customers={customers}
+                            onCustomerClick={setSelectedCustomer}
+                            onDelete={deleteCustomer}
+                        />
+                    )}
+                    {activeTab === 'segments' && <SegmentManager />}
+                    {activeTab === 'feedback' && <FeedbackList />}
+                    {activeTab === 'reengage' && <ReEngagementTool />}
+                </div>
 
-            {/* Content Container */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
-                {activeTab === 'directory' && (
-                    <CustomerDirectory
-                        customers={customers}
-                        onCustomerClick={setSelectedCustomer}
-                        onDelete={deleteCustomer}
-                    />
-                )}
-                {activeTab === 'segments' && <SegmentManager />}
-                {activeTab === 'feedback' && <FeedbackList />}
-                {activeTab === 'reengage' && <ReEngagementTool />}
-            </div>
+                {/* Profile Modal */}
+                <CustomerProfileModal
+                    isOpen={!!selectedCustomer}
+                    customer={selectedCustomer}
+                    onClose={() => setSelectedCustomer(null)}
+                />
 
-            {/* Profile Modal */}
-            <CustomerProfileModal
-                isOpen={!!selectedCustomer}
-                customer={selectedCustomer}
-                onClose={() => setSelectedCustomer(null)}
-            />
-
-            {/* Add Customer Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-col items-center text-center mb-10">
-                            <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
-                                <UserPlus className="w-10 h-10" />
+                {/* Add Customer Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-white rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex flex-col items-center text-center mb-10">
+                                <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
+                                    <UserPlus className="w-10 h-10" />
+                                </div>
+                                <h2 className="text-3xl font-black text-text uppercase tracking-tight">Induct Customer</h2>
+                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">New Identity Matrix Registration</p>
                             </div>
-                            <h2 className="text-3xl font-black text-text uppercase tracking-tight">Induct Customer</h2>
-                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">New Identity Matrix Registration</p>
+
+                            <form onSubmit={handleAddCustomer} className="space-y-6">
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Full Identification</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            placeholder="e.g. ADITYA_SHARMA"
+                                            value={newCustomerForm.name}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Node</label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            placeholder="+91 00000 00000"
+                                            value={newCustomerForm.phone}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Birth Date</label>
+                                            <input
+                                                type="date"
+                                                value={newCustomerForm.dob}
+                                                onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
+                                                className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Anniversary</label>
+                                            <input
+                                                type="date"
+                                                value={newCustomerForm.anniversary}
+                                                onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
+                                                className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Customer Category</label>
+                                        <select
+                                            value={newCustomerForm.category}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, category: e.target.value })}
+                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase tracking-widest"
+                                        >
+                                            <option value="Regular">Regular</option>
+                                            <option value="Premium">Premium</option>
+                                            <option value="Elite">Elite</option>
+                                            <option value="Budget">Budget</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Residential Address</label>
+                                        <textarea
+                                            placeholder="STREET, AREA, CITY, PIN"
+                                            value={newCustomerForm.address}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
+                                            className="w-full px-6 py-3 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase h-24 resize-none"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Internal Remarks / Notes</label>
+                                        <input
+                                            type="text"
+                                            placeholder="ANY SPECIAL REQUIREMENTS..."
+                                            value={newCustomerForm.remarks}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, remarks: e.target.value })}
+                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-4 pt-8">
+                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all active:scale-[0.98]">ABORT</button>
+                                    <button type="submit" className="flex-1 bg-text text-white py-5 rounded-none shadow-2xl shadow-text/20 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all active:scale-[0.98]">INITIALIZE</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Manual WhatsApp Message Modal */}
+            {whatsappModal.isOpen && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white rounded-none w-full max-w-lg p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
+                            <div className="w-12 h-12 bg-emerald-500 text-white flex items-center justify-center font-black">
+                                <MessageSquare className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Compose Manual Message</h3>
+                                <p className="text-[10px] font-bold text-text-muted uppercase mt-0.5">To: {whatsappModal.customer?.name}</p>
+                            </div>
                         </div>
 
-                        <form onSubmit={handleAddCustomer} className="space-y-6">
-                            <div className="space-y-5">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Full Identification</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. ADITYA_SHARMA"
-                                        value={newCustomerForm.name}
-                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
-                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Node</label>
-                                    <input
-                                        type="tel"
-                                        required
-                                        placeholder="+91 00000 00000"
-                                        value={newCustomerForm.phone}
-                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
-                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Preference Vector</label>
-                                    <input
-                                        type="text"
-                                        placeholder="HAIRCUT / STYLING"
-                                        value={newCustomerForm.preferred}
-                                        onChange={(e) => setNewCustomerForm({ ...newCustomerForm, preferred: e.target.value })}
-                                        className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
-                                    />
-                                </div>
-                            </div>
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Payload</label>
+                            <textarea
+                                value={whatsappModal.message}
+                                onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
+                                className="w-full h-40 px-5 py-4 bg-surface border border-border text-xs font-bold focus:bg-white focus:border-emerald-500 outline-none transition-all resize-none"
+                                placeholder="Write your personalized message here..."
+                            />
+                        </div>
 
-                            <div className="flex gap-4 pt-8">
-                                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all active:scale-[0.98]">ABORT</button>
-                                <button type="submit" className="flex-1 bg-text text-white py-5 rounded-none shadow-2xl shadow-text/20 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all active:scale-[0.98]">INITIALIZE</button>
-                            </div>
-                        </form>
+                        <div className="flex gap-4 mt-8">
+                            <button
+                                onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
+                                className="flex-1 py-4 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface transition-all"
+                            >
+                                CANCEL
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const phone = whatsappModal.customer.phone.replace(/[^0-9]/g, '');
+                                    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
+                                    setWhatsappModal({ ...whatsappModal, isOpen: false });
+                                }}
+                                className="flex-1 bg-emerald-500 text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
+                            >
+                                DISPATCH
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
+        </>
+    );
+}
+
+function CelebrationReminders({ customers, onSendWhatsApp }) {
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentDate = today.getDate();
+
+    const reminders = customers.filter(c => {
+        if (!c.dob && !c.anniversary) return false;
+
+        const birthday = c.dob ? new Date(c.dob) : null;
+        const anniversary = c.anniversary ? new Date(c.anniversary) : null;
+
+        const isBirthdayNear = birthday && birthday.getMonth() === currentMonth && Math.abs(birthday.getDate() - currentDate) <= 7;
+        const isAnniversaryNear = anniversary && anniversary.getMonth() === currentMonth && Math.abs(anniversary.getDate() - currentDate) <= 7;
+
+        return isBirthdayNear || isAnniversaryNear;
+    });
+
+    if (reminders.length === 0) return null;
+
+    const prepareWhatsAppWish = (customer, type) => {
+        const message = type === 'birthday'
+            ? `Happy Birthday ${customer.name}! 🎂 Wishing you a fantastic day ahead. We have a special treat waiting for you at our salon! ✨`
+            : `Happy Anniversary ${customer.name}! 🥂 Congratulations on your special milestone. We'd love to help you celebrate - visit us for a special treat! ✨`;
+
+        onSendWhatsApp(customer, message);
+    };
+
+    return (
+        <div className="bg-primary/5 border border-primary/20 p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
+            <div className="flex items-center justify-between">
+                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
+                    <Cake className="w-4 h-4" /> Celebration Matrix Reminders
+                </h3>
+                <span className="text-[9px] font-black text-primary/50 uppercase tracking-widest">{reminders.length} UPCOMING THIS WEEK</span>
+            </div>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                {reminders.map(c => {
+                    const birthday = c.dob ? new Date(c.dob) : null;
+                    const anniversary = c.anniversary ? new Date(c.anniversary) : null;
+                    const isBday = birthday && birthday.getMonth() === currentMonth && birthday.getDate() === currentDate;
+                    const isAnniv = anniversary && anniversary.getMonth() === currentMonth && anniversary.getDate() === currentDate;
+
+                    return (
+                        <div key={c._id} className={`flex-shrink-0 min-w-[300px] p-4 bg-white border ${isBday || isAnniv ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border'} flex items-center justify-between group hover:border-primary transition-all`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`w-10 h-10 rounded-none ${isBday || isAnniv ? 'bg-primary text-white' : 'bg-primary/10 text-primary'} flex items-center justify-center font-black text-sm`}>
+                                    {c.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <p className="text-xs font-black text-text uppercase tracking-tight">{c.name}</p>
+                                    <p className="text-[9px] font-bold text-text-muted mt-0.5 flex items-center gap-1.5 uppercase">
+                                        {isBday ? <><Cake className="w-2.5 h-2.5" /> Birthday Today!</> :
+                                            isAnniv ? <><Calendar className="w-2.5 h-2.5" /> Anniversary Today!</> :
+                                                birthday && birthday.getMonth() === currentMonth ? `Birthday on ${birthday.getDate()}` :
+                                                    `Anniversary on ${anniversary.getDate()}`}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => prepareWhatsAppWish(c, isBday || (birthday && !isAnniv) ? 'birthday' : 'anniversary')}
+                                    className="p-2.5 bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 group/wa relative"
+                                    title="Compose WhatsApp Wish"
+                                >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-text text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover/wa:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Edit & Send</span>
+                                </button>
+                                <button className="p-2.5 hover:bg-primary hover:text-white text-primary transition-all border border-primary/10">
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }

@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 
 export default function InventoryDashboard() {
-    const { stats, lowStockItems, movements, outlets, getOutletStats, products } = useInventory();
+    const { stats, lowStockItems, expiryAlerts, movements, outlets, getOutletStats, products } = useInventory();
     const [selectedOutlet, setSelectedOutlet] = useState('all');
 
     const stockStats = [
@@ -244,7 +244,7 @@ export default function InventoryDashboard() {
             </div>
 
             {/* Bottom Grid */}
-            <div className="grid lg:grid-cols-2 gap-4 text-left font-black">
+            <div className="grid lg:grid-cols-3 gap-4 text-left font-black">
                 <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm text-left">
                     <div className="px-5 py-4 border-b border-border/40 flex items-center gap-2 bg-surface/50 text-left">
                         <AlertTriangle className="w-4 h-4 text-rose-500" />
@@ -286,6 +286,45 @@ export default function InventoryDashboard() {
                                                 </span>
                                             );
                                         })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Expiry Alerts */}
+                <div className="bg-surface rounded-2xl border border-border/40 overflow-hidden shadow-sm text-left">
+                    <div className="px-5 py-4 border-b border-border/40 flex items-center gap-2 bg-surface/50 text-left">
+                        <Package className="w-4 h-4 text-orange-500" />
+                        <h2 className="text-sm font-extrabold text-text">Expiry Alerts</h2>
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] text-white font-black bg-orange-500 ml-auto shadow-lg shadow-orange-500/20">
+                            {expiryAlerts.length}
+                        </span>
+                    </div>
+                    <div className="divide-y divide-border/40 max-h-72 overflow-y-auto text-left">
+                        {expiryAlerts.length === 0 ? (
+                            <div className="px-5 py-6 text-center text-[11px] font-bold text-text-muted">No items near expiry ✓</div>
+                        ) : expiryAlerts.map((item) => {
+                            const remainingDays = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+                            const isExpired = remainingDays <= 0;
+                            return (
+                                <div key={item.id} className="px-5 py-3.5 text-left font-black">
+                                    <div className="flex items-center justify-between mb-1.5 text-left">
+                                        <div className="min-w-0 flex-1 text-left font-black">
+                                            <p className="text-sm font-bold text-text truncate text-left">{item.name}</p>
+                                            <p className={`text-[10px] font-black uppercase tracking-tighter ${isExpired ? 'text-rose-500' : 'text-orange-500'}`}>
+                                                {isExpired ? 'EXPIRED' : `Expires in ${remainingDays} days`}
+                                            </p>
+                                        </div>
+                                        <div className="text-right shrink-0 ml-3 font-black">
+                                            <p className="text-[10px] text-text-muted">EXP: {item.expiryDate}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 mt-2 flex-wrap text-left font-black">
+                                        <span className="text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-background text-text-muted border border-border/20 text-left">
+                                            Stock: {item.stock} {item.unit}
+                                        </span>
                                     </div>
                                 </div>
                             );

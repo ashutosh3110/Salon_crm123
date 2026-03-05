@@ -32,7 +32,9 @@ export default function AddProductForm({ onSave }) {
         threshold: '5',
         supplier: '',
         availability: 'all',
-        status: 'active'
+        status: 'active',
+        mfgDate: '',
+        expiryDate: ''
     });
 
     const categories = ['Hair Care', 'Skin Care', 'Styling', 'Grooming', 'Equipment'];
@@ -49,7 +51,9 @@ export default function AddProductForm({ onSave }) {
             ...formData,
             sellingPrice: parseFloat(formData.sellingPrice),
             threshold: parseInt(formData.threshold),
-            gstPercent: parseInt(formData.gstPercent)
+            gstPercent: parseInt(formData.gstPercent),
+            mfgDate: formData.mfgDate,
+            expiryDate: formData.expiryDate
         });
         navigate('/admin/inventory/products');
     };
@@ -327,13 +331,45 @@ export default function AddProductForm({ onSave }) {
                         </label>
                     </div>
                 </div>
+
+                {/* 8. Production & Expiry */}
+                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <BellRing className="w-4 h-4 text-orange-500" />
+                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">8. Production & Expiry</h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Mfg. Date</label>
+                            <input
+                                type="date"
+                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                value={formData.mfgDate}
+                                onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Expiry Date</label>
+                            <input
+                                type="date"
+                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
+                                value={formData.expiryDate}
+                                onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <p className="text-[9px] text-text-muted leading-tight opacity-70 mt-2">
+                        * Expiry tracking helps in generating automated alerts 60 days prior to disposal date.
+                    </p>
+                </div>
             </div>
 
-            {/* 8. Status & 9. Actions */}
+            {/* 9. Status & 10. Actions */}
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 bg-slate-50 rounded-3xl border border-border">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">8. Status:</span>
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">9. Status:</span>
                         <div className="flex p-1 bg-white rounded-xl border border-border">
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'active' })}

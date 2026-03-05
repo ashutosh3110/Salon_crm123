@@ -37,17 +37,17 @@ export const MOCK_PRODUCTS = [
 export const MOCK_CLIENTS = [
     {
         _id: 'c1', name: 'Aman Verma', phone: '9876543210', email: 'aman@gmail.com', gender: 'male',
-        loyaltyPoints: 450, walletBalance: 1200,
+        loyaltyPoints: 450, walletBalance: 1200, dueAmount: 500,
         packages: [{ name: 'Hair Spa Combo', sessionsLeft: 2, totalSessions: 5 }],
         history: [{ date: '2026-02-10', total: 1062, items: 'Haircut, Cleanup' }]
     },
     {
         _id: 'c2', name: 'Sonal Jha', phone: '9876543211', email: 'sonal@gmail.com', gender: 'female',
-        loyaltyPoints: 120, walletBalance: 0,
+        loyaltyPoints: 120, walletBalance: 0, dueAmount: 0,
         packages: [],
         history: [{ date: '2026-02-15', total: 3402, items: 'Hair Coloring' }]
     },
-    { _id: 'c4', name: 'Deepika Sharma', phone: '9876543213', email: 'deepika@gmail.com', gender: 'female', loyaltyPoints: 890, walletBalance: 500, packages: [], history: [] },
+    { _id: 'c4', name: 'Deepika Sharma', phone: '9876543213', email: 'deepika@gmail.com', gender: 'female', loyaltyPoints: 890, walletBalance: 500, dueAmount: 1200, packages: [], history: [] },
 ];
 
 export const MOCK_OUTLETS = [

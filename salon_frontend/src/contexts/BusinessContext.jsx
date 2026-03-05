@@ -74,11 +74,11 @@ const MOCK_PRODUCTS = [
 ];
 
 const MOCK_CUSTOMERS = [
-    { _id: 'c-1', name: 'Aryan Khan', phone: '+91 98765 43210', lastVisit: '2024-03-15', totalVisits: 12, spend: 15400, preferred: 'Haircut', tags: ['VIP'], status: 'Regular' },
-    { _id: 'c-2', name: 'Ishita Sharma', phone: '+91 98765 43211', lastVisit: '2024-03-20', totalVisits: 5, spend: 8200, preferred: 'Manicure', tags: ['Regular'], status: 'Regular' },
-    { _id: 'c-3', name: 'Rahul Verma', phone: '+91 98765 43212', lastVisit: '2024-02-10', totalVisits: 2, spend: 1200, preferred: 'Shave', tags: ['New'], status: 'Inactive' },
-    { _id: 'c-4', name: 'Simran Jit', phone: '+91 98765 43213', lastVisit: '2024-03-21', totalVisits: 25, spend: 45000, preferred: 'Coloring', tags: ['VIP'], status: 'Regular' },
-    { _id: 'c-5', name: 'Vikram Singh', phone: '+91 98765 43214', lastVisit: '2023-12-01', totalVisits: 1, spend: 500, preferred: 'Trim', tags: ['New'], status: 'Inactive' },
+    { _id: 'c-1', name: 'Aryan Khan', phone: '+91 98765 43210', lastVisit: '2024-03-15', totalVisits: 12, spend: 15400, preferred: 'Haircut', tags: ['VIP'], status: 'Regular', dob: '1995-03-05', anniversary: '2020-11-20', address: 'Flat 402, Sea View, Marine Drive', remarks: 'Prefers mild shampoo', category: 'Premium' },
+    { _id: 'c-2', name: 'Ishita Sharma', phone: '+91 98765 43211', lastVisit: '2024-03-20', totalVisits: 5, spend: 8200, preferred: 'Manicure', tags: ['Regular'], status: 'Regular', dob: '1998-07-12', anniversary: '', address: 'Bandra West, Mumbai', remarks: 'Allergic to certain oils', category: 'Regular' },
+    { _id: 'c-3', name: 'Rahul Verma', phone: '+91 98765 43212', lastVisit: '2024-02-10', totalVisits: 2, spend: 1200, preferred: 'Shave', tags: ['New'], status: 'Inactive', dob: '1990-05-25', anniversary: '2015-12-10', address: 'Andheri East, Residency', remarks: 'Frequent traveler', category: 'Budget' },
+    { _id: 'c-4', name: 'Simran Jit', phone: '+91 98765 43213', lastVisit: '2024-03-21', totalVisits: 25, spend: 45000, preferred: 'Coloring', tags: ['VIP'], status: 'Regular', dob: '1988-03-10', anniversary: '2012-05-15', address: 'Juhu Tara Road', remarks: 'High-end products only', category: 'Elite' },
+    { _id: 'c-5', name: 'Vikram Singh', phone: '+91 98765 43214', lastVisit: '2023-12-01', totalVisits: 1, spend: 500, preferred: 'Trim', tags: ['New'], status: 'Inactive', dob: '1992-09-30', anniversary: '', address: 'Colaba Causeway', remarks: '', category: 'Regular' },
 ];
 
 const MOCK_BOOKINGS = [
@@ -228,7 +228,12 @@ export function BusinessProvider({ children }) {
         spend: 0,
         tags: ['New'],
         status: 'Regular',
-        history: []
+        history: [],
+        dob: customer.dob || '',
+        anniversary: customer.anniversary || '',
+        address: customer.address || '',
+        remarks: customer.remarks || '',
+        category: customer.category || 'Regular'
     }, ...prev]);
     const updateCustomer = (id, data) => setCustomers(prev => prev.map(c => c._id === id ? { ...c, ...data } : c));
     const deleteCustomer = (id) => setCustomers(prev => prev.filter(c => c._id !== id));

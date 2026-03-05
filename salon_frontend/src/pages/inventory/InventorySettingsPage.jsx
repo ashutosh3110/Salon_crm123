@@ -17,7 +17,7 @@ const INITIAL_SUPPLIERS = [
 ];
 
 export default function InventorySettingsPage() {
-    const { outlets } = useInventory();
+    const { outlets, addOutlet, deleteOutlet, updateOutlet } = useInventory();
     const [activeTab, setActiveTab] = useState('Categories');
 
     // ── Categories State ─────────────────────────────────────
@@ -99,6 +99,25 @@ export default function InventorySettingsPage() {
     };
     const deleteSup = (id) => { setSuppliers(prev => prev.filter(s => s.id !== id)); setSupMenuOpen(null); showToast('Supplier removed'); };
 
+    // ── Location CRUD ────────────────────────────────────────
+    const [locModal, setLocModal] = useState(false);
+    const [editingLoc, setEditingLoc] = useState(null);
+    const [locForm, setLocForm] = useState({ name: '', short: '', color: 'bg-primary', isWarehouse: false });
+
+    const openAddLoc = () => { setEditingLoc(null); setLocForm({ name: '', short: '', color: 'bg-primary', isWarehouse: false }); setLocModal(true); };
+    const openEditLoc = (loc) => { setEditingLoc(loc); setLocForm({ name: loc.name, short: loc.short, color: loc.color, isWarehouse: loc.isWarehouse }); setLocModal(true); };
+    const saveLoc = (e) => {
+        e.preventDefault();
+        if (editingLoc) {
+            updateOutlet(editingLoc.id, locForm);
+            showToast(`Location "${locForm.name}" updated`);
+        } else {
+            addOutlet(locForm);
+            showToast(`Location "${locForm.name}" added`);
+        }
+        setLocModal(false);
+    };
+
     // ── Save alerts ──────────────────────────────────────────
     const saveAlerts = () => {
         if (editThreshold) { setGlobalThreshold(Number(thresholdInput)); setEditThreshold(false); }
@@ -133,9 +152,9 @@ export default function InventorySettingsPage() {
                 <div className="flex-1 bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm flex flex-col text-left min-h-[400px]">
                     <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-surface/50">
                         <h2 className="text-sm font-black text-text uppercase tracking-widest">{activeTab}</h2>
-                        {(activeTab === 'Categories' || activeTab === 'Suppliers') && (
+                        {(activeTab === 'Categories' || activeTab === 'Suppliers' || activeTab === 'Locations') && (
                             <button
-                                onClick={activeTab === 'Categories' ? openAddCat : openAddSup}
+                                onClick={activeTab === 'Categories' ? openAddCat : activeTab === 'Suppliers' ? openAddSup : openAddLoc}
                                 className="flex items-center gap-1.5 px-4 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
                                 <Plus className="w-3 h-3" /> New Entry
                             </button>
@@ -241,22 +260,32 @@ export default function InventorySettingsPage() {
                         {/* ── LOCATIONS ── */}
                         {activeTab === 'Locations' && (
                             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                                <div className="flex items-center gap-3 p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10 mb-4">
-                                    <Building2 className="w-5 h-5 text-amber-500 shrink-0" />
-                                    <p className="text-xs font-bold text-text-secondary leading-tight">Outlet locations are synced from business settings. Changes must be approved by the platform administrator.</p>
+                                <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10 mb-2">
+                                    <Building2 className="w-5 h-5 text-primary shrink-0" />
+                                    <p className="text-xs font-bold text-text-secondary leading-tight">Define your business footprint. Each location can track its own inventory levels and batch distributions.</p>
                                 </div>
                                 {outlets.map(outlet => (
-                                    <div key={outlet.id} className="flex items-center gap-4 p-4 bg-background rounded-2xl border border-border/10">
-                                        <div className={`w-10 h-10 rounded-xl ${outlet.color} flex items-center justify-center`}>
-                                            <Building2 className="w-4 h-4 text-white" />
+                                    <div key={outlet.id} className="flex items-center gap-4 p-4 bg-background rounded-2xl border border-border/10 group hover:border-primary/20 transition-all">
+                                        <div className={`w-12 h-12 rounded-2xl ${outlet.color} flex items-center justify-center shadow-lg shadow-black/5`}>
+                                            <Building2 className="w-5 h-5 text-white" />
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-black text-text">{outlet.name}</p>
-                                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">{outlet.isWarehouse ? 'Central Warehouse' : 'Retail Outlet'} · ID: {outlet.id}</p>
+                                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">{outlet.isWarehouse ? 'Central Warehouse' : 'Retail Outlet'} • {outlet.short}</p>
                                         </div>
-                                        <span className="text-[9px] font-black px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 uppercase">Active</span>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => openEditLoc(outlet)} className="p-2 hover:bg-surface rounded-lg text-text-muted hover:text-primary transition-colors">
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => { if (confirm('Delete location?')) deleteOutlet(outlet.id); }} className="p-2 hover:bg-rose-500/10 rounded-lg text-text-muted hover:text-rose-500 transition-colors">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
+                                {outlets.length === 0 && (
+                                    <div className="text-center py-10 text-sm font-bold text-text-muted">No locations defined yet.</div>
+                                )}
                             </motion.div>
                         )}
 
@@ -407,6 +436,60 @@ export default function InventorySettingsPage() {
                                 ))}
                                 <button type="submit" className="w-full py-3.5 bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-md shadow-primary/20 hover:scale-[1.01] transition-all">
                                     {editingSup ? 'Save Changes' : 'Add Supplier'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Location Modal ── */}
+            <AnimatePresence>
+                {locModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLocModal(false)} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-surface w-full max-w-sm rounded-[28px] border border-border/40 shadow-2xl relative p-7 text-left">
+                            <div className="flex items-center justify-between mb-5">
+                                <h2 className="text-lg font-black text-text uppercase">{editingLoc ? 'Edit Location' : 'New Location'}</h2>
+                                <button onClick={() => setLocModal(false)} className="w-8 h-8 rounded-full bg-background border border-border/10 flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
+                            </div>
+                            <form onSubmit={saveLoc} className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Display Name *</label>
+                                    <input required type="text" placeholder="e.g. Bandra West Studio"
+                                        className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none"
+                                        value={locForm.name} onChange={e => setLocForm(f => ({ ...f, name: e.target.value }))} />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Short Name (4 char)</label>
+                                        <input required maxLength={8} type="text" placeholder="e.g. BDRA"
+                                            className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-xs font-bold focus:border-primary outline-none"
+                                            value={locForm.short} onChange={e => setLocForm(f => ({ ...f, short: e.target.value }))} />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Theme Color</label>
+                                        <color-select className="grid grid-cols-6 gap-2">
+                                            {['bg-primary', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 'bg-violet-500'].map(c => (
+                                                <button key={c} type="button" onClick={() => setLocForm(f => ({ ...f, color: c }))}
+                                                    className={`w-full aspect-square rounded-lg border-2 transition-all ${c} ${locForm.color === c ? 'border-text scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`} />
+                                            ))}
+                                        </color-select>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between p-3 bg-background rounded-xl border border-border/10">
+                                    <div>
+                                        <p className="text-xs font-black text-text uppercase leading-none">Main Warehouse</p>
+                                        <p className="text-[9px] text-text-muted font-bold mt-1">Designate as central storage</p>
+                                    </div>
+                                    <button type="button" onClick={() => setLocForm(f => ({ ...f, isWarehouse: !f.isWarehouse }))}
+                                        className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-all ${locForm.isWarehouse ? 'bg-primary justify-end' : 'bg-border/60 justify-start'}`}>
+                                        <div className="w-5 h-5 bg-white rounded-full shadow-sm" />
+                                    </button>
+                                </div>
+                                <button type="submit" className="w-full py-3.5 bg-text text-background rounded-xl font-black text-xs uppercase tracking-widest shadow-md hover:opacity-90 active:scale-95 transition-all">
+                                    {editingLoc ? 'Update Location' : 'Save New Location'}
                                 </button>
                             </form>
                         </motion.div>

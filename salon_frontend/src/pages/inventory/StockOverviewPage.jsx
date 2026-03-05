@@ -23,6 +23,7 @@ export default function StockOverviewPage() {
         name: '', sku: '', barcode: '', category: 'Hair Colour', brand: '',
         type: 'retail', stock: 0, minStock: 10, unit: 'pcs',
         costPrice: 0, price: 0, taxRate: 18, supplier: '', reorderQty: 20,
+        mfgDate: '', expiryDate: ''
     });
 
     // ── Get stock for selected outlet (or total) ──────────────
@@ -62,9 +63,11 @@ export default function StockOverviewPage() {
             price: Number(newProduct.price),
             taxRate: Number(newProduct.taxRate),
             reorderQty: Number(newProduct.reorderQty),
+            mfgDate: newProduct.mfgDate,
+            expiryDate: newProduct.expiryDate
         });
         setIsAddModalOpen(false);
-        setNewProduct({ name: '', sku: '', barcode: '', category: 'Hair Colour', brand: '', type: 'retail', stock: 0, minStock: 10, unit: 'pcs', costPrice: 0, price: 0, taxRate: 18, supplier: '', reorderQty: 20 });
+        setNewProduct({ name: '', sku: '', barcode: '', category: 'Hair Colour', brand: '', type: 'retail', stock: 0, minStock: 10, unit: 'pcs', costPrice: 0, price: 0, taxRate: 18, supplier: '', reorderQty: 20, mfgDate: '', expiryDate: '' });
     };
 
     const handleRegenerateBarcode = (id) => {
@@ -183,6 +186,7 @@ export default function StockOverviewPage() {
                                     <th key={o.id} className="px-3 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest hidden xl:table-cell">{o.short}</th>
                                 ))}
                                 <th className="px-5 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest hidden sm:table-cell">Price</th>
+                                <th className="px-5 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest hidden xl:table-cell">Expiry</th>
                                 <th className="px-5 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Status</th>
                                 <th className="px-5 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Detail</th>
                             </tr>
@@ -263,6 +267,20 @@ export default function StockOverviewPage() {
                                         <td className="px-5 py-4 hidden sm:table-cell">
                                             <p className="text-sm font-black text-text">₹{item.price}</p>
                                             {item.costPrice && <p className="text-[10px] text-text-muted">Cost: ₹{item.costPrice}</p>}
+                                        </td>
+
+                                        {/* Expiry */}
+                                        <td className="px-5 py-4 hidden xl:table-cell">
+                                            {item.expiryDate ? (
+                                                <div className="text-left font-black">
+                                                    <p className={`text-xs ${item.status === 'Expired' ? 'text-rose-500' : item.status === 'Near Expiry' ? 'text-amber-500' : 'text-text'}`}>
+                                                        {item.expiryDate}
+                                                    </p>
+                                                    <p className="text-[9px] text-text-muted uppercase">Batch Asset</p>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[9px] font-black text-text-muted opacity-40 uppercase">N/A</span>
+                                            )}
                                         </td>
 
                                         {/* Status */}
@@ -447,6 +465,22 @@ export default function StockOverviewPage() {
                                                 <option value={12}>12%</option><option value={18}>18%</option>
                                                 <option value={28}>28%</option>
                                             </select>
+                                        </div>
+                                    </div>
+
+                                    {/* Mfg & Expiry */}
+                                    <div className="grid sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Manufacturing Date</label>
+                                            <input type="date"
+                                                className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all"
+                                                value={newProduct.mfgDate} onChange={e => setNewProduct({ ...newProduct, mfgDate: e.target.value })} />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Expiry Date</label>
+                                            <input type="date"
+                                                className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all"
+                                                value={newProduct.expiryDate} onChange={e => setNewProduct({ ...newProduct, expiryDate: e.target.value })} />
                                         </div>
                                     </div>
 

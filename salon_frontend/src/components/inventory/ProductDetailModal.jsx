@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { X, Printer, Package, Tag, Building2, IndianRupee, RefreshCw, MapPin } from 'lucide-react';
+import { X, Printer, Package, Tag, Building2, IndianRupee, RefreshCw, MapPin, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BarcodeDisplay from './BarcodeDisplay';
 import { generateEAN13 } from '../../contexts/InventoryContext';
@@ -110,6 +110,8 @@ export default function ProductDetailModal({ product, outlets = [], onClose, onR
                             { icon: IndianRupee, label: 'Selling Price', value: `₹${product.price}` },
                             { icon: Package, label: 'Stock', value: `${product.stock} ${product.unit}` },
                             { icon: Package, label: 'Min Stock', value: `${product.minStock} ${product.unit}` },
+                            { icon: Calendar, label: 'Mfg. Date', value: product.mfgDate || '—' },
+                            { icon: Calendar, label: 'Expiry Date', value: product.expiryDate || '—' },
                         ].map(({ icon: Icon, label, value }) => (
                             <div key={label} className="bg-background rounded-xl border border-border/10 p-3 flex items-center gap-2">
                                 <Icon className="w-3.5 h-3.5 text-text-muted shrink-0" />

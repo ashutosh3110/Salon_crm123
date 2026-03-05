@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useInventory } from '../../contexts/InventoryContext';
 import {
     LayoutDashboard, Package, Truck, AlertTriangle, BarChart3,
     ArrowLeftRight, Settings, LogOut, ChevronLeft, ChevronRight, X
@@ -10,14 +11,16 @@ const menuItems = [
     { label: 'Stock Overview', icon: Package, path: '/inventory/stock' },
     { label: 'Purchase / Stock In', icon: Truck, path: '/inventory/purchase' },
     { label: 'Stock Transfer', icon: ArrowLeftRight, path: '/inventory/transfer' },
-    { label: 'Low Stock Alerts', icon: AlertTriangle, path: '/inventory/alerts', badge: true },
+    { label: 'Intelligence Hub', icon: AlertTriangle, path: '/inventory/alerts', badge: true },
     { label: 'Usage Reports', icon: BarChart3, path: '/inventory/reports' },
     { label: 'Settings', icon: Settings, path: '/inventory/settings' },
 ];
 
 export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const { logout } = useAuth();
+    const { lowStockItems, expiryAlerts } = useInventory();
     const location = useLocation();
+    const totalAlerts = (lowStockItems?.length || 0) + (expiryAlerts?.length || 0);
 
     const content = (
         <div className="flex flex-col h-full bg-background transition-colors duration-300">
@@ -53,8 +56,8 @@ export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, 
                         {!collapsed && (
                             <span className="flex-1 font-bold">{item.label}</span>
                         )}
-                        {!collapsed && item.badge && (
-                            <span className="px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold bg-rose-400">3</span>
+                        {!collapsed && item.badge && totalAlerts > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-md text-[9px] text-white font-bold bg-rose-500 shadow-md shadow-rose-500/20">{totalAlerts}</span>
                         )}
                     </NavLink>
                 ))}

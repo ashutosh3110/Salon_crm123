@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import inventoryData from '../data/inventoryData.json';
 
 const InventoryContext = createContext();
 
@@ -19,241 +20,66 @@ export const generateEAN13 = (prefix = '890') => {
     return prefix + rand + check;
 };
 
-// ── Outlets / Locations ───────────────────────────────────────
-export const OUTLETS = [
-    { id: 'main', name: 'Main Storage', short: 'Main', color: 'bg-violet-500', light: 'bg-violet-500/10 text-violet-600', isWarehouse: true },
-    { id: 'outlet-1', name: 'Downtown Studio', short: 'Downtown', color: 'bg-primary', light: 'bg-primary/10 text-primary' },
-    { id: 'outlet-2', name: 'Bandra Branch', short: 'Bandra', color: 'bg-emerald-500', light: 'bg-emerald-500/10 text-emerald-600' },
-];
+// ── Initial Data Helpers ─────────────────────────────────────
+const getInitialState = (key, defaultValue) => {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : defaultValue;
+};
 
 // Helper: given a product with stockByOutlet, compute total
 const totalStock = (stockByOutlet) =>
     Object.values(stockByOutlet || {}).reduce((s, v) => s + v, 0);
 
-// Helper: compute status from total stock vs minStock
-const computeStatus = (total, minStock) => {
+// Helper: compute status from total stock vs minStock and expiry
+const computeStatus = (total, minStock, expiryDate) => {
+    if (expiryDate) {
+        const remainingDays = Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+        if (remainingDays <= 0) return 'Expired';
+        if (remainingDays <= 30) return 'Near Expiry';
+    }
     if (total <= minStock * 0.5) return 'Critical';
     if (total <= minStock) return 'Low Stock';
     return 'In Stock';
 };
 
-// ── Initial Products (with stockByOutlet) ─────────────────────
-const INITIAL_PRODUCTS = [
-    {
-        id: 1,
-        name: "L'Oréal Hair Colour - Black",
-        sku: 'LOR-HC-001',
-        barcode: '8901030123456',
-        category: 'Hair Colour',
-        brand: "L'Oréal",
-        type: 'service_consumable',
-        stockByOutlet: { 'main': 80, 'outlet-1': 28, 'outlet-2': 16 },
-        minStock: 20,
-        unit: 'pcs',
-        costPrice: 320,
-        price: 450,
-        taxRate: 18,
-        status: 'In Stock',
-        supplier: 'Beauty Hub Supplies',
-        reorderQty: 50,
-    },
-    {
-        id: 2,
-        name: 'Schwarzkopf Shampoo 500ml',
-        sku: 'SCH-SH-002',
-        barcode: '8901030234567',
-        category: 'Shampoo',
-        brand: 'Schwarzkopf',
-        type: 'retail',
-        stockByOutlet: { 'main': 25, 'outlet-1': 12, 'outlet-2': 8 },
-        minStock: 15,
-        unit: 'bottles',
-        costPrice: 580,
-        price: 850,
-        taxRate: 18,
-        status: 'In Stock',
-        supplier: 'Schwarzkopf India',
-        reorderQty: 30,
-    },
-    {
-        id: 3,
-        name: 'OPI Gel Nail Polish - Red',
-        sku: 'OPI-NP-005',
-        barcode: '8901030345678',
-        category: 'Nail Polish',
-        brand: 'OPI',
-        type: 'retail',
-        stockByOutlet: { 'main': 2, 'outlet-1': 4, 'outlet-2': 2 },
-        minStock: 10,
-        unit: 'pcs',
-        costPrice: 850,
-        price: 1200,
-        taxRate: 18,
-        status: 'Low Stock',
-        supplier: 'Lotus Cosmetics',
-        reorderQty: 20,
-    },
-    {
-        id: 4,
-        name: 'Wella Conditioner 1L',
-        sku: 'WEL-CD-003',
-        barcode: '8901030456789',
-        category: 'Conditioner',
-        brand: 'Wella',
-        type: 'service_consumable',
-        stockByOutlet: { 'main': 6, 'outlet-1': 4, 'outlet-2': 2 },
-        minStock: 10,
-        unit: 'bottles',
-        costPrice: 1100,
-        price: 1500,
-        taxRate: 18,
-        status: 'Low Stock',
-        supplier: 'Wella Direct',
-        reorderQty: 15,
-    },
-    {
-        id: 5,
-        name: 'Matrix Hair Serum',
-        sku: 'MAT-HS-009',
-        barcode: '8901030567890',
-        category: 'Serum',
-        brand: 'Matrix',
-        type: 'retail',
-        stockByOutlet: { 'main': 40, 'outlet-1': 15, 'outlet-2': 10 },
-        minStock: 15,
-        unit: 'bottles',
-        costPrice: 680,
-        price: 950,
-        taxRate: 18,
-        status: 'In Stock',
-        supplier: 'Matrix Distribution',
-        reorderQty: 25,
-    },
-    {
-        id: 6,
-        name: 'Disposable Capes (50 pcs)',
-        sku: 'DSP-CP-010',
-        barcode: '8901030678901',
-        category: 'Consumables',
-        brand: 'Generic',
-        type: 'service_consumable',
-        stockByOutlet: { 'main': 1, 'outlet-1': 1, 'outlet-2': 1 },
-        minStock: 5,
-        unit: 'packs',
-        costPrice: 180,
-        price: 300,
-        taxRate: 5,
-        status: 'Critical',
-        supplier: 'Beauty Hub Supplies',
-        reorderQty: 10,
-    },
-    {
-        id: 7,
-        name: 'Sunscreen SPF 50+',
-        sku: 'SUN-SCR-001',
-        barcode: '4234567890123',
-        category: 'Skin Care',
-        brand: 'Biotique',
-        type: 'retail',
-        stockByOutlet: { 'main': 10, 'outlet-1': 6, 'outlet-2': 4 },
-        minStock: 8,
-        unit: 'pcs',
-        costPrice: 380,
-        price: 550,
-        taxRate: 18,
-        status: 'In Stock',
-        supplier: 'Lotus Cosmetics',
-        reorderQty: 20,
-    },
-];
+// Initial constants removed to use JSON
+const INITIAL_PRODUCTS = inventoryData.products;
+const INITIAL_MOVEMENTS = inventoryData.movements;
+const INITIAL_PURCHASES = inventoryData.purchases;
+const INITIAL_TRANSFERS = inventoryData.transfers;
+const MONTHLY_HISTORY = inventoryData.monthlyHistory;
 
 // Enrich: add computed `stock` (total) to every product
 const enrichProduct = (p) => {
     const stock = totalStock(p.stockByOutlet);
-    return { ...p, stock, status: computeStatus(stock, p.minStock) };
+    return { ...p, stock, status: computeStatus(stock, p.minStock, p.expiryDate) };
 };
 
-const INITIAL_MOVEMENTS = [
-    { id: 1, type: 'in', product: 'Matrix Hair Serum', qty: 20, source: 'Beauty Hub Supplies', outlet: 'main', time: 'Today' },
-    { id: 2, type: 'out', product: "L'Oréal Hair Colour", qty: 3, source: 'Service Usage', outlet: 'outlet-1', time: 'Today' },
-    { id: 3, type: 'transfer', product: 'Schwarzkopf Shampoo', qty: 5, source: 'main → outlet-2', outlet: null, time: 'Yesterday' },
-];
-
-const INITIAL_PURCHASES = [
-    { id: 'PUR001', supplier: 'Beauty Hub Supplies', date: 'Feb 22, 2024', amount: 12500, items: 8, status: 'Received' },
-    { id: 'PUR002', supplier: 'Lotus Cosmetics', date: 'Feb 20, 2024', amount: 8900, items: 12, status: 'Received' },
-    { id: 'PUR003', supplier: 'Matrix Distribution', date: 'Feb 18, 2024', amount: 15200, items: 5, status: 'Pending' },
-];
-
-// ── Transfer history ──────────────────────────────────────────
-const INITIAL_TRANSFERS = [
-    { id: 'TR089', productName: "L'Oréal Hair Colour", sku: 'LOR-HC-001', qty: 12, from: 'main', to: 'outlet-1', date: 'Today, 2:30 PM', status: 'Completed', reason: 'Low Stock Replenishment' },
-    { id: 'TR088', productName: 'Schwarzkopf Shampoo', sku: 'SCH-SH-002', qty: 5, from: 'main', to: 'outlet-2', date: 'Yesterday', status: 'Completed', reason: 'Stock Balancing' },
-];
+// Initial constants removed to use JSON
+const INITIAL_SALE_RECORDS = inventoryData.saleRecords;
 
 export const InventoryProvider = ({ children }) => {
-    const [products, setProducts] = useState(() => INITIAL_PRODUCTS.map(enrichProduct));
-    const [movements, setMovements] = useState(INITIAL_MOVEMENTS);
-    const [purchases, setPurchases] = useState(INITIAL_PURCHASES);
-    const [transfers, setTransfers] = useState(INITIAL_TRANSFERS);
+    const [products, setProducts] = useState(() => getInitialState('inv_products', INITIAL_PRODUCTS).map(enrichProduct));
+    const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
+    const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
+    const [transfers, setTransfers] = useState(() => getInitialState('inv_transfers', INITIAL_TRANSFERS));
+    const [outlets, setOutlets] = useState(() => getInitialState('inv_outlets', inventoryData.outlets));
 
     // ── Sale Records — Reconciliation log ────────────────────
-    // subType: 'retail_sale' | 'service_usage' | 'wastage' | 'return'
-    const [saleRecords, setSaleRecords] = useState([
-        { id: 'SR001', invoiceId: 'INV-3482', productName: 'Schwarzkopf Shampoo 500ml', sku: 'SCH-SH-002', subType: 'retail_sale', qty: 2, unitPrice: 850, total: 1700, staffId: null, outletId: 'outlet-1', date: 'Feb 28, 2026' },
-        { id: 'SR002', invoiceId: 'INV-3480', productName: "L'Oréal Hair Colour - Black", sku: 'LOR-HC-001', subType: 'service_usage', qty: 3, unitPrice: 450, total: 1350, staffId: 'u1', outletId: 'outlet-1', date: 'Feb 28, 2026' },
-        { id: 'SR003', invoiceId: 'INV-3479', productName: 'OPI Gel Nail Polish - Red', sku: 'OPI-NP-005', subType: 'retail_sale', qty: 1, unitPrice: 1200, total: 1200, staffId: null, outletId: 'outlet-2', date: 'Feb 27, 2026' },
-        { id: 'SR004', invoiceId: 'INV-3478', productName: 'Wella Conditioner 1L', sku: 'WEL-CD-003', subType: 'service_usage', qty: 2, unitPrice: 1500, total: 3000, staffId: 'u2', outletId: 'outlet-1', date: 'Feb 27, 2026' },
-        { id: 'SR005', invoiceId: 'INV-3477', productName: 'Matrix Hair Serum', sku: 'MAT-HS-009', subType: 'retail_sale', qty: 3, unitPrice: 950, total: 2850, staffId: null, outletId: 'outlet-2', date: 'Feb 26, 2026' },
-        { id: 'SR006', invoiceId: 'INV-3476', productName: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', subType: 'retail_sale', qty: 4, unitPrice: 550, total: 2200, staffId: null, outletId: 'outlet-1', date: 'Feb 26, 2026' },
-        { id: 'SR007', invoiceId: 'INV-3475', productName: "L'Oréal Hair Colour - Black", sku: 'LOR-HC-001', subType: 'service_usage', qty: 5, unitPrice: 450, total: 2250, staffId: 'u3', outletId: 'outlet-2', date: 'Feb 25, 2026' },
-        { id: 'SR008', invoiceId: 'INV-3474', productName: 'Schwarzkopf Shampoo 500ml', sku: 'SCH-SH-002', subType: 'service_usage', qty: 1, unitPrice: 850, total: 850, staffId: 'u1', outletId: 'outlet-1', date: 'Feb 25, 2026' },
-    ]);
+    const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', INITIAL_SALE_RECORDS));
+
+    // Persistence Effect
+    useEffect(() => {
+        localStorage.setItem('inv_products', JSON.stringify(products));
+        localStorage.setItem('inv_movements', JSON.stringify(movements));
+        localStorage.setItem('inv_purchases', JSON.stringify(purchases));
+        localStorage.setItem('inv_transfers', JSON.stringify(transfers));
+        localStorage.setItem('inv_outlets', JSON.stringify(outlets));
+        localStorage.setItem('inv_sale_records', JSON.stringify(saleRecords));
+    }, [products, movements, purchases, transfers, outlets, saleRecords]);
 
     // ── Monthly History — 6 months of consumption per product ──
-    const MONTHLY_HISTORY = [
-        { month: 'Sep 2025', sku: 'LOR-HC-001', actual: 18 },
-        { month: 'Oct 2025', sku: 'LOR-HC-001', actual: 22 },
-        { month: 'Nov 2025', sku: 'LOR-HC-001', actual: 25 },
-        { month: 'Dec 2025', sku: 'LOR-HC-001', actual: 30 },
-        { month: 'Jan 2026', sku: 'LOR-HC-001', actual: 28 },
-        { month: 'Feb 2026', sku: 'LOR-HC-001', actual: 8 },
-
-        { month: 'Sep 2025', sku: 'SCH-SH-002', actual: 12 },
-        { month: 'Oct 2025', sku: 'SCH-SH-002', actual: 10 },
-        { month: 'Nov 2025', sku: 'SCH-SH-002', actual: 15 },
-        { month: 'Dec 2025', sku: 'SCH-SH-002', actual: 18 },
-        { month: 'Jan 2026', sku: 'SCH-SH-002', actual: 14 },
-        { month: 'Feb 2026', sku: 'SCH-SH-002', actual: 3 },
-
-        { month: 'Sep 2025', sku: 'OPI-NP-005', actual: 4 },
-        { month: 'Oct 2025', sku: 'OPI-NP-005', actual: 6 },
-        { month: 'Nov 2025', sku: 'OPI-NP-005', actual: 5 },
-        { month: 'Dec 2025', sku: 'OPI-NP-005', actual: 8 },
-        { month: 'Jan 2026', sku: 'OPI-NP-005', actual: 7 },
-        { month: 'Feb 2026', sku: 'OPI-NP-005', actual: 1 },
-
-        { month: 'Sep 2025', sku: 'WEL-CD-003', actual: 8 },
-        { month: 'Oct 2025', sku: 'WEL-CD-003', actual: 9 },
-        { month: 'Nov 2025', sku: 'WEL-CD-003', actual: 7 },
-        { month: 'Dec 2025', sku: 'WEL-CD-003', actual: 12 },
-        { month: 'Jan 2026', sku: 'WEL-CD-003', actual: 10 },
-        { month: 'Feb 2026', sku: 'WEL-CD-003', actual: 2 },
-
-        { month: 'Sep 2025', sku: 'MAT-HS-009', actual: 20 },
-        { month: 'Oct 2025', sku: 'MAT-HS-009', actual: 24 },
-        { month: 'Nov 2025', sku: 'MAT-HS-009', actual: 22 },
-        { month: 'Dec 2025', sku: 'MAT-HS-009', actual: 28 },
-        { month: 'Jan 2026', sku: 'MAT-HS-009', actual: 26 },
-        { month: 'Feb 2026', sku: 'MAT-HS-009', actual: 3 },
-
-        { month: 'Sep 2025', sku: 'SUN-SCR-001', actual: 10 },
-        { month: 'Oct 2025', sku: 'SUN-SCR-001', actual: 12 },
-        { month: 'Nov 2025', sku: 'SUN-SCR-001', actual: 9 },
-        { month: 'Dec 2025', sku: 'SUN-SCR-001', actual: 14 },
-        { month: 'Jan 2026', sku: 'SUN-SCR-001', actual: 11 },
-        { month: 'Feb 2026', sku: 'SUN-SCR-001', actual: 4 },
-    ];
+    const MONTHLY_HISTORY = inventoryData.monthlyHistory;
 
     // Manual projection overrides: { [sku]: projectedQty }
     const [projectionOverrides, setProjectionOverrides] = useState({});
@@ -351,8 +177,8 @@ export const InventoryProvider = ({ children }) => {
             return enrichProduct({ ...p, stockByOutlet: newByOutlet });
         }));
 
-        const fromName = OUTLETS.find(o => o.id === fromOutlet)?.name || fromOutlet;
-        const toName = OUTLETS.find(o => o.id === toOutlet)?.name || toOutlet;
+        const fromName = outlets.find(o => o.id === fromOutlet)?.name || fromOutlet;
+        const toName = outlets.find(o => o.id === toOutlet)?.name || toOutlet;
         const newMovement = {
             id: Date.now(),
             type: 'transfer',
@@ -377,6 +203,25 @@ export const InventoryProvider = ({ children }) => {
         };
         setTransfers(prev => [newTransfer, ...prev]);
         return { success: true };
+    };
+
+    // ── Add new outlet/hubs ───────────────────────────────────
+    const addOutlet = (data) => {
+        const id = `outlet-${Date.now()}`;
+        const newOutlet = {
+            id,
+            ...data,
+            light: `${data.color}/10 text-${data.color.replace('bg-', '')}-600`
+        };
+        setOutlets(prev => [...prev, newOutlet]);
+    };
+
+    const deleteOutlet = (id) => {
+        setOutlets(prev => prev.filter(o => o.id !== id));
+    };
+
+    const updateOutlet = (id, updates) => {
+        setOutlets(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
     };
 
     // ── Add purchase order ────────────────────────────────────
@@ -414,7 +259,7 @@ export const InventoryProvider = ({ children }) => {
         totalValue: products.reduce((s, p) => s + (p.stockByOutlet?.[outletId] || 0) * p.costPrice, 0),
         lowStockItems: products.filter(p => {
             const outletStock = p.stockByOutlet?.[outletId] || 0;
-            return outletStock > 0 && outletStock <= Math.ceil(p.minStock / OUTLETS.length);
+            return outletStock > 0 && outletStock <= Math.ceil(p.minStock / outlets.length);
         }).length,
     });
 
@@ -492,6 +337,12 @@ export const InventoryProvider = ({ children }) => {
         }).sort((a, b) => Math.abs(b.variancePct) - Math.abs(a.variancePct));
     })();
 
+    const expiryAlerts = products.filter(p => {
+        if (!p.expiryDate) return false;
+        const remainingDays = Math.ceil((new Date(p.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+        return remainingDays <= 60; // Alert for items expiring within 2 months
+    });
+
     const value = {
         products,
         movements,
@@ -502,7 +353,10 @@ export const InventoryProvider = ({ children }) => {
         projectionSummary,
         setProjection,
         resetProjection,
-        outlets: OUTLETS,
+        outlets,
+        addOutlet,
+        deleteOutlet,
+        updateOutlet,
         addProduct,
         updateProduct,
         updateStock,
@@ -514,9 +368,11 @@ export const InventoryProvider = ({ children }) => {
         generateEAN13,
         getOutletStats,
         lowStockItems,
+        expiryAlerts,
         stats: {
             totalProducts: products.length,
             lowStockCount: lowStockItems.length,
+            expiryAlertCount: expiryAlerts.length,
             pendingOrders: purchases.filter(p => p.status === 'Pending').length,
             totalValue: products.reduce((acc, p) => acc + (p.stock * p.costPrice), 0),
         }
