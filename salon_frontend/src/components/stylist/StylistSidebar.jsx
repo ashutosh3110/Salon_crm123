@@ -21,8 +21,15 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
     const { logout, user } = useAuth();
     const location = useLocation();
     const [expandedItem, setExpandedItem] = useState(null);
+    const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
-    const effectiveCollapsed = collapsed && !isHovered;
+    useEffect(() => {
+        const handleResize = () => setIsLgUp(window.innerWidth >= 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     useEffect(() => {
         menuItems.forEach(item => {
