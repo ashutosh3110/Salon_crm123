@@ -1,110 +1,21 @@
 /**
  * POS Mock Data
- * Structured to match backend API models exactly.
+ * Powered by JSON for clean architecture
  */
 
-export const MOCK_SERVICES = [
-    { _id: 's1', name: 'Haircut – Men', price: 400, duration: 30, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
-    { _id: 's2', name: 'Haircut – Women', price: 600, duration: 45, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
-    { _id: 's3', name: 'Hair Coloring', price: 2500, duration: 90, category: 'Hair', status: 'active', commission: 15, hsnCode: '9983' },
-    { _id: 's4', name: 'Keratin Treatment', price: 5000, duration: 120, category: 'Hair', status: 'active', commission: 10, hsnCode: '9983' },
-    { _id: 's5', name: 'Hair Spa', price: 1200, duration: 60, category: 'Hair', status: 'active', commission: 20, hsnCode: '9983' },
-    { _id: 's6', name: 'Blow Dry & Styling', price: 500, duration: 30, category: 'Hair', status: 'active', commission: 25, hsnCode: '9983' },
-    { _id: 's7', name: 'Classic Facial', price: 800, duration: 45, category: 'Skin', status: 'active', commission: 25, hsnCode: '9983' },
-    { _id: 's8', name: 'Gold Facial', price: 1500, duration: 60, category: 'Skin', status: 'active', commission: 20, hsnCode: '9983' },
-    { _id: 's9', name: 'Cleanup', price: 500, duration: 30, category: 'Skin', status: 'active', commission: 30, hsnCode: '9983' },
-    { _id: 's10', name: 'Manicure', price: 350, duration: 30, category: 'Nails', status: 'active', commission: 30, hsnCode: '9983' },
-    { _id: 's11', name: 'Pedicure', price: 450, duration: 40, category: 'Nails', status: 'active', commission: 30, hsnCode: '9983' },
-    { _id: 's12', name: 'Gel Nails', price: 1200, duration: 60, category: 'Nails', status: 'active', commission: 15, hsnCode: '9983' },
-    { _id: 's13', name: 'Full Body Wax', price: 2000, duration: 60, category: 'Waxing', status: 'active', commission: 25, hsnCode: '9983' },
-    { _id: 's14', name: 'Half Arms Wax', price: 300, duration: 15, category: 'Waxing', status: 'active', commission: 35, hsnCode: '9983' },
-    { _id: 's15', name: 'Eyebrow Threading', price: 50, duration: 10, category: 'Threading', status: 'active', commission: 40, hsnCode: '9983' },
-    { _id: 's16', name: 'Upper Lip Threading', price: 30, duration: 5, category: 'Threading', status: 'active', commission: 40, hsnCode: '9983' },
-    { _id: 's17', name: 'Bridal Makeup', price: 8000, duration: 120, category: 'Makeup', status: 'active', commission: 10, hsnCode: '9983' },
-    { _id: 's18', name: 'Party Makeup', price: 3000, duration: 60, category: 'Makeup', status: 'active', commission: 15, hsnCode: '9983' },
-];
+import posData from './posMockData.json';
 
-export const MOCK_PRODUCTS = [
-    { _id: 'p1', name: "L'Oréal Hair Serum", sku: 'LOR-SRM-001', barcode: '8901030112233', hsnCode: '3304', price: 650, category: 'Hair Care', status: 'active', stock: 12, lowStockLevel: 5 },
-    { _id: 'p2', name: 'Moroccan Argan Oil', sku: 'MAO-OIL-001', barcode: '8901030223344', hsnCode: '3304', price: 950, category: 'Hair Care', status: 'active', stock: 2, lowStockLevel: 5 },
-    { _id: 'p3', name: 'Keratin Shampoo', sku: 'KRT-SHP-001', barcode: '8901234560012', hsnCode: '3305', price: 480, category: 'Hair Care', status: 'active', stock: 15, lowStockLevel: 5 },
-    { _id: 'p4', name: 'Anti-Dandruff Shampoo', sku: 'ADS-SHP-001', barcode: '8902234560010', hsnCode: '3305', price: 320, category: 'Hair Care', status: 'active', stock: 3, lowStockLevel: 5 },
-    { _id: 'p5', name: 'Vitamin C Face Serum', sku: 'VTC-SRM-001', barcode: '8903234560019', hsnCode: '3304', price: 890, category: 'Skin Care', status: 'active', stock: 8, lowStockLevel: 5 },
-    { _id: 'p6', name: 'Sunscreen SPF 50+', sku: 'SUN-SCR-001', barcode: '4234567890123', hsnCode: '3304', price: 550, category: 'Skin Care', status: 'active', stock: 20, lowStockLevel: 5 },
-    { _id: 'p10', name: 'Hair Styling Gel', sku: 'HSG-GEL-001', barcode: '5234567890124', hsnCode: '3305', price: 280, category: 'Styling', status: 'active', stock: 1, lowStockLevel: 3 },
-];
+export const MOCK_SERVICES = posData.services;
+export const MOCK_PRODUCTS = posData.products;
+export const MOCK_CLIENTS = posData.clients;
+export const MOCK_OUTLETS = posData.outlets;
+export const MOCK_STAFF = posData.staff;
+export const MOCK_PROMOTIONS = posData.promotions;
+export const MOCK_VOUCHERS = posData.vouchers;
+export const MOCK_APPOINTMENTS = posData.appointments;
 
-export const MOCK_CLIENTS = [
-    {
-        _id: 'c1', name: 'Aman Verma', phone: '9876543210', email: 'aman@gmail.com', gender: 'male',
-        loyaltyPoints: 450, walletBalance: 1200, dueAmount: 500,
-        packages: [{ name: 'Hair Spa Combo', sessionsLeft: 2, totalSessions: 5 }],
-        history: [{ date: '2026-02-10', total: 1062, items: 'Haircut, Cleanup' }]
-    },
-    {
-        _id: 'c2', name: 'Sonal Jha', phone: '9876543211', email: 'sonal@gmail.com', gender: 'female',
-        loyaltyPoints: 120, walletBalance: 0, dueAmount: 0,
-        packages: [],
-        history: [{ date: '2026-02-15', total: 3402, items: 'Hair Coloring' }]
-    },
-    { _id: 'c4', name: 'Deepika Sharma', phone: '9876543213', email: 'deepika@gmail.com', gender: 'female', loyaltyPoints: 890, walletBalance: 500, dueAmount: 1200, packages: [], history: [] },
-];
-
-export const MOCK_OUTLETS = [
-    { _id: 'o1', name: 'Downtown Studio', address: '123 MG Road, Mumbai', phone: '022-1234567', status: 'active', isMain: true },
-    { _id: 'o2', name: 'Bandra Branch', address: '45 Hill Road, Bandra', phone: '022-2345678', status: 'active', isMain: false },
-];
-
-export const MOCK_STAFF = [
-    { _id: 'u1', name: 'Ravi Sharma', role: 'stylist', specialty: 'Hair' },
-    { _id: 'u2', name: 'Neha Gupta', role: 'stylist', specialty: 'Skin' },
-    { _id: 'u3', name: 'Vikram Singh', role: 'stylist', specialty: 'Hair' },
-];
-
-export const MOCK_PROMOTIONS = [
-    { _id: 'pr1', name: 'Summer Special', discountType: 'percentage', discountValue: 10, minBill: 1000, description: '10% off on bills above ₹1000' },
-    { _id: 'pr2', name: 'First Visit', discountType: 'fixed', discountValue: 200, minBill: 1500, description: '₹200 flat off on first visit' },
-    { _id: 'pr3', name: 'Bulk Offer', discountType: 'percentage', discountValue: 20, minBill: 5000, description: '20% off on bills above ₹5000' }
-];
-
-export const MOCK_VOUCHERS = [
-    { code: 'GIFT500', value: 500, type: 'fixed', status: 'active', expiry: '2026-12-31' },
-    { code: 'OFF20', value: 20, type: 'percentage', status: 'active', expiry: '2026-10-31' },
-    { code: 'WELCOME', value: 300, type: 'fixed', status: 'active', expiry: '2026-06-30' }
-];
-
-export const MOCK_INVOICES = [
-    {
-        _id: 'inv1', invoiceNumber: 'INV-3482', createdAt: new Date().toISOString(),
-        clientId: { name: 'Aman Verma', phone: '9876543210' },
-        total: 1062, subTotal: 900, tax: 162, discount: 0,
-        paymentStatus: 'paid', paymentMethod: 'online',
-        outletId: { name: 'Lucknow Branch' },
-        staffId: { name: 'Ravi Sharma' },
-        items: [{ name: 'Haircut', price: 400, quantity: 1, total: 400, type: 'service' }]
-    },
-    {
-        _id: 'inv2', invoiceNumber: 'INV-3483', createdAt: new Date().toISOString(),
-        clientId: { name: 'Sonal Jha', phone: '9876543211' },
-        total: 3402, subTotal: 2883, tax: 519, discount: 0,
-        paymentStatus: 'paid', paymentMethod: 'card',
-        outletId: { name: 'Lucknow Branch' },
-        staffId: { name: 'Neha Gupta' },
-        items: [{ name: 'Global Coloring', price: 3000, quantity: 1, total: 3000, type: 'service' }]
-    },
-    {
-        _id: 'inv3', invoiceNumber: 'INV-3484', createdAt: new Date().toISOString(),
-        clientId: { name: 'Deepika Sharma', phone: '9876543213' },
-        total: 500, subTotal: 423, tax: 77, discount: 0,
-        paymentStatus: 'unpaid', paymentMethod: 'cash',
-        outletId: { name: 'Lucknow Branch' },
-        staffId: { name: 'Vikram Singh' },
-        items: [{ name: 'Cleanup', price: 500, quantity: 1, total: 500, type: 'service' }]
-    },
-];
-
-export const MOCK_APPOINTMENTS = [
-    { _id: 'app1', time: '10:30 AM', clientName: 'Karan Mehra', service: 'Mens Style Cut' },
-    { _id: 'app2', time: '11:15 AM', clientName: 'Anjali Shah', service: 'Hydra Facial' },
-    { _id: 'app3', time: '12:00 PM', clientName: 'Suresh Raina', service: 'Hair Spa + Trim' },
-];
+// --- Mock Invoices with dynamic dates ---
+export const MOCK_INVOICES = posData.invoices.map(inv => ({
+    ...inv,
+    createdAt: new Date().toISOString()
+}));

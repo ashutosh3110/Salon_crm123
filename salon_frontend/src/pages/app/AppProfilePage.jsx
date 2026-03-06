@@ -6,16 +6,18 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
-    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare
+    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
 import {
     MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
 } from '../../data/appMockData';
+import { useWallet } from '../../contexts/WalletContext';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout } = useCustomerAuth();
+    const { balance } = useWallet();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -100,6 +102,7 @@ export default function AppProfilePage() {
 
     const quickLinks = [
         { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
+        { icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
         { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
     ];
 

@@ -5,6 +5,7 @@ import { CustomerAuthProvider } from '../contexts/CustomerAuthContext';
 import { GenderProvider } from '../contexts/GenderContext';
 import { CartProvider } from '../contexts/CartContext';
 import { CustomerThemeProvider } from '../contexts/CustomerThemeContext';
+import { WalletProvider } from '../contexts/WalletContext';
 import AppSplashScreen from '../components/app/AppSplashScreen';
 
 export default function CustomerAppWrapper() {
@@ -16,13 +17,15 @@ export default function CustomerAppWrapper() {
             <GenderProvider>
                 <CartProvider>
                     <CustomerThemeProvider>
-                        <AnimatePresence mode="wait">
-                            {showSplash ? (
-                                <AppSplashScreen key="splash" onComplete={() => setShowSplash(false)} />
-                            ) : (
-                                <Outlet key="app-content" />
-                            )}
-                        </AnimatePresence>
+                        <WalletProvider>
+                            <AnimatePresence mode="wait">
+                                {showSplash ? (
+                                    <AppSplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+                                ) : (
+                                    <Outlet key="app-content" />
+                                )}
+                            </AnimatePresence>
+                        </WalletProvider>
                     </CustomerThemeProvider>
                 </CartProvider>
             </GenderProvider>

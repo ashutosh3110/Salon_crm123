@@ -12,48 +12,14 @@ import {
     ResponsiveContainer, Legend,
 } from 'recharts';
 
-/* ─── Mock data ─────────────────────────────────────────────────────────── */
-const MOCK_MONTHLY_REVENUE = [
-    { month: 'Sep', revenue: 41200, prev: 32000 },
-    { month: 'Oct', revenue: 53400, prev: 41200 },
-    { month: 'Nov', revenue: 48900, prev: 53400 },
-    { month: 'Dec', revenue: 67100, prev: 48900 },
-    { month: 'Jan', revenue: 72800, prev: 67100 },
-    { month: 'Feb', revenue: 81500, prev: 72800 },
-];
+import superAdminData from '../../data/superAdminMockData.json';
 
-const MOCK_REGISTRATIONS = [
-    { month: 'Sep', salons: 12 },
-    { month: 'Oct', salons: 19 },
-    { month: 'Nov', salons: 15 },
-    { month: 'Dec', salons: 27 },
-    { month: 'Jan', salons: 22 },
-    { month: 'Feb', salons: 34 },
-];
-
-const MOCK_PLAN_DIST = [
-    { name: 'Free', value: 38, color: '#94a3b8' },
-    { name: 'Basic', value: 27, color: '#3b82f6' },
-    { name: 'Pro', value: 22, color: '#B85C5C' },
-    { name: 'Enterprise', value: 13, color: '#f59e0b' },
-];
-
-const MOCK_CHURN = [
-    { month: 'Sep', rate: 4.2 },
-    { month: 'Oct', rate: 3.8 },
-    { month: 'Nov', rate: 4.9 },
-    { month: 'Dec', rate: 3.1 },
-    { month: 'Jan', rate: 2.7 },
-    { month: 'Feb', rate: 2.2 },
-];
-
-const MOCK_RECENT = [
-    { _id: '1', name: 'Glam Studio', slug: 'glam-studio', subscriptionPlan: 'pro', status: 'active', createdAt: '2026-02-22T10:00:00Z', city: 'Mumbai', owner: 'Priya Shah' },
-    { _id: '2', name: 'The Barber Room', slug: 'barber-room', subscriptionPlan: 'basic', status: 'trial', createdAt: '2026-02-21T08:30:00Z', city: 'Delhi', owner: 'Raj Mehta' },
-    { _id: '3', name: 'Luxe Cuts', slug: 'luxe-cuts', subscriptionPlan: 'enterprise', status: 'active', createdAt: '2026-02-20T14:15:00Z', city: 'Bangalore', owner: 'Sara Ali' },
-    { _id: '4', name: 'Urban Aesthetics', slug: 'urban-aesth', subscriptionPlan: 'free', status: 'expired', createdAt: '2026-02-18T09:00:00Z', city: 'Pune', owner: 'Vikram R.' },
-    { _id: '5', name: 'Serenity Spa', slug: 'serenity-spa', subscriptionPlan: 'pro', status: 'suspended', createdAt: '2026-02-16T11:45:00Z', city: 'Chennai', owner: 'Anita K.' },
-];
+/* ─── Data from JSON ─────────────────────────────────────────────────── */
+const MOCK_MONTHLY_REVENUE = superAdminData.monthlyRevenue;
+const MOCK_REGISTRATIONS = superAdminData.registrations;
+const MOCK_PLAN_DIST = superAdminData.planDistribution;
+const MOCK_CHURN = superAdminData.churn;
+const MOCK_RECENT = superAdminData.recentTenants;
 
 /* ─── Colour maps ────────────────────────────────────────────────────────── */
 const planColors = {

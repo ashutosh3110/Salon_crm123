@@ -13,19 +13,12 @@ import {
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel } from '../../utils/exportUtils';
 
-/* ─── Mock data ─────────────────────────────────────────────────────── */
-const MOCK_PAYMENTS = [
-    { id: 'pay001', salon: 'Glam Studio', plan: 'Pro', amount: 4999, date: '2026-02-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0023' },
-    { id: 'pay002', salon: 'Luxe Cuts', plan: 'Enterprise', amount: 12999, date: '2026-02-01', status: 'paid', method: 'Stripe', invoice: 'INV-0022' },
-    { id: 'pay003', salon: 'Blossom Parlour', plan: 'Basic', amount: 1999, date: '2026-02-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0021' },
-    { id: 'pay004', salon: 'Elite Groom', plan: 'Basic', amount: 1999, date: '2026-02-01', status: 'failed', method: 'Razorpay', invoice: 'INV-0020' },
-    { id: 'pay005', salon: 'Serenity Spa', plan: 'Pro', amount: 4999, date: '2026-01-01', status: 'refunded', method: 'Stripe', invoice: 'INV-0019' },
-    { id: 'pay006', salon: 'Scissors & Style', plan: 'Pro', amount: 4999, date: '2026-01-15', status: 'paid', method: 'Razorpay', invoice: 'INV-0018' },
-    { id: 'pay007', salon: 'Urban Aesthetics', plan: 'Free', amount: 0, date: '2026-01-01', status: 'paid', method: '—', invoice: 'INV-0017' },
-    { id: 'pay008', salon: 'The Barber Room', plan: 'Basic', amount: 1999, date: '2025-12-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0016' },
-    { id: 'pay009', salon: 'Glam Studio', plan: 'Basic', amount: 1999, date: '2025-12-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0015' },
-    { id: 'pay010', salon: 'Luxe Cuts', plan: 'Enterprise', amount: 12999, date: '2025-12-01', status: 'failed', method: 'Stripe', invoice: 'INV-0014' },
-];
+import superAdminData from '../../data/superAdminMockData.json';
+
+/* ─── Data from JSON ─────────────────────────────────────────────────── */
+const MOCK_PAYMENTS = superAdminData.payments;
+const MONTHLY_REV = superAdminData.monthlyRevenue;
+const PLAN_REV = superAdminData.planDistribution;
 
 const MOCK_INVOICES = MOCK_PAYMENTS.map((p, i) => ({
     id: p.invoice,
@@ -38,22 +31,6 @@ const MOCK_INVOICES = MOCK_PAYMENTS.map((p, i) => ({
     taxAmt: Math.round(p.amount * 0.18),
     total: Math.round(p.amount * 1.18),
 }));
-
-const MONTHLY_REV = [
-    { month: 'Sep', revenue: 41200, subscriptions: 98 },
-    { month: 'Oct', revenue: 53400, subscriptions: 107 },
-    { month: 'Nov', revenue: 48900, subscriptions: 103 },
-    { month: 'Dec', revenue: 67100, subscriptions: 112 },
-    { month: 'Jan', revenue: 72800, subscriptions: 119 },
-    { month: 'Feb', revenue: 81500, subscriptions: 127 },
-];
-
-const PLAN_REV = [
-    { plan: 'Free', revenue: 0, salons: 38, color: '#94a3b8' },
-    { plan: 'Basic', revenue: 53973, salons: 27, color: '#3b82f6' },
-    { plan: 'Pro', revenue: 109978, salons: 22, color: '#B85C5C' },
-    { plan: 'Enterprise', revenue: 168987, salons: 13, color: '#f59e0b' },
-];
 
 const STATUS_CFG = {
     paid: { label: 'Paid', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },

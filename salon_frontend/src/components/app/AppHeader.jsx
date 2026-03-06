@@ -1,11 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Bell } from 'lucide-react';
+import { Sun, Moon, Bell, Wallet } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import logoLightMode from '/2-removebg-preview.png';
 import logoDarkMode from '/1-removebg-preview.png';
 import { useState, useEffect } from 'react';
+import { useWallet } from '../../contexts/WalletContext';
 
 const SALON_THOUGHTS = [
     "Your hair is your crown ✨",
@@ -21,6 +22,7 @@ export default function AppHeader() {
     const { customer } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const { balance } = useWallet();
 
     const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
     const [showThought, setShowThought] = useState(false);
@@ -104,22 +106,21 @@ export default function AppHeader() {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                 {/* Theme Toggle */}
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleTheme}
                     style={{
-                        width: '38px',
+                        width: '32px',
                         height: '38px',
-                        borderRadius: '12px',
                         background: 'none',
                         border: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        color: isLight ? '#C8956C' : '#E6B98D',
+                        color: isLight ? '#000000' : '#FFFFFF',
                     }}
                 >
                     <AnimatePresence mode="wait">
@@ -135,21 +136,39 @@ export default function AppHeader() {
                     </AnimatePresence>
                 </motion.button>
 
-                {/* Notifications */}
+                {/* Wallet Balance Shortcut */}
                 <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => navigate('/app/notifications')}
+                    onClick={() => navigate('/app/wallet')}
                     style={{
-                        width: '38px',
+                        width: '32px',
                         height: '38px',
-                        borderRadius: '12px',
                         background: 'none',
                         border: 'none',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        color: isLight ? '#444' : 'rgba(255,255,255,0.5)',
+                        color: isLight ? '#000000' : '#FFFFFF',
+                    }}
+                >
+                    <Wallet size={20} strokeWidth={2.2} />
+                </motion.button>
+
+                {/* Notifications */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate('/app/notifications')}
+                    style={{
+                        width: '32px',
+                        height: '38px',
+                        background: 'none',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: isLight ? '#000000' : '#FFFFFF',
                         position: 'relative'
                     }}
                 >
