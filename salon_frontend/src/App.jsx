@@ -60,6 +60,8 @@ import MarketingCMSPage from './pages/admin/MarketingCMSPage';
 import MarketingHubPage from './pages/admin/MarketingHubPage';
 import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
 import DigitalPresencePage from './pages/admin/DigitalPresencePage';
+import InquiryPage from './pages/admin/InquiryPage';
+import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
 
 // POS App (standalone)
@@ -248,6 +250,8 @@ function App() {
                       <Route path="/admin/promotions" element={<PromotionsPage />} />
                       <Route path="/admin/marketing" element={<MarketingHubPage />} />
                       <Route path="/admin/digital-presence" element={<DigitalPresencePage />} />
+                      <Route path="/admin/inquiries" element={<InquiryPage />} />
+                      <Route path="/admin/reminders" element={<RemindersPage />} />
                       <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
                       <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                       <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />

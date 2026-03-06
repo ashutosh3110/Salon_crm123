@@ -8,11 +8,18 @@ const auth = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            console.log('Auth failed: No or invalid header');
             return res.status(httpStatus.UNAUTHORIZED).send({ message: 'Please authenticate' });
         }
 
         const token = authHeader.split(' ')[1];
-        const payload = jwt.verify(token, config.jwt.secret);
+        let payload;
+        try {
+            payload = jwt.verify(token, config.jwt.secret);
+        } catch (err) {
+            console.log('Auth failed: JWT verify error:', err.message);
+            return res.status(httpStatus.UNAUTHORIZED).send({ message: 'Invalid token' });
+        }
 
         // 1. Try finding in Users (Staff/Admin)
         let identity = await userService.getUserById(payload.userId);
@@ -30,12 +37,14 @@ const auth = async (req, res, next) => {
         }
 
         if (!identity) {
+            console.log('Auth failed: Identity not found for userId:', payload.userId);
             return res.status(httpStatus.UNAUTHORIZED).send({ message: 'User not found' });
         }
 
         req.user = identity;
         next();
     } catch (error) {
+        console.log('Auth failed: Unexpected error:', error.message);
         return res.status(httpStatus.UNAUTHORIZED).send({ message: 'Invalid token' });
     }
 };

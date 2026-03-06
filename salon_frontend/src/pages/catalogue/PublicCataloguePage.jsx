@@ -19,12 +19,31 @@ export default function PublicCataloguePage() {
 
     useEffect(() => {
         const fetchCatalogue = async () => {
+            setLoading(true);
             try {
+                // Try Local Storage First (Mock Development Flow)
+                const localData = localStorage.getItem('digital_catalogue');
+                if (localData) {
+                    const parsed = JSON.parse(localData);
+                    // Allow preview if slug matches or if it's a generic preview
+                    if (parsed.slug === slug || slug === 'preview') {
+                        setCatalogue(parsed);
+                        setLoading(false);
+                        return;
+                    }
+                }
+
                 const res = await axios.get(`${API_BASE_URL}/catalogue/public/${slug}`);
                 setCatalogue(res.data);
             } catch (err) {
                 console.error('Error fetching catalogue:', err);
-                setError('Catalogue not found or is currently private.');
+                // Last ditch fallback for mock development
+                const localData = localStorage.getItem('digital_catalogue');
+                if (localData) {
+                    setCatalogue(JSON.parse(localData));
+                } else {
+                    setError('Catalogue not found or is currently private.');
+                }
             } finally {
                 setLoading(false);
             }
