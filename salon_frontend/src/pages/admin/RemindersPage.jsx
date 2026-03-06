@@ -78,7 +78,7 @@ function TabButton({ active, label, icon: Icon, onClick }) {
         <button
             onClick={onClick}
             className={`flex items-center gap-3 px-6 py-4 rounded-none border-2 transition-all font-black text-[10px] uppercase tracking-[0.2em] transform active:scale-95 ${active
-                ? 'bg-primary border-primary text-white shadow-xl shadow-primary/20 -translate-y-1'
+                ? 'bg-primary border-primary text-primary-foreground shadow-xl shadow-primary/20 -translate-y-1'
                 : 'bg-surface border-border text-text-muted hover:border-primary/30 hover:text-text'
                 }`}
         >
@@ -267,7 +267,7 @@ export default function RemindersPage() {
                                                     </div>
                                                     <button
                                                         onClick={() => toggleReminder(booking.id, rem.id)}
-                                                        className={`px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
+                                                        className={`px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20' : 'bg-slate-100 dark:bg-surface-alt text-slate-400 dark:text-text-muted border-slate-200 dark:border-border/40'}`}
                                                     >
                                                         {rem.active ? 'ENABLED' : 'DISABLED'}
                                                     </button>
@@ -306,7 +306,7 @@ export default function RemindersPage() {
                                                 </div>
                                                 <button
                                                     onClick={() => toggleRule(rule.id)}
-                                                    className={`px-6 py-2 rounded-none text-[9px] font-black uppercase tracking-widest border transition-all ${rule.active ? 'bg-primary border-primary text-white shadow-lg' : 'bg-background border-border text-text-muted'}`}
+                                                    className={`px-6 py-2 rounded-none text-[9px] font-black uppercase tracking-widest border transition-all ${rule.active ? 'bg-primary border-primary text-primary-foreground shadow-lg' : 'bg-background dark:bg-surface-alt border-border text-text-muted'}`}
                                                 >
                                                     {rule.active ? 'ACTIVE' : 'INACTIVE'}
                                                 </button>
@@ -319,7 +319,7 @@ export default function RemindersPage() {
                                         </div>
                                     ))}
 
-                                    <button className="w-full py-4 border-2 border-dashed border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-3">
+                                    <button className="w-full py-4 border-2 border-dashed border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-3 font-black">
                                         <Plus className="w-4 h-4" /> Add Protocol Rule
                                     </button>
                                 </div>
@@ -344,7 +344,7 @@ export default function RemindersPage() {
                                         </thead>
                                         <tbody className="divide-y divide-border">
                                             {pendingClients.map((client) => (
-                                                <tr key={client.id} className="hover:bg-slate-50 transition-colors">
+                                                <tr key={client.id} className="hover:bg-slate-50 dark:hover:bg-surface-alt/50 transition-colors">
                                                     <td className="px-6 py-5">
                                                         <div className="flex flex-col text-left">
                                                             <span className="text-[11px] font-black text-text uppercase tracking-tight">{client.name}</span>
@@ -355,7 +355,7 @@ export default function RemindersPage() {
                                                         <span className="text-[10px] font-black text-primary uppercase tracking-widest">{client.service}</span>
                                                     </td>
                                                     <td className="px-6 py-5 text-right">
-                                                        <span className={`text-[9px] font-black uppercase px-3 py-1 border ${client.dueIn < 0 ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                                                        <span className={`text-[9px] font-black uppercase px-3 py-1 border ${client.dueIn < 0 ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50'}`}>
                                                             {client.dueIn < 0 ? `${Math.abs(client.dueIn)}d Overdue` : `Due in ${client.dueIn}d`}
                                                         </span>
                                                     </td>
@@ -386,7 +386,7 @@ export default function RemindersPage() {
                                             <code className="text-[10px] font-black text-primary flex-1 truncate">{bookingURL}</code>
                                             <button
                                                 onClick={handleCopyLink}
-                                                className={`p-3 rounded-none transition-all flex items-center gap-2 ${copyStatus ? 'bg-emerald-500 text-white' : 'bg-primary text-white hover:bg-primary-dark'}`}
+                                                className={`p-3 rounded-none transition-all flex items-center gap-2 ${copyStatus ? 'bg-emerald-500 text-white' : 'bg-primary text-primary-foreground hover:bg-primary/90'}`}
                                             >
                                                 {copyStatus ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                                             </button>
@@ -423,12 +423,12 @@ export default function RemindersPage() {
                                 </div>
 
                                 <div className="md:col-span-2 space-y-6">
-                                    <div className="bg-white border border-border p-12 shadow-2xl flex flex-col items-center text-center">
-                                        <div className="p-6 bg-background border border-border mb-8 shadow-inner">
+                                    <div className="bg-white dark:bg-white/95 border border-border p-12 shadow-2xl flex flex-col items-center text-center">
+                                        <div className="p-6 bg-white border border-border mb-8 shadow-inner">
                                             <QRCodeSVG value={bookingURL} size={200} level="M" />
                                         </div>
-                                        <h3 className="text-xs font-black text-text uppercase tracking-[0.3em] mb-2">Physical Access Unit</h3>
-                                        <p className="text-[9px] text-text-muted uppercase tracking-widest opacity-50 mb-8">Download and print for reception desks and windows</p>
+                                        <h3 className="text-xs font-black text-text uppercase tracking-[0.3em] mb-2 dark:text-slate-900">Physical Access Unit</h3>
+                                        <p className="text-[9px] text-text-muted uppercase tracking-widest opacity-50 mb-8 dark:text-slate-500">Download and print for reception desks and windows</p>
                                         <button className="w-full bg-slate-900 text-white py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all flex items-center justify-center gap-3">
                                             <Save className="w-4 h-4" /> Download Vector
                                         </button>

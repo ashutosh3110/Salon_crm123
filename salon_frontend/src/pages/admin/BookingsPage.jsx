@@ -41,12 +41,12 @@ import BookingModal from '../../components/admin/BookingModal';
 import MiniCalendar from '../../components/admin/MiniCalendar';
 
 const statusColors = {
-    upcoming: 'bg-blue-50 text-blue-600 border-blue-100',
-    confirmed: 'bg-blue-50 text-blue-600 border-blue-100',
-    pending: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-    completed: 'bg-green-50 text-green-600 border-green-100',
-    cancelled: 'bg-gray-100 text-gray-500 border-gray-200',
-    'no-show': 'bg-red-50 text-red-600 border-red-100',
+    upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
+    confirmed: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
+    pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
+    completed: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
+    cancelled: 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700',
+    'no-show': 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
 };
 
 const CHART_COLORS = {
@@ -152,7 +152,7 @@ export default function BookingsPage() {
                 <div className="flex items-center gap-4 text-left font-black">
                     <button
                         onClick={() => setIsBookingModalOpen(true)}
-                        className="flex items-center gap-3 px-8 py-3.5 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                        className="flex items-center gap-3 px-8 py-3.5 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                     >
                         <Plus className="w-4 h-4" /> ADD BOOKING
                     </button>
@@ -160,13 +160,13 @@ export default function BookingsPage() {
                     <div className="flex items-center gap-2 bg-surface p-1 rounded-none border border-border">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'calendar' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'calendar' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <Calendar className="w-3.5 h-3.5" /> CALENDAR
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <List className="w-3.5 h-3.5" /> LIST ARRAY
                         </button>
@@ -261,7 +261,7 @@ export default function BookingsPage() {
                         placeholder="Search system registry (name/comm)..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-12 pr-4 py-3.5 rounded-none border border-border bg-background text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
+                        className="w-full pl-12 pr-4 py-3.5 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                     />
                 </div>
 
@@ -273,7 +273,7 @@ export default function BookingsPage() {
                     ].map((sel, idx) => (
                         <select
                             key={idx}
-                            className="px-6 py-3.5 rounded-none border border-border bg-background text-[9px] font-black uppercase tracking-[0.2em] outline-none focus:border-primary cursor-pointer transition-all"
+                            className="px-6 py-3.5 rounded-none border border-border bg-surface text-[9px] font-black uppercase tracking-[0.2em] outline-none focus:border-primary cursor-pointer transition-all"
                             value={sel.value}
                             onChange={(e) => sel.onChange(e.target.value)}
                         >

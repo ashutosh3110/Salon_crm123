@@ -80,8 +80,8 @@ export default function BookingModal({ isOpen, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-surface rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border">
                 {/* Header */}
                 <div className="px-6 py-4 bg-surface border-b border-border flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export default function BookingModal({ isOpen, onClose }) {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {success ? (
                         <div className="py-12 flex flex-col items-center justify-center text-center animate-in zoom-in duration-300">
-                            <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mb-4">
+                            <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-full flex items-center justify-center mb-4 border border-emerald-500/20">
                                 <CheckCircle2 className="w-8 h-8" />
                             </div>
                             <h3 className="text-xl font-bold text-text">Booking Created!</h3>
@@ -116,7 +116,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                             type="text"
                                             value={formData.clientName}
                                             onChange={e => setFormData({ ...formData, clientName: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                             placeholder="John Doe"
                                         />
                                     </div>
@@ -130,7 +130,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                             type="tel"
                                             value={formData.clientPhone}
                                             onChange={e => setFormData({ ...formData, clientPhone: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                             placeholder="+91 00000 00000"
                                         />
                                     </div>
@@ -145,7 +145,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                         required
                                         value={formData.serviceId}
                                         onChange={e => setFormData({ ...formData, serviceId: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-white transition-all"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all"
                                     >
                                         <option value="">Choose a service...</option>
                                         {services.map(s => (
@@ -163,7 +163,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                         required
                                         value={formData.staffId}
                                         onChange={e => setFormData({ ...formData, staffId: e.target.value })}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-white transition-all"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all"
                                     >
                                         <option value="">Select staff member...</option>
                                         {staff.map(s => (
@@ -183,7 +183,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                             type="date"
                                             value={formData.date}
                                             onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                             type="time"
                                             value={formData.time}
                                             onChange={e => setFormData({ ...formData, time: e.target.value })}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                         />
                                     </div>
                                 </div>
@@ -206,7 +206,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-3 rounded-2xl bg-primary text-white font-bold text-sm shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 >
                                     {loading ? 'Processing...' : 'Confirm Appointment'}
                                 </button>

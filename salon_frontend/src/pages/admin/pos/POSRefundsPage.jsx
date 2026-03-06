@@ -31,13 +31,13 @@ export default function POSRefundsPage() {
             </div>
 
             {/* Coming Soon Banner */}
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-none p-6 flex items-center gap-5">
-                <div className="w-12 h-12 rounded-none bg-amber-500/10 flex items-center justify-center shrink-0">
-                    <AlertCircle className="w-6 h-6 text-amber-600" />
+            <div className="bg-amber-500/5 border border-amber-500/20 dark:bg-amber-950/20 dark:border-amber-900/50 rounded-none p-6 flex items-center gap-5">
+                <div className="w-12 h-12 rounded-none bg-amber-500/10 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+                    <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
                 </div>
                 <div>
-                    <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest">feature phase: alpha</p>
-                    <p className="text-[10px] font-bold text-amber-700/70 mt-1 uppercase tracking-wider">Refund processing architecture is under active development. Current data is simulated.</p>
+                    <p className="text-[10px] font-black text-amber-800 dark:text-amber-600 uppercase tracking-widest">feature phase: alpha</p>
+                    <p className="text-[10px] font-bold text-amber-700/70 dark:text-amber-500/70 mt-1 uppercase tracking-wider">Refund processing architecture is under active development. Current data is simulated.</p>
                 </div>
             </div>
 
@@ -65,7 +65,7 @@ export default function POSRefundsPage() {
                                     <td className="px-8 py-5 text-[11px] font-bold text-text-muted uppercase tracking-tight max-w-xs truncate">"{ref.reason}"</td>
                                     <td className="px-8 py-5 text-right font-black text-red-600 tracking-tight">{ref.amount}</td>
                                     <td className="px-8 py-5">
-                                        <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${ref.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'}`}>
+                                        <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${ref.status === 'Pending' ? 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20'}`}>
                                             {ref.status}
                                         </span>
                                     </td>
@@ -73,7 +73,7 @@ export default function POSRefundsPage() {
                                         {ref.status === 'Pending' ? (
                                             <button
                                                 onClick={() => setSelectedRefund(ref)}
-                                                className="px-6 py-2.5 bg-primary text-white rounded-none text-[9px] font-black uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20"
+                                                className="px-6 py-2.5 bg-primary text-primary-foreground rounded-none text-[9px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20"
                                             >
                                                 AUTH REQUEST
                                             </button>
@@ -132,13 +132,13 @@ export default function POSRefundsPage() {
                         <div className="flex gap-4">
                             <button
                                 onClick={() => handleAction('Rejected')}
-                                className="flex-1 py-4 bg-red-500/10 border border-red-500/20 text-red-600 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-3"
+                                className="flex-1 py-4 bg-red-500/10 border border-red-500/20 text-red-600 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/50 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-red-500 hover:text-primary-foreground transition-all flex items-center justify-center gap-3"
                             >
                                 <XCircle className="w-4 h-4" /> DENY REQUEST
                             </button>
                             <button
                                 onClick={() => handleAction('Approved')}
-                                className="flex-1 py-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all flex items-center justify-center gap-3"
+                                className="flex-1 py-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50 rounded-none font-black text-[10px] uppercase tracking-widest hover:bg-emerald-500 hover:text-primary-foreground transition-all flex items-center justify-center gap-3"
                             >
                                 <CheckCircle2 className="w-4 h-4" /> AUTHORIZE
                             </button>

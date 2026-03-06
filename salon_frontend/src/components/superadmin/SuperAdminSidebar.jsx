@@ -40,7 +40,7 @@ const menuItems = [
         icon: Receipt,
         path: '/superadmin/billing',
         badge: 2,
-        badgeColor: 'bg-red-100 text-red-600',
+        badgeColor: 'bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400',
         badgeTitle: '2 failed payments',
     },
     {
@@ -73,7 +73,7 @@ const menuItems = [
         icon: HeadphonesIcon,
         path: '/superadmin/support',
         badge: 6,
-        badgeColor: 'bg-amber-100 text-amber-700',
+        badgeColor: 'bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400',
         badgeTitle: '6 open errors',
     },
 ];
@@ -93,12 +93,12 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
     };
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-white relative">
+        <div className="flex flex-col h-full bg-background border-r border-border/40 relative">
 
             {/* Collapse toggle */}
             <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-white border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
+                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-background border border-border/40 items-center justify-center shadow-md hover:text-primary hover:border-primary transition-all z-50 group"
             >
                 {collapsed
                     ? <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
@@ -160,12 +160,12 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
 
                             {/* Badge dot (collapsed) */}
                             {collapsed && item.badge && (
-                                <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white" />
+                                <div className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-background" />
                             )}
 
                             {/* Tooltip (collapsed) */}
                             {collapsed && (
-                                <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity duration-150 border border-gray-700">
+                                <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity duration-150 border border-slate-700 dark:border-border">
                                     {item.label}
                                     {item.badge && <span className="ml-1.5 opacity-70">({item.badge})</span>}
                                 </div>
@@ -202,7 +202,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                     <LogOut className="shrink-0 w-5 h-5 text-text-muted group-hover:text-red-600 transition-colors" />
                     {!collapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Logout</span>}
                     {collapsed && (
-                        <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-gray-900 text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-gray-700">
+                        <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-slate-700 dark:border-border">
                             Logout
                         </div>
                     )}
@@ -214,7 +214,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
     return (
         <>
             {/* Desktop Sidebar */}
-            <aside className={`hidden lg:block fixed top-0 left-0 h-screen bg-white border-r border-border z-30 transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}>
+            <aside className={`hidden lg:block fixed top-0 left-0 h-screen bg-background border-r border-border z-30 transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60'}`}>
                 {sidebarContent}
             </aside>
 
@@ -227,7 +227,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
             )}
 
             {/* Mobile sidebar */}
-            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-white border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`lg:hidden fixed top-0 left-0 h-screen w-60 bg-background border-r border-border z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 {sidebarContent}
             </aside>
         </>

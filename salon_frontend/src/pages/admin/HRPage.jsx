@@ -94,11 +94,11 @@ export default function HRPage({ tab = 'staff' }) {
                             key={t.id}
                             onClick={() => navigate(`/admin/hr/${t.id}`)}
                             className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab ${tab === t.id
-                                ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-100'
+                                ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-100'
                                 : 'text-text-muted hover:text-text hover:bg-surface-alt'
                                 }`}
                         >
-                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-white' : 'text-primary/60'}`} />
+                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-primary-foreground' : 'text-primary/60'}`} />
                             <span className="hidden lg:inline">{t.label} Protocol</span>
                             {tab === t.id && (
                                 <>

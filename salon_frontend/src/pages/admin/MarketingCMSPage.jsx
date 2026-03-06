@@ -53,7 +53,7 @@ export default function MarketingCMSPage() {
                             setModalType(activeTab === 'banners' ? 'banner' : 'offer');
                             setIsModalOpen(true);
                         }}
-                        className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:translate-y-[-2px] active:translate-y-[0px] transition-all"
+                        className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-none text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                     >
                         <Plus className="w-4 h-4" /> New {activeTab === 'banners' ? 'Banner' : 'Offer'}
                     </button>
@@ -101,7 +101,7 @@ export default function MarketingCMSPage() {
                                         <button className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                                     </div>
                                     <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${banner.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border'
+                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border'
                                             }`}>
                                             {banner.status}
                                         </span>
@@ -158,7 +158,7 @@ export default function MarketingCMSPage() {
                                 </div>
                                 <div className="flex-1 space-y-4">
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${offer.status === 'Live' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border'
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border'
                                             }`}>
                                             {offer.status}
                                         </span>
@@ -280,7 +280,7 @@ export default function MarketingCMSPage() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="flex-1 py-4.5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all"
+                                            className="flex-1 py-4.5 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all font-black"
                                         >
                                             Publish Content
                                         </button>

@@ -62,7 +62,7 @@ export default function SettingsPage({ tab }) {
                             </div>
 
                             <div className="pt-6 flex justify-end border-t border-border">
-                                <button className="px-8 py-3.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all active:scale-[0.98]">Commit Changes</button>
+                                <button className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Commit Changes</button>
                             </div>
                         </div>
                     )}
@@ -122,7 +122,7 @@ export default function SettingsPage({ tab }) {
                             </div>
 
                             <div className="pt-6 flex justify-end border-t border-border">
-                                <button className="px-8 py-3.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all active:scale-[0.98]">Deploy Password</button>
+                                <button className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Deploy Password</button>
                             </div>
                         </div>
                     )}

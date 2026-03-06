@@ -77,13 +77,13 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'rules' }) {
                             key={tab.id}
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
                             className={`flex items-center gap-3 px-6 py-4 transition-all duration-300 relative group whitespace-nowrap rounded-xl ${isActive
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20 z-10'
+                                ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 z-10'
                                 : 'text-text-secondary hover:bg-surface hover:text-primary'
                                 }`}
                         >
-                            <Icon className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-white' : 'text-primary'
+                            <Icon className={`w-4 h-4 transition-colors duration-300 ${isActive ? 'text-primary-foreground' : 'text-primary'
                                 }`} />
-                            <span className={`block text-[10px] font-black uppercase tracking-widest leading-none transition-colors duration-300 ${isActive ? 'text-white' : 'group-hover:text-primary'
+                            <span className={`block text-[10px] font-black uppercase tracking-widest leading-none transition-colors duration-300 ${isActive ? 'text-primary-foreground' : 'group-hover:text-primary'
                                 }`}>
                                 {tab.label}
                             </span>

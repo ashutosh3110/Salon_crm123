@@ -60,7 +60,7 @@ export default function ProductsPage() {
                 </div>
                 <button
                     onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5 }); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add Protocol
                 </button>
@@ -118,7 +118,7 @@ export default function ProductsPage() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-5">
-                                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${p.stockQuantity <= (p.lowStockThreshold || 5) ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${p.stockQuantity <= (p.lowStockThreshold || 5) ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 border-rose-100 dark:border-rose-900/50' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50'}`}>
                                                 {p.stockQuantity <= (p.lowStockThreshold || 5) && <AlertTriangle className="w-3.5 h-3.5" />}
                                                 {p.stockQuantity} UNITS
                                             </span>
@@ -183,7 +183,7 @@ export default function ProductsPage() {
                             </div>
                             <div className="flex gap-4 pt-6">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-4.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all">{editing ? 'Commit' : 'Deploy Item'}</button>
+                                <button type="submit" className="flex-1 py-4.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all">{editing ? 'Commit' : 'Deploy Item'}</button>
                             </div>
                         </form>
                     </div>

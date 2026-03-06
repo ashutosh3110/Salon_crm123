@@ -33,7 +33,7 @@ export default function LoyaltyPage() {
         finally { setSaving(false); }
     };
 
-    const txTypeColors = { EARN: 'bg-emerald-500/10 text-emerald-500', REDEEM: 'bg-primary/10 text-primary', REVERSE: 'bg-rose-500/10 text-rose-500' };
+    const txTypeColors = { EARN: 'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-950/30 dark:text-emerald-400', REDEEM: 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground', REVERSE: 'bg-rose-500/10 text-rose-500 dark:bg-rose-950/30 dark:text-rose-400' };
 
     return (
         <div className="space-y-6">
@@ -75,8 +75,8 @@ export default function LoyaltyPage() {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Point Expiry (Days Count)</label>
                                 <input type="number" value={rules.expiryDays} onChange={(e) => setRules({ ...rules, expiryDays: parseInt(e.target.value) })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
                             </div>
-                            <button onClick={handleSave} disabled={saving} className="w-full py-4.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all disabled:opacity-60">
-                                {saving ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-none animate-spin" /> : <><Save className="w-4 h-4" /> Deploy Configuration</>}
+                            <button onClick={handleSave} disabled={saving} className="w-full py-4.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-60">
+                                {saving ? <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-none animate-spin" /> : <div className="flex items-center justify-center gap-2"><Save className="w-4 h-4" /> Deploy Configuration</div>}
                             </button>
                         </div>
                     )}

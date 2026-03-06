@@ -77,13 +77,13 @@ export default function POSPaymentsPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => setDateFilter('today')}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'today' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'today' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
                     >
                         <Calendar className="w-4 h-4" /> Current Cycle
                     </button>
                     <button
                         onClick={() => setDateFilter('all')}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'all' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'all' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
                     >
                         <Filter className="w-4 h-4" /> Historical Data
                     </button>
@@ -103,7 +103,7 @@ export default function POSPaymentsPage() {
                             <div key={i} className="bg-surface rounded-none border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-none rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
                                 <div className="flex items-center gap-5 relative z-10">
-                                    <div className={`w-12 h-12 rounded-none border border-border flex items-center justify-center shrink-0 bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-white`}>
+                                    <div className={`w-12 h-12 rounded-none border border-border flex items-center justify-center shrink-0 bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-primary-foreground`}>
                                         <item.icon className="w-6 h-6" />
                                     </div>
                                     <div>
@@ -152,7 +152,7 @@ export default function POSPaymentsPage() {
                                                 </td>
                                                 <td className="px-8 py-5 text-right font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</td>
                                                 <td className="px-8 py-5">
-                                                    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-500/20'}`}>
                                                         <CheckCircle2 className="w-3 h-3" />
                                                         {inv.paymentStatus}
                                                     </span>

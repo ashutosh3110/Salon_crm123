@@ -103,7 +103,7 @@ export default function OutletsPage() {
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="flex items-center gap-3 bg-primary text-white border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Expand Network
                 </button>
@@ -233,7 +233,7 @@ export default function OutletsPage() {
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
 
                             <div className="flex justify-between items-start mb-10 text-left">
-                                <div className="w-16 h-16 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
+                                <div className="w-16 h-16 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-inner">
                                     <Store className="w-7 h-7" />
                                 </div>
                                 <div className="flex gap-3 text-left">
@@ -281,7 +281,7 @@ export default function OutletsPage() {
 
                             <button
                                 onClick={() => navigate(`/admin/outlets/${outlet._id}`)}
-                                className="w-full py-5 rounded-none border border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center gap-3"
+                                className="w-full py-5 rounded-none border border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-primary-foreground transition-all duration-300 flex items-center justify-center gap-3"
                             >
                                 Enter Node Dashboard <ChevronRight className="w-4 h-4" />
                             </button>
