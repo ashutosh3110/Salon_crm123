@@ -156,6 +156,26 @@ export default function AppBookingPage() {
         setSubmitting(true);
         try {
             await new Promise(r => setTimeout(r, 1500)); // Simulate API
+
+            // --- Persist Booking to Global Registry ---
+            const newBooking = {
+                id: `BOK-${Date.now()}`,
+                clientId: 'cust-001', // Mocking current customer
+                clientName: 'Priya Sharma', // Mocking current customer name
+                services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
+                totalPrice,
+                totalDuration,
+                date: selectedDate.date.toISOString(),
+                time: selectedTime,
+                staffId: selectedStaff._id,
+                staffName: selectedStaff.name,
+                status: 'upcoming',
+                timestamp: new Date().toISOString()
+            };
+
+            const existingBookings = JSON.parse(localStorage.getItem('WAPIXO_BOOKING_REGISTRY') || '[]');
+            localStorage.setItem('WAPIXO_BOOKING_REGISTRY', JSON.stringify([...existingBookings, newBooking]));
+
             setBookingComplete(true);
         } catch {
             console.error('Booking failed');

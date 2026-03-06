@@ -68,16 +68,6 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         >
                             <Menu className="w-5 h-5 text-text-secondary" />
                         </button>
-
-                        {/* Search (Desktop) */}
-                        <div className="hidden sm:flex items-center bg-surface border border-border/40 px-3 py-2 w-64 focus-within:w-80 transition-all">
-                            <Search className="w-4 h-4 text-text-muted mr-2" />
-                            <input
-                                type="text"
-                                placeholder="Scan Sector..."
-                                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-text placeholder-text-muted outline-none w-full"
-                            />
-                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 font-black">

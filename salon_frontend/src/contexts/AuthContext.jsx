@@ -24,7 +24,7 @@ const MOCK_USERS = {
     'admin@salon.com': { role: 'admin', name: 'Salon Owner' },
     'manager@salon.com': { role: 'manager', name: 'Rajesh Manager' },
     'reception@salon.com': { role: 'receptionist', name: 'Priya Receptionist' },
-    'stylist@salon.com': { role: 'stylist', name: 'Anita Stylist' },
+    'stylist@salon.com': { role: 'stylist', name: 'Anita Verma' },
     'accounts@salon.com': { role: 'accountant', name: 'Deepak Accountant' },
     'inventory@salon.com': { role: 'inventory_manager', name: 'Suresh Inventory' },
     'superadmin@salon.com': { role: 'superadmin', name: 'Super Admin' },

@@ -6,16 +6,21 @@ import {
     Check, X, Award, Info
 } from 'lucide-react';
 
+import stylistData from '../../data/stylistMockData.json';
+
 export default function StylistAttendance() {
+    const [accuracy, setAccuracy] = useState(0);
     const [status, setStatus] = useState('OFFLINE');
     const [location, setLocation] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [logs, setLogs] = useState([
-        { id: 1, type: 'IN', time: '09:02 AM', date: '04 MAR 2026', loc: '28.6139, 77.2090', status: 'VERIFIED' },
-        { id: 2, type: 'OUT', time: '07:15 PM', date: '04 MAR 2026', loc: '28.6139, 77.2090', status: 'VERIFIED' },
-    ]);
-    const [accuracy, setAccuracy] = useState(null);
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [logs, setLogs] = useState(stylistData.attendance.logs);
+
+    const filteredLogs = logs.filter(log => {
+        if (statusFilter === 'ALL') return true;
+        return log.type === statusFilter;
+    });
 
     const fetchLocation = () => {
         setLoading(true);
@@ -74,9 +79,9 @@ export default function StylistAttendance() {
 
     return (
         <div className="space-y-6 font-black text-left">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
                 {/* Status Card */}
-                <div className="lg:col-span-2 bg-background border border-border p-8 relative overflow-hidden group">
+                <div className="bg-background border border-border p-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Activity className="w-32 h-32 text-primary" />
                     </div>
@@ -144,45 +149,35 @@ export default function StylistAttendance() {
                     </div>
                 </div>
 
-                {/* Info Card */}
-                <div className="bg-surface border border-border p-8 flex flex-col justify-between relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                    <div>
-                        <div className="flex items-center gap-2 mb-6 text-primary">
-                            <Info className="w-4 h-4" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Policy_Log_Info</span>
-                        </div>
-                        <div className="space-y-4">
-                            <p className="text-[9px] text-text-muted uppercase leading-relaxed font-bold tracking-widest italic">
-                                All attendance entries are cryptographically signed with your hardware ID and geolocation vector.
-                            </p>
-                            <div className="p-4 bg-background border border-border/50 text-[8px] font-black uppercase tracking-widest text-primary/60">
-                                IP: 192.168.1.104 <br />
-                                GATEWAY: ALPHA_STATION_04
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-8 pt-6 border-t border-border/10">
-                        <div className="flex items-center justify-between">
-                            <span className="text-[8px] text-text-muted uppercase tracking-[0.3em]">Root_Authorized</span>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             {/* Attendance Logs */}
             <div className="bg-surface border border-border overflow-hidden">
-                <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-primary" />
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Session_Cycle_Logs</span>
                     </div>
-                    <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">Total_Entries: {logs.length}</span>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5 p-1 bg-background border border-border">
+                            {['ALL', 'IN', 'OUT'].map(f => (
+                                <button
+                                    key={f}
+                                    onClick={() => setStatusFilter(f)}
+                                    className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                >
+                                    {f === 'ALL' ? 'ALL_CYCLES' : `ONLY_${f}`}
+                                </button>
+                            ))}
+                        </div>
+                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Detected_Entries: {filteredLogs.length}</span>
+                    </div>
                 </div>
 
                 <div className="divide-y divide-border/10">
-                    {logs.map((log) => (
+                    {filteredLogs.map((log) => (
                         <div key={log.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-background/50 transition-all">
                             <div className="flex items-center gap-6">
                                 <div className={`w-1 h-8 ${log.type === 'IN' ? 'bg-emerald-500' : 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.2)]'}`} />

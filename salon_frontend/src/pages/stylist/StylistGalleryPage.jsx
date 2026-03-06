@@ -2,18 +2,13 @@ import { useState } from 'react';
 import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const galleryItems = [
-    { id: 1, title: 'Precision_Fade_V1', category: 'HAIRCUT', likes: 124, date: '24 FEB_24', image: 'https://images.unsplash.com/photo-1599351431247-f579338ae902?auto=format&fit=crop&q=80&w=400' },
-    { id: 2, title: 'Neon_Tonic_Matrix', category: 'COLOR', likes: 89, date: '20 FEB_24', image: 'https://images.unsplash.com/photo-1620331311520-246422ff83f9?auto=format&fit=crop&q=80&w=400' },
-    { id: 3, title: 'Cyber_Waves_Flow', category: 'STYLING', likes: 256, date: '15 FEB_24', image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400' },
-    { id: 4, title: 'Industrial_Braid_Sync', category: 'STYLING', likes: 67, date: '10 FEB_24', image: 'https://images.unsplash.com/photo-1595476108010-b4d1f80d91f2?auto=format&fit=crop&q=80&w=400' },
-    { id: 5, title: 'Surgical_Beard_Trim', category: 'GROOMING', likes: 142, date: '05 FEB_24', image: 'https://images.unsplash.com/photo-1532710093739-9470acff878f?auto=format&fit=crop&q=80&w=400' },
-    { id: 6, title: 'Voltage_Spike_Edge', category: 'HAIRCUT', likes: 53, date: '01 FEB_24', image: 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&q=80&w=400' },
-];
+import stylistData from '../../data/stylistMockData.json';
 
-const categories = ['ALL_VECTORS', 'HAIRCUT', 'COLOR', 'STYLING', 'GROOMING'];
+const galleryItems = stylistData.gallery.items;
+const categories = stylistData.gallery.categories;
 
 export default function StylistGalleryPage() {
+    const [searchTerm, setSearchTerm] = useState('');
     const [view, setView] = useState('grid');
     const [activeCategory, setActiveCategory] = useState('ALL_VECTORS');
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -32,61 +27,77 @@ export default function StylistGalleryPage() {
         setLikedItems(newLiked);
     };
 
-    const filteredItems = galleryItems.filter(item =>
-        activeCategory === 'ALL_VECTORS' || item.category === activeCategory
-    );
+    const filteredItems = galleryItems.filter(item => {
+        const matchesCategory = activeCategory === 'ALL_VECTORS' || item.category === activeCategory;
+        const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.category.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
 
     return (
-        <div className="space-y-6 font-black text-left">
+        <div className="space-y-4 text-left font-black">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-4">
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Camera className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Visual_Library</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <Camera className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Visual_Library</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Portfolio Matrix</h1>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Asset_Injection_Terminal</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Portfolio Matrix</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Asset_Injection_Terminal</p>
                 </div>
                 <button
                     onClick={() => setShowUploadModal(true)}
-                    className="flex items-center gap-3 px-6 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:bg-primary-dark transition-all active:scale-95"
+                    className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
                 >
                     <Plus className="w-4 h-4" /> Inject_New_Work
                 </button>
             </div>
 
             {/* Filter Bar */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-surface border border-border p-2">
-                <div className="flex flex-wrap gap-2">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setActiveCategory(cat)}
-                            className={`px-6 py-3 text-[9px] font-black uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-primary text-white shadow-lg shadow-primary/10' : 'text-text-muted hover:text-text hover:bg-surface-alt'}`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-surface border border-border p-1.5 shadow-inner">
+                <div className="flex flex-col md:flex-row items-center gap-3 w-full">
+                    <div className="flex flex-wrap gap-1.5">
+                        {categories.map((cat) => (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-4 py-2.5 text-[8px] font-black uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-primary text-white shadow-lg shadow-primary/10' : 'text-text-muted hover:text-text hover:bg-surface-alt'}`}
+                            >
+                                {cat.replace('_VECTORS', '')}
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="relative group/search flex-1 md:max-w-xs">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted/50 group-focus-within/search:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="SCAN_ASSETS..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[8px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30 shadow-inner"
+                        />
+                    </div>
                 </div>
-                <div className="flex items-center gap-2 border-l border-border/20 pl-6 h-10">
+                <div className="flex items-center gap-1 border-l border-border/20 pl-4 h-8">
                     <button
                         onClick={() => setView('grid')}
-                        className={`p-2 transition-all ${view === 'grid' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`p-1.5 transition-all ${view === 'grid' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
                     >
-                        <LayoutGrid className="w-5 h-5" />
+                        <LayoutGrid className="w-4.5 h-4.5" />
                     </button>
                     <button
                         onClick={() => setView('list')}
-                        className={`p-2 transition-all ${view === 'list' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`p-1.5 transition-all ${view === 'list' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
                     >
-                        <List className="w-5 h-5" />
+                        <List className="w-4.5 h-4.5" />
                     </button>
                 </div>
             </div>
 
             {/* Gallery Matrix */}
-            <div className={view === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+            <div className={view === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
                 <AnimatePresence mode="popLayout">
                     {filteredItems.map((item) => (
                         <motion.div

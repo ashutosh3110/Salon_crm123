@@ -1,0 +1,340 @@
+{
+    "dashboard": {
+        "schedule": [
+            {
+                "id": 1,
+                "time": "10:00 AM",
+                "customer": "PRIYA SHARMA",
+                "service": "HAIR CUT + BLOW DRY",
+                "duration": "45 MIN",
+                "status": "completed",
+                "sector": "STATION_04"
+            },
+            {
+                "id": 2,
+                "time": "11:00 AM",
+                "customer": "MEERA PATEL",
+                "service": "HAIR COLOUR (GLOBAL)",
+                "duration": "90 MIN",
+                "status": "in-progress",
+                "sector": "STATION_02"
+            },
+            {
+                "id": 3,
+                "time": "12:30 PM",
+                "customer": "SNEHA REDDY",
+                "service": "HAIR SPA",
+                "duration": "60 MIN",
+                "status": "upcoming",
+                "sector": "STATION_04"
+            },
+            {
+                "id": 4,
+                "time": "02:00 PM",
+                "customer": "RITU SINGH",
+                "service": "KERATIN TREATMENT",
+                "duration": "120 MIN",
+                "status": "upcoming",
+                "sector": "STATION_01"
+            },
+            {
+                "id": 5,
+                "time": "04:00 PM",
+                "customer": "KAVYA IYER",
+                "service": "HAIR CUT + STYLING",
+                "duration": "45 MIN",
+                "status": "upcoming",
+                "sector": "STATION_03"
+            }
+        ],
+        "performanceData": [
+            {
+                "day": "MON",
+                "value": 4500,
+                "count": 5
+            },
+            {
+                "day": "TUE",
+                "value": 5200,
+                "count": 6
+            },
+            {
+                "day": "WED",
+                "value": 3800,
+                "count": 4
+            },
+            {
+                "day": "THU",
+                "value": 6100,
+                "count": 7
+            },
+            {
+                "day": "FRI",
+                "value": 7500,
+                "count": 9
+            },
+            {
+                "day": "SAT",
+                "value": 8900,
+                "count": 11
+            },
+            {
+                "day": "SUN",
+                "value": 4200,
+                "count": 5
+            }
+        ],
+        "stats": {
+            "revenue": 18450,
+            "target": 25000,
+            "efficiency": 94,
+            "rating": 4.9
+        }
+    },
+    "clients": [
+        {
+            "id": 1,
+            "name": "PRIYA SHARMA",
+            "visits": 12,
+            "lastService": "FEB 15_24",
+            "status": "VIP_PROTOCOL",
+            "rating": 4.9,
+            "preferences": "LOW_HEAT, SIDE_PART",
+            "email": "p.sharma@nexus.com"
+        },
+        {
+            "id": 2,
+            "name": "MEERA PATEL",
+            "visits": 5,
+            "lastService": "JAN 28_24",
+            "status": "STANDARD_UNIT",
+            "rating": 4.7,
+            "preferences": "AMMONIA-FREE_COLOR_ONLY",
+            "email": "meera.p@uplink.io"
+        },
+        {
+            "id": 3,
+            "name": "SNEHA REDDY",
+            "visits": 8,
+            "lastService": "FEB 02_24",
+            "status": "STANDARD_UNIT",
+            "rating": 4.8,
+            "preferences": "LOVES_HEAD_MASSAGE",
+            "email": "sneha.r@gmail.com"
+        },
+        {
+            "id": 4,
+            "name": "RITU SINGH",
+            "visits": 3,
+            "lastService": "DEC 20_23",
+            "status": "LOW_ACTIVITY",
+            "rating": 4.5,
+            "preferences": "NATURAL_LOOKS",
+            "email": "ritu_s@outlook.com"
+        },
+        {
+            "id": 5,
+            "name": "KAVYA IYER",
+            "visits": 15,
+            "lastService": "FEB 20_24",
+            "status": "VIP_PROTOCOL",
+            "rating": 5.0,
+            "preferences": "REGULAR_ROOT_TOUCHUP",
+            "email": "kavya.i@protonmail.com"
+        }
+    ],
+    "commissions": {
+        "earningsHistory": [
+            {
+                "date": "TODAY",
+                "services": 5,
+                "revenue": 4200,
+                "commission": 840,
+                "status": "PROCESSING"
+            },
+            {
+                "date": "YESTERDAY",
+                "services": 8,
+                "revenue": 7500,
+                "commission": 1500,
+                "status": "SETTLED"
+            },
+            {
+                "date": "21 FEB_24",
+                "services": 6,
+                "revenue": 5100,
+                "commission": 1020,
+                "status": "SETTLED"
+            },
+            {
+                "date": "20 FEB_24",
+                "services": 7,
+                "revenue": 6200,
+                "commission": 1240,
+                "status": "SETTLED"
+            },
+            {
+                "date": "19 FEB_24",
+                "services": 4,
+                "revenue": 3800,
+                "commission": 760,
+                "status": "SETTLED"
+            }
+        ],
+        "incentiveSlabs": [
+            {
+                "tier": "STANDARD_UNIT",
+                "range": "₹0 - ₹25,000",
+                "yield": "15%",
+                "status": "ACTIVE"
+            },
+            {
+                "tier": "POWER_UNIT",
+                "range": "₹25,001 - ₹50,000",
+                "yield": "20%",
+                "status": "UPCOMING"
+            },
+            {
+                "tier": "SUPERSTAR_PROTOCOL",
+                "range": "₹50,001+",
+                "yield": "25%",
+                "status": "LOCKED"
+            }
+        ],
+        "stats": [
+            {
+                "label": "Total_Earned",
+                "value": "₹12,450",
+                "sub": "Gross Settled"
+            },
+            {
+                "label": "Yield_Units",
+                "value": "42 OPS",
+                "sub": "Service Cycles"
+            },
+            {
+                "label": "Rep_Index",
+                "value": "1,250 XP",
+                "sub": "Performance Points"
+            },
+            {
+                "label": "Base_Allocation",
+                "value": "₹25,000",
+                "sub": "Minimum Protocol"
+            }
+        ]
+    },
+    "gallery": {
+        "items": [
+            {
+                "id": 1,
+                "title": "Precision_Fade_V1",
+                "category": "HAIRCUT",
+                "likes": 124,
+                "date": "24 FEB_24",
+                "image": "https://images.unsplash.com/photo-1599351431247-f579338ae902?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                "id": 2,
+                "title": "Neon_Tonic_Matrix",
+                "category": "COLOR",
+                "likes": 89,
+                "date": "20 FEB_24",
+                "image": "https://images.unsplash.com/photo-1620331311520-246422ff83f9?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                "id": 3,
+                "title": "Cyber_Waves_Flow",
+                "category": "STYLING",
+                "likes": 256,
+                "date": "15 FEB_24",
+                "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                "id": 4,
+                "title": "Industrial_Braid_Sync",
+                "category": "STYLING",
+                "likes": 67,
+                "date": "10 FEB_24",
+                "image": "https://images.unsplash.com/photo-1595476108010-b4d1f80d91f2?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                "id": 5,
+                "title": "Surgical_Beard_Trim",
+                "category": "GROOMING",
+                "likes": 142,
+                "date": "05 FEB_24",
+                "image": "https://images.unsplash.com/photo-1532710093739-9470acff878f?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                "id": 6,
+                "title": "Voltage_Spike_Edge",
+                "category": "HAIRCUT",
+                "likes": 53,
+                "date": "01 FEB_24",
+                "image": "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?auto=format&fit=crop&q=80&w=400"
+            }
+        ],
+        "categories": [
+            "ALL_VECTORS",
+            "HAIRCUT",
+            "COLOR",
+            "STYLING",
+            "GROOMING"
+        ]
+    },
+    "attendance": {
+        "logs": [
+            {
+                "id": 1,
+                "type": "IN",
+                "time": "09:02 AM",
+                "date": "04 MAR 2026",
+                "loc": "28.6139, 77.2090",
+                "status": "VERIFIED"
+            },
+            {
+                "id": 2,
+                "type": "OUT",
+                "time": "07:15 PM",
+                "date": "04 MAR 2026",
+                "loc": "28.6139, 77.2090",
+                "status": "VERIFIED"
+            }
+        ]
+    },
+    "timeOff": {
+        "requests": [
+            {
+                "id": 1,
+                "type": "CASUAL_LEAVE",
+                "dates": "24 FEB - 26 FEB",
+                "reason": "FAMILY_VISIT",
+                "status": "PENDING",
+                "appliedOn": "20 FEB"
+            },
+            {
+                "id": 2,
+                "type": "MEDICAL_LEAVE",
+                "dates": "10 FEB",
+                "reason": "EMERGENCY_DENTAL",
+                "status": "APPROVED",
+                "appliedOn": "09 FEB"
+            },
+            {
+                "id": 3,
+                "type": "PAID_LEAVE",
+                "dates": "15 JAN - 20 JAN",
+                "reason": "VACATION",
+                "status": "REJECTED",
+                "appliedOn": "10 JAN"
+            }
+        ],
+        "types": [
+            "CASUAL_LEAVE",
+            "MEDICAL_LEAVE",
+            "PAID_LEAVE",
+            "SICK_BUFFER"
+        ]
+    }
+}

@@ -247,6 +247,7 @@ function App() {
                       <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
                       <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
                       <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
+                      <Route path="/admin/hr/leaves" element={<HRPage tab="leaves" />} />
 
                       <Route path="/admin/promotions" element={<PromotionsPage />} />
                       <Route path="/admin/marketing" element={<MarketingHubPage />} />

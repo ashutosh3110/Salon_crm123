@@ -1,25 +1,17 @@
 import { useState } from 'react';
-import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Award, Zap, CreditCard, Activity, Target, Shield, X, CheckCircle2, ChevronDown, Award as AwardIcon } from 'lucide-react';
+import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Award, Zap, CreditCard, Activity, Target, Shield, X, CheckCircle2, ChevronDown, Award as AwardIcon, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const earningsHistory = [
-    { date: 'TODAY', services: 5, revenue: 4200, commission: 840, status: 'PROCESSING' },
-    { date: 'YESTERDAY', services: 8, revenue: 7500, commission: 1500, status: 'SETTLED' },
-    { date: '21 FEB_24', services: 6, revenue: 5100, commission: 1020, status: 'SETTLED' },
-    { date: '20 FEB_24', services: 7, revenue: 6200, commission: 1240, status: 'SETTLED' },
-    { date: '19 FEB_24', services: 4, revenue: 3800, commission: 760, status: 'SETTLED' },
-];
+import stylistData from '../../data/stylistMockData.json';
 
+const earningsHistory = stylistData.commissions.earningsHistory;
 const fiscalPeriods = ['CURRENT_CYCLE', 'PREVIOUS_CYCLE', 'FISCAL_YTD', 'CUSTOM_RANGE'];
-
-const incentiveSlabs = [
-    { tier: 'STANDARD_UNIT', range: '₹0 - ₹25,000', yield: '15%', status: 'ACTIVE' },
-    { tier: 'POWER_UNIT', range: '₹25,001 - ₹50,000', yield: '20%', status: 'UPCOMING' },
-    { tier: 'SUPERSTAR_PROTOCOL', range: '₹50,001+', yield: '25%', status: 'LOCKED' },
-];
+const incentiveSlabs = stylistData.commissions.incentiveSlabs;
+const stats = stylistData.commissions.stats;
 
 export default function StylistCommissionsPage() {
     const [period, setPeriod] = useState(fiscalPeriods[0]);
+    const [statusFilter, setStatusFilter] = useState('ALL');
     const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
     const [showSlabModal, setShowSlabModal] = useState(false);
     const [toast, setToast] = useState(null);
@@ -30,23 +22,23 @@ export default function StylistCommissionsPage() {
     };
 
     return (
-        <div className="space-y-6 font-black text-left">
+        <div className="space-y-4 text-left">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-4">
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Activity className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Fiscal_Stream</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <Activity className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Fiscal_Stream</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Credit Stream</h1>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Real-time_Liquidity_Audit</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Credit Stream</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Real-time_Liquidity_Audit</p>
                 </div>
-                <div className="flex gap-3 relative">
+                <div className="flex gap-2 relative">
                     <button
                         onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-                        className="flex items-center gap-3 px-6 py-3 bg-surface border border-border text-[9px] font-black text-text-muted hover:text-text hover:border-primary/50 transition-all uppercase tracking-[0.2em]"
+                        className="flex items-center gap-2 px-5 py-3 bg-surface border border-border text-[8px] font-black text-text-muted hover:text-text hover:border-primary/50 transition-all uppercase tracking-[0.2em]"
                     >
-                        <Calendar className="w-4 h-4" /> {period.replace('_', ' ')} <ChevronDown className="w-3.5 h-3.5 ml-2" />
+                        <Calendar className="w-3.5 h-3.5" /> {period.replace('_', ' ')} <ChevronDown className="w-3 h-3 ml-2" />
                     </button>
 
                     <AnimatePresence>
@@ -77,31 +69,35 @@ export default function StylistCommissionsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: 'Total_Earned', value: '₹12,450', icon: DollarSign, color: 'text-emerald-500', sub: 'Gross Settled' },
-                    { label: 'Yield_Units', value: '42 OPS', icon: Zap, color: 'text-primary', sub: 'Service Cycles' },
-                    { label: 'Rep_Index', value: '1,250 XP', icon: Award, color: 'text-amber-500', sub: 'Performance Points' },
-                    { label: 'Base_Allocation', value: '₹25,000', icon: CreditCard, color: 'text-blue-500', sub: 'Minimum Protocol' },
-                ].map((s) => (
-                    <div key={s.label} className="bg-surface border border-border p-6 relative overflow-hidden group hover:border-primary/30 transition-all">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
-                        <div className="w-10 h-10 bg-background border border-border flex items-center justify-center mb-4 text-primary shadow-inner">
-                            <s.icon className={`w-4 h-4 ${s.color}`} />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {stats.map((s) => {
+                    const iconMap = {
+                        'Total_Earned': { icon: DollarSign, color: 'text-emerald-500' },
+                        'Yield_Units': { icon: Zap, color: 'text-primary' },
+                        'Rep_Index': { icon: Award, color: 'text-amber-500' },
+                        'Base_Allocation': { icon: CreditCard, color: 'text-blue-500' }
+                    };
+                    const { icon: Icon, color } = iconMap[s.label];
+                    return (
+                        <div key={s.label} className="bg-surface border border-border p-4 relative overflow-hidden group hover:border-primary/30 transition-all">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
+                            <div className="w-9 h-9 bg-background border border-border flex items-center justify-center mb-3 text-primary shadow-inner">
+                                <Icon className={`w-3.5 h-3.5 ${color}`} />
+                            </div>
+                            <p className="text-xl font-black text-text tracking-tighter uppercase">{s.value}</p>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5 italic">{s.label}</p>
+                            <p className="text-[7px] text-text-muted/60 uppercase mt-0.5 italic tracking-widest">{s.sub}</p>
                         </div>
-                        <p className="text-2xl font-black text-text tracking-tighter uppercase">{s.value}</p>
-                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mt-1 italic">{s.label}</p>
-                        <p className="text-[7px] text-text-muted/60 uppercase mt-1 italic tracking-widest">{s.sub}</p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-3 gap-4">
                 {/* Iteration Log */}
                 <div className="lg:col-span-2 bg-surface border border-border overflow-hidden">
-                    <div className="px-8 py-6 border-b border-border/20 bg-background/50 flex items-center justify-between">
-                        <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Iteration_Log</h2>
-                        <span className="text-[8px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 border border-primary/20">Authorized_Stream</span>
+                    <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex items-center justify-between">
+                        <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Iteration_Log</h2>
+                        <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Authorized_Stream</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">

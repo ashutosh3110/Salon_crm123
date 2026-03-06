@@ -10,7 +10,8 @@ import {
     UserPlus,
     Clock,
     Calculator,
-    BarChart3
+    BarChart3,
+    Calendar
 } from 'lucide-react';
 
 // Sub-components (to be created)
@@ -19,6 +20,7 @@ import AttendanceTracker from '../../components/admin/hr/AttendanceTracker';
 import ShiftManager from '../../components/admin/hr/ShiftManager';
 import PayrollManager from '../../components/admin/hr/PayrollManager';
 import PerformanceAnalytics from '../../components/admin/hr/PerformanceAnalytics';
+import LeaveApprovalManager from '../../components/admin/hr/LeaveApprovalManager';
 
 const HR_TABS = [
     { id: 'staff', label: 'Staff Master', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
@@ -26,6 +28,7 @@ const HR_TABS = [
     { id: 'shifts', label: 'Shifts', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
     { id: 'payroll', label: 'Payroll', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { id: 'performance', label: 'Performance', icon: TrendingUp, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { id: 'leaves', label: 'Leave Requests', icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
 ];
 
 import Skeleton from '../../components/common/Skeleton';
@@ -64,6 +67,7 @@ export default function HRPage({ tab = 'staff' }) {
             case 'shifts': return <ShiftManager />;
             case 'payroll': return <PayrollManager />;
             case 'performance': return <PerformanceAnalytics />;
+            case 'leaves': return <LeaveApprovalManager />;
             default: return <StaffManager />;
         }
     };
