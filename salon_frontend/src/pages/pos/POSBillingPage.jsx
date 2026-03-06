@@ -355,7 +355,7 @@ export default function POSBillingPage() {
                 itemId: item._id,
                 type,
                 quantity: 1,
-                staffId: null,
+                staffIds: [''],
                 commission: item.commission || 0
             }]);
         }
@@ -371,9 +371,25 @@ export default function POSBillingPage() {
         setCart(cart.filter((_, i) => i !== idx));
     };
 
-    const updateStaff = (idx, staffId) => {
+    const updateStaff = (cartIdx, staffArrIdx, staffId) => {
         const newCart = [...cart];
-        newCart[idx].staffId = staffId;
+        const ids = [...(newCart[cartIdx].staffIds || [])];
+        ids[staffArrIdx] = staffId;
+        newCart[cartIdx].staffIds = ids;
+        setCart(newCart);
+    };
+
+    const addStaff = (cartIdx) => {
+        const newCart = [...cart];
+        newCart[cartIdx].staffIds = [...(newCart[cartIdx].staffIds || []), ''];
+        setCart(newCart);
+    };
+
+    const removeStaff = (cartIdx, staffArrIdx) => {
+        const newCart = [...cart];
+        const ids = [...(newCart[cartIdx].staffIds || [])];
+        ids.splice(staffArrIdx, 1);
+        newCart[cartIdx].staffIds = ids;
         setCart(newCart);
     };
 
@@ -449,7 +465,7 @@ export default function POSBillingPage() {
                 client: selectedClient,
                 items: cart.map(item => ({
                     ...item,
-                    staffName: MOCK_STAFF.find(s => s._id === item.staffId)?.name || 'Unknown'
+                    staffName: (item.staffIds || []).filter(Boolean).map(id => MOCK_STAFF.find(s => s._id === id)?.name).filter(Boolean).join(', ') || 'Unassigned'
                 })),
                 totals: { ...totals, paidAmount, balanceDue },
                 payments: payments,
@@ -1024,27 +1040,47 @@ export default function POSBillingPage() {
                                         </div>
                                         <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
                                     </div>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex-1 flex items-center gap-2">
-                                            <span className="text-[9px] font-black text-text-muted uppercase">Staff:</span>
-                                            <select
-                                                className="flex-1 bg-surface-alt border-none text-[10px] font-bold p-1 text-text focus:ring-0"
-                                                value={item.staffId || ''}
-                                                onChange={(e) => updateStaff(idx, e.target.value)}
-                                            >
-                                                <option value="">Select Stylist</option>
-                                                {MOCK_STAFF.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                            </select>
-                                        </div>
-                                        {packageEligibleItems.includes(item.name) && (
-                                            <button
-                                                onClick={() => togglePackageRedemption(idx)}
-                                                className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${item.isPackageRedemption ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface-alt text-text-secondary border-border hover:border-amber-500 hover:text-amber-500'}`}
-                                            >
-                                                <Gift className="w-3 h-3" /> USE PKG
-                                            </button>
-                                        )}
+                                    {/* Multi-Staff Row */}
+                                    <div className="space-y-1.5">
+                                        {(item.staffIds || ['']).map((sid, sIdx) => (
+                                            <div key={sIdx} className="flex items-center gap-2">
+                                                <span className="text-[9px] font-black text-text-muted uppercase shrink-0 w-8">
+                                                    {sIdx === 0 ? 'Staff:' : ''}
+                                                </span>
+                                                <select
+                                                    className="flex-1 bg-surface-alt border border-border/60 text-[10px] font-bold px-2 py-1.5 text-text focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
+                                                    value={sid || ''}
+                                                    onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
+                                                >
+                                                    <option value="">Select Stylist</option>
+                                                    {MOCK_STAFF.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                                </select>
+                                                {(item.staffIds || []).length > 1 && (
+                                                    <button
+                                                        onClick={() => removeStaff(idx, sIdx)}
+                                                        className="p-1 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all shrink-0"
+                                                        title="Remove staff"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        <button
+                                            onClick={() => addStaff(idx)}
+                                            className="flex items-center gap-1.5 text-[10px] font-black text-primary border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1 rounded-full transition-all ml-0 mt-1"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Another Staff
+                                        </button>
                                     </div>
+                                    {packageEligibleItems.includes(item.name) && (
+                                        <button
+                                            onClick={() => togglePackageRedemption(idx)}
+                                            className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${item.isPackageRedemption ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface-alt text-text-secondary border-border hover:border-amber-500 hover:text-amber-500'}`}
+                                        >
+                                            <Gift className="w-3 h-3" /> USE PKG
+                                        </button>
+                                    )}
                                 </div>
                             ))
                         )}

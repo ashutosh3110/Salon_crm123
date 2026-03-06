@@ -17,12 +17,12 @@ import {
 } from 'lucide-react';
 
 const settingsSections = [
-    { title: 'Personal Interface', icon: User, description: 'Manage your profile and display name.' },
-    { title: 'Terminal Preferences', icon: Monitor, description: 'Customize dashboard alerts and live feed views.' },
-    { title: 'Protocol Notifications', icon: Bell, description: 'Configure SMS and email arrival alerts.' },
-    { title: 'Security & Access', icon: Shield, description: 'Update credential protocols and MFA.' },
-    { title: 'Hardware Integration', icon: Printer, description: 'Thermal printer and card terminal settings.' },
-    { title: 'System Logs', icon: Database, description: 'View recent session activity and audit trails.' },
+    { title: 'Profile', icon: User, description: 'Manage your name and basic details.' },
+    { title: 'Display & Layout', icon: Monitor, description: 'Choose how your dashboard looks.' },
+    { title: 'Notifications', icon: Bell, description: 'Control SMS and email alerts.' },
+    { title: 'Security', icon: Shield, description: 'Update password and access settings.' },
+    { title: 'Devices', icon: Printer, description: 'Set up printers and other hardware.' },
+    { title: 'Activity Log', icon: Database, description: 'See recent actions taken in this account.' },
 ];
 
 export default function ReceptionistSettingsPage() {
@@ -43,7 +43,7 @@ export default function ReceptionistSettingsPage() {
     };
 
     const handleSave = () => {
-        alert(`${activeModal} protocols successfully synchronized with system core.`);
+        alert(`${activeModal} settings saved.`);
         setActiveModal(null);
     };
 
@@ -52,8 +52,8 @@ export default function ReceptionistSettingsPage() {
             {/* Header Area */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Terminal Config</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Personal & hardware system parameters</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Reception Settings</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Personal preferences, alerts and devices.</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[9px] font-black text-text-muted uppercase tracking-widest px-3 py-1 border border-border bg-surface-alt">Firmware v2.4.0-Stable</span>
@@ -94,9 +94,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('autoPrint')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.autoPrint ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.autoPrint ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.autoPrint ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.autoPrint ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                     <div className="flex items-center justify-between py-4">
@@ -106,9 +106,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('smsAuth')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.smsAuth ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.smsAuth ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.smsAuth ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.smsAuth ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                     <div className="flex items-center justify-between py-4">
@@ -118,9 +118,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('showCommission')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.showCommission ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.showCommission ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.showCommission ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.showCommission ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                 </div>
