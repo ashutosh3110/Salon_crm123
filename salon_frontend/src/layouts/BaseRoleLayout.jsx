@@ -22,7 +22,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
 
     return (
         <div
-            className="min-h-screen bg-white flex text-text transition-colors duration-300 admin-panel"
+            className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel"
             style={{ '--accent-color': activeAccentColor }}
         >
             {/* Global sharp-edge override for entire panel */}
@@ -60,7 +60,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             {/* Main Content */}
             <div className={`flex-1 flex flex-col transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[68px]' : 'lg:ml-64'}`}>
                 {/* Top Bar */}
-                <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 lg:px-6 gap-3">
+                <header className="sticky top-0 z-30 h-16 bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 lg:px-6 gap-3">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setMobileOpen(true)}
@@ -88,7 +88,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         {/* Notifications */}
                         <button className="relative w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40">
                             <Bell className="w-5 h-5 text-text-secondary" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary ring-2 ring-white dark:ring-surface" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary ring-2 ring-background dark:ring-surface" />
                         </button>
 
                         {/* User Profile */}
@@ -105,10 +105,10 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-4 lg:p-6 overflow-y-auto animate-reveal">
+                <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
                     <Outlet />
                 </main>
             </div>
-        </div>
+        </div >
     );
 }
