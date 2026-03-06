@@ -17,21 +17,21 @@ export default function StockIn() {
                 <div className="flex gap-4 p-1 bg-surface-alt rounded-xl border border-border">
                     <button
                         onClick={() => setView('list')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'list' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'list' ? 'bg-surface text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
                     >
                         <History className="w-3.5 h-3.5" />
                         Inward History
                     </button>
                     <button
                         onClick={() => setView('form')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'form' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'form' ? 'bg-surface text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
                     >
                         <Plus className="w-3.5 h-3.5" />
                         New Stock In (Purchase)
                     </button>
                 </div>
                 {view === 'list' && (
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg text-[10px] font-bold text-text-muted uppercase tracking-wider hover:bg-surface transition-all">
+                    <button className="flex items-center gap-2 px-4 py-2 bg-surface border border-border rounded-lg text-[10px] font-bold text-text-muted uppercase tracking-wider hover:bg-surface-alt transition-all">
                         <Download className="w-3.5 h-3.5" />
                         Download Log
                     </button>
@@ -39,7 +39,7 @@ export default function StockIn() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar bg-white">
+            <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
                 {view === 'list' ? <StockInHistory /> : <StockInForm onCancel={() => setView('list')} />}
             </div>
         </div>
@@ -76,7 +76,7 @@ function StockInHistory() {
                                 <span className="font-medium text-text-secondary text-sm">{entry.product}</span>
                             </td>
                             <td className="px-8 py-5">
-                                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-lg border border-emerald-100">
+                                <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-lg border border-emerald-100 dark:border-emerald-900">
                                     +{entry.quantity} UNIT
                                 </span>
                             </td>
@@ -204,7 +204,7 @@ function StockInForm({ onCancel }) {
                     >
                         Cancel
                     </button>
-                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active">
+                    <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active">
                         <Send className="w-4 h-4" />
                         Confirm Entry
                     </button>

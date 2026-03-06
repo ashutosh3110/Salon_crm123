@@ -269,23 +269,23 @@ export default function DashboardPage() {
                 <div className="bg-surface rounded-none border border-border shadow-sm p-5 space-y-5 text-left font-black">
                     <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Quick Operations</h3>
                     <div className="grid grid-cols-2 gap-2.5">
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Calendar className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Booking</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Users className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Staff</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <TrendingUp className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sales</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Settings className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Settings</span>
                         </button>
-                        <Link to="/admin/digital-presence" className="p-5 rounded-none bg-primary/5 hover:bg-primary text-primary hover:text-white transition-all border border-primary/20 hover:border-primary flex flex-col items-center gap-3 group shadow-sm col-span-2">
+                        <Link to="/admin/digital-presence" className="p-5 rounded-none bg-primary/5 hover:bg-primary text-primary hover:text-primary-foreground transition-all border border-primary/20 hover:border-primary flex flex-col items-center gap-3 group shadow-sm col-span-2">
                             <Globe className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             <div className="text-center">
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] block">Digital Presence</span>
@@ -294,7 +294,7 @@ export default function DashboardPage() {
                         </Link>
                     </div>
 
-                    <div className="p-6 rounded-none bg-primary text-white space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">
+                    <div className="p-6 rounded-none bg-primary text-primary-foreground space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">
                         <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
                             <TrendingUp className="w-20 h-20" />
                         </div>

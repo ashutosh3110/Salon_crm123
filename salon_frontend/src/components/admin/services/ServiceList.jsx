@@ -33,13 +33,13 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
     return (
         <div className="space-y-6">
             {/* Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-border shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
                         placeholder="Search services by name..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-surface-alt text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -47,7 +47,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
 
                 <div className="flex items-center gap-3">
                     <select
-                        className="px-3 py-2 rounded-xl text-sm font-bold text-text-secondary bg-slate-50 border border-border focus:outline-none"
+                        className="px-3 py-2 rounded-xl text-sm font-bold text-text-secondary bg-surface-alt border border-border focus:outline-none"
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
                     >
@@ -56,20 +56,19 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
 
                     <button
                         onClick={() => navigate('/admin/services/new')}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all scale-active"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all scale-active font-black"
                     >
-                        <Plus className="w-4 h-4" />
-                        Add Service
+                        <Plus className="w-4 h-4" /> Add Service
                     </button>
                 </div>
             </div>
 
             {/* Service Table */}
-            <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px]">
+            <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px]">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50/50 border-b border-border">
+                            <tr className="bg-surface-alt/50 border-b border-border">
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Service Name</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Category</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
@@ -92,7 +91,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                 </tr>
                             ) : (
                                 filteredServices.map((service) => (
-                                    <tr key={service.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <tr key={service.id} className="hover:bg-surface-alt/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
@@ -102,7 +101,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[10px] font-bold uppercase tracking-tighter">
+                                            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-tighter">
                                                 <Tag className="w-2.5 h-2.5" />
                                                 {service.category}
                                             </div>
@@ -130,8 +129,8 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                 <button
                                                     onClick={() => onToggleStatus?.(service.id)}
                                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all active:scale-90 ${service.status === 'active'
-                                                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100'
-                                                        : 'bg-rose-50 text-rose-600 border border-rose-100 hover:bg-rose-100'
+                                                        ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
+                                                        : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900 hover:bg-rose-100 dark:hover:bg-rose-900/50'
                                                         }`}>
                                                     <div className={`w-1.5 h-1.5 rounded-full ${service.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                                     {service.status}
@@ -157,7 +156,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                 >
                                                     <EyeOff className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-text transition-all">
+                                                <button className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all">
                                                     <MoreVertical className="w-4 h-4" />
                                                 </button>
                                             </div>

@@ -158,7 +158,7 @@ export default function POSSettingsPage() {
                                 key={mode}
                                 onClick={() => handleToggleMode(mode)}
                                 className={`px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${settings.allowedModes.includes(mode)
-                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                    ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
                                     : 'bg-surface border-border text-text-muted hover:bg-surface-alt'
                                     }`}
                             >
@@ -184,11 +184,11 @@ export default function POSSettingsPage() {
                 </div>
             </div>
 
-            <div className="bg-red-500/5 border border-red-500/20 p-6 rounded-none flex items-start gap-5">
-                <AlertTriangle className="w-6 h-6 text-red-600 shrink-0 mt-1" />
+            <div className="bg-red-500/5 border border-red-500/20 dark:bg-red-950/20 dark:border-red-900/50 p-6 rounded-none flex items-start gap-5">
+                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-500 shrink-0 mt-1" />
                 <div>
-                    <p className="text-[11px] font-black text-red-800 uppercase tracking-widest">CRITICAL: NETWORK-WIDE SYNC</p>
-                    <p className="text-[10px] text-red-700/70 leading-relaxed uppercase tracking-wider mt-1">Committing these parameters will immediately broadcast configuration updates to all active terminal nodes. Verify compliance metrics before execution.</p>
+                    <p className="text-[11px] font-black text-red-800 dark:text-red-500 uppercase tracking-widest">CRITICAL: NETWORK-WIDE SYNC</p>
+                    <p className="text-[10px] text-red-700/70 dark:text-red-400/70 leading-relaxed uppercase tracking-wider mt-1">Committing these parameters will immediately broadcast configuration updates to all active terminal nodes. Verify compliance metrics before execution.</p>
                 </div>
             </div>
 
@@ -196,7 +196,7 @@ export default function POSSettingsPage() {
                 <button className="px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">FACTORY RESET</button>
                 <button
                     onClick={() => alert('Configuration broadcast successful!')}
-                    className="flex items-center gap-4 px-12 py-4 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/30 hover:bg-primary-dark transition-all transform hover:-translate-y-1"
+                    className="flex items-center gap-4 px-12 py-4 bg-primary text-primary-foreground rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/30 hover:brightness-110 active:scale-95 transition-all transform hover:-translate-y-1"
                 >
                     <Save className="w-4 h-4" /> Commit System Params
                 </button>

@@ -91,7 +91,7 @@ export default function OutletDetailPage() {
                 </div>
                 <button
                     onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Edit className="w-3.5 h-3.5" /> RECONFIG PROPERTY
                 </button>
@@ -120,7 +120,7 @@ export default function OutletDetailPage() {
                         key={tab}
                         onClick={() => setActiveTab(tab)}
                         className={`px-8 py-2.5 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab
-                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                             : 'text-text-muted hover:bg-surface'
                             }`}
                     >
@@ -230,10 +230,10 @@ export default function OutletDetailPage() {
                             <h4 className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Protocol Override</h4>
                             <p className="text-xl font-black mb-6 uppercase tracking-tight">Management Grid</p>
                             <div className="space-y-3">
-                                <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-white/10">
+                                <button className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10">
                                     <Users className="w-4 h-4" /> Personnel Roster
                                 </button>
-                                <button className="w-full py-4 bg-white/10 hover:bg-white/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-white/10">
+                                <button className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10">
                                     <Calendar className="w-4 h-4" /> Timeline Control
                                 </button>
                             </div>

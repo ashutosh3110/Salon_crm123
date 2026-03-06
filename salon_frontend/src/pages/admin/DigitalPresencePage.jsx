@@ -19,8 +19,8 @@ function TabButton({ active, label, onClick }) {
         <button
             onClick={onClick}
             className={`flex items-center gap-2 px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border-2 ${active
-                ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                : 'bg-white border-border text-text-muted hover:border-primary/30 hover:text-primary'
+                ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
+                : 'bg-surface border-border text-text-muted hover:border-primary/30 hover:text-primary'
                 }`}
         >
             {label}
@@ -223,7 +223,7 @@ export default function DigitalPresence() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-black hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95 disabled:opacity-50 leading-none"
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-black hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95 disabled:opacity-50 leading-none"
                     >
                         {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                         SAVE CHANGES
@@ -248,7 +248,7 @@ export default function DigitalPresence() {
                     {activeTab === 'builder' && (
                         <div className="grid lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-2 space-y-6">
-                                <div className="bg-white rounded-3xl border border-border p-8 shadow-sm">
+                                <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm">
                                     <div className="space-y-4 mb-8 pb-8 border-b border-border">
                                         <div>
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 block">Catalogue Title</label>
@@ -275,7 +275,7 @@ export default function DigitalPresence() {
                                                     <button
                                                         onClick={() => setCurrentPageIndex(idx)}
                                                         className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border-2 ${currentPageIndex === idx
-                                                            ? 'bg-primary border-primary text-white'
+                                                            ? 'bg-primary border-primary text-primary-foreground'
                                                             : 'bg-surface border-border text-text-muted hover:border-primary/30'
                                                             }`}
                                                     >
@@ -305,7 +305,7 @@ export default function DigitalPresence() {
                                                     newPages[currentPageIndex].title = e.target.value;
                                                     setCatalogue({ ...catalogue, pages: newPages });
                                                 }}
-                                                className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
+                                                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
                                             />
                                         </div>
                                         <div>
@@ -317,7 +317,7 @@ export default function DigitalPresence() {
                                                     newPages[currentPageIndex].icon = e.target.value;
                                                     setCatalogue({ ...catalogue, pages: newPages });
                                                 }}
-                                                className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
+                                                className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
                                             >
                                                 <option value="Layout">Layout</option>
                                                 <option value="Scissors">Scissors</option>
@@ -356,7 +356,7 @@ export default function DigitalPresence() {
 
                                                 <div className="space-y-2">
                                                     {section.items.map((item, itemIdx) => (
-                                                        <div key={itemIdx} className="flex items-center justify-between p-3 bg-white rounded-xl border border-border/50 shadow-sm transition-all hover:border-primary/30">
+                                                        <div key={itemIdx} className="flex items-center justify-between p-3 bg-surface rounded-xl border border-border/50 shadow-sm transition-all hover:border-primary/30">
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
                                                                     <Layout className="w-4 h-4" />
@@ -385,7 +385,7 @@ export default function DigitalPresence() {
                             </div>
 
                             <div className="space-y-6">
-                                <div className="bg-white rounded-3xl border border-border p-6 shadow-sm sticky top-6">
+                                <div className="bg-surface rounded-3xl border border-border p-6 shadow-sm sticky top-6">
                                     <div className="flex items-center justify-between mb-6">
                                         <h3 className="text-xs font-black text-text uppercase tracking-widest">Live Preview</h3>
                                         <div className="flex items-center gap-1.5">
@@ -410,7 +410,7 @@ export default function DigitalPresence() {
                                                         <button
                                                             key={idx}
                                                             onClick={() => setCurrentPageIndex(idx)}
-                                                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${currentPageIndex === idx ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}
+                                                            className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${currentPageIndex === idx ? 'bg-primary text-primary-foreground' : 'bg-surface text-text-muted'}`}
                                                         >
                                                             {p.title}
                                                         </button>
@@ -433,7 +433,7 @@ export default function DigitalPresence() {
                                                     ))}
                                                 </div>
                                                 <div className="mt-8 mb-4 w-full px-4">
-                                                    <div className="w-full py-2.5 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest text-center">BOOK APPOINTMENT</div>
+                                                    <div className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest text-center">BOOK APPOINTMENT</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -449,7 +449,7 @@ export default function DigitalPresence() {
                             <SectionHeader title="Your Shareable Link" desc="This link is public and can be accessed by anyone to browse your services." icon={Globe} />
                             <div className="grid md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
-                                    <div className="bg-white rounded-3xl border border-border p-8 shadow-sm">
+                                    <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 block">Public URL Slug</label>
                                         <div className="flex gap-2">
                                             <div className="flex-1 bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold flex items-center gap-2 overflow-hidden">
@@ -461,23 +461,23 @@ export default function DigitalPresence() {
                                                     className="bg-transparent w-full focus:outline-none"
                                                 />
                                             </div>
-                                            <button onClick={() => copyToClipboard(publicUrl)} className="w-12 h-12 rounded-xl bg-white border border-border flex items-center justify-center text-text-muted hover:border-primary hover:text-primary transition-all">
+                                            <button onClick={() => copyToClipboard(publicUrl)} className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center text-text-muted hover:border-primary hover:text-primary transition-all">
                                                 {copyStatus ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <Copy className="w-5 h-5" />}
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="bg-white rounded-3xl border border-border p-8 shadow-sm flex items-center justify-between">
+                                    <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm flex items-center justify-between">
                                         <div>
                                             <h4 className="text-sm font-black text-text uppercase tracking-tight">Public Visibility</h4>
                                             <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">Allow anyone to view this menu</p>
                                         </div>
-                                        <button onClick={togglePublish} className={`relative w-14 h-7 rounded-full transition-colors ${catalogue.isPublished ? 'bg-emerald-500' : 'bg-slate-200'}`}>
+                                        <button onClick={togglePublish} className={`relative w-14 h-7 rounded-full transition-colors ${catalogue.isPublished ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
                                             <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${catalogue.isPublished ? 'translate-x-7' : 'translate-x-0'}`} />
                                         </button>
                                     </div>
                                 </div>
-                                <div className="bg-white rounded-3xl border border-border p-8 shadow-sm flex flex-col items-center text-center">
-                                    <div className="w-48 h-48 p-4 border-2 border-primary/20 rounded-3xl flex items-center justify-center mb-6">
+                                <div className="bg-surface rounded-3xl border border-border p-8 shadow-sm flex flex-col items-center text-center">
+                                    <div className="w-48 h-48 p-4 border-2 border-primary/20 rounded-3xl flex items-center justify-center mb-6 bg-white">
                                         <QRCodeSVG value={publicUrl} size={150} />
                                     </div>
                                     <button
@@ -497,7 +497,7 @@ export default function DigitalPresence() {
                                             };
                                             img.src = "data:image/svg+xml;base64," + btoa(svgData);
                                         }}
-                                        className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                                        className="px-6 py-2.5 bg-slate-900 text-white dark:bg-slate-800 dark:text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
                                     >
                                         <QrCode className="w-3.5 h-3.5" /> DOWNLOAD PNG
                                     </button>
@@ -511,16 +511,16 @@ export default function DigitalPresence() {
                             <SectionHeader title="Social Integration" desc="Boost your reach by sharing your catalogue across all social platforms." icon={Share2} />
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[
-                                    { label: 'WhatsApp', icon: MessageSquare, color: 'bg-emerald-50 text-emerald-600', btn: 'bg-emerald-600', action: () => window.open(`https://wa.me/?text=Check out our catalogue: ${publicUrl}`, '_blank') },
-                                    { label: 'Instagram', icon: Instagram, color: 'bg-rose-50 text-rose-600', btn: 'bg-rose-600', action: () => copyToClipboard(publicUrl) },
-                                    { label: 'Facebook', icon: Facebook, color: 'bg-blue-50 text-blue-600', btn: 'bg-blue-600', action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${publicUrl}`, '_blank') },
+                                    { label: 'WhatsApp', icon: MessageSquare, color: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400', btn: 'bg-emerald-600', action: () => window.open(`https://wa.me/?text=Check out our catalogue: ${publicUrl}`, '_blank') },
+                                    { label: 'Instagram', icon: Instagram, color: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400', btn: 'bg-rose-600', action: () => copyToClipboard(publicUrl) },
+                                    { label: 'Facebook', icon: Facebook, color: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400', btn: 'bg-blue-600', action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${publicUrl}`, '_blank') },
                                 ].map(s => (
-                                    <div key={s.label} className="bg-white rounded-3xl border border-border p-6 shadow-sm hover:shadow-xl transition-all group text-center">
+                                    <div key={s.label} className="bg-surface rounded-3xl border border-border p-6 shadow-sm hover:shadow-xl transition-all group text-center">
                                         <div className={`w-14 h-14 rounded-2xl ${s.color} flex items-center justify-center mb-6 mx-auto group-hover:scale-110 transition-transform`}>
                                             <s.icon className="w-7 h-7" />
                                         </div>
                                         <h4 className="text-sm font-black text-text uppercase tracking-tight mb-4">{s.label}</h4>
-                                        <button onClick={s.action} className={`w-full py-3 ${s.btn} text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg`}>
+                                        <button onClick={s.action} className={`w-full py-3 ${s.btn} text-primary-foreground rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg`}>
                                             {s.label === 'Instagram' ? 'COPY LINK' : `SHARE TO ${s.label.toUpperCase()}`}
                                         </button>
                                     </div>
@@ -539,7 +539,7 @@ export default function DigitalPresence() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[80vh]"
+                            className="bg-surface rounded-[2rem] border border-border w-full max-w-lg shadow-2xl relative overflow-hidden flex flex-col max-h-[80vh]"
                         >
                             <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
                                 <h3 className="text-lg font-black text-text uppercase tracking-tight">Pick a Service</h3>
@@ -552,7 +552,7 @@ export default function DigitalPresence() {
                                     <button
                                         key={s._id}
                                         onClick={() => addItemToSection(activeSectionIndex, s)}
-                                        className="w-full flex items-center justify-between p-4 bg-white border border-border rounded-xl hover:border-primary/30 transition-all text-left"
+                                        className="w-full flex items-center justify-between p-4 bg-surface border border-border rounded-xl hover:border-primary/30 transition-all text-left"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary"><Layout className="w-5 h-5" /></div>

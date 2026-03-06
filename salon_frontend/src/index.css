@@ -87,14 +87,21 @@
 
   .dark {
     --color-background: #0B0F1A;
-    --color-surface: #151B2B;
-    --color-surface-alt: #1E2538;
-    --color-text: #F1F5F9;
-    --color-text-secondary: #94A3B8;
-    --color-text-muted: #64748B;
-    --color-border: #2D364D;
-    --color-secondary: #151B2B;
+    --color-surface: #121826;
+    --color-surface-alt: #1B2233;
+    --color-text: #F8FAFC;
+    --color-text-secondary: #CBD5E1;
+    --color-text-muted: #94A3B8;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-secondary: #121826;
     --color-secondary-dark: #0B0F1A;
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --border: oklch(1 0 0 / 10%);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.145 0 0);
   }
 
   .new-dark-theme {
@@ -317,6 +324,10 @@
     border-radius: 10px;
   }
 
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #D1D5DB;
   }
@@ -361,9 +372,20 @@
 }
 
 @keyframes scanline {
-  0%   { top: 8px; opacity: 1; }
-  50%  { top: calc(100% - 8px); opacity: 1; }
-  100% { top: 8px; opacity: 1; }
+  0% {
+    top: 8px;
+    opacity: 1;
+  }
+
+  50% {
+    top: calc(100% - 8px);
+    opacity: 1;
+  }
+
+  100% {
+    top: 8px;
+    opacity: 1;
+  }
 }
 
 :root {

@@ -86,10 +86,9 @@ export default function CustomersPage({ tab = 'directory' }) {
                         </button>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                            className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                         >
-                            <UserPlus className="w-3.5 h-3.5" />
-                            Add Customer
+                            <UserPlus className="w-4 h-4" /> Add Customer
                         </button>
                     </div>
                 </div>
@@ -131,8 +130,8 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* Add Customer Modal */}
                 {showAddModal && (
-                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                        <div className="bg-white rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[200] flex items-start justify-center p-4 pt-20 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                        <div className="bg-surface rounded-none w-full max-w-lg p-12 shadow-2xl relative overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
                             <div className="flex flex-col items-center text-center mb-10">
                                 <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
                                     <UserPlus className="w-10 h-10" />
@@ -151,7 +150,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             placeholder="e.g. ADITYA_SHARMA"
                                             value={newCustomerForm.name}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
+                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -162,7 +161,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             placeholder="+91 00000 00000"
                                             value={newCustomerForm.phone}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-5">
@@ -172,7 +171,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 type="date"
                                                 value={newCustomerForm.dob}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, dob: e.target.value })}
-                                                className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                                className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -181,7 +180,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 type="date"
                                                 value={newCustomerForm.anniversary}
                                                 onChange={(e) => setNewCustomerForm({ ...newCustomerForm, anniversary: e.target.value })}
-                                                className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all"
+                                                className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                             />
                                         </div>
                                     </div>
@@ -190,7 +189,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         <select
                                             value={newCustomerForm.category}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, category: e.target.value })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase tracking-widest"
+                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase tracking-widest"
                                         >
                                             <option value="Regular">Regular</option>
                                             <option value="Premium">Premium</option>
@@ -204,7 +203,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             placeholder="STREET, AREA, CITY, PIN"
                                             value={newCustomerForm.address}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
-                                            className="w-full px-6 py-3 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase h-24 resize-none"
+                                            className="w-full px-6 py-3 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase h-24 resize-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -214,14 +213,14 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             placeholder="ANY SPECIAL REQUIREMENTS..."
                                             value={newCustomerForm.remarks}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, remarks: e.target.value })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-white focus:border-primary transition-all uppercase"
+                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex gap-4 pt-8">
-                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all active:scale-[0.98]">ABORT</button>
-                                    <button type="submit" className="flex-1 bg-text text-white py-5 rounded-none shadow-2xl shadow-text/20 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all active:scale-[0.98]">INITIALIZE</button>
+                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all active:scale-[0.98]">ABORT</button>
+                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-5 rounded-none shadow-2xl shadow-primary/20 text-[11px] font-black uppercase tracking-[0.3em] hover:brightness-110 active:scale-[0.98] transition-all">INITIALIZE</button>
                                 </div>
                             </form>
                         </div>
@@ -231,10 +230,10 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* Manual WhatsApp Message Modal */}
             {whatsappModal.isOpen && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white rounded-none w-full max-w-lg p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface rounded-none w-full max-w-lg p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
-                            <div className="w-12 h-12 bg-emerald-500 text-white flex items-center justify-center font-black">
+                            <div className="w-12 h-12 bg-emerald-500 text-primary-foreground flex items-center justify-center font-black">
                                 <MessageSquare className="w-6 h-6" />
                             </div>
                             <div>
@@ -248,7 +247,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                             <textarea
                                 value={whatsappModal.message}
                                 onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
-                                className="w-full h-40 px-5 py-4 bg-surface border border-border text-xs font-bold focus:bg-white focus:border-emerald-500 outline-none transition-all resize-none"
+                                className="w-full h-40 px-5 py-4 bg-surface-alt border border-border text-xs font-bold focus:bg-surface focus:border-emerald-500 outline-none transition-all resize-none"
                                 placeholder="Write your personalized message here..."
                             />
                         </div>
@@ -266,7 +265,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappModal.message)}`, '_blank');
                                     setWhatsappModal({ ...whatsappModal, isOpen: false });
                                 }}
-                                className="flex-1 bg-emerald-500 text-white py-4 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20"
+                                className="flex-1 bg-emerald-500 text-primary-foreground py-4 text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
                             >
                                 DISPATCH
                             </button>
@@ -321,9 +320,9 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                     const isAnniv = anniversary && anniversary.getMonth() === currentMonth && anniversary.getDate() === currentDate;
 
                     return (
-                        <div key={c._id} className={`flex-shrink-0 min-w-[300px] p-4 bg-white border ${isBday || isAnniv ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border'} flex items-center justify-between group hover:border-primary transition-all`}>
+                        <div key={c._id} className={`flex-shrink-0 min-w-[300px] p-4 bg-surface border ${isBday || isAnniv ? 'border-primary shadow-lg ring-1 ring-primary/20' : 'border-border'} flex items-center justify-between group hover:border-primary transition-all`}>
                             <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-none ${isBday || isAnniv ? 'bg-primary text-white' : 'bg-primary/10 text-primary'} flex items-center justify-center font-black text-sm`}>
+                                <div className={`w-10 h-10 rounded-none ${isBday || isAnniv ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'} flex items-center justify-center font-black text-sm`}>
                                     {c.name.charAt(0)}
                                 </div>
                                 <div>
@@ -339,13 +338,13 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => prepareWhatsAppWish(c, isBday || (birthday && !isAnniv) ? 'birthday' : 'anniversary')}
-                                    className="p-2.5 bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 group/wa relative"
+                                    className="p-2.5 bg-emerald-500 text-primary-foreground hover:brightness-110 transition-all shadow-lg shadow-emerald-500/20 group/wa relative"
                                     title="Compose WhatsApp Wish"
                                 >
                                     <MessageSquare className="w-3.5 h-3.5" />
-                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-text text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover/wa:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">Edit & Send</span>
+                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface border border-border text-text text-[8px] font-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover/wa:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">Edit & Send</span>
                                 </button>
-                                <button className="p-2.5 hover:bg-primary hover:text-white text-primary transition-all border border-primary/10">
+                                <button className="p-2.5 hover:bg-primary hover:text-primary-foreground text-primary transition-all border border-primary/10">
                                     <ChevronRight className="w-3.5 h-3.5" />
                                 </button>
                             </div>
@@ -359,10 +358,10 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
 
 function KPICard({ title, value, icon: Icon, color, trend }) {
     const colors = {
-        blue: 'bg-primary/5 text-primary border-primary/10',
-        purple: 'bg-purple-50 text-purple-600 border-purple-100',
-        green: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-        red: 'bg-rose-50 text-rose-600 border-rose-100'
+        blue: 'bg-primary/5 dark:bg-primary/10 text-primary border-primary/10',
+        purple: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/30',
+        green: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30',
+        red: 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/30'
     };
 
     return (
@@ -373,7 +372,7 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
                 <div className={`p-2.5 rounded-none border ${colors[color]} group-hover:scale-110 transition-transform`}>
                     <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{trend}</span>
+                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{trend}</span>
             </div>
             <div className="space-y-1">
                 <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">{title}</h3>
@@ -464,7 +463,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                         {filtered.map((customer, index) => (
                             <tr
                                 key={customer._id}
-                                className="hover:bg-slate-50/50 transition-colors group cursor-pointer border-transparent animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                className="hover:bg-surface-alt/50 transition-colors group cursor-pointer border-transparent animate-in fade-in slide-in-from-bottom-2 duration-300"
                                 style={{ animationDelay: `${index * 50}ms` }}
                                 onClick={() => onCustomerClick(customer)}
                             >

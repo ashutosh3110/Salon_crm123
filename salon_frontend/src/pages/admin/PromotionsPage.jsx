@@ -13,7 +13,11 @@ import {
 } from 'recharts';
 
 const typeLabels = { flat: 'Flat ₹ Off', percentage: '% Off', combo: 'Combo Deal' };
-const typeColors = { flat: 'bg-green-50 text-green-600', percentage: 'bg-blue-50 text-blue-600', combo: 'bg-purple-50 text-purple-600' };
+const typeColors = {
+    flat: 'bg-green-50 dark:bg-emerald-900/20 text-green-600 dark:text-emerald-400',
+    percentage: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
+    combo: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
+};
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function PromotionsPage() {
@@ -70,7 +74,7 @@ export default function PromotionsPage() {
                 </div>
                 <button
                     onClick={() => { setEditing(null); setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true }); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-white border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add Protocol
                 </button>
@@ -107,7 +111,7 @@ export default function PromotionsPage() {
                             { label: 'Total Volume', value: promos.length, icon: Tag, color: 'violet' }
                         ].map((stat, i) => (
                             <div key={i} className="bg-surface p-6 rounded-none border border-border flex items-center gap-6 group hover:shadow-xl transition-all text-left">
-                                <div className={`p-4 rounded-none bg-${stat.color}-500/5 text-${stat.color}-500 border border-${stat.color}-500/10 group-hover:scale-110 transition-transform`}>
+                                <div className={`p-4 rounded-none bg-${stat.color}-500/10 dark:bg-${stat.color}-900/40 text-${stat.color}-500 dark:text-${stat.color}-400 border border-${stat.color}-500/20 dark:border-${stat.color}-500/10 group-hover:scale-110 transition-transform`}>
                                     <stat.icon className="w-6 h-6" />
                                 </div>
                                 <div className="text-left leading-none font-black">
@@ -182,12 +186,12 @@ export default function PromotionsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Protocol Identifier *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. ALPHA_FLASH_20" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. ALPHA_FLASH_20" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Logic Variant *</label>
-                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
                                         <option value="percentage">Percentage</option>
                                         <option value="flat">Flat Amount</option>
                                         <option value="combo">Combo</option>
@@ -195,26 +199,26 @@ export default function PromotionsPage() {
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Intensity Vector *</label>
-                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="00" />
+                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="00" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left font-black">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Lock-In Pulse</label>
-                                    <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
+                                    <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">End Pulse</label>
-                                    <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
+                                    <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
                                 </div>
                             </div>
                             <div className="space-y-3 text-left font-black">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Max Signal Pulses</label>
-                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="Unlimited if null" />
+                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="Unlimited if null" />
                             </div>
                             <div className="flex gap-6 pt-10 font-black">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editing ? 'Commit Override' : 'Deploy Protocol'}</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editing ? 'Commit Override' : 'Deploy Protocol'}</button>
                             </div>
                         </form>
                     </div>

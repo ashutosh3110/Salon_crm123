@@ -24,20 +24,20 @@ const MOCK_TENANTS = [
 ];
 
 const planColors = {
-    free: 'bg-slate-100 text-slate-600 border-slate-200',
-    basic: 'bg-blue-50  text-blue-600  border-blue-200',
+    free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+    basic: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
     pro: 'bg-primary/10 text-primary border-primary/25',
     premium: 'bg-primary/10 text-primary border-primary/25',
-    enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
+    enterprise: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterprise: Crown };
 
 const STATUS_CFG = {
-    active: { label: 'Active', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },
-    trial: { label: 'Trial', cls: 'bg-blue-50   text-blue-600   border-blue-200', icon: Clock },
-    expired: { label: 'Expired', cls: 'bg-orange-50 text-orange-600 border-orange-200', icon: AlertTriangle },
-    suspended: { label: 'Suspended', cls: 'bg-red-50    text-red-600    border-red-200', icon: XCircle },
-    inactive: { label: 'Inactive', cls: 'bg-slate-100 text-slate-500  border-slate-200', icon: null },
+    active: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
+    trial: { label: 'Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
+    expired: { label: 'Expired', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
+    suspended: { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
+    inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
 };
 
 const FILTER_TABS = [
@@ -77,13 +77,13 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
         <div ref={ref} className="relative inline-block text-left">
             <button
                 onClick={() => setOpen(!open)}
-                className={`p-2 rounded-xl transition-all duration-200 ${open ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-95' : 'bg-white border border-border text-text-muted hover:text-primary hover:border-primary/30 hover:shadow-md'}`}
+                className={`p-2 rounded-xl transition-all duration-200 ${open ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-95' : 'bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 hover:shadow-md'}`}
             >
                 <MoreVertical className="w-4 h-4" />
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-sm border border-border rounded-2xl shadow-2xl z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-200 origin-top-right ring-1 ring-black/5">
+                <div className="absolute right-0 mt-2 w-52 bg-surface border border-border rounded-2xl shadow-2xl z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-200 origin-top-right ring-1 ring-black/5">
                     <div className="px-3 py-2 border-b border-border/50 mb-1">
                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Salon Actions</p>
                     </div>
@@ -101,7 +101,7 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
                             </Link>
                         ) : (
                             <button key={a.label} onClick={a.onClick}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} m-1 rounded-xl`}>
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} dark:hover:bg-surface-alt m-1 rounded-xl`}>
                                 <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center shrink-0">
                                     <a.icon className="w-3.5 h-3.5" />
                                 </div>
@@ -121,7 +121,7 @@ function PlanChangeModal({ tenant, onClose, onSave }) {
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <div className="bg-white rounded-2xl border border-border w-full max-w-lg shadow-2xl relative overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-border w-full max-w-lg shadow-2xl relative overflow-hidden">
                 <div className="px-6 py-4 border-b border-border flex items-center justify-between">
                     <div>
                         <h3 className="font-bold text-text truncate max-w-[200px]">Upgrade {tenant.name}</h3>
@@ -181,12 +181,12 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm';
+    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-border rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="bg-surface border border-border rounded-2xl w-full max-w-xl shadow-2xl flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                     <div>
@@ -275,7 +275,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         Cancel
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name || !form.ownerName || !form.email}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
                         {saving ? 'Saving…' : mode === 'create' ? 'Create Salon' : 'Save Changes'}
                     </button>
                 </div>
@@ -381,12 +381,12 @@ export default function SATenantsPage() {
                             exportToExcel(tenants, 'Wapixo_Onboarded_Salons', 'Tenants');
                             showToast('Salons list exported as Excel!', 'info');
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
                     <button
                         onClick={() => setModal({ mode: 'create' })}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
                         <Plus className="w-4 h-4" /> Create Salon
                     </button>
                 </div>
@@ -398,8 +398,8 @@ export default function SATenantsPage() {
                     <button key={f.key}
                         onClick={() => setStatus(f.key)}
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${statusFilter === f.key
-                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                            : 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary'
+                            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                            : 'bg-surface text-text-secondary border-border hover:border-primary/30 hover:text-primary'
                             }`}>
                         <f.icon className="w-3.5 h-3.5" />
                         {f.label}
@@ -415,7 +415,7 @@ export default function SATenantsPage() {
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input type="text" value={search} onChange={e => setSearch(e.target.value)}
                         placeholder="Search by name, owner, city, email…"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" />
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" />
                 </div>
                 <CustomDropdown
                     value={planFilter}
@@ -432,7 +432,7 @@ export default function SATenantsPage() {
             </div>
 
             {/* ── Table ── */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
                 {filtered.length === 0 ? (
                     <div className="text-center py-20">
                         <Building2 className="w-12 h-12 text-text-muted mx-auto mb-3 opacity-40" />
@@ -459,7 +459,7 @@ export default function SATenantsPage() {
                                             {/* Salon */}
                                             <td className="px-4 py-3.5">
                                                 <Link to={`/superadmin/tenants/${t._id}`} className="flex items-center gap-3 group/link">
-                                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover/link:bg-primary group-hover/link:text-white transition-all">
+                                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-sm font-black text-primary shrink-0 group-hover/link:bg-primary group-hover/link:text-primary-foreground transition-all">
                                                         {t.name[0].toUpperCase()}
                                                     </div>
                                                     <div>

@@ -72,7 +72,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                         <DownloadCloud className="w-4 h-4" />
                         Export Ledger
                     </button>
-                    <button className="flex items-center gap-3 bg-primary text-white border border-primary px-10 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
+                    <button className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
                         <Calendar className="w-4 h-4" />
                         Protocol Period
                     </button>
@@ -161,7 +161,7 @@ function FinanceKPICard({ title, value, icon: Icon, color, trend }) {
         <div className="bg-surface p-7 rounded-none border border-border shadow-sm hover:shadow-2xl hover:translate-y-[-2px] transition-all group relative overflow-hidden text-left font-black">
             <div className={`absolute -right-4 -top-4 w-20 h-20 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10`} />
             <div className="flex justify-between items-start mb-10 text-left font-black">
-                <div className={`p-3.5 rounded-none ${colors[color]} border border-current bg-background shadow-inner group-hover:scale-110 transition-transform`}>
+                <div className={`p-3.5 rounded-none ${colors[color]} border border-current bg-surface shadow-inner group-hover:scale-110 transition-transform`}>
                     <Icon className="w-5 h-5 font-black" />
                 </div>
                 <div className="flex flex-col items-end text-left font-black leading-none">

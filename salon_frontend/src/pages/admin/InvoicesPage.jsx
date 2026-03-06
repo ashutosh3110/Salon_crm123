@@ -3,10 +3,10 @@ import { Search, FileText, IndianRupee, Download } from 'lucide-react';
 import api from '../../services/api';
 
 const statusColors = {
-    paid: 'bg-green-50 text-green-600',
-    pending: 'bg-yellow-50 text-yellow-600',
-    partially_paid: 'bg-orange-50 text-orange-600',
-    refunded: 'bg-red-50 text-red-600',
+    paid: 'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400 border-green-100/50 dark:border-green-900/50',
+    pending: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-950/30 dark:text-yellow-400 border-yellow-100/50 dark:border-yellow-900/50',
+    partially_paid: 'bg-orange-50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-100/50 dark:border-orange-900/50',
+    refunded: 'bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 border-red-100/50 dark:border-red-900/50',
 };
 
 export default function InvoicesPage() {

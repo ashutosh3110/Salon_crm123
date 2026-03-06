@@ -279,7 +279,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                     onClick={() => setMobileOpen(false)}
                                                     className={({ isActive: isSubActive }) =>
                                                         `flex items-center justify-between py-2 px-4 rounded-full text-[11px] font-semibold transition-all duration-300 relative ${isSubActive
-                                                            ? 'bg-white text-text shadow-md border border-border/50 translate-x-1.5'
+                                                            ? 'bg-white dark:bg-surface text-text shadow-md border border-border/50 translate-x-1.5'
                                                             : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
                                                         }`
                                                     }

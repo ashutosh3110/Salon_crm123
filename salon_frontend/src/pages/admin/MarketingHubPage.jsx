@@ -138,7 +138,7 @@ export default function MarketingHub() {
                     </button>
                     <button
                         onClick={startCampaign}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-black hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95 leading-none"
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-black hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95 leading-none"
                     >
                         <Plus className="w-4 h-4" /> NEW CAMPAIGN
                     </button>
@@ -152,8 +152,8 @@ export default function MarketingHub() {
                         key={t.id}
                         onClick={() => setActiveTab(t.id)}
                         className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${activeTab === t.id
-                            ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                            : 'bg-white border-border text-text-muted hover:border-primary/30 hover:text-primary'
+                            ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
+                            : 'bg-surface border-border text-text-muted hover:border-primary/30 hover:text-primary'
                             }`}
                     >
                         <t.icon className="w-3.5 h-3.5 shrink-0" />
