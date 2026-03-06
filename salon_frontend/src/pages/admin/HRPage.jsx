@@ -84,7 +84,7 @@ export default function HRPage({ tab = 'staff' }) {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60">Human Capital Management Matrix</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60">Manage staff, attendance, shifts and payroll.</p>
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@ export default function HRPage({ tab = 'staff' }) {
                                 }`}
                         >
                             <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-primary-foreground' : 'text-primary/60'}`} />
-                            <span className="hidden lg:inline">{t.label} Protocol</span>
+                            <span className="hidden lg:inline">{t.label}</span>
                             {tab === t.id && (
                                 <>
                                     <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-white/40" />

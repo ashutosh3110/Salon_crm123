@@ -249,7 +249,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         <div className="flex items-center gap-4 mt-3">
                             <label className="flex items-center gap-2 cursor-pointer select-none">
                                 <div onClick={() => set('popular', !form.popular)}
-                                    className={`w-10 h-5.5 rounded-full transition-colors relative flex items-center px-0.5 ${form.popular ? 'bg-primary' : 'bg-slate-200'}`}
+                                    className={`pill-toggle w-10 h-5.5 rounded-full transition-colors relative flex items-center px-0.5 ${form.popular ? 'bg-primary' : 'bg-slate-200'}`}
                                     style={{ height: '22px', width: '40px' }}>
                                     <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.popular ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                                 </div>
@@ -257,7 +257,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer select-none">
                                 <div onClick={() => set('active', !form.active)}
-                                    className={`relative flex items-center px-0.5 rounded-full transition-colors ${form.active ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                    className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.active ? 'bg-emerald-500' : 'bg-slate-200'}`}
                                     style={{ height: '22px', width: '40px' }}>
                                     <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.active ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                                 </div>
@@ -290,7 +290,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                         </div>
                                     </div>
                                     <div onClick={() => setFeature(f.key, !form.features[f.key])}
-                                        className={`relative flex items-center px-0.5 rounded-full transition-colors shrink-0 ${form.features[f.key] ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                        className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors shrink-0 ${form.features[f.key] ? 'bg-emerald-500' : 'bg-slate-200'}`}
                                         style={{ height: '22px', width: '40px' }}>
                                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.features[f.key] ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                                     </div>

@@ -64,8 +64,8 @@ export default function FinancePage({ tab = 'dashboard' }) {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Financial Architecture</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: capital_flow_v3.0 // liquidity_status_stable</p>
+                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Finances</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Track revenue, expenses and cash position at a glance.</p>
                 </div>
                 <div className="flex flex-wrap gap-4 text-left font-black">
                     <button className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
@@ -74,7 +74,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                     </button>
                     <button className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
                         <Calendar className="w-4 h-4" />
-                        Protocol Period
+                        Choose Period
                     </button>
                 </div>
             </div>
@@ -83,7 +83,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
                 <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
                     <FinanceKPICard title="Gross Inflow" value="₹12.45L" icon={TrendingUp} color="blue" trend="+12.5% MTD" />
-                    <FinanceKPICard title="Outflow Matrix" value="₹2.82L" icon={ArrowDownRight} color="rose" trend="8 SEQUENCES" />
+                    <FinanceKPICard title="Total Expenses" value="₹2.82L" icon={ArrowDownRight} color="rose" trend="Last 8 days" />
                     <FinanceKPICard title="Liability Load" value="₹84,200" icon={Users} color="orange" trend="3 OVERDUE" />
                     <FinanceKPICard title="Net Liquidity" value="₹9.63L" icon={Activity} color="emerald" trend="77% MARGIN" />
                 </div>

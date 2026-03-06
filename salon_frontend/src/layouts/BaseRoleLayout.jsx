@@ -25,13 +25,17 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel"
             style={{ '--accent-color': activeAccentColor }}
         >
-            {/* Global sharp-edge override for entire panel */}
+            {/* Global sharp-edge override for entire panel, with opt-out for pill toggles */}
             <style>{`
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
                     border-radius: 0 !important;
                     font-family: 'Open Sans', sans-serif;
+                }
+                .admin-panel .pill-toggle,
+                .admin-panel .pill-toggle * {
+                    border-radius: 9999px !important;
                 }
                 .admin-panel h1, 
                 .admin-panel h2, 

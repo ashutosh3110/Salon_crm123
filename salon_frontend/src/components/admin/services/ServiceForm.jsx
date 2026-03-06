@@ -187,7 +187,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                                 <p className="text-[10px] text-white/50 leading-relaxed mt-1 uppercase font-bold tracking-tighter">Define automatically calculated staff commissions</p>
                             </div>
                             <label className="flex items-center gap-3 cursor-pointer group/toggle mt-4">
-                                <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 relative ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
+                                <div className={`pill-toggle w-10 h-5 rounded-full p-1 transition-all duration-300 relative ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
                                     <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${formData.commissionApplicable ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </div>
                                 <span className={`text-[10px] font-bold uppercase tracking-widest ${formData.commissionApplicable ? 'text-white' : 'text-slate-500'}`}>Commission Applicable?</span>

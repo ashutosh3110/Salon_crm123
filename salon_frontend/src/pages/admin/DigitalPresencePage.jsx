@@ -471,7 +471,7 @@ export default function DigitalPresence() {
                                             <h4 className="text-sm font-black text-text uppercase tracking-tight">Public Visibility</h4>
                                             <p className="text-[10px] text-text-muted font-bold uppercase mt-0.5">Allow anyone to view this menu</p>
                                         </div>
-                                        <button onClick={togglePublish} className={`relative w-14 h-7 rounded-full transition-colors ${catalogue.isPublished ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                                        <button onClick={togglePublish} className={`pill-toggle relative w-14 h-7 rounded-full transition-colors ${catalogue.isPublished ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-800'}`}>
                                             <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform ${catalogue.isPublished ? 'translate-x-7' : 'translate-x-0'}`} />
                                         </button>
                                     </div>

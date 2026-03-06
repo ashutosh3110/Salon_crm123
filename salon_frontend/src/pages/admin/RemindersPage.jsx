@@ -189,8 +189,8 @@ export default function RemindersPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Smart Protocols</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Module :: reminder_system_v2.0 // auto_trigger</p>
+                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Reminders</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Automatically remind clients about important visits.</p>
                 </div>
             </div>
 
@@ -198,7 +198,7 @@ export default function RemindersPage() {
             <div className="flex items-center gap-3 overflow-x-auto pb-4 no-scrollbar">
                 <TabButton
                     active={activeTab === 'bridal'}
-                    label="Bridal Flow"
+                    label="Bridal Reminders"
                     icon={Sparkles}
                     onClick={() => setActiveTab('bridal')}
                 />
@@ -216,7 +216,7 @@ export default function RemindersPage() {
                 />
                 <TabButton
                     active={activeTab === 'social'}
-                    label="Social Logic"
+                    label="Social Sharing"
                     icon={Share2}
                     onClick={() => setActiveTab('social')}
                 />
@@ -235,8 +235,8 @@ export default function RemindersPage() {
                     {activeTab === 'bridal' && (
                         <div className="space-y-6">
                             <SectionHeader
-                                title="Bridal Protocols"
-                                desc="Automated sequence map for high-value wedding bookings"
+                                title="Bridal reminders"
+                                desc="Stay on top of wedding bookings with gentle follow-ups."
                                 icon={Sparkles}
                             />
 
