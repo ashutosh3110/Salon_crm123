@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, User } from 'lucide-react';
 
@@ -17,7 +18,7 @@ export default function AppLoginPage() {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
     const [name, setName] = useState('');
-    const [gender, setGender] = useState('');
+    const [selectedGender, setSelectedGender] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -25,6 +26,7 @@ export default function AppLoginPage() {
     const otpRefs = [useRef(), useRef(), useRef(), useRef()];
     const navigate = useNavigate();
     const { requestOtp, customerLogin, completeProfile } = useCustomerAuth();
+    const { setGender: setGlobalGender } = useGender();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -88,7 +90,17 @@ export default function AppLoginPage() {
         setLoading(true); setError('');
         try {
             const c = await customerLogin(phone, code);
-            if (c.isNewUser) goTo(3); else navigate('/app', { state: { justLoggedIn: true } });
+            // Skip profile completion if name and gender are already present
+            if (c.isNewUser && (!c.name || !c.gender)) {
+                if (c.name) setName(c.name);
+                if (c.gender) setSelectedGender(c.gender);
+                goTo(3);
+            } else {
+                if (c.gender) {
+                    setGlobalGender(c.gender === 'male' ? 'men' : 'women');
+                }
+                navigate('/app', { state: { justLoggedIn: true } });
+            }
         } catch (e) {
             setError(e.message || 'Invalid OTP');
             setOtp(['', '', '', '']);
@@ -100,7 +112,8 @@ export default function AppLoginPage() {
         if (!name.trim()) { setError('Please enter your name'); return; }
         setLoading(true); setError('');
         try {
-            await completeProfile({ name: name.trim(), gender });
+            await completeProfile({ name: name.trim(), gender: selectedGender });
+            if (selectedGender) setGlobalGender(selectedGender === 'male' ? 'men' : 'women');
             navigate('/app', { state: { justLoggedIn: true } });
         } catch (e) { setError(e.message || 'Something went wrong'); }
         finally { setLoading(false); }
@@ -454,25 +467,25 @@ export default function AppLoginPage() {
                                 <motion.div
                                     key={g.id}
                                     whileTap={{ scale: 0.96 }}
-                                    onClick={() => setGender(g.id)}
+                                    onClick={() => setSelectedGender(g.id)}
                                     style={{
                                         position: 'relative',
                                         height: '140px',
                                         borderRadius: '20px',
                                         overflow: 'hidden',
                                         cursor: 'pointer',
-                                        border: `2px solid ${gender === g.id ? '#C8956C' : 'transparent'}`,
+                                        border: `2px solid ${selectedGender === g.id ? '#C8956C' : 'transparent'}`,
                                         transition: 'all 0.3s ease',
-                                        boxShadow: gender === g.id ? '0 8px 20px rgba(200,149,108,0.2)' : 'none'
+                                        boxShadow: selectedGender === g.id ? '0 8px 20px rgba(200,149,108,0.2)' : 'none'
                                     }}
                                 >
-                                    <img src={g.img} alt={g.label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: gender === g.id ? 1 : 0.7 }} />
+                                    <img src={g.img} alt={g.label} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: selectedGender === g.id ? 1 : 0.7 }} />
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
                                     <div style={{ position: 'absolute', bottom: '12px', left: '12px' }}>
                                         <p style={{ fontSize: '8px', fontWeight: 800, textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '1px', letterSpacing: '0.05em' }}>Curation for</p>
                                         <p style={{ fontSize: '15px', fontWeight: 900, color: '#fff', fontFamily: "'Playfair Display', serif" }}>{g.label}</p>
                                     </div>
-                                    {gender === g.id && (
+                                    {selectedGender === g.id && (
                                         <div style={{ position: 'absolute', top: '8px', right: '8px', width: '20px', height: '20px', background: '#C8956C', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                             <span style={{ color: '#fff', fontSize: '10px' }}>✓</span>
                                         </div>
@@ -486,7 +499,7 @@ export default function AppLoginPage() {
                         <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={handleProfile}
-                            disabled={loading || !name.trim() || !gender}
+                            disabled={loading || !name.trim() || !selectedGender}
                             style={{
                                 ...S.btn,
                                 borderRadius: '16px',
@@ -495,7 +508,7 @@ export default function AppLoginPage() {
                                 letterSpacing: '0.12em',
                                 fontSize: '13px',
                                 fontWeight: 900,
-                                opacity: (loading || !name.trim() || !gender) ? 0.5 : 1
+                                opacity: (loading || !name.trim() || !selectedGender) ? 0.5 : 1
                             }}
                         >
                             {loading ? <Loader2 size={18} className="animate-spin" /> : 'Get Started'}

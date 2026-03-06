@@ -36,6 +36,17 @@ export function CustomerAuthProvider({ children }) {
             throw new Error('Invalid OTP');
         }
 
+        // Simulate backend checking for existing user by phone
+        const allUsers = JSON.parse(localStorage.getItem('all_registered_customers') || '{}');
+        const existingUser = allUsers[phone];
+
+        if (existingUser) {
+            return {
+                customer: { ...existingUser, isNewUser: false },
+                token: `customer-token-${Date.now()}`
+            };
+        }
+
         const mockCustomer = {
             _id: `cust-${Date.now()}`,
             name: '',
@@ -56,8 +67,16 @@ export function CustomerAuthProvider({ children }) {
     const completeProfile = async (profileData) => {
         // TODO: Replace with api.patch('/clients/:id', profileData)
         const updatedCustomer = { ...customer, ...profileData, isNewUser: false };
+
+        // Save to current user session
         localStorage.setItem('customer_user', JSON.stringify(updatedCustomer));
         setCustomer(updatedCustomer);
+
+        // Simulate backend persistence
+        const allUsers = JSON.parse(localStorage.getItem('all_registered_customers') || '{}');
+        allUsers[updatedCustomer.phone] = updatedCustomer;
+        localStorage.setItem('all_registered_customers', JSON.stringify(allUsers));
+
         return updatedCustomer;
     };
 
