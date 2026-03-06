@@ -9,11 +9,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
+import { MOCK_SERVICES } from '../../data/appMockData';
 import api from '../../services/api';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 
-function TabButton({ active, icon: Icon, label, onClick }) {
+function TabButton({ active, label, onClick }) {
     return (
         <button
             onClick={onClick}
@@ -22,18 +23,14 @@ function TabButton({ active, icon: Icon, label, onClick }) {
                 : 'bg-white border-border text-text-muted hover:border-primary/30 hover:text-primary'
                 }`}
         >
-            <Icon className="w-4 h-4" />
             {label}
         </button>
     );
 }
 
-function SectionHeader({ title, desc, icon: Icon }) {
+function SectionHeader({ title, desc }) {
     return (
         <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-                <Icon className="w-6 h-6" />
-            </div>
             <div>
                 <h2 className="text-xl font-black text-text tracking-tight uppercase">{title}</h2>
                 <p className="text-xs text-text-muted font-medium">{desc}</p>
@@ -70,18 +67,53 @@ export default function DigitalPresence() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [catalogueRes, servicesRes] = await Promise.all([
-                api.get('/catalogue'),
-                api.get('/services')
-            ]);
-            if (catalogueRes.data) {
-                setCatalogue(catalogueRes.data);
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const localCatalogue = localStorage.getItem('digital_catalogue');
+            if (localCatalogue) {
+                setCatalogue(JSON.parse(localCatalogue));
             } else {
-                setCatalogue(prev => ({ ...prev, slug: `salon-${Math.random().toString(36).substring(7)}` }));
+                setCatalogue(prev => ({
+                    ...prev,
+                    slug: `salon-${Math.random().toString(36).substring(7)}`,
+                    title: 'Our Premium Menu',
+                    description: 'Welcome to our salon. Browse our services below.',
+                    pages: [
+                        {
+                            title: 'Hair',
+                            slug: 'hair',
+                            icon: 'Scissors',
+                            sections: [
+                                {
+                                    title: 'Haircuts',
+                                    items: [
+                                        { type: 'service', refId: 'srv-001', displayName: 'Classic Haircut', price: 500, highlight: false },
+                                        { type: 'service', refId: 'srv-002', displayName: 'Hair Coloring', price: 2500, highlight: false }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: 'Skin',
+                            slug: 'skin',
+                            icon: 'Sparkles',
+                            sections: [
+                                {
+                                    title: 'Facials',
+                                    items: [
+                                        { type: 'service', refId: 'srv-005', displayName: 'Facial — Gold', price: 1800, highlight: false }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }));
             }
-            setServices(servicesRes.data.results || []);
+            setServices(MOCK_SERVICES);
         } catch (error) {
             console.error('Error fetching data:', error);
+            setServices(MOCK_SERVICES);
         } finally {
             setLoading(false);
         }
@@ -90,10 +122,12 @@ export default function DigitalPresence() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.post('/catalogue', catalogue);
-            alert('Catalogue saved successfully!');
+            // Simulate save delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+            localStorage.setItem('digital_catalogue', JSON.stringify(catalogue));
+            alert('Progress saved to browser storage!');
         } catch (error) {
-            alert('Error saving catalogue');
+            alert('Error saving locally');
         } finally {
             setSaving(false);
         }
@@ -101,12 +135,9 @@ export default function DigitalPresence() {
 
     const togglePublish = async () => {
         const newStatus = !catalogue.isPublished;
-        try {
-            await api.put('/catalogue/publish', { isPublished: newStatus });
-            setCatalogue(prev => ({ ...prev, isPublished: newStatus }));
-        } catch (error) {
-            alert('Error updating status');
-        }
+        const newCatalogue = { ...catalogue, isPublished: newStatus };
+        setCatalogue(newCatalogue);
+        localStorage.setItem('digital_catalogue', JSON.stringify(newCatalogue));
     };
 
     const addPage = () => {
@@ -201,9 +232,9 @@ export default function DigitalPresence() {
             </div>
 
             <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
-                <TabButton active={activeTab === 'builder'} icon={Palette} label="Catalogue Builder" onClick={() => setActiveTab('builder')} />
-                <TabButton active={activeTab === 'share'} icon={LinkIcon} label="Share & Link" onClick={() => setActiveTab('share')} />
-                <TabButton active={activeTab === 'social'} icon={Share2} label="Social Integration" onClick={() => setActiveTab('social')} />
+                <TabButton active={activeTab === 'builder'} label="Catalogue Builder" onClick={() => setActiveTab('builder')} />
+                <TabButton active={activeTab === 'share'} label="Share & Link" onClick={() => setActiveTab('share')} />
+                <TabButton active={activeTab === 'social'} label="Social Integration" onClick={() => setActiveTab('social')} />
             </div>
 
             <AnimatePresence mode="wait">

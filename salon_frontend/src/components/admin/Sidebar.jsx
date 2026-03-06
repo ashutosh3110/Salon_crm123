@@ -91,6 +91,18 @@ const menuItems = [
         roles: ['admin', 'manager', 'receptionist']
     },
     {
+        label: 'Inquiries',
+        icon: ClipboardList,
+        path: '/admin/inquiries',
+        roles: ['admin', 'manager', 'receptionist']
+    },
+    {
+        label: 'Reminders & Links',
+        icon: Bell,
+        path: '/admin/reminders',
+        roles: ['admin', 'manager']
+    },
+    {
         label: 'CRM',
         icon: Users,
         path: '/admin/crm',
