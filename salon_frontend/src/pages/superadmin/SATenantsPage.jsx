@@ -5,11 +5,46 @@ import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
     CheckCircle, EyeIcon, ArrowUpRight, Trash2, LogIn,
     ChevronDown, Filter, RefreshCw, MapPin, Users, Home,
-    Crown, Clock, AlertTriangle, XCircle, Layers,
+    Crown, Clock, AlertTriangle, XCircle, Layers, Calendar,
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel } from '../../utils/exportUtils';
 import { Download } from 'lucide-react';
+
+/* ─── Date filter helper ────────────────────────────────────────── */
+const DATE_PERIODS = [
+    { value: 'all', label: 'All' },
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: 'This Week' },
+    { value: 'month', label: 'This Month' },
+    { value: 'custom', label: 'Custom' },
+];
+
+function isInPeriod(dateStr, period, customFrom, customTo) {
+    if (!dateStr || period === 'all') return true;
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (period === 'today') {
+        return d.toDateString() === now.toDateString();
+    }
+    if (period === 'week') {
+        const start = new Date(now);
+        start.setDate(now.getDate() - now.getDay());
+        start.setHours(0, 0, 0, 0);
+        return d >= start && d <= now;
+    }
+    if (period === 'month') {
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    if (period === 'custom') {
+        const from = customFrom ? new Date(customFrom) : null;
+        const to = customTo ? new Date(customTo + 'T23:59:59') : null;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+    }
+    return true;
+}
 
 /* ─── Mock data ─────────────────────────────────────────────────────────── */
 const MOCK_TENANTS = [
@@ -292,6 +327,10 @@ export default function SATenantsPage() {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatus] = useState('');
     const [planFilter, setPlan] = useState('');
+    const [datePeriod, setDatePeriod] = useState('all');
+    const [customFrom, setCustomFrom] = useState('');
+    const [customTo, setCustomTo] = useState('');
+    const [showDateFilter, setShowDateFilter] = useState(false);
     const [modal, setModal] = useState(null); // null | { mode: 'create'|'edit'|'plan', tenant? }
     const [planModalData, setPlanModalData] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -308,8 +347,73 @@ export default function SATenantsPage() {
         const matchQ = !q || t.name.toLowerCase().includes(q) || t.ownerName.toLowerCase().includes(q) || t.city.toLowerCase().includes(q) || t.email.toLowerCase().includes(q);
         const matchS = !statusFilter || t.status === statusFilter;
         const matchP = !planFilter || t.subscriptionPlan === planFilter;
-        return matchQ && matchS && matchP;
+        const matchD = isInPeriod(t.createdAt, datePeriod, customFrom, customTo);
+        return matchQ && matchS && matchP && matchD;
     });
+
+    /* Date filter toggle button + collapsible panel */
+    const isDateFiltered = datePeriod !== 'all';
+    const activePeriodLabel = DATE_PERIODS.find(p => p.value === datePeriod)?.label || 'All';
+
+    const FilterToggleBtn = (
+        <button
+            onClick={() => setShowDateFilter(v => !v)}
+            className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm ${showDateFilter || isDateFiltered
+                    ? 'bg-primary text-primary-foreground border-primary shadow-primary/20'
+                    : 'bg-surface text-text-secondary border-border hover:border-primary/30 hover:text-primary'
+                }`}
+        >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">{isDateFiltered ? activePeriodLabel : 'Filter'}</span>
+            {isDateFiltered && !showDateFilter && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white" />
+            )}
+        </button>
+    );
+
+    const DateFilterPanel = showDateFilter && (
+        <div className="bg-surface rounded-2xl border border-primary/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
+            <Calendar className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">Period:</span>
+            {DATE_PERIODS.map(p => (
+                <button
+                    key={p.value}
+                    onClick={() => { setDatePeriod(p.value); if (p.value !== 'custom') { setCustomFrom(''); setCustomTo(''); } }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${datePeriod === p.value
+                            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                            : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
+                        }`}
+                >
+                    {p.label}
+                </button>
+            ))}
+            {datePeriod === 'custom' && (
+                <div className="flex items-center gap-2 ml-1">
+                    <input
+                        type="date"
+                        value={customFrom}
+                        onChange={e => setCustomFrom(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                    <span className="text-xs text-text-muted font-semibold">to</span>
+                    <input
+                        type="date"
+                        value={customTo}
+                        onChange={e => setCustomTo(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                </div>
+            )}
+            {isDateFiltered && (
+                <button
+                    onClick={() => { setDatePeriod('all'); setCustomFrom(''); setCustomTo(''); setShowDateFilter(false); }}
+                    className="ml-auto flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-all"
+                >
+                    <X className="w-3 h-3" /> Clear
+                </button>
+            )}
+        </div>
+    );
 
     /* counts for tab badges */
     const counts = FILTER_TABS.reduce((acc, f) => {
@@ -409,7 +513,9 @@ export default function SATenantsPage() {
                 ))}
             </div>
 
-            {/* ── Search + plan filter ── */}
+            {/* ── Date period filter ── */}
+
+            {/* ── Search + plan filter + filter toggle ── */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -429,7 +535,10 @@ export default function SATenantsPage() {
                         { value: 'enterprise', label: 'Enterprise' },
                     ]}
                 />
+                {FilterToggleBtn}
             </div>
+            {/* Date filter panel */}
+            {DateFilterPanel}
 
             {/* ── Table ── */}
             <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">

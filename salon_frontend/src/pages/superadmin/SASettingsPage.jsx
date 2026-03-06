@@ -1,157 +1,52 @@
 import { useState } from 'react';
 import {
-    Wrench, Users, CreditCard, MessageSquare, Mail, Bell,
-    Send, CheckCircle, AlertTriangle, XCircle, Radio,
-    ToggleLeft, ToggleRight, Globe, Shield, Zap,
-    Database, RefreshCw, Lock, Unlock, PenLine, X,
-    ChevronRight, Clock, BarChart2, Smartphone,
-    Building2, UserCheck, Crown,
+    User, Mail, Phone, Lock, Eye, EyeOff, Save,
+    CheckCircle, Shield, Edit3, KeyRound,
+    BadgeCheck, AlertCircle,
 } from 'lucide-react';
-import CustomDropdown from '../../components/superadmin/CustomDropdown';
 
-/* ─── Toggle switch ─────────────────────────────────────────────────── */
-function Toggle({ value, onChange, size = 'md' }) {
-    const sizes = { sm: { track: 'w-9 h-5', thumb: 'w-3.5 h-3.5', on: 'translate-x-[16px]' }, md: { track: 'w-12 h-6', thumb: 'w-4.5 h-4.5', on: 'translate-x-6' } };
-    const s = sizes[size];
-    return (
-        <button onClick={() => onChange(!value)}
-            className={`relative inline-flex items-center px-0.5 rounded-full transition-all duration-300 focus:outline-none ${value ? 'bg-emerald-500' : 'bg-slate-200'}`}
-            style={{ width: size === 'md' ? '48px' : '36px', height: size === 'md' ? '26px' : '20px' }}>
-            <div className={`bg-white rounded-full shadow-md transition-transform duration-300 ${value ? (size === 'md' ? 'translate-x-[22px]' : 'translate-x-[16px]') : 'translate-x-0'}`}
-                style={{ width: size === 'md' ? '18px' : '14px', height: size === 'md' ? '18px' : '14px' }} />
-        </button>
-    );
-}
-
-/* ─── Section card ──────────────────────────────────────────────────── */
+/* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
     return (
         <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
                 <div className={`w-9 h-9 rounded-xl ${iconColor} flex items-center justify-center shrink-0`}>
-                    <Icon className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />
+                    <Icon style={{ width: 18, height: 18 }} />
                 </div>
                 <div>
                     <h3 className="font-bold text-text text-sm">{title}</h3>
                     {subtitle && <p className="text-[11px] text-text-muted mt-0.5">{subtitle}</p>}
                 </div>
             </div>
-            <div className="p-5">{children}</div>
+            <div className="p-6">{children}</div>
         </div>
     );
 }
 
-/* ─── Global toggle row ─────────────────────────────────────────────── */
-function ToggleRow({ label, desc, value, onChange, warn }) {
+/* ─── Input field ───────────────────────────────────────────────────── */
+function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder, readOnly, suffix }) {
     return (
-        <div className={`flex items-center justify-between py-3.5 px-4 rounded-xl border transition-all ${warn && value ? 'bg-red-50/50 border-red-200' : 'bg-surface/50 border-border hover:border-slate-300'
-            }`}>
-            <div className="flex-1 min-w-0 mr-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-text">{label}</span>
-                    {warn && value && (
-                        <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-full">ACTIVE</span>
-                    )}
-                </div>
-                <span className="text-xs text-text-muted">{desc}</span>
-            </div>
-            <Toggle value={value} onChange={onChange} />
-        </div>
-    );
-}
-
-/* ─── Composer modal ────────────────────────────────────────────────── */
-function ComposerModal({ type, onClose, onSend }) {
-    const [form, setForm] = useState({ subject: '', message: '', audience: 'all', channel: 'email' });
-    const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
-    const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
-
-    const TYPES = {
-        broadcast: { title: 'Broadcast Message', icon: Radio, iconColor: 'text-primary' },
-        maintenance: { title: 'Maintenance Alert', icon: Wrench, iconColor: 'text-amber-500' },
-        announcement: { title: 'Push Announcement', icon: Bell, iconColor: 'text-blue-500' },
-        expiry: { title: 'Plan Expiry Reminder', icon: Clock, iconColor: 'text-orange-500' },
-    };
-    const t = TYPES[type] || TYPES.broadcast;
-
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-border rounded-2xl w-full max-w-lg shadow-2xl">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-                    <div className="flex items-center gap-3">
-                        <t.icon className={`w-5 h-5 ${t.iconColor}`} />
-                        <div>
-                            <h3 className="text-base font-bold text-text">{t.title}</h3>
-                            <p className="text-xs text-text-muted mt-0.5">Compose and send to selected audience</p>
-                        </div>
+        <div>
+            <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
+                {label}
+            </label>
+            <div className="relative">
+                {Icon && (
+                    <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                )}
+                <input
+                    type={type}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    readOnly={readOnly}
+                    className={`w-full ${Icon ? 'pl-10' : 'pl-3.5'} ${suffix ? 'pr-10' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''}`}
+                />
+                {suffix && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {suffix}
                     </div>
-                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface transition-colors">
-                        <X className="w-5 h-5 text-text-muted" />
-                    </button>
-                </div>
-                <div className="p-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className={labelCls}>Audience</label>
-                            <CustomDropdown
-                                variant="form"
-                                value={form.audience}
-                                onChange={v => set('audience', v)}
-                                options={[
-                                    { value: 'all', label: 'All Salons', icon: Building2 },
-                                    { value: 'active', label: 'Active Salons', icon: UserCheck },
-                                    { value: 'trial', label: 'Trial Salons', icon: Clock },
-                                    { value: 'expired', label: 'Expired Salons', icon: XCircle },
-                                    { value: 'pro', label: 'Pro Plan', icon: Crown },
-                                    { value: 'enterprise', label: 'Enterprise Plan', icon: Zap },
-                                ]}
-                            />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Channel</label>
-                            <CustomDropdown
-                                variant="form"
-                                value={form.channel}
-                                onChange={v => set('channel', v)}
-                                options={[
-                                    { value: 'email', label: 'Email', icon: Mail },
-                                    { value: 'push', label: 'Push', icon: Bell },
-                                    { value: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-                                    { value: 'sms', label: 'SMS', icon: Smartphone },
-                                ]}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className={labelCls}>Subject *</label>
-                        <input className={inputCls} value={form.subject} onChange={e => set('subject', e.target.value)}
-                            placeholder={type === 'maintenance' ? 'Scheduled Maintenance — Action Required' : type === 'expiry' ? 'Your plan expires in 3 days' : 'Enter subject line…'} />
-                    </div>
-                    <div>
-                        <label className={labelCls}>Message *</label>
-                        <textarea className={inputCls} rows={5} value={form.message} onChange={e => set('message', e.target.value)}
-                            placeholder={
-                                type === 'maintenance'
-                                    ? 'We will be performing scheduled maintenance on Feb 24, 2026 from 2:00 AM to 4:00 AM IST. Services may be unavailable during this period.'
-                                    : type === 'expiry'
-                                        ? 'Your {{plan}} subscription expires on {{date}}. Renew now to avoid interruption to your salon.'
-                                        : 'Write your message here…'
-                            } />
-                    </div>
-                    <div className="bg-surface rounded-xl p-3 text-xs text-text-secondary">
-                        <span className="font-bold text-text-muted">Preview:</span> This will reach approximately <span className="font-bold text-text">
-                            {form.audience === 'all' ? '127' : form.audience === 'active' ? '89' : form.audience === 'trial' ? '18' : form.audience === 'expired' ? '11' : form.audience === 'pro' ? '22' : '13'}
-                        </span> salons via <span className="font-bold text-text capitalize">{form.channel}</span>.
-                    </div>
-                </div>
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
-                    <button onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">Cancel</button>
-                    <button onClick={() => onSend(form)} disabled={!form.subject || !form.message}
-                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
-                        <Send className="w-4 h-4" /> Send Now
-                    </button>
-                </div>
+                )}
             </div>
         </div>
     );
@@ -160,222 +55,274 @@ function ComposerModal({ type, onClose, onSend }) {
 /* ══════════════════════════════════════════════════════════════════════ */
 export default function SASettingsPage() {
     const [toast, setToast] = useState(null);
-    const [composer, setComposer] = useState(null); // null | 'broadcast' | 'maintenance' | 'announcement' | 'expiry'
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [savingPassword, setSavingPassword] = useState(false);
 
-    /* Global toggles state */
-    const [toggles, setToggles] = useState({
-        maintenanceMode: false,
-        newRegistrations: true,
-        paymentGateway: true,
-        whatsappIntegration: false,
-        emailService: true,
-        smsService: true,
-        mobileApp: true,
-        debugMode: false,
-        apiRateLimit: true,
-        autoBackup: true,
+    /* Profile form */
+    const [profile, setProfile] = useState({
+        name: 'Super Admin',
+        email: 'admin@wapixo.com',
+        phone: '+91 98765 43210',
+        role: 'Super Administrator',
     });
-    const setToggle = (k) => (v) => {
-        setToggles(p => ({ ...p, [k]: v }));
-        showToast(`${k.replace(/([A-Z])/g, ' $1')} ${v ? 'enabled' : 'disabled'}.`, v ? 'success' : 'error');
+    const setP = (k, v) => setProfile(p => ({ ...p, [k]: v }));
+
+    /* Password form */
+    const [pwd, setPwd] = useState({ current: '', newPwd: '', confirm: '' });
+    const setPw = (k, v) => setPwd(p => ({ ...p, [k]: v }));
+    const [showCur, setShowCur] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showCon, setShowCon] = useState(false);
+
+    /* Validation helpers */
+    const pwdStrength = (p) => {
+        let score = 0;
+        if (p.length >= 8) score++;
+        if (/[A-Z]/.test(p)) score++;
+        if (/[0-9]/.test(p)) score++;
+        if (/[^A-Za-z0-9]/.test(p)) score++;
+        return score; // 0-4
     };
+    const strength = pwdStrength(pwd.newPwd);
+    const strengthLabel = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'][strength];
+    const strengthColor = ['bg-red-500', 'bg-orange-400', 'bg-amber-400', 'bg-emerald-500', 'bg-emerald-600'][strength];
 
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
-        setTimeout(() => setToast(null), 3000);
+        setTimeout(() => setToast(null), 3200);
     };
 
-    const handleSend = async (form) => {
-        setComposer(null);
-        showToast(`Message sent to ${form.audience === 'all' ? 127 : form.audience === 'active' ? 89 : 18} salons via ${form.channel}!`);
+    const handleSaveProfile = async () => {
+        if (!profile.name || !profile.email) return showToast('Name and Email are required.', 'error');
+        setSavingProfile(true);
+        await new Promise(r => setTimeout(r, 700));
+        setSavingProfile(false);
+        showToast('Profile updated successfully!');
     };
+
+    const handleChangePassword = async () => {
+        if (!pwd.current) return showToast('Enter your current password.', 'error');
+        if (pwd.newPwd.length < 8) return showToast('New password must be at least 8 characters.', 'error');
+        if (pwd.newPwd !== pwd.confirm) return showToast('New passwords do not match.', 'error');
+        setSavingPassword(true);
+        await new Promise(r => setTimeout(r, 800));
+        setSavingPassword(false);
+        setPwd({ current: '', newPwd: '', confirm: '' });
+        showToast('Password changed successfully!');
+    };
+
+    /* Avatar initials */
+    const initials = profile.name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
     return (
         <div className="space-y-6 pb-8">
 
+            {/* Toast */}
             {toast && (
-                <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'
-                    }`}>
-                    <CheckCircle className="w-4 h-4 shrink-0" /> {toast.msg}
+                <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+                    {toast.type === 'error'
+                        ? <AlertCircle className="w-4 h-4 shrink-0" />
+                        : <CheckCircle className="w-4 h-4 shrink-0" />}
+                    {toast.msg}
                 </div>
             )}
 
             {/* ── Header ── */}
             <div>
-                <h1 className="text-2xl font-black text-text tracking-tight">Global Controls</h1>
-                <p className="text-sm text-text-secondary mt-0.5">Platform-wide settings, feature flags, and communication tools</p>
+                <h1 className="text-2xl font-black text-text tracking-tight">Account Settings</h1>
+                <p className="text-sm text-text-secondary mt-0.5">Manage your Super Admin profile and security</p>
             </div>
 
-            {/* ── Maintenance mode banner ── */}
-            {toggles.maintenanceMode && (
-                <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 border-2 border-amber-300 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                    <Wrench className="w-5 h-5 text-amber-600 shrink-0 animate-pulse" />
-                    <div>
-                        <div className="text-sm font-bold text-amber-700">Maintenance Mode is ACTIVE</div>
-                        <div className="text-xs text-amber-600">All salons are currently seeing a maintenance page. Disable this immediately if unintended.</div>
+            {/* ── Avatar + Quick Info Banner ── */}
+            <div className="bg-gradient-to-r from-primary via-[#A03040] to-[#8B1A2D] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-primary/20">
+                {/* Avatar circle */}
+                <div className="shrink-0">
+                    <div className="w-20 h-20 rounded-2xl bg-white/20 border-2 border-white/30 flex items-center justify-center text-white text-3xl font-black shadow-lg">
+                        {initials}
                     </div>
-                    <button onClick={() => setToggle('maintenanceMode')(false)} className="ml-auto shrink-0 text-xs font-bold text-amber-700 border border-amber-300 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-all">
-                        Disable Now
-                    </button>
                 </div>
-            )}
+                {/* Info */}
+                <div className="text-center sm:text-left">
+                    <h2 className="text-xl font-black text-white">{profile.name}</h2>
+                    <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
+                        <BadgeCheck className="w-4 h-4 text-white/80" />
+                        <span className="text-sm text-white/80 font-medium">{profile.role}</span>
+                    </div>
+                    <p className="text-sm text-white/60 mt-1">{profile.email}</p>
+                </div>
+                <div className="sm:ml-auto bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-center">
+                    <div className="text-[11px] font-bold text-white/60 uppercase tracking-wider">Last Login</div>
+                    <div className="text-sm font-bold text-white mt-0.5">Today, 4:12 PM</div>
+                </div>
+            </div>
 
+            {/* ── Two column layout ── */}
             <div className="grid lg:grid-cols-2 gap-6">
 
-                {/* ── Platform controls ── */}
-                <SectionCard title="Platform Controls" subtitle="Core system feature flags" icon={Globe} iconColor="bg-primary/10 text-primary">
-                    <div className="space-y-3">
-                        <ToggleRow
-                            label="Maintenance Mode"
-                            desc="Show maintenance page to all salon tenants"
-                            value={toggles.maintenanceMode}
-                            onChange={setToggle('maintenanceMode')}
-                            warn
+                {/* ── Profile Edit ── */}
+                <SectionCard
+                    title="Edit Profile"
+                    subtitle="Update your personal information"
+                    icon={Edit3}
+                    iconColor="bg-primary/10 text-primary"
+                >
+                    <div className="space-y-4">
+                        <Field
+                            label="Full Name *"
+                            icon={User}
+                            value={profile.name}
+                            onChange={e => setP('name', e.target.value)}
+                            placeholder="Your full name"
                         />
-                        <ToggleRow
-                            label="New Registrations"
-                            desc="Allow new salons to register on the platform"
-                            value={toggles.newRegistrations}
-                            onChange={setToggle('newRegistrations')}
+                        <Field
+                            label="Email Address *"
+                            icon={Mail}
+                            type="email"
+                            value={profile.email}
+                            onChange={e => setP('email', e.target.value)}
+                            placeholder="admin@wapixo.com"
                         />
-                        <ToggleRow
-                            label="Debug Mode"
-                            desc="Enable verbose error logging across all tenants"
-                            value={toggles.debugMode}
-                            onChange={setToggle('debugMode')}
-                            warn
+                        <Field
+                            label="Phone Number"
+                            icon={Phone}
+                            type="tel"
+                            value={profile.phone}
+                            onChange={e => setP('phone', e.target.value)}
+                            placeholder="+91 XXXXX XXXXX"
                         />
-                        <ToggleRow
-                            label="API Rate Limiting"
-                            desc="Apply request rate limits to all tenant APIs"
-                            value={toggles.apiRateLimit}
-                            onChange={setToggle('apiRateLimit')}
+                        <Field
+                            label="Role"
+                            icon={Shield}
+                            value={profile.role}
+                            readOnly
                         />
-                        <ToggleRow
-                            label="Automated Backups"
-                            desc="Run daily encrypted database backups"
-                            value={toggles.autoBackup}
-                            onChange={setToggle('autoBackup')}
-                        />
+
+                        <button
+                            onClick={handleSaveProfile}
+                            disabled={savingProfile}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-60 transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
+                        >
+                            {savingProfile
+                                ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                                : <><Save className="w-4 h-4" /> Save Profile</>
+                            }
+                        </button>
                     </div>
                 </SectionCard>
 
-                {/* ── Integration controls ── */}
-                <SectionCard title="Integration Controls" subtitle="Third-party service flags" icon={Zap} iconColor="bg-blue-50 text-blue-600">
-                    <div className="space-y-3">
-                        <ToggleRow
-                            label="Payment Gateway"
-                            desc="Razorpay / Stripe payment processing"
-                            value={toggles.paymentGateway}
-                            onChange={setToggle('paymentGateway')}
-                            warn={!toggles.paymentGateway}
+                {/* ── Change Password ── */}
+                <SectionCard
+                    title="Change Password"
+                    subtitle="Keep your account secure with a strong password"
+                    icon={KeyRound}
+                    iconColor="bg-amber-50 text-amber-600"
+                >
+                    <div className="space-y-4">
+                        {/* Current password */}
+                        <Field
+                            label="Current Password *"
+                            icon={Lock}
+                            type={showCur ? 'text' : 'password'}
+                            value={pwd.current}
+                            onChange={e => setPw('current', e.target.value)}
+                            placeholder="Enter current password"
+                            suffix={
+                                <button type="button" onClick={() => setShowCur(v => !v)} className="text-text-muted hover:text-text transition-colors">
+                                    {showCur ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            }
                         />
-                        <ToggleRow
-                            label="Email Service"
-                            desc="Transactional email delivery via SMTP"
-                            value={toggles.emailService}
-                            onChange={setToggle('emailService')}
-                        />
-                        <ToggleRow
-                            label="SMS Service"
-                            desc="OTP and notification SMS via gateway"
-                            value={toggles.smsService}
-                            onChange={setToggle('smsService')}
-                        />
-                        <ToggleRow
-                            label="WhatsApp Integration"
-                            desc="WhatsApp Business API notifications"
-                            value={toggles.whatsappIntegration}
-                            onChange={setToggle('whatsappIntegration')}
-                        />
-                        <ToggleRow
-                            label="Mobile App"
-                            desc="Customer-facing booking mobile application"
-                            value={toggles.mobileApp}
-                            onChange={setToggle('mobileApp')}
-                        />
+
+                        {/* New password */}
+                        <div>
+                            <Field
+                                label="New Password *"
+                                icon={Lock}
+                                type={showNew ? 'text' : 'password'}
+                                value={pwd.newPwd}
+                                onChange={e => setPw('newPwd', e.target.value)}
+                                placeholder="Min. 8 characters"
+                                suffix={
+                                    <button type="button" onClick={() => setShowNew(v => !v)} className="text-text-muted hover:text-text transition-colors">
+                                        {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                }
+                            />
+                            {/* Strength meter */}
+                            {pwd.newPwd && (
+                                <div className="mt-2">
+                                    <div className="flex gap-1 mb-1">
+                                        {[0, 1, 2, 3].map(i => (
+                                            <div
+                                                key={i}
+                                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${i < strength ? strengthColor : 'bg-slate-100'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <p className="text-[11px] font-bold text-text-muted">
+                                        Strength: <span className={`${strength >= 3 ? 'text-emerald-600' : strength >= 2 ? 'text-amber-500' : 'text-red-500'}`}>{strengthLabel}</span>
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Confirm password */}
+                        <div>
+                            <Field
+                                label="Confirm New Password *"
+                                icon={Lock}
+                                type={showCon ? 'text' : 'password'}
+                                value={pwd.confirm}
+                                onChange={e => setPw('confirm', e.target.value)}
+                                placeholder="Re-enter new password"
+                                suffix={
+                                    <button type="button" onClick={() => setShowCon(v => !v)} className="text-text-muted hover:text-text transition-colors">
+                                        {showCon ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                }
+                            />
+                            {pwd.confirm && pwd.newPwd !== pwd.confirm && (
+                                <p className="text-[11px] font-bold text-red-500 mt-1.5 flex items-center gap-1">
+                                    <AlertCircle className="w-3 h-3" /> Passwords do not match
+                                </p>
+                            )}
+                            {pwd.confirm && pwd.newPwd === pwd.confirm && pwd.confirm.length > 0 && (
+                                <p className="text-[11px] font-bold text-emerald-600 mt-1.5 flex items-center gap-1">
+                                    <CheckCircle className="w-3 h-3" /> Passwords match
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Password tips */}
+                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-xs text-amber-700 space-y-1">
+                            <p className="font-bold text-amber-800 mb-1">Password must contain:</p>
+                            {[
+                                { rule: 'At least 8 characters', met: pwd.newPwd.length >= 8 },
+                                { rule: 'One uppercase letter (A–Z)', met: /[A-Z]/.test(pwd.newPwd) },
+                                { rule: 'One number (0–9)', met: /[0-9]/.test(pwd.newPwd) },
+                                { rule: 'One special character (!@#…)', met: /[^A-Za-z0-9]/.test(pwd.newPwd) },
+                            ].map(r => (
+                                <div key={r.rule} className="flex items-center gap-1.5">
+                                    <CheckCircle className={`w-3 h-3 shrink-0 ${r.met ? 'text-emerald-500' : 'text-amber-300'}`} />
+                                    <span className={r.met ? 'text-emerald-700 font-semibold' : ''}>{r.rule}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={handleChangePassword}
+                            disabled={savingPassword || !pwd.current || !pwd.newPwd || !pwd.confirm}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gray-900 hover:bg-black text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-black/20 active:scale-[0.98]"
+                        >
+                            {savingPassword
+                                ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Changing…</>
+                                : <><KeyRound className="w-4 h-4" /> Change Password</>
+                            }
+                        </button>
                     </div>
                 </SectionCard>
             </div>
 
-            {/* ── Communication Center ── */}
-            <SectionCard title="Communication Center" subtitle="Send messages to salons — emails, alerts, announcements" icon={MessageSquare} iconColor="bg-violet-50 text-violet-600">
-                <div className="grid sm:grid-cols-2 gap-4">
-                    {[
-                        {
-                            type: 'broadcast', icon: Radio, color: 'bg-primary/10 text-primary border-primary/20',
-                            label: 'Broadcast Email', desc: 'Send a custom email to all or filtered salon groups',
-                            btnLabel: 'Compose & Send',
-                        },
-                        {
-                            type: 'maintenance', icon: Wrench, color: 'bg-amber-50 text-amber-600 border-amber-200',
-                            label: 'Maintenance Alert', desc: 'Notify salons about upcoming downtime with custom schedule',
-                            btnLabel: 'Send Alert',
-                        },
-                        {
-                            type: 'announcement', icon: Bell, color: 'bg-blue-50 text-blue-600 border-blue-200',
-                            label: 'Push Announcement', desc: 'Publish a platform update or new feature announcement',
-                            btnLabel: 'Announce',
-                        },
-                        {
-                            type: 'expiry', icon: Clock, color: 'bg-orange-50 text-orange-600 border-orange-200',
-                            label: 'Plan Expiry Reminder', desc: `Send renewal reminders to salons with expiring plans`,
-                            btnLabel: 'Send Reminder',
-                        },
-                    ].map(c => (
-                        <div key={c.type} className={`flex flex-col gap-3 p-4 rounded-xl border-2 ${c.color} bg-opacity-50`}>
-                            <div className="flex items-start gap-3">
-                                <div className={`w-9 h-9 rounded-xl ${c.color} flex items-center justify-center shrink-0`}>
-                                    <c.icon className="w-4.5 h-4.5" style={{ width: 18, height: 18 }} />
-                                </div>
-                                <div>
-                                    <div className="text-sm font-bold text-text">{c.label}</div>
-                                    <div className="text-xs text-text-muted">{c.desc}</div>
-                                </div>
-                            </div>
-                            <button onClick={() => setComposer(c.type)}
-                                className="flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-white border border-current text-xs font-bold hover:shadow-md transition-all active:scale-95">
-                                <Send className="w-3.5 h-3.5" /> {c.btnLabel}
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            </SectionCard>
-
-            {/* ── Danger zone ── */}
-            <div className="bg-red-50 border-2 border-red-200 rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-red-200">
-                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-                    <div>
-                        <h3 className="font-bold text-red-700 text-sm">Danger Zone</h3>
-                        <p className="text-[11px] text-red-500 mt-0.5">Irreversible actions — proceed with extreme caution</p>
-                    </div>
-                </div>
-                <div className="p-5 space-y-3">
-                    {[
-                        { label: 'Force Logout All Sessions', desc: 'Invalidate all active user sessions across all salons', icon: Lock, action: () => showToast('All sessions invalidated — users will need to re-login.', 'error') },
-                        { label: 'Clear All Caches', desc: 'Purge Redis cache, CDN edge caches and API response caches', icon: Database, action: () => showToast('Cache clear initiated — may take 30 seconds.', 'info') },
-                        { label: 'Rebuild Search Index', desc: 'Re-index all tenant data for search service (takes ~5 min)', icon: RefreshCw, action: () => showToast('Search re-index started in background.', 'info') },
-                    ].map(d => (
-                        <div key={d.label} className="flex items-center justify-between gap-4 bg-white rounded-xl border border-red-100 px-4 py-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <d.icon className="w-4 h-4 text-red-400 shrink-0" />
-                                <div className="min-w-0">
-                                    <div className="text-sm font-semibold text-text">{d.label}</div>
-                                    <div className="text-xs text-text-muted truncate">{d.desc}</div>
-                                </div>
-                            </div>
-                            <button onClick={d.action}
-                                className="shrink-0 flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all active:scale-95 shadow-md shadow-red-500/20">
-                                Execute
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* ── Composer modal ── */}
-            {composer && <ComposerModal type={composer} onClose={() => setComposer(null)} onSend={handleSend} />}
         </div>
     );
 }
