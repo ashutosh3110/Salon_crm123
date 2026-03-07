@@ -14,14 +14,7 @@ import {
     Loader2
 } from 'lucide-react';
 
-const pendingCheckins = [
-    { id: 'APT-1002', name: 'Vikram Malhotra', time: '11:00 AM', service: 'Men\'s Grooming', professional: 'Suresh', payment: 'Unpaid' },
-    { id: 'APT-1005', name: 'Sneha Kapur', time: '01:30 PM', service: 'Manicure & Pedicure', professional: 'Ritu', payment: 'Pre-paid' },
-];
-
-const checkoutRequested = [
-    { id: 'APT-1001', name: 'Ananya Iyer', time: '10:30 AM', service: 'HydraFacial', professional: 'Meera', amount: '₹2,500' },
-];
+import { pendingCheckins, checkoutRequested } from '../../data/receptionistData';
 
 export default function CheckInPage() {
     const [checkinList, setCheckinList] = useState(pendingCheckins);

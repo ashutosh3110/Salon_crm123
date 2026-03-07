@@ -325,7 +325,7 @@ function App() {
                     {/* ═══════════════════════════════════════════════════════════
                  ACCOUNTANT — Finance Panel
                  ═══════════════════════════════════════════════════════════ */}
-                    <Route element={<ProtectedRoute allowedRoles={['accountant', 'admin']} />}>
+                    <Route element={<ProtectedRoute allowedRoles={['admin', 'accountant']} />}>
                       <Route element={<AccountantLayout />}>
                         <Route path="/accountant" element={<AccountantDashboard />} />
                         <Route path="/accountant/revenue" element={<RevenuePage />} />

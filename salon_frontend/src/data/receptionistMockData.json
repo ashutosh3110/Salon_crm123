@@ -1,0 +1,291 @@
+{
+    "appointments": [
+        {
+            "id": "APT-1001",
+            "client": "Ananya Iyer",
+            "service": "HydraFacial",
+            "time": "10:30 AM",
+            "professional": "Meera Joshi",
+            "status": "Arrived",
+            "price": "₹2,500",
+            "phone": "+91 98765 43210"
+        },
+        {
+            "id": "APT-1002",
+            "client": "Vikram Malhotra",
+            "service": "Men's Grooming",
+            "time": "11:00 AM",
+            "professional": "Anita Verma",
+            "status": "Upcoming",
+            "price": "₹850",
+            "phone": "+91 98765 43211"
+        },
+        {
+            "id": "APT-1003",
+            "client": "Sarah Khan",
+            "service": "Hair Coloring",
+            "time": "11:30 AM",
+            "professional": "Kavita Singh",
+            "status": "Cancelled",
+            "price": "₹4,200",
+            "phone": "+91 98765 43212"
+        },
+        {
+            "id": "APT-1004",
+            "client": "Rahul Bajaj",
+            "service": "Full Body Massage",
+            "time": "12:00 PM",
+            "professional": "Deepa Nair",
+            "status": "Completed",
+            "price": "₹3,500",
+            "phone": "+91 98765 43213"
+        },
+        {
+            "id": "APT-1005",
+            "client": "Sneha Kapur",
+            "service": "Manicure & Pedicure",
+            "time": "01:30 PM",
+            "professional": "Ritu Kapoor",
+            "status": "Upcoming",
+            "price": "₹1,200",
+            "phone": "+91 98765 43214"
+        }
+    ],
+    "pendingCheckins": [
+        {
+            "id": "APT-1002",
+            "name": "Vikram Malhotra",
+            "time": "11:00 AM",
+            "service": "Men's Grooming",
+            "professional": "Suresh",
+            "payment": "Unpaid"
+        },
+        {
+            "id": "APT-1005",
+            "name": "Sneha Kapur",
+            "time": "01:30 PM",
+            "service": "Manicure & Pedicure",
+            "professional": "Ritu",
+            "payment": "Pre-paid"
+        }
+    ],
+    "checkoutRequested": [
+        {
+            "id": "APT-1001",
+            "name": "Ananya Iyer",
+            "time": "10:30 AM",
+            "service": "HydraFacial",
+            "professional": "Meera",
+            "amount": "₹2,500"
+        }
+    ],
+    "invoices": [
+        {
+            "id": "INV-7801",
+            "client": "Rahul Sharma",
+            "amount": "₹1,250",
+            "date": "25 Oct 2023",
+            "status": "Paid",
+            "method": "UPI"
+        },
+        {
+            "id": "INV-7802",
+            "client": "Priya Singh",
+            "amount": "₹3,500",
+            "date": "25 Oct 2023",
+            "status": "Unpaid",
+            "method": "-"
+        },
+        {
+            "id": "INV-7803",
+            "client": "Anita Verma",
+            "amount": "₹1,200",
+            "date": "24 Oct 2023",
+            "status": "Paid",
+            "method": "Card"
+        },
+        {
+            "id": "INV-7804",
+            "client": "John Doe",
+            "amount": "₹4,800",
+            "date": "24 Oct 2023",
+            "status": "Paid",
+            "method": "Cash"
+        },
+        {
+            "id": "INV-7805",
+            "client": "Sanya Mirza",
+            "amount": "₹2,100",
+            "date": "23 Oct 2023",
+            "status": "Refunded",
+            "method": "Original"
+        }
+    ],
+    "recentPayments": [
+        {
+            "id": "TXN-9021",
+            "client": "Rohit Bal",
+            "amount": "₹1,500",
+            "time": "10:45 AM",
+            "method": "UPI",
+            "status": "Success"
+        },
+        {
+            "id": "TXN-9022",
+            "client": "Meena Rai",
+            "amount": "₹2,300",
+            "time": "10:52 AM",
+            "method": "Card",
+            "status": "Success"
+        },
+        {
+            "id": "TXN-9023",
+            "client": "Sunil Gavaskar",
+            "amount": "₹850",
+            "time": "11:05 AM",
+            "method": "Cash",
+            "status": "Failed"
+        },
+        {
+            "id": "TXN-9024",
+            "client": "Priya Sharma",
+            "amount": "₹500",
+            "time": "11:15 AM",
+            "method": "UPI",
+            "status": "Success"
+        },
+        {
+            "id": "TXN-9025",
+            "client": "Amit Kumar",
+            "amount": "₹1,200",
+            "time": "11:20 AM",
+            "method": "Card",
+            "status": "Success"
+        }
+    ],
+    "waitingList": [
+        {
+            "id": "Q-001",
+            "name": "Nisha Gupta",
+            "wait": "12 mins",
+            "service": "Blow Dry",
+            "priority": true,
+            "preferredProfessional": "Elena"
+        },
+        {
+            "id": "Q-002",
+            "name": "Amit Trivedi",
+            "wait": "25 mins",
+            "service": "Men's Cut",
+            "priority": false,
+            "preferredProfessional": "Any"
+        },
+        {
+            "id": "Q-003",
+            "name": "Karishma Rao",
+            "wait": "40 mins",
+            "service": "Manicure",
+            "priority": false,
+            "preferredProfessional": "Ritu"
+        }
+    ],
+    "stylists": [
+        {
+            "name": "Meera",
+            "status": "Available",
+            "specialty": "Facials",
+            "current": "Free"
+        },
+        {
+            "name": "Suresh",
+            "status": "Busy",
+            "specialty": "Hair Cut",
+            "current": "Cutting"
+        },
+        {
+            "name": "Elena",
+            "status": "On Break",
+            "specialty": "Coloring",
+            "current": "Break"
+        }
+    ],
+    "dashboardStats": [
+        {
+            "label": "Today's Appointments",
+            "value": 24,
+            "trend": "+14%",
+            "positive": true
+        },
+        {
+            "label": "Pending Check-ins",
+            "value": 8,
+            "trend": "+2 today",
+            "positive": false
+        },
+        {
+            "label": "Completed Today",
+            "value": 12,
+            "trend": "+5.2%",
+            "positive": true
+        },
+        {
+            "label": "New Registrations",
+            "value": 5,
+            "trend": "+1 today",
+            "positive": true
+        }
+    ],
+    "invoiceStats": [
+        {
+            "label": "Total Revenue (Today)",
+            "value": 24850,
+            "prefix": "₹",
+            "trend": "+12.5%",
+            "positive": true,
+            "glow": "bg-emerald-500/5",
+            "color": "text-emerald-500"
+        },
+        {
+            "label": "Unpaid Invoices",
+            "value": 3,
+            "trend": "-1 today",
+            "positive": false,
+            "glow": "bg-amber-500/5",
+            "color": "text-amber-500"
+        },
+        {
+            "label": "Net Transactions",
+            "value": 42,
+            "trend": "+8 today",
+            "positive": true,
+            "glow": "bg-primary/5",
+            "color": "text-primary"
+        }
+    ],
+    "settingsSections": [
+        {
+            "title": "Profile",
+            "description": "Manage your name and basic details."
+        },
+        {
+            "title": "Display & Layout",
+            "description": "Choose how your dashboard looks."
+        },
+        {
+            "title": "Notifications",
+            "description": "Control SMS and email alerts."
+        },
+        {
+            "title": "Security",
+            "description": "Update password and access settings."
+        },
+        {
+            "title": "Devices",
+            "description": "Set up printers and other hardware."
+        },
+        {
+            "title": "Activity Log",
+            "description": "See recent actions taken in this account."
+        }
+    ]
+}

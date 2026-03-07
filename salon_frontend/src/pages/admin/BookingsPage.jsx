@@ -39,6 +39,8 @@ import BookingCalendar from '../../components/admin/BookingCalendar';
 import BookingDetailModal from '../../components/admin/BookingDetailModal';
 import BookingModal from '../../components/admin/BookingModal';
 import MiniCalendar from '../../components/admin/MiniCalendar';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
 const statusColors = {
     upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
@@ -65,6 +67,7 @@ const MOCK_OUTLETS = [
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 export default function BookingsPage() {
+    const { user } = useAuth();
     const { bookings: registryBookings, updateBookingStatus: updateRegistryStatus } = useBookingRegistry();
     const {
         bookings: contextBookings,
@@ -458,7 +461,7 @@ export default function BookingsPage() {
                                                     </div>
                                                     <div className="flex flex-col text-left">
                                                         <span className="text-sm font-black text-text uppercase tracking-tight leading-none mb-1">{b.client?.name || 'UNKNOWN'}</span>
-                                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.1em] leading-none">{b.client?.phone || 'NO_COMMS'}</span>
+                                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.1em] leading-none">{maskPhone(b.client?.phone, user?.role) || 'NO_COMMS'}</span>
                                                     </div>
                                                 </div>
                                             </td>

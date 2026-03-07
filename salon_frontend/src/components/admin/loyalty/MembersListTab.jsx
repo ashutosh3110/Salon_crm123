@@ -12,6 +12,8 @@ import {
     AlertCircle,
     Download
 } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
+import { maskPhone } from '../../../utils/phoneUtils';
 import { motion } from 'framer-motion';
 
 import loyaltyData from '../../../data/loyaltyMockData.json';
@@ -20,12 +22,13 @@ const MOCK_MEMBERS = loyaltyData.members;
 
 
 export default function MembersListTab() {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
 
     const filteredMembers = MOCK_MEMBERS.filter(m => {
-        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.phone.includes(searchTerm);
+        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''));
         if (filter === 'all') return matchesSearch;
         return matchesSearch && m.status === filter;
     });
@@ -88,7 +91,7 @@ export default function MembersListTab() {
                                             </div>
                                             <div>
                                                 <div className="text-sm font-black text-foreground italic tracking-tight">{member.name}</div>
-                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{member.phone}</div>
+                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{maskPhone(member.phone, user?.role)}</div>
                                             </div>
                                         </div>
                                     </td>

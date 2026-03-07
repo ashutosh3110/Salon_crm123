@@ -17,6 +17,8 @@ import {
     Ban,
     Trash2
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import { useBusiness } from '../../contexts/BusinessContext';
 
 const roleColors = {
@@ -35,6 +37,7 @@ const statusColors = {
 };
 
 export default function StaffPage() {
+    const { user } = useAuth();
     const { staff, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
     const [filteredStaff, setFilteredStaff] = useState(staff);
     const [loading, setLoading] = useState(false);
@@ -62,7 +65,8 @@ export default function StaffPage() {
         if (search) {
             result = result.filter(s =>
                 s.name?.toLowerCase().includes(search.toLowerCase()) ||
-                s.email?.toLowerCase().includes(search.toLowerCase())
+                s.email?.toLowerCase().includes(search.toLowerCase()) ||
+                s.phone?.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
             );
         }
 
@@ -199,6 +203,7 @@ export default function StaffPage() {
                         <thead>
                             <tr className="bg-surface-alt border-b border-border">
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Human Asset</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Contact Protocol</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Authority</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Base Center</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Lifecycle</th>
@@ -232,6 +237,11 @@ export default function StaffPage() {
                                                     <div className="font-bold text-text text-sm group-hover:text-primary transition-colors tracking-tight">{s.name}</div>
                                                     <div className="text-[10px] text-text-muted font-bold tracking-tight lowercase">{s.email}</div>
                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[10px] font-bold text-text uppercase tracking-widest flex items-center gap-1"><Phone className="w-2.5 h-2.5 opacity-40" /> {maskPhone(s.phone, user?.role)}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">

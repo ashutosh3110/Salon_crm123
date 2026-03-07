@@ -4,6 +4,8 @@ import {
     Mail, Phone, Star, BadgeCheck, Shield,
     UserPlus, MailCheck, Trash2, Edit2, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
 
@@ -16,6 +18,7 @@ const INITIAL_TEAM = [
 ];
 
 export default function TeamPage() {
+    const { user } = useAuth();
     const [team, setTeam] = useState(INITIAL_TEAM);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -165,7 +168,7 @@ export default function TeamPage() {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{member.name}</p>
-                                                <p className="text-[11px] text-text-muted font-medium">{member.phone}</p>
+                                                <p className="text-[11px] text-text-muted font-medium">{maskPhone(member.phone, user?.role)}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -337,8 +340,9 @@ export default function TeamPage() {
                                     required
                                     type="tel"
                                     className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-sm font-medium outline-none focus:border-primary/50 transition-colors"
-                                    value={editingMember.phone}
+                                    value={user?.role === 'admin' ? editingMember.phone : maskPhone(editingMember.phone, user?.role)}
                                     onChange={(e) => setEditingMember({ ...editingMember, phone: e.target.value })}
+                                    readOnly={user?.role !== 'admin'}
                                 />
                             </div>
 

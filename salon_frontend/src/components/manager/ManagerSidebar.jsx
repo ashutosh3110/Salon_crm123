@@ -14,7 +14,7 @@ const menuItems = [
     { label: 'Targets', icon: Target, path: '/manager/targets' },
     { label: 'Feedback', icon: Star, path: '/manager/feedback' },
     { label: 'Shift Planning', icon: Clock, path: '/manager/shifts' },
-    { label: 'Digital Presence', icon: Globe, path: '/admin/digital-presence' },
+    { label: 'Digital Presence', icon: Globe, path: '/manager/digital-presence' },
     { label: 'Settings', icon: Settings, path: '/manager/settings' },
 ];
 

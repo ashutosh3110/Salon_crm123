@@ -16,16 +16,21 @@ import {
     Check
 } from 'lucide-react';
 
-const settingsSections = [
-    { title: 'Profile', icon: User, description: 'Manage your name and basic details.' },
-    { title: 'Display & Layout', icon: Monitor, description: 'Choose how your dashboard looks.' },
-    { title: 'Notifications', icon: Bell, description: 'Control SMS and email alerts.' },
-    { title: 'Security', icon: Shield, description: 'Update password and access settings.' },
-    { title: 'Devices', icon: Printer, description: 'Set up printers and other hardware.' },
-    { title: 'Activity Log', icon: Database, description: 'See recent actions taken in this account.' },
-];
+import { settingsSections as rawSections } from '../../data/receptionistData';
 
 export default function ReceptionistSettingsPage() {
+    // Map icons back to sections since JSON can't store components
+    const settingsSections = rawSections.map(section => {
+        const iconMap = {
+            'Profile': User,
+            'Display & Layout': Monitor,
+            'Notifications': Bell,
+            'Security': Shield,
+            'Devices': Printer,
+            'Activity Log': Database
+        };
+        return { ...section, icon: iconMap[section.title] };
+    });
     const [toggles, setToggles] = useState({
         autoPrint: true,
         smsAuth: false,
@@ -149,7 +154,7 @@ export default function ReceptionistSettingsPage() {
                             </button>
                         </div>
                         <div className="p-8 space-y-6">
-                            {activeModal === 'Personal Interface' && (
+                            {activeModal === 'Profile' && (
                                 <div className="space-y-4 text-left">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Display Alias</label>
@@ -164,7 +169,7 @@ export default function ReceptionistSettingsPage() {
                                     </div>
                                 </div>
                             )}
-                            {activeModal === 'Hardware Integration' && (
+                            {activeModal === 'Devices' && (
                                 <div className="space-y-4 text-left">
                                     <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -183,7 +188,7 @@ export default function ReceptionistSettingsPage() {
                                 </div>
                             )}
                             {/* Generic placeholder for other categories */}
-                            {!['Personal Interface', 'Hardware Integration'].includes(activeModal) && (
+                            {!['Profile', 'Devices'].includes(activeModal) && (
                                 <div className="py-12 text-center space-y-4">
                                     <Database className="w-12 h-12 text-primary/20 mx-auto" />
                                     <p className="text-[11px] text-text-muted font-bold uppercase tracking-widest">Standard parameters available for {activeModal}.</p>

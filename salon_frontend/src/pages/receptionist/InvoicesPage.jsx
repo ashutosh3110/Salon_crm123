@@ -19,14 +19,7 @@ import {
     Loader2
 } from 'lucide-react';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-
-const invoices = [
-    { id: 'INV-7801', client: 'Rahul Sharma', amount: '₹1,250', date: '25 Oct 2023', status: 'Paid', method: 'UPI' },
-    { id: 'INV-7802', client: 'Priya Singh', amount: '₹3,500', date: '25 Oct 2023', status: 'Unpaid', method: '-' },
-    { id: 'INV-7803', client: 'Anita Verma', amount: '₹1,200', date: '24 Oct 2023', status: 'Paid', method: 'Card' },
-    { id: 'INV-7804', client: 'John Doe', amount: '₹4,800', date: '24 Oct 2023', status: 'Paid', method: 'Cash' },
-    { id: 'INV-7805', client: 'Sanya Mirza', amount: '₹2,100', date: '23 Oct 2023', status: 'Refunded', method: 'Original' },
-];
+import { invoices, invoiceStats as rawStats } from '../../data/receptionistData';
 
 export default function InvoicesPage() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -35,8 +28,17 @@ export default function InvoicesPage() {
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
-
     const [isExporting, setIsExporting] = useState(false);
+
+    // Map icons back to stats since JSON can't store components
+    const stats = rawStats.map(stat => {
+        const iconMap = {
+            'Total Revenue (Today)': TrendingUp,
+            'Unpaid Invoices': Clock,
+            'Net Transactions': FileText
+        };
+        return { ...stat, icon: iconMap[stat.label] };
+    });
 
     const filteredInvoices = invoices.filter(inv => {
         const matchesSearch = inv.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -101,11 +103,7 @@ export default function InvoicesPage() {
 
             {/* Stats Bar */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                    { label: 'Total Revenue (Today)', value: 24850, prefix: '₹', icon: TrendingUp, trend: '+12.5%', positive: true, glow: 'bg-emerald-500/5', color: 'text-emerald-500' },
-                    { label: 'Unpaid Invoices', value: 3, icon: Clock, trend: '-1 today', positive: false, glow: 'bg-amber-500/5', color: 'text-amber-500' },
-                    { label: 'Net Transactions', value: 42, icon: FileText, trend: '+8 today', positive: true, glow: 'bg-primary/5', color: 'text-primary' }
-                ].map((stat, i) => (
+                {stats.map((stat, i) => (
                     <div key={i} className="bg-surface py-6 px-8 border border-border group hover:border-primary/20 transition-all relative overflow-hidden">
                         {/* Soft Glow */}
                         <div className={`absolute -right-4 -top-4 w-24 h-24 ${stat.glow} rounded-none blur-2xl group-hover:opacity-100 transition-opacity opacity-50`} />
@@ -254,6 +252,7 @@ export default function InvoicesPage() {
                     <button onClick={() => setCurrentPage(p => p + 1)} className="px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt">Next</button>
                 </div>
             </div>
+
             {/* Modals Interface */}
             {isPreviewOpen && selectedInvoice && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">

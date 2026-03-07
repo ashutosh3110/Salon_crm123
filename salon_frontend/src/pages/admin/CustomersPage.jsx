@@ -24,8 +24,11 @@ import SegmentManager from '../../components/admin/customers/SegmentManager';
 import FeedbackList from '../../components/admin/customers/FeedbackList';
 import ReEngagementTool from '../../components/admin/customers/ReEngagementTool';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomersPage({ tab = 'directory' }) {
+    const { user } = useAuth();
     const { customers, addCustomer, deleteCustomer } = useBusiness();
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -387,12 +390,14 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
 }
 
 function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [spendFilter, setSpendFilter] = useState('All');
 
     const filtered = customers.filter(c => {
-        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.phone.includes(searchTerm);
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.phone && c.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')));
 
         const matchesStatus = filterStatus === 'All' ||
             (filterStatus === 'VIP' ? c.tags.includes('VIP') : c.status === filterStatus);
@@ -474,7 +479,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                         </div>
                                         <div>
                                             <div className="font-bold text-text group-hover:text-primary transition-colors tracking-tight text-sm">{customer.name}</div>
-                                            <div className="text-[10px] text-text-muted font-bold tracking-widest">{customer.phone}</div>
+                                            <div className="text-[10px] text-text-muted font-bold tracking-widest">{maskPhone(customer.phone, user?.role)}</div>
                                         </div>
                                     </div>
                                 </td>

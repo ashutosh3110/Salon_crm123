@@ -3,6 +3,7 @@ import { Search, User, Mail, Phone, Calendar, Star, ChevronRight, History, Heart
 import { RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
 import stylistData from '../../data/stylistMockData.json';
 
@@ -38,6 +39,7 @@ export default function StylistClientsPage() {
                         isBooking: true,
                         bookedTime: b.time,
                         bookedDate: new Date(b.date || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+                        phone: b.phone || ''
                     }));
 
                 setMyClients([...STATIC_CLIENTS, ...bookingClients]);
@@ -68,7 +70,8 @@ export default function StylistClientsPage() {
         .filter(c => {
             const nameMatch = c.name?.toLowerCase().includes(searchTerm.toLowerCase());
             const emailMatch = c.email?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesSearch = nameMatch || emailMatch;
+            const phoneMatch = c.phone?.includes(searchTerm);
+            const matchesSearch = nameMatch || emailMatch || phoneMatch;
             const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter;
             return matchesSearch && matchesStatus;
         })
@@ -170,6 +173,9 @@ export default function StylistClientsPage() {
                                             <Star className="w-2.5 h-2.5 fill-primary text-primary" /> {client.rating}
                                         </div>
                                     </div>
+                                    {client.phone && (
+                                        <p className="text-[10px] font-bold text-text-muted/60 mt-0.5">{maskPhone(client.phone, user?.role)}</p>
+                                    )}
                                 </div>
                             </div>
                             <button

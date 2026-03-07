@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    Calendar,
+    Calendar as CalendarIcon,
     Search,
     Filter,
     Plus,
@@ -17,39 +18,84 @@ import {
     Scissors,
     Shield,
     Edit3,
-    Trash2
+    Trash2,
+    CreditCard,
+    Smartphone,
+    UserPlus,
+    Loader2
 } from 'lucide-react';
-
-const appointments = [
-    { id: 'APT-1001', client: 'Ananya Iyer', service: 'HydraFacial', time: '10:30 AM', professional: 'Meera', status: 'Arrived', price: '₹2,500', phone: '+91 98765 43210' },
-    { id: 'APT-1002', client: 'Vikram Malhotra', service: 'Men\'s Grooming', time: '11:00 AM', professional: 'Suresh', status: 'Upcoming', price: '₹850', phone: '+91 98765 43211' },
-    { id: 'APT-1003', client: 'Sarah Khan', service: 'Hair Coloring', time: '11:15 AM', professional: 'Elena', status: 'Cancelled', price: '₹4,200', phone: '+91 98765 43212' },
-    { id: 'APT-1004', client: 'Rahul Bajaj', service: 'Full Body Massage', time: '12:00 PM', professional: 'David', status: 'Completed', price: '₹3,500', phone: '+91 98765 43213' },
-    { id: 'APT-1005', client: 'Sneha Kapur', service: 'Manicure & Pedicure', time: '01:30 PM', professional: 'Ritu', status: 'Upcoming', price: '₹1,200', phone: '+91 98765 43214' },
-];
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
+import { appointments as staticAppointments } from '../../data/receptionistData';
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { MOCK_SERVICES, MOCK_STAFF } from '../../data/appMockData';
 
 export default function AppointmentsPage() {
-    const [appointmentData, setAppointmentData] = useState(appointments);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const { bookings: registryBookings, addBooking, updateBookingStatus, cancelBooking } = useBookingRegistry();
+
+    // Combine static mock data with live registry data
+    const appointmentData = useMemo(() => {
+        const mappedRegistry = registryBookings.map(b => ({
+            id: b.id,
+            client: b.clientName,
+            service: Array.isArray(b.services) ? b.services.map(s => s.name).join(', ') : b.service,
+            time: b.time,
+            professional: b.staffName || 'Unassigned',
+            status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+            price: typeof b.totalPrice === 'number' ? `₹${b.totalPrice.toLocaleString()}` : (b.price || '₹0'),
+            phone: b.phone || '',
+            source: b.source || 'APP',
+            isRegistry: true
+        }));
+
+        return [...mappedRegistry, ...staticAppointments];
+    }, [registryBookings]);
+
     const [view, setView] = useState('list'); // 'list' or 'calendar'
     const [searchQuery, setSearchQuery] = useState('');
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [currentPage, setCurrentPage] = useState(1);
     const [isBookingOpen, setIsBookingOpen] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+    // Manual Booking Form State
+    const [newBooking, setNewBooking] = useState({
+        clientName: '',
+        phone: '',
+        serviceId: '',
+        staffId: '',
+        time: '10:00 AM',
+        date: new Date().toISOString().split('T')[0]
+    });
 
     const filteredAppointments = appointmentData.filter(apt =>
         apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
         apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        apt.service.toLowerCase().includes(searchQuery.toLowerCase())
+        apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.phone?.replace(/\D/g, '').includes(searchQuery.replace(/\D/g, ''))
     );
 
-    const [selectedAppointment, setSelectedAppointment] = useState(null);
-    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const handleBill = (apt) => {
+        navigate('/pos', {
+            state: {
+                preSelectClient: {
+                    name: apt.client,
+                    phone: apt.phone
+                },
+                preSelectService: apt.service,
+                appointmentId: apt.id
+            }
+        });
+    };
 
-    const handleCheckIn = (id) => {
-        setAppointmentData(prev => prev.map(apt =>
-            apt.id === id ? { ...apt, status: 'Arrived' } : apt
-        ));
-        alert(`Protocol Clearance: Appointment ${id} marked as ARRIVED.`);
+    const handleCheckIn = (id, isRegistry) => {
+        if (isRegistry) {
+            updateBookingStatus(id, 'arrived');
+        } else {
+            alert(`Protocol Clearance: Appointment ${id} marked as ARRIVED.`);
+        }
     };
 
     const handleViewDetails = (id) => {
@@ -58,16 +104,55 @@ export default function AppointmentsPage() {
         setIsDetailsOpen(true);
     };
 
-    const handleCancelAppointment = (id) => {
+    const handleCancelAppointment = (id, isRegistry) => {
         if (confirm(`Authorize cancellation of ${id}? This action is permanent.`)) {
-            setAppointmentData(prev => prev.filter(a => a.id !== id));
+            if (isRegistry) {
+                cancelBooking(id);
+            }
             setIsDetailsOpen(false);
             alert('Security Clearance: Appointment protocol terminated.');
         }
     };
 
-    const handleBookAppointment = () => {
-        setIsBookingOpen(true);
+    const handleManualBookingSubmit = (e) => {
+        e.preventDefault();
+        const service = MOCK_SERVICES.find(s => s._id === newBooking.serviceId);
+        const staff = MOCK_STAFF.find(s => s._id === newBooking.staffId);
+
+        if (!service || !staff || !newBooking.clientName || !newBooking.phone) {
+            alert('Missing Required Protocols: Please complete all fields.');
+            return;
+        }
+
+        const bookingObj = {
+            id: `RECP-${Date.now()}`,
+            clientId: `walkin-${Date.now()}`,
+            clientName: newBooking.clientName,
+            phone: newBooking.phone,
+            services: [{ name: service.name, price: service.price, duration: service.duration }],
+            totalPrice: service.price,
+            totalDuration: service.duration,
+            date: new Date(newBooking.date).toISOString(),
+            appointmentDate: new Date(newBooking.date).toISOString(),
+            time: newBooking.time,
+            staffId: staff._id,
+            staffName: staff.name,
+            status: 'upcoming',
+            timestamp: new Date().toISOString(),
+            source: 'RECEPTION'
+        };
+
+        addBooking(bookingObj);
+        setIsBookingOpen(false);
+        setNewBooking({
+            clientName: '',
+            phone: '',
+            serviceId: '',
+            staffId: '',
+            time: '10:00 AM',
+            date: new Date().toISOString().split('T')[0]
+        });
+        alert('Internal Protocol: Manual booking successfully registered in vault.');
     };
 
     const formatDate = (date) => {
@@ -78,6 +163,90 @@ export default function AppointmentsPage() {
         const nextDate = new Date(currentDate);
         nextDate.setDate(currentDate.getDate() + days);
         setCurrentDate(nextDate);
+    };
+
+    // --- Calendar Implementation ---
+    const timeSlots = [
+        '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '12:00 PM', '12:30 PM',
+        '01:00 PM', '01:30 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM',
+        '04:00 PM', '04:30 PM', '05:00 PM', '05:30 PM', '06:00 PM', '06:30 PM',
+        '07:00 PM', '07:30 PM', '08:00 PM'
+    ];
+
+    const CalendarView = () => {
+        return (
+            <div className="bg-surface border border-border shadow-sm overflow-hidden flex flex-col h-[700px]">
+                {/* Calendar Header (Staff Names) */}
+                <div className="flex border-b border-border bg-surface-alt/50 sticky top-0 z-10">
+                    <div className="w-24 border-r border-border shrink-0 p-4 text-[10px] font-black uppercase tracking-widest text-text-muted flex items-center justify-center">
+                        TIME
+                    </div>
+                    <div className="flex flex-1 overflow-x-auto scrollbar-hide">
+                        {MOCK_STAFF.map(staff => (
+                            <div key={staff._id} className="min-w-[150px] flex-1 border-r border-border last:border-r-0 p-4 text-center">
+                                <p className="text-[10px] font-black text-text uppercase tracking-widest">{staff.name}</p>
+                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5">{staff.specialization}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden relative">
+                    {timeSlots.map(time => (
+                        <div key={time} className="flex border-b border-border/50 min-h-[80px] group transition-all">
+                            {/* Time Label */}
+                            <div className="w-24 border-r border-border shrink-0 p-3 bg-surface-alt/20 flex flex-col items-center justify-start">
+                                <span className="text-[11px] font-black text-text uppercase tracking-tight">{time}</span>
+                            </div>
+
+                            {/* Staff Columns */}
+                            <div className="flex flex-1 overflow-x-auto scrollbar-hide">
+                                {MOCK_STAFF.map(staff => {
+                                    // Find appointments for this time slot and this professional
+                                    const slotApts = appointmentData.filter(apt =>
+                                        apt.time === time &&
+                                        (apt.professional === staff.name || (apt.professional === 'Unassigned' && staff.name === 'Anita Verma'))
+                                    );
+
+                                    return (
+                                        <div key={staff._id} className="min-w-[150px] flex-1 border-r border-border/30 last:border-r-0 p-2 relative group/cell hover:bg-surface-alt/10 transition-colors">
+                                            {slotApts.map(apt => (
+                                                <div
+                                                    key={apt.id}
+                                                    onClick={() => handleViewDetails(apt.id)}
+                                                    className={`absolute inset-1 p-2 border overflow-hidden cursor-pointer transition-all hover:scale-[1.02] hover:z-20 shadow-sm ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/30' :
+                                                            apt.status === 'Cancelled' ? 'bg-rose-500/10 border-rose-500/30 opacity-60' :
+                                                                'bg-primary/10 border-primary/30'
+                                                        }`}
+                                                >
+                                                    <div className="flex flex-col h-full justify-between">
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="text-[9px] font-black text-text uppercase tracking-tight truncate flex-1">{apt.client}</span>
+                                                                {apt.source === 'APP' && <Smartphone className="w-2 h-2 text-primary" />}
+                                                            </div>
+                                                            <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest truncate">{apt.service}</p>
+                                                        </div>
+                                                        <div className="flex items-center justify-between mt-1">
+                                                            <span className={`text-[6px] font-black px-1 py-0.5 border ${apt.status === 'Arrived' ? 'border-emerald-500/50 text-emerald-600' : 'border-primary/50 text-primary'
+                                                                } uppercase`}>
+                                                                {apt.status}
+                                                            </span>
+                                                            <span className="text-[7px] font-black text-text-muted">{apt.price}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -104,7 +273,7 @@ export default function AppointmentsPage() {
                         </button>
                     </div>
                     <button
-                        onClick={handleBookAppointment}
+                        onClick={() => setIsBookingOpen(true)}
                         className="px-5 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" /> Book Appointment
@@ -138,224 +307,276 @@ export default function AppointmentsPage() {
                 </div>
             </div>
 
-            {/* Appointments Content */}
-            <div className="bg-surface border border-border shadow-sm overflow-hidden min-h-[400px]">
-                {view === 'list' ? (
-                    <>
+            {/* Views */}
+            {view === 'list' ? (
+                <div className="bg-surface border border-border shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto min-h-[400px]">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">ID / Status</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Client Information</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Service & Stylist</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Time / Price</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">Protocol</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">ID / Source</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Client</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Protocol</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Timeline</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Professional</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/50">
                                 {filteredAppointments.length > 0 ? filteredAppointments.map((apt) => (
                                     <tr key={apt.id} className="hover:bg-surface-alt/30 transition-all group">
-                                        <td className="px-6 py-5">
-                                            <div className="space-y-1.5">
-                                                <p className="text-[10px] font-black text-text-muted tracking-widest">{apt.id}</p>
-                                                <span className={`inline-flex px-2 py-0.5 text-[8px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                        apt.status === 'Cancelled' ? 'bg-rose-500/10 border-rose-500/20 text-rose-500' :
-                                                            apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' :
-                                                                'bg-surface-alt border-border text-text-muted'
-                                                    }`}>
-                                                    {apt.status}
-                                                </span>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{apt.id}</p>
+                                                {apt.source === 'APP' ? (
+                                                    <Smartphone className="w-3 h-3 text-primary animate-pulse" title="Mobile App Booking" />
+                                                ) : (
+                                                    <User className="w-3 h-3 text-text-muted opacity-50" title="Manual Entry" />
+                                                )}
                                             </div>
+                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{apt.source || 'INTERNAL'}</p>
                                         </td>
-                                        <td className="px-6 py-5">
+                                        <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 bg-surface-alt border border-border flex items-center justify-center font-black text-text-muted group-hover:bg-primary/5 group-hover:text-primary transition-all">
+                                                <div className="w-9 h-9 bg-surface-alt border border-border flex items-center justify-center font-black text-[10px] text-text-muted">
                                                     {apt.client[0]}
                                                 </div>
                                                 <div>
                                                     <p className="text-sm font-black text-text uppercase tracking-tight">{apt.client}</p>
-                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{apt.phone}</p>
+                                                    <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(apt.phone)}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <p className="text-sm font-black text-text uppercase tracking-tight">{apt.service}</p>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <User className="w-3 h-3 text-primary" />
-                                                <p className="text-[9px] font-black text-text-secondary uppercase tracking-widest">{apt.professional}</p>
+                                        <td className="px-6 py-4 text-center">
+                                            <p className="text-[11px] font-bold text-text uppercase tracking-widest">{apt.service}</p>
+                                            <p className="text-[9px] font-black text-primary/70 uppercase mt-0.5">{apt.price}</p>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <div className="flex items-center gap-1.5 text-sm font-black text-text uppercase tracking-tight">
+                                                    <Clock className="w-3 h-3 text-primary" />
+                                                    {apt.time}
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock className="w-3.5 h-3.5 text-text-muted" />
-                                                <p className="text-sm font-black text-text">{apt.time}</p>
-                                            </div>
-                                            <p className="text-[10px] font-black text-primary mt-0.5">{apt.price}</p>
+                                        <td className="px-6 py-4 text-center">
+                                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">{apt.professional}</p>
                                         </td>
-                                        <td className="px-6 py-5 text-right">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
+                                                    apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-600' :
+                                                        apt.status === 'Upcoming' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
+                                                            'bg-rose-500/10 border-rose-500/20 text-rose-600'
+                                                    }`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${apt.status === 'Arrived' ? 'bg-emerald-500' :
+                                                        apt.status === 'Completed' ? 'bg-blue-500' :
+                                                            apt.status === 'Upcoming' ? 'bg-amber-500' : 'bg-rose-500'
+                                                        }`} />
+                                                    {apt.status}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => alert(`Opening details for ${apt.id}`)} className="p-2 bg-surface-alt border border-border hover:border-primary/30 transition-all opacity-0 group-hover:opacity-100">
-                                                    <MoreVertical className="w-4 h-4 text-text-muted" />
-                                                </button>
-                                                {apt.status === 'Upcoming' && (
-                                                    <button onClick={() => handleCheckIn(apt.id)} className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
-                                                        Check-In
+                                                {apt.status === 'Arrived' && (
+                                                    <button
+                                                        onClick={() => handleBill(apt)}
+                                                        className="px-3 py-1.5 bg-primary text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-all border border-primary shadow-sm shadow-primary/20"
+                                                    >
+                                                        <CreditCard className="w-3 h-3" /> Bill
                                                     </button>
                                                 )}
+                                                {apt.status === 'Upcoming' && (
+                                                    <button
+                                                        onClick={() => handleCheckIn(apt.id, apt.isRegistry)}
+                                                        className="p-2 border border-border hover:bg-emerald-500/5 hover:border-emerald-500/20 group transition-all"
+                                                        title="Mark Arrived"
+                                                    >
+                                                        <CheckCircle2 className="w-4 h-4 text-text-muted group-hover:text-emerald-500" />
+                                                    </button>
+                                                )}
+                                                <button onClick={() => handleViewDetails(apt.id)} className="p-2 border border-border hover:bg-surface-alt transition-all group" title="View Protocol">
+                                                    <MoreVertical className="w-4 h-4 text-text-muted group-hover:text-text" />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan="5" className="px-6 py-20 text-center">
-                                            <div className="flex flex-col items-center gap-2 opacity-20">
-                                                <Search className="w-10 h-10" />
-                                                <p className="text-[10px] font-black uppercase tracking-widest">No matching sequences found</p>
+                                        <td colSpan="7" className="px-6 py-20 text-center">
+                                            <div className="opacity-20 flex flex-col items-center">
+                                                <CalendarIcon className="w-12 h-12 mb-2" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest">No active protocols in ledger</p>
                                             </div>
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
-                        <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center justify-between mt-auto">
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Showing {filteredAppointments.length} matching entries</p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    className="px-3 py-1.5 border border-border bg-surface text-[9px] font-black uppercase tracking-widest disabled:opacity-30"
-                                    disabled={currentPage === 1}
-                                >
-                                    Previous
-                                </button>
-                                <button
-                                    onClick={() => setCurrentPage(p => p + 1)}
-                                    className="px-3 py-1.5 border border-border bg-surface text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt"
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-[500px] text-center space-y-4">
-                        <Calendar className="w-16 h-16 text-primary opacity-20" />
-                        <div>
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Calendar View Interface</h3>
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1 opacity-60">Stylist occupancy matrix loading...</p>
-                        </div>
                     </div>
-                )}
-            </div>
-            {/* Modals Interface */}
+                </div>
+            ) : (
+                <CalendarView />
+            )}
+
+            {/* Manual Booking Modal */}
             {isBookingOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-xl relative animate-in zoom-in-95 duration-300">
+                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
                         <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-primary" /> SECURE APPOINTMENT BOOKING
+                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT PROTOCOL
                             </h3>
                             <button onClick={() => setIsBookingOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
-                        <div className="p-8 space-y-5 text-left">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Client</label>
-                                <div className="relative group">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                    <input type="text" autoFocus placeholder="SEARCH EXISTING DATABASE..." className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                        <form onSubmit={handleManualBookingSubmit} className="p-8 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newBooking.clientName}
+                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="CLIENT FULL NAME"
+                                    />
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Number</label>
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={newBooking.phone}
+                                        onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="+91 XXXXX XXXXX"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Protocol (Service)</label>
+                                <select
+                                    required
+                                    value={newBooking.serviceId}
+                                    onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
+                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                >
+                                    <option value="">-- SELECT SERVICE --</option>
+                                    {MOCK_SERVICES.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assign Specialist</label>
+                                <select
+                                    required
+                                    value={newBooking.staffId}
+                                    onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
+                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                >
+                                    <option value="">-- AUTO ASSIGN / SELECT --</option>
+                                    {MOCK_STAFF.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} - {s.specialization}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Matrix</label>
-                                    <div className="relative">
-                                        <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <select className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            <option>Bridges & Cuts</option>
-                                            <option>Skin Matrix Hydra</option>
-                                            <option>Color Frequency</option>
-                                        </select>
-                                    </div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Date</label>
+                                    <input
+                                        type="date"
+                                        value={newBooking.date}
+                                        onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[10px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assigned Professional</label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <select className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            <option>Meera (Level 4)</option>
-                                            <option>Suresh (Level 3)</option>
-                                            <option>Elena (Level 5)</option>
-                                        </select>
-                                    </div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Time Slot</label>
+                                    <select
+                                        value={newBooking.time}
+                                        onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                    >
+                                        <option>10:00 AM</option>
+                                        <option>10:30 AM</option>
+                                        <option>11:00 AM</option>
+                                        <option>11:30 AM</option>
+                                        <option>12:00 PM</option>
+                                        <option>01:00 PM</option>
+                                        <option>02:00 PM</option>
+                                        <option>03:00 PM</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div className="pt-4 border-t border-border flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none">SLOT AVAILABLE</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <button onClick={() => setIsBookingOpen(false)} className="px-6 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">ABORT</button>
-                                    <button onClick={() => { alert('Appointment Allocated'); setIsBookingOpen(false); }} className="px-6 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20">AUTHORIZE</button>
-                                </div>
-                            </div>
-                        </div>
+                            <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                                INITIALIZE BOOKING
+                            </button>
+                        </form>
                     </div>
                 </div>
             )}
-            {/* Appointment Details Modal */}
+
+            {/* Details Modal */}
             {isDetailsOpen && selectedAppointment && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
                     <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
                         <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Search className="w-4 h-4 text-primary" /> PROTOCOL CLEARANCE: {selectedAppointment.id}
-                            </h3>
+                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest">APPOINTMENT DETAIL: {selectedAppointment.id}</h3>
                             <button onClick={() => setIsDetailsOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
                         <div className="p-8 space-y-6">
                             <div className="flex items-center gap-6 pb-6 border-b border-border">
-                                <div className="w-16 h-16 bg-surface-alt border border-border flex items-center justify-center font-black text-xl text-primary">
+                                <div className="w-16 h-16 bg-surface-alt border border-border flex items-center justify-center font-black text-xl text-text-muted">
                                     {selectedAppointment.client[0]}
                                 </div>
                                 <div>
-                                    <h4 className="text-xl font-black text-text uppercase tracking-tight">{selectedAppointment.client}</h4>
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Entity Reference ID: {selectedAppointment.id}</p>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">{selectedAppointment.client}</h2>
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{selectedAppointment.id} · {selectedAppointment.source || 'MANUAL'}</p>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-6 py-2">
+                            <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-1">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Service Allocated</p>
-                                    <p className="text-sm font-black text-text uppercase">{selectedAppointment.service}</p>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 flex items-center gap-2"><Clock className="w-3 h-3" /> Schedule</p>
+                                    <p className="text-sm font-black text-text uppercase">{selectedAppointment.time}</p>
+                                    <p className="text-[10px] font-bold text-text-secondary uppercase">Today</p>
                                 </div>
-                                <div className="space-y-1 text-right">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Assigned Specialist</p>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 flex items-center gap-2"><Scissors className="w-3 h-3" /> Service</p>
+                                    <p className="text-sm font-black text-text uppercase">{selectedAppointment.service}</p>
+                                    <p className="text-[10px] font-black text-primary uppercase">{selectedAppointment.price}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 flex items-center gap-2"><User className="w-3 h-3" /> Professional</p>
                                     <p className="text-sm font-black text-text uppercase">{selectedAppointment.professional}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Scheduled Interval</p>
-                                    <p className="text-sm font-black text-text uppercase">{selectedAppointment.time}</p>
-                                </div>
-                                <div className="space-y-1 text-right">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Fiscal Value</p>
-                                    <p className="text-sm font-black text-primary uppercase">{selectedAppointment.price}</p>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 flex items-center gap-2"><Phone className="w-3 h-3" /> Contact</p>
+                                    <p className="text-sm font-black text-text uppercase">{maskPhone(selectedAppointment.phone)}</p>
                                 </div>
                             </div>
-                            <div className="pt-6 border-t border-border flex gap-4">
-                                <button onClick={() => handleCancelAppointment(selectedAppointment.id)} className="flex-1 py-3 border border-rose-500/20 text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500/10 transition-all flex items-center justify-center gap-2">
-                                    <Trash2 className="w-4 h-4" /> TERMINATE
-                                </button>
-                                <button onClick={() => alert('Modification protocol active...')} className="flex-1 py-3 bg-surface-alt border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface transition-all flex items-center justify-center gap-2">
-                                    <Edit3 className="w-4 h-4" /> MODIFY
-                                </button>
+                            <div className="pt-6 border-t border-border flex gap-3">
                                 {selectedAppointment.status === 'Upcoming' && (
-                                    <button onClick={() => { handleCheckIn(selectedAppointment.id); setIsDetailsOpen(false); }} className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
-                                        AUTHORIZE CHECK-IN
+                                    <button
+                                        onClick={() => handleCheckIn(selectedAppointment.id, selectedAppointment.isRegistry)}
+                                        className="flex-1 py-3 bg-emerald-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all"
+                                    >
+                                        MARK ARRIVED
                                     </button>
                                 )}
+                                <button
+                                    onClick={() => handleCancelAppointment(selectedAppointment.id, selectedAppointment.isRegistry)}
+                                    className="flex-1 py-3 border border-border text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
+                                >
+                                    CANCEL PROTOCOL
+                                </button>
                             </div>
                         </div>
                     </div>

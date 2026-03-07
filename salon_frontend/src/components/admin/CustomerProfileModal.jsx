@@ -16,8 +16,11 @@ import {
 } from 'lucide-react';
 
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
+    const { user } = useAuth();
     const { updateCustomer } = useBusiness();
     const [activeTab, setActiveTab] = useState('details');
     const [isEditing, setIsEditing] = useState(false);
@@ -93,7 +96,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         </div>
                                     </div>
                                     <p className="font-extrabold text-text-muted text-[10px] flex items-center gap-3 uppercase tracking-[0.3em]">
-                                        {customer.phone} <span className="opacity-20 text-text">|</span> {customer.status} MEMBER STATUS
+                                        {maskPhone(customer.phone, user?.role)} <span className="opacity-20 text-text">|</span> {customer.status} MEMBER STATUS
                                     </p>
                                 </>
                             )}

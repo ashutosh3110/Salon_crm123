@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Phone, Mail, Star, Edit, Trash2, Users, TrendingUp, PieChart as PieIcon, BarChart3, ShieldAlert } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import {
     PieChart,
     Pie,
@@ -24,6 +26,7 @@ const GENDER_COLORS = {
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function ClientsPage() {
+    const { user } = useAuth();
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -113,7 +116,7 @@ export default function ClientsPage() {
 
     const filtered = clients.filter((c) =>
         c.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone?.includes(search) ||
+        c.phone?.replace(/\D/g, '').includes(search.replace(/\D/g, '')) ||
         c.email?.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -268,7 +271,7 @@ export default function ClientsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-left">
-                                            <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Phone className="w-3.5 h-3.5 opacity-40" />{client.phone}</span>
+                                            <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Phone className="w-3.5 h-3.5 opacity-40" />{maskPhone(client.phone, user?.role)}</span>
                                         </td>
                                         <td className="px-8 py-6 hidden sm:table-cell text-left">
                                             {client.email ? <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Mail className="w-3.5 h-3.5 opacity-40" />{client.email.toLowerCase()}</span> : <span className="text-[9px] font-black text-text-muted/20">ACCESS_RESTRICTED</span>}

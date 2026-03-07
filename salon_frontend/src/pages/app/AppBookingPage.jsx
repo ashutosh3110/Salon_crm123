@@ -6,6 +6,7 @@ import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
 const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -154,6 +155,8 @@ export default function AppBookingPage() {
     }, [services, serviceSearch]);
 
     // Submit booking
+    const { customer } = useCustomerAuth();
+
     const handleSubmit = async () => {
         setSubmitting(true);
         try {
@@ -162,8 +165,9 @@ export default function AppBookingPage() {
             // --- Persist Booking to Global Registry ---
             const newBooking = {
                 id: `BOK-${Date.now()}`,
-                clientId: 'cust-001', // Mocking current customer
-                clientName: 'Priya Sharma', // Mocking current customer name
+                clientId: customer?._id || 'cust-001',
+                clientName: customer?.name || 'Priya Sharma',
+                phone: customer?.phone || '',
                 services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
                 totalPrice,
                 totalDuration,
