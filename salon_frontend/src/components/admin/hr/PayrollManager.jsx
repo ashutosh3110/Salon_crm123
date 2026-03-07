@@ -14,13 +14,10 @@ import {
 
 const MONTHS = ['January 2025', 'February 2025', 'March 2025', 'April 2025', 'May 2025', 'June 2025', 'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025', 'December 2025'];
 
-const INITIAL_PAYROLL = [
-    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', base: 25000, days: 28, commission: 4500, deductions: 500, net: 29000, status: 'paid', bankName: 'HDFC Bank', accountNo: '501004231988', ifsc: 'HDFC0001234' },
-    { id: 2, staff: 'Rahul Verma', role: 'Barber', base: 18000, days: 26, commission: 3200, deductions: 200, net: 21000, status: 'approved', bankName: 'ICICI Bank', accountNo: '001205006789', ifsc: 'ICIC0000012' },
-    { id: 3, staff: 'Sneha Kapur', role: 'Reception', base: 15000, days: 30, commission: 0, deductions: 100, net: 14900, status: 'draft', bankName: 'SBI', accountNo: '31245566778', ifsc: 'SBIN0004567' },
-    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', base: 45000, days: 29, commission: 12000, deductions: 1000, net: 56000, status: 'approved', bankName: 'Axis Bank', accountNo: '912010088776655', ifsc: 'UTIB0000123' },
-    { id: 5, staff: 'Priya Singh', role: 'Nail Tech', base: 16000, days: 24, commission: 1500, deductions: 0, net: 17500, status: 'draft', bankName: 'HDFC Bank', accountNo: '502000554433', ifsc: 'HDFC0001234' },
-];
+import hrData from '../../../data/hrMockData.json';
+
+const INITIAL_PAYROLL = hrData.payroll;
+
 
 const STATUS_META = {
     paid: { label: 'Paid', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },

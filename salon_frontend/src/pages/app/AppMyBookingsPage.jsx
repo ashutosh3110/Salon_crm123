@@ -6,16 +6,26 @@ import { MOCK_BOOKINGS } from '../../data/appMockData';
 import { CalendarX } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+
 const tabs = ['Upcoming', 'Past'];
 
 export default function AppMyBookingsPage() {
+    const { bookings: registryBookings } = useBookingRegistry();
     const [activeTab, setActiveTab] = useState('Upcoming');
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
-    // TODO: Replace with api.get('/bookings?clientId=...')
-    const bookings = MOCK_BOOKINGS;
+    const bookings = useMemo(() => {
+        // App expects appointmentDate field usually, registry has date/appointmentDate
+        const live = registryBookings.map(b => ({
+            ...b,
+            _id: b.id,
+            appointmentDate: b.appointmentDate || b.date
+        }));
+        return [...live, ...MOCK_BOOKINGS];
+    }, [registryBookings]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',

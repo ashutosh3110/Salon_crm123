@@ -11,6 +11,8 @@ import {
     Search
 } from 'lucide-react';
 import api from '../../../services/api';
+import loyaltyData from '../../../data/loyaltyMockData.json';
+
 
 export default function LoyaltyTransactionsTab() {
     const [transactions, setTransactions] = useState([]);
@@ -25,14 +27,7 @@ export default function LoyaltyTransactionsTab() {
                 setTransactions(data.data || data || []);
             } catch (err) {
                 console.error('Fetch error:', err);
-                // Mock data for demo since we can't change backend
-                setTransactions([
-                    { _id: '1', customerId: { name: 'Aditya Verma' }, type: 'EARN', points: 150, createdAt: new Date().toISOString(), invoiceId: 'INV-1001' },
-                    { _id: '2', customerId: { name: 'Priya Sharma' }, type: 'REDEEM', points: 300, createdAt: new Date().toISOString(), invoiceId: 'INV-1002' },
-                    { _id: '3', customerId: { name: 'Sanya Khan' }, type: 'EARN', points: 75, createdAt: new Date(Date.now() - 86400000).toISOString(), invoiceId: 'INV-0998' },
-                    { _id: '4', customerId: { name: 'Rohan Gupta' }, type: 'REVERSE', points: 50, createdAt: new Date(Date.now() - 172800000).toISOString(), invoiceId: 'INV-0985' },
-                    { _id: '5', customerId: { name: 'Vikram Singh' }, type: 'EARN', points: 200, createdAt: new Date(Date.now() - 259200000).toISOString(), invoiceId: 'INV-0980' },
-                ]);
+                setTransactions(loyaltyData.transactions);
             } finally {
                 setLoading(false);
             }

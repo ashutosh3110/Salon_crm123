@@ -1,0 +1,366 @@
+{
+    "attendance": [
+        {
+            "id": 1,
+            "staff": "Ananya Sharma",
+            "role": "Stylist",
+            "checkIn": "09:15 AM",
+            "checkOut": "06:30 PM",
+            "status": "present",
+            "hours": "9.2",
+            "outlet": "Main Branch",
+            "inSource": "Web",
+            "loc": "28.6139, 77.2090"
+        },
+        {
+            "id": 2,
+            "staff": "Rahul Verma",
+            "role": "Barber",
+            "checkIn": "09:45 AM",
+            "checkOut": "07:00 PM",
+            "status": "late",
+            "hours": "9.2",
+            "outlet": "City Center",
+            "inSource": "Mobile",
+            "loc": "28.5355, 77.3910"
+        },
+        {
+            "id": 3,
+            "staff": "Sneha Kapur",
+            "role": "Reception",
+            "checkIn": "09:00 AM",
+            "checkOut": "06:00 PM",
+            "status": "present",
+            "hours": "9.0",
+            "outlet": "Main Branch",
+            "inSource": "Biometric",
+            "loc": "28.6139, 77.2090"
+        },
+        {
+            "id": 4,
+            "staff": "Vikram Malhotra",
+            "role": "Manager",
+            "checkIn": "-",
+            "checkOut": "-",
+            "status": "absent",
+            "hours": "0",
+            "outlet": "West End",
+            "inSource": "-",
+            "loc": "-"
+        },
+        {
+            "id": 5,
+            "staff": "Priya Singh",
+            "role": "Technician",
+            "checkIn": "10:30 AM",
+            "checkOut": "04:30 PM",
+            "status": "half-day",
+            "hours": "6.0",
+            "outlet": "Main Branch",
+            "inSource": "Web",
+            "loc": "28.6139, 77.2090"
+        },
+        {
+            "id": 6,
+            "staff": "Amit Sharma",
+            "role": "Barber",
+            "checkIn": "09:05 AM",
+            "checkOut": "06:00 PM",
+            "status": "present",
+            "hours": "8.9",
+            "outlet": "Main Branch",
+            "inSource": "Biometric",
+            "loc": "28.6139, 77.2090"
+        },
+        {
+            "id": 7,
+            "staff": "Kavita Patel",
+            "role": "Nail Tech",
+            "checkIn": "-",
+            "checkOut": "-",
+            "status": "leave",
+            "hours": "0",
+            "outlet": "Bandra Branch",
+            "inSource": "-",
+            "loc": "-"
+        }
+    ],
+    "payroll": [
+        {
+            "id": 1,
+            "staff": "Ananya Sharma",
+            "role": "Senior Stylist",
+            "base": 45000,
+            "commission": 12500,
+            "bonus": 5000,
+            "deductions": 2500,
+            "net": 60000,
+            "status": "Paid",
+            "method": "HDFC-****-1234",
+            "date": "2024-02-01"
+        },
+        {
+            "id": 2,
+            "staff": "Rahul Verma",
+            "role": "Hair Specialist",
+            "base": 38000,
+            "commission": 8400,
+            "bonus": 0,
+            "deductions": 1800,
+            "net": 44600,
+            "status": "Pending",
+            "method": "ICICI-****-5678",
+            "date": "2024-02-01"
+        },
+        {
+            "id": 3,
+            "staff": "Sneha Kapur",
+            "role": "Reception",
+            "base": 25000,
+            "commission": 0,
+            "bonus": 2000,
+            "deductions": 1200,
+            "net": 25800,
+            "status": "Paid",
+            "method": "SBI-****-9012",
+            "date": "2024-02-01"
+        },
+        {
+            "id": 4,
+            "staff": "Vikram Malhotra",
+            "role": "Manager",
+            "base": 65000,
+            "commission": 15000,
+            "bonus": 10000,
+            "deductions": 5000,
+            "net": 85000,
+            "status": "Paid",
+            "method": "AXIS-****-3456",
+            "date": "2024-02-01"
+        },
+        {
+            "id": 5,
+            "staff": "Priya Singh",
+            "role": "Nail Tech",
+            "base": 32000,
+            "commission": 6500,
+            "bonus": 1500,
+            "deductions": 1500,
+            "net": 38500,
+            "status": "Processing",
+            "method": "KOTAK-****-7890",
+            "date": "2024-02-01"
+        }
+    ],
+    "performance": [
+        {
+            "id": 1,
+            "staff": "Ananya Sharma",
+            "role": "Stylist",
+            "revenue": 75000,
+            "services": 142,
+            "rating": 4.9,
+            "commission": 7500,
+            "cost": 25000,
+            "contribution": "Elite",
+            "goal": 80000
+        },
+        {
+            "id": 2,
+            "staff": "Rahul Verma",
+            "role": "Barber",
+            "revenue": 62000,
+            "services": 118,
+            "rating": 4.7,
+            "commission": 6200,
+            "cost": 18000,
+            "contribution": "High",
+            "goal": 70000
+        },
+        {
+            "id": 3,
+            "staff": "Sneha Kapur",
+            "role": "Reception",
+            "revenue": 12000,
+            "services": 45,
+            "rating": 4.8,
+            "commission": 0,
+            "cost": 15000,
+            "contribution": "Medium",
+            "goal": 20000
+        },
+        {
+            "id": 4,
+            "staff": "Vikram Malhotra",
+            "role": "Manager",
+            "revenue": 95000,
+            "services": 30,
+            "rating": 5.0,
+            "commission": 9500,
+            "cost": 45000,
+            "contribution": "Elite",
+            "goal": 100000
+        },
+        {
+            "id": 5,
+            "staff": "Priya Singh",
+            "role": "Nail Tech",
+            "revenue": 34000,
+            "services": 88,
+            "rating": 4.6,
+            "commission": 3400,
+            "cost": 16000,
+            "contribution": "High",
+            "goal": 40000
+        }
+    ],
+    "staff": [
+        {
+            "id": 1,
+            "name": "Ananya Sharma",
+            "role": "Senior Stylist",
+            "outlet": "Main Branch",
+            "status": "active",
+            "email": "ananya@salon.com",
+            "phone": "+91 98765 43210",
+            "joined": "2023-05-15",
+            "salary": 25000,
+            "dob": "1995-08-22",
+            "pan": "ABCDE1234F",
+            "address": "123, Lotus Apartment, Mumbai",
+            "bankName": "HDFC Bank",
+            "accountNo": "501004561234",
+            "ifsc": "HDFC0001234"
+        },
+        {
+            "id": 2,
+            "name": "Rahul Verma",
+            "role": "Hair Specialist",
+            "outlet": "City Center",
+            "status": "active",
+            "email": "rahul@salon.com",
+            "phone": "+91 98765 43211",
+            "joined": "2023-06-20",
+            "salary": 18000,
+            "dob": "1992-03-15",
+            "pan": "FGHIJ5678K",
+            "address": "B-42, Residency Road, Mumbai",
+            "bankName": "ICICI Bank",
+            "accountNo": "001205004567",
+            "ifsc": "ICIC0000012"
+        },
+        {
+            "id": 3,
+            "name": "Priya Singh",
+            "role": "Makeup Artist",
+            "outlet": "Main Branch",
+            "status": "inactive",
+            "email": "priya@salon.com",
+            "phone": "+91 98765 43212",
+            "joined": "2023-01-10",
+            "salary": 20000,
+            "dob": "1998-11-05",
+            "pan": "LMNOP9012Q",
+            "address": "Flat 101, Sea View, Bandra",
+            "bankName": "SBI",
+            "accountNo": "31234567890",
+            "ifsc": "SBIN0001234"
+        }
+    ],
+    "shifts": [
+        {
+            "id": 1,
+            "name": "Morning Shift",
+            "start": "09:00",
+            "end": "17:00",
+            "staffCount": 12,
+            "outlet": "Main Branch",
+            "color": "bg-emerald-500",
+            "hex": "#10b981",
+            "assignedStaff": [
+                1,
+                3
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Evening Shift",
+            "start": "13:00",
+            "end": "21:00",
+            "staffCount": 8,
+            "outlet": "Main Branch",
+            "color": "bg-blue-500",
+            "hex": "#3b82f6",
+            "assignedStaff": [
+                2
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Full Day",
+            "start": "10:00",
+            "end": "20:00",
+            "staffCount": 4,
+            "outlet": "City Center",
+            "color": "bg-violet-500",
+            "hex": "#8b5cf6",
+            "assignedStaff": [
+                4,
+                5
+            ]
+        }
+    ],
+    "meta": {
+        "outlets": [
+            "Main Branch",
+            "City Center",
+            "West End",
+            "Bandra Branch"
+        ],
+        "roles": [
+            "Senior Stylist",
+            "Hair Specialist",
+            "Makeup Artist",
+            "Manager",
+            "Receptionist",
+            "Barber",
+            "Nail Technician"
+        ],
+        "colors": [
+            "#8b5cf6",
+            "#3b82f6",
+            "#10b981",
+            "#f59e0b",
+            "#ef4444",
+            "#6366f1",
+            "#ec4899"
+        ]
+    },
+    "staff_list_summary": [
+        {
+            "id": 1,
+            "name": "Ananya Sharma",
+            "outlet": "Main Branch"
+        },
+        {
+            "id": 2,
+            "name": "Rahul Verma",
+            "outlet": "City Center"
+        },
+        {
+            "id": 3,
+            "name": "Sneha Kapur",
+            "outlet": "Main Branch"
+        },
+        {
+            "id": 4,
+            "name": "Vikram Malhotra",
+            "outlet": "West End"
+        },
+        {
+            "id": 5,
+            "name": "Priya Singh",
+            "outlet": "Main Branch"
+        }
+    ]
+}

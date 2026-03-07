@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useContent } from '../../hooks/useContent';
+import landingData from '../../data/landingMockData.json';
+
 
 
 const SLIDE_DURATION = 5000;
@@ -217,10 +219,7 @@ function DashboardPreview({ cardVariants }) {
                 {/* Appointment List */}
                 <div className="space-y-3">
                     <h4 className="text-xs font-bold text-text-secondary uppercase tracking-widest">Upcoming</h4>
-                    {[
-                        { name: 'Priya S.', service: 'Hair Spa • Neha', time: '10:00 AM', color: 'bg-primary/10 text-primary' },
-                        { name: 'Rahul M.', service: 'Haircut • Amit', time: '11:30 AM', color: 'bg-primary/10 text-primary' },
-                    ].map((appt, i) => (
+                    {landingData.previews.appointments.map((appt, i) => (
                         <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-[#F8F9FA] border border-transparent hover:border-black/5 transition-all">
                             <div className="flex items-center gap-4">
                                 <div className={`w-10 h-10 rounded-full ${appt.color} flex items-center justify-center font-bold text-sm`}>
@@ -280,44 +279,8 @@ function DashboardPreview({ cardVariants }) {
 }
 
 function PricingPreview({ cardVariants }) {
-    const plans = [
-        {
-            name: 'Free',
-            price: '₹0',
-            duration: 'forever',
-            desc: 'Perfect to get started with a single salon.',
-            features: ['2 Staff Members', '10 Products', '5 Services', '1 Outlet', 'Basic Booking', 'POS Billing'],
-            button: 'Get Started',
-            popular: false
-        },
-        {
-            name: 'Basic',
-            price: '₹1,499',
-            duration: '/month',
-            desc: 'For growing salons that need more power.',
-            features: ['10 Staff Members', '100 Products', '50 Services', '2 Outlets', 'Analytics Dashboard', 'Loyalty Program', 'Promotions', 'Email Support'],
-            button: 'Start Free Trial',
-            popular: false
-        },
-        {
-            name: 'Premium',
-            price: '₹3,999',
-            duration: '/month',
-            desc: 'The most popular choice for established salons.',
-            features: ['50 Staff Members', '1,000 Products', '500 Services', '10 Outlets', 'Advanced Analytics', 'HR & Payroll', 'WhatsApp Campaigns', 'Priority Support', 'Custom Branding'],
-            button: 'Start Free Trial',
-            popular: true
-        },
-        {
-            name: 'Enterprise',
-            price: 'Custom',
-            duration: '',
-            desc: 'For salon chains with unlimited needs.',
-            features: ['Unlimited Staff', 'Unlimited Products', 'Unlimited Services', 'Unlimited Outlets', 'Everything in Premium', 'Dedicated Account Manager', 'API Access', 'SLA Guarantee'],
-            button: 'Contact Sales',
-            popular: false
-        }
-    ];
+    const plans = landingData.plans;
+
 
     return (
         <div className="grid grid-cols-2 lg:flex lg:items-start lg:justify-center gap-2 md:gap-4 w-full lg:w-[140%] lg:-ml-[20%] scale-100 lg:scale-[0.65] origin-top lg:origin-center py-2 md:py-10 px-2 lg:px-0">
@@ -402,32 +365,11 @@ function TestimonialPreview({ cardVariants }) {
 }
 
 function FeaturesTeaser({ cardVariants }) {
-    const features = [
-        {
-            icon: Zap,
-            title: 'Lightning Fast',
-            desc: 'Optimized for speed so your reception never waits. POS billing in under 10 seconds.',
-            image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-            icon: Shield,
-            title: 'Enterprise Security',
-            desc: 'Bank-grade encryption, role-based access, and complete data isolation per salon.',
-            image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-            icon: Heart,
-            title: 'Built for Salons',
-            desc: 'Not a generic tool. Every feature is designed specifically for the beauty industry.',
-            image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-            icon: Globe,
-            title: 'Cloud Native',
-            desc: 'Access from anywhere — desktop, tablet, or phone. No installations, no limits.',
-            image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800'
-        },
-    ];
+    const features = landingData.previews.features.map(f => ({
+        ...f,
+        icon: f.title === 'Lightning Fast' ? Zap : f.title === 'Enterprise Security' ? Shield : f.title === 'Built for Salons' ? Heart : Globe
+    }));
+
 
     return (
         <div className="grid grid-cols-2 gap-4 w-full p-2">

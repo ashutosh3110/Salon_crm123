@@ -1,0 +1,435 @@
+{
+    "outlets": [
+        {
+            "_id": "mock-1",
+            "name": "Grace & Glamour - Downtown",
+            "city": "Mumbai",
+            "address": "123, Marine Drive, South Mumbai",
+            "staffCount": 15,
+            "status": "active",
+            "phone": "+91 98765 43210",
+            "email": "downtown@graceglamour.com"
+        },
+        {
+            "_id": "mock-2",
+            "name": "The Royal Salon - Bandra",
+            "city": "Mumbai",
+            "address": "B-42, Pali Hill, Bandra West",
+            "staffCount": 8,
+            "status": "active",
+            "phone": "+91 98765 43211",
+            "email": "bandra@royalsalon.com"
+        }
+    ],
+    "staff": [
+        {
+            "_id": "s-1",
+            "name": "Rahul Sharma",
+            "email": "rahul@example.com",
+            "phone": "+91 98765 00001",
+            "role": "manager",
+            "outletId": "mock-1",
+            "outletName": "Grace & Glamour - Downtown",
+            "inviteStatus": "accepted",
+            "joinedDate": "2026-01-15"
+        },
+        {
+            "_id": "s-2",
+            "name": "Priya Singh",
+            "email": "priya@example.com",
+            "phone": "+91 98765 00002",
+            "role": "stylist",
+            "outletId": "mock-1",
+            "outletName": "Grace & Glamour - Downtown",
+            "inviteStatus": "accepted",
+            "joinedDate": "2026-02-01"
+        }
+    ],
+    "services": [
+        {
+            "id": 1,
+            "name": "Premium Haircut",
+            "category": "Hair",
+            "duration": 45,
+            "price": 850,
+            "gst": 18,
+            "outlets": "All Outlets",
+            "status": "active",
+            "commissionApplicable": true,
+            "commissionType": "percent",
+            "commissionValue": 10
+        },
+        {
+            "id": 2,
+            "name": "Facial Clean-up",
+            "category": "Skin",
+            "duration": 30,
+            "price": 1200,
+            "gst": 12,
+            "outlets": "Main Branch",
+            "status": "active",
+            "commissionApplicable": true,
+            "commissionType": "fixed",
+            "commissionValue": 150
+        },
+        {
+            "id": 3,
+            "name": "Bridal Makeup",
+            "category": "Makeup",
+            "duration": 180,
+            "price": 15000,
+            "gst": 18,
+            "outlets": "All Outlets",
+            "status": "active",
+            "commissionApplicable": false
+        },
+        {
+            "id": 4,
+            "name": "Pedicure Deluxe",
+            "category": "Spa",
+            "duration": 60,
+            "price": 950,
+            "gst": 5,
+            "outlets": "All Outlets",
+            "status": "inactive",
+            "commissionApplicable": true,
+            "commissionType": "percent",
+            "commissionValue": 5
+        }
+    ],
+    "categories": [
+        {
+            "id": 1,
+            "name": "Hair",
+            "serviceCount": 12,
+            "status": "active"
+        },
+        {
+            "id": 2,
+            "name": "Skin",
+            "serviceCount": 8,
+            "status": "active"
+        },
+        {
+            "id": 3,
+            "name": "Makeup",
+            "serviceCount": 5,
+            "status": "active"
+        },
+        {
+            "id": 4,
+            "name": "Spa",
+            "serviceCount": 4,
+            "status": "active"
+        },
+        {
+            "id": 5,
+            "name": "Nails",
+            "serviceCount": 6,
+            "status": "active"
+        },
+        {
+            "id": 6,
+            "name": "Massage",
+            "serviceCount": 3,
+            "status": "inactive"
+        }
+    ],
+    "products": [
+        {
+            "id": 1,
+            "name": "Loreal Expert Shampoo",
+            "brand": "Loreal",
+            "category": "Hair Care",
+            "sellingPrice": 1250,
+            "sku": "LRL-SMP-001",
+            "stock": 45,
+            "threshold": 10,
+            "status": "active"
+        },
+        {
+            "id": 2,
+            "name": "Matrix Hydra Serum",
+            "brand": "Matrix",
+            "category": "Serums",
+            "sellingPrice": 850,
+            "sku": "MTX-SRM-042",
+            "stock": 8,
+            "threshold": 15,
+            "status": "active"
+        },
+        {
+            "id": 3,
+            "name": "Gillette Shaving Foam",
+            "brand": "Gillette",
+            "category": "Men Grooming",
+            "sellingPrice": 450,
+            "sku": "GIL-FN-099",
+            "stock": 120,
+            "threshold": 20,
+            "status": "active"
+        },
+        {
+            "id": 4,
+            "name": "Philips Pro Hair Dryer",
+            "brand": "Philips",
+            "category": "Equipment",
+            "sellingPrice": 3500,
+            "sku": "PHL-DRY-77",
+            "stock": 5,
+            "threshold": 5,
+            "status": "inactive"
+        }
+    ],
+    "customers": [
+        {
+            "_id": "c-1",
+            "name": "Aryan Khan",
+            "phone": "+91 98765 43210",
+            "lastVisit": "2024-03-15",
+            "totalVisits": 12,
+            "spend": 15400,
+            "preferred": "Haircut",
+            "tags": [
+                "VIP"
+            ],
+            "status": "Regular",
+            "dob": "1995-03-05",
+            "anniversary": "2020-11-20",
+            "address": "Flat 402, Sea View, Marine Drive",
+            "remarks": "Prefers mild shampoo",
+            "category": "Premium"
+        },
+        {
+            "_id": "c-2",
+            "name": "Ishita Sharma",
+            "phone": "+91 98765 43211",
+            "lastVisit": "2024-03-20",
+            "totalVisits": 5,
+            "spend": 8200,
+            "preferred": "Manicure",
+            "tags": [
+                "Regular"
+            ],
+            "status": "Regular",
+            "dob": "1998-07-12",
+            "anniversary": "",
+            "address": "Bandra West, Mumbai",
+            "remarks": "Allergic to certain oils",
+            "category": "Regular"
+        },
+        {
+            "_id": "c-3",
+            "name": "Rahul Verma",
+            "phone": "+91 98765 43212",
+            "lastVisit": "2024-02-10",
+            "totalVisits": 2,
+            "spend": 1200,
+            "preferred": "Shave",
+            "tags": [
+                "New"
+            ],
+            "status": "Inactive",
+            "dob": "1990-05-25",
+            "anniversary": "2015-12-10",
+            "address": "Andheri East, Residency",
+            "remarks": "Frequent traveler",
+            "category": "Budget"
+        },
+        {
+            "_id": "c-4",
+            "name": "Simran Jit",
+            "phone": "+91 98765 43213",
+            "lastVisit": "2024-03-21",
+            "totalVisits": 25,
+            "spend": 45000,
+            "preferred": "Coloring",
+            "tags": [
+                "VIP"
+            ],
+            "status": "Regular",
+            "dob": "1988-03-10",
+            "anniversary": "2012-05-15",
+            "address": "Juhu Tara Road",
+            "remarks": "High-end products only",
+            "category": "Elite"
+        },
+        {
+            "_id": "c-5",
+            "name": "Vikram Singh",
+            "phone": "+91 98765 43214",
+            "lastVisit": "2023-12-01",
+            "totalVisits": 1,
+            "spend": 500,
+            "preferred": "Trim",
+            "tags": [
+                "New"
+            ],
+            "status": "Inactive",
+            "dob": "1992-09-30",
+            "anniversary": "",
+            "address": "Colaba Causeway",
+            "remarks": "",
+            "category": "Regular"
+        }
+    ],
+    "bookings": [
+        {
+            "_id": "b1",
+            "client": {
+                "name": "Aryan Khan",
+                "phone": "+91 99887 76655"
+            },
+            "service": {
+                "name": "Full Haircut & Wash",
+                "price": 850
+            },
+            "staff": {
+                "_id": "s-1",
+                "name": "Rahul Sharma"
+            },
+            "appointmentDate": "2026-03-06T10:00:00.000Z",
+            "status": "upcoming",
+            "outletName": "Grace & Glamour - Downtown",
+            "source": "Online"
+        },
+        {
+            "_id": "b2",
+            "client": {
+                "name": "Pooja Hegde",
+                "phone": "+91 98765 43210"
+            },
+            "service": {
+                "name": "Facial Clean-up",
+                "price": 1200
+            },
+            "staff": {
+                "_id": "s-2",
+                "name": "Priya Singh"
+            },
+            "appointmentDate": "2026-03-06T11:30:00.000Z",
+            "status": "confirmed",
+            "outletName": "The Royal Salon - Bandra",
+            "source": "Walk-in"
+        },
+        {
+            "_id": "b3",
+            "client": {
+                "name": "Varun Dhawan",
+                "phone": "+91 99001 12233"
+            },
+            "service": {
+                "name": "Beard Trim",
+                "price": 450
+            },
+            "staff": {
+                "_id": "s-1",
+                "name": "Rahul Sharma"
+            },
+            "appointmentDate": "2026-03-06T14:00:00.000Z",
+            "status": "no-show",
+            "outletName": "Grace & Glamour - Downtown",
+            "source": "Online"
+        }
+    ],
+    "suppliers": [
+        {
+            "id": "1",
+            "name": "Glossy Cosmetics Ltd",
+            "contact": "Anil Mehta",
+            "phone": "+91 98200 12345",
+            "email": "anil@glossy.com",
+            "gstin": "27AAACG1234A1Z5",
+            "due": 45000,
+            "status": "Active"
+        },
+        {
+            "id": "2",
+            "name": "Salon Supplies Inc",
+            "contact": "Sarah J.",
+            "phone": "+91 98111 22233",
+            "email": "sales@salonsupplies.in",
+            "gstin": "27BBBCG5678B1Z2",
+            "due": 12500,
+            "status": "Overdue"
+        },
+        {
+            "id": "3",
+            "name": "Organic India",
+            "contact": "Rajesh K.",
+            "phone": "+91 99000 55555",
+            "email": "support@organic.in",
+            "gstin": "27CCC G9012C1Z9",
+            "due": 0,
+            "status": "Active"
+        }
+    ],
+    "feedbacks": [
+        {
+            "id": "1",
+            "customer": "Aryan Khan",
+            "rating": 5,
+            "comment": "Amazing haircut as always! Zoya is very detailed and understands exactly what I want.",
+            "service": "Haircut",
+            "staff": "Zoya Khan",
+            "date": "2024-03-22",
+            "status": "active"
+        },
+        {
+            "id": "2",
+            "customer": "Ishita Sharma",
+            "rating": 2,
+            "comment": "Waiting time was too long even with an appointment. Service was okay but not exceptional.",
+            "service": "Manicure",
+            "staff": "Sneha Rao",
+            "date": "2024-03-21",
+            "status": "active"
+        },
+        {
+            "id": "3",
+            "customer": "Rahul Verma",
+            "rating": 4,
+            "comment": "Good experience, clean place. Will come back.",
+            "service": "Shave",
+            "staff": "Haris Ali",
+            "date": "2024-03-20",
+            "status": "active"
+        },
+        {
+            "id": "4",
+            "customer": "Simran Jit",
+            "rating": 5,
+            "comment": "The new color looks stunning. Best salon in town!",
+            "service": "Hair Coloring",
+            "staff": "Mehak Rizvi",
+            "date": "2024-03-19",
+            "status": "active"
+        }
+    ],
+    "segments": [
+        {
+            "id": "1",
+            "name": "VIP Customers",
+            "count": 42,
+            "color": "bg-amber-50 text-amber-600 border-amber-100",
+            "iconName": "Crown",
+            "rule": "Spend > ₹20,000 OR Visits > 15"
+        },
+        {
+            "id": "2",
+            "name": "New Customers",
+            "count": 128,
+            "color": "bg-blue-50 text-blue-600 border-blue-100",
+            "iconName": "Zap",
+            "rule": "First visit in last 30 days"
+        },
+        {
+            "id": "3",
+            "name": "Inactive (30d+)",
+            "count": 86,
+            "color": "bg-red-50 text-red-600 border-red-100",
+            "iconName": "UserMinus",
+            "rule": "No visit since 30+ days"
+        }
+    ]
+}

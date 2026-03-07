@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     TrendingUp,
     Users,
@@ -31,6 +31,7 @@ import {
     Bar
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 const stats = [
     { label: 'Total Revenue', value: 128450, prefix: '₹', trend: '+14.5%', positive: true, icon: DollarSign },
@@ -63,6 +64,21 @@ const recentActivity = [
 ];
 
 export default function DashboardPage() {
+    const { bookings: registryBookings } = useBookingRegistry();
+
+    const liveRecentActivity = useMemo(() => {
+        // Take last 5 from registry
+        const live = (registryBookings || []).slice(0, 5).map(b => ({
+            client: b.clientName,
+            service: b.services?.[0]?.name || 'Salon Service',
+            time: b.time || 'Scheduled',
+            amount: `₹${(b.totalPrice || 0).toLocaleString()}`,
+            status: b.status === 'upcoming' ? 'Upcoming' : 'Completed',
+            isLive: true
+        }));
+        return [...live, ...recentActivity].slice(0, 5);
+    }, [registryBookings]);
+
     return (
         <div className="space-y-6 animate-reveal">
             {/* Top Bar / Welcome */}
@@ -246,14 +262,17 @@ export default function DashboardPage() {
                         <button className="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-70 transition-opacity">Full Stream</button>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
-                        {recentActivity.map((activity, i) => (
+                        {(liveRecentActivity || []).map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors group">
                                 <div className="flex items-center gap-4 text-left font-black">
-                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center font-black text-text-muted group-hover:text-primary transition-all">
-                                        {activity.client[0]}
+                                    <div className={`w-10 h-10 rounded-none bg-surface-alt border flex items-center justify-center font-black transition-all ${activity.isLive ? 'border-primary/50 text-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)]' : 'border-border text-text-muted group-hover:text-primary'}`}>
+                                        {activity.client?.[0] || 'C'}
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{activity.client}</p>
+                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">
+                                            {activity.client}
+                                            {activity.isLive && <span className="ml-2 text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">LIVE_APP</span>}
+                                        </p>
                                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{activity.service}</p>
                                     </div>
                                 </div>

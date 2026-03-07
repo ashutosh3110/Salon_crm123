@@ -4,31 +4,19 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const AuthContext = createContext(null);
 
 // ── Role → Base Path Registry ──────────────────────────────────────────
-const ROLE_REDIRECT_MAP = {
-    superadmin: '/superadmin',
-    admin: '/admin',
-    manager: '/manager',
-    receptionist: '/receptionist',
-    stylist: '/stylist',
-    accountant: '/accountant',
-    inventory_manager: '/inventory',
-};
+import authData from '../data/authMockData.json';
+
+// Role → Base Path Registry
+const ROLE_REDIRECT_MAP = authData.redirect_map;
+
+// Mock Users for Dev Testing
+const MOCK_USERS = authData.mock_users;
 
 export function getRedirectPath(user) {
     if (!user || !user.role) return '/login';
     return ROLE_REDIRECT_MAP[user.role] || '/admin';
 }
 
-// ── Mock Users for Dev Testing ─────────────────────────────────────────
-const MOCK_USERS = {
-    'admin@salon.com': { role: 'admin', name: 'Salon Owner' },
-    'manager@salon.com': { role: 'manager', name: 'Rajesh Manager' },
-    'reception@salon.com': { role: 'receptionist', name: 'Priya Receptionist' },
-    'stylist@salon.com': { role: 'stylist', name: 'Anita Verma' },
-    'accounts@salon.com': { role: 'accountant', name: 'Deepak Accountant' },
-    'inventory@salon.com': { role: 'inventory_manager', name: 'Suresh Inventory' },
-    'superadmin@salon.com': { role: 'superadmin', name: 'Super Admin' },
-};
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);

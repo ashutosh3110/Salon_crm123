@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, Sliders
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -15,6 +16,7 @@ const slideVariants = {
 };
 
 export default function AppBookingPage() {
+    const { addBooking } = useBookingRegistry();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
@@ -166,15 +168,16 @@ export default function AppBookingPage() {
                 totalPrice,
                 totalDuration,
                 date: selectedDate.date.toISOString(),
+                appointmentDate: selectedDate.date.toISOString(), // For admin compatibility
                 time: selectedTime,
                 staffId: selectedStaff._id,
                 staffName: selectedStaff.name,
                 status: 'upcoming',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                source: 'APP'
             };
 
-            const existingBookings = JSON.parse(localStorage.getItem('WAPIXO_BOOKING_REGISTRY') || '[]');
-            localStorage.setItem('WAPIXO_BOOKING_REGISTRY', JSON.stringify([...existingBookings, newBooking]));
+            addBooking(newBooking);
 
             setBookingComplete(true);
         } catch {

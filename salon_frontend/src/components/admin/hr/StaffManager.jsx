@@ -10,32 +10,16 @@ import {
     Legend
 } from 'recharts';
 
-const ROLES = ['Senior Stylist', 'Hair Specialist', 'Makeup Artist', 'Manager', 'Receptionist', 'Barber', 'Nail Technician'];
-const OUTLETS = ['Main Branch', 'City Center', 'West End', 'Bandra Branch'];
+import hrData from '../../../data/hrMockData.json';
+
+const ROLES = hrData.meta.roles;
+const OUTLETS = hrData.meta.outlets;
 const PAGE_SIZE = 5;
 
-const INITIAL_STAFF = [
-    {
-        id: 1, name: 'Ananya Sharma', role: 'Senior Stylist', outlet: 'Main Branch', status: 'active',
-        email: 'ananya@salon.com', phone: '+91 98765 43210', joined: '2023-05-15', salary: 25000,
-        dob: '1995-08-22', pan: 'ABCDE1234F', address: '123, Lotus Apartment, Mumbai',
-        bankName: 'HDFC Bank', accountNo: '501004561234', ifsc: 'HDFC0001234'
-    },
-    {
-        id: 2, name: 'Rahul Verma', role: 'Hair Specialist', outlet: 'City Center', status: 'active',
-        email: 'rahul@salon.com', phone: '+91 98765 43211', joined: '2023-06-20', salary: 18000,
-        dob: '1992-03-15', pan: 'FGHIJ5678K', address: 'B-42, Residency Road, Mumbai',
-        bankName: 'ICICI Bank', accountNo: '001205004567', ifsc: 'ICIC0000012'
-    },
-    {
-        id: 3, name: 'Priya Singh', role: 'Makeup Artist', outlet: 'Main Branch', status: 'inactive',
-        email: 'priya@salon.com', phone: '+91 98765 43212', joined: '2023-01-10', salary: 20000,
-        dob: '1998-11-05', pan: 'LMNOP9012Q', address: 'Flat 101, Sea View, Bandra',
-        bankName: 'SBI', accountNo: '31234567890', ifsc: 'SBIN0001234'
-    },
-];
+const INITIAL_STAFF = hrData.staff;
 
-const COLORS = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#ec4899'];
+const COLORS = hrData.meta.colors;
+
 
 const EMPTY_FORM = {
     name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: '', salary: '', status: 'active',

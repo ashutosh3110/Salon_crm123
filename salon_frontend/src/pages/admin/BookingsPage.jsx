@@ -62,7 +62,10 @@ const MOCK_OUTLETS = [
     { id: 'mock-2', name: 'Bandra West' }
 ];
 
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+
 export default function BookingsPage() {
+    const { bookings: registryBookings, updateBookingStatus: updateRegistryStatus } = useBookingRegistry();
     const {
         bookings: contextBookings,
         staff: contextStaff,
@@ -76,19 +79,31 @@ export default function BookingsPage() {
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
-    const [dateFilter, setDateFilter] = useState('today');
+    const [dateFilter, setDateFilter] = useState('all');
     const [outletFilter, setOutletFilter] = useState('all');
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    // Rename for compatibility with existing logic
-    const bookings = contextBookings;
+    // Merge logic
+    const bookings = useMemo(() => {
+        const live = (registryBookings || []).map(b => ({
+            ...b,
+            _id: b.id,
+            appointmentDate: b.appointmentDate || b.date || b.timestamp,
+            client: { name: b.clientName || 'App User', phone: 'Mobile App' },
+            service: b.services?.[0] || { name: 'App Booking' },
+            staff: { _id: b.staffId, name: b.staffName || 'Unassigned' },
+            source: b.source || 'APP'
+        }));
+        return [...live, ...contextBookings];
+    }, [registryBookings, contextBookings]);
+
     const staff = contextStaff;
     const loading = false;
 
     const filteredBookings = useMemo(() => {
         if (!Array.isArray(bookings)) return [];
-        return bookings.filter(b => {
+        let result = bookings.filter(b => {
             const clientName = b.client?.name || '';
             const clientPhone = b.client?.phone || '';
             const matchesSearch = clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -98,7 +113,34 @@ export default function BookingsPage() {
 
             return matchesSearch && matchesStatus && matchesStaff;
         });
-    }, [bookings, searchTerm, statusFilter, staffFilter]);
+
+        // Date Filter implementation
+        if (dateFilter !== 'all') {
+            const now = new Date();
+            const todayStr = now.toDateString();
+
+            if (dateFilter === 'today') {
+                result = result.filter(b => {
+                    const bDate = b.appointmentDate || b.date;
+                    return bDate && new Date(bDate).toDateString() === todayStr;
+                });
+            } else if (dateFilter === 'week') {
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                result = result.filter(b => {
+                    const bDate = b.appointmentDate || b.date;
+                    return bDate && new Date(bDate) >= weekAgo;
+                });
+            } else if (dateFilter === 'month') {
+                const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
+                result = result.filter(b => {
+                    const bDate = b.appointmentDate || b.date;
+                    return bDate && new Date(bDate) >= monthAgo;
+                });
+            }
+        }
+
+        return result;
+    }, [bookings, searchTerm, statusFilter, staffFilter, dateFilter]);
 
     // Analytics Calculations
     const statusData = useMemo(() => {
@@ -267,7 +309,7 @@ export default function BookingsPage() {
 
                 <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto font-black">
                     {[
-                        { value: dateFilter, onChange: setDateFilter, options: [{ v: 'today', l: 'Today' }, { v: 'week', l: 'Week' }, { v: 'month', l: 'Month' }] },
+                        { value: dateFilter, onChange: setDateFilter, options: [{ v: 'all', l: 'Every Date' }, { v: 'today', l: 'Today' }, { v: 'week', l: 'Week' }, { v: 'month', l: 'Month' }] },
                         { value: staffFilter, onChange: setStaffFilter, options: [{ v: 'all', l: 'Every Staff' }, ...staff.map(s => ({ v: s._id, l: s.name }))] },
                         { value: statusFilter, onChange: setStatusFilter, options: [{ v: 'all', l: 'Every Status' }, { v: 'upcoming', l: 'Upcoming' }, { v: 'completed', l: 'Completed' }, { v: 'cancelled', l: 'Cancelled' }, { v: 'no-show', l: 'No-Show' }] }
                     ].map((sel, idx) => (

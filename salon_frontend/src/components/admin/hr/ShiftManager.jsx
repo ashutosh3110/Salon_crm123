@@ -14,23 +14,14 @@ import {
     Pie
 } from 'recharts';
 
-const OUTLETS = ['Main Branch', 'City Center', 'West End', 'Bandra Branch'];
+import hrData from '../../../data/hrMockData.json';
+
+const OUTLETS = hrData.meta.outlets;
+const STAFF_LIST = hrData.staff_list_summary;
+const INITIAL_SHIFTS = hrData.shifts;
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6366f1'];
 const TW_COLORS = ['bg-emerald-500', 'bg-blue-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-primary'];
 
-const STAFF_LIST = [
-    { id: 1, name: 'Ananya Sharma', outlet: 'Main Branch' },
-    { id: 2, name: 'Rahul Verma', outlet: 'City Center' },
-    { id: 3, name: 'Sneha Kapur', outlet: 'Main Branch' },
-    { id: 4, name: 'Vikram Malhotra', outlet: 'West End' },
-    { id: 5, name: 'Priya Singh', outlet: 'Main Branch' },
-];
-
-const INITIAL_SHIFTS = [
-    { id: 1, name: 'Morning Shift', start: '09:00', end: '17:00', staffCount: 12, outlet: 'Main Branch', color: 'bg-emerald-500', hex: '#10b981', assignedStaff: [1, 3] },
-    { id: 2, name: 'Evening Shift', start: '13:00', end: '21:00', staffCount: 8, outlet: 'Main Branch', color: 'bg-blue-500', hex: '#3b82f6', assignedStaff: [2] },
-    { id: 3, name: 'Full Day', start: '10:00', end: '20:00', staffCount: 4, outlet: 'City Center', color: 'bg-violet-500', hex: '#8b5cf6', assignedStaff: [4, 5] },
-];
 
 const EMPTY_FORM = { name: '', start: '09:00', end: '17:00', outlet: OUTLETS[0], color: TW_COLORS[0], hex: COLORS[0] };
 
