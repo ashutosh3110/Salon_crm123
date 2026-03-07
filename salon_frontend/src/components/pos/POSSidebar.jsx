@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
     Zap,
@@ -26,6 +26,15 @@ const menuItems = [
 
 export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const location = useLocation();
+    const [isMdUp, setIsMdUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
+
+    useEffect(() => {
+        const handleResize = () => setIsMdUp(window.innerWidth >= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const effectiveCollapsed = isMdUp && collapsed;
 
     const isActive = (path) => {
         if (path === '/pos') return location.pathname === '/pos';
@@ -51,7 +60,7 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
             </button>
 
             {/* Logo / Header */}
-            <div className={`flex items-center h-20 border-b border-border/40 transition-all duration-300 ${collapsed ? 'justify-center' : 'px-4 justify-between'}`}>
+            <div className={`flex items-center h-20 border-b border-border/40 transition-all duration-300 ${effectiveCollapsed ? 'justify-center' : 'px-4 justify-between'}`}>
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <img
                         src="/2-removebg-preview.png"
@@ -84,28 +93,28 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
                                 : item.accent
                                     ? 'text-primary hover:bg-primary/10'
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
-                                } ${collapsed ? 'justify-center' : ''}`}
-                            title={collapsed ? item.label : undefined}
+                                } ${effectiveCollapsed ? 'justify-center' : ''}`}
+                            title={effectiveCollapsed ? item.label : undefined}
                         >
                             <item.icon className={`w-[18px] h-[18px] shrink-0 ${active
                                 ? item.accent ? 'text-white' : 'text-primary'
                                 : item.accent ? 'text-primary' : 'text-text-muted group-hover:text-text'
                                 } transition-colors`} />
-                            {!collapsed && <span>{item.label}</span>}
+                            {!effectiveCollapsed && <span>{item.label}</span>}
                         </NavLink>
                     );
                 })}
             </nav>
 
             {/* Footer */}
-            <div className={`border-t border-border/40 p-2 ${collapsed ? 'flex justify-center' : ''} bg-surface-alt/20`}>
+            <div className={`border-t border-border/40 p-2 ${effectiveCollapsed ? 'flex justify-center' : ''} bg-surface-alt/20`}>
                 <button
                     onClick={handleLogout}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-bold text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all w-full ${collapsed ? 'justify-center' : ''}`}
-                    title={collapsed ? 'Exit POS' : undefined}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-bold text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all w-full ${effectiveCollapsed ? 'justify-center' : ''}`}
+                    title={effectiveCollapsed ? 'Exit POS' : undefined}
                 >
                     <LogOut className="w-[18px] h-[18px]" />
-                    {!collapsed && <span>Exit POS</span>}
+                    {!effectiveCollapsed && <span>Exit POS</span>}
                 </button>
             </div>
         </div>
@@ -115,7 +124,7 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
         <>
             {/* Desktop sidebar */}
             <aside
-                className={`hidden md:block fixed top-0 left-0 h-screen z-30 border-r border-border/40 bg-background transition-all duration-300 ${collapsed ? 'w-[68px]' : 'w-60 shadow-2xl shadow-primary/5'
+                className={`hidden md:block fixed top-0 left-0 h-screen z-30 border-r border-border/40 bg-background transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-60 shadow-2xl shadow-primary/5'
                     }`}
             >
                 {sidebarContent}

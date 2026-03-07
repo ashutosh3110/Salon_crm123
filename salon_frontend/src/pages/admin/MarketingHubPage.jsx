@@ -37,6 +37,45 @@ const WHATSAPP_CAMPAIGNS = [
     { id: 'wa3', name: 'Weekend Grooming Alert', status: 'draft', sent: 0, read: 0, date: '--' },
 ];
 
+const AUTOMATION_FLOWS = [
+    {
+        id: 'birthday',
+        name: 'Birthday Wishes',
+        short: 'Send a warm message with an offer on the customer\'s birthday.',
+        triggerLabel: 'On the customer\'s birthday',
+        channelLabel: 'WhatsApp + optional SMS',
+        badge: 'Popular',
+        preview: 'Happy Birthday {{name}} 🎉\nWe\'d love to spoil you today. Enjoy {{offer}} on any service this week. Reply YES to book.',
+    },
+    {
+        id: 'after_visit',
+        name: 'Visit Thank You + Review',
+        short: 'Say thanks after every visit and ask for a review link.',
+        triggerLabel: '2 hours after the appointment is marked as completed',
+        channelLabel: 'WhatsApp',
+        badge: 'Recommended',
+        preview: 'Hi {{name}}, thank you for visiting {{salon_name}} today.\nTap here to rate your experience: {{review_link}}',
+    },
+    {
+        id: 'winback',
+        name: 'Win Back Inactive Clients',
+        short: 'Gently remind clients who have not visited in a while.',
+        triggerLabel: 'When there is no visit for 60 days',
+        channelLabel: 'WhatsApp broadcast',
+        badge: 'Re-activation',
+        preview: 'We miss you at {{salon_name}} 💛\nBook any service this week and get {{offer}} as a welcome back gift.',
+    },
+    {
+        id: 'no_show',
+        name: 'No-show Follow Up',
+        short: 'Send a polite note after a missed appointment.',
+        triggerLabel: '30 minutes after a missed or cancelled booking',
+        channelLabel: 'WhatsApp',
+        badge: 'Care',
+        preview: 'Hi {{name}}, we noticed today\'s booking did not happen.\nIf you want to reschedule, just reply here or tap this link: {{booking_link}}',
+    },
+];
+
 /* ─── Components ───────────────────────────────────────────────────────── */
 
 function StatCard({ label, value, trend, icon: Icon, color }) {
@@ -174,6 +213,7 @@ export default function MarketingHub() {
                     {activeTab === 'dashboard' && <DashboardContent />}
                     {activeTab === 'whatsapp' && <WhatsAppContent onNew={() => startCampaign()} />}
                     {activeTab === 'email' && <EmailContent onOpen={() => setIsEmailModalOpen(true)} />}
+                    {activeTab === 'automations' && <AutomationsContent />}
                     {activeTab === 'presence' && (
                         <div className="space-y-6">
                             <div className="bg-primary/5 rounded-[2.5rem] p-10 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -590,6 +630,185 @@ function WhatsAppContent({ onNew }) {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ─── Automations Tab ──────────────────────────────────────────────────── */
+function AutomationsContent() {
+    const [selectedId, setSelectedId] = useState(AUTOMATION_FLOWS[0]?.id ?? null);
+    const selected = AUTOMATION_FLOWS.find(flow => flow.id === selectedId) ?? AUTOMATION_FLOWS[0];
+
+    return (
+        <div className="space-y-6">
+            <SectionHeader
+                title="Automatic Messages"
+                desc="Set up once, and let the system send friendly, on-brand messages for you."
+                icon={Zap}
+                badge="Coming Soon"
+            />
+
+            <div className="grid lg:grid-cols-3 gap-6">
+                {/* Left: templates list */}
+                <div className="lg:col-span-1 space-y-4">
+                    <p className="text-[11px] text-text-muted font-bold uppercase tracking-[0.2em]">
+                        Ready-made automations
+                    </p>
+                    <div className="space-y-3">
+                        {AUTOMATION_FLOWS.map(flow => {
+                            const isActive = selected?.id === flow.id;
+                            return (
+                                <button
+                                    key={flow.id}
+                                    type="button"
+                                    onClick={() => setSelectedId(flow.id)}
+                                    className={`w-full text-left rounded-2xl border-2 p-4 transition-all group ${isActive
+                                        ? 'border-primary bg-primary/[0.02] shadow-sm'
+                                        : 'border-border bg-white hover:border-primary/30'
+                                        }`}
+                                >
+                                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-primary bg-primary/10 group-hover:bg-primary/15`}>
+                                                <Zap className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-xs font-black text-text uppercase tracking-tight">
+                                                {flow.name}
+                                            </span>
+                                        </div>
+                                        {flow.badge && (
+                                            <span className="text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded-full bg-surface text-text-muted">
+                                                {flow.badge}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-text-muted font-medium leading-snug">
+                                        {flow.short}
+                                    </p>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="mt-4 rounded-2xl border border-dashed border-border px-4 py-3 bg-surface/60 text-[11px] text-text-muted font-medium">
+                        We will not send anything automatically until you turn a flow on in a later version.
+                    </div>
+                </div>
+
+                {/* Right: selected flow details */}
+                <div className="lg:col-span-2 space-y-4">
+                    <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h3 className="text-sm font-black text-text uppercase tracking-wider flex items-center gap-2">
+                                    {selected.name}
+                                </h3>
+                                <p className="text-xs text-text-muted font-medium mt-1">
+                                    {selected.short}
+                                </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Runs automatically
+                                </div>
+                                <button
+                                    type="button"
+                                    className="text-[10px] font-black uppercase tracking-[0.18em] text-primary hover:underline"
+                                >
+                                    Edit rules (visual builder)
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 mb-6">
+                            <div className="rounded-2xl bg-surface p-4 border border-border/60">
+                                <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">
+                                    When it runs
+                                </div>
+                                <p className="text-xs text-text font-medium leading-relaxed">
+                                    {selected.triggerLabel}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl bg-surface p-4 border border-border/60">
+                                <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">
+                                    Where it sends
+                                </div>
+                                <p className="text-xs text-text font-medium leading-relaxed">
+                                    {selected.channelLabel}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4 items-start">
+                            {/* Message preview */}
+                            <div className="rounded-2xl border border-border bg-surface p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">
+                                            WA
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-black text-text uppercase tracking-[0.18em]">
+                                                Message preview
+                                            </p>
+                                            <p className="text-[10px] text-text-muted font-medium">
+                                                Personalised with {{ name: 'name', offer: 'offer', salon: 'salon_name' } && 'tags like {{name}}' }
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className="text-[10px] font-black uppercase tracking-[0.18em] text-text-muted hover:text-primary"
+                                    >
+                                        Edit text
+                                    </button>
+                                </div>
+                                <div className="rounded-2xl bg-white border border-border/60 px-4 py-3 text-[11px] text-text leading-relaxed whitespace-pre-line">
+                                    {selected.preview}
+                                </div>
+                            </div>
+
+                            {/* Summary checklist */}
+                            <div className="rounded-2xl border border-border bg-surface p-4 space-y-3">
+                                <p className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em]">
+                                    Who will get this
+                                </p>
+                                <ul className="space-y-2 text-xs text-text font-medium">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                        <span>Only active customers in your client list.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                        <span>Messages respect opt-out / DND flags.</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                        <span>Timing windows are spread out to avoid spamming.</span>
+                                    </li>
+                                </ul>
+                                <div className="pt-2 border-t border-border/60 mt-2">
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em] mb-2">
+                                        Status
+                                    </p>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 text-slate-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
+                                            <Clock className="w-3.5 h-3.5" />
+                                            Not sending yet
+                                        </span>
+                                        <button
+                                            type="button"
+                                            className="px-3 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.18em] hover:bg-black transition-colors"
+                                        >
+                                            Turn on (soon)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
