@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3 } from 'lucide-react';
-import api from '../../services/api';
+// import api from '../../services/api'; // Removed backend dependency
 import {
     BarChart,
     Bar,
@@ -16,6 +16,12 @@ const typeLabels = { flat: 'Flat ₹ Off', percentage: '% Off', combo: 'Combo De
 const typeColors = { flat: 'bg-green-50 text-green-600', percentage: 'bg-blue-50 text-blue-600', combo: 'bg-purple-50 text-purple-600' };
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
+const MOCK_PROMOS = [
+    { _id: 'p1', name: 'ALPHA FLASH 20', type: 'percentage', value: 20, startDate: '2024-03-01', endDate: '2024-03-31', usageLimit: 100, isActive: true },
+    { _id: 'p2', name: 'FLAT 500 SAVER', type: 'flat', value: 500, startDate: '2024-03-05', endDate: '2024-03-15', usageLimit: 50, isActive: true },
+    { _id: 'p3', name: 'WELCOME COMBO', type: 'combo', value: 1000, startDate: '2024-01-01', endDate: '2024-12-31', usageLimit: null, isActive: true }
+];
+
 export default function PromotionsPage() {
     const [promos, setPromos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,35 +29,49 @@ export default function PromotionsPage() {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true });
 
-    const fetchPromos = async () => {
-        try { setLoading(true); const { data } = await api.get('/promotions'); setPromos(data.data || data || []); }
-        catch (err) { console.error(err); } finally { setLoading(false); }
+    // Mock fetch logic
+    const fetchPromos = () => {
+        setLoading(true);
+        setTimeout(() => {
+            const saved = localStorage.getItem('mock_promos');
+            setPromos(saved ? JSON.parse(saved) : MOCK_PROMOS);
+            setLoading(false);
+        }, 800);
     };
 
     useEffect(() => { fetchPromos(); }, []);
 
+    // Persist mock data to localStorage
+    useEffect(() => {
+        if (!loading) {
+            localStorage.setItem('mock_promos', JSON.stringify(promos));
+        }
+    }, [promos, loading]);
+
     const chartData = useMemo(() => {
         return promos.slice(0, 6).map((p, i) => ({
             name: p.name.split(' ')[0],
-            value: p.value,
+            value: Number(p.value),
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
     }, [promos]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        try {
-            if (editing) { await api.put(`/promotions/${editing._id}`, form); }
-            else { await api.post('/promotions', form); }
-            setShowModal(false); setEditing(null);
-            setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true });
-            fetchPromos();
-        } catch (err) { alert(err.response?.data?.message || 'Error saving'); }
+        if (editing) {
+            setPromos(prev => prev.map(p => p._id === editing._id ? { ...p, ...form } : p));
+        } else {
+            const newPromo = { ...form, _id: `p-${Date.now()}` };
+            setPromos(prev => [newPromo, ...prev]);
+        }
+        setShowModal(false);
+        setEditing(null);
+        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true });
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
         if (!confirm('Delete this promotion?')) return;
-        try { await api.delete(`/promotions/${id}`); fetchPromos(); } catch { alert('Error'); }
+        setPromos(prev => prev.filter(p => p._id !== id));
     };
 
     const openEdit = (p) => {
