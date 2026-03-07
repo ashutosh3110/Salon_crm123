@@ -16,12 +16,12 @@ import {
 } from 'lucide-react';
 
 const statusColors = {
-    upcoming: 'bg-blue-50 text-blue-600 border-blue-100',
-    confirmed: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    pending: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-    completed: 'bg-green-50 text-green-600 border-green-100',
-    cancelled: 'bg-gray-100 text-gray-500 border-gray-200',
-    'no-show': 'bg-red-50 text-red-600 border-red-100',
+    upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
+    confirmed: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900',
+    pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
+    completed: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
+    cancelled: 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700',
+    'no-show': 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
 };
 
 export default function BookingDetailModal({ booking, onClose, onUpdateStatus, onReassign, onReschedule }) {
@@ -31,9 +31,9 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
     if (!booking) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200"
+                className="bg-surface rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-border"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -58,7 +58,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                         <section>
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 block">Customer</label>
                             <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full bg-surface-alt flex items-center justify-center text-primary font-bold text-lg border-2 border-white shadow-sm">
+                                <div className="w-12 h-12 rounded-full bg-surface-alt flex items-center justify-center text-primary font-bold text-lg border-2 border-surface shadow-sm">
                                     {booking.client?.name?.[0] || 'C'}
                                 </div>
                                 <div>
@@ -89,7 +89,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
 
                         <section>
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 block">Service(s)</label>
-                            <div className="p-3 rounded-xl border border-border bg-white flex items-center justify-between">
+                            <div className="p-3 rounded-xl border border-border bg-surface-alt flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary">
                                         <Shield className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                             <div className="grid grid-cols-2 gap-2">
                                 {(booking.status === 'upcoming' || booking.status === 'pending') && (
                                     <button
-                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-50 border border-green-100 text-[11px] font-bold text-green-600 hover:bg-green-100 transition-all col-span-2"
+                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-primary-foreground transition-all col-span-2"
                                         onClick={() => onUpdateStatus?.(booking._id, 'confirmed')}
                                     >
                                         <CheckCircle2 className="w-3.5 h-3.5" /> CONFIRM APPOINTMENT
@@ -155,7 +155,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                                     <AlertCircle className="w-3.5 h-3.5 text-red-500" /> NO-SHOW
                                 </button>
                                 <button
-                                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-[11px] font-bold text-red-500 hover:bg-red-50 hover:border-red-100 transition-all col-span-2"
+                                    className="flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-[11px] font-bold text-red-500 dark:text-red-400 dark:border-red-900/50 hover:bg-red-500 hover:text-primary-foreground transition-all col-span-2"
                                     onClick={() => onUpdateStatus?.(booking._id, 'cancelled')}
                                 >
                                     <XCircle className="w-3.5 h-3.5" /> CANCEL BOOKING
@@ -195,14 +195,14 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                                         setIsEditingNotes(false);
                                         // Save logic here
                                     }}
-                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition"
+                                    className="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition"
                                 >
                                     Save Notes
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="p-4 rounded-2xl bg-white border border-border/50 text-sm text-text-secondary">
+                        <div className="p-4 rounded-2xl bg-surface-alt border border-border/50 text-sm text-text-secondary">
                             {notes || 'No internal notes added yet.'}
                         </div>
                     )}

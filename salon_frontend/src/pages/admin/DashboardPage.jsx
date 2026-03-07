@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     TrendingUp,
     Users,
@@ -31,6 +31,7 @@ import {
     Bar
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 const stats = [
     { label: 'Total Revenue', value: 128450, prefix: '₹', trend: '+14.5%', positive: true, icon: DollarSign },
@@ -63,6 +64,21 @@ const recentActivity = [
 ];
 
 export default function DashboardPage() {
+    const { bookings: registryBookings } = useBookingRegistry();
+
+    const liveRecentActivity = useMemo(() => {
+        // Take last 5 from registry
+        const live = (registryBookings || []).slice(0, 5).map(b => ({
+            client: b.clientName,
+            service: b.services?.[0]?.name || 'Salon Service',
+            time: b.time || 'Scheduled',
+            amount: `₹${(b.totalPrice || 0).toLocaleString()}`,
+            status: b.status === 'upcoming' ? 'Upcoming' : 'Completed',
+            isLive: true
+        }));
+        return [...live, ...recentActivity].slice(0, 5);
+    }, [registryBookings]);
+
     return (
         <div className="space-y-6 animate-reveal">
             {/* Top Bar / Welcome */}
@@ -246,14 +262,17 @@ export default function DashboardPage() {
                         <button className="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-70 transition-opacity">Full Stream</button>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
-                        {recentActivity.map((activity, i) => (
+                        {(liveRecentActivity || []).map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors group">
                                 <div className="flex items-center gap-4 text-left font-black">
-                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center font-black text-text-muted group-hover:text-primary transition-all">
-                                        {activity.client[0]}
+                                    <div className={`w-10 h-10 rounded-none bg-surface-alt border flex items-center justify-center font-black transition-all ${activity.isLive ? 'border-primary/50 text-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)]' : 'border-border text-text-muted group-hover:text-primary'}`}>
+                                        {activity.client?.[0] || 'C'}
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{activity.client}</p>
+                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">
+                                            {activity.client}
+                                            {activity.isLive && <span className="ml-2 text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">LIVE_APP</span>}
+                                        </p>
                                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{activity.service}</p>
                                     </div>
                                 </div>
@@ -269,23 +288,23 @@ export default function DashboardPage() {
                 <div className="bg-surface rounded-none border border-border shadow-sm p-5 space-y-5 text-left font-black">
                     <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Quick Operations</h3>
                     <div className="grid grid-cols-2 gap-2.5">
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Calendar className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Booking</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Users className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Staff</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <TrendingUp className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sales</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-white transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
+                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Settings className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Settings</span>
                         </button>
-                        <Link to="/admin/digital-presence" className="p-5 rounded-none bg-primary/5 hover:bg-primary text-primary hover:text-white transition-all border border-primary/20 hover:border-primary flex flex-col items-center gap-3 group shadow-sm col-span-2">
+                        <Link to="/admin/digital-presence" className="p-5 rounded-none bg-primary/5 hover:bg-primary text-primary hover:text-primary-foreground transition-all border border-primary/20 hover:border-primary flex flex-col items-center gap-3 group shadow-sm col-span-2">
                             <Globe className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             <div className="text-center">
                                 <span className="text-[10px] font-black uppercase tracking-[0.2em] block">Digital Presence</span>
@@ -294,7 +313,7 @@ export default function DashboardPage() {
                         </Link>
                     </div>
 
-                    <div className="p-6 rounded-none bg-primary text-white space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">
+                    <div className="p-6 rounded-none bg-primary text-primary-foreground space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">
                         <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
                             <TrendingUp className="w-20 h-20" />
                         </div>

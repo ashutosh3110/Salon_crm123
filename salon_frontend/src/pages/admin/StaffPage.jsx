@@ -17,24 +17,27 @@ import {
     Ban,
     Trash2
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import { useBusiness } from '../../contexts/BusinessContext';
 
 const roleColors = {
-    admin: 'bg-purple-50 text-purple-600',
-    manager: 'bg-blue-50 text-blue-600',
-    receptionist: 'bg-green-50 text-green-600',
-    stylist: 'bg-pink-50 text-pink-600',
-    accountant: 'bg-yellow-50 text-yellow-600',
-    inventory_manager: 'bg-orange-50 text-orange-600',
+    admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
+    manager: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
+    receptionist: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400',
+    stylist: 'bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400',
+    accountant: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400',
+    inventory_manager: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
 };
 
 const statusColors = {
-    accepted: 'bg-green-50 text-green-600 border-green-100',
-    pending: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-    expired: 'bg-red-50 text-red-600 border-red-100',
+    accepted: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
+    pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
+    expired: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
 };
 
 export default function StaffPage() {
+    const { user } = useAuth();
     const { staff, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
     const [filteredStaff, setFilteredStaff] = useState(staff);
     const [loading, setLoading] = useState(false);
@@ -62,7 +65,8 @@ export default function StaffPage() {
         if (search) {
             result = result.filter(s =>
                 s.name?.toLowerCase().includes(search.toLowerCase()) ||
-                s.email?.toLowerCase().includes(search.toLowerCase())
+                s.email?.toLowerCase().includes(search.toLowerCase()) ||
+                s.phone?.replace(/\D/g, '').includes(search.replace(/\D/g, ''))
             );
         }
 
@@ -143,7 +147,7 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
                     <Plus className="w-3.5 h-3.5" /> Recruit Talent
                 </button>
@@ -199,6 +203,7 @@ export default function StaffPage() {
                         <thead>
                             <tr className="bg-surface-alt border-b border-border">
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Human Asset</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Contact Protocol</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Authority</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Base Center</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Lifecycle</th>
@@ -220,7 +225,7 @@ export default function StaffPage() {
                                 filteredStaff.map((s, index) => (
                                     <tr
                                         key={s._id}
-                                        className="hover:bg-slate-50/50 transition-all group animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                        className="hover:bg-surface-alt/50 transition-all group animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         style={{ animationDelay: `${index * 50}ms` }}
                                     >
                                         <td className="px-6 py-5 pl-8">
@@ -232,6 +237,11 @@ export default function StaffPage() {
                                                     <div className="font-bold text-text text-sm group-hover:text-primary transition-colors tracking-tight">{s.name}</div>
                                                     <div className="text-[10px] text-text-muted font-bold tracking-tight lowercase">{s.email}</div>
                                                 </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-[10px] font-bold text-text uppercase tracking-widest flex items-center gap-1"><Phone className="w-2.5 h-2.5 opacity-40" /> {maskPhone(s.phone, user?.role)}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
@@ -302,7 +312,7 @@ export default function StaffPage() {
 
             {/* Shift Modal */}
             {showModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowModal(false)}>
                     <div className="bg-surface rounded-none w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center text-center mb-8">
                             <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-4 border border-primary/20">
@@ -437,10 +447,10 @@ export default function StaffPage() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="flex-1 bg-primary text-white py-4 rounded-none shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:bg-primary-dark transition-all"
+                                    className="flex-1 bg-primary text-primary-foreground py-4 rounded-none shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:brightness-110 active:scale-95 transition-all"
                                 >
                                     {loading ? (
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-none animate-spin" />
+                                        <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-none animate-spin" />
                                     ) : (
                                         <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Commit' : 'Induct'}</span>
                                     )}

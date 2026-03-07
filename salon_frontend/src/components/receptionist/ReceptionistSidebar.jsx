@@ -12,7 +12,7 @@ const menuItems = [
     { label: 'Walk-in Queue', icon: Users, path: '/receptionist/queue' },
     { label: 'Quick Bill (POS)', icon: Zap, path: '/pos/billing', accent: true },
     { label: 'Check-in/Out', icon: UserCheck, path: '/receptionist/checkin' },
-    { label: 'Digital Presence', icon: Globe, path: '/admin/digital-presence' },
+    { label: 'Digital Presence', icon: Globe, path: '/receptionist/digital-presence' },
     { label: 'Invoices', icon: ClipboardList, path: '/receptionist/invoices' },
     { label: 'Payments', icon: CreditCard, path: '/receptionist/payments' },
     { label: 'Petty Cash', icon: ClipboardList, path: '/receptionist/petty-cash' },
@@ -22,8 +22,17 @@ const menuItems = [
 export default function ReceptionistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout } = useAuth();
     const location = useLocation();
+    const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
-    const effectiveCollapsed = collapsed && !isHovered;
+    useEffect(() => {
+        const handleResize = () => {
+            setIsLgUp(window.innerWidth >= 1024);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     const isActive = (path) => {
         if (path === '/receptionist' && location.pathname === '/receptionist') return true;

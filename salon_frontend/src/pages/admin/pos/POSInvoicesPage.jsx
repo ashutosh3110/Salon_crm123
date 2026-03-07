@@ -73,13 +73,13 @@ export default function POSInvoicesPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={() => { setDateFilter('today'); setPage(1); }}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'today' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'today' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
                     >
                         <Calendar className="w-4 h-4" /> Today
                     </button>
                     <button
                         onClick={() => { setDateFilter('all'); setPage(1); }}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'all' ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
+                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'all' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
                     >
                         <Filter className="w-4 h-4" /> All Records
                     </button>
@@ -122,7 +122,7 @@ export default function POSInvoicesPage() {
                                         <td className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">{inv.paymentMethod}</td>
                                         <td className="px-8 py-5 text-right font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</td>
                                         <td className="px-8 py-5">
-                                            <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : inv.paymentStatus === 'cancelled' ? 'bg-red-500/10 text-red-600 border-red-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                            <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20' : inv.paymentStatus === 'cancelled' ? 'bg-red-500/10 text-red-600 dark:bg-red-950/30 dark:text-red-400 border-red-500/20' : 'bg-orange-500/10 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-500/20'}`}>
                                                 {inv.paymentStatus}
                                             </span>
                                         </td>
@@ -144,8 +144,8 @@ export default function POSInvoicesPage() {
                     <div className="flex items-center justify-between px-8 py-5 border-t border-border bg-surface-alt/30">
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Cycle {page} of {totalPages}</p>
                         <div className="flex gap-2">
-                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="w-10 h-10 flex items-center justify-center rounded-none border border-border bg-surface text-text-muted hover:bg-primary hover:text-white disabled:opacity-30 transition-all"><ChevronLeft className="w-4 h-4" /></button>
-                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="w-10 h-10 flex items-center justify-center rounded-none border border-border bg-surface text-text-muted hover:bg-primary hover:text-white disabled:opacity-30 transition-all"><ChevronRight className="w-4 h-4" /></button>
+                            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="w-10 h-10 flex items-center justify-center rounded-none border border-border bg-surface text-text-muted hover:bg-primary hover:text-primary-foreground disabled:opacity-30 transition-all"><ChevronLeft className="w-4 h-4" /></button>
+                            <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} className="w-10 h-10 flex items-center justify-center rounded-none border border-border bg-surface text-text-muted hover:bg-primary hover:text-primary-foreground disabled:opacity-30 transition-all"><ChevronRight className="w-4 h-4" /></button>
                         </div>
                     </div>
                 )}
@@ -158,7 +158,7 @@ export default function POSInvoicesPage() {
                     <div className="bg-surface rounded-none border border-border shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-10 py-6 border-b border-border bg-surface-alt/50">
                             <h3 className="text-sm font-black text-text uppercase tracking-[0.2em]">Log Entry Inspection</h3>
-                            <button onClick={() => setSelectedInvoice(null)} className="w-10 h-10 rounded-none border border-border flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                            <button onClick={() => setSelectedInvoice(null)} className="w-10 h-10 rounded-none border border-border flex items-center justify-center hover:bg-red-500 hover:text-primary-foreground transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -169,7 +169,7 @@ export default function POSInvoicesPage() {
                                     <p className="text-xl font-black text-primary tracking-widest uppercase">{selectedInvoice.invoiceNumber}</p>
                                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">{formatDate(selectedInvoice.createdAt)}</p>
                                 </div>
-                                <span className={`px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] border ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                <span className={`px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] border ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-500/20'}`}>
                                     {selectedInvoice.paymentStatus || 'VERIFIED'}
                                 </span>
                             </div>
@@ -195,7 +195,7 @@ export default function POSInvoicesPage() {
                                     {selectedInvoice.items?.map((item, i) => (
                                         <div key={i} className="flex items-center justify-between text-sm p-5 hover:bg-surface-alt/50 transition-all bg-surface">
                                             <div className="flex items-center gap-4">
-                                                <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none border ${item.type === 'service' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>{item.type === 'service' ? 'SRV' : 'PRD'}</span>
+                                                <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none border ${item.type === 'service' ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 border-blue-500/20' : 'bg-amber-500/10 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400 border-amber-500/20'}`}>{item.type === 'service' ? 'SRV' : 'PRD'}</span>
                                                 <span className="font-black text-text uppercase tracking-widest leading-none">{item.name}</span>
                                                 <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-2">Qty {item.quantity}</span>
                                             </div>
@@ -230,7 +230,7 @@ export default function POSInvoicesPage() {
                             </div>
                         </div>
                         <div className="p-8 border-t border-border bg-surface-alt/30 flex justify-end">
-                            <button onClick={() => window.print()} className="px-8 py-4 bg-surface rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all flex items-center gap-3">
+                            <button onClick={() => window.print()} className="px-8 py-4 bg-surface rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-3">
                                 <Printer className="w-4 h-4" /> Print Hardcopy Log
                             </button>
                         </div>

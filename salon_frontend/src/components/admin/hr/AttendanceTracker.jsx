@@ -10,15 +10,10 @@ import {
     Legend
 } from 'recharts';
 
-const INITIAL_ATTENDANCE = [
-    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', checkIn: '09:15 AM', checkOut: '06:30 PM', status: 'present', hours: '9.2', outlet: 'Main Branch', inSource: 'Web', loc: '28.6139, 77.2090' },
-    { id: 2, staff: 'Rahul Verma', role: 'Barber', checkIn: '09:45 AM', checkOut: '07:00 PM', status: 'late', hours: '9.2', outlet: 'City Center', inSource: 'Mobile', loc: '28.5355, 77.3910' },
-    { id: 3, staff: 'Sneha Kapur', role: 'Reception', checkIn: '09:00 AM', checkOut: '06:00 PM', status: 'present', hours: '9.0', outlet: 'Main Branch', inSource: 'Biometric', loc: '28.6139, 77.2090' },
-    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', checkIn: '-', checkOut: '-', status: 'absent', hours: '0', outlet: 'West End', inSource: '-', loc: '-' },
-    { id: 5, staff: 'Priya Singh', role: 'Technician', checkIn: '10:30 AM', checkOut: '04:30 PM', status: 'half-day', hours: '6.0', outlet: 'Main Branch', inSource: 'Web', loc: '28.6139, 77.2090' },
-    { id: 6, staff: 'Amit Sharma', role: 'Barber', checkIn: '09:05 AM', checkOut: '06:00 PM', status: 'present', hours: '8.9', outlet: 'Main Branch', inSource: 'Biometric', loc: '28.6139, 77.2090' },
-    { id: 7, staff: 'Kavita Patel', role: 'Nail Tech', checkIn: '-', checkOut: '-', status: 'leave', hours: '0', outlet: 'Bandra Branch', inSource: '-', loc: '-' },
-];
+import hrData from '../../../data/hrMockData.json';
+
+const INITIAL_ATTENDANCE = hrData.attendance;
+
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },

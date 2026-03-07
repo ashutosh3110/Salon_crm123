@@ -12,79 +12,36 @@ import {
     ResponsiveContainer, Legend,
 } from 'recharts';
 
-/* ─── Mock data ─────────────────────────────────────────────────────────── */
-const MOCK_STATS = {
-    total: 127,
-    byStatus: { active: 89, trial: 18 },
-    revenueToday: 12400,
-    revenueMonth: 81500,
-    expiredPlans: 11,
-    totalUsers: 534
-};
+import superAdminData from '../../data/superAdminMockData.json';
 
-const MOCK_MONTHLY_REVENUE = [
-    { month: 'Sep', revenue: 41200, prev: 32000 },
-    { month: 'Oct', revenue: 53400, prev: 41200 },
-    { month: 'Nov', revenue: 48900, prev: 53400 },
-    { month: 'Dec', revenue: 67100, prev: 48900 },
-    { month: 'Jan', revenue: 72800, prev: 67100 },
-    { month: 'Feb', revenue: 81500, prev: 72800 },
-];
-
-const MOCK_REGISTRATIONS = [
-    { month: 'Sep', salons: 12 },
-    { month: 'Oct', salons: 19 },
-    { month: 'Nov', salons: 15 },
-    { month: 'Dec', salons: 27 },
-    { month: 'Jan', salons: 22 },
-    { month: 'Feb', salons: 34 },
-];
-
-const MOCK_PLAN_DIST = [
-    { name: 'Free', value: 38, color: '#94a3b8' },
-    { name: 'Basic', value: 27, color: '#3b82f6' },
-    { name: 'Pro', value: 22, color: '#B85C5C' },
-    { name: 'Enterprise', value: 13, color: '#f59e0b' },
-];
-
-const MOCK_CHURN = [
-    { month: 'Sep', rate: 4.2 },
-    { month: 'Oct', rate: 3.8 },
-    { month: 'Nov', rate: 4.9 },
-    { month: 'Dec', rate: 3.1 },
-    { month: 'Jan', rate: 2.7 },
-    { month: 'Feb', rate: 2.2 },
-];
-
-const MOCK_RECENT = [
-    { _id: '1', name: 'Glam Studio', slug: 'glam-studio', subscriptionPlan: 'pro', status: 'active', createdAt: '2026-02-22T10:00:00Z', city: 'Mumbai', owner: 'Priya Shah' },
-    { _id: '2', name: 'The Barber Room', slug: 'barber-room', subscriptionPlan: 'basic', status: 'trial', createdAt: '2026-02-21T08:30:00Z', city: 'Delhi', owner: 'Raj Mehta' },
-    { _id: '3', name: 'Luxe Cuts', slug: 'luxe-cuts', subscriptionPlan: 'enterprise', status: 'active', createdAt: '2026-02-20T14:15:00Z', city: 'Bangalore', owner: 'Sara Ali' },
-    { _id: '4', name: 'Urban Aesthetics', slug: 'urban-aesth', subscriptionPlan: 'free', status: 'expired', createdAt: '2026-02-18T09:00:00Z', city: 'Pune', owner: 'Vikram R.' },
-    { _id: '5', name: 'Serenity Spa', slug: 'serenity-spa', subscriptionPlan: 'pro', status: 'suspended', createdAt: '2026-02-16T11:45:00Z', city: 'Chennai', owner: 'Anita K.' },
-];
+/* ─── Data from JSON ─────────────────────────────────────────────────── */
+const MOCK_MONTHLY_REVENUE = superAdminData.monthlyRevenue;
+const MOCK_REGISTRATIONS = superAdminData.registrations;
+const MOCK_PLAN_DIST = superAdminData.planDistribution;
+const MOCK_CHURN = superAdminData.churn;
+const MOCK_RECENT = superAdminData.recentTenants;
 
 /* ─── Colour maps ────────────────────────────────────────────────────────── */
 const planColors = {
-    free: 'bg-slate-100 text-slate-600 border-slate-200',
-    basic: 'bg-blue-50 text-blue-600 border-blue-200',
+    free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',
+    basic: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800',
     pro: 'bg-primary/10 text-primary border-primary/20',
     premium: 'bg-primary/10 text-primary border-primary/20',
-    enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
+    enterprise: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800',
 };
 const statusColors = {
-    active: 'bg-emerald-50 text-emerald-600',
-    trial: 'bg-blue-50 text-blue-600',
-    expired: 'bg-orange-50 text-orange-600',
-    suspended: 'bg-red-50 text-red-600',
-    inactive: 'bg-slate-100 text-slate-500',
+    active: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400',
+    trial: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
+    expired: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
+    suspended: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
+    inactive: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
 };
 
 /* ─── Custom tooltip ─────────────────────────────────────────────────────── */
 const CustomTooltip = ({ active, payload, label, prefix = '', suffix = '' }) => {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-white border border-border rounded-xl shadow-xl p-3 text-xs">
+        <div className="bg-surface border border-border rounded-xl shadow-xl p-3 text-xs">
             <p className="font-semibold text-text mb-1">{label}</p>
             {payload.map((p, i) => (
                 <p key={i} style={{ color: p.color }} className="font-medium">
@@ -112,13 +69,13 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 /* ─── Metric card ────────────────────────────────────────────────────────── */
 function MetricCard({ label, value, icon: Icon, gradient, shadow, change, prefix = '', loading }) {
     return (
-        <div className={`bg-white rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-md transition-all group shadow-sm`}>
+        <div className={`bg-surface rounded-2xl border border-border p-5 hover:border-primary/20 hover:shadow-md transition-all group shadow-sm`}>
             <div className="flex items-center justify-between mb-4">
                 <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow}`}>
                     <Icon className="w-5 h-5 text-white" />
                 </div>
                 {change !== undefined && (
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${change >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400' : 'bg-red-50 dark:bg-red-950/30 text-red-500 dark:text-red-400'}`}>
                         {change >= 0 ? '↑' : '↓'} {Math.abs(change)}%
                     </span>
                 )}
@@ -201,7 +158,7 @@ export default function SADashboardPage() {
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-text-secondary text-xs font-semibold hover:border-primary/30 hover:text-primary transition-all"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} /> Refresh
                     </button>
@@ -219,12 +176,12 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-3 gap-6">
 
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-sm p-5">
+                <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
                         title="Monthly Revenue"
                         subtitle="Last 6 months performance vs previous period"
                         action={
-                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
                                 ↑ 11.9% MoM
                             </span>
                         }
@@ -254,7 +211,7 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Plan Distribution — PieChart */}
-                <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader title="Plan Distribution" subtitle="Current active subscriptions" />
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
@@ -284,12 +241,12 @@ export default function SADashboardPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* New Registrations — BarChart */}
-                <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
                         title="New Salon Registrations"
                         subtitle="Monthly signups over last 6 months"
                         action={
-                            <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
                                 34 this month
                             </span>
                         }
@@ -312,12 +269,12 @@ export default function SADashboardPage() {
                 </div>
 
                 {/* Churn Rate — LineChart */}
-                <div className="bg-white rounded-2xl border border-border shadow-sm p-5">
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
                         title="Churn Rate"
                         subtitle="Monthly churn % — lower is better"
                         action={
-                            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
                                 ↓ Improving
                             </span>
                         }
@@ -344,7 +301,7 @@ export default function SADashboardPage() {
             </div>
 
             {/* ── Recent Signups Table ── */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div>
                         <h2 className="font-bold text-text">Recent Signups</h2>
@@ -403,7 +360,7 @@ export default function SADashboardPage() {
                                     </td>
                                     <td className="px-5 py-3.5 text-right">
                                         <Link to={`/superadmin/tenants/${t._id}`}
-                                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1.5 rounded-lg transition-all">
+                                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-primary/20 bg-primary/5 hover:bg-primary hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
                                             View <ArrowRight className="w-3 h-3" />
                                         </Link>
                                     </td>

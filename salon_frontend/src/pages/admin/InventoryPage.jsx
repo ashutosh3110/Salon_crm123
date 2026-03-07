@@ -68,7 +68,7 @@ export default function InventoryPage({ tab = 'products' }) {
                     <button className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-[0.2em] shadow-sm">
                         <Download className="w-4 h-4" /> Export Log
                     </button>
-                    <button className="flex items-center gap-3 bg-primary text-white border border-primary px-8 py-3.5 rounded-none text-[10px] font-black hover:bg-primary-dark transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20">
+                    <button className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-8 py-3.5 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20">
                         <Plus className="w-4 h-4" /> New Asset Entry
                     </button>
                 </div>

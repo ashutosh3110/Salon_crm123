@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
     Search, ShoppingCart, Plus, Minus, X, Trash2,
     Scissors, Package, Check, Loader2, Scan,
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
-    Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText
+    Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
+    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
 } from 'lucide-react';
 import {
     MOCK_SERVICES, MOCK_PRODUCTS, MOCK_CLIENTS,
@@ -11,7 +13,8 @@ import {
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CreditCard, Ticket, Gift, History, Calendar } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import {
     Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Font
 } from '@react-pdf/renderer';
@@ -49,7 +52,7 @@ const pdfStyles = StyleSheet.create({
     thanks: { fontSize: 16, marginBottom: 5 }
 });
 
-const InvoicePDF = ({ invoice }) => (
+const InvoicePDF = ({ invoice, role }) => (
     <Document>
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
@@ -64,7 +67,7 @@ const InvoicePDF = ({ invoice }) => (
                 <View style={pdfStyles.metaBox}>
                     <Text style={pdfStyles.label}>Billed To</Text>
                     <Text style={pdfStyles.value}>{invoice.client?.name || 'Walk-in Client'}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.client?.phone}</Text>
+                    <Text style={pdfStyles.salonMeta}>{maskPhone(invoice.client?.phone, role)}</Text>
                     <Text style={pdfStyles.salonMeta}>{invoice.client?.email || ''}</Text>
                 </View>
                 <View style={pdfStyles.metaBox}>
@@ -130,7 +133,9 @@ const InvoicePDF = ({ invoice }) => (
 );
 
 export default function POSBillingPage() {
+    const { user } = useAuth();
     const { addSaleRecord } = useInventory();
+    const location = useLocation();
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
@@ -169,6 +174,37 @@ export default function POSBillingPage() {
     const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
+
+    // ── Handle Incoming Navigation State (from Appointments) ──
+    useEffect(() => {
+        if (location.state?.preSelectClient) {
+            const { name, phone } = location.state.preSelectClient;
+            // Attempt to find existing client or create partial
+            const existingClient = MOCK_CLIENTS.find(c => c.phone === phone);
+            if (existingClient) {
+                setSelectedClient(existingClient);
+            } else {
+                setSelectedClient({ name, phone, email: '', loyaltyPoints: 0, walletBalance: 0, dueAmount: 0 });
+            }
+
+            // If a service was pre-selected, add it to cart
+            if (location.state.preSelectService) {
+                const serviceName = location.state.preSelectService;
+                // Handle different possible ways services are listed
+                const serviceObj = MOCK_SERVICES.find(s => s.name.toLowerCase().includes(serviceName.toLowerCase()));
+                if (serviceObj) {
+                    setCart([{
+                        ...serviceObj,
+                        itemId: serviceObj._id,
+                        quantity: 1,
+                        type: 'service',
+                        staffId: 'u1',
+                        staffName: 'Ravi Sharma'
+                    }]);
+                }
+            }
+        }
+    }, [location.state]);
 
     // Refs
     const searchInputRef = useRef(null);
@@ -337,7 +373,11 @@ export default function POSBillingPage() {
 
     const filteredClients = useMemo(() => {
         if (!searchClient) return MOCK_CLIENTS.slice(0, 5);
-        return MOCK_CLIENTS.filter(c => c.name.toLowerCase().includes(searchClient.toLowerCase()) || c.phone.includes(searchClient));
+        const q = searchClient.toLowerCase();
+        return MOCK_CLIENTS.filter(c =>
+            c.name.toLowerCase().includes(q) ||
+            (c.phone && c.phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')))
+        );
     }, [searchClient]);
 
     // ─── Cart Logic ────────────────────────────────────────
@@ -355,7 +395,7 @@ export default function POSBillingPage() {
                 itemId: item._id,
                 type,
                 quantity: 1,
-                staffId: null,
+                staffIds: [''],
                 commission: item.commission || 0
             }]);
         }
@@ -371,9 +411,25 @@ export default function POSBillingPage() {
         setCart(cart.filter((_, i) => i !== idx));
     };
 
-    const updateStaff = (idx, staffId) => {
+    const updateStaff = (cartIdx, staffArrIdx, staffId) => {
         const newCart = [...cart];
-        newCart[idx].staffId = staffId;
+        const ids = [...(newCart[cartIdx].staffIds || [])];
+        ids[staffArrIdx] = staffId;
+        newCart[cartIdx].staffIds = ids;
+        setCart(newCart);
+    };
+
+    const addStaff = (cartIdx) => {
+        const newCart = [...cart];
+        newCart[cartIdx].staffIds = [...(newCart[cartIdx].staffIds || []), ''];
+        setCart(newCart);
+    };
+
+    const removeStaff = (cartIdx, staffArrIdx) => {
+        const newCart = [...cart];
+        const ids = [...(newCart[cartIdx].staffIds || [])];
+        ids.splice(staffArrIdx, 1);
+        newCart[cartIdx].staffIds = ids;
         setCart(newCart);
     };
 
@@ -449,7 +505,7 @@ export default function POSBillingPage() {
                 client: selectedClient,
                 items: cart.map(item => ({
                     ...item,
-                    staffName: MOCK_STAFF.find(s => s._id === item.staffId)?.name || 'Unknown'
+                    staffName: (item.staffIds || []).filter(Boolean).map(id => MOCK_STAFF.find(s => s._id === id)?.name).filter(Boolean).join(', ') || 'Unassigned'
                 })),
                 totals: { ...totals, paidAmount, balanceDue },
                 payments: payments,
@@ -538,7 +594,7 @@ export default function POSBillingPage() {
     const handleDownloadPDF = async () => {
         setIsGeneratingPDF(true);
         try {
-            const blob = await pdf(<InvoicePDF invoice={successInvoice} />).toBlob();
+            const blob = await pdf(<InvoicePDF invoice={successInvoice} role={user?.role} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -613,7 +669,7 @@ export default function POSBillingPage() {
 
                     <div className="border-t border-dashed border-black pt-2 mb-2">
                         <div className="flex justify-between"><span>Customer:</span><span className="font-bold uppercase">{successInvoice.client.name}</span></div>
-                        <div className="flex justify-between"><span>Mobile:</span><span>{successInvoice.client.phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1XXXXXX$3')}</span></div>
+                        <div className="flex justify-between"><span>Mobile:</span><span>{maskPhone(successInvoice.client.phone, user?.role)}</span></div>
                     </div>
 
                     <div className="border-t border-black pt-2 mb-1 font-bold">
@@ -903,7 +959,7 @@ export default function POSBillingPage() {
                                                 >
                                                     <div>
                                                         <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{c.name}</p>
-                                                        <p className="text-[11px] font-bold text-text-muted mt-0.5">{c.phone}</p>
+                                                        <p className="text-[11px] font-bold text-text-muted mt-0.5">{maskPhone(c.phone, user?.role)}</p>
                                                     </div>
                                                     <span className="text-[10px] font-black tracking-widest text-text-secondary bg-surface-alt px-3 py-1.5 border border-border group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">SELECT</span>
                                                 </button>
@@ -936,7 +992,7 @@ export default function POSBillingPage() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-black text-text">{selectedClient.name}</p>
-                                        <p className="text-[11px] text-text-muted font-bold">{selectedClient.phone}</p>
+                                        <p className="text-[11px] text-text-muted font-bold">{maskPhone(selectedClient.phone, user?.role)}</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setSelectedClient(null)} className="p-2 text-text-muted hover:text-rose-500 transition-colors">
@@ -1024,27 +1080,47 @@ export default function POSBillingPage() {
                                         </div>
                                         <button onClick={() => removeItem(idx)} className="p-1 text-text-muted hover:text-rose-500"><X className="w-4 h-4" /></button>
                                     </div>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="flex-1 flex items-center gap-2">
-                                            <span className="text-[9px] font-black text-text-muted uppercase">Staff:</span>
-                                            <select
-                                                className="flex-1 bg-surface-alt border-none text-[10px] font-bold p-1 text-text focus:ring-0"
-                                                value={item.staffId || ''}
-                                                onChange={(e) => updateStaff(idx, e.target.value)}
-                                            >
-                                                <option value="">Select Stylist</option>
-                                                {MOCK_STAFF.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                            </select>
-                                        </div>
-                                        {packageEligibleItems.includes(item.name) && (
-                                            <button
-                                                onClick={() => togglePackageRedemption(idx)}
-                                                className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${item.isPackageRedemption ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface-alt text-text-secondary border-border hover:border-amber-500 hover:text-amber-500'}`}
-                                            >
-                                                <Gift className="w-3 h-3" /> USE PKG
-                                            </button>
-                                        )}
+                                    {/* Multi-Staff Row */}
+                                    <div className="space-y-1.5">
+                                        {(item.staffIds || ['']).map((sid, sIdx) => (
+                                            <div key={sIdx} className="flex items-center gap-2">
+                                                <span className="text-[9px] font-black text-text-muted uppercase shrink-0 w-8">
+                                                    {sIdx === 0 ? 'Staff:' : ''}
+                                                </span>
+                                                <select
+                                                    className="flex-1 bg-surface-alt border border-border/60 text-[10px] font-bold px-2 py-1.5 text-text focus:ring-1 focus:ring-primary/30 focus:border-primary transition-all"
+                                                    value={sid || ''}
+                                                    onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
+                                                >
+                                                    <option value="">Select Stylist</option>
+                                                    {MOCK_STAFF.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                                </select>
+                                                {(item.staffIds || []).length > 1 && (
+                                                    <button
+                                                        onClick={() => removeStaff(idx, sIdx)}
+                                                        className="p-1 text-rose-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-all shrink-0"
+                                                        title="Remove staff"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                        <button
+                                            onClick={() => addStaff(idx)}
+                                            className="flex items-center gap-1.5 text-[10px] font-black text-primary border border-primary/30 bg-primary/5 hover:bg-primary hover:text-white px-3 py-1 rounded-full transition-all ml-0 mt-1"
+                                        >
+                                            <Plus className="w-3 h-3" /> Add Another Staff
+                                        </button>
                                     </div>
+                                    {packageEligibleItems.includes(item.name) && (
+                                        <button
+                                            onClick={() => togglePackageRedemption(idx)}
+                                            className={`flex items-center gap-1.5 px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${item.isPackageRedemption ? 'bg-amber-500 text-white border-amber-500' : 'bg-surface-alt text-text-secondary border-border hover:border-amber-500 hover:text-amber-500'}`}
+                                        >
+                                            <Gift className="w-3 h-3" /> USE PKG
+                                        </button>
+                                    )}
                                 </div>
                             ))
                         )}

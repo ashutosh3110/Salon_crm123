@@ -17,26 +17,10 @@ import {
     SheetTrigger,
 } from "../ui/Sheet";
 
-const testimonials = [
-    {
-        name: "Claudia Alves",
-        content: "Thank you very much! An amazing job that exceeded all my expectations! I am very glad that I trusted you!",
-        stars: 5,
-        image: "https://i.pravatar.cc/150?u=claudia"
-    },
-    {
-        name: "Priya Sharma",
-        content: "Managing our salon became so much easier after switching to SalonCRM. The booking system is intuitive and our clients love the automated reminders.",
-        stars: 5,
-        image: "https://i.pravatar.cc/150?u=priya"
-    },
-    {
-        name: "Rahul Varma",
-        content: "The inventory management and staff performance tracking has helped us increase our revenue by 25% in just 3 months. Incredibly detailed reports.",
-        stars: 5,
-        image: "https://i.pravatar.cc/150?u=rahul"
-    }
-];
+import landingData from '../../data/landingMockData.json';
+
+const testimonials = landingData.testimonials;
+
 
 export default function Testimonials() {
     const scrollRef = useRef(null);

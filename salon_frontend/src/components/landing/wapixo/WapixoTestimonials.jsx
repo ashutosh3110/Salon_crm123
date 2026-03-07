@@ -2,29 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Quote, X, Send, User, Building } from 'lucide-react';
 
-const testimonials = [
-    {
-        id: 1,
-        name: 'Claudia Alves',
-        role: 'CEO, Artistry Studio',
-        content: 'Wapixo has completely transformed how we manage our multi-outlet salon. The precision in billing and the depth of analytics is unmatched in the industry.',
-        image: 'https://i.pravatar.cc/150?u=claudia',
-    },
-    {
-        id: 2,
-        name: 'Priya Sharma',
-        role: 'Director, Urban Gloss',
-        content: 'The WhatsApp automation and smart scheduling have reduced our no-shows by 40%. It is not just a software; it is a growth partner for our business.',
-        image: 'https://i.pravatar.cc/150?u=priya',
-    },
-    {
-        id: 3,
-        name: 'Rahul Varma',
-        role: 'Founder, Elite Scissors',
-        content: 'Managing inventory across 10 locations was a nightmare before Wapixo. Now, everything is synchronized with surgical precision. Truly impressive.',
-        image: 'https://i.pravatar.cc/150?u=rahul',
-    },
-];
+import landingData from '../../../data/landingMockData.json';
+
+const testimonials = landingData.testimonials.map((t, i) => ({ ...t, id: i + 1 }));
+
 
 export default function WapixoTestimonials() {
     const [showForm, setShowForm] = useState(false);

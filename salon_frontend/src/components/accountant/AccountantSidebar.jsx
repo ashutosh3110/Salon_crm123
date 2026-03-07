@@ -21,8 +21,17 @@ const menuItems = [
 export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout } = useAuth();
     const location = useLocation();
+    const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
-    const effectiveCollapsed = collapsed && !isHovered;
+    useEffect(() => {
+        const handleResize = () => {
+            setIsLgUp(window.innerWidth >= 1024);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     const isActive = (path) => {
         if (path === '/accountant' && location.pathname === '/accountant') return true;

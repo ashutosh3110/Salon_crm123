@@ -22,13 +22,7 @@ import {
     Loader2
 } from 'lucide-react';
 
-const recentPayments = [
-    { id: 'TXN-9021', client: 'Rohit Bal', amount: '₹1,500', time: '10:45 AM', method: 'UPI', status: 'Success' },
-    { id: 'TXN-9022', client: 'Meena Rai', amount: '₹2,300', time: '10:52 AM', method: 'Card', status: 'Success' },
-    { id: 'TXN-9023', client: 'Sunil Gavaskar', amount: '₹850', time: '11:05 AM', method: 'Cash', status: 'Failed' },
-    { id: 'TXN-9024', client: 'Priya Sharma', amount: '₹500', time: '11:15 AM', method: 'UPI', status: 'Success' },
-    { id: 'TXN-9025', client: 'Amit Kumar', amount: '₹1,200', time: '11:20 AM', method: 'Card', status: 'Success' },
-];
+import { recentPayments } from '../../data/receptionistData';
 
 export default function PaymentsPage() {
     const [paymentFeed, setPaymentFeed] = useState(recentPayments);

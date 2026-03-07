@@ -13,19 +13,12 @@ import {
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel } from '../../utils/exportUtils';
 
-/* ─── Mock data ─────────────────────────────────────────────────────── */
-const MOCK_PAYMENTS = [
-    { id: 'pay001', salon: 'Glam Studio', plan: 'Pro', amount: 4999, date: '2026-02-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0023' },
-    { id: 'pay002', salon: 'Luxe Cuts', plan: 'Enterprise', amount: 12999, date: '2026-02-01', status: 'paid', method: 'Stripe', invoice: 'INV-0022' },
-    { id: 'pay003', salon: 'Blossom Parlour', plan: 'Basic', amount: 1999, date: '2026-02-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0021' },
-    { id: 'pay004', salon: 'Elite Groom', plan: 'Basic', amount: 1999, date: '2026-02-01', status: 'failed', method: 'Razorpay', invoice: 'INV-0020' },
-    { id: 'pay005', salon: 'Serenity Spa', plan: 'Pro', amount: 4999, date: '2026-01-01', status: 'refunded', method: 'Stripe', invoice: 'INV-0019' },
-    { id: 'pay006', salon: 'Scissors & Style', plan: 'Pro', amount: 4999, date: '2026-01-15', status: 'paid', method: 'Razorpay', invoice: 'INV-0018' },
-    { id: 'pay007', salon: 'Urban Aesthetics', plan: 'Free', amount: 0, date: '2026-01-01', status: 'paid', method: '—', invoice: 'INV-0017' },
-    { id: 'pay008', salon: 'The Barber Room', plan: 'Basic', amount: 1999, date: '2025-12-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0016' },
-    { id: 'pay009', salon: 'Glam Studio', plan: 'Basic', amount: 1999, date: '2025-12-01', status: 'paid', method: 'Razorpay', invoice: 'INV-0015' },
-    { id: 'pay010', salon: 'Luxe Cuts', plan: 'Enterprise', amount: 12999, date: '2025-12-01', status: 'failed', method: 'Stripe', invoice: 'INV-0014' },
-];
+import superAdminData from '../../data/superAdminMockData.json';
+
+/* ─── Data from JSON ─────────────────────────────────────────────────── */
+const MOCK_PAYMENTS = superAdminData.payments;
+const MONTHLY_REV = superAdminData.monthlyRevenue;
+const PLAN_REV = superAdminData.planDistribution;
 
 const MOCK_INVOICES = MOCK_PAYMENTS.map((p, i) => ({
     id: p.invoice,
@@ -38,22 +31,6 @@ const MOCK_INVOICES = MOCK_PAYMENTS.map((p, i) => ({
     taxAmt: Math.round(p.amount * 0.18),
     total: Math.round(p.amount * 1.18),
 }));
-
-const MONTHLY_REV = [
-    { month: 'Sep', revenue: 41200, subscriptions: 98 },
-    { month: 'Oct', revenue: 53400, subscriptions: 107 },
-    { month: 'Nov', revenue: 48900, subscriptions: 103 },
-    { month: 'Dec', revenue: 67100, subscriptions: 112 },
-    { month: 'Jan', revenue: 72800, subscriptions: 119 },
-    { month: 'Feb', revenue: 81500, subscriptions: 127 },
-];
-
-const PLAN_REV = [
-    { plan: 'Free', revenue: 0, salons: 38, color: '#94a3b8' },
-    { plan: 'Basic', revenue: 53973, salons: 27, color: '#3b82f6' },
-    { plan: 'Pro', revenue: 109978, salons: 22, color: '#B85C5C' },
-    { plan: 'Enterprise', revenue: 168987, salons: 13, color: '#f59e0b' },
-];
 
 const STATUS_CFG = {
     paid: { label: 'Paid', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },
@@ -158,10 +135,48 @@ function InvoiceModal({ onClose, onSend }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
+/* ─── Date filter helper ─────────────────────────────────────────────── */
+const DATE_PERIODS = [
+    { value: 'all', label: 'All' },
+    { value: 'today', label: 'Today' },
+    { value: 'week', label: 'This Week' },
+    { value: 'month', label: 'This Month' },
+    { value: 'custom', label: 'Custom' },
+];
+
+function isInPeriod(dateStr, period, customFrom, customTo) {
+    if (!dateStr || period === 'all') return true;
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (period === 'today') {
+        return d.toDateString() === now.toDateString();
+    }
+    if (period === 'week') {
+        const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+        start.setHours(0, 0, 0, 0);
+        return d >= start && d <= now;
+    }
+    if (period === 'month') {
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }
+    if (period === 'custom') {
+        const from = customFrom ? new Date(customFrom) : null;
+        const to = customTo ? new Date(customTo + 'T23:59:59') : null;
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+    }
+    return true;
+}
+
 export default function SABillingPage() {
     const [tab, setTab] = useState('payments');
     const [search, setSearch] = useState('');
     const [statusFilter, setSF] = useState('');
+    const [datePeriod, setDatePeriod] = useState('all');
+    const [customFrom, setCustomFrom] = useState('');
+    const [customTo, setCustomTo] = useState('');
+    const [showDateFilter, setShowDateFilter] = useState(false);
     const [showModal, setModal] = useState(false);
     const [toast, setToast] = useState(null);
     const [retrying, setRetry] = useState(null);
@@ -176,14 +191,16 @@ export default function SABillingPage() {
         const q = search.toLowerCase();
         const matchQ = !q || p.salon.toLowerCase().includes(q) || p.invoice.toLowerCase().includes(q) || p.plan.toLowerCase().includes(q);
         const matchS = !statusFilter || p.status === statusFilter;
-        return matchQ && matchS;
+        const matchD = isInPeriod(p.date, datePeriod, customFrom, customTo);
+        return matchQ && matchS && matchD;
     });
 
     const filteredInvoices = MOCK_INVOICES.filter(inv => {
         const q = search.toLowerCase();
         const matchQ = !q || inv.salon.toLowerCase().includes(q) || inv.id.toLowerCase().includes(q);
         const matchS = !statusFilter || inv.status === statusFilter;
-        return matchQ && matchS;
+        const matchD = isInPeriod(inv.date, datePeriod, customFrom, customTo);
+        return matchQ && matchS && matchD;
     });
 
     /* KPIs */
@@ -210,6 +227,70 @@ export default function SABillingPage() {
         { id: 'invoices', icon: FileText, label: 'Invoices' },
         { id: 'reports', icon: BarChart2, label: 'Reports' },
     ];
+
+    /* ── Date filter toggle button (reusable) ── */
+    const isDateFiltered = datePeriod !== 'all';
+    const activePeriodLabel = DATE_PERIODS.find(p => p.value === datePeriod)?.label || 'All';
+
+    const FilterToggleBtn = (
+        <button
+            onClick={() => setShowDateFilter(v => !v)}
+            className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm ${showDateFilter || isDateFiltered
+                    ? 'bg-primary text-white border-primary shadow-primary/20'
+                    : 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary'
+                }`}
+        >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">{isDateFiltered ? activePeriodLabel : 'Filter'}</span>
+            {isDateFiltered && !showDateFilter && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-400 border-2 border-white" />
+            )}
+        </button>
+    );
+
+    const DateFilterPanel = showDateFilter && (
+        <div className="bg-white rounded-2xl border border-primary/20 shadow-lg px-4 py-3.5 flex flex-wrap items-center gap-2 animate-in slide-in-from-top-2 duration-200">
+            <Calendar className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider mr-1">Period:</span>
+            {DATE_PERIODS.map(p => (
+                <button
+                    key={p.value}
+                    onClick={() => { setDatePeriod(p.value); if (p.value !== 'custom') { setCustomFrom(''); setCustomTo(''); } }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${datePeriod === p.value
+                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
+                            : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
+                        }`}
+                >
+                    {p.label}
+                </button>
+            ))}
+            {datePeriod === 'custom' && (
+                <div className="flex items-center gap-2 ml-1">
+                    <input
+                        type="date"
+                        value={customFrom}
+                        onChange={e => setCustomFrom(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                    <span className="text-xs text-text-muted font-semibold">to</span>
+                    <input
+                        type="date"
+                        value={customTo}
+                        onChange={e => setCustomTo(e.target.value)}
+                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-text bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                </div>
+            )}
+            {isDateFiltered && (
+                <button
+                    onClick={() => { setDatePeriod('all'); setCustomFrom(''); setCustomTo(''); setShowDateFilter(false); }}
+                    className="ml-auto flex items-center gap-1 text-xs font-bold text-red-500 hover:text-red-600 px-2 py-1 rounded-lg hover:bg-red-50 transition-all"
+                >
+                    <X className="w-3 h-3" /> Clear
+                </button>
+            )}
+        </div>
+    );
 
     return (
         <div className="space-y-5 pb-8">
@@ -281,8 +362,8 @@ export default function SABillingPage() {
 
             {/* ════ TAB: PAYMENTS ════ */}
             {tab === 'payments' && (
-                <div className="space-y-4">
-                    {/* Filter bar */}
+                <div className="space-y-3">
+                    {/* Search + status + filter toggle */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -301,7 +382,10 @@ export default function SABillingPage() {
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}
                         />
+                        {FilterToggleBtn}
                     </div>
+                    {/* Date filter panel */}
+                    {DateFilterPanel}
 
                     {/* Payments table */}
                     <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -384,7 +468,8 @@ export default function SABillingPage() {
 
             {/* ════ TAB: INVOICES ════ */}
             {tab === 'invoices' && (
-                <div className="space-y-4">
+                <div className="space-y-3">
+                    {/* Search + status + filter toggle */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="relative flex-1">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -403,7 +488,10 @@ export default function SABillingPage() {
                                 { value: 'refunded', label: 'Refunded', icon: RotateCcw },
                             ]}
                         />
+                        {FilterToggleBtn}
                     </div>
+                    {/* Date filter panel */}
+                    {DateFilterPanel}
 
                     <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">

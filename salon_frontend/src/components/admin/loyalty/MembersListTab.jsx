@@ -12,23 +12,23 @@ import {
     AlertCircle,
     Download
 } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
+import { maskPhone } from '../../../utils/phoneUtils';
 import { motion } from 'framer-motion';
 
-const MOCK_MEMBERS = [
-    { id: 1, name: 'Aditya Verma', phone: '+91 98765 43210', plan: 'Royal Platinum', status: 'active', expiry: '2026-05-12', joinDate: '2026-02-12' },
-    { id: 2, name: 'Priya Sharma', phone: '+91 87654 32109', plan: 'Gold Elite', status: 'active', expiry: '2026-03-30', joinDate: '2026-02-28' },
-    { id: 3, name: 'Rohan Gupta', phone: '+91 76543 21098', plan: 'Silver Lounge', status: 'expired', expiry: '2026-02-20', joinDate: '2026-01-20' },
-    { id: 4, name: 'Sanya Khan', phone: '+91 91234 56789', plan: 'Gold Elite', status: 'active', expiry: '2026-04-15', joinDate: '2026-02-15' },
-    { id: 5, name: 'Vikram Singh', phone: '+91 82345 67890', plan: 'Royal Platinum', status: 'cancelled', expiry: '2026-02-25', joinDate: '2026-01-25' },
-];
+import loyaltyData from '../../../data/loyaltyMockData.json';
+
+const MOCK_MEMBERS = loyaltyData.members;
+
 
 export default function MembersListTab() {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
 
     const filteredMembers = MOCK_MEMBERS.filter(m => {
-        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.phone.includes(searchTerm);
+        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''));
         if (filter === 'all') return matchesSearch;
         return matchesSearch && m.status === filter;
     });
@@ -91,7 +91,7 @@ export default function MembersListTab() {
                                             </div>
                                             <div>
                                                 <div className="text-sm font-black text-foreground italic tracking-tight">{member.name}</div>
-                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{member.phone}</div>
+                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{maskPhone(member.phone, user?.role)}</div>
                                             </div>
                                         </div>
                                     </td>

@@ -20,12 +20,12 @@ export default function StockOverview() {
                         <input
                             type="text"
                             placeholder="Search product name or barcode..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                            className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all font-bold"
                         />
                     </div>
                     <div className="relative">
                         <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
+                        <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider cursor-pointer">
                             <option>All Outlets</option>
                             <option>Andheri West</option>
                             <option>Bandra</option>
@@ -33,7 +33,7 @@ export default function StockOverview() {
                     </div>
                     <div className="relative">
                         <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
+                        <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider cursor-pointer font-bold">
                             <option>All Categories</option>
                             <option>Hair Care</option>
                             <option>Equipment</option>
@@ -57,7 +57,7 @@ export default function StockOverview() {
                             <th className="px-6 py-4 text-[10px] font-bold text-text-secondary uppercase tracking-widest bg-surface text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-border bg-white text-sm">
+                    <tbody className="divide-y divide-border bg-surface text-sm">
                         {MOCK_STOCK.map((item) => (
                             <tr key={item.id} className="hover:bg-surface/50 transition-colors group cursor-default">
                                 <td className="px-6 py-4">

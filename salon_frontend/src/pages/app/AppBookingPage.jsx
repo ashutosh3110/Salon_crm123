@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, Sliders
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
 const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -15,6 +17,7 @@ const slideVariants = {
 };
 
 export default function AppBookingPage() {
+    const { addBooking } = useBookingRegistry();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
@@ -152,10 +155,34 @@ export default function AppBookingPage() {
     }, [services, serviceSearch]);
 
     // Submit booking
+    const { customer } = useCustomerAuth();
+
     const handleSubmit = async () => {
         setSubmitting(true);
         try {
             await new Promise(r => setTimeout(r, 1500)); // Simulate API
+
+            // --- Persist Booking to Global Registry ---
+            const newBooking = {
+                id: `BOK-${Date.now()}`,
+                clientId: customer?._id || 'cust-001',
+                clientName: customer?.name || 'Priya Sharma',
+                phone: customer?.phone || '',
+                services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
+                totalPrice,
+                totalDuration,
+                date: selectedDate.date.toISOString(),
+                appointmentDate: selectedDate.date.toISOString(), // For admin compatibility
+                time: selectedTime,
+                staffId: selectedStaff._id,
+                staffName: selectedStaff.name,
+                status: 'upcoming',
+                timestamp: new Date().toISOString(),
+                source: 'APP'
+            };
+
+            addBooking(newBooking);
+
             setBookingComplete(true);
         } catch {
             console.error('Booking failed');

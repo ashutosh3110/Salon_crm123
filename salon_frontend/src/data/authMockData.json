@@ -1,0 +1,41 @@
+{
+    "mock_users": {
+        "admin@salon.com": {
+            "role": "admin",
+            "name": "Salon Owner"
+        },
+        "manager@salon.com": {
+            "role": "manager",
+            "name": "Rajesh Manager"
+        },
+        "reception@salon.com": {
+            "role": "receptionist",
+            "name": "Priya Receptionist"
+        },
+        "stylist@salon.com": {
+            "role": "stylist",
+            "name": "Anita Verma"
+        },
+        "accounts@salon.com": {
+            "role": "accountant",
+            "name": "Deepak Accountant"
+        },
+        "inventory@salon.com": {
+            "role": "inventory_manager",
+            "name": "Suresh Inventory"
+        },
+        "superadmin@salon.com": {
+            "role": "superadmin",
+            "name": "Super Admin"
+        }
+    },
+    "redirect_map": {
+        "superadmin": "/superadmin",
+        "admin": "/admin",
+        "manager": "/manager",
+        "receptionist": "/receptionist",
+        "stylist": "/stylist",
+        "accountant": "/accountant",
+        "inventory_manager": "/inventory"
+    }
+}

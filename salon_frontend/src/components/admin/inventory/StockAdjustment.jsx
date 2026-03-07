@@ -17,14 +17,14 @@ export default function StockAdjustment() {
                 <div className="flex gap-4 p-1 bg-surface-alt rounded-xl border border-border">
                     <button
                         onClick={() => setView('list')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'list' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'list' ? 'bg-surface text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
                     >
                         <History className="w-3.5 h-3.5" />
                         Adjustment Log
                     </button>
                     <button
                         onClick={() => setView('form')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'form' ? 'bg-white text-rose-600 shadow-sm' : 'text-text-muted hover:text-text'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'form' ? 'bg-surface text-rose-600 shadow-sm' : 'text-text-muted hover:text-text'}`}
                     >
                         <MinusCircle className="w-3.5 h-3.5" />
                         Manual Adjustment
@@ -33,7 +33,7 @@ export default function StockAdjustment() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar bg-white">
+            <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
                 {view === 'list' ? <AdjustmentHistory /> : <AdjustmentForm onCancel={() => setView('list')} />}
             </div>
         </div>
@@ -56,7 +56,7 @@ function AdjustmentHistory() {
                 </thead>
                 <tbody className="divide-y divide-border">
                     {MOCK_ADJUSTMENTS.map((entry) => (
-                        <tr key={entry.id} className="hover:bg-rose-50/30 transition-colors group">
+                        <tr key={entry.id} className="hover:bg-surface-alt/50 transition-colors group">
                             <td className="px-8 py-5">
                                 <span className="font-semibold text-text-secondary text-xs">{new Date(entry.date).toLocaleDateString()}</span>
                             </td>
@@ -64,7 +64,7 @@ function AdjustmentHistory() {
                                 <span className="font-bold text-text text-sm">{entry.product}</span>
                             </td>
                             <td className="px-8 py-5">
-                                <span className="px-3 py-1 bg-rose-50 text-rose-600 text-[10px] font-bold rounded-lg border border-rose-100">
+                                <span className="px-3 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-lg border border-rose-100 dark:border-rose-900">
                                     {entry.quantity} UNITS
                                 </span>
                             </td>
@@ -109,7 +109,7 @@ function AdjustmentForm({ onCancel }) {
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Select Product</label>
                         <div className="relative group">
                             <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
-                            <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider">
+                            <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider cursor-pointer">
                                 <option>Select item to adjust...</option>
                                 <option>Mac Studio Fix Foundation</option>
                                 <option>Dyson Supersonic Filter</option>
@@ -125,13 +125,13 @@ function AdjustmentForm({ onCancel }) {
                                 <input
                                     type="number"
                                     placeholder="e.g. 5"
-                                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all font-bold"
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Reason Code</label>
-                            <select className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider">
+                            <select className="w-full px-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider cursor-pointer">
                                 <option>Select Reason</option>
                                 <option>Damage</option>
                                 <option>Expiry</option>
@@ -146,7 +146,7 @@ function AdjustmentForm({ onCancel }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Outlet</label>
                             <div className="relative group">
                                 <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
-                                <select className="w-full pl-10 pr-4 py-2.5 bg-white border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider">
+                                <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider cursor-pointer">
                                     <option>Select Outlet</option>
                                     <option>Andheri West</option>
                                     <option>Bandra</option>
@@ -157,7 +157,7 @@ function AdjustmentForm({ onCancel }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Date of Event</label>
                             <input
                                 type="date"
-                                className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all"
+                                className="w-full px-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all font-bold"
                             />
                         </div>
                     </div>
@@ -166,7 +166,7 @@ function AdjustmentForm({ onCancel }) {
                 <div className="flex gap-4 pt-4">
                     <button
                         onClick={onCancel}
-                        className="flex-1 px-6 py-3.5 rounded-xl border border-border text-sm font-bold text-text-secondary hover:bg-white transition-all"
+                        className="flex-1 px-6 py-3.5 rounded-xl border border-border text-sm font-bold text-text-secondary hover:bg-surface-alt transition-all"
                     >
                         Back to Log
                     </button>

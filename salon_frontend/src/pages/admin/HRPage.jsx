@@ -10,7 +10,8 @@ import {
     UserPlus,
     Clock,
     Calculator,
-    BarChart3
+    BarChart3,
+    Calendar
 } from 'lucide-react';
 
 // Sub-components (to be created)
@@ -19,6 +20,7 @@ import AttendanceTracker from '../../components/admin/hr/AttendanceTracker';
 import ShiftManager from '../../components/admin/hr/ShiftManager';
 import PayrollManager from '../../components/admin/hr/PayrollManager';
 import PerformanceAnalytics from '../../components/admin/hr/PerformanceAnalytics';
+import LeaveApprovalManager from '../../components/admin/hr/LeaveApprovalManager';
 
 const HR_TABS = [
     { id: 'staff', label: 'Staff Master', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
@@ -26,6 +28,7 @@ const HR_TABS = [
     { id: 'shifts', label: 'Shifts', icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
     { id: 'payroll', label: 'Payroll', icon: DollarSign, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { id: 'performance', label: 'Performance', icon: TrendingUp, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+    { id: 'leaves', label: 'Leave Requests', icon: Calendar, color: 'text-primary', bg: 'bg-primary/10' },
 ];
 
 import Skeleton from '../../components/common/Skeleton';
@@ -64,6 +67,7 @@ export default function HRPage({ tab = 'staff' }) {
             case 'shifts': return <ShiftManager />;
             case 'payroll': return <PayrollManager />;
             case 'performance': return <PerformanceAnalytics />;
+            case 'leaves': return <LeaveApprovalManager />;
             default: return <StaffManager />;
         }
     };
@@ -80,7 +84,7 @@ export default function HRPage({ tab = 'staff' }) {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60">Human Capital Management Matrix</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60">Manage staff, attendance, shifts and payroll.</p>
                     </div>
                 </div>
 
@@ -90,12 +94,12 @@ export default function HRPage({ tab = 'staff' }) {
                             key={t.id}
                             onClick={() => navigate(`/admin/hr/${t.id}`)}
                             className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab ${tab === t.id
-                                ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-100'
+                                ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-100'
                                 : 'text-text-muted hover:text-text hover:bg-surface-alt'
                                 }`}
                         >
-                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-white' : 'text-primary/60'}`} />
-                            <span className="hidden lg:inline">{t.label} Protocol</span>
+                            <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-primary-foreground' : 'text-primary/60'}`} />
+                            <span className="hidden lg:inline">{t.label}</span>
                             {tab === t.id && (
                                 <>
                                     <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-white/40" />

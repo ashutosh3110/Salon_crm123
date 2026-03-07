@@ -61,7 +61,7 @@ export default function AddProductForm({ onSave }) {
     return (
         <div className="max-w-4xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="bg-white p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
+            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
                         <FileText className="w-6 h-6" />
@@ -73,7 +73,7 @@ export default function AddProductForm({ onSave }) {
                 </div>
                 <button
                     onClick={() => navigate('/admin/inventory/products')}
-                    className="p-2 rounded-xl hover:bg-slate-50 text-text-muted transition-all"
+                    className="p-2 rounded-xl hover:bg-surface-alt text-text-muted transition-all"
                 >
                     <X className="w-5 h-5" />
                 </button>
@@ -81,7 +81,7 @@ export default function AddProductForm({ onSave }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 1. Basic Details */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
                     <div className="flex items-center gap-2 mb-2">
                         <FileText className="w-4 h-4 text-primary" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
@@ -91,7 +91,7 @@ export default function AddProductForm({ onSave }) {
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Product Name <span className="text-rose-500">*</span></label>
                         <input
                             type="text"
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                             placeholder="e.g. Loreal Revive Shampoo"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -103,7 +103,7 @@ export default function AddProductForm({ onSave }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Brand / Mfr</label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                 placeholder="e.g. Loreal"
                                 value={formData.brand}
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
@@ -112,7 +112,7 @@ export default function AddProductForm({ onSave }) {
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category</label>
                             <select
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold outline-none"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold outline-none"
                                 value={formData.category}
                                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                             >
@@ -125,7 +125,7 @@ export default function AddProductForm({ onSave }) {
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
                         <textarea
                             rows="2"
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold resize-none"
                             placeholder="Brief product use details..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -134,8 +134,8 @@ export default function AddProductForm({ onSave }) {
                 </div>
 
                 {/* 2. Pricing & tax */}
-                <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="space-y-6 text-left">
+                    <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
                         <div className="flex items-center gap-2 mb-2">
                             <DollarSign className="w-4 h-4 text-emerald-500" />
                             <h3 className="text-xs font-bold text-text uppercase tracking-widest">2. Pricing Details</h3>
@@ -147,7 +147,7 @@ export default function AddProductForm({ onSave }) {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold text-sm">₹</span>
                                 <input
                                     type="number"
-                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20"
+                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20"
                                     placeholder="0.00"
                                     value={formData.sellingPrice}
                                     onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
@@ -166,7 +166,7 @@ export default function AddProductForm({ onSave }) {
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">GST % <span className="text-rose-500">*</span></label>
                                 <select
-                                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                     value={formData.gstPercent}
                                     onChange={(e) => setFormData({ ...formData, gstPercent: e.target.value })}
                                 >
@@ -181,7 +181,7 @@ export default function AddProductForm({ onSave }) {
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">HSN Code</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                    className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                     placeholder="e.g. 3305"
                                     value={formData.hsnCode}
                                     onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
@@ -192,7 +192,7 @@ export default function AddProductForm({ onSave }) {
                 </div>
 
                 {/* 4. Barcode & SKU */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
                     <div className="flex items-center gap-2 mb-2">
                         <Scan className="w-4 h-4 text-blue-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">4. Barcode / SKU</h3>
@@ -204,21 +204,21 @@ export default function AddProductForm({ onSave }) {
                             <div className="flex gap-2">
                                 <input
                                     type="text"
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-mono font-bold"
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-mono font-bold"
                                     placeholder="Scan or enter barcode"
                                     value={formData.barcode}
                                     onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
                                 />
                                 <button
                                     onClick={() => setFormData({ ...formData, barcode: Math.floor(Math.random() * 1000000000000).toString() })}
-                                    className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-text-muted transition-all border border-border/50" title="Generate Barcode"
+                                    className="p-2.5 rounded-xl bg-surface-alt hover:bg-surface text-text-muted transition-all border border-border/50" title="Generate Barcode"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                 </button>
                             </div>
 
                             {formData.barcode && (
-                                <div className="mt-2 p-4 bg-slate-50 border border-border rounded-xl flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
+                                <div className="mt-2 p-4 bg-surface-alt border border-border rounded-xl flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
                                     <div className="bg-white p-2 rounded-lg shadow-sm border border-border/50">
                                         <Barcode
                                             value={formData.barcode}
@@ -238,7 +238,7 @@ export default function AddProductForm({ onSave }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">SKU (Internal Code) <span className="text-rose-500">*</span></label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                 placeholder="e.g. LRL-SH-05"
                                 value={formData.sku}
                                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
@@ -279,7 +279,7 @@ export default function AddProductForm({ onSave }) {
                 </div>
 
                 {/* 6. Supplier Mapping */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
                     <div className="flex items-center gap-2 mb-2">
                         <Truck className="w-4 h-4 text-amber-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">6. Supplier Mapping</h3>
@@ -288,7 +288,7 @@ export default function AddProductForm({ onSave }) {
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Default Supplier (Reference only)</label>
                         <select
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                             value={formData.supplier}
                             onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
                         >
@@ -302,14 +302,14 @@ export default function AddProductForm({ onSave }) {
                 </div>
 
                 {/* 7. Outlet Availability */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
                     <div className="flex items-center gap-2 mb-2">
                         <Building className="w-4 h-4 text-violet-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">7. Outlet Availability</h3>
                     </div>
 
                     <div className="space-y-3">
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-border cursor-pointer hover:bg-white transition-all group">
+                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
                             <input
                                 type="radio"
                                 name="outlet"
@@ -319,7 +319,7 @@ export default function AddProductForm({ onSave }) {
                             />
                             <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
                         </label>
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-border cursor-pointer hover:bg-white transition-all group">
+                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
                             <input
                                 type="radio"
                                 name="outlet"
@@ -333,7 +333,7 @@ export default function AddProductForm({ onSave }) {
                 </div>
 
                 {/* 8. Production & Expiry */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
                     <div className="flex items-center gap-2 mb-2">
                         <BellRing className="w-4 h-4 text-orange-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">8. Production & Expiry</h3>
@@ -344,7 +344,7 @@ export default function AddProductForm({ onSave }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Mfg. Date</label>
                             <input
                                 type="date"
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                 value={formData.mfgDate}
                                 onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
                             />
@@ -353,7 +353,7 @@ export default function AddProductForm({ onSave }) {
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Expiry Date</label>
                             <input
                                 type="date"
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
                                 value={formData.expiryDate}
                                 onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
                             />
@@ -366,20 +366,20 @@ export default function AddProductForm({ onSave }) {
             </div>
 
             {/* 9. Status & 10. Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 bg-slate-50 rounded-3xl border border-border">
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 p-6 bg-surface-alt rounded-3xl border border-border text-left">
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-4">
                         <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">9. Status:</span>
-                        <div className="flex p-1 bg-white rounded-xl border border-border">
+                        <div className="flex p-1 bg-surface rounded-xl border border-border">
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'active' })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm' : 'text-text-muted hover:text-text'}`}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm dark:shadow-emerald-950/40' : 'text-text-muted hover:text-text'}`}
                             >
                                 Active
                             </button>
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'inactive' })}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm' : 'text-text-muted hover:text-text'}`}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm dark:shadow-rose-950/40' : 'text-text-muted hover:text-text'}`}
                             >
                                 Inactive
                             </button>
@@ -390,14 +390,14 @@ export default function AddProductForm({ onSave }) {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => navigate('/admin/inventory/products')}
-                        className="px-6 py-3 rounded-2xl text-sm font-bold text-text-secondary hover:bg-white transition-all border border-transparent hover:border-border"
+                        className="px-6 py-3 rounded-2xl text-sm font-bold text-text-secondary hover:bg-surface transition-all border border-transparent hover:border-border"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={!isFormValid}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-2xl text-white text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 shadow-none cursor-not-allowed'}`}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-2xl text-primary-foreground text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
                     >
                         <Save className="w-4 h-4" />
                         Save Product

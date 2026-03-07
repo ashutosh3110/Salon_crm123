@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Phone, Mail, Star, Edit, Trash2, Users, TrendingUp, PieChart as PieIcon, BarChart3, ShieldAlert } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import {
     PieChart,
     Pie,
@@ -24,6 +26,7 @@ const GENDER_COLORS = {
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function ClientsPage() {
+    const { user } = useAuth();
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -113,7 +116,7 @@ export default function ClientsPage() {
 
     const filtered = clients.filter((c) =>
         c.name?.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone?.includes(search) ||
+        c.phone?.replace(/\D/g, '').includes(search.replace(/\D/g, '')) ||
         c.email?.toLowerCase().includes(search.toLowerCase())
     );
 
@@ -127,7 +130,7 @@ export default function ClientsPage() {
                 </div>
                 <button
                     onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', gender: 'female', notes: '' }); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-white border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add Profile
                 </button>
@@ -268,7 +271,7 @@ export default function ClientsPage() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-left">
-                                            <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Phone className="w-3.5 h-3.5 opacity-40" />{client.phone}</span>
+                                            <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Phone className="w-3.5 h-3.5 opacity-40" />{maskPhone(client.phone, user?.role)}</span>
                                         </td>
                                         <td className="px-8 py-6 hidden sm:table-cell text-left">
                                             {client.email ? <span className="inline-flex items-center gap-2 text-[11px] font-black text-text-muted uppercase tracking-widest leading-none"><Mail className="w-3.5 h-3.5 opacity-40" />{client.email.toLowerCase()}</span> : <span className="text-[9px] font-black text-text-muted/20">ACCESS_RESTRICTED</span>}
@@ -283,10 +286,10 @@ export default function ClientsPage() {
                                         </td>
                                         <td className="px-8 py-6 text-right">
                                             <div className="flex items-center justify-end gap-3 font-black">
-                                                <button onClick={() => openEdit(client)} className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
+                                                <button onClick={() => openEdit(client)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button onClick={() => handleDelete(client._id)} className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-rose-600 hover:border-rose-600 transition-all shadow-sm">
+                                                <button onClick={() => handleDelete(client._id)} className="p-3 rounded-none bg-surface border border-border text-text-muted hover:text-rose-600 hover:border-rose-600 transition-all shadow-sm">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -312,16 +315,16 @@ export default function ClientsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Full Identity *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Comms Link *</label>
-                                    <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
+                                    <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Gender Tag</label>
-                                    <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                    <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
                                         <option value="female">FEMALE</option>
                                         <option value="male">MALE</option>
                                         <option value="other">OTHER</option>
@@ -330,15 +333,15 @@ export default function ClientsPage() {
                             </div>
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Electronic Mail</label>
-                                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="reach@node.com" />
+                                <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="reach@node.com" />
                             </div>
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Dossier Notes</label>
-                                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/10" placeholder="Relevant history log..." />
+                                <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/10" placeholder="Relevant history log..." />
                             </div>
                             <div className="flex gap-6 pt-10 font-black">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editingClient ? 'Commit' : 'Deploy Identity'}</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editingClient ? 'Commit' : 'Deploy Identity'}</button>
                             </div>
                         </form>
                     </div>

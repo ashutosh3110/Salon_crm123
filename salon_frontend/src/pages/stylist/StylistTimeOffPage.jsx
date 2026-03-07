@@ -1,22 +1,73 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, AlertCircle, CheckCircle2, XCircle, Plus, ChevronRight, Info, Shield, Activity, ShieldAlert, X, Disc } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const leaveRequests = [
-    { id: 1, type: 'CASUAL_LEAVE', dates: '24 FEB - 26 FEB', reason: 'FAMILY_VISIT', status: 'PENDING', appliedOn: '20 FEB' },
-    { id: 2, type: 'MEDICAL_LEAVE', dates: '10 FEB', reason: 'EMERGENCY_DENTAL', status: 'APPROVED', appliedOn: '09 FEB' },
-    { id: 3, type: 'PAID_LEAVE', dates: '15 JAN - 20 JAN', reason: 'VACATION', status: 'REJECTED', appliedOn: '10 JAN' },
-];
+import stylistData from '../../data/stylistMockData.json';
 
-const leaveTypes = ['CASUAL_LEAVE', 'MEDICAL_LEAVE', 'PAID_LEAVE', 'SICK_BUFFER'];
+const leaveRequests = stylistData.timeOff.requests;
+const leaveTypes = stylistData.timeOff.types;
 
 export default function StylistTimeOffPage() {
+    const [requests, setRequests] = useState(stylistData.timeOff.requests);
     const [showForm, setShowForm] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('ALL');
     const [toast, setToast] = useState(null);
 
-    const showToast = (msg) => {
+    const [formData, setFormData] = useState({
+        type: leaveTypes[0],
+        startDate: '',
+        endDate: '',
+        reason: ''
+    });
+
+    const filteredRequests = requests.filter(req => {
+        if (statusFilter === 'ALL') return true;
+        return req.status === statusFilter;
+    });
+
+    // Remove the showToast function as it's being decommissioned
+    /* const showToast = (msg) => {
         setToast(msg);
         setTimeout(() => setToast(null), 3000);
+    }; */
+
+    // Load and Sync with LocalStorage for cross-panel visibility
+    useEffect(() => {
+        const stored = localStorage.getItem('WAPIXO_LEAVE_REGISTRY');
+        if (stored) {
+            setRequests(JSON.parse(stored));
+        } else {
+            localStorage.setItem('WAPIXO_LEAVE_REGISTRY', JSON.stringify(stylistData.timeOff.requests));
+        }
+    }, []);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const formatMonth = (dateStr) => {
+            const d = new Date(dateStr);
+            const day = d.getDate();
+            const month = d.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase();
+            return `${day < 10 ? '0' + day : day} ${month}`;
+        };
+
+        const newRequest = {
+            id: Date.now(), // Unique ID based on timestamp
+            staffName: 'Ananya Sharma', // Mocking currently logged in stylist
+            type: formData.type,
+            dates: `${formatMonth(formData.startDate)} - ${formatMonth(formData.endDate)}`,
+            reason: formData.reason,
+            status: 'PENDING',
+            appliedOn: formatMonth(new Date())
+        };
+
+        const updatedRequests = [newRequest, ...requests];
+        setRequests(updatedRequests);
+        localStorage.setItem('WAPIXO_LEAVE_REGISTRY', JSON.stringify(updatedRequests));
+
+        setShowForm(false);
+        setFormData({ type: leaveTypes[0], startDate: '', endDate: '', reason: '' });
+        // showToast("Downtime request transmitted for verification."); // Decommissioned
     };
 
     const statusStyles = {
@@ -26,121 +77,91 @@ export default function StylistTimeOffPage() {
     };
 
     return (
-        <div className="space-y-6 font-black text-left">
-            {/* Header */}
+        <div className="space-y-6 text-left">
+            {/* Header / Command Center */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <Activity className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Downtime_Control</span>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Downtime_Control</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Protocol Pause</h1>
+                    <h1 className="text-3xl text-text tracking-tighter uppercase font-bold">Protocol Pause</h1>
                     <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Absence_Management_Terminal</p>
                 </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="flex items-center gap-3 px-6 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:bg-primary-dark transition-all active:scale-95"
+                    className="flex items-center gap-3 px-6 py-4 bg-primary text-white text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 font-bold"
                 >
-                    <Plus className="w-4 h-4" /> Initialize_Request
+                    <Plus className="w-5 h-5" /> Initialize_Request
                 </button>
             </div>
 
             {/* Quota Matrix */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                     { label: 'Casual_Quota', value: '4/12', color: 'text-primary' },
                     { label: 'Medical_Units', value: '2/8', color: 'text-rose-500' },
                     { label: 'Paid_Stream', value: '10/15', color: 'text-emerald-500' },
                     { label: 'Sick_Buffer', value: '1/5', color: 'text-amber-500' },
                 ].map((s) => (
-                    <div key={s.label} className="bg-surface border border-border p-6 relative overflow-hidden group">
+                    <div key={s.label} className="bg-surface border border-border p-4 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
-                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2">{s.label}</p>
-                        <p className={`text-4xl font-black ${s.color} tracking-tighter`}>
+                        <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1">{s.label}</p>
+                        <p className={`text-2xl font-black ${s.color} tracking-tighter`}>
                             {s.value.split('/')[0]}
-                            <span className="text-sm font-black text-text-muted mx-2">/</span>
-                            <span className="text-sm font-black text-text-muted">{s.value.split('/')[1]}</span>
+                            <span className="text-xs font-black text-text-muted mx-1">/</span>
+                            <span className="text-xs font-black text-text-muted">{s.value.split('/')[1]}</span>
                         </p>
-                        <div className="mt-4 h-1 bg-background">
-                            <div className="h-full bg-border/20 w-full" />
-                        </div>
                     </div>
                 ))}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
                 {/* Requests Table */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-surface border border-border overflow-hidden">
-                        <div className="px-8 py-6 border-b border-border/20 bg-background/50 flex items-center justify-between">
-                            <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Iteration_Request_Log</h2>
-                            <span className="text-[8px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 border border-primary/20">Authorized_Base</span>
+                <div className="bg-surface border border-border overflow-hidden text-left">
+                    <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Iteration_Request_Log</h2>
+                            <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Authorized_Base</span>
                         </div>
-                        <div className="divide-y divide-border/10">
-                            {leaveRequests.map((req) => (
-                                <div key={req.id} className="p-8 flex flex-col md:flex-row items-center justify-between bg-surface hover:bg-surface-alt/50 transition-all group">
-                                    <div className="flex items-center gap-6 w-full md:w-auto">
-                                        <div className={`w-12 h-12 flex items-center justify-center border ${statusStyles[req.status]}`}>
-                                            {req.status === 'APPROVED' ? <CheckCircle2 className="w-5 h-5" /> :
-                                                req.status === 'PENDING' ? <Clock className="w-5 h-5 text-amber-500 animate-pulse" /> : <XCircle className="w-5 h-5" />}
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-black text-text uppercase tracking-tight">{req.type}</p>
-                                            <p className="text-[10px] text-text-muted font-bold tracking-widest uppercase italic">
-                                                [{req.dates}] <span className="mx-2 opacity-30">|</span> APPLIED_{req.appliedOn}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-6 mt-4 md:mt-0 w-full md:w-auto justify-between md:justify-end">
-                                        <span className={`text-[9px] font-black px-4 py-1.5 border uppercase tracking-widest ${statusStyles[req.status]}`}>
-                                            {req.status}
-                                        </span>
-                                        <button
-                                            onClick={() => showToast(`Synchronizing Request_ID: ${req.id}`)}
-                                            className="p-2 border border-border text-text-muted hover:text-text hover:bg-surface transition-all active:scale-95"
-                                        >
-                                            <ChevronRight className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+
+                        <div className="flex items-center gap-2">
+                            <div className="flex gap-1 p-1 bg-surface border border-border text-left">
+                                {['ALL', 'APPROVED', 'PENDING', 'REJECTED'].map(f => (
+                                    <button
+                                        key={f}
+                                        onClick={() => setStatusFilter(f)}
+                                        className={`px-2.5 py-1 text-[7px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                    >
+                                        {f === 'ALL' ? 'ALL_UNITS' : f}
+                                    </button>
+                                ))}
+                            </div>
+                            <span className="text-[7px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-2 text-left">Detected: {filteredRequests.length}</span>
                         </div>
                     </div>
-                </div>
-
-                {/* Important Info */}
-                <div className="space-y-6">
-                    <div className="bg-primary/5 border border-primary/20 p-8 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <ShieldAlert className="w-16 h-16 text-primary" />
-                        </div>
-
-                        <div className="relative z-10 font-black">
-                            <div className="flex items-center gap-3 mb-6">
-                                <Shield className="w-4 h-4 text-primary" />
-                                <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Policy_Directives</h2>
-                            </div>
-                            <div className="space-y-6">
-                                <div className="p-4 bg-background border border-border">
-                                    <p className="text-[8px] text-primary uppercase tracking-[0.2em] mb-2 font-bold italic">Latency_Requirement</p>
-                                    <p className="text-[10px] text-text-muted uppercase leading-relaxed tracking-tight">
-                                        Submissions must be finalized <span className="text-primary">48 hours</span> prior to session initiation.
-                                    </p>
+                    <div className="divide-y divide-border/10 text-left">
+                        {filteredRequests.map((req) => (
+                            <div key={req.id} className="px-5 py-4 flex flex-col md:flex-row items-center justify-between bg-surface hover:bg-surface-alt/50 transition-all group">
+                                <div className="flex items-center gap-4 w-full md:w-auto text-left">
+                                    <div className={`w-10 h-10 flex items-center justify-center border ${statusStyles[req.status]}`}>
+                                        {req.status === 'APPROVED' ? <CheckCircle2 className="w-4 h-4" /> :
+                                            req.status === 'PENDING' ? <Clock className="w-4 h-4 text-amber-500 animate-pulse" /> : <XCircle className="w-4 h-4" />}
+                                    </div>
+                                    <div className="space-y-0.5 text-left">
+                                        <p className="text-xs font-black text-text uppercase tracking-tight text-left">{req.type}</p>
+                                        <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase italic leading-none text-left">
+                                            [{req.dates}] <span className="mx-1.5 opacity-30">|</span> APPLIED_{req.appliedOn}
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="p-4 bg-background border border-border">
-                                    <p className="text-[8px] text-primary uppercase tracking-[0.2em] mb-2 font-bold italic">Medical_Verification</p>
-                                    <p className="text-[10px] text-text-muted uppercase leading-relaxed tracking-tight">
-                                        Doctor's certificate mandatory for dental/medical cycles exceeding <span className="text-primary">48 units</span>.
-                                    </p>
-                                </div>
-                                <div className="p-4 bg-background border border-border">
-                                    <p className="text-[8px] text-primary uppercase tracking-[0.2em] mb-2 font-bold italic">Managerial_Sync</p>
-                                    <p className="text-[10px] text-text-muted uppercase leading-relaxed tracking-tight">
-                                        Planned vacation streams require prior <span className="text-primary">Managerial Bypass</span> approval.
-                                    </p>
+                                <div className="flex items-center gap-4 mt-3 md:mt-0 w-full md:w-auto justify-between md:justify-end text-left">
+                                    <span className={`text-[8px] font-black px-3 py-1 border uppercase tracking-widest ${statusStyles[req.status]}`}>
+                                        {req.status}
+                                    </span>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -167,16 +188,17 @@ export default function StylistTimeOffPage() {
                             </div>
 
                             <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    setShowForm(false);
-                                    showToast("Downtime request transmitted for verification.");
-                                }}
+                                onSubmit={handleSubmit}
                                 className="space-y-6 relative z-10"
                             >
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Pause_Vector</label>
-                                    <select required className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none">
+                                    <select
+                                        required
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                        className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
+                                    >
                                         {leaveTypes.map(t => <option key={t} value={t}>{t}</option>)}
                                     </select>
                                 </div>
@@ -184,17 +206,35 @@ export default function StylistTimeOffPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Initiation_Date</label>
-                                        <input required type="date" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                        <input
+                                            required
+                                            type="date"
+                                            value={formData.startDate}
+                                            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                            className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none"
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Termination_Date</label>
-                                        <input required type="date" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                        <input
+                                            required
+                                            type="date"
+                                            value={formData.endDate}
+                                            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                            className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Rationalization</label>
-                                    <textarea required placeholder="Specify logical reason for protocol pause..." className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none" />
+                                    <textarea
+                                        required
+                                        placeholder="Specify logical reason for protocol pause..."
+                                        value={formData.reason}
+                                        onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+                                        className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none"
+                                    />
                                 </div>
 
                                 <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Submit Protocol Pause</button>
@@ -204,16 +244,7 @@ export default function StylistTimeOffPage() {
                 )}
             </AnimatePresence>
 
-            {/* Toast */}
-            <AnimatePresence>
-                {toast && (
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* Toast System Decommissioned */}
         </div>
     );
 }

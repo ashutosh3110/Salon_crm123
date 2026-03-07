@@ -3,25 +3,33 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard, Package, ShoppingBag, BarChart2,
-    Settings, LogOut, ChevronLeft, ChevronRight, X, AlertTriangle, List, Truck, History
+    Settings, LogOut, ChevronLeft, ChevronRight, X, AlertTriangle, List, Truck, History, ShoppingCart, ArrowLeftRight
 } from 'lucide-react';
 
 const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/inventory' },
-    { label: 'Asset Ledger', icon: Package, path: '/inventory/products' },
-    { label: 'Procurement Matrix', icon: ShoppingBag, path: '/inventory/orders' },
-    { label: 'Deployment Logs', icon: Truck, path: '/inventory/stock-entries' },
-    { label: 'Depletion Alerts', icon: AlertTriangle, path: '/inventory/low-stock' },
+    { label: 'Operational Dashboard', icon: LayoutDashboard, path: '/inventory' },
+    { label: 'Asset Ledger', icon: Package, path: '/inventory/stock' },
+    { label: 'Procurement Matrix', icon: ShoppingCart, path: '/inventory/purchase' },
+    { label: 'Deployment Logs', icon: ArrowLeftRight, path: '/inventory/transfer' },
+    { label: 'Depletion Alerts', icon: AlertTriangle, path: '/inventory/alerts' },
     { label: 'Analysis Vectors', icon: BarChart2, path: '/inventory/reports' },
-    { label: 'Historical Flow', icon: History, path: '/inventory/history' },
     { label: 'System Prefs', icon: Settings, path: '/inventory/settings' },
 ];
 
 export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout } = useAuth();
     const location = useLocation();
+    const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
-    const effectiveCollapsed = collapsed && !isHovered;
+    useEffect(() => {
+        const handleResize = () => {
+            setIsLgUp(window.innerWidth >= 1024);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     const isActive = (path) => {
         if (path === '/inventory' && location.pathname === '/inventory') return true;

@@ -1,31 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, User, Mail, Phone, Calendar, Star, ChevronRight, History, Heart, UserPlus, Filter, Shield, X, CheckCircle2 } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
-const myClients = [
-    { id: 1, name: 'PRIYA SHARMA', visits: 12, lastService: 'FEB 15_24', status: 'VIP_PROTOCOL', rating: 4.9, preferences: 'LOW_HEAT, SIDE_PART', email: 'p.sharma@nexus.com' },
-    { id: 2, name: 'MEERA PATEL', visits: 5, lastService: 'JAN 28_24', status: 'STANDARD_UNIT', rating: 4.7, preferences: 'AMMONIA-FREE_COLOR_ONLY', email: 'meera.p@uplink.io' },
-    { id: 3, name: 'SNEHA REDDY', visits: 8, lastService: 'FEB 02_24', status: 'STANDARD_UNIT', rating: 4.8, preferences: 'LOVES_HEAD_MASSAGE', email: 'sneha.r@gmail.com' },
-    { id: 4, name: 'RITU SINGH', visits: 3, lastService: 'DEC 20_23', status: 'LOW_ACTIVITY', rating: 4.5, preferences: 'NATURAL_LOOKS', email: 'ritu_s@outlook.com' },
-    { id: 5, name: 'KAVYA IYER', visits: 15, lastService: 'FEB 20_24', status: 'VIP_PROTOCOL', rating: 5.0, preferences: 'REGULAR_ROOT_TOUCHUP', email: 'kavya.i@protonmail.com' },
-];
+import stylistData from '../../data/stylistMockData.json';
+
+const STATIC_CLIENTS = stylistData.clients;
 
 export default function StylistClientsPage() {
+    const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('name');
     const [showEnrollModal, setShowEnrollModal] = useState(false);
+    const [statusFilter, setStatusFilter] = useState('ALL');
     const [selectedClient, setSelectedClient] = useState(null);
     const [toast, setToast] = useState(null);
+    const [myClients, setMyClients] = useState(STATIC_CLIENTS);
+
+    // --- Load Bookings from Registry (Polling every 2s for same-tab updates) ---
+    useEffect(() => {
+        const syncMatrix = () => {
+            try {
+                const registry = JSON.parse(localStorage.getItem('WAPIXO_BOOKING_REGISTRY') || '[]');
+                // Show ALL bookings regardless of stylist when in demo mode
+                // For production: filter by currentStylistName
+                const bookingClients = registry
+                    .map((b, idx) => ({
+                        id: b.id || `ext-${idx}`,
+                        name: b.clientName || "New Unit",
+                        visits: 1,
+                        lastService: new Date(b.date || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' }).toUpperCase(),
+                        status: 'ACTIVE_BOOKING',
+                        rating: 5.0,
+                        preferences: (b.services || []).map(s => s.name).join(' + '),
+                        email: b.staffName ? `Booked: ${b.staffName}` : 'external.node@matrix.net',
+                        isBooking: true,
+                        bookedTime: b.time,
+                        bookedDate: new Date(b.date || Date.now()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+                        phone: b.phone || ''
+                    }));
+
+                setMyClients([...STATIC_CLIENTS, ...bookingClients]);
+            } catch (err) {
+                console.error("Personnel Sync Error:", err);
+            }
+        };
+
+        // Run immediately
+        syncMatrix();
+        // Poll every 2 seconds to catch same-tab updates
+        const interval = setInterval(syncMatrix, 2000);
+        window.addEventListener('storage', syncMatrix);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('storage', syncMatrix);
+        };
+    }, [user]);
 
     const showToast = (msg) => {
         setToast(msg);
         setTimeout(() => setToast(null), 3000);
     };
 
+    const clientStatuses = ['ALL', ...new Set(myClients.map(c => c.status))];
+
     const filteredClients = myClients
-        .filter(c =>
-            c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        .filter(c => {
+            const nameMatch = c.name?.toLowerCase().includes(searchTerm.toLowerCase());
+            const emailMatch = c.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            const phoneMatch = c.phone?.includes(searchTerm);
+            const matchesSearch = nameMatch || emailMatch || phoneMatch;
+            const matchesStatus = statusFilter === 'ALL' || c.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        })
         .sort((a, b) => {
             if (sortBy === 'name') return a.name.localeCompare(b.name);
             if (sortBy === 'visits') return b.visits - a.visits;
@@ -34,43 +83,66 @@ export default function StylistClientsPage() {
         });
 
     return (
-        <div className="space-y-6 font-black text-left">
+        <div className="space-y-4 text-left">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-4">
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Security_Zone</span>
+                    <div className="flex items-center gap-2 mb-1">
+                        <Shield className="w-3.5 h-3.5 text-primary" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Security_Zone</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase">Personnel Matrix</h1>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Authorized_Base_Only</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Personnel Matrix</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Authorized_Base_Only</p>
                 </div>
                 <button
                     onClick={() => setShowEnrollModal(true)}
-                    className="flex items-center gap-3 px-6 py-3 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:bg-primary-dark transition-all active:scale-95"
+                    className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
                 >
                     <UserPlus className="w-4 h-4" /> Enroll_Unit
                 </button>
             </div>
 
             {/* Search & Filter */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50" />
                     <input
                         type="text"
                         placeholder="SCAN_DATA_BYTES..."
-                        className="w-full pl-12 pr-4 py-4 bg-surface border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
+                        className="w-full pl-11 pr-4 py-3.5 bg-surface border border-border text-[9px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all shadow-inner"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 bg-surface border border-border p-1">
+                    {clientStatuses.map(status => (
+                        <button
+                            key={status}
+                            onClick={() => setStatusFilter(status)}
+                            className={`px-3 py-2 text-[8px] font-black uppercase tracking-widest transition-all ${statusFilter === status ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
+                        >
+                            {status.replace('_', ' ')}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => {
+                            setSearchTerm('');
+                            setStatusFilter('ALL');
+                            setSortBy('name');
+                            showToast('Matrix Synchronization Reset');
+                        }}
+                        className="px-3 py-2 border-l border-border text-text-muted hover:text-primary transition-all"
+                        title="Reset_Matrix"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                    </button>
+                </div>
+                <div className="flex gap-1.5">
                     {['name', 'visits', 'rating'].map(criteria => (
                         <button
                             key={criteria}
                             onClick={() => setSortBy(criteria)}
-                            className={`px-6 py-4 border border-border flex items-center gap-3 text-[10px] font-black uppercase tracking-widest transition-all ${sortBy === criteria ? 'bg-primary text-white border-primary shadow-lg shadow-primary/10' : 'bg-surface text-text-muted hover:text-text'}`}
+                            className={`px-4 py-3.5 border border-border flex items-center gap-2.5 text-[8px] font-black uppercase tracking-widest transition-all ${sortBy === criteria ? 'bg-background text-primary border-primary shadow-lg' : 'bg-surface text-text-muted hover:text-text'}`}
                         >
                             Sort_{criteria}
                         </button>
@@ -79,46 +151,49 @@ export default function StylistClientsPage() {
             </div>
 
             {/* Clients Matrix Grid */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-4">
                 {filteredClients.map((client) => (
-                    <div key={client.id} className="bg-surface border border-border p-8 hover:border-primary/40 transition-all group relative overflow-hidden">
+                    <div key={client.id} className="bg-surface border border-border p-5 hover:border-primary/40 transition-all group relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -translate-y-12 translate-x-12 rotate-45" />
 
-                        <div className="flex items-start justify-between mb-8 relative z-10">
-                            <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 bg-background border border-border flex items-center justify-center text-primary text-xl font-black uppercase shadow-inner">
+                        <div className="flex items-start justify-between mb-6 relative z-10">
+                            <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-background border border-border flex items-center justify-center text-primary text-lg font-black uppercase shadow-inner">
                                     {client.name.split(' ').map(n => n[0]).join('')}
                                 </div>
-                                <div className="space-y-1">
-                                    <h3 className="text-lg font-black text-text group-hover:text-primary transition-colors tracking-tight uppercase">{client.name}</h3>
-                                    <div className="flex items-center gap-3">
-                                        <div className={`text-[8px] font-black px-2 py-0.5 border uppercase tracking-widest ${client.status.includes('VIP') ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
+                                <div className="space-y-0.5">
+                                    <h3 className="text-base font-black text-text group-hover:text-primary transition-colors tracking-tight uppercase">{client.name}</h3>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`text-[7px] font-black px-1.5 py-0.5 border uppercase tracking-widest ${client.status.includes('VIP') ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' :
                                             client.status.includes('STANDARD') ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
                                             }`}>
                                             {client.status}
                                         </div>
-                                        <div className="flex items-center gap-1 text-[10px] font-black text-text">
-                                            <Star className="w-3 h-3 fill-primary text-primary" /> {client.rating}
+                                        <div className="flex items-center gap-1 text-[9px] font-black text-text">
+                                            <Star className="w-2.5 h-2.5 fill-primary text-primary" /> {client.rating}
                                         </div>
                                     </div>
+                                    {client.phone && (
+                                        <p className="text-[10px] font-bold text-text-muted/60 mt-0.5">{maskPhone(client.phone, user?.role)}</p>
+                                    )}
                                 </div>
                             </div>
                             <button
                                 onClick={() => setSelectedClient(client)}
-                                className="p-2 border border-border hover:bg-surface-alt transition-all group-hover:border-primary/40"
+                                className="p-1.5 border border-border hover:bg-surface-alt transition-all group-hover:border-primary/40"
                             >
-                                <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary" />
+                                <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 mb-8 relative z-10">
-                            <div className="bg-background border border-border p-4 shadow-sm">
-                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 italic">Total_Cycles</p>
-                                <p className="text-sm font-black text-text">{client.visits} ITERATIONS</p>
+                        <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
+                            <div className="bg-background border border-border p-3 shadow-sm">
+                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Total_Cycles</p>
+                                <p className="text-xs font-black text-text">{client.visits} ITERATIONS</p>
                             </div>
-                            <div className="bg-background border border-border p-4 shadow-sm">
-                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 italic">Last_Sync</p>
-                                <p className="text-sm font-black text-text">{client.lastService}</p>
+                            <div className="bg-background border border-border p-3 shadow-sm">
+                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Last_Sync</p>
+                                <p className="text-xs font-black text-text">{client.lastService}</p>
                             </div>
                         </div>
 

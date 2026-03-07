@@ -279,7 +279,7 @@ export default function POSBillingPage() {
                         </button>
                         <button
                             onClick={handleNewBill}
-                            className="flex-1 px-6 py-4 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark shadow-xl shadow-primary/25 transition-all flex items-center justify-center gap-3"
+                            className="flex-1 px-6 py-4 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 shadow-xl shadow-primary/25 transition-all flex items-center justify-center gap-3"
                         >
                             <Plus className="w-4 h-4" /> Reset Terminal
                         </button>
@@ -335,13 +335,13 @@ export default function POSBillingPage() {
                     <div className="flex items-center gap-2 bg-surface-alt rounded-none p-1.5 border border-border">
                         <button
                             onClick={() => { setActiveTab('services'); setSelectedCategory('All'); setSearchItem(''); }}
-                            className={`flex-1 flex items-center justify-center gap-3 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'services' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface'}`}
+                            className={`flex-1 flex items-center justify-center gap-3 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'services' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface'}`}
                         >
                             <Scissors className="w-4 h-4" /> Service Modules
                         </button>
                         <button
                             onClick={() => { setActiveTab('products'); setSelectedCategory('All'); setSearchItem(''); }}
-                            className={`flex-1 flex items-center justify-center gap-3 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'products' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface'}`}
+                            className={`flex-1 flex items-center justify-center gap-3 px-4 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === 'products' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface'}`}
                         >
                             <Package className="w-4 h-4" /> Physical Stocks
                         </button>
@@ -365,7 +365,7 @@ export default function POSBillingPage() {
                                     key={cat}
                                     onClick={() => setSelectedCategory(cat)}
                                     className={`px-5 py-2.5 rounded-none text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all border ${selectedCategory === cat
-                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                        ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20'
                                         : 'bg-surface border-border text-text-muted hover:border-primary/40 hover:text-primary'
                                         }`}
                                 >
@@ -394,11 +394,11 @@ export default function POSBillingPage() {
                                             }`}
                                     >
                                         <div className="flex items-start justify-between mb-4">
-                                            <div className={`w-10 h-10 rounded-none flex items-center justify-center border transition-all ${inCart ? 'bg-primary text-white border-primary' : 'bg-surface-alt text-text-muted border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20'}`}>
+                                            <div className={`w-10 h-10 rounded-none flex items-center justify-center border transition-all ${inCart ? 'bg-primary text-primary-foreground border-primary' : 'bg-surface-alt text-text-muted border-border group-hover:bg-primary/10 group-hover:text-primary group-hover:border-primary/20'}`}>
                                                 {activeTab === 'services' ? <Scissors className="w-4 h-4" /> : <Package className="w-4 h-4" />}
                                             </div>
                                             {inCart && (
-                                                <span className="text-[9px] font-black bg-primary text-white px-2 py-1 rounded-none uppercase tracking-widest shadow-lg shadow-primary/20 leading-none">
+                                                <span className="text-[9px] font-black bg-primary text-primary-foreground px-2 py-1 rounded-none uppercase tracking-widest shadow-lg shadow-primary/20 leading-none">
                                                     QTY {inCart.quantity}
                                                 </span>
                                             )}
@@ -437,7 +437,7 @@ export default function POSBillingPage() {
                         {selectedClient ? (
                             <div className="flex items-center gap-5 bg-surface-alt rounded-none border border-border p-5 group transition-all">
                                 <div className="w-12 h-12 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary transition-colors">
-                                    <User className="w-6 h-6 text-primary group-hover:text-white transition-colors" />
+                                    <User className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors" />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-black text-text uppercase tracking-tight truncate">{selectedClient.name}</p>
@@ -469,7 +469,7 @@ export default function POSBillingPage() {
                                                 onClick={() => { setSelectedClient(c); setShowClientDropdown(false); setSearchClient(''); }}
                                                 className="w-full text-left px-5 py-4 hover:bg-surface-alt transition-all flex items-center gap-4 group"
                                             >
-                                                <div className="w-9 h-9 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                                                <div className="w-9 h-9 rounded-none bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                                     <User className="w-4 h-4" />
                                                 </div>
                                                 <div className="min-w-0">
@@ -480,7 +480,7 @@ export default function POSBillingPage() {
                                         ))}
                                         <button
                                             onClick={() => { setShowClientDropdown(false); setShowNewClient(true); }}
-                                            className="w-full text-left px-5 py-4 hover:bg-primary transition-all flex items-center gap-3 text-primary hover:text-white font-black text-[10px] uppercase tracking-[0.2em]"
+                                            className="w-full text-left px-5 py-4 hover:bg-primary transition-all flex items-center gap-3 text-primary hover:text-primary-foreground font-black text-[10px] uppercase tracking-[0.2em]"
                                         >
                                             <UserPlus className="w-4 h-4" /> Initialize New Entity Record
                                         </button>
@@ -497,7 +497,7 @@ export default function POSBillingPage() {
                                 <input required value={newClientForm.phone} onChange={e => setNewClientForm(p => ({ ...p, phone: e.target.value }))} placeholder="Mobile Descriptor *" className="w-full px-4 py-3 rounded-none border border-border bg-surface text-[10px] font-black uppercase tracking-[0.2em] focus:ring-2 focus:ring-primary/20 outline-none" />
                                 <input value={newClientForm.email} onChange={e => setNewClientForm(p => ({ ...p, email: e.target.value }))} placeholder="Digital Mailbox" className="w-full px-4 py-3 rounded-none border border-border bg-surface text-[10px] font-black uppercase tracking-[0.2em] focus:ring-2 focus:ring-primary/20 outline-none" />
                                 <div className="flex gap-3 pt-2">
-                                    <button type="submit" className="flex-1 py-3 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark shadow-lg shadow-primary/20 transition-all">Commit Record</button>
+                                    <button type="submit" className="flex-1 py-3 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] hover:brightness-110 shadow-lg shadow-primary/20 transition-all">Commit Record</button>
                                     <button type="button" onClick={() => setShowNewClient(false)} className="px-6 py-3 rounded-none border border-border bg-surface text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
                                 </div>
                             </form>
@@ -571,15 +571,15 @@ export default function POSBillingPage() {
                                             ) : <div />}
                                             {/* Quantity Controls */}
                                             <div className="flex items-center gap-1 bg-surface border border-border p-1">
-                                                <button onClick={() => updateQuantity(index, -1)} className="w-8 h-8 rounded-none flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                                                <button onClick={() => updateQuantity(index, -1)} className="w-8 h-8 rounded-none flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
                                                     <Minus className="w-3 h-3" />
                                                 </button>
                                                 <span className="w-10 text-center text-[11px] font-black">{item.quantity}</span>
-                                                <button onClick={() => updateQuantity(index, 1)} className="w-8 h-8 rounded-none flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                                                <button onClick={() => updateQuantity(index, 1)} className="w-8 h-8 rounded-none flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all">
                                                     <Plus className="w-3 h-3" />
                                                 </button>
                                                 <div className="w-px h-6 bg-border mx-1" />
-                                                <button onClick={() => removeFromCart(index)} className="w-8 h-8 rounded-none flex items-center justify-center text-text-muted hover:text-white hover:bg-red-500 transition-all">
+                                                <button onClick={() => removeFromCart(index)} className="w-8 h-8 rounded-none flex items-center justify-center text-text-muted hover:text-primary-foreground hover:bg-red-500 transition-all">
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
@@ -679,7 +679,7 @@ export default function POSBillingPage() {
                                             key={pm.id}
                                             onClick={() => setPaymentMethod(pm.id)}
                                             className={`flex flex-col items-center justify-center gap-2 py-4 rounded-none border transition-all ${paymentMethod === pm.id
-                                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105 z-10'
+                                                ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-105 z-10'
                                                 : 'border-border bg-surface text-text-muted hover:border-primary/40'
                                                 }`}
                                         >
@@ -694,10 +694,10 @@ export default function POSBillingPage() {
                             <button
                                 onClick={handleCheckout}
                                 disabled={checkingOut || !selectedClient || cart.length === 0}
-                                className="w-full py-5 rounded-none bg-primary text-white font-black text-xs uppercase tracking-[0.4em] hover:bg-primary-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4 shadow-2xl shadow-primary/40 active:scale-[0.98] mt-4"
+                                className="w-full py-5 rounded-none bg-primary text-primary-foreground font-black text-xs uppercase tracking-[0.4em] hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-4 shadow-2xl shadow-primary/40 active:scale-[0.98] mt-4"
                             >
                                 {checkingOut ? (
-                                    <><div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-none animate-spin" /> Committing...</>
+                                    <><div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-none animate-spin" /> Committing...</>
                                 ) : (
                                     <><Sparkles className="w-4 h-4" /> Initialize Charge [₹{grandTotal.toLocaleString()}]</>
                                 )}

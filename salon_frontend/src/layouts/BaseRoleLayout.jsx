@@ -22,16 +22,24 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
 
     return (
         <div
-            className="min-h-screen bg-white flex text-text transition-colors duration-300 admin-panel"
+            className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel"
             style={{ '--accent-color': activeAccentColor }}
         >
-            {/* Global sharp-edge override for entire panel */}
+            {/* Global sharp-edge override for entire panel, with opt-out for pill toggles and consistent primary buttons */}
             <style>{`
                 .admin-panel *,
                 .admin-panel *::before,
                 .admin-panel *::after {
                     border-radius: 0 !important;
                     font-family: 'Open Sans', sans-serif;
+                }
+                .admin-panel .pill-toggle,
+                .admin-panel .pill-toggle * {
+                    border-radius: 9999px !important;
+                }
+                .admin-panel button.bg-primary,
+                .admin-panel a.bg-primary {
+                    color: var(--primary-foreground) !important;
                 }
                 .admin-panel h1, 
                 .admin-panel h2, 
@@ -60,7 +68,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             {/* Main Content */}
             <div className={`flex-1 flex flex-col transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[68px]' : 'lg:ml-64'}`}>
                 {/* Top Bar */}
-                <header className="sticky top-0 z-30 h-16 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 lg:px-6 gap-3">
+                <header className="sticky top-0 z-30 h-16 bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 lg:px-6 gap-3">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setMobileOpen(true)}
@@ -68,16 +76,6 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         >
                             <Menu className="w-5 h-5 text-text-secondary" />
                         </button>
-
-                        {/* Search (Desktop) */}
-                        <div className="hidden sm:flex items-center bg-surface border border-border/40 px-3 py-2 w-64 focus-within:w-80 transition-all">
-                            <Search className="w-4 h-4 text-text-muted mr-2" />
-                            <input
-                                type="text"
-                                placeholder="Scan Sector..."
-                                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-text placeholder-text-muted outline-none w-full"
-                            />
-                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 font-black">
@@ -98,7 +96,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         {/* Notifications */}
                         <button className="relative w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40">
                             <Bell className="w-5 h-5 text-text-secondary" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary ring-2 ring-white dark:ring-surface" />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary ring-2 ring-background dark:ring-surface" />
                         </button>
 
                         {/* User Profile */}
@@ -115,10 +113,10 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-4 lg:p-6 overflow-y-auto animate-reveal">
+                <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
                     <Outlet />
                 </main>
             </div>
-        </div>
+        </div >
     );
 }

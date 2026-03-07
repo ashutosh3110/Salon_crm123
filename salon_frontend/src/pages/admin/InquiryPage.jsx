@@ -18,21 +18,21 @@ const FOLLOW_UP_OPTIONS = [
 ];
 
 const SOURCE_STYLES = {
-    'Walk-in': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-    'Phone Call': { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
-    'Instagram': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
-    'Facebook': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
-    'WhatsApp': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-    'Website': { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
-    'Referral': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-    'Other': { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' },
+    'Walk-in': { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-900/50' },
+    'Phone Call': { bg: 'bg-violet-50 dark:bg-violet-950/30', text: 'text-violet-700 dark:text-violet-400', border: 'border-violet-200 dark:border-violet-900/50' },
+    'Instagram': { bg: 'bg-rose-50 dark:bg-rose-950/30', text: 'text-rose-700 dark:text-rose-400', border: 'border-rose-200 dark:border-rose-900/50' },
+    'Facebook': { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-700 dark:text-sky-400', border: 'border-sky-200 dark:border-sky-900/50' },
+    'WhatsApp': { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900/50' },
+    'Website': { bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-900/50' },
+    'Referral': { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-900/50' },
+    'Other': { bg: 'bg-slate-50 dark:bg-slate-900/40', text: 'text-slate-700 dark:text-slate-300', border: 'border-slate-200 dark:border-slate-800' },
 };
 
 const STATUS_STYLES = {
-    'new': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'New' },
-    'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow-up' },
-    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Converted' },
-    'lost': { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', label: 'Lost' },
+    'new': { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-700 dark:text-sky-400', border: 'border-sky-200 dark:border-sky-900/50', label: 'New' },
+    'follow-up': { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-900/50', label: 'Follow-up' },
+    'converted': { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-900/50', label: 'Converted' },
+    'lost': { bg: 'bg-slate-100 dark:bg-slate-900/40', text: 'text-slate-500 dark:text-slate-400', border: 'border-slate-200 dark:border-slate-800', label: 'Lost' },
 };
 
 const SOURCE_ICONS = {
@@ -64,9 +64,9 @@ function getFollowUpLabel(dateStr) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
     const diff = Math.round((target - today) / 86400000);
-    if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, color: 'text-rose-600', bg: 'bg-rose-50' };
-    if (diff === 0) return { text: 'Due today', color: 'text-amber-600', bg: 'bg-amber-50' };
-    return { text: `In ${diff}d`, color: 'text-text-muted', bg: 'bg-surface' };
+    if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/30' };
+    if (diff === 0) return { text: 'Due today', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30' };
+    return { text: `In ${diff}d`, color: 'text-text-muted', bg: 'bg-surface dark:bg-surface-alt' };
 }
 
 function formatDate(dateStr) {
@@ -214,7 +214,7 @@ export default function InquiryPage() {
                 </div>
                 <button
                     onClick={() => { closeModal(); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-white border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Log Inquiry
                 </button>
@@ -343,7 +343,7 @@ export default function InquiryPage() {
                                                 {statusDropdown === inq.id && (
                                                     <>
                                                         <div className="fixed inset-0 z-40" onClick={() => setStatusDropdown(null)} />
-                                                        <div className="absolute left-6 top-full mt-1 z-50 bg-white border border-border shadow-2xl rounded-none overflow-hidden min-w-[140px]">
+                                                        <div className="absolute left-6 top-full mt-1 z-50 bg-white dark:bg-surface-alt border border-border shadow-2xl rounded-none overflow-hidden min-w-[140px]">
                                                             {STATUSES.map(s => (
                                                                 <button
                                                                     key={s}
@@ -452,8 +452,8 @@ export default function InquiryPage() {
                                             type="button"
                                             onClick={() => setForm({ ...form, followUpDays: opt.value })}
                                             className={`px-5 py-3 rounded-none text-[10px] font-black uppercase tracking-widest border transition-all ${form.followUpDays === opt.value
-                                                ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                                                : 'bg-background border-border text-text-muted hover:border-primary/30'
+                                                ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
+                                                : 'bg-background dark:bg-surface-alt border-border text-text-muted hover:border-primary/30'
                                                 }`}
                                         >
                                             {opt.label}
@@ -463,7 +463,7 @@ export default function InquiryPage() {
                             </div>
                             <div className="flex gap-6 pt-8 font-black">
                                 <button type="button" onClick={closeModal} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editingInquiry ? 'Update' : 'Log Inquiry'}</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary/90 transition-all">{editingInquiry ? 'Update' : 'Log Inquiry'}</button>
                             </div>
                         </form>
                     </div>

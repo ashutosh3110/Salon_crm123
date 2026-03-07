@@ -99,20 +99,13 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 /* ─── Metric card ────────────────────────────────────────────────────── */
-function MetricCard({ label, value, sub, change, icon: Icon, gradient, shadow }) {
-    const up = change >= 0;
+function MetricCard({ label, value, sub, icon: Icon, gradient, shadow }) {
     return (
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
                 <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${shadow}`}>
                     <Icon className="w-5 h-5 text-white" />
                 </div>
-                {change !== null && (
-                    <span className={`flex items-center gap-0.5 text-[11px] font-bold px-2 py-0.5 rounded-full ${up ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                        {up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                        {Math.abs(change)}%
-                    </span>
-                )}
             </div>
             <div className="text-2xl font-black text-text">{value}</div>
             <div className="text-xs text-text-muted mt-0.5">{label}</div>

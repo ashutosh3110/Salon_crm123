@@ -50,7 +50,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
     return (
         <div className="max-w-4xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="bg-white p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
+            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
                         <Scissors className="w-6 h-6" />
@@ -65,7 +65,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 </div>
                 <button
                     onClick={() => navigate('/admin/services/list')}
-                    className="p-2 rounded-xl hover:bg-slate-50 text-text-muted transition-all"
+                    className="p-2 rounded-xl hover:bg-surface-alt text-text-muted transition-all"
                 >
                     <X className="w-5 h-5" />
                 </button>
@@ -73,7 +73,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 1. Basic Details */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4 h-fit">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 h-fit">
                     <div className="flex items-center gap-2 mb-2">
                         <Tag className="w-4 h-4 text-primary" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
@@ -83,7 +83,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Name <span className="text-rose-500">*</span></label>
                         <input
                             type="text"
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                             placeholder="e.g. Executive Men's Haircut"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -93,7 +93,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category <span className="text-rose-500">*</span></label>
                         <select
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold outline-none"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold outline-none"
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         >
@@ -106,7 +106,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
                         <textarea
                             rows="2"
-                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold resize-none"
+                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold resize-none"
                             placeholder="Details about the service..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -115,7 +115,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 </div>
 
                 {/* 2. Time & Pricing */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4 h-fit">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 h-fit">
                     <div className="flex items-center gap-2 mb-2">
                         <IndianRupee className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
@@ -128,7 +128,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                                 <input
                                     type="number"
-                                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                     placeholder="e.g. 45"
                                     value={formData.duration}
                                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
@@ -141,7 +141,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold text-sm">₹</span>
                                 <input
                                     type="number"
-                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20"
+                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20"
                                     placeholder="0.00"
                                     value={formData.price}
                                     onChange={(e) => setFormData({ ...formData, price: e.target.value })}
@@ -150,7 +150,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-slate-50">
+                    <div className="pt-4 border-t border-border/50">
                         <div className="flex items-center gap-2 mb-3">
                             <BadgePercent className="w-4 h-4 text-indigo-500" />
                             <h3 className="text-xs font-bold text-text uppercase tracking-widest">3. Tax (GST)</h3>
@@ -158,7 +158,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                         <div className="space-y-1">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">GST % <span className="text-rose-500">*</span></label>
                             <select
-                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-border text-sm font-bold"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
                                 value={formData.gst}
                                 onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
                             >
@@ -187,7 +187,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                                 <p className="text-[10px] text-white/50 leading-relaxed mt-1 uppercase font-bold tracking-tighter">Define automatically calculated staff commissions</p>
                             </div>
                             <label className="flex items-center gap-3 cursor-pointer group/toggle mt-4">
-                                <div className={`w-10 h-5 rounded-full p-1 transition-all duration-300 relative ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
+                                <div className={`pill-toggle w-10 h-5 rounded-full p-1 transition-all duration-300 relative ${formData.commissionApplicable ? 'bg-rose-500' : 'bg-slate-700'}`} onClick={() => setFormData({ ...formData, commissionApplicable: !formData.commissionApplicable })}>
                                     <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${formData.commissionApplicable ? 'translate-x-5' : 'translate-x-0'}`} />
                                 </div>
                                 <span className={`text-[10px] font-bold uppercase tracking-widest ${formData.commissionApplicable ? 'text-white' : 'text-slate-500'}`}>Commission Applicable?</span>
@@ -233,14 +233,14 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 </div>
 
                 {/* 5. Outlet Availability */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
                     <div className="flex items-center gap-2 mb-2">
                         <Building2 className="w-4 h-4 text-violet-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">5. Outlet Availability</h3>
                     </div>
 
                     <div className="space-y-3">
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-border cursor-pointer hover:bg-white transition-all group">
+                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
                             <input
                                 type="radio"
                                 name="outlet"
@@ -250,7 +250,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             />
                             <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
                         </label>
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-border cursor-pointer hover:bg-white transition-all group">
+                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
                             <input
                                 type="radio"
                                 name="outlet"
@@ -264,7 +264,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 </div>
 
                 {/* 6. Status */}
-                <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
                     <div className="flex items-center gap-2 mb-2">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         <h3 className="text-xs font-bold text-text uppercase tracking-widest">6. Service Status</h3>
@@ -272,16 +272,16 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
 
                     <div className="flex flex-col h-full justify-center space-y-4 pb-4">
                         <p className="text-[10px] text-text-muted font-bold leading-relaxed uppercase tracking-widest opacity-70">Define if the service is currently bookable and active in POS system.</p>
-                        <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-50 rounded-2xl border border-border">
+                        <div className="grid grid-cols-2 gap-2 p-1.5 bg-surface-alt rounded-2xl border border-border">
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'active' })}
-                                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all uppercase ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200' : 'text-text-secondary hover:text-text'}`}
+                                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all uppercase ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200 dark:shadow-emerald-950/40' : 'text-text-secondary hover:text-text'}`}
                             >
                                 Active
                             </button>
                             <button
                                 onClick={() => setFormData({ ...formData, status: 'inactive' })}
-                                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all uppercase ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-lg shadow-rose-200' : 'text-text-secondary hover:text-text'}`}
+                                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all uppercase ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-lg shadow-rose-200 dark:shadow-rose-950/40' : 'text-text-secondary hover:text-text'}`}
                             >
                                 Inactive
                             </button>
@@ -291,17 +291,17 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
             </div>
 
             {/* Actions */}
-            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-end gap-3 p-6 bg-slate-50 rounded-3xl border border-border">
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-end gap-3 p-6 bg-surface-alt rounded-3xl border border-border text-left">
                 <button
                     onClick={() => navigate('/admin/services/list')}
-                    className="px-8 py-3 rounded-2xl text-sm font-bold text-text-secondary hover:bg-white transition-all border border-transparent hover:border-border"
+                    className="px-8 py-3 rounded-2xl text-sm font-bold text-text-secondary hover:bg-surface transition-all border border-transparent hover:border-border"
                 >
                     Cancel
                 </button>
                 <button
                     onClick={handleSave}
                     disabled={!isFormValid}
-                    className={`flex items-center gap-2 px-10 py-3 rounded-2xl text-white text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 shadow-none cursor-not-allowed'}`}
+                    className={`flex items-center gap-2 px-10 py-3 rounded-2xl text-primary-foreground text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
                 >
                     <Save className="w-4 h-4" />
                     Save Service

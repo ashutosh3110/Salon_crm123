@@ -1,0 +1,91 @@
+{
+    "members": [
+        {
+            "id": 1,
+            "name": "Aditya Verma",
+            "phone": "+91 98765 43210",
+            "plan": "Royal Platinum",
+            "status": "active",
+            "expiry": "2026-05-12",
+            "joinDate": "2026-02-12"
+        },
+        {
+            "id": 2,
+            "name": "Priya Sharma",
+            "phone": "+91 87654 32109",
+            "plan": "Gold Elite",
+            "status": "active",
+            "expiry": "2026-03-30",
+            "joinDate": "2026-02-28"
+        },
+        {
+            "id": 3,
+            "name": "Rohan Gupta",
+            "phone": "+91 76543 21098",
+            "plan": "Silver Lounge",
+            "status": "expired",
+            "expiry": "2026-02-20",
+            "joinDate": "2026-01-20"
+        },
+        {
+            "id": 4,
+            "name": "Sanya Khan",
+            "phone": "+91 91234 56789",
+            "plan": "Gold Elite",
+            "status": "active",
+            "expiry": "2026-04-15",
+            "joinDate": "2026-02-15"
+        },
+        {
+            "id": 5,
+            "name": "Vikram Singh",
+            "phone": "+91 82345 67890",
+            "plan": "Royal Platinum",
+            "status": "cancelled",
+            "expiry": "2026-02-25",
+            "joinDate": "2026-01-25"
+        }
+    ],
+    "transactions": [
+        {
+            "_id": "1",
+            "customerName": "Aditya Verma",
+            "type": "EARN",
+            "points": 150,
+            "createdAt": "2026-03-01T10:00:00.000Z",
+            "invoiceId": "INV-1001"
+        },
+        {
+            "_id": "2",
+            "customerName": "Priya Sharma",
+            "type": "REDEEM",
+            "points": 300,
+            "createdAt": "2026-03-02T11:30:00.000Z",
+            "invoiceId": "INV-1002"
+        },
+        {
+            "_id": "3",
+            "customerName": "Sanya Khan",
+            "type": "EARN",
+            "points": 75,
+            "createdAt": "2026-02-28T09:15:00.000Z",
+            "invoiceId": "INV-0998"
+        },
+        {
+            "_id": "4",
+            "customerName": "Rohan Gupta",
+            "type": "REVERSE",
+            "points": 50,
+            "createdAt": "2026-02-27T16:45:00.000Z",
+            "invoiceId": "INV-0985"
+        },
+        {
+            "_id": "5",
+            "customerName": "Vikram Singh",
+            "type": "EARN",
+            "points": 200,
+            "createdAt": "2026-02-26T14:20:00.000Z",
+            "invoiceId": "INV-0980"
+        }
+    ]
+}

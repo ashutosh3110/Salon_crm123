@@ -19,13 +19,10 @@ import {
     Cell
 } from 'recharts';
 
-const INITIAL_PERFORMANCE = [
-    { id: 1, staff: 'Ananya Sharma', role: 'Stylist', revenue: 75000, services: 142, rating: 4.9, commission: 7500, cost: 25000, contribution: 'Elite', goal: 80000 },
-    { id: 2, staff: 'Rahul Verma', role: 'Barber', revenue: 62000, services: 118, rating: 4.7, commission: 6200, cost: 18000, contribution: 'High', goal: 70000 },
-    { id: 3, staff: 'Sneha Kapur', role: 'Reception', revenue: 12000, services: 45, rating: 4.8, commission: 0, cost: 15000, contribution: 'Medium', goal: 20000 },
-    { id: 4, staff: 'Vikram Malhotra', role: 'Manager', revenue: 95000, services: 30, rating: 5.0, commission: 9500, cost: 45000, contribution: 'Elite', goal: 100000 },
-    { id: 5, staff: 'Priya Singh', role: 'Nail Tech', revenue: 34000, services: 88, rating: 4.6, commission: 3400, cost: 16000, contribution: 'High', goal: 40000 },
-];
+import hrData from '../../../data/hrMockData.json';
+
+const INITIAL_PERFORMANCE = hrData.performance;
+
 
 const CONTRIBUTION_META = {
     Elite: { cls: 'bg-violet-600 text-white' },

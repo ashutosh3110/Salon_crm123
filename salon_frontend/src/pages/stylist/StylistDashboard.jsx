@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     Calendar, Users, Clock, Star, TrendingUp, Scissors,
     CheckCircle2, Play, AlertCircle, ArrowRight, Activity,
@@ -11,24 +12,12 @@ import {
     ResponsiveContainer, Cell, AreaChart, Area
 } from 'recharts';
 
-// ── Mock Data & Constants ────────────────────────────────────────────────
-const PERFORMANCE_DATA = [
-    { day: 'MON', value: 4500, count: 5 },
-    { day: 'TUE', value: 5200, count: 6 },
-    { day: 'WED', value: 3800, count: 4 },
-    { day: 'THU', value: 6100, count: 7 },
-    { day: 'FRI', value: 7500, count: 9 },
-    { day: 'SAT', value: 8900, count: 11 },
-    { day: 'SUN', value: 4200, count: 5 },
-];
+import stylistData from '../../data/stylistMockData.json';
 
-const INITIAL_SCHEDULE = [
-    { id: 1, time: '10:00 AM', customer: 'PRIYA SHARMA', service: 'HAIR CUT + BLOW DRY', duration: '45 MIN', status: 'completed', sector: 'STATION_04' },
-    { id: 2, time: '11:00 AM', customer: 'MEERA PATEL', service: 'HAIR COLOUR (GLOBAL)', duration: '90 MIN', status: 'in-progress', sector: 'STATION_02' },
-    { id: 3, time: '12:30 PM', customer: 'SNEHA REDDY', service: 'HAIR SPA', duration: '60 MIN', status: 'upcoming', sector: 'STATION_04' },
-    { id: 4, time: '02:00 PM', customer: 'RITU SINGH', service: 'KERATIN TREATMENT', duration: '120 MIN', status: 'upcoming', sector: 'STATION_01' },
-    { id: 5, time: '04:00 PM', customer: 'KAVYA IYER', service: 'HAIR CUT + STYLING', duration: '45 MIN', status: 'upcoming', sector: 'STATION_03' },
-];
+// ── Mock Data & Constants ────────────────────────────────────────────────
+const PERFORMANCE_DATA = stylistData.dashboard.performanceData;
+const INITIAL_SCHEDULE = stylistData.dashboard.schedule;
+const stats = stylistData.dashboard.stats;
 
 const STATUS_MAP = {
     'completed': { label: 'FULFILLED', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
@@ -38,19 +27,64 @@ const STATUS_MAP = {
 };
 
 export default function StylistDashboard() {
+    const { user } = useAuth();
     const [schedule, setSchedule] = useState(INITIAL_SCHEDULE);
-    const [isShiftActive, setIsShiftActive] = useState(true);
+
+    // --- Load Live Bookings (Polling every 2s for same-tab updates) ---
+    useEffect(() => {
+        const syncSchedule = () => {
+            try {
+                const registry = JSON.parse(localStorage.getItem('WAPIXO_BOOKING_REGISTRY') || '[]');
+
+                // Show ALL bookings (Demo mode)
+                // For production: filter by stylist ID/name
+                const liveSessions = registry
+                    .map((b, idx) => ({
+                        id: b.id || `live-${idx}`,
+                        time: b.time || '00:00',
+                        customer: (b.clientName || "Unknown Unit").toUpperCase(),
+                        service: (b.services || []).map(s => s.name).join(' + ').toUpperCase(),
+                        duration: `${b.totalDuration || 30} MIN`,
+                        status: b.status || 'upcoming',
+                        sector: 'STATION_PRIME', // Live bookings
+                        isLive: true,
+                        staffName: b.staffName
+                    }));
+
+                // Merge with initial mock schedule
+                setSchedule([...INITIAL_SCHEDULE, ...liveSessions]);
+            } catch (err) {
+                console.error("Dashboard Sync Error:", err);
+            }
+        };
+
+        syncSchedule();
+        // Poll every 2 seconds to catch same-tab localStorage updates
+        const interval = setInterval(syncSchedule, 2000);
+        window.addEventListener('storage', syncSchedule);
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('storage', syncSchedule);
+        };
+    }, [user]);
+
     const [searchTerm, setSearchTerm] = useState('');
-
-    const stats = useMemo(() => ({
-        revenue: 4250,
-        target: 10000,
-        efficiency: 94,
-        rating: 4.8
-    }), []);
-
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [sectorFilter, setSectorFilter] = useState('ALL');
     const [selectedApt, setSelectedApt] = useState(null);
+    const [isShiftActive, setIsShiftActive] = useState(false);
     const [toast, setToast] = useState(null);
+
+    const sectors = ['ALL', ...new Set(INITIAL_SCHEDULE.map(s => s.sector))];
+    const statuses = ['ALL', 'completed', 'in-progress', 'upcoming'];
+
+    const filteredSchedule = schedule.filter(s => {
+        const matchesSearch = s.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            s.service.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'ALL' || s.status === statusFilter;
+        const matchesSector = sectorFilter === 'ALL' || s.sector === sectorFilter;
+        return matchesSearch && matchesStatus && matchesSector;
+    });
 
     const showToast = (msg) => {
         setToast(msg);
@@ -63,10 +97,10 @@ export default function StylistDashboard() {
     };
 
     return (
-        <div className="space-y-6 font-black text-left">
+        <div className="space-y-4 text-left font-black">
             {/* Header / Operation Pulse */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-background border border-border p-8 relative overflow-hidden group">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-3 bg-background border border-border p-5 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Activity className="w-32 h-32 text-primary" />
                     </div>
@@ -91,10 +125,10 @@ export default function StylistDashboard() {
                             </button>
                         </div>
 
-                        <div className="flex flex-col md:flex-row items-end gap-10">
+                        <div className="flex flex-col md:flex-row items-end gap-6">
                             <div>
-                                <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Session_Yield</p>
-                                <h2 className="text-5xl font-black text-text tracking-tighter">₹{stats.revenue.toLocaleString()}</h2>
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic">Session_Yield</p>
+                                <h2 className="text-4xl font-black text-text tracking-tighter">₹{stats.revenue.toLocaleString()}</h2>
                             </div>
                             <div className="flex-1 w-full space-y-3">
                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
@@ -113,135 +147,144 @@ export default function StylistDashboard() {
                         </div>
                     </div>
                 </div>
-
-                <div className="bg-surface border border-border p-8 flex flex-col justify-between relative group overflow-hidden">
-                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                    <div>
-                        <div className="flex items-center gap-2 mb-6">
-                            <Zap className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Unit_Diagnostics</span>
-                        </div>
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold">Latency_Avg</p>
-                                    <p className="text-xl font-black text-text">0.4 ms</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold">Sync_Rate</p>
-                                    <p className="text-xl font-black text-emerald-500">99.9%</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold">Node_Efficiency</p>
-                                    <p className="text-xl font-black text-text">{stats.efficiency}%</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold">Reputation_Index</p>
-                                    <div className="flex items-center gap-1 font-black text-xl text-primary">
-                                        <Star className="w-4 h-4 fill-primary" /> {stats.rating}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mt-8 pt-6 border-t border-border/10 flex items-center justify-between">
-                        <span className="text-[8px] text-text-muted uppercase tracking-[0.3em]">Device_Authorized</span>
-                        <div className="flex gap-1">
-                            {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-primary/20 animate-pulse" style={{ animationDelay: `${i * 0.2}s` }} />)}
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Performance Matrix & Fulfillment Matrix */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
                 {/* Fulfillment Matrix (Schedule) */}
-                <div className="lg:col-span-3 space-y-4">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between bg-surface border border-border px-6 py-4 gap-4">
-                        <div className="flex items-center gap-3">
-                            <Calendar className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Fulfillment_Matrix</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="relative flex-1 md:flex-none">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
-                                <input
-                                    type="text"
-                                    placeholder="SCAN_OBJECTS..."
-                                    className="bg-background border border-border pl-10 pr-4 py-2 text-[9px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all w-full md:w-64"
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                />
+                <div className="lg:col-span-3 space-y-3">
+                    <div className="bg-surface border border-border p-4 relative overflow-hidden group">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <Calendar className="w-5 h-5 text-primary" />
+                                <div>
+                                    <h3 className="text-sm font-black text-text uppercase tracking-widest">Fulfillment_Matrix</h3>
+                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Sequence: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</p>
+                                </div>
                             </div>
-                            <button className="p-2 border border-border hover:bg-surface-alt transition-all group">
-                                <Filter className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
-                            </button>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                <div className="relative group/search">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-focus-within/search:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="SCAN_PROTOCOL..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="pl-9 pr-4 py-2.5 bg-background border border-border text-[9px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all w-full md:w-48 placeholder:text-text-muted/30"
+                                    />
+                                </div>
+
+                                <div className="hidden lg:flex items-center gap-1.5 p-1 bg-background border border-border shadow-inner">
+                                    {sectors.map(s => (
+                                        <button
+                                            key={s}
+                                            onClick={() => setSectorFilter(s)}
+                                            className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${sectorFilter === s ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface-alt/50'}`}
+                                        >
+                                            {s.replace('STATION_', '')}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center gap-1.5 p-1 bg-background border border-border shadow-inner">
+                                    {statuses.map(s => (
+                                        <button
+                                            key={s}
+                                            onClick={() => setStatusFilter(s)}
+                                            className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === s ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface-alt/50'}`}
+                                        >
+                                            {s === 'ALL' ? 'ALL' : STATUS_MAP[s].label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setStatusFilter('ALL');
+                                        setSectorFilter('ALL');
+                                        showToast('Matrix Recalibrated');
+                                    }}
+                                    className="p-2.5 border border-border text-text-muted hover:text-text hover:border-primary transition-all active:scale-95"
+                                    title="Reset_Sequence"
+                                >
+                                    <RefreshCw className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="bg-surface border border-border overflow-hidden">
-                        <div className="divide-y divide-border/10">
-                            {schedule
-                                .filter(s => s.customer.toLowerCase().includes(searchTerm.toLowerCase()) || s.service.toLowerCase().includes(searchTerm.toLowerCase()))
-                                .map((apt) => (
-                                    <div key={apt.id} className="p-6 group hover:bg-surface-alt/50 transition-all relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="bg-background border border-border overflow-hidden p-1 shadow-inner">
+                            <div className="divide-y divide-border/10">
+                                {filteredSchedule.length > 0 ? (
+                                    filteredSchedule.map((apt) => (
+                                        <div key={apt.id} className="p-6 group hover:bg-surface-alt/30 transition-all relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <div className="flex flex-col md:flex-row md:items-center gap-6">
+                                                <div className="w-20 shrink-0">
+                                                    <p className="text-xl font-black text-text leading-none tracking-tighter">{apt.time.split(' ')[0]}</p>
+                                                    <p className="text-[9px] text-text-muted uppercase mt-1 tracking-[0.3em] font-bold italic">{apt.time.split(' ')[1]}</p>
+                                                </div>
 
-                                        <div className="flex flex-col md:flex-row md:items-center gap-6">
-                                            <div className="w-20 shrink-0">
-                                                <p className="text-lg font-black text-text leading-none tracking-tighter">{apt.time.split(' ')[0]}</p>
-                                                <p className="text-[9px] text-text-muted uppercase mt-1 tracking-[0.3em] font-bold italic">{apt.time.split(' ')[1]}</p>
-                                            </div>
-
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h4 className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{apt.customer}</h4>
-                                                    <div className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[8px] text-primary font-black">
-                                                        {apt.sector}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <h4 className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{apt.customer}</h4>
+                                                        <div className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[8px] text-primary font-black">
+                                                            {apt.sector}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <p className="text-[10px] text-text-muted uppercase tracking-[0.1em] font-bold">
-                                                    {apt.service} <span className="mx-2 opacity-30">|</span> {apt.duration}
-                                                </p>
-                                            </div>
-
-                                            <div className="flex items-center gap-4">
-                                                <div className={`px-4 py-2 border text-[8px] font-black uppercase tracking-[0.2em] shadow-sm ${STATUS_MAP[apt.status].bg} ${STATUS_MAP[apt.status].color} ${STATUS_MAP[apt.status].border}`}>
-                                                    {STATUS_MAP[apt.status].label}
+                                                    <p className="text-[10px] text-text-muted uppercase tracking-[0.1em] font-bold">
+                                                        {apt.service} <span className="mx-2 opacity-30">|</span> {apt.duration}
+                                                    </p>
                                                 </div>
 
-                                                <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-all animate-in slide-in-from-right-1">
-                                                    {apt.status === 'upcoming' && (
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`px-4 py-2 border text-[8px] font-black uppercase tracking-[0.2em] shadow-sm ${STATUS_MAP[apt.status].bg} ${STATUS_MAP[apt.status].color} ${STATUS_MAP[apt.status].border}`}>
+                                                        {STATUS_MAP[apt.status].label}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-all animate-in slide-in-from-right-1">
+                                                        {apt.status === 'upcoming' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, 'in-progress'); }}
+                                                                className="p-2.5 border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
+                                                                title="Launch_Protocol"
+                                                            >
+                                                                <Play className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
+                                                        {apt.status === 'in-progress' && (
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, 'completed'); }}
+                                                                className="p-2.5 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
+                                                                title="Finalize_Protocol"
+                                                            >
+                                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => updateStatus(apt.id, 'in-progress')}
-                                                            className="p-2.5 border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5 active:scale-95"
-                                                            title="Launch_Protocol"
+                                                            onClick={() => setSelectedApt(apt)}
+                                                            className="p-2.5 border border-border text-text-muted hover:text-text hover:bg-surface-alt transition-all active:scale-95"
                                                         >
-                                                            <Play className="w-3.5 h-3.5" />
+                                                            <ArrowRight className="w-3.5 h-3.5" />
                                                         </button>
-                                                    )}
-                                                    {apt.status === 'in-progress' && (
-                                                        <button
-                                                            onClick={() => updateStatus(apt.id, 'completed')}
-                                                            className="p-2.5 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg shadow-emerald-500/5 active:scale-95"
-                                                            title="Finalize_Protocol"
-                                                        >
-                                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        onClick={() => setSelectedApt(apt)}
-                                                        className="p-2.5 border border-border text-text-muted hover:text-text hover:bg-surface-alt transition-all active:scale-95"
-                                                    >
-                                                        <ArrowRight className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    ))
+                                ) : (
+                                    <div className="p-20 text-center space-y-4">
+                                        <div className="w-12 h-12 bg-surface-alt border border-border mx-auto flex items-center justify-center">
+                                            <Search className="w-5 h-5 text-text-muted opacity-20" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-black text-text uppercase tracking-widest">No_Protocols_Detected</p>
+                                            <p className="text-[8px] text-text-muted uppercase tracking-widest mt-1">Adjust filters or search parameters</p>
+                                        </div>
                                     </div>
-                                ))}
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,15 +319,28 @@ export default function StylistDashboard() {
                                     />
                                     <YAxis hide />
                                     <Tooltip
-                                        cursor={{ fill: 'rgba(var(--primary-rgb), 0.1)' }}
-                                        contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0', fontSize: '10px', color: 'var(--text)', fontWeight: 900, textTransform: 'uppercase' }}
+                                        cursor={{ fill: 'var(--primary)', fillOpacity: 0.05 }}
+                                        contentStyle={{
+                                            backgroundColor: 'var(--surface)',
+                                            border: '2px solid var(--primary)',
+                                            borderRadius: '0',
+                                            fontSize: '11px',
+                                            color: 'var(--text)',
+                                            fontWeight: 900,
+                                            textTransform: 'uppercase',
+                                            padding: '12px',
+                                            boxShadow: '10px 10px 0px rgba(0,0,0,0.1)',
+                                        }}
+                                        itemStyle={{ color: 'var(--text)', padding: '4px 0 0 0', fontSize: '12px' }}
+                                        labelStyle={{ color: 'var(--primary)', fontWeight: 'bold', borderBottom: '1px solid var(--border)', paddingBottom: '4px', marginBottom: '4px' }}
                                     />
-                                    <Bar dataKey="value" fill="var(--primary)" barSize={14}>
+                                    <Bar dataKey="value" barSize={16}>
                                         {PERFORMANCE_DATA.map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={index === 5 ? 'var(--primary)' : 'rgba(var(--primary-rgb), 0.15)'}
-                                                className="transition-all hover:opacity-80"
+                                                fill="var(--primary)"
+                                                fillOpacity={index === 5 ? 1 : 0.2}
+                                                className="transition-all cursor-crosshair hover:fill-opacity-100"
                                             />
                                         ))}
                                     </Bar>
@@ -383,19 +439,6 @@ export default function StylistDashboard() {
                                     <div className="text-[10px] text-text-muted uppercase font-black tracking-tighter italic">
                                         Iteration_Duration: <span className="text-text">{selectedApt.duration}</span>
                                     </div>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <Shield className="w-3.5 h-3.5 text-primary" /> Policy_Compliance
-                                    </h4>
-                                    <ul className="space-y-2">
-                                        {['Standard_Sterilization_Check', 'Digital_Receipt_Bypass', 'Asset_Usage_Logged'].map(p => (
-                                            <li key={p} className="flex items-center gap-3 text-[9px] font-black text-text-muted uppercase tracking-widest">
-                                                <div className="w-1 h-1 bg-primary" /> {p}
-                                            </li>
-                                        ))}
-                                    </ul>
                                 </div>
                             </div>
 

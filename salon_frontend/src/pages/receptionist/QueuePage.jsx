@@ -19,17 +19,7 @@ import {
     Loader2
 } from 'lucide-react';
 
-const waitingList = [
-    { id: 'Q-001', name: 'Nisha Gupta', wait: '12 mins', service: 'Blow Dry', priority: true, preferredProfessional: 'Elena' },
-    { id: 'Q-002', name: 'Amit Trivedi', wait: '25 mins', service: 'Men\'s Cut', priority: false, preferredProfessional: 'Any' },
-    { id: 'Q-003', name: 'Karishma Rao', wait: '40 mins', service: 'Manicure', priority: false, preferredProfessional: 'Ritu' },
-];
-
-const stylists = [
-    { name: 'Meera', status: 'Available', specialty: 'Facials', current: 'Free' },
-    { name: 'Suresh', status: 'Busy', specialty: 'Hair Cut', current: 'Cutting' },
-    { name: 'Elena', status: 'On Break', specialty: 'Coloring', current: 'Break' },
-];
+import { waitingList, stylists } from '../../data/receptionistData';
 
 export default function QueuePage() {
     const [queueData, setQueueData] = useState(waitingList);
@@ -192,8 +182,8 @@ export default function QueuePage() {
                                         onClick={() => handleFloorRotation(st.name)}
                                         disabled={rotatingStylist === st.name}
                                         className={`px-3 py-1.5 text-[8px] font-black uppercase border tracking-widest transition-all ${st.status === 'Available'
-                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20'
-                                                : 'bg-rose-500/10 border-rose-500/20 text-rose-500 cursor-not-allowed opacity-50'
+                                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20'
+                                            : 'bg-rose-500/10 border-rose-500/20 text-rose-500 cursor-not-allowed opacity-50'
                                             }`}
                                     >
                                         {rotatingStylist === st.name ? <Loader2 className="w-3 h-3 animate-spin inline-block mr-1" /> : null} {st.status}

@@ -93,7 +93,7 @@ export default function POSDashboardPage() {
                     <div key={i} className="bg-surface rounded-none border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-none rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
                         <div className="flex items-center justify-between mb-6">
-                            <div className={`w-10 h-10 rounded-none border border-border flex items-center justify-center bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-white`}>
+                            <div className={`w-10 h-10 rounded-none border border-border flex items-center justify-center bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-primary-foreground`}>
                                 <stat.icon className="w-5 h-5" />
                             </div>
                         </div>
@@ -162,7 +162,7 @@ export default function POSDashboardPage() {
                         {recentInvoices.map((inv) => (
                             <div key={inv._id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all group">
                                 <div className="flex items-center gap-5 min-w-0">
-                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-all">
+                                    <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                         <Receipt className="w-5 h-5" />
                                     </div>
                                     <div className="min-w-0">
@@ -171,7 +171,7 @@ export default function POSDashboardPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-8 shrink-0">
-                                    <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                    <span className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-500/20'}`}>
                                         {inv.paymentStatus || 'PAID'}
                                     </span>
                                     <span className="text-sm font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</span>

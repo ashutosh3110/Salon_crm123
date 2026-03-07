@@ -16,16 +16,21 @@ import {
     Check
 } from 'lucide-react';
 
-const settingsSections = [
-    { title: 'Personal Interface', icon: User, description: 'Manage your profile and display name.' },
-    { title: 'Terminal Preferences', icon: Monitor, description: 'Customize dashboard alerts and live feed views.' },
-    { title: 'Protocol Notifications', icon: Bell, description: 'Configure SMS and email arrival alerts.' },
-    { title: 'Security & Access', icon: Shield, description: 'Update credential protocols and MFA.' },
-    { title: 'Hardware Integration', icon: Printer, description: 'Thermal printer and card terminal settings.' },
-    { title: 'System Logs', icon: Database, description: 'View recent session activity and audit trails.' },
-];
+import { settingsSections as rawSections } from '../../data/receptionistData';
 
 export default function ReceptionistSettingsPage() {
+    // Map icons back to sections since JSON can't store components
+    const settingsSections = rawSections.map(section => {
+        const iconMap = {
+            'Profile': User,
+            'Display & Layout': Monitor,
+            'Notifications': Bell,
+            'Security': Shield,
+            'Devices': Printer,
+            'Activity Log': Database
+        };
+        return { ...section, icon: iconMap[section.title] };
+    });
     const [toggles, setToggles] = useState({
         autoPrint: true,
         smsAuth: false,
@@ -43,7 +48,7 @@ export default function ReceptionistSettingsPage() {
     };
 
     const handleSave = () => {
-        alert(`${activeModal} protocols successfully synchronized with system core.`);
+        alert(`${activeModal} settings saved.`);
         setActiveModal(null);
     };
 
@@ -52,8 +57,8 @@ export default function ReceptionistSettingsPage() {
             {/* Header Area */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Terminal Config</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Personal & hardware system parameters</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Reception Settings</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Personal preferences, alerts and devices.</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-[9px] font-black text-text-muted uppercase tracking-widest px-3 py-1 border border-border bg-surface-alt">Firmware v2.4.0-Stable</span>
@@ -94,9 +99,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('autoPrint')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.autoPrint ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.autoPrint ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.autoPrint ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.autoPrint ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                     <div className="flex items-center justify-between py-4">
@@ -106,9 +111,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('smsAuth')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.smsAuth ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.smsAuth ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.smsAuth ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.smsAuth ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                     <div className="flex items-center justify-between py-4">
@@ -118,9 +123,9 @@ export default function ReceptionistSettingsPage() {
                         </div>
                         <div
                             onClick={() => handleToggle('showCommission')}
-                            className={`w-10 h-5 transition-colors duration-200 relative cursor-pointer ${toggles.showCommission ? 'bg-primary' : 'bg-border'}`}
+                            className={`pill-toggle w-11 h-6 rounded-full transition-colors duration-200 relative cursor-pointer flex items-center px-1 ${toggles.showCommission ? 'bg-primary' : 'bg-border'}`}
                         >
-                            <div className={`absolute top-1 bottom-1 w-3 bg-white transition-all duration-200 ${toggles.showCommission ? 'right-1' : 'left-1'}`} />
+                            <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${toggles.showCommission ? 'translate-x-4' : 'translate-x-0'}`} />
                         </div>
                     </div>
                 </div>
@@ -149,7 +154,7 @@ export default function ReceptionistSettingsPage() {
                             </button>
                         </div>
                         <div className="p-8 space-y-6">
-                            {activeModal === 'Personal Interface' && (
+                            {activeModal === 'Profile' && (
                                 <div className="space-y-4 text-left">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Display Alias</label>
@@ -164,7 +169,7 @@ export default function ReceptionistSettingsPage() {
                                     </div>
                                 </div>
                             )}
-                            {activeModal === 'Hardware Integration' && (
+                            {activeModal === 'Devices' && (
                                 <div className="space-y-4 text-left">
                                     <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -183,7 +188,7 @@ export default function ReceptionistSettingsPage() {
                                 </div>
                             )}
                             {/* Generic placeholder for other categories */}
-                            {!['Personal Interface', 'Hardware Integration'].includes(activeModal) && (
+                            {!['Profile', 'Devices'].includes(activeModal) && (
                                 <div className="py-12 text-center space-y-4">
                                     <Database className="w-12 h-12 text-primary/20 mx-auto" />
                                     <p className="text-[11px] text-text-muted font-bold uppercase tracking-widest">Standard parameters available for {activeModal}.</p>

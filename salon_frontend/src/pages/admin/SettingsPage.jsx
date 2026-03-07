@@ -20,8 +20,8 @@ export default function SettingsPage({ tab }) {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-black text-text uppercase tracking-tight">System Configuration</h1>
-                <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Manage operational parameters and security protocols.</p>
+                <h1 className="text-2xl font-black text-text uppercase tracking-tight">Settings</h1>
+                <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Update profile details, notifications and security.</p>
             </div>
 
             <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm transition-all">
@@ -29,8 +29,8 @@ export default function SettingsPage({ tab }) {
                     {activeTab === 'profile' && (
                         <div className="space-y-8 max-w-2xl">
                             <div>
-                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Profile Matrix</h2>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Synchronize personal identity and access keys.</p>
+                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Profile</h2>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Keep your basic account information up to date.</p>
                             </div>
 
                             <div className="flex items-center gap-6 p-6 rounded-none bg-surface-alt border border-border">
@@ -47,11 +47,11 @@ export default function SettingsPage({ tab }) {
                             <div className="space-y-6 pt-2">
                                 <div className="grid sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Operational Name</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Full Name</label>
                                         <input type="text" defaultValue={user?.name || ''} className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Comms Protocol (Email)</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Email</label>
                                         <input type="email" defaultValue={user?.email || ''} className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50" />
                                     </div>
                                 </div>
@@ -62,7 +62,7 @@ export default function SettingsPage({ tab }) {
                             </div>
 
                             <div className="pt-6 flex justify-end border-t border-border">
-                                <button className="px-8 py-3.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all active:scale-[0.98]">Commit Changes</button>
+                                <button className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Commit Changes</button>
                             </div>
                         </div>
                     )}
@@ -70,17 +70,17 @@ export default function SettingsPage({ tab }) {
                     {activeTab === 'notifications' && (
                         <div className="space-y-8 max-w-2xl">
                             <div>
-                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Feedback Pulsar</h2>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Configure high-priority notification frequencies.</p>
+                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Notifications</h2>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Choose which alerts you want to receive.</p>
                             </div>
 
                             <div className="divide-y divide-border border border-border rounded-none overflow-hidden">
                                 {[
-                                    { title: 'Booking Confirmations', desc: 'Real-time sync on new appointment sequences.' },
-                                    { title: 'Payment Alerts', desc: 'Transactional pulse monitoring.' },
-                                    { title: 'Low Stock Warnings', desc: 'Material depletion protocols.' },
-                                    { title: 'Daily Summary Report', desc: 'Consolidated end-of-day data logs.' },
-                                    { title: 'Marketing Updates', desc: 'Communication from mission control.' }
+                                    { title: 'Booking Confirmations', desc: 'Send a message when a new booking is created.' },
+                                    { title: 'Payment Alerts', desc: 'Notify when a bill is paid or refunded.' },
+                                    { title: 'Low Stock Warnings', desc: 'Alert when products reach low stock.' },
+                                    { title: 'Daily Summary Report', desc: 'Email a short end-of-day summary.' },
+                                    { title: 'Marketing Updates', desc: 'Product news and marketing tips from us.' }
                                 ].map((item) => (
                                     <div key={item.title} className="flex items-center justify-between p-6 bg-surface hover:bg-surface-alt/50 transition-colors">
                                         <div className="space-y-1">
@@ -100,29 +100,29 @@ export default function SettingsPage({ tab }) {
                     {activeTab === 'security' && (
                         <div className="space-y-8 max-w-xl">
                             <div>
-                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Firewall Control</h2>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Cycle account authorization tokens regularly.</p>
+                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Security</h2>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Change your password to keep your account safe.</p>
                             </div>
 
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Legacy Token (Current)</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Current Password</label>
                                     <input type="password" placeholder="••••••••" className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50" />
                                 </div>
                                 <div className="grid sm:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">New Sequence</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">New Password</label>
                                         <input type="password" placeholder="••••••••" className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Verify Sequence</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Confirm Password</label>
                                         <input type="password" placeholder="••••••••" className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50" />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-6 flex justify-end border-t border-border">
-                                <button className="px-8 py-3.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:bg-primary-dark transition-all active:scale-[0.98]">Deploy Password</button>
+                                <button className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Update Password</button>
                             </div>
                         </div>
                     )}
