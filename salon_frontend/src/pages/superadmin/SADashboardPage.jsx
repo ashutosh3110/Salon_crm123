@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../services/api';
+// import api from '../../services/api'; // Removed backend dependency
 import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
@@ -105,36 +105,33 @@ function SectionHeader({ title, subtitle, action }) {
 
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SADashboardPage() {
-    const [stats, setStats] = useState(null);
+    const [stats, setStats] = useState(MOCK_STATS);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [recentTenants, setRecentTenants] = useState(MOCK_RECENT);
     const [systemOk] = useState(true); // mock system health
 
-    const fetchStats = async (isRefresh = false) => {
+    const fetchStats = (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
-        try {
-            const res = await api.get('/tenants/stats');
-            setStats(res.data);
-        } catch {
-            /* backend not available — use mock */
-        } finally {
+        // Pure mock logic now
+        setTimeout(() => {
+            setStats(MOCK_STATS);
             setLoading(false);
             setRefreshing(false);
-        }
+        }, 1000);
     };
 
     useEffect(() => { fetchStats(); }, []);
 
-    /* ── KPI values: prefer real API, fall back to mock ── */
+    /* ── KPI values: Pure mock ── */
     const kpi = {
-        totalSalons: stats?.total ?? 127,
-        activeSubs: stats?.byStatus?.active ?? 89,
-        trialSalons: stats?.byStatus?.trial ?? 18,
-        revenueToday: stats?.revenueToday ?? 12400,
-        revenueMonth: stats?.revenueMonth ?? 81500,
-        expiredPlans: stats?.expiredPlans ?? 11,
-        totalUsers: stats?.totalUsers ?? 534,
+        totalSalons: stats.total,
+        activeSubs: stats.byStatus.active,
+        trialSalons: stats.byStatus.trial,
+        revenueToday: stats.revenueToday,
+        revenueMonth: stats.revenueMonth,
+        expiredPlans: stats.expiredPlans,
+        totalUsers: stats.totalUsers,
     };
 
     const metricCards = [
