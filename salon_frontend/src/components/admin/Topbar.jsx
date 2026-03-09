@@ -1,10 +1,10 @@
-import { Menu, Bell, Search, Moon, Sun } from 'lucide-react';
+import { Menu, Bell, Search, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 
 export default function Topbar({ onMenuClick }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     const initials = user?.name
@@ -28,12 +28,12 @@ export default function Topbar({ onMenuClick }) {
                 </button>
 
                 {/* Search */}
-                <div className="hidden sm:flex items-center bg-surface border border-border/40 rounded-xl px-3 py-2 w-64 focus-within:w-80 transition-all">
+                <div className="hidden md:flex items-center bg-surface border border-border/40 px-3 py-2 w-48 lg:w-64 focus-within:w-80 transition-all">
                     <Search className="w-4 h-4 text-text-muted mr-2" />
                     <input
                         type="text"
                         placeholder="Search..."
-                        className="bg-transparent text-sm text-text placeholder-text-muted outline-none w-full"
+                        className="bg-transparent text-sm text-text placeholder-text-muted outline-none w-full uppercase text-[10px] font-black tracking-widest"
                     />
                 </div>
             </div>
@@ -60,16 +60,25 @@ export default function Topbar({ onMenuClick }) {
                     <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white dark:ring-surface" />
                 </button>
 
-                {/* Avatar */}
+                {/* User Profile */}
                 <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border/40">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
                         {initials}
                     </div>
                     <div className="hidden sm:block">
-                        <div className="text-sm font-medium text-text leading-tight">{user?.name || 'User'}</div>
-                        <div className="text-xs text-text-muted capitalize">{user?.role || 'admin'}</div>
+                        <div className="text-xs font-black text-text uppercase tracking-tighter leading-none">{user?.name || 'User'}</div>
+                        <div className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{user?.role || 'admin'}</div>
                     </div>
                 </div>
+
+                {/* Logout Button */}
+                <button
+                    onClick={logout}
+                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-500 transition-colors border border-border/40 group"
+                    title="Logout"
+                >
+                    <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                </button>
             </div>
         </header>
     );

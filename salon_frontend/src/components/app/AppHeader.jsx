@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Bell, Wallet } from 'lucide-react';
+import { Sun, Moon, Bell, Wallet, LogOut } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import logoLightMode from '/2-removebg-preview.png';
@@ -19,7 +19,7 @@ const SALON_THOUGHTS = [
 
 export default function AppHeader() {
     const { theme, toggleTheme } = useCustomerTheme();
-    const { customer } = useCustomerAuth();
+    const { customer, logout } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { balance } = useWallet();
@@ -183,6 +183,26 @@ export default function AppHeader() {
                         borderRadius: '50%',
                         border: isLight ? '1.5px solid #fff' : '1.5px solid #141414'
                     }} />
+                </motion.button>
+
+                {/* Logout */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={logout}
+                    style={{
+                        width: '32px',
+                        height: '38px',
+                        background: 'none',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: isLight ? '#000000' : '#FFFFFF',
+                    }}
+                    title="Logout"
+                >
+                    <LogOut size={20} strokeWidth={2.2} />
                 </motion.button>
             </div>
         </header>

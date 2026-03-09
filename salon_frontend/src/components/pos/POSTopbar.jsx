@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Menu, Bell, Store, Moon, Sun, Monitor } from 'lucide-react';
+import { Menu, Bell, Store, Moon, Sun, Monitor, LogOut, ArrowLeft } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 
 export default function POSTopbar({ onMenuClick }) {
     const { theme, toggleTheme } = useTheme();
+    const { logout, getExitPath } = useAuth();
     const navigate = useNavigate();
 
     return (
@@ -18,6 +20,18 @@ export default function POSTopbar({ onMenuClick }) {
                     >
                         <Menu className="w-5 h-5 text-text-secondary" />
                     </button>
+
+                    {/* Exit POS Button */}
+                    <motion.button
+                        whileHover={{ x: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate(getExitPath())}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-surface border border-border hover:border-primary/50 hover:bg-primary/5 transition-all hidden md:flex group"
+                        title="Return to Main Dashboard"
+                    >
+                        <ArrowLeft className="w-4 h-4 text-text-muted group-hover:text-primary transition-colors" />
+                        <span className="text-[10px] font-black text-text-secondary group-hover:text-primary uppercase tracking-widest">Exit POS</span>
+                    </motion.button>
 
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary/10 flex items-center justify-center border border-primary/20">
@@ -66,6 +80,15 @@ export default function POSTopbar({ onMenuClick }) {
                             <div className="absolute top-0 left-0 w-full h-full border border-background opacity-0 group-hover:opacity-10 scale-90 group-hover:scale-100 transition-all"></div>
                         </div>
                     </div>
+
+                    {/* Logout Button */}
+                    <button
+                        onClick={logout}
+                        className="w-10 h-10 bg-surface border border-border flex items-center justify-center hover:bg-rose-500/10 hover:border-rose-500/30 group transition-all"
+                        title="Logout Terminal"
+                    >
+                        <LogOut className="w-4 h-4 text-text-secondary group-hover:text-rose-500 transition-colors" />
+                    </button>
                 </div>
             </div>
         </header>

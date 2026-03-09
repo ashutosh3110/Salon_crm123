@@ -32,6 +32,13 @@ export default function AdminLayout() {
                 .admin-panel .font-sans {
                     font-family: 'Open Sans', sans-serif !important;
                 }
+                /* Mobile optimized spacing */
+                @media (max-width: 640px) {
+                    .admin-panel main {
+                        padding-left: 12px !important;
+                        padding-right: 12px !important;
+                    }
+                }
             `}</style>
 
             <Sidebar
@@ -50,7 +57,7 @@ export default function AdminLayout() {
             >
                 <Topbar onMenuClick={() => setMobileOpen(true)} />
 
-                <main className="p-4 animate-reveal">
+                <main className="p-3 sm:p-5 lg:p-8 animate-reveal max-w-[1600px] mx-auto">
                     <Outlet />
                 </main>
             </div>

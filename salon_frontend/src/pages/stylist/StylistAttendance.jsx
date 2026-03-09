@@ -90,7 +90,7 @@ export default function StylistAttendance() {
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${status === 'ACTIVE_RUN' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Presence_State: {status}</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Current Status: {status === 'ACTIVE_RUN' ? 'ON DUTY' : 'OFF DUTY'}</span>
                             </div>
                             <Shield className="w-4 h-4 text-primary opacity-40" />
                         </div>
@@ -98,18 +98,18 @@ export default function StylistAttendance() {
                         <div className="grid md:grid-cols-2 gap-10">
                             <div className="space-y-6">
                                 <div>
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Location_Vector</p>
+                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Detected Location</p>
                                     {loading ? (
                                         <div className="flex items-center gap-2 text-primary">
                                             <RefreshCw className="w-4 h-4 animate-spin" />
-                                            <span className="text-xs uppercase tracking-widest">Fetching...</span>
+                                            <span className="text-xs uppercase tracking-widest">Scanning...</span>
                                         </div>
                                     ) : location ? (
                                         <div className="space-y-1">
                                             <p className="text-2xl font-black text-text tracking-tighter uppercase flex items-center gap-2">
                                                 <Navigation className="w-5 h-5 text-primary" /> {location.lat}, {location.lng}
                                             </p>
-                                            <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Signal_Accuracy: {accuracy}m</p>
+                                            <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Signal Accuracy: {accuracy}m</p>
                                         </div>
                                     ) : (
                                         <p className="text-rose-500 text-[10px] font-black uppercase">{error || 'Vector Missing'}</p>
@@ -119,7 +119,7 @@ export default function StylistAttendance() {
                                     onClick={fetchLocation}
                                     className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-primary hover:text-white transition-colors"
                                 >
-                                    <RefreshCw className="w-3 h-3" /> Rekey_Location_Scan
+                                    <RefreshCw className="w-3 h-3" /> Refresh Location
                                 </button>
                             </div>
 
@@ -132,7 +132,7 @@ export default function StylistAttendance() {
                                             ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
                                             : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]'}`}
                                 >
-                                    <Zap className="w-4 h-4" /> Initialize_Presence
+                                    <Zap className="w-4 h-4" /> Punch In
                                 </button>
                                 <button
                                     disabled={status === 'OFFLINE' || loading || !location}
@@ -142,7 +142,7 @@ export default function StylistAttendance() {
                                             ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
                                             : 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/20 hover:scale-[1.02]'}`}
                                 >
-                                    <Smartphone className="w-4 h-4" /> Terminate_Cycle
+                                    <Smartphone className="w-4 h-4" /> Punch Out
                                 </button>
                             </div>
                         </div>
@@ -157,7 +157,7 @@ export default function StylistAttendance() {
                 <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Session_Cycle_Logs</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Attendance History</span>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -168,11 +168,11 @@ export default function StylistAttendance() {
                                     onClick={() => setStatusFilter(f)}
                                     className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
                                 >
-                                    {f === 'ALL' ? 'ALL_CYCLES' : `ONLY_${f}`}
+                                    {f === 'ALL' ? 'ALL' : f === 'IN' ? 'PUNCH INS' : 'PUNCH OUTS'}
                                 </button>
                             ))}
                         </div>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Detected_Entries: {filteredLogs.length}</span>
+                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Total Logs: {filteredLogs.length}</span>
                     </div>
                 </div>
 
@@ -185,7 +185,7 @@ export default function StylistAttendance() {
                                     <div className="flex items-center gap-3">
                                         <p className="text-sm font-black text-text tracking-tighter">{log.time}</p>
                                         <div className={`px-2 py-0.5 border text-[7px] font-black uppercase tracking-widest ${log.type === 'IN' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                                            PROTOCOL_{log.type === 'IN' ? 'INITIALIZED' : 'TERMINATED'}
+                                            {log.type === 'IN' ? 'PUNCHED IN' : 'PUNCHED OUT'}
                                         </div>
                                     </div>
                                     <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest italic">{log.date}</p>
@@ -198,7 +198,7 @@ export default function StylistAttendance() {
                                         <MapPin className="w-3 h-3 text-primary" />
                                         <span className="text-[9px] font-black text-text uppercase tracking-widest">{log.loc}</span>
                                     </div>
-                                    <p className="text-[7px] text-text-muted uppercase font-bold tracking-[0.2em] italic">GEOLOCATION_VERIFIED_BY_SYSTEM</p>
+                                    <p className="text-[7px] text-text-muted uppercase font-bold tracking-[0.2em] italic">Location Verified</p>
                                 </div>
                                 <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/10 rounded-none">
                                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
@@ -212,7 +212,7 @@ export default function StylistAttendance() {
                 {logs.length === 0 && (
                     <div className="p-20 text-center space-y-4">
                         <AlertTriangle className="w-10 h-10 text-text-muted mx-auto opacity-20" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No cycle data available in local registry.</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No attendance logs found.</p>
                     </div>
                 )}
             </div>

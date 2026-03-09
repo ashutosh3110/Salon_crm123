@@ -232,7 +232,7 @@ function PlanModal({ plan, onClose, onSave }) {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Plan Designation</label>
                             <input
-                                value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                 className="w-full h-12 bg-surface-alt border border-border/60 px-4 text-sm font-bold text-foreground focus:border-primary focus:bg-surface outline-none transition-all shadow-sm"
                                 placeholder="E.g. Royal Platinum"
                             />

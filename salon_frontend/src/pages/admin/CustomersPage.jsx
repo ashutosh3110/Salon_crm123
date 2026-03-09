@@ -152,7 +152,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             required
                                             placeholder="e.g. ADITYA_SHARMA"
                                             value={newCustomerForm.name}
-                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                             className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
                                         />
                                     </div>
@@ -163,7 +163,10 @@ export default function CustomersPage({ tab = 'directory' }) {
                                             required
                                             placeholder="+91 00000 00000"
                                             value={newCustomerForm.phone}
-                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, phone: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setNewCustomerForm({ ...newCustomerForm, phone: val });
+                                            }}
                                             className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                         />
                                     </div>

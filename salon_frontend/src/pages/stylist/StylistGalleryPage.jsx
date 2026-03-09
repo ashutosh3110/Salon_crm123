@@ -41,16 +41,16 @@ export default function StylistGalleryPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <Camera className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Visual_Library</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">My Portfolio</span>
                     </div>
-                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Portfolio Matrix</h1>
-                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Asset_Injection_Terminal</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Hair Style Gallery</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Keep your best work updated</p>
                 </div>
                 <button
                     onClick={() => setShowUploadModal(true)}
                     className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
                 >
-                    <Plus className="w-4 h-4" /> Inject_New_Work
+                    <Plus className="w-4 h-4" /> Add New Style
                 </button>
             </div>
 
@@ -73,7 +73,7 @@ export default function StylistGalleryPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted/50 group-focus-within/search:text-primary transition-colors" />
                         <input
                             type="text"
-                            placeholder="SCAN_ASSETS..."
+                            placeholder="Search by category or style..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[8px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30 shadow-inner"
@@ -118,9 +118,9 @@ export default function StylistGalleryPage() {
                             <div className="p-6 flex-1 relative">
                                 <div className="flex items-start justify-between mb-4">
                                     <div>
-                                        <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1 italic">[{item.category}]</p>
+                                        <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1 italic">[{item.category.replace('_VECTORS', '')}]</p>
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{item.title}</h3>
-                                        <p className="text-[9px] text-text-muted uppercase tracking-widest mt-1">LOGGED_{item.date}</p>
+                                        <p className="text-[9px] text-text-muted uppercase tracking-widest mt-1">DATE: {item.date}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <button
@@ -143,7 +143,7 @@ export default function StylistGalleryPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => showToast(`Asset LINK generated: ${item.title}`)}
+                                            onClick={() => showToast(`Gallery link copied: ${item.title}`)}
                                             className="p-1.5 hover:text-primary transition-colors"
                                         >
                                             <Share2 className="w-4 h-4" />
@@ -172,8 +172,8 @@ export default function StylistGalleryPage() {
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">
                                 <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Asset Injection</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol: Visual_Data_Upload</p>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Upload Photo</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Add a photo of your recent work</p>
                                 </div>
                                 <button onClick={() => setShowUploadModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
                                     <X className="w-5 h-5" />
@@ -184,30 +184,30 @@ export default function StylistGalleryPage() {
                                 onSubmit={(e) => {
                                     e.preventDefault();
                                     setShowUploadModal(false);
-                                    showToast("Visual data successfully injected into Matrix.");
+                                    showToast("New photo successfully added to gallery.");
                                 }}
                                 className="space-y-6 relative z-10"
                             >
                                 <div className="border-2 border-dashed border-border p-12 text-center hover:border-primary/50 transition-all group cursor-pointer bg-background/50">
                                     <Upload className="w-10 h-10 text-text-muted group-hover:text-primary mx-auto mb-4 transition-all" />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] group-hover:text-text">Click to initialize upload sequence</p>
-                                    <p className="text-[8px] text-text-muted/60 uppercase mt-2 italic">Supporting: RAW, JPEG, PNG, WEBP</p>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] group-hover:text-text">Click to select image file</p>
+                                    <p className="text-[8px] text-text-muted/60 uppercase mt-2 italic">Supporting: JPEG, PNG, WEBP</p>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Asset_Title</label>
-                                        <input required type="text" placeholder="Identity of the Work" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Style Name</label>
+                                        <input required type="text" placeholder="e.g. Blonde Balayage" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Category_Vector</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Style Category</label>
                                         <select required className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none">
-                                            {categories.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
+                                            {categories.slice(1).map(c => <option key={c} value={c}>{c.replace('_VECTORS', '')}</option>)}
                                         </select>
                                     </div>
                                 </div>
 
-                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Command_Upload</button>
+                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Upload to Gallery</button>
                             </form>
                         </motion.div>
                     </div>

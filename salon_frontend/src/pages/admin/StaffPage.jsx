@@ -136,10 +136,10 @@ export default function StaffPage() {
     return (
         <div className="space-y-6 animate-reveal">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-text uppercase">Personnel Roster</h1>
-                    <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Manage your dream team & assignments</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight">Personnel Roster</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Manage your dream team & assignments</p>
                 </div>
                 <button
                     onClick={() => {
@@ -147,14 +147,14 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-8 py-3.5 sm:py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Recruit Talent
+                    <Plus className="w-4 h-4" /> Recruit Talent
                 </button>
             </div>
 
             {/* Filters */}
-            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col md:flex-row gap-4">
+            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col lg:flex-row gap-4">
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
@@ -162,16 +162,16 @@ export default function StaffPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Scan for name or email..."
-                        className="w-full pl-11 pr-4 py-2.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                        className="w-full pl-11 pr-4 py-3 sm:py-3.5 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                     />
                 </div>
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative group">
-                        <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="relative group flex-1">
+                        <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted transition-colors group-focus-within:text-primary" />
                         <select
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
-                            className="text-[10px] font-extrabold uppercase tracking-widest bg-surface-alt border border-border rounded-none pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none min-w-[140px]"
+                            className="w-full text-[9px] font-black uppercase tracking-widest bg-surface border border-border rounded-none pl-11 pr-8 py-3 sm:py-3.5 outline-none focus:border-primary cursor-pointer appearance-none sm:min-w-[160px] transition-all"
                         >
                             <option value="all">Every Role</option>
                             <option value="admin">Admin</option>
@@ -179,19 +179,21 @@ export default function StaffPage() {
                             <option value="receptionist">Receptionist</option>
                             <option value="stylist">Stylist</option>
                         </select>
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
                     </div>
-                    <div className="relative group">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                    <div className="relative group flex-1">
+                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted transition-colors group-focus-within:text-primary" />
                         <select
                             value={outletFilter}
                             onChange={(e) => setOutletFilter(e.target.value)}
-                            className="text-[10px] font-extrabold uppercase tracking-widest bg-surface-alt border border-border rounded-none pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none min-w-[160px]"
+                            className="w-full text-[9px] font-black uppercase tracking-widest bg-surface border border-border rounded-none pl-11 pr-8 py-3 sm:py-3.5 outline-none focus:border-primary cursor-pointer appearance-none sm:min-w-[180px] transition-all"
                         >
                             <option value="all">Every Unit</option>
                             {outlets.map(o => (
                                 <option key={o._id} value={o._id}>{o.name}</option>
                             ))}
                         </select>
+                        <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
                     </div>
                 </div>
             </div>
@@ -332,7 +334,7 @@ export default function StaffPage() {
                                         type="text"
                                         required
                                         value={form.name}
-                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                         placeholder="Full Name"
                                         className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30"
                                     />
@@ -354,7 +356,10 @@ export default function StaffPage() {
                                         <input
                                             type="tel"
                                             value={form.phone}
-                                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setForm({ ...form, phone: val });
+                                            }}
                                             placeholder="Phone"
                                             className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30"
                                         />

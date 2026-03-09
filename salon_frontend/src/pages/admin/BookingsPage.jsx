@@ -188,16 +188,16 @@ export default function BookingsPage() {
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Booking Protocols</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: scheduling_intelligence_active // global_sync</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Booking Protocols</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: scheduling_intelligence_active // global_sync</p>
                 </div>
 
-                <div className="flex items-center gap-4 text-left font-black">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-left font-black">
                     <button
                         onClick={() => setIsBookingModalOpen(true)}
-                        className="flex items-center gap-3 px-8 py-3.5 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                        className="flex items-center justify-center gap-3 px-8 py-3.5 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                     >
                         <Plus className="w-4 h-4" /> ADD BOOKING
                     </button>
@@ -205,13 +205,13 @@ export default function BookingsPage() {
                     <div className="flex items-center gap-2 bg-surface p-1 rounded-none border border-border">
                         <button
                             onClick={() => setView('calendar')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'calendar' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'calendar' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <Calendar className="w-3.5 h-3.5" /> CALENDAR
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`flex items-center gap-2 px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
                             <List className="w-3.5 h-3.5" /> LIST ARRAY
                         </button>
@@ -220,8 +220,8 @@ export default function BookingsPage() {
             </div>
 
             {/* Top Analytics Cluster */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left font-black">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />

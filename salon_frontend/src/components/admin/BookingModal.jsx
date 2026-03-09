@@ -115,7 +115,7 @@ export default function BookingModal({ isOpen, onClose }) {
                                             required
                                             type="text"
                                             value={formData.clientName}
-                                            onChange={e => setFormData({ ...formData, clientName: e.target.value })}
+                                            onChange={e => setFormData({ ...formData, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                             placeholder="John Doe"
                                         />
@@ -129,7 +129,10 @@ export default function BookingModal({ isOpen, onClose }) {
                                             required
                                             type="tel"
                                             value={formData.clientPhone}
-                                            onChange={e => setFormData({ ...formData, clientPhone: e.target.value })}
+                                            onChange={e => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setFormData({ ...formData, clientPhone: val });
+                                            }}
                                             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                             placeholder="+91 00000 00000"
                                         />

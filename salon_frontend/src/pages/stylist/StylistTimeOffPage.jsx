@@ -83,26 +83,26 @@ export default function StylistTimeOffPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-2">
                         <Activity className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Downtime_Control</span>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-primary font-bold">Leave Management</span>
                     </div>
-                    <h1 className="text-3xl text-text tracking-tighter uppercase font-bold">Protocol Pause</h1>
-                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Absence_Management_Terminal</p>
+                    <h1 className="text-3xl text-text tracking-tighter uppercase font-bold">Time Off & Leaves</h1>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1 italic">Request and track your leaves</p>
                 </div>
                 <button
                     onClick={() => setShowForm(true)}
                     className="flex items-center gap-3 px-6 py-4 bg-primary text-white text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 font-bold"
                 >
-                    <Plus className="w-5 h-5" /> Initialize_Request
+                    <Plus className="w-5 h-5" /> Apply for Leave
                 </button>
             </div>
 
             {/* Quota Matrix */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'Casual_Quota', value: '4/12', color: 'text-primary' },
-                    { label: 'Medical_Units', value: '2/8', color: 'text-rose-500' },
-                    { label: 'Paid_Stream', value: '10/15', color: 'text-emerald-500' },
-                    { label: 'Sick_Buffer', value: '1/5', color: 'text-amber-500' },
+                    { label: 'Casual Leaves', value: '4/12', color: 'text-primary' },
+                    { label: 'Medical Leaves', value: '2/8', color: 'text-rose-500' },
+                    { label: 'Earned Leaves', value: '10/15', color: 'text-emerald-500' },
+                    { label: 'Short Leaves', value: '1/5', color: 'text-amber-500' },
                 ].map((s) => (
                     <div key={s.label} className="bg-surface border border-border p-4 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
@@ -121,8 +121,8 @@ export default function StylistTimeOffPage() {
                 <div className="bg-surface border border-border overflow-hidden text-left">
                     <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Iteration_Request_Log</h2>
-                            <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Authorized_Base</span>
+                            <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Application History</h2>
+                            <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Verified Records</span>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -133,11 +133,11 @@ export default function StylistTimeOffPage() {
                                         onClick={() => setStatusFilter(f)}
                                         className={`px-2.5 py-1 text-[7px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
                                     >
-                                        {f === 'ALL' ? 'ALL_UNITS' : f}
+                                        {f === 'ALL' ? 'ALL' : f}
                                     </button>
                                 ))}
                             </div>
-                            <span className="text-[7px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-2 text-left">Detected: {filteredRequests.length}</span>
+                            <span className="text-[7px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-2 text-left">Requests: {filteredRequests.length}</span>
                         </div>
                     </div>
                     <div className="divide-y divide-border/10 text-left">
@@ -151,7 +151,7 @@ export default function StylistTimeOffPage() {
                                     <div className="space-y-0.5 text-left">
                                         <p className="text-xs font-black text-text uppercase tracking-tight text-left">{req.type}</p>
                                         <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase italic leading-none text-left">
-                                            [{req.dates}] <span className="mx-1.5 opacity-30">|</span> APPLIED_{req.appliedOn}
+                                            [{req.dates}] <span className="mx-1.5 opacity-30">|</span> Applied on: {req.appliedOn}
                                         </p>
                                     </div>
                                 </div>
@@ -179,8 +179,8 @@ export default function StylistTimeOffPage() {
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">
                                 <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Pause Initialization</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol: Downtime_Request_V2</p>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Apply for Leave</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Submit your leave request below</p>
                                 </div>
                                 <button onClick={() => setShowForm(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
                                     <X className="w-5 h-5" />
@@ -192,7 +192,7 @@ export default function StylistTimeOffPage() {
                                 className="space-y-6 relative z-10"
                             >
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Pause_Vector</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Leave Type</label>
                                     <select
                                         required
                                         value={formData.type}
@@ -205,7 +205,7 @@ export default function StylistTimeOffPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Initiation_Date</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">From Date</label>
                                         <input
                                             required
                                             type="date"
@@ -215,7 +215,7 @@ export default function StylistTimeOffPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Termination_Date</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">To Date</label>
                                         <input
                                             required
                                             type="date"
@@ -227,17 +227,17 @@ export default function StylistTimeOffPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Rationalization</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Reason for Leave</label>
                                     <textarea
                                         required
-                                        placeholder="Specify logical reason for protocol pause..."
+                                        placeholder="Enter your reason for taking leave..."
                                         value={formData.reason}
                                         onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
                                         className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none"
                                     />
                                 </div>
 
-                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Submit Protocol Pause</button>
+                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Submit Application</button>
                             </form>
                         </motion.div>
                     </div>

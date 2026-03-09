@@ -73,7 +73,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                     <input
                                         type="text"
                                         value={editForm?.name}
-                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                         className="text-2xl font-black text-text bg-white border border-border px-4 py-2 rounded-none outline-none focus:border-primary uppercase tracking-tight"
                                     />
                                     <input

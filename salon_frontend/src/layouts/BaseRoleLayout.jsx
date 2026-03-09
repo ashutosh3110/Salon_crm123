@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, Moon, Sun, Search, Bell } from 'lucide-react';
+import { Menu, Moon, Sun, Search, Bell, LogOut } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { motion } from 'framer-motion';
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
  * Accepts a SidebarComponent, brandColor, and title as props.
  */
 export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 'var(--color-primary)' }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [collapsed, setCollapsed] = useState(true);
     const [isHovered, setIsHovered] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -109,6 +109,15 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                                 {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
                             </div>
                         </div>
+
+                        {/* Logout Button */}
+                        <button
+                            onClick={logout}
+                            className="w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 group transition-colors border border-border/40 ml-1"
+                            title="Logout"
+                        >
+                            <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                        </button>
                     </div>
                 </header>
 

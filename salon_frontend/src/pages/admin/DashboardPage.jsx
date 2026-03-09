@@ -84,25 +84,25 @@ export default function DashboardPage() {
             {/* Top Bar / Welcome */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left font-black">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Welcome Back, Admin</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Real-time salon intelligence overview</p>
+                    <h1 className="text-xl sm:text-2xl font-black text-text tracking-tight uppercase">Welcome Back, Admin</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Real-time salon intelligence overview</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <div className="relative">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-auto">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Scan system..."
-                            className="pl-10 pr-4 py-2.5 rounded-none bg-surface-alt border border-border text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 transition-all min-w-[240px]"
+                            className="pl-10 pr-4 py-2.5 rounded-none bg-surface-alt border border-border text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-2 focus:ring-primary/20 transition-all w-full sm:min-w-[240px]"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left font-black">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 text-left font-black">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={i} className="bg-surface py-5 px-6 sm:py-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
@@ -110,16 +110,16 @@ export default function DashboardPage() {
                             <div className="flex items-center justify-between mb-3 text-left font-black">
                                 <div className="flex items-center gap-2.5">
                                     <stat.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+                                    <p className="text-[10px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                <div className={`flex items-center gap-1 text-[10px] sm:text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>
                                     {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {stat.trend}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase">
                                     <AnimatedCounter
                                         value={stat.value}
                                         prefix={stat.prefix}

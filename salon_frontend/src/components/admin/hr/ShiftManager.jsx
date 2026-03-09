@@ -225,7 +225,7 @@ export default function ShiftManager() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Signal Identity *</label>
                                     <input required type="text" placeholder="e.g. ALPHA_MORNING"
                                         className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                        value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                                        value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') }))} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">

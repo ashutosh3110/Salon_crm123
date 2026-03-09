@@ -287,7 +287,7 @@ export default function MarketingHub() {
                                             placeholder="e.g. Summer Special 2026"
                                             className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
                                             value={campaignForm.name}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                         />
                                     </div>
 

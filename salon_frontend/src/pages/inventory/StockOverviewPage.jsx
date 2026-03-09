@@ -358,7 +358,7 @@ export default function StockOverviewPage() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Product Name *</label>
                                             <input required type="text" placeholder="e.g. Matrix Serum 200ml"
                                                 className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-all"
-                                                value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} />
+                                                value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} />
                                         </div>
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">SKU Code *</label>

@@ -123,22 +123,22 @@ export default function ClientsPage() {
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Client Registry</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: identification_matrix_v2.0 // master_database</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Client Registry</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: identification_matrix_v2.0 // master_database</p>
                 </div>
                 <button
                     onClick={() => { setEditingClient(null); setForm({ name: '', email: '', phone: '', gender: 'female', notes: '' }); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-6 sm:px-10 py-3.5 sm:py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add Profile
                 </button>
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left font-black">
+                <div className="md:col-span-2 grid grid-cols-2 gap-4">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
@@ -216,14 +216,14 @@ export default function ClientsPage() {
             </div>
 
             {/* Search Filter */}
-            <div className="flex items-center bg-surface rounded-none border border-border px-6 py-4 max-w-xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 text-left font-black">
-                <Search className="w-4 h-4 text-text-muted mr-4" />
+            <div className="flex items-center bg-surface rounded-none border border-border px-4 sm:px-6 py-3.5 sm:py-4 w-full sm:max-w-xl shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20 text-left font-black">
+                <Search className="w-4 h-4 text-text-muted mr-3 sm:mr-4" />
                 <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Scan system for name, comms, or identity link..."
-                    className="bg-transparent text-[11px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
+                    className="bg-transparent text-[10px] sm:text-[11px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
                 />
             </div>
 
@@ -315,12 +315,15 @@ export default function ClientsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Full Identity *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. ALEXANDRA_V" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Comms Link *</label>
-                                    <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
+                                    <input type="tel" value={form.phone} onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 10) setForm({ ...form, phone: val });
+                                    }} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Gender Tag</label>

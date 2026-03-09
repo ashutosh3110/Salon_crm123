@@ -945,7 +945,13 @@ export default function POSBillingPage() {
                                     placeholder="Search by Phone or Name..."
                                     className="w-full px-4 py-2 text-sm bg-background text-text border border-border outline-none focus:border-primary"
                                     value={searchClient}
-                                    onChange={(e) => { setSearchClient(e.target.value); setShowClientDropdown(true); }}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        // If it's all numbers, limit to 10
+                                        if (/^\d*$/.test(val) && val.length > 10) return;
+                                        setSearchClient(val);
+                                        setShowClientDropdown(true);
+                                    }}
                                     onFocus={() => setShowClientDropdown(true)}
                                 />
                                 {showClientDropdown && searchClient && (
@@ -1429,7 +1435,7 @@ export default function POSBillingPage() {
                                     type="text"
                                     className="w-full p-3 bg-background border border-border text-sm font-bold text-text outline-none focus:border-primary uppercase tracking-tighter"
                                     value={newClientForm.name}
-                                    onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
+                                    onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -1439,7 +1445,10 @@ export default function POSBillingPage() {
                                     type="tel"
                                     className="w-full p-3 bg-background border border-border text-sm font-bold text-text outline-none focus:border-primary"
                                     value={newClientForm.phone}
-                                    onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value })}
+                                    onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 10) setNewClientForm({ ...newClientForm, phone: val });
+                                    }}
                                 />
                             </div>
                             <div className="space-y-1.5">

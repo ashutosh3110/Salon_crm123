@@ -254,7 +254,7 @@ export default function AttendanceTracker() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity font-black">
+                                        <div className="flex items-center justify-end gap-2 transition-opacity font-black">
                                             <button onClick={() => { setChangeStatusModal(record); setNewStatus(record.status); }}
                                                 className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
                                                 <CheckCircle2 className="w-4 h-4" />

@@ -244,7 +244,7 @@ export default function SegmentManager() {
                                     required
                                     placeholder="e.g. HIGH_VALUE_CLIENTS"
                                     value={newSegment.name}
-                                    onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value })}
+                                    onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                     className="w-full px-5 py-4 bg-surface border border-border focus:border-primary focus:bg-white outline-none transition-all font-bold text-sm uppercase"
                                 />
                             </div>

@@ -319,7 +319,7 @@ export default function ReceptionistDashboard() {
                                         required
                                         type="text"
                                         value={newBooking.clientName}
-                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value })}
+                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                         className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
                                         placeholder="CLIENT FULL NAME"
                                     />

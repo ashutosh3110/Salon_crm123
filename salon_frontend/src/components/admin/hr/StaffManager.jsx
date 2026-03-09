@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Users, Search, Filter, Plus, MoreVertical, Mail, Phone, Calendar, Shield, CheckCircle2, Clock, Edit2, Eye, Trash2, UserPlus, Building2, X, ChevronLeft, ChevronRight, PieChart as PieChartIcon } from 'lucide-react';
+import { Users, Search, Filter, Plus, MoreVertical, Mail, Phone, Calendar, Shield, CheckCircle2, Clock, Edit2, Eye, Trash2, UserPlus, Building2, X, ChevronLeft, ChevronRight, PieChart as PieChartIcon, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     PieChart,
@@ -232,7 +232,7 @@ export default function StaffManager() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-5 text-left text-[11px] font-black">
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/5 text-violet-500 border border-violet-500/10 uppercase tracking-tighter"><Shield className="w-3 h-3" />{s.role}</span>
+                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-violet-500/5 text-violet-500 border border-violet-500/10 uppercase tracking-tighter"><Shield className="w-3.5 h-3.5" />{s.role}</span>
                                         <p className="text-[10px] text-text-muted mt-2 uppercase tracking-widest">{s.outlet}</p>
                                     </td>
                                     <td className="px-6 py-5 text-left text-[11px] font-black">
@@ -247,7 +247,7 @@ export default function StaffManager() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-2 transition-opacity">
                                             <button onClick={() => setViewModal(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Eye className="w-4 h-4" /></button>
                                             <button onClick={() => openEdit(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Edit2 className="w-4 h-4" /></button>
                                             <div className="relative text-left">
@@ -311,7 +311,7 @@ export default function StaffManager() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Legal Identity *</label>
                                             <input required type="text" placeholder="FULL_NAME"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                                                value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Vector Role *</label>
@@ -337,7 +337,10 @@ export default function StaffManager() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Comm_Frequency *</label>
                                             <input required type="text" placeholder="PHONE_STREAM"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                                                value={form.phone} onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    if (val.length <= 10) setForm(f => ({ ...f, phone: val }));
+                                                }} />
                                         </div>
 
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Personnel Metadata</div>
@@ -466,7 +469,7 @@ export default function StaffManager() {
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.pan || 'NOT_FOUND'}</p>
                                     </div>
                                     <div className="col-span-2 text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3 h-3" /> Physical Logistics</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Physical Logistics</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.address || 'NO_PHYSICAL_RECORD'}</p>
                                     </div>
 

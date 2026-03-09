@@ -86,7 +86,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                             placeholder="e.g. Executive Men's Haircut"
                             value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                         />
                     </div>
 
