@@ -1,14 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
-import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, generateTimeSlots } from '../../data/appMockData';
+import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
-const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
+const STEPS = ['Service', 'Location', 'Date & Time', 'Stylist', 'Confirm'];
 
 const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 200 : -200, opacity: 0 }),
@@ -24,6 +24,13 @@ export default function AppBookingPage() {
     const isLight = theme === 'light';
 
     const preSelectedServiceId = searchParams.get('serviceId');
+    const outletId = searchParams.get('outletId');
+
+    const [selectedOutlet, setSelectedOutlet] = useState(() => {
+        return MOCK_OUTLETS.find(o => o._id === outletId) || null;
+    });
+
+    const currentOutlet = selectedOutlet || MOCK_OUTLETS[0];
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -53,10 +60,15 @@ export default function AppBookingPage() {
             const svc = MOCK_SERVICES.find(s => s._id === preSelectedServiceId);
             if (svc && !selectedServices.find(s => s._id === preSelectedServiceId)) {
                 setSelectedServices([svc]);
-                setStep(1);
+                // If we also have an outlet selected, move to date/time
+                if (outletId) {
+                    const out = MOCK_OUTLETS.find(o => o._id === outletId);
+                    if (out) setSelectedOutlet(out);
+                    setStep(2);
+                }
             }
         }
-    }, [preSelectedServiceId]);
+    }, [preSelectedServiceId, outletId]);
 
     const toggleService = (svc) => {
         setSelectedServices(prev => {
@@ -72,6 +84,15 @@ export default function AppBookingPage() {
 
     const totalPrice = useMemo(() => {
         return selectedServices.reduce((sum, s) => sum + s.price, 0);
+    }, [selectedServices]);
+
+    const availableSalons = useMemo(() => {
+        if (!selectedServices.length) return MOCK_OUTLETS;
+        const selectedCategories = [...new Set(selectedServices.map(s => s.category))];
+        return MOCK_OUTLETS.filter(salon => {
+            if (!salon.categories || salon.categories.length === 0) return true;
+            return selectedCategories.every(cat => salon.categories.includes(cat));
+        });
     }, [selectedServices]);
 
     // TODO: Replace with api.get('/services?status=active')
@@ -105,7 +126,7 @@ export default function AppBookingPage() {
             d.setDate(startDay.getDate() + i);
 
             const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
-            const dayHours = MOCK_OUTLET.workingHours.find(wh => wh.day === dayName);
+            const dayHours = currentOutlet.workingHours?.find(wh => wh.day === dayName);
             const isCurrentMonth = d.getMonth() === month;
             const isPast = d < today;
 
@@ -121,7 +142,7 @@ export default function AppBookingPage() {
             });
         }
         return days;
-    }, [viewMonth]);
+    }, [viewMonth, currentOutlet]);
 
     const currentMonthLabel = viewMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
 
@@ -144,8 +165,8 @@ export default function AppBookingPage() {
     const timeSlots = useMemo(() => {
         if (!selectedDate) return [];
         const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' });
-        return generateTimeSlots(dayName, totalDuration || 30);
-    }, [selectedDate, totalDuration]);
+        return generateTimeSlots(dayName, totalDuration || 30, currentOutlet);
+    }, [selectedDate, totalDuration, currentOutlet]);
 
     // Filter services by search
     const filteredServices = useMemo(() => {
@@ -294,7 +315,7 @@ export default function AppBookingPage() {
                 <button onClick={() => step > 0 ? goTo(step - 1) : navigate(-1)} style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
                     <ArrowLeft className="w-4 h-4" /> {step > 0 ? 'Back' : 'Cancel'}
                 </button>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8956C] font-mono" style={{ fontFamily: "'Poppins', sans-serif" }}>Step {step + 1}/4</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8956C] font-mono" style={{ fontFamily: "'Poppins', sans-serif" }}>Step {step + 1}/{STEPS.length}</div>
             </div>
 
             {/* Step Indicator */}
@@ -314,18 +335,31 @@ export default function AppBookingPage() {
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="space-y-6"
                     >
+                        <div className="flex flex-col gap-0">
+                            <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                Book <span className="text-[#C8956C]">Services</span>
+                            </h2>
+                            <div className="flex items-center gap-1.5 opacity-60 mb-2">
+                                <MapPin size={10} className="text-[#C8956C]" />
+                                <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
+                            </div>
+                        </div>
                         <div className="flex flex-col gap-4">
                             <div
                                 style={{
-                                    background: colors.input,
+                                    background: isLight
+                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
                                     boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
                                     borderRadius: '20px 6px 20px 6px',
-                                    border: isSearchFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'transparent'}`,
+                                    border: isSearchFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
                                     padding: '0 16px',
                                     height: '52px',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px'
                                 }}
-                                className="flex items-center gap-3"
                             >
                                 <Search size={18} style={{ color: isSearchFocused ? '#C8956C' : colors.textMuted }} />
                                 <input
@@ -397,8 +431,76 @@ export default function AppBookingPage() {
                     </motion.div>
                 )}
 
-                {/* STEP 1: Date & Time */}
+                {/* STEP 1: Select Location */}
                 {step === 1 && (
+                    <motion.div
+                        key="step-1"
+                        custom={direction}
+                        variants={slideVariants}
+                        initial="enter" animate="center" exit="exit"
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="space-y-6"
+                    >
+                        <div className="flex flex-col gap-0">
+                            <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                Select <span className="text-[#C8956C]">Salon</span>
+                            </h2>
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Nearest to you based on selected services</p>
+                        </div>
+
+                        <div className="space-y-3">
+                            {availableSalons.map(salon => {
+                                const isSelected = selectedOutlet?._id === salon._id;
+                                return (
+                                    <motion.button
+                                        key={salon._id}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setSelectedOutlet(salon)}
+                                        style={{
+                                            background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                            borderColor: isSelected ? '#C8956C' : colors.border,
+                                            fontFamily: "'Poppins', sans-serif"
+                                        }}
+                                        className="w-full text-left p-4 rounded-2xl border flex gap-4 transition-all duration-300 shadow-sm relative overflow-hidden items-center"
+                                    >
+                                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                                            <img src={salon.image} alt={salon.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="text-sm font-bold uppercase tracking-tight truncate line-clamp-1" style={{ color: colors.text }}>{salon.name}</h4>
+                                            <div className="flex items-center gap-1 opacity-60 mt-1">
+                                                <MapPin className="w-3 h-3 text-[#C8956C]" />
+                                                <span className="text-[10px] uppercase font-bold truncate line-clamp-1 break-all pr-2">{salon.address}</span>
+                                            </div>
+                                            <div className="text-[10px] mt-1.5 font-black uppercase text-[#C8956C] tracking-widest flex items-center gap-1.5">
+                                                <span>2.4 KM AWAY</span>
+                                            </div>
+                                        </div>
+                                        {isSelected && (
+                                            <div className="bg-[#C8956C] rounded-full p-1 shrink-0">
+                                                <Check size={12} color="white" strokeWidth={3} />
+                                            </div>
+                                        )}
+                                    </motion.button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="pt-4">
+                            <button
+                                onClick={() => goTo(2)}
+                                disabled={!selectedOutlet}
+                                style={{ fontFamily: "'Poppins', sans-serif" }}
+                                className="w-full py-4 rounded-xl bg-[#C8956C] text-white text-[11px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
+                            >
+                                Continue <ArrowRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* STEP 2: Date & Time */}
+                {step === 2 && (
                     <motion.div
                         key="step-1"
                         custom={direction}
@@ -408,7 +510,7 @@ export default function AppBookingPage() {
                         className="space-y-8"
                     >
                         <button
-                            onClick={() => goTo(2)}
+                            onClick={() => goTo(3)}
                             disabled={!selectedDate || !selectedTime}
                             style={{ fontFamily: "'Poppins', sans-serif" }}
                             className="w-full py-4 rounded-xl bg-[#C8956C] text-white text-[11px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
@@ -418,9 +520,15 @@ export default function AppBookingPage() {
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                    Select <span className="text-[#C8956C]">Timeline</span>
-                                </h2>
+                                <div className="flex flex-col gap-0">
+                                    <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                        Select <span className="text-[#C8956C]">Timeline</span>
+                                    </h2>
+                                    <div className="flex items-center gap-1.5 opacity-60 mb-2">
+                                        <MapPin size={10} className="text-[#C8956C]" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
+                                    </div>
+                                </div>
                                 <div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ fontFamily: "'Poppins', sans-serif" }}>
                                     {selectedDate ? `${selectedDate.fullMonth} ${selectedDate.year}` : currentMonthLabel}
                                 </div>
@@ -531,10 +639,10 @@ export default function AppBookingPage() {
                     </motion.div>
                 )}
 
-                {/* STEP 2: Choose Stylist */}
-                {step === 2 && (
+                {/* STEP 3: Stylist */}
+                {step === 3 && (
                     <motion.div
-                        key="step-2"
+                        key="step-3"
                         custom={direction}
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
@@ -542,7 +650,7 @@ export default function AppBookingPage() {
                         className="space-y-6"
                     >
                         <button
-                            onClick={() => goTo(3)}
+                            onClick={() => goTo(4)}
                             disabled={!selectedStaff}
                             style={{
                                 fontFamily: "'Poppins', sans-serif",
@@ -620,8 +728,8 @@ export default function AppBookingPage() {
                     </motion.div>
                 )}
 
-                {/* STEP 3: Confirm */}
-                {step === 3 && (
+                {/* STEP 4: Confirm */}
+                {step === 4 && (
                     <motion.div
                         key="step-3"
                         custom={direction}
@@ -674,6 +782,10 @@ export default function AppBookingPage() {
                                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
                                     <span style={{ color: colors.textMuted }}>Stylist</span>
                                     <span style={{ color: colors.text }}>{selectedStaff?.name}</span>
+                                </div>
+                                <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
+                                    <span style={{ color: colors.textMuted }}>Salon</span>
+                                    <span style={{ color: colors.text }}>{currentOutlet.name}</span>
                                 </div>
                             </div>
 

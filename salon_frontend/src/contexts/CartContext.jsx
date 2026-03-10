@@ -8,18 +8,9 @@ export function CartProvider({ children }) {
         return saved ? JSON.parse(saved) : [];
     });
 
-    const [wishlist, setWishlist] = useState(() => {
-        const saved = localStorage.getItem('app_wishlist');
-        return saved ? JSON.parse(saved) : [];
-    });
-
     useEffect(() => {
         localStorage.setItem('app_cart', JSON.stringify(cart));
     }, [cart]);
-
-    useEffect(() => {
-        localStorage.setItem('app_wishlist', JSON.stringify(wishlist));
-    }, [wishlist]);
 
     const addToCart = (product) => {
         setCart(prev => {
@@ -47,14 +38,6 @@ export function CartProvider({ children }) {
         setCart(prev => prev.filter(item => item._id !== productId));
     };
 
-    const toggleWishlist = (productId) => {
-        setWishlist(prev =>
-            prev.includes(productId)
-                ? prev.filter(id => id !== productId)
-                : [...prev, productId]
-        );
-    };
-
     const clearCart = () => setCart([]);
 
     const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -63,7 +46,6 @@ export function CartProvider({ children }) {
     return (
         <CartContext.Provider value={{
             cart, addToCart, updateQuantity, removeFromCart, clearCart,
-            wishlist, toggleWishlist,
             cartTotal, cartCount
         }}>
             {children}

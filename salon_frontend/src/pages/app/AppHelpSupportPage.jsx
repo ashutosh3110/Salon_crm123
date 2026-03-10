@@ -53,20 +53,24 @@ export default function AppHelpSupportPage() {
             <div style={{ padding: '24px 16px' }}>
                 {/* Search Bar */}
                 <div style={{
-                    background: colors.card,
-                    borderRadius: '16px',
-                    padding: '12px 16px',
+                    background: isLight
+                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+                    boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                    borderRadius: '20px 6px 20px 6px',
+                    padding: '0 16px',
+                    height: '48px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    border: `1px solid ${colors.border}`,
+                    border: `1.5px solid ${isLight ? '#E8ECEF' : 'rgba(255,255,255,0.05)'}`,
                     marginBottom: '32px'
                 }}>
-                    <Search size={18} color={colors.textMuted} />
+                    <Search size={18} color={colors.accent} />
                     <input
                         type="text"
                         placeholder="Search for help..."
-                        style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, fontSize: '14px', width: '100%' }}
+                        style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, fontSize: '14px', width: '100%', fontWeight: 600 }}
                     />
                 </div>
 

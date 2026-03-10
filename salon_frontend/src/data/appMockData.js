@@ -9,7 +9,8 @@ import customerData from './customerMockData.json';
 export const MOCK_CUSTOMER = customerData.customer;
 export const MOCK_SERVICES = customerData.services;
 export const MOCK_STAFF = customerData.staff;
-export const MOCK_OUTLET = customerData.outlet;
+export const MOCK_OUTLETS = customerData.outlets;
+export const MOCK_OUTLET = customerData.outlets[0];
 export const MOCK_LOYALTY_WALLET = customerData.loyaltyWallet;
 export const MOCK_LOYALTY_RULES = customerData.loyaltyRules;
 export const MOCK_LOYALTY_TRANSACTIONS = customerData.loyaltyTransactions;
@@ -61,9 +62,25 @@ export const MOCK_BOOKINGS = [
 ];
 
 // --- Helper: Generate time slots from outlet working hours ---
-export function generateTimeSlots(dayOfWeek, serviceDuration = 30) {
-    const dayHours = MOCK_OUTLET.workingHours.find(d => d.day === dayOfWeek);
-    if (!dayHours || !dayHours.isOpen) return [];
+export function generateTimeSlots(dayOfWeek, serviceDuration = 30, outlet = null) {
+    const targetOutlet = outlet || MOCK_OUTLET;
+    const dayHours = targetOutlet.workingHours?.find(d => d.day === dayOfWeek);
+
+    // Fallback if working hours not found (common for outlets without explicit hours in mock)
+    if (!dayHours || !dayHours.isOpen) {
+        // Provide default 10 AM - 8 PM if not specified
+        if (!dayHours) {
+            const slots = [];
+            for (let t = 600; t + serviceDuration <= 1200; t += 30) {
+                const h = Math.floor(t / 60);
+                const m = t % 60;
+                const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+                slots.push({ time: label, available: Math.random() > 0.2, isPast: false });
+            }
+            return slots;
+        }
+        return [];
+    }
 
     const [openH, openM] = dayHours.openTime.split(':').map(Number);
     const [closeH, closeM] = dayHours.closeTime.split(':').map(Number);

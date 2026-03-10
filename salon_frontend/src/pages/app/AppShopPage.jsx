@@ -6,6 +6,7 @@ import { MOCK_PRODUCTS, PRODUCT_CATEGORIES } from '../../data/appMockData';
 import { useCart } from '../../contexts/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 
 const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) => {
     const [isOpen, setIsOpen] = useState(isInitialOpen);
@@ -46,8 +47,8 @@ const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) 
 };
 
 const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight }) => {
-    const { toggleWishlist, wishlist } = useCart();
-    const isLiked = wishlist.includes(product._id);
+    const { isProductLiked, toggleProductLike } = useFavorites();
+    const isLiked = isProductLiked(product._id);
 
     return (
         <motion.div
@@ -65,7 +66,7 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
                 />
                 <button
-                    onClick={() => toggleWishlist(product._id)}
+                    onClick={() => toggleProductLike(product._id)}
                     className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
                     style={{ color: isLiked ? '#e53e3e' : '#fff' }}
                 >
@@ -106,7 +107,8 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
 };
 
 const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
-    const { cart, updateQuantity, toggleWishlist, wishlist } = useCart();
+    const { cart, updateQuantity } = useCart();
+    const { isProductLiked, toggleProductLike } = useFavorites();
     const [isFull, setIsFull] = useState(false);
     const containerRef = useRef(null);
     const { scrollY } = useScroll({ container: containerRef });
@@ -115,7 +117,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
     const imgScale = useTransform(scrollY, [0, 500], [1, 1.15]);
 
     const inCart = cart.find(item => item._id === product?._id);
-    const isLiked = wishlist.includes(product?._id);
+    const isLiked = isProductLiked(product?._id);
 
     useEffect(() => {
         const unsubscribe = scrollY.onChange((v) => {
@@ -147,15 +149,15 @@ const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
             >
                 {/* Fixed Action Buttons */}
                 <button
-                    onClick={onClose}
-                    className="absolute top-6 left-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[70] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    className="absolute top-6 left-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[100] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 pointer-events-auto"
                 >
                     <ChevronLeft size={20} />
                 </button>
 
                 <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[70] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                    onClick={(e) => { e.stopPropagation(); onClose(); }}
+                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[100] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 pointer-events-auto"
                 >
                     <X size={20} />
                 </button>

@@ -64,6 +64,14 @@ const AppLoyaltyPage = () => {
             } catch (err) {
                 console.error('Wallet fetch error:', err);
                 // Fallback to demo data if needed
+                setLoyaltyStats(prev => ({
+                    ...prev,
+                    currentPoints: 250,
+                    currentTier: 'Basic Member',
+                    history: [
+                        { id: 'tx-1', type: 'earn', action: 'Haircut & Styling', date: new Date().toISOString(), points: 250 }
+                    ]
+                }));
             } finally {
                 setLoading(false);
             }
@@ -115,13 +123,13 @@ const AppLoyaltyPage = () => {
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                                     <Crown size={14} color="#C8956C" />
-                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#C8956C', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{LOYALTY_STATS.currentTier}</p>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#C8956C', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{loyaltyStats.currentTier}</p>
                                 </div>
-                                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFF', margin: 0 }}>{LOYALTY_STATS.currentPoints.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, opacity: 0.6 }}>pts</span></h2>
+                                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFF', margin: 0 }}>{loyaltyStats.currentPoints.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, opacity: 0.6 }}>pts</span></h2>
                             </div>
                             <div style={{ background: 'rgba(200,149,108,0.15)', padding: '8px 12px', borderRadius: '12px', border: '1px solid rgba(200,149,108,0.2)' }}>
                                 <p style={{ fontSize: '10px', color: '#C8956C', margin: 0, fontWeight: 700 }}>Redeemable</p>
-                                <p style={{ fontSize: '14px', color: '#FFF', margin: 0, fontWeight: 900 }}>{LOYALTY_STATS.potentialSavings}</p>
+                                <p style={{ fontSize: '14px', color: '#FFF', margin: 0, fontWeight: 900 }}>{loyaltyStats.potentialSavings}</p>
                             </div>
                         </div>
 
@@ -140,7 +148,7 @@ const AppLoyaltyPage = () => {
                                 />
                             </div>
                         </div>
-                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Earn {LOYALTY_STATS.nextTier - LOYALTY_STATS.currentPoints} more points for next tier</p>
+                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Earn {loyaltyStats.nextTier - loyaltyStats.currentPoints} more points for next tier</p>
                     </div>
                 </div>
             </motion.div>

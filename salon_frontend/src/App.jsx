@@ -94,6 +94,8 @@ import AppLayout from './layouts/AppLayout';
 import AppLoginPage from './pages/app/AppLoginPage';
 import AppHomePage from './pages/app/AppHomePage';
 import AppWalletPage from './pages/app/AppWalletPage';
+import AppDiscoveryPage from './pages/app/AppDiscoveryPage';
+import SalonProfilePage from './pages/app/SalonProfilePage';
 
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
@@ -111,6 +113,7 @@ import AppMembershipSuccessPage from './pages/app/AppMembershipSuccessPage';
 import GenderSelectPage from './pages/app/GenderSelectPage';
 import AppHelpSupportPage from './pages/app/AppHelpSupportPage';
 import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
+import AppFavoritesPage from './pages/app/AppFavoritesPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
 import CustomerAppWrapper from './layouts/CustomerAppWrapper';
@@ -396,7 +399,10 @@ function App() {
                       <Route path="/app/gender" element={<GenderSelectPage />} />
                       <Route element={<AppLayout />}>
                         <Route path="/app" element={<AppHomePage />} />
+                        <Route path="/app/salon/:id" element={<SalonProfilePage />} />
+                        <Route path="/app/discovery" element={<AppDiscoveryPage />} />
                         <Route path="/app/wallet" element={<AppWalletPage />} />
+                        <Route path="/app/likes" element={<AppFavoritesPage />} />
 
                         <Route path="/app/book" element={<AppBookingPage />} />
                         <Route path="/app/services" element={<AppServicesPage />} />

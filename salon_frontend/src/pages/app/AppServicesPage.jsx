@@ -120,7 +120,7 @@ export default function AppServicesPage() {
     }, [filteredServices, activeCategory, searchQuery]);
 
     const handleBook = (id) => {
-        navigate(`/app/book?serviceId=${id}`);
+        navigate(`/app/discovery?serviceId=${id}`);
     };
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
@@ -135,15 +135,20 @@ export default function AppServicesPage() {
                 {/* Search Bar */}
                 <div
                     style={{
-                        background: colors.input,
+                        background: isLight
+                            ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
+                            : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
                         boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
                         borderRadius: '20px 6px 20px 6px',
-                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'transparent'}`,
+                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
                         transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                         padding: '0 16px',
-                        height: '46px'
+                        height: '52px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
                     }}
-                    className="flex items-center gap-3 mb-5"
+                    className="mb-5"
                 >
                     <Search size={16} style={{ color: isFocused ? '#C8956C' : colors.textMuted }} />
                     <input
