@@ -195,7 +195,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
                                     <span className="text-[10px] font-black">{product.rating}</span>
                                 </div>
                             </div>
-                            <h2 className="text-3xl font-black text-white leading-[1.2] tracking-tighter italic" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            <h2 className="text-3xl font-black text-white leading-[1.2] tracking-tighter italic" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                                 {product.name}
                             </h2>
                         </div>
@@ -328,7 +328,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                     >
                         <div className="p-10 border-b border-white/5 flex items-center justify-between">
                             <div>
-                                <h3 className="text-2xl font-black uppercase tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Your Bag</h3>
+                                <h3 className="text-2xl font-black uppercase tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Your Bag</h3>
                                 <p className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.3em]">{cart.length} Selections</p>
                             </div>
                             <button onClick={onClose} className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
@@ -340,7 +340,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                             {cart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
                                     <ShoppingBag size={80} className="mb-6" />
-                                    <p className="font-black uppercase tracking-[0.5em] text-xs font-serif">Empty Selection</p>
+                                    <p className="font-black uppercase tracking-[0.5em] text-xs" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Empty Selection</p>
                                 </div>
                             ) : (
                                 cart.map((item) => (
@@ -366,7 +366,7 @@ const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, 
                         </div>
 
                         <div className="p-10 bg-white/5 border-t border-white/5 space-y-6">
-                            <div className="flex items-center justify-between font-serif">
+                            <div className="flex items-center justify-between" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                                 <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Subtotal</span>
                                 <span className="text-3xl font-black italic tracking-tighter">₹{total}</span>
                             </div>

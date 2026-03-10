@@ -71,13 +71,15 @@ export default function AppLayout() {
                 }
 
                 .app-shell {
-                    font-family: 'Inter', sans-serif;
+                    font-family: 'SF Pro Text', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     box-sizing: border-box;
                     color: var(--app-text);
                 }
-
-                .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
-                    font-family: 'Playfair Display', serif !important;
+                
+                .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4, .app-shell h5, .app-shell h6 {
+                    font-family: 'SF Pro Display', 'Inter', sans-serif !important;
+                    font-weight: 700;
+                    letter-spacing: -0.02em;
                 }
 
                 /* ── Custom Scrollbar ── */
@@ -108,7 +110,7 @@ export default function AppLayout() {
 
                 /* ── Smooth Inputs ── */
                 input, select, textarea {
-                    font-family: 'Inter', sans-serif !important;
+                    font-family: 'SF Pro Text', 'Inter', sans-serif !important;
                 }
             `}</style>
 

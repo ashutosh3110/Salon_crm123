@@ -88,7 +88,7 @@ export default function AppHeader() {
                                 fontSize: showThought ? '14px' : '15px',
                                 fontWeight: showThought ? 600 : 800,
                                 fontStyle: showThought ? 'italic' : 'normal',
-                                fontFamily: showThought ? "'Playfair Display', serif" : "'Inter', sans-serif",
+                                fontFamily: showThought ? "'SF Pro Display', sans-serif" : "'SF Pro Text', sans-serif",
                                 color: showThought ? (isLight ? '#C8956C' : '#E6B98D') : (isLight ? '#000' : '#fff'),
                                 letterSpacing: showThought ? '0.02em' : '-0.01em',
                                 whiteSpace: 'nowrap',
@@ -185,25 +185,7 @@ export default function AppHeader() {
                     }} />
                 </motion.button>
 
-                {/* Logout */}
-                <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={logout}
-                    style={{
-                        width: '32px',
-                        height: '38px',
-                        background: 'none',
-                        border: 'none',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        color: isLight ? '#000000' : '#FFFFFF',
-                    }}
-                    title="Logout"
-                >
-                    <LogOut size={20} strokeWidth={2.2} />
-                </motion.button>
+
             </div>
         </header>
     );

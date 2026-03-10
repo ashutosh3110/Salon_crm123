@@ -59,7 +59,7 @@ export default function AppMyBookingsPage() {
             style={{ background: colors.bg, minHeight: '100svh' }}
         >
             <div className="pt-12 pb-2">
-                <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
+                <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
                     My <span className="text-[#C8956C]">Bookings</span>
                 </h1>
                 <p className="text-xs uppercase tracking-widest mt-1 opacity-60" style={{ color: colors.textMuted }}>Track your sessions</p>

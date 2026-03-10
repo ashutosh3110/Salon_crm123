@@ -34,7 +34,7 @@ export default function AppProductDetailsPage() {
 
     if (!product) return (
         <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-            <h2 className="text-xl font-black italic" style={{ fontFamily: "'Playfair Display', serif" }}>Ritual not found</h2>
+            <h2 className="text-xl font-black italic" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Ritual not found</h2>
             <button onClick={() => navigate('/app/shop')} className="mt-6 px-10 py-3 bg-[#C8956C] text-white rounded-2xl font-black uppercase tracking-widest text-[10px]">Back to Shop</button>
         </div>
     );
@@ -94,7 +94,7 @@ export default function AppProductDetailsPage() {
                             <span className="text-[10px] font-black text-white">{product.rating}</span>
                         </div>
                     </div>
-                    <h1 className="text-4xl font-black text-white italic tracking-tighter leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <h1 className="text-4xl font-black text-white italic tracking-tighter leading-tight" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                         {product.name}
                     </h1>
                 </div>
@@ -116,7 +116,7 @@ export default function AppProductDetailsPage() {
                         >
                             <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-10 text-center text-xl font-black italic tracking-tighter tabular-nums" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        <span className="w-10 text-center text-xl font-black italic tracking-tighter tabular-nums" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                             {inCart?.quantity || 1}
                         </span>
                         <button
@@ -131,7 +131,7 @@ export default function AppProductDetailsPage() {
                 {/* Description */}
                 <div className="space-y-4">
                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">The Ritual Story</h3>
-                    <p className="text-lg leading-relaxed font-medium opacity-80 italic" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    <p className="text-lg leading-relaxed font-medium opacity-80 italic" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                         {product.description}
                     </p>
                     <p className="text-sm leading-relaxed opacity-50">

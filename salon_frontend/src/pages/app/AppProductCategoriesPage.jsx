@@ -165,7 +165,7 @@ function FlipCard({ item, gradient, onClick, accent, delay, isLight }) {
                             background: gradient,
                         }}
                     >
-                        <span className="text-[9.5px] font-black text-white text-center leading-tight tracking-tight uppercase" style={{ fontFamily: "'Playfair Display', serif" }}>
+                        <span className="text-[9.5px] font-black text-white text-center leading-tight tracking-tight uppercase" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
                             {item.label}
                         </span>
                     </div>
@@ -242,7 +242,7 @@ export default function AppProductCategoriesPage() {
                     <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
                         <ArrowLeft size={20} />
                     </button>
-                    <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Categories</h1>
+                    <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Categories</h1>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => navigate('/app/shop')} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
@@ -290,7 +290,7 @@ export default function AppProductCategoriesPage() {
                     >
                         <img src={cat.img} alt={cat.label} className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center p-6">
-                            <h2 className="text-xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>{cat.label}</h2>
+                            <h2 className="text-xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>{cat.label}</h2>
                         </div>
                     </motion.div>
 
