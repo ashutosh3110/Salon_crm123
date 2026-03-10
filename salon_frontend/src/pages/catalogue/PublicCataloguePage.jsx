@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-    Clock, Tag, Star, ChevronRight, MessageSquare,
+    Clock, Tag, Star, ChevronRight, ChevronDown, MessageSquare,
     Facebook, Instagram, Globe, Phone, MapPin,
     Share2, ArrowLeft, RefreshCw, ExternalLink,
     X, CheckCircle2, Calendar, Scissors, Sparkles, ArrowRight
@@ -9,6 +9,11 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
+import PremiumLanding from '../../components/catalogue/PremiumLanding';
+import PremiumIndex from '../../components/catalogue/PremiumIndex';
+import PremiumLookbook from '../../components/catalogue/PremiumLookbook';
+import PremiumGrid from '../../components/catalogue/PremiumGrid';
+import initialCatalogueData from '../../data/digitalCatalogueData.json';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
 
@@ -22,34 +27,31 @@ export default function PublicCataloguePage() {
     const [selectedItem, setSelectedItem] = useState(null);
     const [bookingDate, setBookingDate] = useState('');
     const [isBooked, setIsBooked] = useState(false);
+    const [showSplash, setShowSplash] = useState(true);
 
     useEffect(() => {
         const fetchCatalogue = async () => {
             setLoading(true);
             try {
-                // Try Local Storage First (Mock Development Flow)
-                const localData = localStorage.getItem('digital_catalogue');
-                if (localData) {
-                    const parsed = JSON.parse(localData);
-                    // Allow preview if slug matches or if it's a generic preview
-                    if (parsed.slug === slug || slug === 'preview' || (slug && slug.includes('salon'))) {
-                        setCatalogue(parsed);
-                        setLoading(false);
-                        return;
-                    }
+                // Try Local Storage First (Full Data from Editor)
+                const fullLocalData = localStorage.getItem('digital_catalogue_full');
+                if (fullLocalData) {
+                    setCatalogue(JSON.parse(fullLocalData));
+                    setLoading(false);
+                    return;
                 }
 
-                const res = await axios.get(`${API_BASE_URL}/catalogue/public/${slug}`);
-                setCatalogue(res.data);
+                // Try individual premium config
+                const premiumLocal = localStorage.getItem('digital_catalogue_premium');
+                const baseData = initialCatalogueData;
+                if (premiumLocal) {
+                    baseData.premiumLanding = JSON.parse(premiumLocal);
+                }
+                setCatalogue(baseData);
+                setLoading(false);
             } catch (err) {
                 console.error('Error fetching catalogue:', err);
-                // Last ditch fallback for mock development
-                const localData = localStorage.getItem('digital_catalogue');
-                if (localData) {
-                    setCatalogue(JSON.parse(localData));
-                } else {
-                    setError('Catalogue not found or is currently private.');
-                }
+                setCatalogue(initialCatalogueData);
             } finally {
                 setLoading(false);
             }
@@ -105,6 +107,25 @@ export default function PublicCataloguePage() {
             fontFamily: premiumConfig.fontFamily === 'serif' ? 'serif' : 'sans-serif',
             color: premiumConfig.textColor
         }}>
+
+            <AnimatePresence>
+                {showSplash && catalogue.premiumLanding && (
+                    <motion.div
+                        initial={{ opacity: 1 }}
+                        exit={{ opacity: 0, y: -100 }}
+                        transition={{ duration: 1, ease: 'easeInOut' }}
+                        className="fixed inset-0 z-[1000]"
+                        onWheel={(e) => e.deltaY > 0 && setShowSplash(false)}
+                        onClick={() => setShowSplash(false)}
+                    >
+                        <PremiumLanding data={catalogue.premiumLanding} />
+                        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer flex flex-col items-center gap-2" onClick={() => setShowSplash(false)}>
+                            <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.5em]">View Catalogue</p>
+                            <ChevronDown className="text-white/40 w-6 h-6" />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ─── Premium Header ─── */}
             <header className="p-8 flex justify-between items-center border-b border-slate-100">
@@ -169,65 +190,66 @@ export default function PublicCataloguePage() {
                 </div>
             </div>
 
-            {/* ─── Menu Grid ─── */}
-            <main className="max-w-6xl mx-auto p-12 lg:p-24 space-y-32">
+            {/* ─── Premium Layout Handler ─── */}
+            <div className="h-screen w-full relative">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentPageIndex}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 1.02 }}
-                        className="space-y-32"
+                        className="h-full w-full"
                     >
-                        {activePage?.sections.map((section, sIdx) => (
-                            <div key={sIdx} className="grid lg:grid-cols-2 gap-24 items-start">
-                                <div className={sIdx % 2 !== 0 ? 'lg:order-last' : ''}>
-                                    <div className="space-y-2 mb-12">
-                                        <div className="w-12 h-1px bg-primary opacity-30" />
-                                        <h3 className="text-4xl font-light uppercase tracking-tight" style={{ color: premiumConfig.accentColor }}>{section.title}</h3>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Section 0{sIdx + 1}</p>
-                                    </div>
-
-                                    <div className="space-y-12">
-                                        {section.items.map((item, iIdx) => (
-                                            <div key={iIdx} className="flex justify-between items-start group">
-                                                <div className="flex items-center gap-6 flex-1">
-                                                    <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg group-hover:scale-105 transition-transform">
-                                                        <img src={item.imageUrl} className="w-full h-full object-cover" alt={item.displayName} />
-                                                    </div>
-                                                    <div className="space-y-1 max-w-[70%]">
-                                                        <h4 className="text-xl font-bold uppercase tracking-tight group-hover:text-primary transition-colors">{item.displayName}</h4>
-                                                        <p className="text-xs opacity-50 font-medium leading-relaxed italic">{item.description}</p>
-                                                        <div className="flex items-center gap-4 pt-2">
-                                                            <span className="text-[10px] font-black tracking-widest opacity-40 uppercase">{item.duration || '45'} MIN</span>
-                                                            <button
-                                                                onClick={() => handleBookNow(item)}
-                                                                className="text-[10px] font-black tracking-widest uppercase text-primary underline"
-                                                            >
-                                                                Book Now
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="text-lg font-black italic" style={{ color: premiumConfig.accentColor }}>₹{item.price}</div>
+                        {activePage?.type === 'NEW_INDEX' ? (
+                            <PremiumIndex data={activePage.config} />
+                        ) : activePage?.type === 'NEW_LOOKBOOK' ? (
+                            <PremiumLookbook data={activePage.config} accentColor={premiumConfig.accentColor} />
+                        ) : activePage?.type === 'NEW_GRID' ? (
+                            <PremiumGrid data={activePage.config} />
+                        ) : (
+                            /* ─── Existing Menu Grid Fallback ─── */
+                            <main className="max-w-6xl mx-auto p-12 lg:p-24 space-y-32 h-auto">
+                                {activePage?.sections?.map((section, sIdx) => (
+                                    <div key={sIdx} className="grid lg:grid-cols-2 gap-24 items-start mb-32">
+                                        <div className={sIdx % 2 !== 0 ? 'lg:order-last' : ''}>
+                                            <div className="space-y-2 mb-12">
+                                                <div className="w-12 h-1px bg-primary opacity-30" />
+                                                <h3 className="text-4xl font-light uppercase tracking-tight" style={{ color: premiumConfig.accentColor }}>{section.title}</h3>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Section 0{sIdx + 1}</p>
                                             </div>
-                                        ))}
+
+                                            <div className="space-y-12">
+                                                {section.items.map((item, iIdx) => (
+                                                    <div key={iIdx} className="flex justify-between items-start group">
+                                                        <div className="flex items-center gap-6 flex-1">
+                                                            <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0 shadow-lg group-hover:scale-105 transition-transform">
+                                                                <img src={item.imageUrl} className="w-full h-full object-cover" alt={item.displayName} />
+                                                            </div>
+                                                            <div className="space-y-1 max-w-[70%]">
+                                                                <h4 className="text-xl font-bold uppercase tracking-tight group-hover:text-primary transition-colors">{item.displayName}</h4>
+                                                                <p className="text-xs opacity-50 font-medium leading-relaxed italic">{item.description}</p>
+                                                                <div className="flex items-center gap-4 pt-2">
+                                                                    <span className="text-[10px] font-black tracking-widest opacity-40 uppercase">{item.duration || '45'} MIN</span>
+                                                                    <button onClick={() => handleBookNow(item)} className="text-[10px] font-black tracking-widest uppercase text-primary underline">Book Now</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-lg font-black italic" style={{ color: premiumConfig.accentColor }}>₹{item.price}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="relative">
+                                            <div className="absolute -inset-8 bg-slate-50 -z-1" style={{ backgroundColor: `${premiumConfig.accentColor}05` }} />
+                                            <motion.img initial={{ opacity: 0, scale: 1.1 }} whileInView={{ opacity: 1, scale: 1 }} src={sIdx % 2 === 0 ? "https://images.unsplash.com/photo-1522337360705-0b34991ff08a?w=800&q=80" : "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&q=80"} className="w-full h-full object-cover shadow-2xl grayscale hover:grayscale-0 transition-all duration-1000 aspect-[4/5]" />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="relative">
-                                    <div className="absolute -inset-8 bg-slate-50 -z-1" style={{ backgroundColor: `${premiumConfig.accentColor}05` }} />
-                                    <motion.img
-                                        initial={{ opacity: 0, scale: 1.1 }}
-                                        whileInView={{ opacity: 1, scale: 1 }}
-                                        src={sIdx % 2 === 0 ? "https://images.unsplash.com/photo-1522337360705-0b34991ff08a?w=800&q=80" : "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=800&q=80"}
-                                        className="w-full h-full object-cover shadow-2xl grayscale hover:grayscale-0 transition-all duration-1000 aspect-[4/5]"
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                                ))}
+                            </main>
+                        )}
                     </motion.div>
                 </AnimatePresence>
-            </main>
+            </div>
 
             {/* ─── Footer Section ─── */}
             <footer className="bg-slate-950 text-white p-24 text-center space-y-12 relative overflow-hidden">

@@ -59,7 +59,6 @@ import InventoryPage from './pages/admin/InventoryPage';
 import MarketingCMSPage from './pages/admin/MarketingCMSPage';
 import MarketingHubPage from './pages/admin/MarketingHubPage';
 import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
-import DigitalPresencePage from './pages/admin/DigitalPresencePage';
 import InquiryPage from './pages/admin/InquiryPage';
 import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
@@ -165,6 +164,7 @@ import TargetsPage from './pages/manager/TargetsPage';
 import FeedbackPage from './pages/manager/FeedbackPage';
 import ShiftsPage from './pages/manager/ShiftsPage';
 import ManagerSettingsPage from './pages/manager/ManagerSettingsPage';
+import CatalogueEditorPage from './pages/manager/CatalogueEditorPage';
 
 import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
@@ -255,7 +255,6 @@ function App() {
 
                         <Route path="/admin/promotions" element={<PromotionsPage />} />
                         <Route path="/admin/marketing" element={<MarketingHubPage />} />
-                        <Route path="/admin/digital-presence" element={<DigitalPresencePage />} />
                         <Route path="/admin/inquiries" element={<InquiryPage />} />
                         <Route path="/admin/reminders" element={<RemindersPage />} />
                         <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
@@ -286,8 +285,8 @@ function App() {
                         <Route path="/manager/targets" element={<TargetsPage />} />
                         <Route path="/manager/feedback" element={<FeedbackPage />} />
                         <Route path="/manager/shifts" element={<ShiftsPage />} />
+                        <Route path="/manager/catalogue" element={<CatalogueEditorPage />} />
                         <Route path="/manager/settings" element={<ManagerSettingsPage />} />
-                        <Route path="/manager/digital-presence" element={<DigitalPresencePage />} />
                       </Route>
                     </Route>
 
@@ -304,7 +303,6 @@ function App() {
                         <Route path="/receptionist/payments" element={<PaymentsPage />} />
                         <Route path="/receptionist/petty-cash" element={<PettyCashPage />} />
                         <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
-                        <Route path="/receptionist/digital-presence" element={<DigitalPresencePage />} />
                       </Route>
                     </Route>
 

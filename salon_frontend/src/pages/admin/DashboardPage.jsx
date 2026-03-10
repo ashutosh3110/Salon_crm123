@@ -304,13 +304,6 @@ export default function DashboardPage() {
                             <Settings className="w-4 h-4 opacity-60 group-hover:opacity-100" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em]">Settings</span>
                         </button>
-                        <Link to="/admin/digital-presence" className="p-5 rounded-none bg-primary/5 hover:bg-primary text-primary hover:text-primary-foreground transition-all border border-primary/20 hover:border-primary flex flex-col items-center gap-3 group shadow-sm col-span-2">
-                            <Globe className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                            <div className="text-center">
-                                <span className="text-[10px] font-black uppercase tracking-[0.2em] block">Digital Presence</span>
-                                <span className="text-[8px] font-bold uppercase tracking-widest opacity-60">Manage Online Catalogue</span>
-                            </div>
-                        </Link>
                     </div>
 
                     <div className="p-6 rounded-none bg-primary text-primary-foreground space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">

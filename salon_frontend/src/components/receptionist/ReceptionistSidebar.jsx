@@ -12,7 +12,6 @@ const menuItems = [
     { label: 'Walk-in Queue', icon: Users, path: '/receptionist/queue' },
     { label: 'Quick Bill (POS)', icon: Zap, path: '/pos/billing', accent: true },
     { label: 'Check-in/Out', icon: UserCheck, path: '/receptionist/checkin' },
-    { label: 'Digital Presence', icon: Globe, path: '/receptionist/digital-presence' },
     { label: 'Invoices', icon: ClipboardList, path: '/receptionist/invoices' },
     { label: 'Payments', icon: CreditCard, path: '/receptionist/payments' },
     { label: 'Petty Cash', icon: ClipboardList, path: '/receptionist/petty-cash' },

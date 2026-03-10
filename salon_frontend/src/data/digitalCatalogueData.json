@@ -1,0 +1,213 @@
+{
+    "theme": {
+        "primary": "#B85C5C",
+        "secondary": "#000000",
+        "background": "#ffffff",
+        "accent": "#F9F9F9",
+        "font": "Playfair Display"
+    },
+    "premiumLanding": {
+        "backgroundImage": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2070&auto=format&fit=crop",
+        "titleText": "Visit the\nstore.",
+        "brandLogo": "https://cdn.iconscout.com/icon/free/png-256/free-apple-logo-icon-download-in-svg-png-gif-file-formats--logos-pack-icons-444158.png",
+        "tagline": "Discover timeless elegance - Shop Now!",
+        "accentColor": "#ffffff",
+        "socialLinks": {
+            "facebook": "https://facebook.com",
+            "twitter": "https://twitter.com",
+            "linkedin": "https://linkedin.com",
+            "instagram": "https://instagram.com",
+            "youtube": "https://youtube.com"
+        }
+    },
+    "pages": [
+        {
+            "id": "p0",
+            "type": "NEW_INDEX",
+            "title": "Index.",
+            "config": {
+                "indexTitle": "index.",
+                "sections": [
+                    {
+                        "id": "01",
+                        "title": "GOLD STATEMENT",
+                        "desc": "Gold has captivated civilizations for millennia, symbolizing wealth, power, and eternal beauty."
+                    },
+                    {
+                        "id": "02",
+                        "title": "WHITE GOLD",
+                        "desc": "White gold is the perfect fusion of sophistication and versatility, offering a modern take on classic elegance."
+                    }
+                ],
+                "welcomeTitle": "welcome",
+                "welcomeMessage": "Welcome to our exclusive Fine Jewelry Collection. Crafted with precision and passion, our pieces are designed to celebrate your most cherished moments. Explore, engage, and shop effortlessly from this digital catalog.",
+                "whyChooseUs": [
+                    "Handcrafted luxury jewelry",
+                    "Ethically sourced gemstones & metals",
+                    "Timeless designs with modern elegance",
+                    "Seamless shopping experience"
+                ],
+                "heroImage": "https://images.unsplash.com/photo-1627255139045-8fe3857ca29b?q=80&w=2070&auto=format&fit=crop",
+                "sideText": "Browse, Click, and Own the Perfect Piece.",
+                "pageNumbers": {
+                    "left": "02.",
+                    "right": "03."
+                }
+            }
+        },
+        {
+            "id": "p1",
+            "type": "NEW_LOOKBOOK",
+            "title": "01.Gold statement",
+            "config": {
+                "modelImage": "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2070&auto=format&fit=crop",
+                "productImage": "https://images.unsplash.com/photo-1635767798638-3e25273a8236?q=80&w=1964&auto=format&fit=crop",
+                "pageNumber": {
+                    "left": "04",
+                    "right": "05"
+                },
+                "productName": "Emma hoops",
+                "description": "Turn heads with our exquisite collection of gold statement earrings, designed for those who dare to shine.",
+                "price": "$320",
+                "swatches": [
+                    "#E5E1DA",
+                    "#EBCF7C",
+                    "#D4AF37"
+                ]
+            }
+        },
+        {
+            "id": "p2",
+            "type": "NEW_GRID",
+            "title": "02.White gold",
+            "config": {
+                "topSection": {
+                    "image": "https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=2070&auto=format&fit=crop",
+                    "detail": {
+                        "name": "Eea",
+                        "image": "https://images.unsplash.com/photo-1626784215021-2e39ccf971cd?q=80&w=1964&auto=format&fit=crop",
+                        "desc": "Elegant design with timeless appeal. A meaningful symbol of love and devotion.",
+                        "price": "$320"
+                    }
+                },
+                "bottomSection": {
+                    "items": [
+                        {
+                            "name": "Sien",
+                            "image": "https://images.unsplash.com/photo-1603561591411-0e7ad4bdcd22?q=80&w=1964&auto=format&fit=crop",
+                            "desc": "Our gold statement rings are crafted to perfection, blending bold designs with timeless elegance.",
+                            "price": "$320"
+                        },
+                        {
+                            "name": "Zion",
+                            "image": "https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=1964&auto=format&fit=crop",
+                            "desc": "Our gold statement rings are crafted to perfection, blending bold designs with timeless elegance.",
+                            "price": "$320"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": 1,
+            "title": "Hair Services",
+            "icon": "Scissors",
+            "content": {
+                "welcome": "Welcome to our exclusive Fine Salon Collection. Our services are designed to celebrate your most cherished moments with premium beauty care.",
+                "whyUs": [
+                    "Expert Master Stylists",
+                    "Premium Organic Products",
+                    "Luxury Private Cabins",
+                    "Concierge Booking Experience"
+                ],
+                "summaries": [
+                    {
+                        "num": "01",
+                        "title": "Silk Revival",
+                        "text": "Intensive hair rejuvenation treatment."
+                    },
+                    {
+                        "num": "02",
+                        "title": "Glow Ritual",
+                        "text": "Diamond-infused facial for radiant skin."
+                    }
+                ],
+                "heroImage": "https://images.unsplash.com/photo-1560066922-1e87d492359f?q=80&w=1964&auto=format&fit=crop",
+                "assetType": "image"
+            }
+        },
+        {
+            "id": "p2",
+            "type": "PRODUCT_DETAIL",
+            "title": "Bridal Artistry",
+            "content": {
+                "number": "06.",
+                "specTitle": "Exclusive Bridal Package",
+                "description": "Transform your special day into a masterpiece. Our head stylists provide personalized consultation and bespoke makeup artistry.",
+                "price": "₹24,999",
+                "bgImage": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=2071&auto=format&fit=crop",
+                "insetImage": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=1974&auto=format&fit=crop",
+                "assetType": "image"
+            }
+        },
+        {
+            "id": "p3",
+            "type": "DARK_GRID",
+            "title": "Gents Lounge",
+            "content": {
+                "number": "02.",
+                "mainImage": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop",
+                "products": [
+                    {
+                        "id": 1,
+                        "title": "Baron",
+                        "sub": "ROYAL SHAVE & CUT",
+                        "price": "₹1,200",
+                        "img": "https://images.unsplash.com/photo-1599351473216-203be09bc14c?q=80&w=1976&auto=format&fit=crop"
+                    },
+                    {
+                        "id": 2,
+                        "title": "Vertex",
+                        "sub": "SCALP DETOX THERAPY",
+                        "price": "₹1,800",
+                        "img": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop"
+                    },
+                    {
+                        "id": 3,
+                        "title": "Apex",
+                        "sub": "BEARD SCULPTING",
+                        "price": "₹800",
+                        "img": "https://images.unsplash.com/photo-1621605815841-aa33c56306e9?q=80&w=2070&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "p4",
+            "type": "GALLERY",
+            "title": "Aura Spa",
+            "content": {
+                "number": "10.",
+                "description": "Immerse yourself in tranquility with our curated selection of holistic therapies designed for the urban soul.",
+                "images": [
+                    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=2070&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1519415510236-8517c83cd33e?q=80&w=2070&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1620331311520-246422ff82f9?q=80&w=1974&auto=format&fit=crop"
+                ]
+            }
+        },
+        {
+            "id": "p5",
+            "type": "CONTACT",
+            "title": "Join our world.",
+            "info": "Bespoke beauty, curated for you. Book your experience today.",
+            "links": [
+                "instagram",
+                "facebook",
+                "whatsapp",
+                "website"
+            ],
+            "bgImage": "https://images.unsplash.com/photo-1600948836101-f9ffda59d250?q=80&w=2072&auto=format&fit=crop"
+        }
+    ]
+}

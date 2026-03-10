@@ -1,0 +1,105 @@
+{
+    "theme": {
+        "primary": "#D4AF37",
+        "secondary": "#000000",
+        "background": "#000000",
+        "accent": "#1A1A1A",
+        "font": "Playfair Display"
+    },
+    "pages": [
+        {
+            "id": "c2p1",
+            "type": "INDEX",
+            "title": "Zenith.",
+            "content": {
+                "sideText": "Pure. Minimal. Elegant.",
+                "welcome": "Experience a new dimension of hair and skin care. Our Zenith collection represents the pinnacle of salon artistry and holistic wellness.",
+                "whyUsTitle": "The Zenith Edge",
+                "whyUs": [
+                    "Bespoke Consultation",
+                    "Vegan Certified Elements",
+                    "Zen Fusion Spaces",
+                    "Signature Scent Journeys"
+                ],
+                "summaries": [
+                    {
+                        "num": "01",
+                        "title": "Chroma Shift",
+                        "text": "Revolutionary color transitions."
+                    },
+                    {
+                        "num": "02",
+                        "title": "Zen Scalp",
+                        "text": "Deep meditative head therapy."
+                    }
+                ],
+                "heroImage": "https://images.unsplash.com/photo-1595475243692-3b2d1395e638?q=80&w=2070&auto=format&fit=crop",
+                "assetType": "image"
+            }
+        },
+        {
+            "id": "c2p2",
+            "type": "PRODUCT_DETAIL",
+            "title": "Gold Ritual",
+            "content": {
+                "number": "01.",
+                "specTitle": "Liquid Gold Facial Therapy",
+                "description": "Our signature 24K gold foil treatment combined with cold-pressed botanical extracts for an unparalleled radiance.",
+                "price": "₹15,000",
+                "bgImage": "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=2010&auto=format&fit=crop",
+                "insetImage": "https://images.unsplash.com/photo-1540555700478-4be289fbecee?q=80&w=2070&auto=format&fit=crop",
+                "assetType": "image"
+            }
+        },
+        {
+            "id": "c2p3",
+            "type": "DARK_GRID",
+            "title": "Noir Spa",
+            "content": {
+                "number": "04.",
+                "mainImage": "https://images.unsplash.com/photo-1519415391522-630e25660920?q=80&w=2070&auto=format&fit=crop",
+                "products": [
+                    {
+                        "id": 1,
+                        "title": "Onyx",
+                        "sub": "CHARCOAL DETOX",
+                        "price": "₹3,500",
+                        "img": "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?q=80&w=2070&auto=format&fit=crop"
+                    },
+                    {
+                        "id": 2,
+                        "title": "Slate",
+                        "sub": "MUD THERAPY",
+                        "price": "₹4,200",
+                        "img": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=2070&auto=format&fit=crop"
+                    },
+                    {
+                        "id": 3,
+                        "title": "Void",
+                        "sub": "SENSORY DEPRIVATION",
+                        "price": "₹6,000",
+                        "img": "https://images.unsplash.com/photo-1559599101-f09722fb4948?q=80&w=2069&auto=format&fit=crop"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "c2p4",
+            "type": "CONTACT",
+            "title": "Visit the store.",
+            "info": "Discover timeless elegance — Shop Now!",
+            "links": [
+                {
+                    "url": "instagram.com"
+                },
+                {
+                    "url": "facebook.com"
+                },
+                {
+                    "url": "linkedin.com"
+                }
+            ],
+            "bgImage": "/assets/catalog/hero_dark.png"
+        }
+    ]
+}

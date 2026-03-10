@@ -85,12 +85,6 @@ const menuItems = [
         ]
     },
     {
-        label: 'Digital Presence',
-        icon: Globe,
-        path: '/admin/digital-presence',
-        roles: ['admin', 'manager', 'receptionist']
-    },
-    {
         label: 'Inquiries',
         icon: ClipboardList,
         path: '/admin/inquiries',
