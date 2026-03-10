@@ -168,58 +168,141 @@
             "image": "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&q=80"
         }
     ],
-    "outlet": {
-        "_id": "outlet-001",
-        "name": "Glamour Studio — Koramangala",
-        "address": "1st Block, Koramangala, Bangalore 560034",
-        "phone": "080-12345678",
-        "isMain": true,
-        "status": "active",
-        "workingHours": [
-            {
-                "day": "Monday",
-                "isOpen": true,
-                "openTime": "09:00",
-                "closeTime": "21:00"
-            },
-            {
-                "day": "Tuesday",
-                "isOpen": true,
-                "openTime": "09:00",
-                "closeTime": "21:00"
-            },
-            {
-                "day": "Wednesday",
-                "isOpen": true,
-                "openTime": "09:00",
-                "closeTime": "21:00"
-            },
-            {
-                "day": "Thursday",
-                "isOpen": true,
-                "openTime": "09:00",
-                "closeTime": "21:00"
-            },
-            {
-                "day": "Friday",
-                "isOpen": true,
-                "openTime": "09:00",
-                "closeTime": "21:00"
-            },
-            {
-                "day": "Saturday",
-                "isOpen": true,
-                "openTime": "10:00",
-                "closeTime": "22:00"
-            },
-            {
-                "day": "Sunday",
-                "isOpen": false,
-                "openTime": "",
-                "closeTime": ""
-            }
-        ]
-    },
+    "outlets": [
+        {
+            "_id": "outlet-001",
+            "name": "Wapixo Premium — Koramangala",
+            "address": "1st Block, Koramangala, Bangalore 560034",
+            "phone": "080-12345678",
+            "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&q=80",
+            "rating": 4.8,
+            "distance": "0.8 km",
+            "isMain": true,
+            "status": "active",
+            "location": { "lat": 12.9352, "lng": 77.6245 },
+            "workingHours": [
+                { "day": "Monday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Tuesday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Wednesday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Thursday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Friday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Saturday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Sunday", "isOpen": false, "openTime": "", "closeTime": "" }
+            ]
+        },
+        {
+            "_id": "outlet-002",
+            "name": "Wapixo Urban — Indiranagar",
+            "address": "100 Feet Rd, Indiranagar, Bangalore 560038",
+            "phone": "080-87654321",
+            "image": "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400&q=80",
+            "rating": 4.6,
+            "distance": "3.5 km",
+            "isMain": false,
+            "status": "active",
+            "location": { "lat": 12.9716, "lng": 77.6412 },
+            "workingHours": [
+                { "day": "Monday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Tuesday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Wednesday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Thursday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Friday", "isOpen": true, "openTime": "10:00", "closeTime": "22:00" },
+                { "day": "Saturday", "isOpen": true, "openTime": "09:00", "closeTime": "23:00" },
+                { "day": "Sunday", "isOpen": true, "openTime": "10:00", "closeTime": "20:00" }
+            ]
+        },
+        {
+            "_id": "outlet-003",
+            "name": "Wapixo Gold — HSR Layout",
+            "address": "Sector 7, HSR Layout, Bangalore 560102",
+            "phone": "080-11223344",
+            "image": "https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?w=400&q=80",
+            "rating": 4.9,
+            "distance": "1.2 km",
+            "isMain": false,
+            "status": "active",
+            "location": { "lat": 12.9121, "lng": 77.6445 },
+            "workingHours": [
+                { "day": "Monday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Tuesday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Wednesday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Thursday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Friday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Saturday", "isOpen": true, "openTime": "09:00", "closeTime": "21:00" },
+                { "day": "Sunday", "isOpen": true, "openTime": "10:00", "closeTime": "18:00" }
+            ]
+        },
+        {
+            "_id": "outlet-004",
+            "name": "Wapixo Express — Jayanagar",
+            "address": "4th Block, Jayanagar, Bangalore 560011",
+            "phone": "080-22334455",
+            "image": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&q=80",
+            "rating": 4.5,
+            "distance": "2.1 km",
+            "location": { "lat": 12.9250, "lng": 77.5938 }
+        },
+        {
+            "_id": "outlet-005",
+            "name": "Wapixo Studio — MG Road",
+            "address": "MG Road, Bangalore 560001",
+            "phone": "080-33445566",
+            "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80",
+            "rating": 4.7,
+            "distance": "4.2 km",
+            "location": { "lat": 12.9756, "lng": 77.6067 }
+        },
+        {
+            "_id": "outlet-006",
+            "name": "Wapixo Elite — Whitefield",
+            "address": "ITPL Main Rd, Whitefield, Bangalore 560066",
+            "phone": "080-44556677",
+            "image": "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=80",
+            "rating": 4.9,
+            "distance": "12.5 km",
+            "location": { "lat": 12.9698, "lng": 77.7499 }
+        },
+        {
+            "_id": "outlet-007",
+            "name": "Wapixo Chic — Malleshwaram",
+            "address": "Marginsa 15th Cross, Malleshwaram, Bangalore 560003",
+            "phone": "080-55667788",
+            "image": "https://images.unsplash.com/photo-1512290923902-8a9f81dc2069?w=400&q=80",
+            "rating": 4.4,
+            "distance": "6.8 km",
+            "location": { "lat": 12.9988, "lng": 77.5714 }
+        },
+        {
+            "_id": "outlet-008",
+            "name": "Wapixo Glam — Domlur",
+            "address": "Intermediate Ring Rd, Domlur, Bangalore 560071",
+            "phone": "080-66778899",
+            "image": "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&q=80",
+            "rating": 4.6,
+            "distance": "2.8 km",
+            "location": { "lat": 12.9610, "lng": 77.6387 }
+        },
+        {
+            "_id": "outlet-009",
+            "name": "Wapixo Bloom — Bannerghatta",
+            "address": "Bannerghatta Main Rd, Bangalore 560076",
+            "phone": "080-77889900",
+            "image": "https://images.unsplash.com/photo-1527799822367-4748a1a3bb77?w=400&q=80",
+            "rating": 4.3,
+            "distance": "8.5 km",
+            "location": { "lat": 12.8907, "lng": 77.5937 }
+        },
+        {
+            "_id": "outlet-010",
+            "name": "Wapixo Aura — Sadashivanagar",
+            "address": "Bashyam Circle, Sadashivanagar, Bangalore 560080",
+            "phone": "080-88990011",
+            "image": "https://images.unsplash.com/photo-1634712282287-14ed57b9cc89?w=400&q=80",
+            "rating": 4.8,
+            "distance": "7.2 km",
+            "location": { "lat": 13.0068, "lng": 77.5813 }
+        }
+    ],
     "loyaltyWallet": {
         "_id": "wallet-001",
         "customerId": "cust-001",

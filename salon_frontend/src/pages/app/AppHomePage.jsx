@@ -8,12 +8,13 @@ import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
     Moon, Bell, Sun, Search, Clock
 } from 'lucide-react';
-import { MOCK_OUTLET, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
+import { MOCK_OUTLETS, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
 import homeData from '../../data/appHomeData.json';
 import logoLightMode from '/2-removebg-preview.png';
 import logoDarkMode from '/1-removebg-preview.png';
 import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
+import SalonMapView from '../../components/app/SalonMapView';
 
 const { MEMBERSHIP_PLANS, RUNNING_OFFERS, GENDER_DATA } = homeData;
 
@@ -78,14 +79,15 @@ export default function AppHomePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { gender, setGender } = useGender();
-    const { theme } = useCustomerTheme();
-    const isLight = theme === 'light';
+    const { theme, colors, isLight } = useCustomerTheme();
 
     const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
     const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const [selectedExpert, setSelectedExpert] = useState(null);
+    const [selectedOutlet, setSelectedOutlet] = useState(MOCK_OUTLETS[0]);
+    const [isMapView, setIsMapView] = useState(false);
 
     const EXPERT_DETAILS = {
         "Jake Rivera": { experience: "12 Years", bio: "Award-winning master barber specializing in heritage cuts and modern beard tailoring. Transforming style since 2012.", tags: ["Classic Fade", "Royal Shave", "Taper Design"] },
@@ -138,17 +140,6 @@ export default function AppHomePage() {
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
     const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
-
-    /* ── Theme based colors ── */
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1E1E1E',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        input: isLight ? '#EDF0F2' : '#242424',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-        accent: '#C8956C'
-    };
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -363,6 +354,60 @@ export default function AppHomePage() {
                     transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
             >
+                {/* ── LOCATION HEADER ── */}
+                <motion.div 
+                    variants={fadeUp} 
+                    style={{ 
+                        padding: '16px 16px 10px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between' 
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ 
+                            width: '36px', 
+                            height: '36px', 
+                            borderRadius: '12px', 
+                            background: isLight ? '#FFF' : '#242424',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                            border: `1px solid ${colors.border}`
+                        }}>
+                            <MapPin size={18} color="#C8956C" />
+                        </div>
+                        <div>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Location</p>
+                            <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {selectedOutlet.address.split(',')[1]?.trim() || 'Bangalore'}
+                                <motion.span animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }} style={{ fontSize: '12px' }}>📍</motion.span>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsMapView(!isMapView)}
+                        style={{
+                            background: isMapView ? '#C8956C' : (isLight ? '#FFF' : '#242424'),
+                            color: isMapView ? '#FFF' : colors.text,
+                            padding: '8px 12px',
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            border: `1.5px solid ${isMapView ? '#C8956C' : colors.border}`,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                        }}
+                    >
+                        {isMapView ? 'List View' : 'Map View'}
+                    </motion.button>
+                </motion.div>
+
                 {/* ── SEARCH BAR ── */}
                 <motion.div variants={fadeUp} style={{ padding: '10px 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div
@@ -484,6 +529,97 @@ export default function AppHomePage() {
 
                     </div>
                 </motion.div>
+
+                {/* ── MAP VIEW (NEW) ── */}
+                <AnimatePresence>
+                    {isMapView && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                            style={{ padding: '0 16px' }}
+                        >
+                            <SalonMapView 
+                                outlets={MOCK_OUTLETS}
+                                selectedOutlet={selectedOutlet}
+                                onSelect={setSelectedOutlet}
+                                onViewProfile={(outlet) => {
+                                    navigate(`/app/salon/${outlet._id}`); 
+                                }}
+                                colors={colors}
+                                isLight={isLight}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* ── NEARBY SALONS (NEW) ── */}
+                {!isMapView && (
+                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Crown size={20} color={colors.accent} />
+                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Salons Near You</span>
+                            </div>
+                        </div>
+                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                            {MOCK_OUTLETS.map(outlet => (
+                                <motion.div
+                                    key={outlet._id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate(`/app/salon/${outlet._id}`)}
+                                    style={{
+                                        flexShrink: 0, 
+                                        width: '240px', 
+                                        background: colors.card, 
+                                        borderRadius: '24px', 
+                                        overflow: 'hidden',
+                                        border: selectedOutlet._id === outlet._id ? `2px solid ${colors.accent}` : `1px solid ${colors.border}`,
+                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.05)' : '0 10px 20px rgba(0,0,0,0.2)',
+                                        position: 'relative',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <div style={{ height: '120px', width: '100%', position: 'relative' }}>
+                                        <img src={outlet.image} alt={outlet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <div style={{ 
+                                            position: 'absolute', 
+                                            top: '12px', 
+                                            right: '12px', 
+                                            background: 'rgba(255,255,255,0.9)', 
+                                            backdropFilter: 'blur(4px)',
+                                            padding: '4px 8px',
+                                            borderRadius: '8px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                        }}>
+                                            <Star size={12} fill="#C8956C" color="#C8956C" />
+                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ padding: '14px' }}>
+                                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                            {outlet.name}
+                                        </h4>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+                                            <MapPin size={12} color={colors.textMuted} />
+                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>{outlet.distance} · {outlet.address.split(',')[0]}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            {['Luxury', 'Top Rated'].map(tag => (
+                                                <span key={tag} style={{ fontSize: '9px', fontWeight: 800, color: colors.accent, background: `${colors.accent}15`, padding: '2px 8px', borderRadius: '4px' }}>
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* ── CATEGORIES (ORIGINAL) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>

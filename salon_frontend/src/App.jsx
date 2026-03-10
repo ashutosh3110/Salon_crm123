@@ -94,6 +94,7 @@ import AppLayout from './layouts/AppLayout';
 import AppLoginPage from './pages/app/AppLoginPage';
 import AppHomePage from './pages/app/AppHomePage';
 import AppWalletPage from './pages/app/AppWalletPage';
+import SalonProfilePage from './pages/app/SalonProfilePage';
 
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
@@ -396,6 +397,7 @@ function App() {
                       <Route path="/app/gender" element={<GenderSelectPage />} />
                       <Route element={<AppLayout />}>
                         <Route path="/app" element={<AppHomePage />} />
+                        <Route path="/app/salon/:id" element={<SalonProfilePage />} />
                         <Route path="/app/wallet" element={<AppWalletPage />} />
 
                         <Route path="/app/book" element={<AppBookingPage />} />
