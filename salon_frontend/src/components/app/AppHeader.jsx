@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Bell, Wallet } from 'lucide-react';
+import { Sun, Moon, Bell, Wallet, LogOut } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import logoLightMode from '/2-removebg-preview.png';
@@ -19,7 +19,7 @@ const SALON_THOUGHTS = [
 
 export default function AppHeader() {
     const { theme, toggleTheme } = useCustomerTheme();
-    const { customer } = useCustomerAuth();
+    const { customer, logout } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { balance } = useWallet();
@@ -88,7 +88,7 @@ export default function AppHeader() {
                                 fontSize: showThought ? '14px' : '15px',
                                 fontWeight: showThought ? 600 : 800,
                                 fontStyle: showThought ? 'italic' : 'normal',
-                                fontFamily: showThought ? "'Playfair Display', serif" : "'Inter', sans-serif",
+                                fontFamily: showThought ? "'SF Pro Display', sans-serif" : "'SF Pro Text', sans-serif",
                                 color: showThought ? (isLight ? '#C8956C' : '#E6B98D') : (isLight ? '#000' : '#fff'),
                                 letterSpacing: showThought ? '0.02em' : '-0.01em',
                                 whiteSpace: 'nowrap',
@@ -184,6 +184,8 @@ export default function AppHeader() {
                         border: isLight ? '1.5px solid #fff' : '1.5px solid #141414'
                     }} />
                 </motion.button>
+
+
             </div>
         </header>
     );

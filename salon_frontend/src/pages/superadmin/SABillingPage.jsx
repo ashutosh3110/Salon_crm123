@@ -236,8 +236,8 @@ export default function SABillingPage() {
         <button
             onClick={() => setShowDateFilter(v => !v)}
             className={`relative flex items-center gap-2 px-3.5 py-2.5 rounded-xl border text-sm font-semibold transition-all shadow-sm ${showDateFilter || isDateFiltered
-                    ? 'bg-primary text-white border-primary shadow-primary/20'
-                    : 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary'
+                ? 'bg-primary text-white border-primary shadow-primary/20'
+                : 'bg-white text-text-secondary border-border hover:border-primary/30 hover:text-primary'
                 }`}
         >
             <Filter className="w-4 h-4" />
@@ -257,8 +257,8 @@ export default function SABillingPage() {
                     key={p.value}
                     onClick={() => { setDatePeriod(p.value); if (p.value !== 'custom') { setCustomFrom(''); setCustomTo(''); } }}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${datePeriod === p.value
-                            ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
-                            : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
+                        ? 'bg-primary text-white border-primary shadow-md shadow-primary/20'
+                        : 'bg-surface text-text-secondary border-border hover:border-primary/40 hover:text-primary'
                         }`}
                 >
                     {p.label}
@@ -579,12 +579,12 @@ export default function SABillingPage() {
                                     const maxRev = Math.max(...PLAN_REV.map(x => x.revenue));
                                     const pct = maxRev > 0 ? (p.revenue / maxRev) * 100 : 0;
                                     return (
-                                        <div key={p.plan}>
+                                        <div key={p.name}>
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                                                    <span className="text-sm font-medium text-text">{p.plan}</span>
-                                                    <span className="text-xs text-text-muted">({p.salons} salons)</span>
+                                                    <span className="text-sm font-medium text-text">{p.name}</span>
+                                                    <span className="text-xs text-text-muted">({p.value} salons)</span>
                                                 </div>
                                                 <span className="text-sm font-bold text-text">
                                                     {p.revenue === 0 ? '—' : `₹${p.revenue.toLocaleString('en-IN')}`}

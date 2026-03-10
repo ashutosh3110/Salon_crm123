@@ -1,10 +1,10 @@
-import { Menu, Bell, Search, Moon, Sun } from 'lucide-react';
+import { Menu, Bell, Search, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 
 export default function Topbar({ onMenuClick }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     const initials = user?.name
@@ -60,7 +60,7 @@ export default function Topbar({ onMenuClick }) {
                     <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white dark:ring-surface" />
                 </button>
 
-                {/* Avatar */}
+                {/* User Profile */}
                 <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border/40">
                     <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-xs font-bold text-primary border border-primary/20">
                         {initials}
@@ -70,6 +70,15 @@ export default function Topbar({ onMenuClick }) {
                         <div className="text-xs text-text-muted capitalize">{user?.role || 'admin'}</div>
                     </div>
                 </div>
+
+                {/* Logout Button */}
+                <button
+                    onClick={logout}
+                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-500 transition-colors border border-border/40 group"
+                    title="Logout"
+                >
+                    <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                </button>
             </div>
         </header>
     );

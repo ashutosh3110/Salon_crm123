@@ -267,7 +267,7 @@ export default function AppHomePage() {
                                         fontWeight: 900,
                                         textTransform: 'uppercase',
                                         marginBottom: '12px',
-                                        fontFamily: "'Inter', sans-serif"
+                                        fontFamily: "'SF Pro Text', sans-serif"
                                     }}
                                 >
                                     Experience The Ritual
@@ -278,7 +278,7 @@ export default function AppHomePage() {
                                     fontWeight: 900,
                                     margin: 0,
                                     color: '#FFFFFF',
-                                    fontFamily: "'Playfair Display', serif",
+                                    fontFamily: "'SF Pro Display', sans-serif",
                                     letterSpacing: '-0.03em',
                                     lineHeight: 1,
                                     fontStyle: 'italic',

@@ -155,7 +155,7 @@ export default function ProductsPage() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Item Identity *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. Silk Serum Pro" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. Silk Serum Pro" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">

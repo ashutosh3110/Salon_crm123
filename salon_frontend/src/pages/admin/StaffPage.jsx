@@ -332,7 +332,7 @@ export default function StaffPage() {
                                         type="text"
                                         required
                                         value={form.name}
-                                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                        onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                         placeholder="Full Name"
                                         className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30"
                                     />
@@ -354,7 +354,10 @@ export default function StaffPage() {
                                         <input
                                             type="tel"
                                             value={form.phone}
-                                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                if (val.length <= 10) setForm({ ...form, phone: val });
+                                            }}
                                             placeholder="Phone"
                                             className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:opacity-30"
                                         />

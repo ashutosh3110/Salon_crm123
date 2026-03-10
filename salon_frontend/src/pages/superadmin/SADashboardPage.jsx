@@ -21,6 +21,20 @@ const MOCK_PLAN_DIST = superAdminData.planDistribution;
 const MOCK_CHURN = superAdminData.churn;
 const MOCK_RECENT = superAdminData.recentTenants;
 
+const MOCK_STATS = {
+    total: 127,
+    byStatus: {
+        active: 84,
+        trial: 22,
+        expired: 14,
+        suspended: 7
+    },
+    revenueToday: 8450,
+    revenueMonth: 81500,
+    expiredPlans: 14,
+    totalUsers: 485,
+};
+
 /* ─── Colour maps ────────────────────────────────────────────────────────── */
 const planColors = {
     free: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700',

@@ -518,5 +518,31 @@
                 }
             ]
         }
+    ],
+    "settings": [
+        {
+            "title": "Register Info",
+            "description": "Station ID, Terminal Name and Session protocols."
+        },
+        {
+            "title": "Hardware Config",
+            "description": "Connect and calibrate Thermal Printers and Scanning units."
+        },
+        {
+            "title": "Billing Logic",
+            "description": "Taxation thresholds, Discounting rules and Rounding protocols."
+        },
+        {
+            "title": "Security",
+            "description": "Access control, Session timeouts and PIN requirements."
+        },
+        {
+            "title": "Display",
+            "description": "Theme adaptation, Font scaling and UI responsiveness."
+        },
+        {
+            "title": "Sync Status",
+            "description": "Vault connection integrity and Local cache management."
+        }
     ]
 }

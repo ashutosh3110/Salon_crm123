@@ -1,10 +1,10 @@
-import { Menu, Bell, Moon, Sun } from 'lucide-react';
+import { Menu, Bell, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { motion } from 'framer-motion';
 
 export default function SuperAdminTopbar({ onMenuClick }) {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     return (
@@ -51,6 +51,15 @@ export default function SuperAdminTopbar({ onMenuClick }) {
                             <div className="text-[11px] text-text-muted mt-0.5">superadmin</div>
                         </div>
                     </div>
+
+                    {/* Logout Button */}
+                    <button
+                        onClick={logout}
+                        className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 transition-colors border border-border/40 group"
+                        title="Logout"
+                    >
+                        <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                    </button>
                 </div>
             </div>
         </header>

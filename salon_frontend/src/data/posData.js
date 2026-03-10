@@ -19,3 +19,5 @@ export const MOCK_INVOICES = posData.invoices.map(inv => ({
     ...inv,
     createdAt: new Date().toISOString()
 }));
+
+export const MOCK_SETTINGS = posData.settings;

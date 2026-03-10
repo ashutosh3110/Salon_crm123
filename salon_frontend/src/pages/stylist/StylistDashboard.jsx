@@ -20,10 +20,12 @@ const INITIAL_SCHEDULE = stylistData.dashboard.schedule;
 const stats = stylistData.dashboard.stats;
 
 const STATUS_MAP = {
-    'completed': { label: 'FULFILLED', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
-    'in-progress': { label: 'ACTIVE_RUN', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
-    'upcoming': { label: 'QUEUED', color: 'text-text-muted', bg: 'bg-surface-alt', border: 'border-border/40' },
-    'cancelled': { label: 'TERMINATED', color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+    'completed': { label: 'COMPLETED', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+    'in-progress': { label: 'IN PROGRESS', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
+    'upcoming': { label: 'UPCOMING', color: 'text-text-muted', bg: 'bg-surface-alt', border: 'border-border/40' },
+    'cancelled': { label: 'CANCELLED', color: 'text-rose-500', bg: 'bg-rose-500/10', border: 'border-rose-500/20' },
+    'pending': { label: 'PENDING', color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/20' },
+    'default': { label: 'UNKNOWN', color: 'text-text-muted', bg: 'bg-surface-alt', border: 'border-border/40' },
 };
 
 export default function StylistDashboard() {
@@ -93,7 +95,7 @@ export default function StylistDashboard() {
 
     const updateStatus = (id, newStatus) => {
         setSchedule(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
-        showToast(`Protocol Status Update: ${STATUS_MAP[newStatus].label}`);
+        showToast(`Status Updated: ${(STATUS_MAP[newStatus] || STATUS_MAP['default']).label}`);
     };
 
     return (
@@ -109,30 +111,30 @@ export default function StylistDashboard() {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${isShiftActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Operation_Pulse</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Live Work Status</span>
                             </div>
                             <button
                                 onClick={() => {
                                     setIsShiftActive(!isShiftActive);
-                                    showToast(isShiftActive ? 'Manual Shift Termination Initiated' : 'Operation Initialization Successful');
+                                    showToast(isShiftActive ? 'Shift ended successfully' : 'Shift started successfully');
                                 }}
                                 className={`px-6 py-2 border text-[9px] font-black uppercase tracking-[0.2em] transition-all
                                     ${isShiftActive
                                         ? 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/20'
                                         : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20'}`}
                             >
-                                {isShiftActive ? 'Terminate_Shift' : 'Initialize_Shift'}
+                                {isShiftActive ? 'End Shift' : 'Start Shift'}
                             </button>
                         </div>
 
                         <div className="flex flex-col md:flex-row items-end gap-6">
                             <div>
-                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic">Session_Yield</p>
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic">Total Earnings</p>
                                 <h2 className="text-4xl font-black text-text tracking-tighter">₹{stats.revenue.toLocaleString()}</h2>
                             </div>
                             <div className="flex-1 w-full space-y-3">
                                 <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-text-muted">
-                                    <span>Target_Acquisition</span>
+                                    <span>Goal Progress</span>
                                     <span className="text-primary">{Math.round((stats.revenue / stats.target) * 100)}%</span>
                                 </div>
                                 <div className="h-4 bg-surface border border-border p-0.5 shadow-inner">
@@ -158,8 +160,8 @@ export default function StylistDashboard() {
                             <div className="flex items-center gap-3">
                                 <Calendar className="w-5 h-5 text-primary" />
                                 <div>
-                                    <h3 className="text-sm font-black text-text uppercase tracking-widest">Fulfillment_Matrix</h3>
-                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Sequence: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</p>
+                                    <h3 className="text-sm font-black text-text uppercase tracking-widest">Appointments Schedule</h3>
+                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</p>
                                 </div>
                             </div>
 
@@ -168,7 +170,7 @@ export default function StylistDashboard() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted group-focus-within/search:text-primary transition-colors" />
                                     <input
                                         type="text"
-                                        placeholder="SCAN_PROTOCOL..."
+                                        placeholder="Search by name..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         className="pl-9 pr-4 py-2.5 bg-background border border-border text-[9px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all w-full md:w-48 placeholder:text-text-muted/30"
@@ -182,7 +184,7 @@ export default function StylistDashboard() {
                                             onClick={() => setSectorFilter(s)}
                                             className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${sectorFilter === s ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface-alt/50'}`}
                                         >
-                                            {s.replace('STATION_', '')}
+                                            {s.replace('STATION_', 'CHAIR ')}
                                         </button>
                                     ))}
                                 </div>
@@ -194,7 +196,7 @@ export default function StylistDashboard() {
                                             onClick={() => setStatusFilter(s)}
                                             className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === s ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface-alt/50'}`}
                                         >
-                                            {s === 'ALL' ? 'ALL' : STATUS_MAP[s].label}
+                                            {s === 'ALL' ? 'ALL' : (STATUS_MAP[s] || STATUS_MAP['default']).label}
                                         </button>
                                     ))}
                                 </div>
@@ -204,10 +206,10 @@ export default function StylistDashboard() {
                                         setSearchTerm('');
                                         setStatusFilter('ALL');
                                         setSectorFilter('ALL');
-                                        showToast('Matrix Recalibrated');
+                                        showToast('Filters cleared');
                                     }}
                                     className="p-2.5 border border-border text-text-muted hover:text-text hover:border-primary transition-all active:scale-95"
-                                    title="Reset_Sequence"
+                                    title="Reset All"
                                 >
                                     <RefreshCw className="w-4 h-4" />
                                 </button>
@@ -239,8 +241,8 @@ export default function StylistDashboard() {
                                                 </div>
 
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`px-4 py-2 border text-[8px] font-black uppercase tracking-[0.2em] shadow-sm ${STATUS_MAP[apt.status].bg} ${STATUS_MAP[apt.status].color} ${STATUS_MAP[apt.status].border}`}>
-                                                        {STATUS_MAP[apt.status].label}
+                                                    <div className={`px-4 py-2 border text-[8px] font-black uppercase tracking-[0.2em] shadow-sm ${(STATUS_MAP[apt.status] || STATUS_MAP['default']).bg} ${(STATUS_MAP[apt.status] || STATUS_MAP['default']).color} ${(STATUS_MAP[apt.status] || STATUS_MAP['default']).border}`}>
+                                                        {(STATUS_MAP[apt.status] || STATUS_MAP['default']).label}
                                                     </div>
 
                                                     <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-all animate-in slide-in-from-right-1">
@@ -248,7 +250,7 @@ export default function StylistDashboard() {
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, 'in-progress'); }}
                                                                 className="p-2.5 border border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95"
-                                                                title="Launch_Protocol"
+                                                                title="Start Service"
                                                             >
                                                                 <Play className="w-3.5 h-3.5" />
                                                             </button>
@@ -257,7 +259,7 @@ export default function StylistDashboard() {
                                                             <button
                                                                 onClick={(e) => { e.stopPropagation(); updateStatus(apt.id, 'completed'); }}
                                                                 className="p-2.5 border border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
-                                                                title="Finalize_Protocol"
+                                                                title="Complete Service"
                                                             >
                                                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                                             </button>
@@ -279,8 +281,8 @@ export default function StylistDashboard() {
                                             <Search className="w-5 h-5 text-text-muted opacity-20" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black text-text uppercase tracking-widest">No_Protocols_Detected</p>
-                                            <p className="text-[8px] text-text-muted uppercase tracking-widest mt-1">Adjust filters or search parameters</p>
+                                            <p className="text-[10px] font-black text-text uppercase tracking-widest">No Appointments Found</p>
+                                            <p className="text-[8px] text-text-muted uppercase tracking-widest mt-1">Try adjusting your filters</p>
                                         </div>
                                     </div>
                                 )}
@@ -299,10 +301,10 @@ export default function StylistDashboard() {
                         <div className="flex items-center justify-between mb-8 relative z-10">
                             <div className="flex items-center gap-3">
                                 <TrendingUp className="w-4 h-4 text-primary" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Yield_Projection</span>
+                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Performance Analysis</span>
                             </div>
                             <RefreshCw
-                                onClick={() => showToast("Calibrating Yield Vectors...")}
+                                onClick={() => showToast("Updating performance data...")}
                                 className="w-3.5 h-3.5 text-text-muted cursor-pointer hover:rotate-180 transition-transform duration-500 hover:text-primary"
                             />
                         </div>
@@ -350,11 +352,11 @@ export default function StylistDashboard() {
 
                         <div className="mt-8 grid grid-cols-2 gap-4 relative z-10">
                             <div className="p-5 bg-background border border-border group/tile hover:border-primary/30 transition-all">
-                                <p className="text-[8px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic group-hover/tile:text-primary transition-colors">Peak_Flow</p>
+                                <p className="text-[8px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic group-hover/tile:text-primary transition-colors">Highest Daily</p>
                                 <p className="text-xl font-black text-text tracking-tight">₹8,900</p>
                             </div>
                             <div className="p-5 bg-background border border-border group/tile hover:border-primary/30 transition-all">
-                                <p className="text-[8px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic group-hover/tile:text-primary transition-colors">Unit_Throughput</p>
+                                <p className="text-[8px] text-text-muted uppercase tracking-[0.2em] mb-1 font-bold italic group-hover/tile:text-primary transition-colors">Services Done</p>
                                 <p className="text-xl font-black text-text tracking-tight">47 OPS</p>
                             </div>
                         </div>
@@ -365,7 +367,7 @@ export default function StylistDashboard() {
                         <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -translate-y-12 translate-x-12 rotate-45" />
                         <div className="flex items-center gap-3 mb-6 relative z-10">
                             <Clock className="w-4 h-4 text-primary" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Attendance_Vector</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">My Attendance Log</span>
                         </div>
                         <div className="space-y-3 relative z-10">
                             {[
@@ -376,7 +378,7 @@ export default function StylistDashboard() {
                                 <div key={idx} className="flex items-center justify-between p-4 bg-background border border-border/10 text-[9px] font-black uppercase tracking-widest hover:border-border/30 transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-1 h-4 ${log.type === 'in' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.3)]'}`} />
-                                        <span className={log.type === 'in' ? 'text-emerald-500' : 'text-rose-500'}>{log.status}</span>
+                                        <span className={log.type === 'in' ? 'text-emerald-500' : 'text-rose-500'}>{log.status === 'INITIALIZED' ? 'PUNCHED IN' : 'PUNCHED OUT'}</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-text">{log.time}</span>
@@ -404,8 +406,8 @@ export default function StylistDashboard() {
 
                             <div className="flex items-center justify-between mb-10 relative z-10">
                                 <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Iteration Detail</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol: Fulfillment_Scan_{selectedApt.id}</p>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Appointment Details</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Appointment ID: {selectedApt.id}</p>
                                 </div>
                                 <button onClick={() => setSelectedApt(null)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
                                     <X className="w-5 h-5" />
@@ -415,36 +417,36 @@ export default function StylistDashboard() {
                             <div className="space-y-8 relative z-10">
                                 <div className="grid grid-cols-2 gap-8">
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Client_Identity</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Client Name</p>
                                         <p className="text-lg font-black text-text">{selectedApt.customer}</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Fulfillment_Time</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Appointment Time</p>
                                         <p className="text-lg font-black text-text">{selectedApt.time}</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Service_Vector</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Services</p>
                                         <p className="text-lg font-black text-text">{selectedApt.service}</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Unit_Sector</p>
-                                        <p className="text-lg font-black text-text text-primary">{selectedApt.sector}</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Assigned Station</p>
+                                        <p className="text-lg font-black text-text text-primary">{selectedApt.sector.replace('STATION_', 'CHAIR ')}</p>
                                     </div>
                                 </div>
 
                                 <div className="p-6 bg-background border border-border flex items-center gap-6">
-                                    <div className={`px-4 py-2 border text-[9px] font-black uppercase tracking-widest ${STATUS_MAP[selectedApt.status].bg} ${STATUS_MAP[selectedApt.status].color} ${STATUS_MAP[selectedApt.status].border}`}>
-                                        {STATUS_MAP[selectedApt.status].label}
+                                    <div className={`px-4 py-2 border text-[9px] font-black uppercase tracking-widest ${(STATUS_MAP[selectedApt.status] || STATUS_MAP['default']).bg} ${(STATUS_MAP[selectedApt.status] || STATUS_MAP['default']).color} ${(STATUS_MAP[selectedApt.status] || STATUS_MAP['default']).border}`}>
+                                        {(STATUS_MAP[selectedApt.status] || STATUS_MAP['default']).label}
                                     </div>
                                     <div className="text-[10px] text-text-muted uppercase font-black tracking-tighter italic">
-                                        Iteration_Duration: <span className="text-text">{selectedApt.duration}</span>
+                                        Duration: <span className="text-text">{selectedApt.duration}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="mt-10 flex gap-3 relative z-10">
-                                <button className="flex-1 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Modify_Vector</button>
-                                <button onClick={() => setSelectedApt(null)} className="px-8 py-4 border border-border text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Dismiss</button>
+                                <button className="flex-1 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Edit Appointment</button>
+                                <button onClick={() => setSelectedApt(null)} className="px-8 py-4 border border-border text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Close</button>
                             </div>
                         </motion.div>
                     </div>

@@ -68,7 +68,7 @@ export default function AppReferralPage() {
 
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-6 px-4">
-            <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
+            <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
                 Refer & <span className="text-[#C8956C]">Earn</span>
             </h1>
 
@@ -86,7 +86,7 @@ export default function AppReferralPage() {
             >
                 <div className="relative z-10">
                     <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 4px', fontWeight: 500 }}>Premium Rewards</p>
-                    <h3 className="text-lg font-black mb-4" style={{ color: colors.text, fontFamily: "'Playfair Display', serif", lineHeight: 1.3 }}>
+                    <h3 className="text-lg font-black mb-4" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif", lineHeight: 1.3 }}>
                         Earn 50 Points<br />
                         <span style={{ color: colors.accent }}>per success</span>
                     </h3>
@@ -159,7 +159,7 @@ export default function AppReferralPage() {
             {/* Referral List */}
             {referrals.length > 0 && (
                 <motion.div variants={fadeUp} className="space-y-4 pt-2">
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] opacity-80 px-1" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Your Status List</h3>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] opacity-80 px-1" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Your Status List</h3>
                     <div className="space-y-3">
                         {referrals.map((ref, i) => (
                             <motion.div
@@ -174,7 +174,7 @@ export default function AppReferralPage() {
                                     <UserPlus className={`w-5 h-5 ${ref.status === 'COMPLETED' ? 'text-emerald-500' : 'text-amber-500'}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black uppercase tracking-tight italic truncate" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>{ref.referredName}</p>
+                                    <p className="text-sm font-black uppercase tracking-tight italic truncate" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>{ref.referredName}</p>
                                     <p className="text-[9px] font-black uppercase tracking-widest mt-1 opacity-40" style={{ color: colors.textMuted }}>
                                         {ref.status === 'COMPLETED' ? 'BOOKING SECURED' : 'INVITATION SENT'}
                                     </p>

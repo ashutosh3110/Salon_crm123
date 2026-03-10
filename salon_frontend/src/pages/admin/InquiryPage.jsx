@@ -416,11 +416,14 @@ export default function InquiryPage() {
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Full Name *</label>
-                                    <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. PRIYA SHARMA" />
+                                    <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="e.g. PRIYA SHARMA" />
                                 </div>
                                 <div className="space-y-2 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Phone *</label>
-                                    <input type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
+                                    <input type="tel" value={form.phone} onChange={(e) => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        if (val.length <= 10) setForm({ ...form, phone: val });
+                                    }} required className="w-full px-6 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" placeholder="+91..." />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-6">

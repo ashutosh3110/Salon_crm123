@@ -233,7 +233,7 @@ export default function TeamPage() {
                                     className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-sm outline-none focus:border-primary/50 transition-colors"
                                     placeholder="e.g. Rahul Sharma"
                                     value={newMember.name}
-                                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                                    onChange={(e) => setNewMember({ ...newMember, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
@@ -313,7 +313,7 @@ export default function TeamPage() {
                                     type="text"
                                     className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-sm font-medium outline-none focus:border-primary/50 transition-colors"
                                     value={editingMember.name}
-                                    onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                                    onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                 />
                             </div>
 

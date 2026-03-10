@@ -113,7 +113,7 @@ export default function AppProfilePage() {
         <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="space-y-5 px-4 pb-8">
             {/* Header */}
             <div className="pt-12 pb-2">
-                <h1 className="text-2xl font-black" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Profile</h1>
+                <h1 className="text-2xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
                 <p className="text-xs" style={{ color: colors.textMuted }}>Manage your account and rewards</p>
             </div>
 
@@ -170,7 +170,7 @@ export default function AppProfilePage() {
                                     value={form.name}
                                     onFocus={() => setFocusedField('name')}
                                     onBlur={() => setFocusedField(null)}
-                                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                                    onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                     style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '14px', fontWeight: 600 }}
                                 />
                             </div>

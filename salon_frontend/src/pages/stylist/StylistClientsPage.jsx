@@ -89,16 +89,16 @@ export default function StylistClientsPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <Shield className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Security_Zone</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Verified Access</span>
                     </div>
-                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Personnel Matrix</h1>
-                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Authorized_Base_Only</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Client Directory</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Internal Use Only</p>
                 </div>
                 <button
                     onClick={() => setShowEnrollModal(true)}
                     className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
                 >
-                    <UserPlus className="w-4 h-4" /> Enroll_Unit
+                    <UserPlus className="w-4 h-4" /> Add Client
                 </button>
             </div>
 
@@ -108,7 +108,7 @@ export default function StylistClientsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50" />
                     <input
                         type="text"
-                        placeholder="SCAN_DATA_BYTES..."
+                        placeholder="Search by name or phone..."
                         className="w-full pl-11 pr-4 py-3.5 bg-surface border border-border text-[9px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all shadow-inner"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -129,10 +129,10 @@ export default function StylistClientsPage() {
                             setSearchTerm('');
                             setStatusFilter('ALL');
                             setSortBy('name');
-                            showToast('Matrix Synchronization Reset');
+                            showToast('Directory Refreshed');
                         }}
                         className="px-3 py-2 border-l border-border text-text-muted hover:text-primary transition-all"
-                        title="Reset_Matrix"
+                        title="Reset Filters"
                     >
                         <RefreshCw className="w-4 h-4" />
                     </button>
@@ -188,11 +188,11 @@ export default function StylistClientsPage() {
 
                         <div className="grid grid-cols-2 gap-3 mb-6 relative z-10">
                             <div className="bg-background border border-border p-3 shadow-sm">
-                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Total_Cycles</p>
-                                <p className="text-xs font-black text-text">{client.visits} ITERATIONS</p>
+                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Total Visits</p>
+                                <p className="text-xs font-black text-text">{client.visits} VISITS</p>
                             </div>
                             <div className="bg-background border border-border p-3 shadow-sm">
-                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Last_Sync</p>
+                                <p className="text-[7px] font-black text-text-muted uppercase tracking-[0.2em] mb-0.5 italic">Last Visit</p>
                                 <p className="text-xs font-black text-text">{client.lastService}</p>
                             </div>
                         </div>
@@ -201,7 +201,7 @@ export default function StylistClientsPage() {
                             <div className="flex items-start gap-3 p-4 bg-primary/5 border border-primary/10">
                                 <Heart className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                                 <div>
-                                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1">Pref_Logic_Vector</p>
+                                    <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1">Client Preferences</p>
                                     <p className="text-[10px] text-text font-black uppercase tracking-tight">{client.preferences}</p>
                                 </div>
                             </div>
@@ -211,7 +211,7 @@ export default function StylistClientsPage() {
                                     onClick={() => setSelectedClient(client)}
                                     className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface-alt border border-border text-[9px] font-black text-text-muted uppercase tracking-widest hover:bg-surface hover:text-primary transition-all active:scale-95"
                                 >
-                                    <History className="w-3.5 h-3.5" /> Service_Log
+                                    <History className="w-3.5 h-3.5" /> View Service History
                                 </button>
                                 <button
                                     onClick={() => showToast(`COMM_LINK initiated for ${client.name}`)}
@@ -238,8 +238,8 @@ export default function StylistClientsPage() {
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">
                                 <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Client Induction</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Protocol_049: Unit Enrollment</p>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Register Client</h2>
+                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Enter client details below</p>
                                 </div>
                                 <button onClick={() => setShowEnrollModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
                                     <X className="w-5 h-5" />
@@ -254,24 +254,24 @@ export default function StylistClientsPage() {
                                 className="space-y-6 relative z-10"
                             >
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Asset_Identity</label>
-                                    <input required type="text" placeholder="Full Legal Name" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Name</label>
+                                    <input required type="text" placeholder="Full Name" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Digital_Link</label>
-                                        <input required type="email" placeholder="Email@Matrix.net" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Email Address</label>
+                                        <input required type="email" placeholder="client@email.com" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Comm_Channel</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Mobile Number</label>
                                         <input required type="tel" placeholder="+91 XXX XXX XXXX" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Preference_Profile</label>
-                                    <textarea placeholder="Specify logical preferences and requirements..." className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none" />
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Notes & Preferences</label>
+                                    <textarea placeholder="Any special requirements or service notes..." className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none" />
                                 </div>
-                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Execute Induction Protocol</button>
+                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Save Client Info</button>
                             </form>
                         </motion.div>
                     </div>
@@ -303,25 +303,25 @@ export default function StylistClientsPage() {
                             <div className="flex-1 overflow-y-auto p-10 space-y-8">
                                 <div className="grid grid-cols-3 gap-6">
                                     <div className="bg-background border border-border p-6 text-center">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Persistence</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Visits</p>
                                         <p className="text-2xl font-black text-text tracking-tighter">{selectedClient.visits}</p>
-                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Total_Iterations</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Total Visits</p>
                                     </div>
                                     <div className="bg-background border border-border p-6 text-center">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Reputation</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Rating</p>
                                         <p className="text-2xl font-black text-primary tracking-tighter">{selectedClient.rating}</p>
-                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Trust_Metric</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Trust Level</p>
                                     </div>
                                     <div className="bg-background border border-border p-6 text-center">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Last_Contact</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Recent Visit</p>
                                         <p className="text-lg font-black text-text tracking-tight uppercase">{selectedClient.lastService}</p>
-                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Sync_Timestamp</p>
+                                        <p className="text-[8px] font-black text-primary uppercase mt-1">Visit Date</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4">
                                     <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
-                                        <Calendar className="w-4 h-4" /> Historical_Service_Grid
+                                        <Calendar className="w-4 h-4" /> Past Services
                                     </h4>
                                     <div className="border border-border divide-y divide-border/30">
                                         {[
@@ -346,7 +346,7 @@ export default function StylistClientsPage() {
                                 <div className="p-6 bg-primary/5 border border-primary/20">
                                     <div className="flex items-center gap-3 mb-3">
                                         <Heart className="w-4 h-4 text-primary" />
-                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Active_Preferences</span>
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Customer Preferences</span>
                                     </div>
                                     <p className="text-[11px] text-text-muted uppercase leading-relaxed font-bold tracking-tight italic">
                                         {selectedClient.preferences}
@@ -354,7 +354,7 @@ export default function StylistClientsPage() {
                                 </div>
                             </div>
                             <div className="p-10 border-t border-border bg-background/50 shrink-0">
-                                <button className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Schedule New Iteration</button>
+                                <button className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Book Appointment</button>
                             </div>
                         </motion.div>
                     </div>

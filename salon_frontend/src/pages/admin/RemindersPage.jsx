@@ -23,10 +23,12 @@ import {
     Scissors,
     Sparkles,
     ArrowRight,
-    TrendingUp
+    TrendingUp,
+    X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
+import { createPortal } from 'react-dom';
 
 /* ─── Mock Data & Seeds ────────────────────────────────────────────────── */
 
@@ -109,6 +111,14 @@ export default function RemindersPage() {
     const [loading, setLoading] = useState(true);
     const [copyStatus, setCopyStatus] = useState(false);
 
+    // Modals
+    const [showRuleModal, setShowRuleModal] = useState(false);
+    const [showBridalModal, setShowBridalModal] = useState(false);
+
+    // Form States
+    const [newRule, setNewRule] = useState({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
+    const [newBridal, setNewBridal] = useState({ clientName: '', clientPhone: '', eventName: '', eventDate: '', service: '' });
+
     // Data states
     const [bridalBookings, setBridalBookings] = useState([]);
     const [reminderRules, setReminderRules] = useState([]);
@@ -158,6 +168,46 @@ export default function RemindersPage() {
         navigator.clipboard.writeText(bookingURL);
         setCopyStatus(true);
         setTimeout(() => setCopyStatus(false), 2000);
+    };
+
+    const handleAddRule = (e) => {
+        e.preventDefault();
+        const rule = {
+            id: `rule-${Date.now()}`,
+            ...newRule,
+            active: true
+        };
+        persistRules([...reminderRules, rule]);
+        setShowRuleModal(false);
+        setNewRule({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
+    };
+
+    const handleAddBridal = (e) => {
+        e.preventDefault();
+        if (!newBridal.clientName || !newBridal.clientPhone || !newBridal.eventDate) return;
+        const booking = {
+            id: `br-${Date.now()}`,
+            ...newBridal,
+            reminders: [
+                { id: `rem-30d-${Date.now()}`, label: '30 Days Before', daysBefore: 30, status: 'scheduled', active: true },
+                { id: `rem-7d-${Date.now()}`, label: '7 Days Before', daysBefore: 7, status: 'scheduled', active: true },
+                { id: `rem-1d-${Date.now()}`, label: '1 Day Before', daysBefore: 1, status: 'scheduled', active: true },
+            ]
+        };
+        persistBridal([booking, ...bridalBookings]);
+        setShowBridalModal(false);
+        setNewBridal({ clientName: '', clientPhone: '', eventName: '', eventDate: '', service: '' });
+    };
+
+    const sendBridalReminder = (clientPhone, clientName, eventName, remLabel) => {
+        const text = `Hi ${clientName}, this is a gentle reminder regarding your upcoming ${eventName} (${remLabel}). Let us know if you need to align on anything!`;
+        const phoneParam = clientPhone ? clientPhone.replace(/\D/g, '') : '';
+        window.open(`https://wa.me/${phoneParam}?text=${encodeURIComponent(text)}`, '_blank');
+    };
+
+    const sendActionHubReminder = (clientName, service) => {
+        const text = `Hello ${clientName}, we noticed you might be due for your ${service}. We'd love to have you back! Shall we check available slots?`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     const toggleReminder = (bookingId, remId) => {
@@ -234,11 +284,19 @@ export default function RemindersPage() {
                     {/* 1. BRIDAL REMINDERS */}
                     {activeTab === 'bridal' && (
                         <div className="space-y-6">
-                            <SectionHeader
-                                title="Bridal reminders"
-                                desc="Stay on top of wedding bookings with gentle follow-ups."
-                                icon={Sparkles}
-                            />
+                            <div className="flex items-center justify-between mb-8">
+                                <SectionHeader
+                                    title="Bridal reminders"
+                                    desc="Stay on top of wedding bookings with gentle follow-ups."
+                                    icon={Sparkles}
+                                />
+                                <button
+                                    onClick={() => setShowBridalModal(true)}
+                                    className="px-6 py-4 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
+                                >
+                                    <Plus className="w-4 h-4" /> Track Event
+                                </button>
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {bridalBookings.map((booking) => (
@@ -265,12 +323,20 @@ export default function RemindersPage() {
                                                             <p className="text-[8px] text-text-muted uppercase tracking-[0.1em] mt-0.5">{rem.status.toUpperCase()}</p>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        onClick={() => toggleReminder(booking.id, rem.id)}
-                                                        className={`px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20' : 'bg-slate-100 dark:bg-surface-alt text-slate-400 dark:text-text-muted border-slate-200 dark:border-border/40'}`}
-                                                    >
-                                                        {rem.active ? 'ENABLED' : 'DISABLED'}
-                                                    </button>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => sendBridalReminder(booking.clientPhone, booking.clientName, booking.eventName, rem.label)}
+                                                            className="px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500 hover:text-white flex items-center gap-1"
+                                                        >
+                                                            <MessageSquare className="w-3 h-3" /> SEND
+                                                        </button>
+                                                        <button
+                                                            onClick={() => toggleReminder(booking.id, rem.id)}
+                                                            className={`px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20' : 'bg-slate-100 dark:bg-surface-alt text-slate-400 dark:text-text-muted border-slate-200 dark:border-border/40 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20'}`}
+                                                        >
+                                                            {rem.active ? 'ENABLED' : 'DISABLED'}
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
@@ -319,7 +385,7 @@ export default function RemindersPage() {
                                         </div>
                                     ))}
 
-                                    <button className="w-full py-4 border-2 border-dashed border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-3 font-black">
+                                    <button onClick={() => setShowRuleModal(true)} className="w-full py-4 border-2 border-dashed border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:border-primary/40 hover:text-primary transition-all flex items-center justify-center gap-3 font-black">
                                         <Plus className="w-4 h-4" /> Add Protocol Rule
                                     </button>
                                 </div>
@@ -355,9 +421,15 @@ export default function RemindersPage() {
                                                         <span className="text-[10px] font-black text-primary uppercase tracking-widest">{client.service}</span>
                                                     </td>
                                                     <td className="px-6 py-5 text-right">
-                                                        <span className={`text-[9px] font-black uppercase px-3 py-1 border ${client.dueIn < 0 ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50'}`}>
-                                                            {client.dueIn < 0 ? `${Math.abs(client.dueIn)}d Overdue` : `Due in ${client.dueIn}d`}
-                                                        </span>
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            <span className={`text-[9px] font-black uppercase px-3 py-1 border ${client.dueIn < 0 ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50' : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50'}`}>
+                                                                {client.dueIn < 0 ? `${Math.abs(client.dueIn)}d Overdue` : `Due in ${client.dueIn}d`}
+                                                            </span>
+                                                            <div className="flex items-center">
+                                                                <button onClick={() => setPendingClients(pendingClients.filter(c => c.id !== client.id))} className="px-3 py-1 border border-border text-[9px] font-black uppercase hover:bg-primary/10 hover:text-primary transition-all rounded-none bg-surface-alt">Mark Replied</button>
+                                                                <button onClick={() => sendActionHubReminder(client.name, client.service)} className="px-3 py-1 border border-l-0 border-border bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all"><MessageSquare className="w-3.5 h-3.5" /></button>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -509,6 +581,111 @@ export default function RemindersPage() {
                     )}
                 </motion.div>
             </AnimatePresence>
+
+            {/* MODALS */}
+            {typeof document !== 'undefined' ? createPortal(
+                <>
+                    {/* Rule Modal */}
+                    <AnimatePresence>
+                        {showRuleModal && (
+                            <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 text-left font-black" onClick={() => setShowRuleModal(false)}>
+                                <div className="bg-surface rounded-none w-full max-w-md p-8 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border text-left font-black" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex flex-col items-center text-center mb-8">
+                                        <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
+                                            <Scissors className="w-10 h-10" />
+                                        </div>
+                                        <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">Create Protocol</h2>
+                                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Initializing logic pattern</p>
+                                    </div>
+                                    <form onSubmit={handleAddRule} className="space-y-8 text-left font-black">
+                                        <div className="space-y-3 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Trigger Category *</label>
+                                            <input type="text" required value={newRule.category} onChange={e => setNewRule({ ...newRule, category: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} placeholder="e.g. Hair Spa" className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-8 text-left">
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Interval (Days) *</label>
+                                                <input type="number" required min="1" value={newRule.interval} onChange={e => setNewRule({ ...newRule, interval: parseInt(e.target.value) || 0 })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                            </div>
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Transmission Channel</label>
+                                                <select value={newRule.channel} onChange={e => setNewRule({ ...newRule, channel: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                                    <option>WhatsApp</option>
+                                                    <option>Email</option>
+                                                    <option>SMS</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Message Template</label>
+                                            <textarea required value={newRule.message} onChange={e => setNewRule({ ...newRule, message: e.target.value })} rows={3} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/10 text-text-muted" placeholder="Use {name} and {link}..." />
+                                        </div>
+                                        <div className="flex gap-6 pt-10 font-black">
+                                            <button type="button" onClick={() => setShowRuleModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
+                                            <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">Save Protocol</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Bridal Modal */}
+                    <AnimatePresence>
+                        {showBridalModal && (
+                            <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 text-left font-black" onClick={() => setShowBridalModal(false)}>
+                                <div className="bg-surface rounded-none w-full max-w-md p-8 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border text-left font-black" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex flex-col items-center text-center mb-8">
+                                        <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
+                                            <Sparkles className="w-10 h-10" />
+                                        </div>
+                                        <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">Track New Event</h2>
+                                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Provisioning event data stream</p>
+                                    </div>
+                                    <form onSubmit={handleAddBridal} className="space-y-8 text-left font-black">
+                                        <div className="grid grid-cols-2 gap-8 text-left">
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Client Identity *</label>
+                                                <input type="text" required value={newBridal.clientName} onChange={e => setNewBridal({ ...newBridal, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} placeholder="e.g. SANYA_G" className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                            </div>
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Contact No. *</label>
+                                                <input type="tel" required value={newBridal.clientPhone} onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    if (val.length <= 10) setNewBridal({ ...newBridal, clientPhone: val });
+                                                }} placeholder="e.g. 9876543210" className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-8 text-left">
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Event Timeline *</label>
+                                                <input type="date" required value={newBridal.eventDate} onChange={e => setNewBridal({ ...newBridal, eventDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                            </div>
+                                            <div className="space-y-3 text-left">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Event Context *</label>
+                                                <input type="text" required value={newBridal.eventName} onChange={e => setNewBridal({ ...newBridal, eventName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} placeholder="e.g. WEDDING CEREMONY" className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Target Service *</label>
+                                            <input type="text" required value={newBridal.service} onChange={e => setNewBridal({ ...newBridal, service: e.target.value })} placeholder="e.g. VIP BRIDAL JOURNEY" className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10" />
+                                        </div>
+                                        <div className="bg-primary/5 border border-primary/20 p-6 shadow-inner relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rotate-45 transform translate-x-8 -translate-y-8 blur-sm pointer-events-none" />
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.3em] leading-relaxed relative z-10"><span className="text-primary-muted opacity-60">System Notification // </span>3 automated milestones (30d, 7d, 1d) will be injected dynamically.</p>
+                                        </div>
+                                        <div className="flex gap-6 pt-10 font-black">
+                                            <button type="button" onClick={() => setShowBridalModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
+                                            <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">Commit Event</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        )}
+                    </AnimatePresence>
+                </>,
+                document.body
+            ) : null}
         </div>
     );
 }

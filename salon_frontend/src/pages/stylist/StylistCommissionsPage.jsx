@@ -28,10 +28,10 @@ export default function StylistCommissionsPage() {
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <Activity className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Fiscal_Stream</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Earnings Stream</span>
                     </div>
-                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Credit Stream</h1>
-                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Real-time_Liquidity_Audit</p>
+                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">My Commissions</h1>
+                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Current Earnings Overview</p>
                 </div>
                 <div className="flex gap-2 relative">
                     <button
@@ -55,7 +55,7 @@ export default function StylistCommissionsPage() {
                                         onClick={() => {
                                             setPeriod(p);
                                             setShowPeriodDropdown(false);
-                                            showToast(`Fiscal sequence synchronized: ${p}`);
+                                            showToast(`Data updated for: ${p.replace('_', ' ')}`);
                                         }}
                                         className={`w-full px-6 py-4 text-left text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt transition-colors ${period === p ? 'text-primary' : 'text-text-muted'}`}
                                     >
@@ -85,7 +85,7 @@ export default function StylistCommissionsPage() {
                                 <Icon className={`w-3.5 h-3.5 ${color}`} />
                             </div>
                             <p className="text-xl font-black text-text tracking-tighter uppercase">{s.value}</p>
-                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5 italic">{s.label}</p>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5 italic">{s.label === 'Total_Earned' ? 'Total Commissions' : s.label === 'Yield_Units' ? 'Total Services' : s.label === 'Rep_Index' ? 'Reputation Score' : 'Fixed Base Salary'}</p>
                             <p className="text-[7px] text-text-muted/60 uppercase mt-0.5 italic tracking-widest">{s.sub}</p>
                         </div>
                     );
@@ -96,17 +96,17 @@ export default function StylistCommissionsPage() {
                 {/* Iteration Log */}
                 <div className="lg:col-span-2 bg-surface border border-border overflow-hidden">
                     <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex items-center justify-between">
-                        <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Iteration_Log</h2>
-                        <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Authorized_Stream</span>
+                        <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Recent Earnings Log</h2>
+                        <span className="text-[7px] font-black text-primary uppercase bg-primary/10 px-1.5 py-0.5 border border-primary/20">Verified Data</span>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="border-b border-border/20 bg-background/30 font-black">
-                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Timestamp</th>
-                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Cycles</th>
-                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Revenue_Flow</th>
-                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em] text-right">Credit_Yield</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Date</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Services Done</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em]">Bill Amount</th>
+                                    <th className="px-8 py-4 text-[9px] text-text-muted uppercase tracking-[0.2em] text-right">My Commission</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/10">
@@ -139,7 +139,7 @@ export default function StylistCommissionsPage() {
                     <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-8">
                             <TrendingUp className="w-4 h-4 text-primary" />
-                            <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Yield_Vector</h2>
+                            <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Monthly Target Performance</h2>
                         </div>
 
                         <div className="space-y-10">
@@ -148,13 +148,13 @@ export default function StylistCommissionsPage() {
                                     <div className="w-32 h-32 border-4 border-primary rounded-full shadow-2xl" />
                                 </div>
                                 <p className="text-6xl font-black text-text tracking-tighter">85%</p>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2 italic">Achievement_Matrix</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2 italic">Target Progress</p>
                             </div>
 
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between text-[8px] font-black uppercase tracking-widest text-text-muted">
-                                    <span>Quota_Progress</span>
-                                    <span className="text-primary">850/1000 UNT</span>
+                                    <span>Quota Done</span>
+                                    <span className="text-primary">850/1000 TOTAL</span>
                                 </div>
                                 <div className="h-4 bg-background border border-border p-0.5 shadow-inner">
                                     <motion.div

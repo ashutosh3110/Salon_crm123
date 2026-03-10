@@ -281,7 +281,7 @@ export default function PayrollManager() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
-                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-1 transition-opacity">
                                             <button onClick={() => setViewModal(pay)} className="p-2 rounded-none text-text-muted hover:text-primary hover:bg-primary/10 transition-all"><Eye className="w-4 h-4" /></button>
                                             <button onClick={() => openEdit(pay)} disabled={isLocked} className="p-2 rounded-none text-text-muted hover:text-primary hover:bg-primary/10 transition-all disabled:opacity-30"><Edit2 className="w-4 h-4" /></button>
                                             {pay.status !== 'paid' && (

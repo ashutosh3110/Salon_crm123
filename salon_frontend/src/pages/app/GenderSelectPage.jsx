@@ -29,7 +29,7 @@ export default function GenderSelectPage() {
     return (
         <div
             className="min-h-screen flex flex-col relative overflow-hidden"
-            style={{ background: colors.bg, color: colors.text, fontFamily: "'Inter', sans-serif" }}
+            style={{ background: colors.bg, color: colors.text, fontFamily: "'SF Pro Text', sans-serif" }}
         >
             {/* Ambient Background Effects */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[50vh] opacity-20 pointer-events-none">
@@ -53,7 +53,7 @@ export default function GenderSelectPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-3xl font-black italic tracking-tighter mb-2"
-                    style={{ fontFamily: "'Playfair Display', serif" }}
+                    style={{ fontFamily: "'SF Pro Display', sans-serif" }}
                 >
                     Personalize <span className="text-[#C8956C]">Experience</span>
                 </motion.h1>

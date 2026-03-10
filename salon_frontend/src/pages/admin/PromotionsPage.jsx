@@ -206,7 +206,7 @@ export default function PromotionsPage() {
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Protocol Identifier *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. ALPHA_FLASH_20" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. ALPHA_FLASH_20" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">

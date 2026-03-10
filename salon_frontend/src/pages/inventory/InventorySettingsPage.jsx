@@ -391,7 +391,7 @@ export default function InventorySettingsPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Name *</label>
                                     <input required type="text" placeholder="e.g. Hair Treatments"
                                         className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none"
-                                        value={catForm.name} onChange={e => setCatForm(f => ({ ...f, name: e.target.value }))} />
+                                        value={catForm.name} onChange={e => setCatForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') }))} />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Status</label>
@@ -459,7 +459,7 @@ export default function InventorySettingsPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Display Name *</label>
                                     <input required type="text" placeholder="e.g. Bandra West Studio"
                                         className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none"
-                                        value={locForm.name} onChange={e => setLocForm(f => ({ ...f, name: e.target.value }))} />
+                                        value={locForm.name} onChange={e => setLocForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') }))} />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1.5">

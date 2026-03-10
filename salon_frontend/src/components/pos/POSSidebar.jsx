@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
     Zap,
     LayoutDashboard,
@@ -12,8 +12,10 @@ import {
     X,
     LogOut,
     CalendarDays,
-    Bell
+    Bell,
+    ArrowLeft
 } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const menuItems = [
     { label: 'New Bill', icon: Zap, path: '/pos/billing', accent: true },
@@ -26,6 +28,8 @@ const menuItems = [
 
 export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { getExitPath } = useAuth();
     const [isMdUp, setIsMdUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
 
     useEffect(() => {
@@ -41,8 +45,8 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
         return location.pathname === path || location.pathname.startsWith(path + '/');
     };
 
-    const handleLogout = () => {
-        window.location.href = '/admin/login';
+    const handleExit = () => {
+        navigate(getExitPath());
     };
 
     const sidebarContent = (
@@ -109,11 +113,11 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
             {/* Footer */}
             <div className={`border-t border-border/40 p-2 ${effectiveCollapsed ? 'flex justify-center' : ''} bg-surface-alt/20`}>
                 <button
-                    onClick={handleLogout}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-bold text-text-secondary hover:bg-rose-500/10 hover:text-rose-500 transition-all w-full ${effectiveCollapsed ? 'justify-center' : ''}`}
+                    onClick={handleExit}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-bold text-text-secondary hover:bg-primary/10 hover:text-primary transition-all w-full border border-transparent hover:border-primary/20 ${effectiveCollapsed ? 'justify-center' : ''}`}
                     title={effectiveCollapsed ? 'Exit POS' : undefined}
                 >
-                    <LogOut className="w-[18px] h-[18px]" />
+                    <ArrowLeft className="w-[18px] h-[18px]" />
                     {!effectiveCollapsed && <span>Exit POS</span>}
                 </button>
             </div>
