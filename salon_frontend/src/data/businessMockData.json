@@ -8,7 +8,11 @@
             "staffCount": 15,
             "status": "active",
             "phone": "+91 98765 43210",
-            "email": "downtown@graceglamour.com"
+            "email": "downtown@graceglamour.com",
+            "location": {
+                "lat": 12.9352,
+                "lng": 77.6245
+            }
         },
         {
             "_id": "mock-2",
@@ -18,7 +22,11 @@
             "staffCount": 8,
             "status": "active",
             "phone": "+91 98765 43211",
-            "email": "bandra@royalsalon.com"
+            "email": "bandra@royalsalon.com",
+            "location": {
+                "lat": 12.9400,
+                "lng": 77.6300
+            }
         }
     ],
     "staff": [

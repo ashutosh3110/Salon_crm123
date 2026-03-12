@@ -7,6 +7,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) => {
     const [isOpen, setIsOpen] = useState(isInitialOpen);
@@ -399,6 +400,7 @@ export default function AppShopPage() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { activeOutletId, activeOutlet } = useBusiness();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -425,6 +427,12 @@ export default function AppShopPage() {
     const selectedProduct = useMemo(() =>
         MOCK_PRODUCTS.find(p => p._id === selectedProductId),
         [selectedProductId]);
+
+    // Sync state with URL params for external navigation
+    useEffect(() => {
+        const cat = searchParams.get('category') || 'All';
+        setActiveCategory(cat);
+    }, [searchParams]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -462,6 +470,13 @@ export default function AppShopPage() {
 
     const filteredProducts = useMemo(() => {
         let result = MOCK_PRODUCTS;
+
+        // Filter by Outlet
+        result = result.filter(p => {
+            if (!p.outletId) return true; // Available in all salons
+            return p.outletId === activeOutletId;
+        });
+
         if (activeCategory !== 'All') {
             result = result.filter(p => p.category === activeCategory);
         }
@@ -470,7 +485,7 @@ export default function AppShopPage() {
             result = result.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
         }
         return result;
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory, searchQuery, activeOutletId]);
 
     const handleSendToPOS = () => {
         const orderData = { items: cart, total: cartTotal, timestamp: new Date().toISOString() };

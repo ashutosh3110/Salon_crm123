@@ -1,22 +1,46 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign, Calendar, Filter, Download, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import * as XLSX from 'xlsx';
+import { useFinance } from '../../contexts/FinanceContext';
 
 export default function RevenuePage() {
+    const { revenue } = useFinance();
+    const [activeFilter, setActiveFilter] = useState('All Revenue');
+
+    const totalRevenueSum = revenue.reduce((acc, curr) => acc + curr.amount, 0);
+    const totalTaxSum = revenue.reduce((acc, curr) => acc + curr.tax, 0);
+    const avgTrans = revenue.length > 0 ? (totalRevenueSum / revenue.length).toFixed(0) : 0;
+
     const stats = [
-        { label: 'Total Revenue', value: '₹14,25,000', change: '+12.5%', isPositive: true },
-        { label: 'Avg. Transaction', value: '₹1,450', change: '+3.2%', isPositive: true },
-        { label: 'Tax Collected', value: '₹2,56,500', change: '+10.8%', isPositive: true },
+        { label: 'Total Revenue', value: `₹${totalRevenueSum.toLocaleString()}`, change: '+12.5%', isPositive: true },
+        { label: 'Avg. Transaction', value: `₹${avgTrans.toLocaleString()}`, change: '+3.2%', isPositive: true },
+        { label: 'Tax Collected', value: `₹${totalTaxSum.toLocaleString()}`, change: '+10.8%', isPositive: true },
         { label: 'Refunds', value: '₹12,400', change: '-5.4%', isPositive: false },
     ];
 
-    const revenueData = [
-        { id: 1, date: 'Feb 23, 2024', source: 'Services - Hair Styling', amount: '₹4,500', tax: '₹810', method: 'UPI', status: 'Completed' },
-        { id: 2, date: 'Feb 23, 2024', source: 'Product - L\'Oréal Shampoo', amount: '₹1,200', tax: '₹216', method: 'Cash', status: 'Completed' },
-        { id: 3, date: 'Feb 22, 2024', source: 'Services - Facial Treatment', amount: '₹3,500', tax: '₹630', method: 'Card', status: 'Completed' },
-        { id: 4, date: 'Feb 22, 2024', source: 'Membership - Gold', amount: '₹15,000', tax: '₹2,700', method: 'UPI', status: 'Completed' },
-        { id: 5, date: 'Feb 21, 2024', source: 'Services - Hair Colouring', amount: '₹8,500', tax: '₹1,530', method: 'Card', status: 'Processing' },
-    ];
+    const handleExport = () => {
+        const ws = XLSX.utils.json_to_sheet(revenue.map(item => ({
+            "Invoice ID": `INV-2024-00${item.id}`,
+            "Date": item.date,
+            "Description": item.source,
+            "Category": item.type,
+            "Amount": item.amount,
+            "Tax (GST)": item.tax,
+            "Payment Method": item.method,
+            "Status": item.status
+        })));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Revenue_Report");
+        XLSX.writeFile(wb, "Revenue_Report.xlsx");
+    };
+
+    const filteredData = useMemo(() => {
+        return revenue.filter(item => {
+            if (activeFilter === 'All Revenue') return true;
+            return item.type === activeFilter;
+        });
+    }, [revenue, activeFilter]);
 
     return (
         <div className="space-y-6">
@@ -30,7 +54,7 @@ export default function RevenuePage() {
                     <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all">
                         <Calendar className="w-3.5 h-3.5" /> This Month
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all">
+                    <button onClick={handleExport} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all">
                         <Download className="w-4 h-4" /> Export Report
                     </button>
                 </div>
@@ -60,10 +84,15 @@ export default function RevenuePage() {
 
             {/* Quick Actions / Filters */}
             <div className="flex flex-wrap items-center gap-2">
-                <button className="px-4 py-2 bg-primary text-white rounded-none text-[10px] font-black uppercase tracking-widest shadow-md">All Revenue</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Service Sales</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Product Sales</button>
-                <button className="px-4 py-2 bg-surface border border-border/40 text-text-secondary rounded-none text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">Memberships</button>
+                {['All Revenue', 'Service Sales', 'Product Sales', 'Memberships'].map(filter => (
+                    <button
+                        key={filter}
+                        onClick={() => setActiveFilter(filter)}
+                        className={`px-4 py-2 rounded-none text-[10px] font-black uppercase tracking-widest transition-all ${activeFilter === filter ? 'bg-primary text-white shadow-md' : 'bg-surface border border-border/40 text-text-secondary hover:bg-surface-alt'}`}
+                    >
+                        {filter}
+                    </button>
+                ))}
                 <div className="flex-1" />
                 <button className="flex items-center gap-2 px-4 py-2 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-colors">
                     <Filter className="w-3.5 h-3.5" /> More Filters
@@ -85,14 +114,17 @@ export default function RevenuePage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
-                            {revenueData.map((item) => (
+                            {filteredData.map((item) => (
                                 <tr key={item.id} className="hover:bg-surface-alt/50 transition-colors group">
                                     <td className="px-6 py-4 text-xs font-bold text-text-secondary">{item.date}</td>
                                     <td className="px-6 py-4">
                                         <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{item.source}</p>
-                                        <p className="text-[10px] text-text-muted font-medium">INV-2024-00{item.id}</p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <p className="text-[10px] text-text-muted font-medium">INV-2024-00{item.id}</p>
+                                            <span className="text-[8px] font-bold px-1.5 py-0.5 bg-surface-alt border border-border/20 text-text-muted uppercase tracking-widest rounded">{item.type}</span>
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">{item.tax}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">₹{item.tax}</td>
                                     <td className="px-6 py-4">
                                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-none bg-background border border-border/10 text-text-secondary">{item.method}</span>
                                     </td>
@@ -101,9 +133,16 @@ export default function RevenuePage() {
                                             {item.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">{item.amount}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{item.amount.toLocaleString()}</td>
                                 </tr>
                             ))}
+                            {filteredData.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                        No data found for this filter
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

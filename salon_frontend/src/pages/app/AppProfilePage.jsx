@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
@@ -6,7 +6,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
-    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart
+    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
@@ -26,8 +26,16 @@ export default function AppProfilePage() {
     const [saving, setSaving] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
-    const { addFeedback } = useBusiness();
+    const { addFeedback, activeOutlet } = useBusiness();
     const [review, setReview] = useState({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
+    const [reviewImages, setReviewImages] = useState([]);
+    const fileInputRef = useRef(null);
+
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        const newImages = files.map(file => URL.createObjectURL(file));
+        setReviewImages(prev => [...prev, ...newImages]);
+    };
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [reviewSubmitted, setReviewSubmitted] = useState(false);
     const [form, setForm] = useState({
@@ -93,6 +101,7 @@ export default function AppProfilePage() {
 
             setReviewSubmitted(true);
             setReview({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
+            setReviewImages([]);
         } finally {
             setIsSubmittingReview(false);
             // Hide success message after 3 seconds
@@ -363,6 +372,150 @@ export default function AppProfilePage() {
                         <ChevronRight className="w-4 h-4 opacity-20" />
                     </motion.button>
                 ))}
+            </motion.div>
+
+            {/* Review Section */}
+            <motion.div variants={fadeUp} className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
+                </div>
+
+                <div style={{
+                    background: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    position: 'relative',
+                    overflow: 'hidden'
+                }} className="rounded-2xl p-6 shadow-sm">
+                    {/* Decorative Background Icon */}
+                    <MessageSquare style={{
+                        position: 'absolute',
+                        top: '-10px',
+                        right: '-10px',
+                        width: '80px',
+                        height: '80px',
+                        opacity: 0.03,
+                        transform: 'rotate(-15deg)',
+                        color: colors.accent
+                    }} />
+
+                    <div className="relative z-10">
+                        <h4 style={{ color: colors.text }} className="text-sm font-black uppercase tracking-wider mb-1">Review Active Salon</h4>
+                        <p style={{ color: colors.accent }} className="text-[11px] font-bold mb-4">{activeOutlet?.name || 'Wapixo Salon'} · {activeOutlet?.city || 'India'}</p>
+
+                        <form onSubmit={handleReviewSubmit} className="space-y-4">
+                            {/* Star Rating */}
+                            <div className="flex gap-2 justify-center py-2">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <motion.button
+                                        key={star}
+                                        type="button"
+                                        whileTap={{ scale: 0.8 }}
+                                        onClick={() => setReview({ ...review, rating: star })}
+                                        style={{ color: review.rating >= star ? '#C8956C' : colors.textMuted }}
+                                        disabled={isSubmittingReview}
+                                    >
+                                        <Star size={24} fill={review.rating >= star ? "#C8956C" : "none"} />
+                                    </motion.button>
+                                ))}
+                            </div>
+
+                            {/* Comment Box */}
+                            <div
+                                style={{
+                                    background: isLight ? '#FFF9F5' : '#141414',
+                                    borderRadius: '16px 4px 16px 4px',
+                                    border: focusedField === 'comment' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
+                                    padding: '12px',
+                                    transition: 'all 0.3s'
+                                }}
+                            >
+                                <textarea
+                                    onFocus={() => setFocusedField('comment')}
+                                    onBlur={() => setFocusedField(null)}
+                                    value={review.comment}
+                                    onChange={(e) => setReview({ ...review, comment: e.target.value })}
+                                    placeholder="Tell us how we did..."
+                                    disabled={isSubmittingReview}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        outline: 'none',
+                                        width: '100%',
+                                        color: colors.text,
+                                        fontSize: '13px',
+                                        minHeight: '80px',
+                                        resize: 'none'
+                                    }}
+                                />
+                            </div>
+
+                            {/* Photo Upload Container */}
+                            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handleFileChange}
+                                    style={{ display: 'none' }}
+                                />
+                                <motion.button
+                                    type="button"
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => fileInputRef.current.click()}
+                                    style={{
+                                        width: '56px', height: '56px', borderRadius: '12px', border: `1px dashed ${colors.accent}`,
+                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                        gap: '4px', background: 'none', color: colors.accent, flexShrink: 0, cursor: 'pointer'
+                                    }}
+                                >
+                                    <Camera size={16} />
+                                    <span style={{ fontSize: '8px', fontWeight: 800 }}>Add</span>
+                                </motion.button>
+                                {reviewImages.map((imgUrl, index) => (
+                                    <div key={index} style={{ position: 'relative', width: '56px', height: '56px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+                                        <img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <button
+                                            type="button"
+                                            onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== index))}
+                                            style={{ position: 'absolute', top: '2px', right: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: '#FFF', border: 'none', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer' }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <motion.button
+                                whileTap={{ scale: 0.96 }}
+                                disabled={isSubmittingReview || !review.comment.trim()}
+                                style={{
+                                    width: '100%',
+                                    padding: '16px',
+                                    background: reviewSubmitted ? '#22C55E' : '#C8956C',
+                                    color: '#FFF',
+                                    borderRadius: '16px 4px 16px 4px',
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em',
+                                    boxShadow: reviewSubmitted ? '0 8px 20px rgba(34,197,94,0.3)' : '0 8px 20px rgba(200,149,108,0.3)',
+                                    border: 'none',
+                                    opacity: (!review.comment.trim() && !reviewSubmitted) ? 0.5 : 1
+                                }}
+                                className="flex items-center justify-center gap-2"
+                            >
+                                {isSubmittingReview ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : reviewSubmitted ? (
+                                    <>Submitted ✨</>
+                                ) : (
+                                    <>Submit Review</>
+                                )}
+                            </motion.button>
+                        </form>
+                    </div>
+                </div>
             </motion.div>
 
             {/* Support & Legal */}

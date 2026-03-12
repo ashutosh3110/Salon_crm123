@@ -7,15 +7,16 @@ import {
 } from 'lucide-react';
 
 import stylistData from '../../data/stylistMockData.json';
+import { useAttendance } from '../../contexts/AttendanceContext';
 
 export default function StylistAttendance() {
+    const { logs, addLog } = useAttendance();
     const [accuracy, setAccuracy] = useState(0);
     const [status, setStatus] = useState('OFFLINE');
     const [location, setLocation] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [statusFilter, setStatusFilter] = useState('ALL');
-    const [logs, setLogs] = useState(stylistData.attendance.logs);
 
     const filteredLogs = logs.filter(log => {
         if (statusFilter === 'ALL') return true;
@@ -65,12 +66,12 @@ export default function StylistAttendance() {
             time,
             date,
             loc: `${location.lat}, ${location.lng}`,
-            status: 'VERIFIED'
+            status: 'VERIFIED',
+            stylistName: 'Rahul Sharma' // Mock current user for now
         };
 
-        setLogs([newLog, ...logs]);
+        addLog(newLog);
         setStatus(type === 'IN' ? 'ACTIVE_RUN' : 'OFFLINE');
-        // In a real app, send newLog to backend
     };
 
     useEffect(() => {

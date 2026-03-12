@@ -12,7 +12,9 @@ import {
     Zap
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/api';
+import {
+    MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
+} from '../../data/appMockData';
 
 const AppLoyaltyPage = () => {
     const navigate = useNavigate();
@@ -36,47 +38,34 @@ const AppLoyaltyPage = () => {
     };
 
     const [loyaltyStats, setLoyaltyStats] = React.useState({
-        currentPoints: 0,
-        nextTier: 3000,
-        currentTier: 'Basic Member',
-        potentialSavings: '₹0',
-        history: [],
+        currentPoints: MOCK_LOYALTY_WALLET.totalPoints,
+        nextTier: 5000,
+        currentTier: MOCK_LOYALTY_WALLET.totalPoints >= 5000 ? 'Platinum Member' : (MOCK_LOYALTY_WALLET.totalPoints >= 2000 ? 'Gold Member' : 'Silver Member'),
+        potentialSavings: `₹${(MOCK_LOYALTY_WALLET.totalPoints * MOCK_LOYALTY_RULES.redeemRate).toLocaleString()}`,
+        history: MOCK_LOYALTY_TRANSACTIONS,
         rewards: [
             { id: 1, title: 'Free Haircut', points: 1000, icon: <Star size={16} /> },
             { id: 2, title: '20% Off Services', points: 500, icon: <Zap size={16} /> },
             { id: 3, title: 'Luxury Spa Kit', points: 2500, icon: <Gift size={16} /> },
         ]
     });
-    const [loading, setLoading] = React.useState(true);
+    const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
-        const fetchWallet = async () => {
-            try {
-                // Fetch real wallet from backend
-                const { data } = await api.get('/loyalty/wallet');
-                const wallet = data.data || data;
+        // Simulation of data sync from localStorage
+        const syncLoyalty = () => {
+            const savedWallet = localStorage.getItem('salon_loyalty_wallet');
+            if (savedWallet) {
+                const wallet = JSON.parse(savedWallet);
                 setLoyaltyStats(prev => ({
                     ...prev,
-                    currentPoints: wallet.points || 0,
+                    currentPoints: wallet.points,
+                    potentialSavings: `₹${(wallet.points * MOCK_LOYALTY_RULES.redeemRate).toLocaleString()}`,
                     currentTier: wallet.points >= 5000 ? 'Platinum Member' : (wallet.points >= 2000 ? 'Gold Member' : 'Silver Member'),
-                    history: wallet.history || prev.history
                 }));
-            } catch (err) {
-                console.error('Wallet fetch error:', err);
-                // Fallback to demo data if needed
-                setLoyaltyStats(prev => ({
-                    ...prev,
-                    currentPoints: 250,
-                    currentTier: 'Basic Member',
-                    history: [
-                        { id: 'tx-1', type: 'earn', action: 'Haircut & Styling', date: new Date().toISOString(), points: 250 }
-                    ]
-                }));
-            } finally {
-                setLoading(false);
             }
         };
-        fetchWallet();
+        syncLoyalty();
     }, []);
 
     const progressPercentage = (loyaltyStats.currentPoints / loyaltyStats.nextTier) * 100;

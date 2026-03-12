@@ -47,10 +47,38 @@ const AppMembershipCheckoutPage = () => {
         input: isLight ? '#F8F8F8' : '#2A2A2A',
     };
 
+    const getNumericPrice = (p) => {
+        if (typeof p === 'number') return p;
+        if (typeof p === 'string') {
+            return parseInt(p.replace(/[^0-9]/g, ''), 10) || 0;
+        }
+        return 0;
+    };
+
+    const numericPrice = getNumericPrice(plan.price);
+    const taxAmount = Math.round(numericPrice * 0.18);
+    const totalWithTax = numericPrice + taxAmount;
+
     const handlePayment = () => {
         setIsProcessing(true);
+
         // Simulate payment processing time
         setTimeout(() => {
+            // Persist membership data to localStorage for global use
+            const membershipData = {
+                id: plan.id,
+                name: plan.name,
+                benefits: plan.benefits || [], // Assuming benefits are passed or exist in a global config
+            };
+
+            // If benefits are missing (fallback), use defaults based on ID
+            if (!membershipData.benefits.length) {
+                if (plan.id === 'silver') membershipData.benefits = ['5% Off on all services'];
+                if (plan.id === 'gold') membershipData.benefits = ['15% Off on all services'];
+                if (plan.id === 'platinum') membershipData.benefits = ['30% Off on all services'];
+            }
+
+            localStorage.setItem('salon_active_membership', JSON.stringify(membershipData));
             navigate('/app/membership/success', { state: { plan } });
         }, 2000);
     };
@@ -138,16 +166,16 @@ const AppMembershipCheckoutPage = () => {
                     <div style={{ background: colors.card, borderRadius: '24px', padding: '20px', border: `1px solid ${colors.border}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                             <span style={{ fontSize: '14px', color: colors.textMuted }}>Subtotal</span>
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{plan.price}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>₹{numericPrice.toLocaleString()}</span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                             <span style={{ fontSize: '14px', color: colors.textMuted }}>Taxes & Fees (18%)</span>
-                            <span style={{ fontSize: '14px', fontWeight: 600 }}>₹{Math.round(parseInt(plan.price.replace('₹', '').replace(',', '')) * 0.18)}</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>₹{taxAmount.toLocaleString()}</span>
                         </div>
                         <div style={{ height: '1px', background: colors.border, margin: '12px 0' }} />
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span style={{ fontSize: '16px', fontWeight: 800 }}>Amt to Pay</span>
-                            <span style={{ fontSize: '18px', fontWeight: 900, color: colors.accent }}>₹{Math.round(parseInt(plan.price.replace('₹', '').replace(',', '')) * 1.18)}</span>
+                            <span style={{ fontSize: '18px', fontWeight: 900, color: colors.accent }}>₹{totalWithTax.toLocaleString()}</span>
                         </div>
                     </div>
                 </motion.div>

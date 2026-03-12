@@ -23,7 +23,6 @@ export default function AppSplashScreen({ onComplete }) {
     const handleVideoEnded = () => {
         setProgress(100);
         setTimeout(() => {
-            navigate('/app/login');
             onComplete && onComplete();
         }, 800);
     };

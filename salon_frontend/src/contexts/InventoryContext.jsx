@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import inventoryData from '../data/inventoryData.json';
+import { useFinance } from './FinanceContext';
 
 const InventoryContext = createContext();
 
@@ -59,6 +60,7 @@ const enrichProduct = (p) => {
 const INITIAL_SALE_RECORDS = inventoryData.saleRecords;
 
 export const InventoryProvider = ({ children }) => {
+    const { addExpense } = useFinance();
     const [products, setProducts] = useState(() => getInitialState('inv_products', INITIAL_PRODUCTS).map(enrichProduct));
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
@@ -227,6 +229,16 @@ export const InventoryProvider = ({ children }) => {
     // ── Add purchase order ────────────────────────────────────
     const addPurchase = (purchase) => {
         setPurchases(prev => [{ ...purchase, id: `PUR${Date.now().toString().slice(-4)}` }, ...prev]);
+
+        // ── Connect to Accountant Expenses ──
+        addExpense({
+            date: new Date().toISOString().split('T')[0],
+            vendor: purchase.vendor || 'Inventory Supplier',
+            category: 'Inventory',
+            desc: `Stock Purchase: ${purchase.productName || 'Bulk Order'}`,
+            amount: purchase.totalAmount || 0,
+            status: 'Paid'
+        });
     };
 
     // ── Add Sale Record (called from POS on checkout) ─────────

@@ -6,6 +6,7 @@ import AppHeader from '../components/app/AppHeader';
 import { useGender } from '../contexts/GenderContext';
 import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../contexts/CustomerThemeContext';
+import { useBusiness } from '../contexts/BusinessContext';
 
 const pageVariants = {
     initial: { opacity: 0, x: 0 },
@@ -19,17 +20,37 @@ export default function AppLayout() {
     const { gender } = useGender();
     const { customer } = useCustomerAuth();
     const { theme } = useCustomerTheme();
+    const { activeOutletId } = useBusiness();
 
     const isLight = theme === 'light';
 
     // Check authentication and gender selection
+    // Check authentication and required setup
     useEffect(() => {
+        // 1. Must be logged in
         if (!customer) {
-            navigate('/app/login', { replace: true });
-        } else if (!gender && location.pathname !== '/app/gender') {
-            navigate('/app/gender', { replace: true });
+            if (location.pathname !== '/app/login') {
+                navigate('/app/login', { replace: true });
+            }
+            return;
         }
-    }, [customer, gender, navigate, location.pathname]);
+
+        // 2. Must have gender/preferences set (for new users)
+        if (!gender) {
+            if (location.pathname !== '/app/gender' && location.pathname !== '/app/login') {
+                navigate('/app/gender', { replace: true });
+            }
+            return;
+        }
+
+        // 3. Must have a salon selected
+        if (!activeOutletId) {
+            if (location.pathname !== '/app/salon-selection') {
+                navigate('/app/salon-selection', { replace: true });
+            }
+            return;
+        }
+    }, [customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications'];
     const searchParams = new URLSearchParams(location.search);

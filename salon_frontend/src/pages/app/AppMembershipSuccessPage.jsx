@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    CheckCircle2,
     Crown,
     Calendar,
     ArrowRight,
@@ -55,8 +54,7 @@ const AppMembershipSuccessPage = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            padding: '24px',
+            padding: '40px 24px',
             textAlign: 'center',
             position: 'relative',
             overflow: 'hidden'
@@ -71,50 +69,26 @@ const AppMembershipSuccessPage = () => {
                 transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
                 style={{
                     position: 'absolute',
-                    width: '400px', height: '400px',
+                    top: '10%',
+                    width: '300px', height: '300px',
                     background: 'radial-gradient(circle, rgba(200,149,108,0.2) 0%, transparent 70%)',
                     zIndex: 0
                 }}
             />
 
-            {/* ── SUCCESS ICON ── */}
-            <motion.div
-                initial={{ scale: 0, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                style={{
-                    width: 100, height: 100, borderRadius: '35px',
-                    background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: '#FFF', marginBottom: '32px',
-                    boxShadow: '0 20px 40px rgba(200,149,108,0.4)',
-                    position: 'relative', zIndex: 1
-                }}
-            >
-                <motion.div
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                >
-                    {getPlanIcon(plan.id, 40)}
-                </motion.div>
-                <div style={{ position: 'absolute', top: -10, right: -10, background: '#FFF', borderRadius: '50%', padding: '4px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                    <CheckCircle2 size={24} color="#22c55e" fill="#22c55e" stroke="#FFF" />
-                </div>
-            </motion.div>
-
             {/* ── SUCCESS MESSAGE ── */}
-            <div style={{ position: 'relative', zIndex: 1 }}>
+            <div style={{ position: 'relative', zIndex: 1, marginTop: '20px' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: colors.accent, marginBottom: '12px' }}>
-                        <Sparkles size={16} />
-                        <span style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Welcome to the Club</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: colors.accent, marginBottom: '8px' }}>
+                        <Sparkles size={14} />
+                        <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Welcome to the Club</span>
                     </div>
-                    <h2 style={{ fontSize: '32px', fontWeight: 900, margin: '0 0 16px', lineHeight: 1.1 }}>You are now a <br />{plan.name} Member</h2>
-                    <p style={{ fontSize: '15px', color: colors.textMuted, margin: '0 auto 40px', maxWidth: '280px', lineHeight: 1.6 }}>Your VIP status is now active. Enjoy exclusive benefits and priority service on every visit.</p>
+                    <h2 style={{ fontSize: '24px', fontWeight: 900, margin: '0 0 12px', lineHeight: 1.2 }}>You are now a <br />{plan.name} Member</h2>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, margin: '0 auto 24px', maxWidth: '260px', lineHeight: 1.5 }}>Your VIP status is now active. Enjoy exclusive benefits and priority service.</p>
                 </motion.div>
 
                 {/* ── MEMBERSHIP INFO MINI-CARD ── */}
@@ -124,45 +98,45 @@ const AppMembershipSuccessPage = () => {
                     transition={{ delay: 0.5 }}
                     style={{
                         background: colors.card, border: `1px solid ${colors.border}`,
-                        borderRadius: '24px', padding: '20px', display: 'flex', gap: '16px',
-                        marginBottom: '48px', alignItems: 'center', textAlign: 'left',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
+                        borderRadius: '20px', padding: '14px 18px', display: 'flex', gap: '12px',
+                        marginBottom: '32px', alignItems: 'center', textAlign: 'left',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.04)'
                     }}
                 >
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(200,149,108,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.accent }}>
-                        <Calendar size={22} />
+                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(200,149,108,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.accent }}>
+                        <Calendar size={18} />
                     </div>
                     <div>
-                        <p style={{ fontSize: '11px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', fontWeight: 700 }}>VALID UNTIL</p>
-                        <p style={{ fontSize: '15px', fontWeight: 800, margin: 0 }}>{dateStr}</p>
+                        <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 1px', textTransform: 'uppercase', fontWeight: 700 }}>VALID UNTIL</p>
+                        <p style={{ fontSize: '14px', fontWeight: 800, margin: 0 }}>{dateStr}</p>
                     </div>
                 </motion.div>
 
                 {/* ── ACTION BUTTONS ── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '280px', margin: '0 auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '260px', margin: '0 auto' }}>
                     <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate('/app')}
                         style={{
-                            width: '100%', padding: '16px',
+                            width: '100%', padding: '14px',
                             background: colors.accent, color: '#FFF',
-                            border: 'none', borderRadius: '20px 6px 20px 6px',
-                            fontSize: '15px', fontWeight: 900, cursor: 'pointer',
+                            border: 'none', borderRadius: '16px 5px 16px 5px',
+                            fontSize: '14px', fontWeight: 900, cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                            boxShadow: '0 10px 25px rgba(200,149,108,0.3)'
+                            boxShadow: '0 8px 20px rgba(200,149,108,0.25)'
                         }}
                     >
-                        Go to Home <ArrowRight size={18} />
+                        Go to Home <ArrowRight size={16} />
                     </motion.button>
 
                     <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate('/app/bookings')}
                         style={{
-                            width: '100%', padding: '16px',
+                            width: '100%', padding: '14px',
                             background: 'transparent', color: colors.text,
-                            border: `1px solid ${colors.border}`, borderRadius: '20px',
-                            fontSize: '14px', fontWeight: 700, cursor: 'pointer'
+                            border: `1px solid ${colors.border}`, borderRadius: '16px',
+                            fontSize: '13px', fontWeight: 700, cursor: 'pointer'
                         }}
                     >
                         Manage Membership

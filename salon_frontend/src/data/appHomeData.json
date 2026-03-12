@@ -342,5 +342,128 @@
                 }
             ]
         }
-    }
+    },
+    "LOOKBOOK": [
+        {
+            "url": "https://images.unsplash.com/photo-1620331307335-df936021799c?w=400&q=80",
+            "tag": "Fade",
+            "title": "Classic Taper Ritual"
+        },
+        {
+            "url": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80",
+            "tag": "Balayage",
+            "title": "Solar Flare Glow"
+        },
+        {
+            "url": "https://images.unsplash.com/photo-1599351431247-f5091e38e1b6?w=400&q=80",
+            "tag": "Beard",
+            "title": "Artisan Sculpt"
+        },
+        {
+            "url": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&q=80",
+            "tag": "Bridal",
+            "title": "Royal Ethereal"
+        }
+    ],
+    "REVIEWS": [
+        {
+            "name": "Rahul S.",
+            "date": "2 days ago",
+            "text": "Best grooming experience in the city. The staff is elite.",
+            "salon": "Wapixo Premium"
+        },
+        {
+            "name": "Sneha M.",
+            "date": "1 week ago",
+            "text": "Love the new membership benefits. Highly recommended!",
+            "salon": "Elegance Salon"
+        },
+        {
+            "name": "Vikram K.",
+            "date": "3 days ago",
+            "text": "Top-notch service and very professional stylists.",
+            "salon": "The Royal Salon"
+        }
+    ],
+    "EXPERT_DETAILS": {
+        "Jake Rivera": {
+            "experience": "12 Years",
+            "bio": "Award-winning master barber specializing in heritage cuts and modern beard tailoring. Transforming style since 2012.",
+            "tags": [
+                "Classic Fade",
+                "Royal Shave",
+                "Taper Design"
+            ]
+        },
+        "Carlos Mendez": {
+            "experience": "8 Years",
+            "bio": "Leading hair stylist with a focus on contemporary trends and precision scissor work. Artist of the craft.",
+            "tags": [
+                "Modern Quiff",
+                "Texture Cut",
+                "Precision Styling"
+            ]
+        },
+        "Dan Fisher": {
+            "experience": "15 Years",
+            "bio": "The master of beard sculpting. Dan treats every beard like a piece of art. Renowned for detail.",
+            "tags": [
+                "Beard Sculpt",
+                "Stubble Groom",
+                "Hot Towel"
+            ]
+        },
+        "Mark Chen": {
+            "experience": "10 Years",
+            "bio": "Expert colorist with a deep understanding of men's color dynamics and gray blending techniques.",
+            "tags": [
+                "Gray Blend",
+                "Sunlight Tints",
+                "Creative Color"
+            ]
+        },
+        "Sofiya Liss": {
+            "experience": "9 Years",
+            "bio": "High-fashion stylist with a passion for bridal and editorial hair design. Making every client a muse.",
+            "tags": [
+                "Bridal Style",
+                "Editorial",
+                "Glamour Waves"
+            ]
+        },
+        "Adrin Ross": {
+            "experience": "11 Years",
+            "bio": "Master colorist known for stunning transformations and protecting hair integrity. Color perfectionist.",
+            "tags": [
+                "Balayage",
+                "Vibrant Hues",
+                "Color Correction"
+            ]
+        },
+        "Nina Patel": {
+            "experience": "7 Years",
+            "bio": "Elite nail artist specializing in luxury extensions and intricate hand-painted designs.",
+            "tags": [
+                "Nail Extensions",
+                "Hand Painted",
+                "Luxury Spa"
+            ]
+        },
+        "Priya Kapoor": {
+            "experience": "14 Years",
+            "bio": "Advanced skin therapist dedicated to holistic rejuvenation and clinical skin health.",
+            "tags": [
+                "Dermal Therapy",
+                "Glow Facial",
+                "Skin Ritual"
+            ]
+        }
+    },
+    "PLACEHOLDERS": [
+        "Search categories...",
+        "Search for salons...",
+        "Search specialists...",
+        "Search for offers...",
+        "Search hair styles..."
+    ]
 }

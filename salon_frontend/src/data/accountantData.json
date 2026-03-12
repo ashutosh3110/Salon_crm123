@@ -1,0 +1,182 @@
+{
+    "revenue": [
+        {
+            "id": 1,
+            "date": "2024-02-23",
+            "source": "Services - Hair Styling",
+            "type": "Service Sales",
+            "amount": 4500,
+            "tax": 810,
+            "method": "UPI",
+            "status": "Completed"
+        },
+        {
+            "id": 2,
+            "date": "2024-02-23",
+            "source": "Product - L'Oréal Shampoo",
+            "type": "Product Sales",
+            "amount": 1200,
+            "tax": 216,
+            "method": "Cash",
+            "status": "Completed"
+        },
+        {
+            "id": 3,
+            "date": "2024-02-22",
+            "source": "Services - Facial Treatment",
+            "type": "Service Sales",
+            "amount": 3500,
+            "tax": 630,
+            "method": "Card",
+            "status": "Completed"
+        },
+        {
+            "id": 4,
+            "date": "2024-02-22",
+            "source": "Membership - Gold",
+            "type": "Memberships",
+            "amount": 15000,
+            "tax": 2700,
+            "method": "UPI",
+            "status": "Completed"
+        },
+        {
+            "id": 5,
+            "date": "2024-02-21",
+            "source": "Services - Hair Colouring",
+            "type": "Service Sales",
+            "amount": 8500,
+            "tax": 1530,
+            "method": "Card",
+            "status": "Processing"
+        }
+    ],
+    "expenses": [
+        {
+            "id": 1,
+            "date": "2024-02-23",
+            "category": "Inventory",
+            "vendor": "Beauty Hub Supplies",
+            "desc": "Restock Shampoos & Conditioners",
+            "amount": 12500,
+            "status": "Paid"
+        },
+        {
+            "id": 2,
+            "date": "2024-02-22",
+            "category": "Utilities",
+            "vendor": "Power Grid Corp",
+            "desc": "Electricity Bill - Jan 2024",
+            "amount": 4200,
+            "status": "Paid"
+        },
+        {
+            "id": 3,
+            "date": "2024-02-21",
+            "category": "Staff Welfare",
+            "vendor": "Coffee Roasters",
+            "desc": "Breakroom Supplies",
+            "amount": 1200,
+            "status": "Reimbursement"
+        },
+        {
+            "id": 4,
+            "date": "2024-02-20",
+            "category": "Inventory",
+            "vendor": "Matrix Distribution",
+            "desc": "Hair Colour Batch",
+            "amount": 25000,
+            "status": "Pending"
+        },
+        {
+            "id": 5,
+            "date": "2024-02-18",
+            "category": "Marketing",
+            "vendor": "Google Ads",
+            "desc": "Monthly Campaign",
+            "amount": 5000,
+            "status": "Paid"
+        }
+    ],
+    "payroll": [
+        {
+            "id": 1,
+            "name": "Rahul Sharma",
+            "role": "Senior Stylist",
+            "salary": 45000,
+            "commission": 12500,
+            "deductions": 2000,
+            "status": "Paid"
+        },
+        {
+            "id": 2,
+            "name": "Priya Patel",
+            "role": "Dermatologist",
+            "salary": 65000,
+            "commission": 24000,
+            "deductions": 3500,
+            "status": "Paid"
+        },
+        {
+            "id": 3,
+            "name": "Amit Singh",
+            "role": "Barber",
+            "salary": 30000,
+            "commission": 8900,
+            "deductions": 1500,
+            "status": "Processing"
+        },
+        {
+            "id": 4,
+            "name": "Sneha Kapur",
+            "role": "Receptionist",
+            "salary": 25000,
+            "commission": 0,
+            "deductions": 1200,
+            "status": "Paid"
+        },
+        {
+            "id": 5,
+            "name": "Vikram Das",
+            "role": "Junior Stylist",
+            "salary": 22000,
+            "commission": 4500,
+            "deductions": 1000,
+            "status": "Pending"
+        }
+    ],
+    "taxFilings": [
+        {
+            "period": "Jan 2024",
+            "type": "GSTR-3B",
+            "amount": 195000,
+            "status": "Filed",
+            "date": "2024-02-18",
+            "ack": "ACK92810"
+        },
+        {
+            "period": "Jan 2024",
+            "type": "GSTR-1",
+            "amount": 195000,
+            "status": "Filed",
+            "date": "2024-02-10",
+            "ack": "ACK92750"
+        },
+        {
+            "period": "Dec 2023",
+            "type": "GSTR-3B",
+            "amount": 210000,
+            "status": "Filed",
+            "date": "2024-01-18",
+            "ack": "ACK91240"
+        },
+        {
+            "period": "Q3 2023-24",
+            "type": "Income Tax",
+            "amount": 450000,
+            "status": "Processing",
+            "date": "2024-01-05",
+            "ack": "ACK90850"
+        }
+    ]
+}

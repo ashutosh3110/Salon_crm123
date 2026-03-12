@@ -1,24 +1,50 @@
 import { useState } from 'react';
 import { DollarSign, Plus, Search, Filter, Download, Calendar, ArrowUpRight, ArrowDownRight, MoreHorizontal, PieChart, ShoppingBag, Receipt, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useFinance } from '../../contexts/FinanceContext';
 
 export default function ExpensesPage() {
+    const { expenses, addExpense } = useFinance();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterCategory, setFilterCategory] = useState('All Categories');
+
+    const [formState, setFormState] = useState({
+        category: 'Inventory',
+        amount: '',
+        vendor: '',
+        date: new Date().toISOString().split('T')[0],
+        desc: ''
+    });
 
     const categories = [
-        { name: 'Inventory', amount: '₹1,24,000', color: 'bg-primary' },
-        { name: 'Utilities', amount: '₹12,500', color: 'bg-amber-500' },
-        { name: 'Rent', amount: '₹85,000', color: 'bg-indigo-500' },
-        { name: 'Staff Welfare', amount: '₹8,900', color: 'bg-emerald-500' },
+        { name: 'Inventory', amount: `₹${expenses.filter(e => e.category === 'Inventory').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-primary' },
+        { name: 'Utilities', amount: `₹${expenses.filter(e => e.category === 'Utilities').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-amber-500' },
+        { name: 'Rent', amount: `₹${expenses.filter(e => e.category === 'Rent').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-indigo-500' },
+        { name: 'Staff Welfare', amount: `₹${expenses.filter(e => e.category === 'Staff Welfare').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-emerald-500' },
     ];
 
-    const expenses = [
-        { id: 1, date: 'Feb 23, 2024', category: 'Inventory', vendor: 'Beauty Hub Supplies', desc: 'Restock Shampoos & Conditioners', amount: '₹12,500', status: 'Paid' },
-        { id: 2, date: 'Feb 22, 2024', category: 'Utilities', vendor: 'Power Grid Corp', desc: 'Electricity Bill - Jan 2024', amount: '₹4,200', status: 'Paid' },
-        { id: 3, date: 'Feb 21, 2024', category: 'Staff Welfare', vendor: 'Coffee Roasters', desc: 'Breakroom Supplies', amount: '₹1,200', status: 'Reimbursement' },
-        { id: 4, date: 'Feb 20, 2024', category: 'Inventory', vendor: 'Matrix Distribution', desc: 'Hair Colour Batch', amount: '₹25,000', status: 'Pending' },
-        { id: 5, date: 'Feb 18, 2024', category: 'Marketing', vendor: 'Google Ads', desc: 'Monthly Campaign', amount: '₹5,000', status: 'Paid' },
-    ];
+    const filteredExpenses = expenses.filter(exp => {
+        const vendor = exp.vendor || '';
+        const category = exp.category || '';
+        const desc = exp.desc || '';
+        const matchesSearch = vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            desc.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory = filterCategory === 'All Categories' || exp.category === filterCategory;
+        return matchesSearch && matchesCategory;
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        addExpense({
+            ...formState,
+            amount: parseFloat(formState.amount),
+            status: 'Paid'
+        });
+        setIsAddModalOpen(false);
+        setFormState({ category: 'Inventory', amount: '', vendor: '', date: new Date().toISOString().split('T')[0], desc: '' });
+    };
 
     return (
         <div className="space-y-6">
@@ -61,12 +87,27 @@ export default function ExpensesPage() {
                 <div className="px-6 py-5 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50">
                     <div className="relative w-full md:w-80">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input type="text" placeholder="Search by vendor or category..." className="w-full pl-10 pr-4 py-2.5 bg-background border border-border/40 rounded-none text-sm outline-none focus:border-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search by vendor or category..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-background border border-border/40 rounded-none text-sm outline-none focus:border-primary transition-colors"
+                        />
                     </div>
                     <div className="flex gap-2">
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-colors">
-                            <Filter className="w-3.5 h-3.5" /> All Categories
-                        </button>
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-colors outline-none cursor-pointer"
+                        >
+                            <option value="All Categories">All Categories</option>
+                            <option value="Inventory">Inventory</option>
+                            <option value="Utilities">Utilities</option>
+                            <option value="Rent">Rent</option>
+                            <option value="Staff Welfare">Staff Welfare</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
                     </div>
                 </div>
 
@@ -83,7 +124,7 @@ export default function ExpensesPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
-                            {expenses.map((exp) => (
+                            {filteredExpenses.map((exp) => (
                                 <tr key={exp.id} className="hover:bg-surface-alt/50 transition-colors group">
                                     <td className="px-6 py-4 text-xs font-bold text-text-secondary">{exp.date}</td>
                                     <td className="px-6 py-4">
@@ -100,7 +141,7 @@ export default function ExpensesPage() {
                                             {exp.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">{exp.amount}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{exp.amount.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="p-2 hover:bg-background rounded-none text-text-muted hover:text-text transition-all">
                                             <MoreHorizontal className="w-4 h-4" />
@@ -108,6 +149,13 @@ export default function ExpensesPage() {
                                     </td>
                                 </tr>
                             ))}
+                            {filteredExpenses.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                        No expenses found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -124,11 +172,15 @@ export default function ExpensesPage() {
                                     <h2 className="text-xl font-black text-text uppercase tracking-tight">Record Expense</h2>
                                     <button onClick={() => setIsAddModalOpen(false)} className="w-10 h-10 rounded-none bg-background border border-border/10 flex items-center justify-center text-text-muted hover:text-text transition-all">×</button>
                                 </div>
-                                <form className="space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); setIsAddModalOpen(false); }}>
+                                <form className="space-y-6 text-left" onSubmit={handleSubmit}>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Category</label>
-                                            <select className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none">
+                                            <select
+                                                value={formState.category}
+                                                onChange={(e) => setFormState({ ...formState, category: e.target.value })}
+                                                className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none"
+                                            >
                                                 <option>Inventory</option>
                                                 <option>Rent</option>
                                                 <option>Utilities</option>
@@ -138,20 +190,45 @@ export default function ExpensesPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Amount</label>
-                                            <input required type="number" placeholder="₹ 0.00" className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none" />
+                                            <input
+                                                required
+                                                type="number"
+                                                placeholder="₹ 0.00"
+                                                value={formState.amount}
+                                                onChange={(e) => setFormState({ ...formState, amount: e.target.value })}
+                                                className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none"
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Vendor</label>
-                                            <input required type="text" placeholder="Who did you pay?" className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none" />
+                                            <input
+                                                required
+                                                type="text"
+                                                placeholder="Who did you pay?"
+                                                value={formState.vendor}
+                                                onChange={(e) => setFormState({ ...formState, vendor: e.target.value })}
+                                                className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none"
+                                            />
                                         </div>
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Date</label>
-                                            <input required type="date" className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none" />
+                                            <input
+                                                required
+                                                type="date"
+                                                value={formState.date}
+                                                onChange={(e) => setFormState({ ...formState, date: e.target.value })}
+                                                className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none"
+                                            />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Description</label>
-                                        <textarea placeholder="Purpose of this expense..." className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none h-24 resize-none" />
+                                        <textarea
+                                            placeholder="Purpose of this expense..."
+                                            value={formState.desc}
+                                            onChange={(e) => setFormState({ ...formState, desc: e.target.value })}
+                                            className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none h-24 resize-none"
+                                        />
                                     </div>
                                     <button type="submit" className="w-full py-4.5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25">Save Transaction</button>
                                 </form>

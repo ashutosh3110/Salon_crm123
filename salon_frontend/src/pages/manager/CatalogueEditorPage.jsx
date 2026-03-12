@@ -37,31 +37,14 @@ export default function CatalogueEditorPage() {
             <div style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;text-align:center;">
                 <div style="width:50px;height:50px;border:5px solid rgba(255,255,255,0.1);border-top-color:#e11d48;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:24px;"></div>
                 <h2 style="font-weight:900;letter-spacing:10px;font-size:20px;margin:0;">SECURE RENDER</h2>
-                <p id="pdf-log" style="margin-top:12px;font-size:12px;opacity:0.4;font-family:monospace;letter-spacing:2px;">HIJACKING CSS ENGINE...</p>
+                <p id="pdf-log" style="margin-top:12px;font-size:12px;opacity:0.4;font-family:monospace;letter-spacing:2px;">GENERATING CATALOGUE...</p>
                 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
             </div>
         `;
         document.body.appendChild(overlay);
         const log = document.getElementById('pdf-log');
 
-        // Global Interceptors
-        const originalGCS = window.getComputedStyle;
-        const originalBG = Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype, 'backgroundColor');
-        const originalColor = Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype, 'color');
-        const originalBorder = Object.getOwnPropertyDescriptor(CSSStyleDeclaration.prototype, 'borderColor');
-
-        const scrub = (v) => (typeof v === 'string' && v.includes('okl')) ? '#ffffff' : v;
-
         try {
-            // Hijack Engine
-            window.getComputedStyle = (el, p) => {
-                const s = originalGCS.call(window, el, p);
-                return new Proxy(s, { get: (t, k) => scrub(t[k]) });
-            };
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'backgroundColor', { get: function () { return scrub(originalBG.get.call(this)); } });
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'color', { get: function () { return scrub(originalColor.get.call(this)); } });
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'borderColor', { get: function () { return scrub(originalBorder.get.call(this)); } });
-
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfW = pdf.internal.pageSize.getWidth();
             const pdfH = pdf.internal.pageSize.getHeight();
@@ -80,13 +63,6 @@ export default function CatalogueEditorPage() {
                     scale: 1,
                     useCORS: true,
                     backgroundColor: mode === 'landing' ? '#000000' : '#ffffff',
-                    onclone: (doc) => {
-                        const okl = /oklch\([^)]+\)|oklab\([^)]+\)/gi;
-                        Array.from(doc.querySelectorAll('*')).forEach(el => {
-                            const s = el.getAttribute('style');
-                            if (s && s.includes('okl')) el.setAttribute('style', s.replace(okl, '#ffffff'));
-                        });
-                    }
                 });
 
                 if (canvas.width > 0) {
@@ -102,12 +78,9 @@ export default function CatalogueEditorPage() {
             console.error("Shield Error:", err);
             alert("Export Error. Please try refreshing the page.");
         } finally {
-            // Restore Engine
-            window.getComputedStyle = originalGCS;
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'backgroundColor', originalBG);
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'color', originalColor);
-            Object.defineProperty(CSSStyleDeclaration.prototype, 'borderColor', originalBorder);
-            overlay.remove();
+            if (document.body.contains(overlay)) {
+                overlay.remove();
+            }
             setIsDownloading(false);
             setPreviewMode('landing');
         }

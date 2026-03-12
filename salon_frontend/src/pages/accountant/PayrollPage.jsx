@@ -1,21 +1,31 @@
 import { useState } from 'react';
 import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useFinance } from '../../contexts/FinanceContext';
 
 export default function PayrollPage() {
+    const { payroll } = useFinance();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('All');
+
+    const totalSalarySum = payroll.reduce((acc, curr) => acc + (typeof curr.salary === 'number' ? curr.salary : 0), 0);
+    const totalCommissionSum = payroll.reduce((acc, curr) => acc + (typeof curr.commission === 'number' ? curr.commission : 0), 0);
+    const processedCount = payroll.filter(p => p.status === 'Paid').length;
+
     const payrollSummary = [
-        { label: 'Total Payroll', value: '₹5,35,000', sub: 'Current Month' },
-        { label: 'Total Commissions', value: '₹1,12,400', sub: 'Performance Based' },
-        { label: 'Payouts Processed', value: '14/15', sub: 'Staff Members' },
+        { label: 'Total Payroll', value: `₹${totalSalarySum.toLocaleString()}`, sub: 'Current Month' },
+        { label: 'Total Commissions', value: `₹${totalCommissionSum.toLocaleString()}`, sub: 'Performance Based' },
+        { label: 'Payouts Processed', value: `${processedCount}/${payroll.length}`, sub: 'Staff Members' },
     ];
 
-    const staffPayments = [
-        { id: 1, name: 'Rahul Sharma', role: 'Senior Stylist', salary: '₹45,000', commission: '₹12,500', deductions: '₹2,000', net: '₹55,500', status: 'Paid' },
-        { id: 2, name: 'Priya Patel', role: 'Dermatologist', salary: '₹65,000', commission: '₹24,000', deductions: '₹3,500', net: '₹85,500', status: 'Paid' },
-        { id: 3, name: 'Amit Singh', role: 'Barber', salary: '₹30,000', commission: '₹8,900', deductions: '₹1,500', net: '₹37,400', status: 'Processing' },
-        { id: 4, name: 'Sneha Kapur', role: 'Receptionist', salary: '₹25,000', commission: '₹0', deductions: '₹1,200', net: '₹23,800', status: 'Paid' },
-        { id: 5, name: 'Vikram Das', role: 'Junior Stylist', salary: '₹22,000', commission: '₹4,500', deductions: '₹1,000', net: '₹25,500', status: 'Pending' },
-    ];
+    const filteredStaff = payroll.filter(staff => {
+        const name = staff.name || '';
+        const role = staff.role || '';
+        const matchesSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            role.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || staff.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     return (
         <div className="space-y-6">
@@ -56,9 +66,28 @@ export default function PayrollPage() {
                         <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Staff Salary Register</h2>
                         <span className="text-[9px] font-black px-2 py-0.5 rounded-none bg-primary/10 text-primary uppercase tracking-widest">Feb 2024</span>
                     </div>
-                    <div className="relative w-full md:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input type="text" placeholder="Search employee..." className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-none text-[10px] font-extrabold uppercase tracking-widest outline-none focus:border-primary transition-colors" />
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
+                        <div className="flex bg-background border border-border p-1 rounded-none">
+                            {['All', 'Paid', 'Processing', 'Pending'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => setStatusFilter(status)}
+                                    className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === status ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="relative w-full md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            <input
+                                type="text"
+                                placeholder="Search employee..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-none text-[10px] font-extrabold uppercase tracking-widest outline-none focus:border-primary transition-colors"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -76,7 +105,7 @@ export default function PayrollPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
-                            {staffPayments.map((staff) => (
+                            {filteredStaff.map((staff) => (
                                 <tr key={staff.id} className="hover:bg-surface-alt/50 transition-colors group">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -85,13 +114,25 @@ export default function PayrollPage() {
                                             </div>
                                             <div>
                                                 <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{staff.name}</p>
-                                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">{staff.role}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">{staff.role}</p>
+                                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-none uppercase ${staff.attendanceScore > 80 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                                                        {staff.attendanceScore}% ATT
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-text-secondary">{staff.salary}</td>
-                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">{staff.commission}</td>
-                                    <td className="px-6 py-4 text-sm font-bold text-rose-500">{staff.deductions}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-text-secondary">₹{staff.salary.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">₹{staff.commission.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-rose-500">
+                                        <div className="flex flex-col">
+                                            <span>₹{staff.totalDeductions.toLocaleString()}</span>
+                                            {staff.totalDeductions > staff.deductions && (
+                                                <span className="text-[8px] opacity-60 uppercase font-black">Incl. Attendance</span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4 text-left">
                                         <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${staff.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' :
                                             staff.status === 'Processing' ? 'bg-amber-500/10 text-amber-500' :
@@ -100,7 +141,7 @@ export default function PayrollPage() {
                                             {staff.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">{staff.net}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{(staff.salary + staff.commission - staff.totalDeductions).toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="p-2 hover:bg-background rounded-none text-text-muted hover:text-text transition-all">
                                             <MoreHorizontal className="w-4 h-4" />
@@ -108,6 +149,11 @@ export default function PayrollPage() {
                                     </td>
                                 </tr>
                             ))}
+                            {filteredStaff.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="px-6 py-8 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">No staff records found</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

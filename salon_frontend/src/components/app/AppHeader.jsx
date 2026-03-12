@@ -7,6 +7,8 @@ import logoLightMode from '/2-removebg-preview.png';
 import logoDarkMode from '/1-removebg-preview.png';
 import { useState, useEffect } from 'react';
 import { useWallet } from '../../contexts/WalletContext';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { MapPin } from 'lucide-react';
 
 const SALON_THOUGHTS = [
     "Your hair is your crown ✨",
@@ -23,6 +25,7 @@ export default function AppHeader() {
     const navigate = useNavigate();
     const location = useLocation();
     const { balance } = useWallet();
+    const { activeOutlet } = useBusiness();
 
     const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
     const [showThought, setShowThought] = useState(false);
@@ -41,68 +44,140 @@ export default function AppHeader() {
 
     return (
         <header style={{
+            height: '60px',
             position: location.pathname === '/app/shop' ? 'relative' : 'sticky',
             top: 0,
             zIndex: 1000,
             background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(20, 20, 20, 0.85)',
             backdropFilter: 'blur(16px)',
-            padding: '12px 16px',
+            padding: '0 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             maxWidth: '100%',
+            overflow: 'visible',
         }}>
-            {/* Logo/Brand */}
+            {/* Logo - fixed width, no flex */}
             <div
                 onClick={() => navigate('/app')}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    height: '100%'
                 }}
             >
                 <div style={{
-                    width: '38px',
-                    height: '38px',
+                    width: '100px',
+                    height: '100px',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden'
+                    justifyContent: 'flex-start',
+                    position: 'relative',
+                    zIndex: 2,
+                    overflow: 'visible',
+                    marginLeft: '-20px',
                 }}>
                     <img
                         src={isLight ? logoLightMode : logoDarkMode}
                         alt="Wapixo Logo"
-                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        style={{
+                            width: '140px',
+                            height: '100px',
+                            objectFit: 'contain',
+                            objectPosition: 'left center',
+                            filter: isLight ? 'none' : 'drop-shadow(0 0 8px rgba(255,255,255,0.1))'
+                        }}
                     />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', height: '24px', justifyContent: 'center', overflow: 'hidden' }}>
-                    <AnimatePresence mode="wait">
-                        <motion.span
-                            key={showThought ? currentThoughtIndex : 'greeting'}
-                            initial={{ y: 20, opacity: 0, rotateX: -90 }}
-                            animate={{ y: 0, opacity: 1, rotateX: 0 }}
-                            exit={{ y: -20, opacity: 0, rotateX: 90 }}
-                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                            style={{
-                                fontSize: showThought ? '14px' : '15px',
-                                fontWeight: showThought ? 600 : 800,
-                                fontStyle: showThought ? 'italic' : 'normal',
-                                fontFamily: showThought ? "'SF Pro Display', sans-serif" : "'SF Pro Text', sans-serif",
-                                color: showThought ? (isLight ? '#C8956C' : '#E6B98D') : (isLight ? '#000' : '#fff'),
-                                letterSpacing: showThought ? '0.02em' : '-0.01em',
+            </div>
+
+            {/* Middle - Greeting/Location Selector */}
+            <div style={{
+                flex: 1,
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                paddingLeft: '12px',
+                paddingRight: '4px',
+            }}>
+                <AnimatePresence mode="wait">
+                    {!showThought ? (
+                        <motion.div
+                            key="greeting-location"
+                            initial={{ y: 12, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -12, opacity: 0 }}
+                            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                            style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}
+                        >
+                            <span style={{
+                                fontSize: '13px',
+                                fontWeight: 800,
+                                color: isLight ? '#111' : '#fff',
                                 whiteSpace: 'nowrap',
-                                transformOrigin: 'center'
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                            }}>
+                                Hi, {customer?.name?.split(' ')[0] || 'Guest'} 👋
+                            </span>
+                            <motion.button
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => navigate('/app/discovery')}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    background: 'none',
+                                    border: 'none',
+                                    padding: 0,
+                                    color: '#C8956C',
+                                    cursor: 'pointer',
+                                    textAlign: 'left',
+                                    width: 'fit-content'
+                                }}
+                            >
+                                <MapPin size={10} strokeWidth={3} />
+                                <span style={{
+                                    fontSize: '10px',
+                                    fontWeight: 700,
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em',
+                                    maxWidth: '120px',
+                                    overflow: 'hidden',
+                                    whiteSpace: 'nowrap',
+                                    textOverflow: 'ellipsis'
+                                }}>
+                                    {activeOutlet?.name || 'Select Salon'}
+                                </span>
+                            </motion.button>
+                        </motion.div>
+                    ) : (
+                        <motion.span
+                            key={currentThoughtIndex}
+                            initial={{ y: 12, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -12, opacity: 0 }}
+                            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                            style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                fontStyle: 'italic',
+                                color: isLight ? '#C8956C' : '#E6B98D',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: 'block',
+                                width: '100%',
                             }}
                         >
-                            {!showThought ? (
-                                `Hi, ${customer?.name?.split(' ')[0] || 'Guest'}`
-                            ) : (
-                                SALON_THOUGHTS[currentThoughtIndex]
-                            )}
+                            {SALON_THOUGHTS[currentThoughtIndex]}
                         </motion.span>
-                    </AnimatePresence>
-                </div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Actions */}

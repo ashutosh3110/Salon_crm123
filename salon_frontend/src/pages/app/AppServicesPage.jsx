@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { MOCK_SERVICES, SERVICE_CATEGORIES } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const ServiceCard = ({ service, onBook, colors, isLight }) => {
     return (
@@ -70,9 +71,17 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
 export default function AppServicesPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
+    const { activeOutlet, activeOutletId } = useBusiness();
     const isLight = theme === 'light';
-    const [searchQuery, setSearchQuery] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All');
+    const categories = SERVICE_CATEGORIES;
+    const [searchParams] = useSearchParams();
+    const categoryParam = searchParams.get('category');
+
+    // Check if category exists in canonical list, else use as search
+    const isCanonical = categories.includes(categoryParam);
+
+    const [searchQuery, setSearchQuery] = useState(isCanonical ? '' : (categoryParam || ''));
+    const [activeCategory, setActiveCategory] = useState(isCanonical ? categoryParam : 'All');
     const [isFocused, setIsFocused] = useState(false);
 
     const colors = {
@@ -84,10 +93,15 @@ export default function AppServicesPage() {
         input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
     };
 
-    const categories = SERVICE_CATEGORIES;
-
     const filteredServices = useMemo(() => {
         let result = MOCK_SERVICES;
+
+        // Filter by Outlet if outletId is present on service
+        result = result.filter(s => {
+            if (!s.outletId) return true; // Available in all salons
+            return s.outletId === activeOutletId;
+        });
+
         if (activeCategory !== 'All') {
             result = result.filter(s => s.category === activeCategory);
         }
@@ -96,13 +110,13 @@ export default function AppServicesPage() {
             result = result.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
         }
         return result;
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory, searchQuery, activeOutletId]);
 
     const groupedServices = useMemo(() => {
         if (activeCategory !== 'All') return { [activeCategory]: filteredServices };
 
         const groups = {};
-        MOCK_SERVICES.forEach(s => {
+        filteredServices.forEach(s => {
             if (!groups[s.category]) groups[s.category] = [];
             groups[s.category].push(s);
         });
@@ -120,7 +134,7 @@ export default function AppServicesPage() {
     }, [filteredServices, activeCategory, searchQuery]);
 
     const handleBook = (id) => {
-        navigate(`/app/discovery?serviceId=${id}`);
+        navigate(`/app/book?serviceId=${id}`);
     };
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
@@ -129,7 +143,17 @@ export default function AppServicesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-40 px-4 pt-1 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                {/* Salon Info */}
+                <div className="flex items-center gap-2 mb-3 px-1">
+                    <div className="flex items-center justify-center">
+                        <ShoppingBag className="text-[#C8956C]" size={16} />
+                    </div>
+                    <div>
+                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Active Salon</p>
+                        <h2 className="text-sm font-black tracking-tight" style={{ color: colors.text }}>{activeOutlet?.name || 'Wapixo Salon'}</h2>
+                    </div>
+                </div>
 
 
                 {/* Search Bar */}

@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const STEPS = ['Service', 'Location', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -25,12 +26,13 @@ export default function AppBookingPage() {
 
     const preSelectedServiceId = searchParams.get('serviceId');
     const outletId = searchParams.get('outletId');
+    const { activeOutlet, outlets } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
-        return MOCK_OUTLETS.find(o => o._id === outletId) || null;
+        return outlets.find(o => o._id === outletId) || activeOutlet || null;
     });
 
-    const currentOutlet = selectedOutlet || MOCK_OUTLETS[0];
+    const currentOutlet = selectedOutlet;
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -43,6 +45,22 @@ export default function AppBookingPage() {
     const [serviceSearch, setServiceSearch] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [viewMonth, setViewMonth] = useState(new Date());
+    const [activeMembership, setActiveMembership] = useState(null);
+    const [couponCode, setCouponCode] = useState('');
+    const [isPromoApplied, setIsPromoApplied] = useState(false);
+    const [promoDiscount, setPromoDiscount] = useState(0);
+
+    // Initial load for membership
+    useEffect(() => {
+        const mem = localStorage.getItem('salon_active_membership');
+        if (mem) {
+            try {
+                setActiveMembership(JSON.parse(mem));
+            } catch (e) {
+                console.error("Failed to parse membership", e);
+            }
+        }
+    }, []);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -62,13 +80,13 @@ export default function AppBookingPage() {
                 setSelectedServices([svc]);
                 // If we also have an outlet selected, move to date/time
                 if (outletId) {
-                    const out = MOCK_OUTLETS.find(o => o._id === outletId);
+                    const out = outlets.find(o => o._id === outletId);
                     if (out) setSelectedOutlet(out);
-                    setStep(2);
+                    setStep(2); // Jump to Date & Time skip Location selection
                 }
             }
         }
-    }, [preSelectedServiceId, outletId]);
+    }, [preSelectedServiceId, outletId, outlets]);
 
     const toggleService = (svc) => {
         setSelectedServices(prev => {
@@ -85,6 +103,42 @@ export default function AppBookingPage() {
     const totalPrice = useMemo(() => {
         return selectedServices.reduce((sum, s) => sum + s.price, 0);
     }, [selectedServices]);
+
+    const membershipDiscount = useMemo(() => {
+        if (!activeMembership || !totalPrice) return 0;
+        // Search for a percentage benefit like "15% Off on all services"
+        const benefit = activeMembership.benefits?.find(b => b.toLowerCase().includes('off'));
+        if (benefit) {
+            const match = benefit.match(/\d+/);
+            if (match) {
+                const percent = parseInt(match[0]);
+                return Math.floor((totalPrice * percent) / 100);
+            }
+        }
+        return 0;
+    }, [activeMembership, totalPrice]);
+
+    const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount);
+
+    const applyPromo = () => {
+        if (!couponCode.trim()) return;
+        // Mock promo logic
+        const code = couponCode.toUpperCase();
+        if (code === 'SAVE20') {
+            setPromoDiscount(Math.floor(totalPrice * 0.2));
+            setIsPromoApplied(true);
+        } else if (code === 'WELCOMESALON') {
+            setPromoDiscount(200);
+            setIsPromoApplied(true);
+        } else if (code === 'REFER500') {
+            setPromoDiscount(500);
+            setIsPromoApplied(true);
+        } else {
+            alert("Invalid or expired promo code");
+            setPromoDiscount(0);
+            setIsPromoApplied(false);
+        }
+    };
 
     const availableSalons = useMemo(() => {
         if (!selectedServices.length) return MOCK_OUTLETS;
@@ -126,7 +180,10 @@ export default function AppBookingPage() {
             d.setDate(startDay.getDate() + i);
 
             const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+            // Fallback: If no working hours defined, assume open Mon-Sat 10:00-20:00
             const dayHours = currentOutlet.workingHours?.find(wh => wh.day === dayName);
+            const defaultOpen = dayName !== 'Sunday';
+
             const isCurrentMonth = d.getMonth() === month;
             const isPast = d < today;
 
@@ -136,7 +193,7 @@ export default function AppBookingPage() {
                 month: d.toLocaleDateString('en-IN', { month: 'short' }),
                 fullMonth: d.toLocaleDateString('en-IN', { month: 'long' }),
                 year: d.getFullYear(),
-                isOpen: (dayHours?.isOpen ?? false) && !isPast && isCurrentMonth,
+                isOpen: (dayHours ? dayHours.isOpen : defaultOpen) && !isPast && isCurrentMonth,
                 isToday: d.getTime() === today.getTime(),
                 isCurrentMonth,
             });
@@ -339,10 +396,12 @@ export default function AppBookingPage() {
                             <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
                                 Book <span className="text-[#C8956C]">Services</span>
                             </h2>
-                            <div className="flex items-center gap-1.5 opacity-60 mb-2">
-                                <MapPin size={10} className="text-[#C8956C]" />
-                                <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
-                            </div>
+                            {currentOutlet && (
+                                <div className="flex items-center gap-1.5 opacity-60 mb-2">
+                                    <MapPin size={10} className="text-[#C8956C]" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
+                                </div>
+                            )}
                         </div>
                         <div className="flex flex-col gap-4">
                             <div
@@ -431,6 +490,7 @@ export default function AppBookingPage() {
                     </motion.div>
                 )}
 
+
                 {/* STEP 1: Select Location */}
                 {step === 1 && (
                     <motion.div
@@ -443,58 +503,62 @@ export default function AppBookingPage() {
                     >
                         <div className="flex flex-col gap-0">
                             <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                Select <span className="text-[#C8956C]">Salon</span>
+                                Select <span className="text-[#C8956C]">Location</span>
                             </h2>
-                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mt-2" style={{ fontFamily: "'Poppins', sans-serif" }}>Nearest to you based on selected services</p>
+                            <p className="text-[10px] uppercase tracking-widest opacity-40 font-bold mt-1">Found {availableSalons.length} salons nearby</p>
                         </div>
 
-                        <div className="space-y-3">
-                            {availableSalons.map(salon => {
-                                const isSelected = selectedOutlet?._id === salon._id;
-                                return (
-                                    <motion.button
-                                        key={salon._id}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => setSelectedOutlet(salon)}
-                                        style={{
-                                            background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
-                                            borderColor: isSelected ? '#C8956C' : colors.border,
-                                            fontFamily: "'Poppins', sans-serif"
-                                        }}
-                                        className="w-full text-left p-4 rounded-2xl border flex gap-4 transition-all duration-300 shadow-sm relative overflow-hidden items-center"
-                                    >
-                                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0">
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-4">
+                            {availableSalons.map((salon, i) => (
+                                <motion.button
+                                    key={salon._id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        setSelectedOutlet(salon);
+                                        goTo(2);
+                                    }}
+                                    style={{
+                                        background: selectedOutlet?._id === salon._id ? 'rgba(200,149,108,0.08)' : colors.card,
+                                        borderColor: selectedOutlet?._id === salon._id ? '#C8956C' : colors.border,
+                                        fontFamily: "'Poppins', sans-serif"
+                                    }}
+                                    className="w-full text-left p-4 rounded-2xl border transition-all duration-300 shadow-sm relative overflow-hidden"
+                                >
+                                    <div className="flex gap-4">
+                                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
                                             <img src={salon.image} alt={salon.name} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold uppercase tracking-tight truncate line-clamp-1" style={{ color: colors.text }}>{salon.name}</h4>
-                                            <div className="flex items-center gap-1 opacity-60 mt-1">
-                                                <MapPin className="w-3 h-3 text-[#C8956C]" />
-                                                <span className="text-[10px] uppercase font-bold truncate line-clamp-1 break-all pr-2">{salon.address}</span>
+                                            <div className="flex justify-between items-start">
+                                                <h3 className="text-sm font-bold uppercase tracking-tight truncate" style={{ color: colors.text }}>{salon.name}</h3>
+                                                <div className="flex items-center gap-1 text-[#C8956C]">
+                                                    <Star size={10} fill="#C8956C" />
+                                                    <span className="text-[10px] font-black">{salon.rating}</span>
+                                                </div>
                                             </div>
-                                            <div className="text-[10px] mt-1.5 font-black uppercase text-[#C8956C] tracking-widest flex items-center gap-1.5">
-                                                <span>2.4 KM AWAY</span>
+                                            <p className="text-[10px] mt-1 opacity-60 leading-tight line-clamp-2" style={{ color: colors.textMuted }}>{salon.address}</p>
+                                            <div className="flex items-center gap-3 mt-2">
+                                                <span className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1" style={{ color: colors.textMuted }}>
+                                                    <MapPin size={10} className="text-[#C8956C]" /> {salon.distance}
+                                                </span>
+                                                <div className="flex gap-1">
+                                                    {salon.categories?.slice(0, 2).map(cat => (
+                                                        <span key={cat} className="text-[8px] px-1.5 py-0.5 rounded-full bg-black/5 dark:bg-white/5 font-bold uppercase tracking-widest">{cat}</span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
-                                        {isSelected && (
-                                            <div className="bg-[#C8956C] rounded-full p-1 shrink-0">
-                                                <Check size={12} color="white" strokeWidth={3} />
-                                            </div>
-                                        )}
-                                    </motion.button>
-                                );
-                            })}
-                        </div>
-
-                        <div className="pt-4">
-                            <button
-                                onClick={() => goTo(2)}
-                                disabled={!selectedOutlet}
-                                style={{ fontFamily: "'Poppins', sans-serif" }}
-                                className="w-full py-4 rounded-xl bg-[#C8956C] text-white text-[11px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
-                            >
-                                Continue <ArrowRight className="w-4 h-4" />
-                            </button>
+                                    </div>
+                                    {selectedOutlet?._id === salon._id && (
+                                        <div className="absolute top-2 right-2 bg-[#C8956C] rounded-full p-1 scale-75">
+                                            <Check size={12} color="white" strokeWidth={3} />
+                                        </div>
+                                    )}
+                                </motion.button>
+                            ))}
                         </div>
                     </motion.div>
                 )}
@@ -502,7 +566,7 @@ export default function AppBookingPage() {
                 {/* STEP 2: Date & Time */}
                 {step === 2 && (
                     <motion.div
-                        key="step-1"
+                        key="step-2"
                         custom={direction}
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
@@ -526,7 +590,7 @@ export default function AppBookingPage() {
                                     </h2>
                                     <div className="flex items-center gap-1.5 opacity-60 mb-2">
                                         <MapPin size={10} className="text-[#C8956C]" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
+                                        <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet?.name || 'Select Location'}</span>
                                     </div>
                                 </div>
                                 <div className="text-[10px] font-bold uppercase tracking-widest opacity-60" style={{ fontFamily: "'Poppins', sans-serif" }}>
@@ -731,7 +795,7 @@ export default function AppBookingPage() {
                 {/* STEP 4: Confirm */}
                 {step === 4 && (
                     <motion.div
-                        key="step-3"
+                        key="step-4"
                         custom={direction}
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
@@ -785,13 +849,76 @@ export default function AppBookingPage() {
                                 </div>
                                 <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest">
                                     <span style={{ color: colors.textMuted }}>Salon</span>
-                                    <span style={{ color: colors.text }}>{currentOutlet.name}</span>
+                                    <span style={{ color: colors.text }}>{currentOutlet?.name || 'Not selected'}</span>
                                 </div>
                             </div>
 
-                            <div className="flex justify-between text-2xl pt-6 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tighter">
-                                <span style={{ color: colors.textMuted }}>Total</span>
-                                <span className="text-[#C8956C]">₹{totalPrice.toLocaleString()}</span>
+                            {activeMembership && membershipDiscount > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    className="p-3 rounded-2xl flex items-center gap-3 border border-orange-200"
+                                    style={{ background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(200, 149, 108, 0.05) 100%)' }}
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm">
+                                        <Crown size={14} color="#C8956C" fill="#C8956C" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{activeMembership.name} Benefit</p>
+                                        <p className="text-[11px] font-bold" style={{ color: colors.text }}>Additional ₹{membershipDiscount} saved</p>
+                                    </div>
+                                    <Sparkles size={14} color="#C8956C" className="animate-pulse" />
+                                </motion.div>
+                            )}
+
+                            {/* Coupon Code Section */}
+                            <div className="pt-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-2 opacity-50" style={{ color: colors.text }}>Promo Code</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="ENTER CODE"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value)}
+                                        disabled={isPromoApplied}
+                                        className="flex-1 bg-black/5 dark:bg-white/5 rounded-xl px-4 py-2.5 text-[11px] font-bold tracking-widest outline-none border border-transparent focus:border-[#C8956C]/30 transition-all"
+                                        style={{ color: colors.text }}
+                                    />
+                                    <button
+                                        onClick={isPromoApplied ? () => { setIsPromoApplied(false); setPromoDiscount(0); setCouponCode(''); } : applyPromo}
+                                        className={`px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isPromoApplied ? 'bg-red-500/10 text-red-500' : 'bg-[#C8956C] text-white'}`}
+                                    >
+                                        {isPromoApplied ? 'Remove' : 'Apply'}
+                                    </button>
+                                </div>
+                                {isPromoApplied && (
+                                    <p className="text-[10px] font-bold text-green-500 mt-2 flex items-center gap-1">
+                                        <Sparkles size={10} /> Promo code applied successfully!
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tighter">
+                                <div className="flex justify-between items-center opacity-40 text-xs">
+                                    <span style={{ color: colors.text }}>Subtotal</span>
+                                    <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
+                                </div>
+                                {membershipDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-[#C8956C]">Membership Discount</span>
+                                        <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                {promoDiscount > 0 && (
+                                    <div className="flex justify-between items-center text-xs">
+                                        <span className="text-green-500">Promo Discount</span>
+                                        <span className="text-green-500">- ₹{promoDiscount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between text-2xl pt-2">
+                                    <span style={{ color: colors.textMuted }}>Total</span>
+                                    <span className="text-[#C8956C]">₹{finalPrice.toLocaleString()}</span>
+                                </div>
                             </div>
                         </div>
 

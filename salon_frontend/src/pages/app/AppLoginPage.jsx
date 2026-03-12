@@ -99,7 +99,7 @@ export default function AppLoginPage() {
                 if (c.gender) {
                     setGlobalGender(c.gender === 'male' ? 'men' : 'women');
                 }
-                navigate('/app', { state: { justLoggedIn: true } });
+                navigate('/app/salon-selection', { replace: true });
             }
         } catch (e) {
             setError(e.message || 'Invalid OTP');
@@ -114,7 +114,7 @@ export default function AppLoginPage() {
         try {
             await completeProfile({ name: name.trim(), gender: selectedGender });
             if (selectedGender) setGlobalGender(selectedGender === 'male' ? 'men' : 'women');
-            navigate('/app', { state: { justLoggedIn: true } });
+            navigate('/app/salon-selection', { replace: true });
         } catch (e) { setError(e.message || 'Something went wrong'); }
         finally { setLoading(false); }
     };

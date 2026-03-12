@@ -54,6 +54,12 @@ export function BusinessProvider({ children }) {
         return saved ? JSON.parse(saved) : businessMockData.segments;
     });
 
+    const [activeOutletId, setActiveOutletId] = useState(() => {
+        return localStorage.getItem('active_outlet_id') || null;
+    });
+
+    const activeOutlet = outlets.find(o => o._id === activeOutletId) || null;
+
     // Persist to localStorage
     useEffect(() => { localStorage.setItem('mock_outlets', JSON.stringify(outlets)); }, [outlets]);
     useEffect(() => { localStorage.setItem('mock_staff', JSON.stringify(staff)); }, [staff]);
@@ -64,6 +70,10 @@ export function BusinessProvider({ children }) {
     useEffect(() => { localStorage.setItem('mock_bookings', JSON.stringify(bookings)); }, [bookings]);
     useEffect(() => { localStorage.setItem('mock_feedbacks', JSON.stringify(feedbacks)); }, [feedbacks]);
     useEffect(() => { localStorage.setItem('mock_segments', JSON.stringify(segments)); }, [segments]);
+    useEffect(() => {
+        if (activeOutletId) localStorage.setItem('active_outlet_id', activeOutletId);
+        else localStorage.removeItem('active_outlet_id');
+    }, [activeOutletId]);
 
     // Actions
     const addOutlet = (outlet) => setOutlets(prev => [{ ...outlet, _id: `out-${Date.now()}`, staffCount: 0 }, ...prev]);
@@ -138,7 +148,8 @@ export function BusinessProvider({ children }) {
         feedbacks, addFeedback, archiveFeedback, deleteFeedback,
         suppliers, addSupplier, updateSupplier, deleteSupplier,
         segments, addSegment, deleteSegment,
-        bookings, addBooking, updateBookingStatus
+        bookings, addBooking, updateBookingStatus,
+        activeOutletId, setActiveOutletId, activeOutlet
     };
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;

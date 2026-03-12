@@ -62,30 +62,47 @@ const AppMembershipPage = () => {
             minHeight: '100vh',
             background: colors.bg,
             color: colors.text,
-            paddingTop: '40px',
+            paddingTop: '20px',
             paddingBottom: '100px',
             fontFamily: "'Inter', sans-serif"
         }}>
 
-            {/* ── HERO TEXT ── */}
+
+
+            {/* ── HEADER ── */}
+            <div className="sticky top-0 z-40 px-4 pt-4 pb-4 flex items-center gap-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => navigate(-1)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: colors.text,
+                        padding: 0
+                    }}
+                >
+                    <ArrowLeft size={24} />
+                </motion.button>
+                <div>
+                    <h2 style={{ fontSize: '20px', fontWeight: 900, margin: 0, lineHeight: 1.2 }}>Membership Hub</h2>
+                    <p style={{ fontSize: '10px', color: colors.accent, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Experience the Royal Treatment</p>
+                </div>
+            </div>
+
+            {/* ── HERO TEXT (Hidden/Removed older redundant section) ── */}
             <motion.div
                 {...fadeUp}
-                style={{ padding: '0 16px 32px', textAlign: 'center' }}
+                style={{ padding: '0 16px 24px' }}
             >
-                <div style={{
-                    display: 'inline-flex', padding: '6px 12px', borderRadius: '20px',
-                    background: 'rgba(200,149,108,0.1)', border: '1px solid rgba(200,149,108,0.2)',
-                    marginBottom: '16px'
-                }}>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Membership Hub</span>
-                </div>
-                <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 10px', lineHeight: 1.2 }}>Experience the <br /><span style={{ color: colors.accent }}>Royal Treatment</span></h2>
-                <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0, padding: '0 20px' }}>Join our elite community and enjoy curated luxury benefits on every visit.</p>
+                <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Join our elite community and enjoy curated luxury benefits on every visit.</p>
             </motion.div>
 
             {/* ── PLANS LIST ── */}
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {MEMBERSHIP_TIERS.map((plan, index) => (
+                {membershipPlans.map((plan, index) => (
                     <motion.div
                         key={plan.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -126,14 +143,14 @@ const AppMembershipPage = () => {
                                 width: 44, height: 44,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}>
-                                {plan.icon}
+                                {getIcon(plan.icon)}
                             </div>
                             <h3 style={{ fontSize: '20px', fontWeight: 900, margin: 0 }}>{plan.name}</h3>
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
-                            <span style={{ fontSize: '32px', fontWeight: 900 }}>{plan.price}</span>
-                            <span style={{ fontSize: '14px', opacity: 0.7 }}>{plan.period}</span>
+                            <span style={{ fontSize: '32px', fontWeight: 900 }}>₹{plan.price}</span>
+                            <span style={{ fontSize: '14px', opacity: 0.7 }}> / month</span>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>

@@ -5,6 +5,7 @@ import {
     Search, Filter, Download, Calculator, CheckCircle2, Clock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useFinance } from '../../contexts/FinanceContext';
 import {
     BarChart,
     Bar,
@@ -37,19 +38,19 @@ const expenseSplitData = [
 ];
 
 export default function AccountantDashboard() {
+    const { totalRevenue, totalExpenses, netProfit, revenue, expenses } = useFinance();
+
     const stats = [
-        { label: 'Net Revenue', value: '₹14,25,000', change: '+12.5%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-        { label: 'Operational Expenses', value: '₹4,85,000', change: '+2.4%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+12.5%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+        { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+2.4%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
         { label: 'Account Payables', value: '₹1,12,000', change: '-5.2%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        { label: 'Net Profit', value: '₹8,28,000', change: '+18.1%', isPositive: true, icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
+        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+18.1%', isPositive: true, icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
     ];
 
     const recentTransactions = [
-        { id: 'TXN001', desc: 'Service Revenue - Outlet 1', type: 'Credit', amount: '₹4,500', date: 'Today, 2:30 PM', status: 'Completed' },
-        { id: 'TXN002', desc: 'Supplier Payout - Beauty Hub', type: 'Debit', amount: '₹12,400', date: 'Today, 1:15 PM', status: 'Approved' },
-        { id: 'TXN003', desc: 'Rent Settlement - Feb 24', type: 'Debit', amount: '₹85,000', date: 'Yesterday', status: 'Processing' },
-        { id: 'TXN004', desc: 'Membership Gold - Amit Singh', type: 'Credit', amount: '₹15,000', date: 'Yesterday', status: 'Completed' },
-    ];
+        ...revenue.map(r => ({ id: `REV-${r.id}`, desc: r.source, type: 'Credit', amount: `₹${r.amount.toLocaleString()}`, date: r.date, status: r.status })),
+        ...expenses.map(e => ({ id: `EXP-${e.id}`, desc: e.vendor, type: 'Debit', amount: `₹${e.amount.toLocaleString()}`, date: e.date, status: e.status }))
+    ].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
 
     return (
         <div className="space-y-6 text-left font-black">
@@ -180,7 +181,7 @@ export default function AccountantDashboard() {
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                            <p className="text-2xl font-black text-text">₹4.8L</p>
+                            <p className="text-xl font-black text-text">₹{(totalExpenses / 100000).toFixed(1)}L</p>
                             <p className="text-[10px] text-text-muted font-bold tracking-widest uppercase">Total Cost</p>
                         </div>
                     </div>

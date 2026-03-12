@@ -8,12 +8,13 @@ import {
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
 } from 'lucide-react';
 import {
-    MOCK_SERVICES, MOCK_PRODUCTS, MOCK_CLIENTS,
     MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { useFinance } from '../../contexts/FinanceContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import {
     Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Font
@@ -134,7 +135,9 @@ const InvoicePDF = ({ invoice, role }) => (
 
 export default function POSBillingPage() {
     const { user } = useAuth();
-    const { addSaleRecord } = useInventory();
+    const { addSaleRecord, products } = useInventory();
+    const { services, customers: businessCustomers, addCustomer: addBusinessCustomer } = useBusiness();
+    const { addRevenue } = useFinance();
     const location = useLocation();
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
@@ -243,7 +246,7 @@ export default function POSBillingPage() {
                 (decodedText) => {
                     // Barcode successfully scanned!
                     closeCameraScanner();
-                    const product = MOCK_PRODUCTS.find(p => p.barcode === decodedText || p.sku === decodedText);
+                    const product = products.find(p => p.barcode === decodedText || p.sku === decodedText);
                     if (product) {
                         addToCart(product, 'product');
                     } else {
@@ -340,7 +343,7 @@ export default function POSBillingPage() {
     useEffect(() => {
         if (!searchItem || searchItem.length < 5) return; // Barcodes are usually long
 
-        const product = MOCK_PRODUCTS.find(p => p.barcode === searchItem);
+        const product = products.find(p => p.barcode === searchItem);
         if (product) {
             addToCart(product, 'product');
             setSearchItem('');
@@ -348,7 +351,7 @@ export default function POSBillingPage() {
         }
 
         // Optional: Check SKU too if it's an exact match
-        const productBySku = MOCK_PRODUCTS.find(p => p.sku === searchItem);
+        const productBySku = products.find(p => p.sku === searchItem);
         if (productBySku) {
             addToCart(productBySku, 'product');
             setSearchItem('');
@@ -357,28 +360,28 @@ export default function POSBillingPage() {
 
     // ─── Filters & Search ────────────────────────────────────
     const categories = useMemo(() => {
-        const items = activeTab === 'services' ? MOCK_SERVICES : MOCK_PRODUCTS;
+        const items = activeTab === 'services' ? services : products;
         return ['All', ...new Set(items.map(i => i.category))];
-    }, [activeTab]);
+    }, [activeTab, services, products]);
 
     const filteredItems = useMemo(() => {
-        const items = activeTab === 'services' ? MOCK_SERVICES : MOCK_PRODUCTS;
-        return items.filter(item => {
+        const itemsList = activeTab === 'services' ? services : products;
+        return itemsList.filter(item => {
             const matchSearch = item.name.toLowerCase().includes(searchItem.toLowerCase()) ||
                 (item.sku && item.sku.toLowerCase().includes(searchItem.toLowerCase()));
             const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
             return matchSearch && matchCat;
         });
-    }, [activeTab, searchItem, selectedCategory]);
+    }, [activeTab, searchItem, selectedCategory, services, products]);
 
     const filteredClients = useMemo(() => {
-        if (!searchClient) return MOCK_CLIENTS.slice(0, 5);
+        if (!searchClient) return businessCustomers.slice(0, 5);
         const q = searchClient.toLowerCase();
-        return MOCK_CLIENTS.filter(c =>
+        return businessCustomers.filter(c =>
             c.name.toLowerCase().includes(q) ||
             (c.phone && c.phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')))
         );
-    }, [searchClient]);
+    }, [searchClient, businessCustomers]);
 
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {
@@ -533,7 +536,7 @@ export default function POSBillingPage() {
                 .filter(item => !item.isPackageRedemption)
                 .map(item => {
                     const isProduct = item.type === 'product';
-                    const posProduct = MOCK_PRODUCTS.find(p => p._id === item.itemId || p._id === item._id);
+                    const posProduct = products.find(p => p._id === item.itemId || p._id === item._id);
                     if (!posProduct) return null;
                     return {
                         invoiceId: invoiceNum,
@@ -552,6 +555,17 @@ export default function POSBillingPage() {
             if (saleEntries.length > 0) {
                 addSaleRecord(saleEntries);
             }
+
+            // ── Phase 4: Record Revenue into Accountant Finance Module ──
+            addRevenue({
+                date: paymentDate, // Machine readable date
+                source: `POS Sale: ${invoiceData.number} (${selectedClient?.name || 'Walk-in'})`,
+                type: cart.some(item => item.type === 'service') ? 'Service Sales' : 'Product Sales',
+                amount: totals.currentBillTotal,
+                tax: totals.tax,
+                method: payments[0]?.method?.toUpperCase() || 'CASH',
+                status: 'Completed'
+            });
 
             setCheckingOut(false);
         }, 1200);
@@ -584,6 +598,7 @@ export default function POSBillingPage() {
             history: []
         };
 
+        addBusinessCustomer(newClient);
         setSelectedClient(newClient);
         setShowNewClient(false);
         setNewClientForm({ name: '', phone: '', email: '' });

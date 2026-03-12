@@ -18,7 +18,8 @@
             "duration": 45,
             "category": "Hair",
             "status": "active",
-            "image": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400&q=80"
+            "image": "https://images.unsplash.com/photo-1560869713-7d0a29430803?w=400&q=80",
+            "outletId": "mock-1"
         },
         {
             "_id": "srv-002",
@@ -28,7 +29,8 @@
             "duration": 120,
             "category": "Hair",
             "status": "active",
-            "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80"
+            "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80",
+            "outletId": "mock-2"
         },
         {
             "_id": "srv-003",
@@ -604,6 +606,7 @@
             "description": "Deep nourishing shampoo for dry and damaged hair.",
             "price": 850,
             "image": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&h=400&fit=crop",
+            "outletId": "mock-1",
             "category": "Hair Care",
             "brand": "L'Oréal",
             "rating": 4.8,
@@ -615,6 +618,7 @@
             "description": "Premium cold-pressed argan oil for hair and skin.",
             "price": 1200,
             "image": "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=400&h=400&fit=crop",
+            "outletId": "mock-2",
             "category": "Hair Care",
             "brand": "Pure Organics",
             "rating": 4.9,

@@ -1,14 +1,76 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import * as XLSX from 'xlsx';
 
 export default function ReconciliationPage() {
-    const reconItems = [
+    const [reconItems, setReconItems] = useState([
         { id: 'RC-101', date: 'Feb 23, 2024', desc: 'UPI Payment Batch - Styling Hub', systemAmt: '₹12,450', bankAmt: '₹12,450', status: 'Matched', diff: '₹0' },
         { id: 'RC-102', date: 'Feb 22, 2024', desc: 'Card Settlement - Merchant 821', systemAmt: '₹45,200', bankAmt: '₹44,800', status: 'Discrepancy', diff: '-₹400' },
         { id: 'RC-103', date: 'Feb 21, 2024', desc: 'Cash Deposit - Main Outlet', systemAmt: '₹15,000', bankAmt: '₹15,000', status: 'Matched', diff: '₹0' },
         { id: 'RC-104', date: 'Feb 20, 2024', desc: 'Supplier Payout - Beauty Hub', systemAmt: '-₹12,450', bankAmt: '₹0', status: 'Pending', diff: '₹12,450' },
-    ];
+    ]);
+
+    const [isMatching, setIsMatching] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const handleImportClick = () => {
+        if (fileInputRef.current) fileInputRef.current.click();
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+
+                if (data && data.length > 0) {
+                    const imported = data.map((row, index) => {
+                        const sAmt = String(row.systemAmt || row.Amount || '0');
+                        const bAmt = String(row.bankAmt || '0');
+                        return {
+                            id: row.id || `RC-IMP-${Date.now()}-${index}`,
+                            date: row.date || row.Date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                            desc: row.desc || row.Description || 'Imported Bank Record',
+                            systemAmt: sAmt.startsWith('₹') ? sAmt : `₹${sAmt}`,
+                            bankAmt: bAmt.startsWith('₹') ? bAmt : `₹${bAmt}`,
+                            status: row.status || 'Pending',
+                            diff: row.diff || '₹0'
+                        };
+                    });
+                    setReconItems(prev => [...imported, ...prev]);
+                    alert(`${imported.length} statement records imported successfully!`);
+                }
+            } catch (err) {
+                console.error("Error reading file:", err);
+                alert("Failed to parse the file. Please ensure it's a valid Excel/CSV.");
+            }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = null;
+    };
+
+    const handleAutoMatch = () => {
+        setIsMatching(true);
+        // Simulate API call and logic taking place
+        setTimeout(() => {
+            setReconItems(prev => prev.map(item => {
+                if (item.status === 'Pending') {
+                    // simulate finding a match and resolving the discrepancy
+                    return { ...item, bankAmt: item.systemAmt, diff: '₹0', status: 'Matched' };
+                }
+                return item;
+            }));
+            setIsMatching(false);
+        }, 1500);
+    };
 
     return (
         <div className="space-y-6 text-left">
@@ -19,11 +81,19 @@ export default function ReconciliationPage() {
                     <p className="text-sm text-text-muted font-medium">Match internal records with bank statements and merchant settlements</p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all transition-colors duration-300">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
+                        className="hidden"
+                    />
+                    <button onClick={handleImportClick} className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all transition-colors duration-300">
                         <ArrowLeftRight className="w-4 h-4" /> Import Statement
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all">
-                        <RefreshCcw className="w-4 h-4" /> Run Auto-Match
+                    <button disabled={isMatching} onClick={handleAutoMatch} className={`flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 transition-all ${isMatching ? 'opacity-80 cursor-wait' : 'hover:scale-105 active:scale-95'}`}>
+                        <RefreshCcw className={`w-4 h-4 ${isMatching ? 'animate-spin' : ''}`} />
+                        {isMatching ? 'Matching...' : 'Run Auto-Match'}
                     </button>
                 </div>
             </div>

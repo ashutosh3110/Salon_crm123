@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -7,6 +7,7 @@ import {
     Award, Camera, MessageSquare, Info, ArrowRight
 } from 'lucide-react';
 import { MOCK_OUTLETS, MOCK_SERVICES } from '../../data/appMockData';
+import homeData from '../../data/appHomeData.json';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 
@@ -27,32 +28,42 @@ export default function SalonProfilePage() {
     const [isWritingReview, setIsWritingReview] = useState(false);
     const [reviewRating, setReviewRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
+    const [reviewImages, setReviewImages] = useState([]);
     const [reviewsData, setReviewsData] = useState([
-        { id: 1, name: 'Phoebe Buffay', time: '2 days ago', rating: 5, text: "Absolutely loved the experience! The staff was very professional and the ambiance was perfect." },
-        { id: 2, name: 'Rachel Green', time: '1 week ago', rating: 4, text: "Great service, but had to wait 10 mins despite my appointment." }
+        { id: 1, name: 'Phoebe Buffay', time: '2 days ago', rating: 5, text: "Absolutely loved the experience! The staff was very professional and the ambiance was perfect.", images: ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80'] },
+        { id: 2, name: 'Rachel Green', time: '1 week ago', rating: 4, text: "Great service, but had to wait 10 mins despite my appointment.", images: ['https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500&q=80'] }
     ]);
+    const fileInputRef = useRef(null);
+
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        const newImages = files.map(file => URL.createObjectURL(file));
+        setReviewImages(prev => [...prev, ...newImages]);
+    };
 
     const handleSubmitReview = () => {
         if (reviewRating === 0 || reviewText.trim() === '') return;
-        setReviewsData([{ id: Date.now(), name: 'You', time: 'Just now', rating: reviewRating, text: reviewText }, ...reviewsData]);
+        setReviewsData([{ id: Date.now(), name: 'You', time: 'Just now', rating: reviewRating, text: reviewText, images: reviewImages }, ...reviewsData]);
         setReviewRating(0);
         setReviewText('');
+        setReviewImages([]);
         setIsWritingReview(false);
     };
 
-    const TABS = ['Services', 'Wall', 'Reviews', 'About'];
+    const TABS = ['Services', 'Lookbook', 'Reviews & Photos', 'About'];
 
     const handleShare = async () => {
         try {
+            const shareText = `Check out ${outlet.name}! Use my code REFER500 to get ₹200 off your first visit.`;
             if (navigator.share) {
                 await navigator.share({
                     title: outlet.name,
-                    text: `Check out ${outlet.name} and book an appointment!`,
+                    text: shareText,
                     url: window.location.href,
                 });
             } else {
-                await navigator.clipboard.writeText(window.location.href);
-                alert("Link copied to clipboard!");
+                await navigator.clipboard.writeText(`${shareText} ${window.location.href}`);
+                alert("Referral link copied to clipboard!");
             }
         } catch (error) {
             console.log("Error sharing:", error);
@@ -325,33 +336,58 @@ export default function SalonProfilePage() {
                                     </motion.button>
                                 </div>
                             ))}
-                            <button style={{
-                                background: 'none',
-                                border: 'none',
-                                color: colors.accent,
-                                fontSize: '14px',
-                                fontWeight: 800,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                margin: '8px auto'
-                            }}>
+                            <button
+                                onClick={() => navigate(`/app/book?outletId=${id}`)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: colors.accent,
+                                    fontSize: '14px',
+                                    fontWeight: 800,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    margin: '8px auto',
+                                    cursor: 'pointer'
+                                }}
+                            >
                                 View Full Menu <ArrowRight size={16} />
                             </button>
                         </motion.div>
                     )}
 
-                    {activeTab === 'Wall' && (
-                        <motion.div key="wall" {...fadeUp} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                            {[1, 2, 3, 4, 5, 6].map(i => (
-                                <div key={i} style={{ height: '180px', borderRadius: '16px', overflow: 'hidden', background: colors.border }}>
-                                    <img src={`https://images.unsplash.com/photo-${1560066980 + i}?w=400&q=80`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {activeTab === 'Lookbook' && (
+                        <motion.div key="lookbook" {...fadeUp} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Stylist Lookbook</h3>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <span style={{ fontSize: '11px', fontWeight: 800, color: colors.accent, padding: '4px 12px', background: `${colors.accent}15`, borderRadius: '8px' }}>Trending</span>
+                                    <span style={{ fontSize: '11px', fontWeight: 600, color: colors.textMuted, padding: '4px 12px', borderRadius: '8px' }}>Classics</span>
                                 </div>
-                            ))}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                                {(homeData.LOOKBOOK || []).map((item, i) => (
+                                    <motion.div
+                                        key={i}
+                                        whileHover={{ scale: 1.02 }}
+                                        style={{ position: 'relative', height: '220px', borderRadius: '20px', overflow: 'hidden', background: colors.border }}
+                                    >
+                                        <img
+                                            src={item.url}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            alt={item.title}
+                                        />
+                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: '#FFF' }}>
+                                            <p style={{ fontSize: '11px', fontWeight: 800, margin: 0 }}>{item.title}</p>
+                                            <p style={{ fontSize: '9px', opacity: 0.8, margin: 0 }}>by {item.tag} Master</p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
-                    {activeTab === 'Reviews' && (
+                    {activeTab === 'Reviews & Photos' && (
                         <motion.div key="reviews" {...fadeUp}>
                             <div style={{ background: `${colors.accent}08`, padding: '24px', borderRadius: '24px', textAlign: 'center', marginBottom: '24px' }}>
                                 <h4 style={{ fontSize: '32px', fontWeight: 900, margin: '0 0 4px' }}>{outlet.rating}</h4>
@@ -411,10 +447,44 @@ export default function SalonProfilePage() {
                                             fontFamily: 'inherit'
                                         }}
                                     />
+                                    <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto' }} className="no-scrollbar">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => fileInputRef.current.click()}
+                                            style={{
+                                                width: '60px', height: '60px', borderRadius: '12px', border: `1px dashed ${colors.accent}`,
+                                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                                gap: '4px', background: 'none', color: colors.accent, flexShrink: 0, cursor: 'pointer'
+                                            }}
+                                        >
+                                            <Camera size={18} />
+                                            <span style={{ fontSize: '9px', fontWeight: 800 }}>Add</span>
+                                        </motion.button>
+                                        {reviewImages.map((imgUrl, index) => (
+                                            <div key={index} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+                                                <img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <button
+                                                    onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== index))}
+                                                    style={{ position: 'absolute', top: '2px', right: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: '#FFF', border: 'none', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer' }}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button
-                                            onClick={() => { setIsWritingReview(false); setReviewRating(0); setReviewText(''); }}
-                                            style={{ flex: 1, padding: '14px', background: colors.background, color: colors.text, borderRadius: '12px', fontSize: '13px', fontWeight: 800, border: `1px solid ${colors.border}` }}
+                                            onClick={() => { setIsWritingReview(false); setReviewRating(0); setReviewText(''); setReviewImages([]); }}
+                                            style={{ flex: 1, padding: '14px', background: colors.background, color: colors.text, borderRadius: '12px', fontSize: '13px', fontWeight: 800, border: `1px solid ${colors.border}`, cursor: 'pointer' }}
                                         >
                                             Cancel
                                         </button>
@@ -430,17 +500,29 @@ export default function SalonProfilePage() {
                             )}
 
                             {reviewsData.map(review => (
-                                <div key={review.id} style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: `1px solid ${colors.border}` }}>
+                                <div key={review.id} style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: `1px solid ${colors.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                        <h5 style={{ fontWeight: 800, margin: 0 }}>{review.name}</h5>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '12px', fontWeight: 800 }}>
+                                                {review.name[0]}
+                                            </div>
+                                            <h5 style={{ fontWeight: 800, margin: 0 }}>{review.name}</h5>
+                                        </div>
                                         <span style={{ fontSize: '11px', color: colors.textMuted }}>{review.time}</span>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '2px', marginBottom: '8px' }}>
+                                    <div style={{ display: 'flex', gap: '2px', marginBottom: '10px' }}>
                                         {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={s <= review.rating ? colors.accent : 'none'} color={colors.accent} />)}
                                     </div>
-                                    <p style={{ fontSize: '14px', color: colors.textMuted, margin: 0, fontStyle: 'italic' }}>
+                                    <p style={{ fontSize: '14px', color: colors.text, margin: '0 0 12px', lineHeight: 1.5 }}>
                                         "{review.text}"
                                     </p>
+                                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }} className="no-scrollbar">
+                                        {(homeData.LOOKBOOK || []).slice(0, 2).map((item, idx) => (
+                                            <div key={idx} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+                                                <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Review" />
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             ))}
                         </motion.div>

@@ -6,9 +6,9 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
     const [hoveredOutlet, setHoveredOutlet] = useState(null);
 
     return (
-        <div style={{ 
-            height: 'calc(100svh - 220px)', 
-            width: '100%', 
+        <div style={{
+            height: 'calc(100svh - 220px)',
+            width: '100%',
             position: 'relative',
             background: isLight ? '#f0f0f0' : '#111',
             borderRadius: '24px',
@@ -20,7 +20,7 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
             <div style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundImage: isLight 
+                backgroundImage: isLight
                     ? `url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/77.6245,12.9352,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`
                     : `url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/77.6245,12.9352,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`,
                 backgroundSize: 'cover',
@@ -40,8 +40,9 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
             {/* ── MARKERS ── */}
             {outlets.map((outlet, index) => {
+                if (!outlet.location) return null;
+
                 // Optimized mock positions for 10 markers
-                // Using smaller multipliers and ensuring they stay within 10-90% range
                 const left = 50 + (outlet.location.lng - 77.6245) * 400;
                 const top = 50 - (outlet.location.lat - 12.9352) * 600;
 
@@ -132,10 +133,10 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                                     }}
                                 >
                                     {outlet.name.split('—')[1] || outlet.name}
-                                    <div style={{ 
-                                        position: 'absolute', 
-                                        top: '100%', 
-                                        left: '50%', 
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        left: '50%',
                                         marginLeft: '-4px',
                                         border: '4px solid transparent',
                                         borderTopColor: isLight ? '#FFF' : '#333'
@@ -194,19 +195,19 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                         }}
                     >
                         {/* Drawer Handle */}
-                        <div style={{ 
-                            width: '40px', 
-                            height: '4px', 
-                            background: colors.border, 
-                            borderRadius: '2px', 
-                            margin: '-10px auto 16px' 
+                        <div style={{
+                            width: '40px',
+                            height: '4px',
+                            background: colors.border,
+                            borderRadius: '2px',
+                            margin: '-10px auto 16px'
                         }} />
 
                         <div className="flex gap-4">
-                            <div style={{ 
-                                width: '80px', 
-                                height: '80px', 
-                                borderRadius: '20px', 
+                            <div style={{
+                                width: '80px',
+                                height: '80px',
+                                borderRadius: '20px',
                                 overflow: 'hidden',
                                 flexShrink: 0
                             }}>
@@ -221,7 +222,7 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                                         <span style={{ fontSize: '10px', fontWeight: 900, color: colors.accent }}>{selectedOutlet.rating}</span>
                                     </div>
                                 </div>
-                                
+
                                 <p style={{ fontSize: '11px', color: colors.textMuted, margin: '4px 0 12px' }}>{selectedOutlet.address}</p>
 
                                 <div className="flex gap-2">

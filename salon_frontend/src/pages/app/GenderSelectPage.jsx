@@ -15,7 +15,7 @@ export default function GenderSelectPage() {
 
     const pick = (g) => {
         setGender(g);
-        navigate('/app', { replace: true });
+        navigate('/app/salon-selection', { replace: true });
     };
 
     const colors = {
@@ -106,7 +106,7 @@ export default function GenderSelectPage() {
                         <div className="flex items-end justify-between">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 mb-1">Curation for</p>
-                                <h2 className="text-4xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>Ladiess</h2>
+                                <h2 className="text-4xl font-black text-white italic tracking-tighter" style={{ fontFamily: "'Playfair Display', serif" }}>Ladies</h2>
                             </div>
                             <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center group-hover:bg-[#C8956C] transition-all duration-300">
                                 <ArrowRight className="text-white w-6 h-6" />

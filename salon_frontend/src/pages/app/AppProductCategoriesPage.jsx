@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Heart, ShoppingBag, X, Plus, Minus, ArrowRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useCart } from '../../contexts/CartContext';
 
 /* ── Left sidebar categories (with images) ── */
 const SIDEBAR = [
@@ -216,11 +218,96 @@ function SpotlightItem({ item, index, onClick, accent, isLight }) {
     );
 }
 
+const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, onCheckout, colors, isLight }) => {
+    const drawerContent = (
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[10000]">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className={`absolute inset-0 ${isLight ? 'bg-white/20' : 'bg-black/30'} backdrop-blur-xl`}
+                    />
+                    <motion.div
+                        initial={{ x: '100%' }}
+                        animate={{ x: 0 }}
+                        exit={{ x: '100%' }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                        style={{ background: colors.card, borderLeft: `1px solid ${colors.border}`, width: '100%', maxWidth: '380px' }}
+                        className="absolute top-0 right-0 h-full shadow-2xl flex flex-col"
+                    >
+                        <div className="p-8 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-xl font-black uppercase tracking-tight" style={{ color: colors.text }}>Your Bag</h3>
+                                <p className="text-[9px] font-black text-[#C8956C] uppercase tracking-[0.3em]">{cart.length} Selections</p>
+                            </div>
+                            <button onClick={onClose} style={{ color: colors.text }} className="w-10 h-10 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                            {cart.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+                                    <ShoppingBag size={64} className="mb-4" />
+                                    <p className="font-black uppercase tracking-[0.4em] text-[10px]">Empty Selection</p>
+                                </div>
+                            ) : (
+                                cart.map((item) => (
+                                    <div key={item._id} className="flex gap-4">
+                                        <div className="w-16 h-16 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 overflow-hidden shrink-0">
+                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-black text-[11px] uppercase tracking-widest leading-relaxed mb-1 line-clamp-1" style={{ color: colors.text }}>{item.name}</h4>
+                                            <p className="text-[10px] font-black text-[#C8956C] mb-3 uppercase tracking-[0.2em]">₹{item.price}</p>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-lg border border-black/5 dark:border-white/5">
+                                                    <button onClick={() => onUpdateQuantity(item._id, -1)} style={{ color: colors.text }} className="w-7 h-7 flex items-center justify-center opacity-40 hover:opacity-100"><Minus size={10} /></button>
+                                                    <span className="w-7 text-center text-[10px] font-black tabular-nums" style={{ color: colors.text }}>{item.quantity}</span>
+                                                    <button onClick={() => onUpdateQuantity(item._id, 1)} style={{ color: colors.text }} className="w-7 h-7 flex items-center justify-center opacity-40 hover:opacity-100"><Plus size={10} /></button>
+                                                </div>
+                                                <button onClick={() => onRemove(item._id)} className="text-[9px] font-black text-rose-500 uppercase tracking-widest px-2">Remove</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        <div className="p-8 bg-black/5 dark:bg-white/5 border-t border-black/5 dark:border-white/5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-[0.3em] opacity-40" style={{ color: colors.text }}>Subtotal</span>
+                                <span className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text }}>₹{total}</span>
+                            </div>
+                            <button
+                                onClick={onCheckout}
+                                disabled={cart.length === 0}
+                                className="w-full h-14 bg-[#C8956C] text-white font-black uppercase tracking-[0.3em] text-[10px] rounded-xl flex items-center justify-center gap-3 disabled:opacity-20 shadow-xl shadow-[#C8956C]/20"
+                            >
+                                PROCEED TO CHECKOUT <ArrowRight size={16} />
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
+    );
+
+    const portalRoot = document.getElementById('app-portal-root');
+    if (!portalRoot) return null;
+    return createPortal(drawerContent, portalRoot);
+};
+
 export default function AppProductCategoriesPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const [active, setActive] = useState('trending');
+    const [isCartOpen, setIsCartOpen] = useState(false);
+    const { cart, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart();
 
     const cat = SIDEBAR.find(s => s.id === active);
     const content = CONTENT[active] || CONTENT.trending;
@@ -237,17 +324,27 @@ export default function AppProductCategoriesPage() {
     return (
         <div className="min-h-screen flex flex-col" style={{ background: colors.bg, color: colors.text }}>
             {/* Header */}
-            <div className="sticky top-0 z-50 p-6 flex items-center justify-between border-b" style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(16px)', borderBottomColor: colors.border }}>
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
+            <div className="sticky top-0 z-50 p-4 pb-2 flex items-center justify-between border-b" style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(16px)', borderBottomColor: colors.border }}>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="flex items-center justify-center active:scale-90 transition-all">
                         <ArrowLeft size={20} />
                     </button>
-                    <h1 className="text-xl font-black tracking-tight" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Categories</h1>
+                    <h1 className="text-lg font-black tracking-tight" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Categories</h1>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={() => navigate('/app/shop')} style={{ color: colors.text }} className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center active:scale-90 transition-all">
+                <div className="flex gap-2 font-black">
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setIsCartOpen(true)}
+                        style={{ color: colors.text, position: 'relative' }}
+                        className="flex items-center justify-center active:scale-90 transition-all"
+                    >
                         <ShoppingBag size={20} />
-                    </button>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-black text-white text-[8px] flex items-center justify-center rounded-full border border-white">
+                                {cartCount}
+                            </span>
+                        )}
+                    </motion.button>
                 </div>
             </div>
 
@@ -323,6 +420,22 @@ export default function AppProductCategoriesPage() {
                     </motion.button>
                 </div>
             </div>
+
+            <CartDrawer
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+                cart={cart}
+                total={cartTotal}
+                onUpdateQuantity={updateQuantity}
+                onRemove={removeFromCart}
+                onCheckout={() => {
+                    localStorage.setItem('pending_pos_cart', JSON.stringify({ items: cart, total: cartTotal }));
+                    setIsCartOpen(false);
+                    alert('Selection sent to checkout!');
+                }}
+                colors={colors}
+                isLight={isLight}
+            />
         </div>
     );
 }
