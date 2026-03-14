@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
+import { useInventory } from '../../../contexts/InventoryContext';
 import { MinusCircle, History, Package, AlertOctagon, Clipboard, Store, Calendar, Send, User, ChevronRight } from 'lucide-react';
 
-const MOCK_ADJUSTMENTS = [
-    { id: '1', date: '2024-03-21', product: 'Mac Studio Fix Foundation', quantity: -2, reason: 'Damage', adjustedBy: 'Admin (Aryan)', outlet: 'Andheri West' },
-    { id: '2', date: '2024-03-19', product: 'Dyson Supersonic Filter', quantity: -1, reason: 'Internal Use', adjustedBy: 'Manager (Raj)', outlet: 'Bandra' },
-    { id: '3', date: '2024-03-10', product: 'L\'Oréal Shampoo', quantity: -5, reason: 'Expiry', adjustedBy: 'Admin (Aryan)', outlet: 'Andheri West' },
-];
-
 export default function StockAdjustment() {
+    const { adjustmentLog, products, outlets } = useInventory();
     const [view, setView] = useState('list'); // 'list' or 'form'
 
     return (
@@ -34,13 +30,21 @@ export default function StockAdjustment() {
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
-                {view === 'list' ? <AdjustmentHistory /> : <AdjustmentForm onCancel={() => setView('list')} />}
+                {view === 'list' ? (
+                    <AdjustmentHistory log={adjustmentLog} />
+                ) : (
+                    <AdjustmentForm 
+                        onCancel={() => setView('list')} 
+                        products={products}
+                        outlets={outlets}
+                    />
+                )}
             </div>
         </div>
     );
 }
 
-function AdjustmentHistory() {
+function AdjustmentHistory({ log }) {
     return (
         <div className="p-0 animate-fadeIn">
             <table className="w-full text-left border-collapse min-w-[1000px]">
@@ -55,7 +59,7 @@ function AdjustmentHistory() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                    {MOCK_ADJUSTMENTS.map((entry) => (
+                    {log.map((entry) => (
                         <tr key={entry.id} className="hover:bg-surface-alt/50 transition-colors group">
                             <td className="px-8 py-5">
                                 <span className="font-semibold text-text-secondary text-xs">{new Date(entry.date).toLocaleDateString()}</span>
@@ -92,7 +96,7 @@ function AdjustmentHistory() {
     );
 }
 
-function AdjustmentForm({ onCancel }) {
+function AdjustmentForm({ onCancel, products, outlets }) {
     return (
         <div className="p-10 max-w-2xl mx-auto animate-slideUp">
             <div className="space-y-8 bg-surface/20 p-8 rounded-3xl border border-border/50">
@@ -111,8 +115,9 @@ function AdjustmentForm({ onCancel }) {
                             <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
                             <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider cursor-pointer">
                                 <option>Select item to adjust...</option>
-                                <option>Mac Studio Fix Foundation</option>
-                                <option>Dyson Supersonic Filter</option>
+                                {products.map(p => (
+                                    <option key={p.id} value={p.name}>{p.name}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -148,8 +153,9 @@ function AdjustmentForm({ onCancel }) {
                                 <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-rose-500 transition-colors" />
                                 <select className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-rose-500/10 transition-all uppercase tracking-wider cursor-pointer">
                                     <option>Select Outlet</option>
-                                    <option>Andheri West</option>
-                                    <option>Bandra</option>
+                                    {outlets.map(o => (
+                                        <option key={o.id} value={o.name}>{o.name}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

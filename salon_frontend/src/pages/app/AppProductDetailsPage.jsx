@@ -16,7 +16,7 @@ const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) 
                 className="w-full py-3.5 flex items-center justify-between text-left group"
             >
                 <div className="flex-1 pr-4">
-                    <h4 className="text-[13px] font-bold uppercase tracking-tight" style={{ color: colors.text }}>{title}</h4>
+                    <h4 className="text-[13px] font-bold uppercase tracking-tight" style={{ color: colors.text === '#1A1A1A' ? '#000' : colors.text }}>{title}</h4>
                     {subtext && !isOpen && <p className="text-[10px] opacity-40 mt-0.5 font-medium italic">{subtext}</p>}
                 </div>
                 <motion.div
@@ -187,6 +187,7 @@ export default function AppProductDetailsPage() {
                         <Accordion
                             title="Return and exchange policy"
                             subtext="Know more about return and exchange"
+                            isInitialOpen={true}
                             colors={colors}
                         >
                             <p>Unopened products can be returned within 7 days of delivery. Due to the personal nature of our products, opened items are non-refundable unless defective.</p>

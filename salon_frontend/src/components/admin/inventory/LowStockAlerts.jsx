@@ -1,13 +1,11 @@
-import React from 'react';
+import { useInventory } from '../../../contexts/InventoryContext';
 import { AlertTriangle, ShieldAlert, ArrowRight, Package, Store, Bell, CheckCircle2, ChevronRight } from 'lucide-react';
 
-const MOCK_ALERTS = [
-    { id: '1', product: 'Olplex No. 3 Hair Perfector', outlet: 'Andheri West', current: 8, threshold: 12, status: 'Critical', color: 'rose' },
-    { id: '2', product: 'Dyson Supersonic Dryer Filter', outlet: 'Bandra', current: 3, threshold: 5, status: 'Warning', color: 'orange' },
-    { id: '3', product: 'Gillette Shaving Foam', outlet: 'Andheri West', current: 12, threshold: 15, status: 'Warning', color: 'orange' },
-];
-
 export default function LowStockAlerts() {
+    const { lowStockItems, products } = useInventory();
+    
+    // Derived stable items (stock > threshold)
+    const stableItems = products.filter(p => p.stock > p.threshold).slice(0, 3);
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden bg-surface/10">
             {/* Header / Banner */}
@@ -18,7 +16,7 @@ export default function LowStockAlerts() {
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-rose-900 dark:text-rose-100 tracking-tight">Active Critical Alerts</h3>
-                        <p className="text-sm text-rose-700 dark:text-rose-300 font-medium font-bold uppercase tracking-tighter">3 items are below their safety threshold and require replenishment.</p>
+                        <p className="text-sm text-rose-700 dark:text-rose-300 font-medium font-bold uppercase tracking-tighter">{lowStockItems.length} items are below their safety threshold and require replenishment.</p>
                     </div>
                 </div>
                 <div className="hidden md:flex gap-3">
@@ -33,7 +31,7 @@ export default function LowStockAlerts() {
 
             {/* Alerts List */}
             <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto no-scrollbar">
-                {MOCK_ALERTS.map((alert) => (
+                {lowStockItems.map((alert) => (
                     <AlertCard key={alert.id} alert={alert} />
                 ))}
 
@@ -41,20 +39,15 @@ export default function LowStockAlerts() {
                 <div className="lg:col-span-2 mt-8 border-t border-border pt-8">
                     <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest mb-4 ml-2">Monitored Items (Stable)</h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 bg-surface border border-border rounded-2xl flex items-center justify-between opacity-60">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                <span className="text-xs font-bold text-text">Hair Wax (Premium)</span>
+                        {stableItems.map(item => (
+                            <div key={item.id} className="p-4 bg-surface border border-border rounded-2xl flex items-center justify-between opacity-60">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                    <span className="text-xs font-bold text-text">{item.name}</span>
+                                </div>
+                                <span className="text-[10px] font-bold text-emerald-600 uppercase">{item.stock} {item.unit || 'Unit'}</span>
                             </div>
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase">42 Unit</span>
-                        </div>
-                        <div className="p-4 bg-surface border border-border rounded-2xl flex items-center justify-between opacity-60">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                <span className="text-xs font-bold text-text">Face Serum ABC</span>
-                            </div>
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase">18 Unit</span>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -74,10 +67,10 @@ function AlertCard({ alert }) {
                         <Package className="w-5 h-5" />
                     </div>
                     <div>
-                        <h4 className="font-bold text-text group-hover:text-primary transition-colors">{alert.product}</h4>
+                        <h4 className="font-bold text-text group-hover:text-primary transition-colors">{alert.name}</h4>
                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-text-muted uppercase tracking-wider mt-0.5">
                             <Store className="w-3 h-3" />
-                            {alert.outlet}
+                            {alert.outlet || 'All Outlets'}
                         </div>
                     </div>
                 </div>
@@ -89,13 +82,13 @@ function AlertCard({ alert }) {
             <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 bg-surface border border-border rounded-2xl">
                     <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block mb-1">Current Stock</span>
-                    <span className={`text-xl font-bold ${isCritical ? 'text-rose-600' : 'text-orange-600'}`}>{alert.current}</span>
-                    <span className="text-[10px] font-bold text-text-muted ml-1">UNITS</span>
+                    <span className={`text-xl font-bold ${isCritical ? 'text-rose-600' : 'text-orange-600'}`}>{alert.stock}</span>
+                    <span className="text-[10px] font-bold text-text-muted ml-1">{alert.unit || 'UNITS'}</span>
                 </div>
                 <div className="p-3 bg-surface border border-border rounded-2xl">
                     <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block mb-1">Threshold</span>
                     <span className="text-xl font-bold text-text">{alert.threshold}</span>
-                    <span className="text-[10px] font-bold text-text-muted ml-1">UNITS</span>
+                    <span className="text-[10px] font-bold text-text-muted ml-1">{alert.unit || 'UNITS'}</span>
                 </div>
             </div>
 

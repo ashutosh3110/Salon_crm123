@@ -34,7 +34,8 @@ export default function ServicesPage({ tab = 'list' }) {
         toggleServiceStatus,
         addCategory,
         deleteCategory,
-        toggleCategoryStatus
+        toggleCategoryStatus,
+        updateCategory
     } = useBusiness();
 
     const categoryStats = useMemo(() => {
@@ -184,6 +185,7 @@ export default function ServicesPage({ tab = 'list' }) {
                             serviceCount: services.filter(s => s.category === cat.name).length
                         }))}
                         onAdd={addCategory}
+                        onUpdate={updateCategory}
                         onDelete={deleteCategory}
                         onToggleStatus={toggleCategoryStatus}
                     />

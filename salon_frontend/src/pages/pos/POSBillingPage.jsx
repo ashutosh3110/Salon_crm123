@@ -8,7 +8,7 @@ import {
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
 } from 'lucide-react';
 import {
-    MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS
+    MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -194,11 +194,11 @@ export default function POSBillingPage() {
             if (location.state.preSelectService) {
                 const serviceName = location.state.preSelectService;
                 // Handle different possible ways services are listed
-                const serviceObj = MOCK_SERVICES.find(s => s.name.toLowerCase().includes(serviceName.toLowerCase()));
+                const serviceObj = services.find(s => s.name.toLowerCase().includes(serviceName.toLowerCase()));
                 if (serviceObj) {
                     setCart([{
                         ...serviceObj,
-                        itemId: serviceObj._id,
+                        itemId: serviceObj.id || serviceObj._id,
                         quantity: 1,
                         type: 'service',
                         staffId: 'u1',
@@ -900,9 +900,9 @@ export default function POSBillingPage() {
                             <Sparkles className="w-3 h-3 text-amber-500" /> Fast Sell
                         </p>
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {MOCK_SERVICES.slice(0, 6).map(s => (
+                            {services.slice(0, 6).map(s => (
                                 <button
-                                    key={`quick-${s._id}`}
+                                    key={`quick-${s.id || s._id}`}
                                     onClick={() => addToCart(s)}
                                     className="flex-shrink-0 px-4 py-2 bg-primary/5 hover:bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
                                 >

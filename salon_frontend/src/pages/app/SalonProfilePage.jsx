@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, Star, MapPin, Phone, Navigation2,
@@ -10,29 +10,45 @@ import { MOCK_OUTLETS, MOCK_SERVICES } from '../../data/appMockData';
 import homeData from '../../data/appHomeData.json';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useCMS } from '../../contexts/CMSContext';
+import { useGender } from '../../contexts/GenderContext';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function SalonProfilePage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
-    const serviceIdFromQuery = searchParams.get('serviceId');
     const { colors, isLight } = useCustomerTheme();
+    const { isSalonLiked, toggleSalonLike } = useFavorites();
+    const { lookbook } = useCMS();
+    const { gender } = useGender();
+    const { feedbacks, addFeedback } = useBusiness();
+    const { user } = useAuth();
+
+    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
+    const isFavorite = isSalonLiked(id);
+
+    const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'Services');
+
+    // Sync tab if state changes
+    useEffect(() => {
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+        }
+    }, [location.state?.activeTab]);
 
     // Find outlet from mock data
     const outlet = MOCK_OUTLETS.find(o => o._id === id) || MOCK_OUTLETS[0];
 
-    const [activeTab, setActiveTab] = useState('Services');
-    const { isSalonLiked, toggleSalonLike } = useFavorites();
-    const isFavorite = isSalonLiked(id);
+    const serviceIdFromQuery = searchParams.get('serviceId');
 
     const [isWritingReview, setIsWritingReview] = useState(false);
     const [reviewRating, setReviewRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
+    const [reviewerName, setReviewerName] = useState('');
     const [reviewImages, setReviewImages] = useState([]);
-    const [reviewsData, setReviewsData] = useState([
-        { id: 1, name: 'Phoebe Buffay', time: '2 days ago', rating: 5, text: "Absolutely loved the experience! The staff was very professional and the ambiance was perfect.", images: ['https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&q=80'] },
-        { id: 2, name: 'Rachel Green', time: '1 week ago', rating: 4, text: "Great service, but had to wait 10 mins despite my appointment.", images: ['https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=500&q=80'] }
-    ]);
     const fileInputRef = useRef(null);
 
     const handleFileChange = (e) => {
@@ -43,9 +59,19 @@ export default function SalonProfilePage() {
 
     const handleSubmitReview = () => {
         if (reviewRating === 0 || reviewText.trim() === '') return;
-        setReviewsData([{ id: Date.now(), name: 'You', time: 'Just now', rating: reviewRating, text: reviewText, images: reviewImages }, ...reviewsData]);
+        
+        addFeedback({
+            customerName: reviewerName.trim() || user?.name || 'Anonymous User',
+            rating: reviewRating,
+            comment: reviewText.trim(),
+            service: 'General Service', // Or dynamically set if booking found
+            staffName: 'Unassigned',
+            images: reviewImages
+        });
+
         setReviewRating(0);
         setReviewText('');
+        setReviewerName('');
         setReviewImages([]);
         setIsWritingReview(false);
     };
@@ -366,20 +392,20 @@ export default function SalonProfilePage() {
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                                {(homeData.LOOKBOOK || []).map((item, i) => (
+                                {lookbook.filter(l => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).map((item) => (
                                     <motion.div
-                                        key={i}
+                                        key={item.id}
                                         whileHover={{ scale: 1.02 }}
                                         style={{ position: 'relative', height: '220px', borderRadius: '20px', overflow: 'hidden', background: colors.border }}
                                     >
                                         <img
-                                            src={item.url}
+                                            src={item.image}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             alt={item.title}
                                         />
                                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: '#FFF' }}>
                                             <p style={{ fontSize: '11px', fontWeight: 800, margin: 0 }}>{item.title}</p>
-                                            <p style={{ fontSize: '9px', opacity: 0.8, margin: 0 }}>by {item.tag} Master</p>
+                                            <p style={{ fontSize: '9px', opacity: 0.8, margin: 0 }}>by {item.tag}</p>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -429,6 +455,23 @@ export default function SalonProfilePage() {
                                             </button>
                                         ))}
                                     </div>
+                                    <input
+                                        type="text"
+                                        value={reviewerName}
+                                        onChange={(e) => setReviewerName(e.target.value)}
+                                        placeholder="Your Name (Optional)"
+                                        style={{
+                                            width: '100%',
+                                            background: colors.background,
+                                            border: `1px solid ${colors.border}`,
+                                            borderRadius: '12px',
+                                            padding: '12px',
+                                            color: colors.text,
+                                            fontSize: '14px',
+                                            marginBottom: '16px',
+                                            fontFamily: 'inherit'
+                                        }}
+                                    />
                                     <textarea
                                         value={reviewText}
                                         onChange={(e) => setReviewText(e.target.value)}
@@ -499,27 +542,27 @@ export default function SalonProfilePage() {
                                 </div>
                             )}
 
-                            {reviewsData.map(review => (
+                            {feedbacks.map(review => (
                                 <div key={review.id} style={{ marginBottom: '24px', paddingBottom: '24px', borderBottom: `1px solid ${colors.border}` }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '12px', fontWeight: 800 }}>
-                                                {review.name[0]}
+                                                {review.customerName?.charAt(0) || 'U'}
                                             </div>
-                                            <h5 style={{ fontWeight: 800, margin: 0 }}>{review.name}</h5>
+                                            <div>
+                                                <p style={{ fontSize: '13px', fontWeight: 800, margin: 0, color: colors.text }}>{review.customerName}</p>
+                                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>{review.date}</p>
+                                            </div>
                                         </div>
-                                        <span style={{ fontSize: '11px', color: colors.textMuted }}>{review.time}</span>
+                                        <div style={{ display: 'flex', gap: '2px' }}>
+                                            {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} fill={i <= review.rating ? colors.accent : 'none'} color={colors.accent} />)}
+                                        </div>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '2px', marginBottom: '10px' }}>
-                                        {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={s <= review.rating ? colors.accent : 'none'} color={colors.accent} />)}
-                                    </div>
-                                    <p style={{ fontSize: '14px', color: colors.text, margin: '0 0 12px', lineHeight: 1.5 }}>
-                                        "{review.text}"
-                                    </p>
+                                    <p style={{ fontSize: '13px', color: colors.textSecondary, margin: '8px 0', lineHeight: 1.5 }}>{review.comment}</p>
                                     <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }} className="no-scrollbar">
-                                        {(homeData.LOOKBOOK || []).slice(0, 2).map((item, idx) => (
+                                        {(review.images || []).map((imgUrl, idx) => (
                                             <div key={idx} style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                                                <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Review" />
+                                                <img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Review" />
                                             </div>
                                         ))}
                                     </div>

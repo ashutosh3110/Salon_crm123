@@ -1,0 +1,117 @@
+{
+    "OVERALL_STATS": {
+        "avgRating": 4.8,
+        "totalReviews": 1240,
+        "positivePercentage": 92,
+        "responseRate": 85,
+        "sentimentScore": 88,
+        "nps": 72
+    },
+    "FEEDBACK_LIST": [
+        {
+            "id": "FB001",
+            "customerName": "Aryan Khanna",
+            "rating": 5,
+            "comment": "Had an amazing experience! The staff was very professional and the haircut was exactly what I wanted. Highly recommend the Keratin treatment here.",
+            "date": "2026-03-14T10:30:00Z",
+            "service": "Keratin Treatment",
+            "staffName": "Anita Verma",
+            "sentiment": "Positive",
+            "status": "New",
+            "response": ""
+        },
+        {
+            "id": "FB002",
+            "customerName": "Sanya Malhotra",
+            "rating": 2,
+            "comment": "The service was okay, but I had to wait for 45 minutes even though I had an appointment. Also, the music was a bit too loud for a relaxing spa experience.",
+            "date": "2026-03-14T08:15:00Z",
+            "service": "Aroma Therapy",
+            "staffName": "Anita Verma",
+            "sentiment": "Negative",
+            "status": "Resolved",
+            "response": "Dear Sanya, we sincerely apologize for the delay and the inconvenience caused by the music volume. We have addressed this with our front desk and spa team to ensure better scheduling and a more serene environment. We'd love to offer you a 20% discount on your next visit to make it up to you."
+        },
+        {
+            "id": "FB003",
+            "customerName": "Rohan Mehra",
+            "rating": 4,
+            "comment": "Great beard grooming session with Anita. She really knows her craft. The only downside was the parking at the venue.",
+            "date": "2026-03-13T16:45:00Z",
+            "service": "Beard Grooming",
+            "staffName": "Anita Verma",
+            "sentiment": "Positive",
+            "status": "Read",
+            "response": "Thank you Rohan! Glad you liked the service. We're working with the building management to improve parking facilities."
+        },
+        {
+            "id": "FB004",
+            "customerName": "Priya Das",
+            "rating": 5,
+            "comment": "The bridal makeup was flawless! Anita is a true artist. She understood my vision perfectly and made me look stunning on my special day.",
+            "date": "2026-03-13T11:20:00Z",
+            "service": "Bridal Makeup",
+            "staffName": "Anita Verma",
+            "sentiment": "Positive",
+            "status": "New",
+            "response": ""
+        },
+        {
+            "id": "FB005",
+            "customerName": "Vikram Singh",
+            "rating": 3,
+            "comment": "Haircut was fine, but the stylist seemed a bit rushed. The overall value for money is just average compared to other premium salons.",
+            "date": "2026-03-12T14:30:00Z",
+            "service": "Elite Haircut",
+            "staffName": "Anita Verma",
+            "sentiment": "Neutral",
+            "status": "New",
+            "response": ""
+        },
+        {
+            "id": "FB006",
+            "customerName": "Ishani Roy",
+            "rating": 5,
+            "comment": "Best manicure I've ever had! The attention to detail was incredible. Will definitely be coming back every month.",
+            "date": "2026-03-12T09:00:00Z",
+            "service": "Manicure Deluxe",
+            "staffName": "Anita Verma",
+            "sentiment": "Positive",
+            "status": "New",
+            "response": ""
+        },
+        {
+            "id": "FB007",
+            "customerName": "Kabir Bajaj",
+            "rating": 1,
+            "comment": "Worst experience ever. The stylist totally ruined my hair color. It looks nothing like the reference photo I showed. Very disappointed.",
+            "date": "2026-03-11T17:10:00Z",
+            "service": "Hair Coloring",
+            "staffName": "Anita Verma",
+            "sentiment": "Negative",
+            "status": "Urgent",
+            "response": ""
+        },
+        {
+            "id": "FB008",
+            "customerName": "Mehak Gupta",
+            "rating": 5,
+            "comment": "Excellent threading service. Very gentle and precise. The staff is always welcoming and polite.",
+            "date": "2026-03-11T12:45:00Z",
+            "service": "Threading — Full Face",
+            "staffName": "Anita Verma",
+            "sentiment": "Positive",
+            "status": "Read",
+            "response": ""
+        }
+    ],
+    "SENTIMENT_DATA": [
+        { "name": "Mon", "positive": 45, "neutral": 10, "negative": 5 },
+        { "name": "Tue", "positive": 52, "neutral": 8, "negative": 3 },
+        { "name": "Wed", "positive": 48, "neutral": 12, "negative": 7 },
+        { "name": "Thu", "positive": 61, "neutral": 5, "negative": 2 },
+        { "name": "Fri", "positive": 55, "neutral": 15, "negative": 8 },
+        { "name": "Sat", "positive": 78, "neutral": 18, "negative": 12 },
+        { "name": "Sun", "positive": 72, "neutral": 14, "negative": 6 }
+    ]
+}

@@ -10,7 +10,9 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { useInventory } from '../../contexts/InventoryContext';
 import { MOCK_OUTLETS, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
+import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
 import logoLightMode from '/2-removebg-preview.png';
 import logoDarkMode from '/1-removebg-preview.png';
@@ -85,8 +87,10 @@ export default function AppHomePage() {
     const location = useLocation();
     const { gender, setGender } = useGender();
     const { theme, colors, isLight } = useCustomerTheme();
-    const { activeOutlet, activeOutletId, outlets, setActiveOutletId } = useBusiness();
+    const { activeOutlet, activeOutletId, outlets, setActiveOutletId, services, categories: businessCategories } = useBusiness();
     const { bookings } = useBookingRegistry();
+    const { shopCategories } = useInventory();
+    const { banners, lookbook: cmsLookbook, offers: cmsOffers } = useCMS();
 
     const lastBooking = bookings.length > 0 ? bookings[0] : null;
 
@@ -121,23 +125,53 @@ export default function AppHomePage() {
 
 
     const filteredPopularServices = useMemo(() => {
-        return MOCK_SERVICES.filter(s => {
-            if (!s.outletId) return true;
-            return s.outletId === activeOutletId;
+        return (services || []).filter(s => {
+            // Filter by outlet
+            if (s.outletId && s.outletId !== 'all' && s.outletId !== activeOutletId) return false;
+            
+            // Filter by gender
+            const cat = businessCategories.find(c => c.name === s.category);
+            if (!cat) return true;
+            if (!g) return true;
+            return cat.gender === 'both' || cat.gender === g;
         }).slice(0, 6);
-    }, [activeOutletId]);
+    }, [activeOutletId, services, g, businessCategories]);
 
     const filteredMembershipPlans = useMemo(() => {
         return MEMBERSHIP_PLANS.filter(p => !p.outletId || p.outletId === activeOutletId);
     }, [activeOutletId]);
 
     const filteredRunningOffers = useMemo(() => {
-        return RUNNING_OFFERS.filter(o => !o.outletId || o.outletId === activeOutletId);
-    }, [activeOutletId]);
+        return cmsOffers.filter(o => (o.gender === 'all' || o.gender === g) && o.status === 'Live');
+    }, [activeOutletId, cmsOffers, g]);
 
     const filteredPromos = useMemo(() => {
-        return d.promos.filter(p => !p.outletId || p.outletId === activeOutletId);
-    }, [activeOutletId, d.promos]);
+        const promos = banners
+            .filter(p => p.status === 'Active' && (p.gender === 'all' || p.gender === g))
+            .map(p => ({
+                id: `banner-${p.id}`,
+                title: p.title,
+                subtitle: 'Featured Service',
+                img: p.image,
+                btnText: 'Book Now',
+                link: p.link
+            }));
+        
+        // Take latest 3 lookbook items and convert to promo format
+        const lookbookPromos = cmsLookbook
+            .filter(l => l.status === 'Active' && (l.gender === 'all' || l.gender === g))
+            .slice(0, 3)
+            .map((item, idx) => ({
+                id: `lookbook-${item.id}`,
+                title: item.title,
+                subtitle: item.tag,
+                img: item.image,
+                btnText: 'View Look',
+                isLookbook: true
+            }));
+
+        return [...lookbookPromos, ...promos];
+    }, [activeOutletId, banners, cmsLookbook, g]);
 
     const filteredExperts = useMemo(() => {
         return d.experts.filter(e => !e.outletId || e.outletId === activeOutletId);
@@ -522,7 +556,13 @@ export default function AppHomePage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.5, ease: "easeOut" }}
-                                    onClick={() => navigate('/app/book')}
+                                    onClick={() => {
+                                        if (filteredPromos[currentPromoIndex]?.isLookbook) {
+                                            navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook' } });
+                                        } else {
+                                            navigate('/app/book');
+                                        }
+                                    }}
                                     style={{
                                         position: 'absolute', inset: 0, cursor: 'pointer',
                                         background: 'linear-gradient(135deg, #2A1F15 0%, #3D2A18 50%, #1a1008 100%)',
@@ -747,13 +787,17 @@ export default function AppHomePage() {
                                     <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Trending rituals of the week</p>
                                 </div>
                             </div>
-                            <button style={{ fontSize: '11px', fontWeight: 800, color: colors.accent, background: 'none', border: 'none' }}>View All</button>
+                            <div style={{ display: 'flex', gap: '8px', background: isLight ? '#F1F3F5' : '#2A2A2A', padding: '4px', borderRadius: '12px' }}>
+                                <button style={{ fontSize: '10px', fontWeight: 800, color: '#8B4513', background: '#F8EDE3', border: 'none', padding: '6px 14px', borderRadius: '10px', cursor: 'pointer' }}>Trending</button>
+                                <button style={{ fontSize: '10px', fontWeight: 800, color: colors.textMuted, background: 'none', border: 'none', padding: '6px 14px', borderRadius: '10px', cursor: 'pointer' }}>Classics</button>
+                            </div>
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {(homeData.LOOKBOOK || []).map((item, idx) => (
+                            {cmsLookbook.filter(l => l.gender === g && l.status === 'Active').map((item) => (
                                 <motion.div
-                                    key={idx}
+                                    key={item.id}
                                     whileTap={{ scale: 0.97 }}
+                                    onClick={() => navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook', lookId: item.id } })}
                                     style={{
                                         flexShrink: 0,
                                         width: '200px',
@@ -765,10 +809,9 @@ export default function AppHomePage() {
                                         cursor: 'pointer',
                                         background: isLight ? '#F1F3F5' : '#2A2A2A'
                                     }}
-                                    onClick={() => navigate(`/app/salon/${activeOutletId}`)}
                                 >
                                     <img
-                                        src={item.url}
+                                        src={item.image}
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         alt={item.title}
                                         onError={(e) => {
@@ -836,7 +879,7 @@ export default function AppHomePage() {
                         <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '15px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {d.categories.map((cat) => (
+                        {(shopCategories.length > 0 ? shopCategories : d.categories).map((cat) => (
                             <motion.div
                                 key={cat.id}
                                 whileTap={{ scale: 0.95 }}
@@ -853,7 +896,7 @@ export default function AppHomePage() {
                                     border: isLight ? '2.5px solid rgba(200,149,108,0.2)' : '2.5px solid rgba(200,149,172,0.1)',
                                     boxShadow: isLight ? '0 6px 15px rgba(0,0,0,0.08)' : '0 6px 15px rgba(0,0,0,0.4)',
                                 }}>
-                                    <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={cat.image || cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </div>
                                 <div style={{
                                     padding: '5px 14px',
@@ -886,20 +929,23 @@ export default function AppHomePage() {
                         </div>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {RUNNING_OFFERS.map(offer => (
+                        {filteredOffers.map(offer => (
                             <motion.div
                                 key={offer.id}
                                 whileTap={{ scale: 0.97 }}
                                 style={{
                                     flexShrink: 0, width: '220px', background: colors.card, borderRadius: '18px', padding: '16px',
-                                    border: `1px dashed ${colors.accent}`, display: 'flex', flexDirection: 'column', gap: '6px',
-                                    position: 'relative'
+                                    border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', gap: '6px',
+                                    position: 'relative', overflow: 'hidden'
                                 }}
                             >
-                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>{offer.subtitle}</p>
-                                <h4 style={{ fontSize: '16px', color: colors.text, margin: 0, fontWeight: 800 }}>{offer.discount}</h4>
-                                <div style={{ background: colors.input, padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 700, color: colors.accent, alignSelf: 'flex-start', marginTop: '4px' }}>
-                                    {offer.code}
+                                <div style={{ height: '80px', width: '100%', marginBottom: '4px', borderRadius: '12px', overflow: 'hidden' }}>
+                                    <img src={offer.img} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <p style={{ fontSize: '11px', color: colors.accent, margin: 0, fontWeight: 800 }}>{offer.tag}</p>
+                                <h4 style={{ fontSize: '14px', color: colors.text, margin: 0, fontWeight: 800 }}>{offer.title}</h4>
+                                <div style={{ background: `${colors.accent}15`, padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 900, color: colors.accent, alignSelf: 'flex-start', marginTop: '2px' }}>
+                                    USE {offer.discount} OFF
                                 </div>
                             </motion.div>
                         ))}
@@ -967,9 +1013,9 @@ export default function AppHomePage() {
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                         {filteredPopularServices.map(service => (
                             <motion.div
-                                key={service._id}
+                                key={service.id || service._id}
                                 whileTap={{ scale: 0.97 }}
-                                onClick={() => navigate(`/app/discovery?serviceId=${service._id}`)}
+                                onClick={() => navigate(`/app/discovery?serviceId=${service.id || service._id}`)}
                                 style={{
                                     flexShrink: 0, width: '160px', background: colors.card, borderRadius: '24px', overflow: 'hidden',
                                     border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', cursor: 'pointer'

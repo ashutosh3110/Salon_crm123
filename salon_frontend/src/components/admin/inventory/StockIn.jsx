@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
+import { useInventory } from '../../../contexts/InventoryContext';
 import { Plus, History, Package, User, Hash, Calendar, DollarSign, Store, Send, ChevronRight, Download } from 'lucide-react';
 
-const MOCK_STOCK_IN = [
-    { id: '1', date: '2024-03-20', supplier: 'Glossy Cosmetics Ltd', product: 'L\'Oréal Professionnel Shampoo', quantity: 50, price: 850, addedBy: 'Admin (Aryan)', outlet: 'Andheri West' },
-    { id: '2', date: '2024-03-18', supplier: 'Salon Supplies Inc', product: 'Dyson Supersonic Filter', quantity: 10, price: 1200, addedBy: 'Manager (Raj)', outlet: 'Bandra' },
-    { id: '3', date: '2024-03-15', supplier: 'Organic India', product: 'Organic Shaving Cream', quantity: 100, price: 120, addedBy: 'Admin (Aryan)', outlet: 'All Outlets' },
-];
-
 export default function StockIn() {
+    const { stockInHistory, suppliers, products, outlets } = useInventory();
     const [view, setView] = useState('list'); // 'list' or 'form'
 
     return (
@@ -40,13 +36,22 @@ export default function StockIn() {
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
-                {view === 'list' ? <StockInHistory /> : <StockInForm onCancel={() => setView('list')} />}
+                {view === 'list' ? (
+                    <StockInHistory history={stockInHistory} />
+                ) : (
+                    <StockInForm 
+                        onCancel={() => setView('list')} 
+                        suppliers={suppliers}
+                        products={products}
+                        outlets={outlets}
+                    />
+                )}
             </div>
         </div>
     );
 }
 
-function StockInHistory() {
+function StockInHistory({ history }) {
     return (
         <div className="p-0 animate-fadeIn">
             <table className="w-full text-left border-collapse min-w-[1000px]">
@@ -61,7 +66,7 @@ function StockInHistory() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                    {MOCK_STOCK_IN.map((entry) => (
+                    {history.map((entry) => (
                         <tr key={entry.id} className="hover:bg-surface/30 transition-colors group">
                             <td className="px-8 py-5">
                                 <span className="font-semibold text-text-secondary text-xs">{new Date(entry.date).toLocaleDateString()}</span>
@@ -102,7 +107,7 @@ function StockInHistory() {
     );
 }
 
-function StockInForm({ onCancel }) {
+function StockInForm({ onCancel, suppliers, products, outlets }) {
     return (
         <div className="p-10 max-w-3xl mx-auto animate-slideUp">
             <div className="space-y-8">
@@ -118,8 +123,9 @@ function StockInForm({ onCancel }) {
                             <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                             <select className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
                                 <option>Select Supplier</option>
-                                <option>Glossy Cosmetics Ltd</option>
-                                <option>Salon Supplies Inc</option>
+                                {suppliers.map(s => (
+                                    <option key={s.id} value={s.name}>{s.name}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -142,8 +148,9 @@ function StockInForm({ onCancel }) {
                             <Package className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                             <select className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
                                 <option>Search existing product...</option>
-                                <option>L'Oréal Professionnel Shampoo</option>
-                                <option>Dyson Supersonic Filter</option>
+                                {products.map(p => (
+                                    <option key={p.id} value={p.name}>{p.name}</option>
+                                ))}
                             </select>
                         </div>
                     </div>
@@ -178,8 +185,9 @@ function StockInForm({ onCancel }) {
                             <Store className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                             <select className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all uppercase tracking-wider">
                                 <option>Select Destination</option>
-                                <option>Andheri West</option>
-                                <option>Bandra</option>
+                                {outlets.map(o => (
+                                    <option key={o.id} value={o.name}>{o.name}</option>
+                                ))}
                                 <option>All Outlets</option>
                             </select>
                         </div>

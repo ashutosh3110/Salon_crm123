@@ -123,6 +123,7 @@ import { InventoryProvider } from './contexts/InventoryContext';
 import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
+import { CMSProvider } from './contexts/CMSContext';
 
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
@@ -181,7 +182,8 @@ function App() {
       <ScrollToHash />
       <AuthProvider>
         <BusinessProvider>
-          <BookingRegistryProvider>
+          <CMSProvider>
+            <BookingRegistryProvider>
             <ThemeProvider>
               <PettyCashProvider>
                 <AttendanceProvider>
@@ -242,6 +244,7 @@ function App() {
                             <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
                             <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
                             <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
+                            <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
 
                             {/* Finance Routes */}
                             <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
@@ -473,6 +476,7 @@ function App() {
               </PettyCashProvider>
             </ThemeProvider>
           </BookingRegistryProvider>
+          </CMSProvider>
         </BusinessProvider>
       </AuthProvider>
     </Router >

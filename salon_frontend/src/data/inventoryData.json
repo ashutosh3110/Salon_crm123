@@ -1,180 +1,449 @@
 {
   "outlets": [
-    { "id": "main", "name": "Main Storage", "short": "Main", "color": "bg-violet-500", "light": "bg-violet-500/10 text-violet-600", "isWarehouse": true },
-    { "id": "outlet-1", "name": "Downtown Studio", "short": "Downtown", "color": "bg-primary", "light": "bg-primary/10 text-primary" },
-    { "id": "outlet-2", "name": "Bandra Branch", "short": "Bandra", "color": "bg-emerald-500", "light": "bg-emerald-500/10 text-emerald-600" },
-    { "id": "outlet-3", "name": "Juhu Heights", "short": "Juhu", "color": "bg-amber-500", "light": "bg-amber-500/10 text-amber-600" },
-    { "id": "outlet-4", "name": "Colaba Hub", "short": "Colaba", "color": "bg-rose-500", "light": "bg-rose-500/10 text-rose-600" },
-    { "id": "outlet-5", "name": "Malad Studio", "short": "Malad", "color": "bg-blue-500", "light": "bg-blue-500/10 text-blue-600" }
+    {
+      "id": "main",
+      "name": "Main Storage",
+      "short": "Main",
+      "color": "bg-violet-500",
+      "light": "bg-violet-500/10 text-violet-600",
+      "isWarehouse": true
+    },
+    {
+      "id": "outlet-1",
+      "name": "Downtown Studio",
+      "short": "Downtown",
+      "color": "bg-primary",
+      "light": "bg-primary/10 text-primary"
+    },
+    {
+      "id": "outlet-2",
+      "name": "Bandra Branch",
+      "short": "Bandra",
+      "color": "bg-emerald-500",
+      "light": "bg-emerald-500/10 text-emerald-600"
+    },
+    {
+      "id": "outlet-3",
+      "name": "Juhu Heights",
+      "short": "Juhu",
+      "color": "bg-amber-500",
+      "light": "bg-amber-500/10 text-amber-600"
+    },
+    {
+      "id": "outlet-4",
+      "name": "Colaba Hub",
+      "short": "Colaba",
+      "color": "bg-rose-500",
+      "light": "bg-rose-500/10 text-rose-600"
+    },
+    {
+      "id": "outlet-5",
+      "name": "Malad Studio",
+      "short": "Malad",
+      "color": "bg-blue-500",
+      "light": "bg-blue-500/10 text-blue-600"
+    }
+  ],
+  "productCategories": [
+    "Hair Care",
+    "Skin Care",
+    "Styling",
+    "Grooming",
+    "Equipment"
+  ],
+  "suppliers": [
+    {
+      "id": "1",
+      "name": "Glossy Cosmetics Ltd",
+      "contact": "Anil Mehta",
+      "phone": "+91 98200 12345",
+      "email": "anil@glossy.com",
+      "gstin": "27AAACG1234A1Z5",
+      "due": 45000,
+      "status": "Active"
+    },
+    {
+      "id": "2",
+      "name": "Salon Supplies Inc",
+      "contact": "Sarah J.",
+      "phone": "+91 98111 22233",
+      "email": "sales@salonsupplies.in",
+      "gstin": "27BBBCG5678B1Z2",
+      "due": 12500,
+      "status": "Overdue"
+    },
+    {
+      "id": "3",
+      "name": "Organic India",
+      "contact": "Rajesh K.",
+      "phone": "+91 99000 55555",
+      "email": "support@organic.in",
+      "gstin": "27CCC G9012C1Z9",
+      "due": 0,
+      "status": "Active"
+    },
+    {
+      "id": "4",
+      "name": "Beauty Hub Supplies",
+      "contact": "Rahul V.",
+      "phone": "+91 98000 11111",
+      "email": "rahul@beautyhub.com",
+      "gstin": "27DDD G3456D1Z1",
+      "due": 5000,
+      "status": "Active"
+    }
+  ],
+  "shopCategories": [
+    { "id": "trending", "name": "Trending", "image": "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000", "count": 12 },
+    { "id": "skincare", "name": "Skin Care", "image": "https://images.unsplash.com/photo-1556228720-195a672e8a03?q=80&w=1000", "count": 8 },
+    { "id": "haircare", "name": "Hair Care", "image": "https://images.unsplash.com/photo-1527799822367-474857a3f447?q=80&w=1000", "count": 15 },
+    { "id": "makeup", "name": "Makeup", "image": "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1000", "count": 20 }
   ],
   "products": [
     {
       "id": 1,
-      "name": "L'Oréal Hair Colour - Black",
+      "name": "L'Oréal Professionnel Shampoo",
       "sku": "LOR-HC-001",
       "barcode": "8901030123456",
-      "category": "Hair Colour",
+      "category": "Hair Care",
       "brand": "L'Oréal",
       "type": "service_consumable",
-      "stockByOutlet": { "main": 80, "outlet-1": 28, "outlet-2": 16 },
-      "minStock": 20,
+      "stock": 45,
+      "stockByOutlet": {
+        "main": 80,
+        "outlet-1": 28,
+        "outlet-2": 16
+      },
+      "threshold": 10,
       "unit": "pcs",
       "costPrice": 320,
-      "price": 450,
-      "taxRate": 18,
-      "status": "In Stock",
+      "sellingPrice": 450,
+      "gstPercent": 18,
+      "status": "active",
       "supplier": "Beauty Hub Supplies",
       "reorderQty": 50,
       "mfgDate": "2025-01-10",
-      "expiryDate": "2026-06-10"
+      "expiryDate": "2026-06-10",
+      "isShopProduct": true,
+      "appCategory": "haircare",
+      "appImage": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000",
+      "rating": 4.8,
+      "shopDescription": "Professional level shampoo for hair repair and shine."
     },
     {
       "id": 2,
-      "name": "Schwarzkopf Shampoo 500ml",
-      "sku": "SCH-SH-002",
+      "name": "Olplex No. 3 Hair Perfector",
+      "sku": "OLP-HP-002",
       "barcode": "8901030234567",
-      "category": "Shampoo",
-      "brand": "Schwarzkopf",
+      "category": "Hair Care",
+      "brand": "Olplex",
       "type": "retail",
-      "stockByOutlet": { "main": 25, "outlet-1": 12, "outlet-2": 8 },
-      "minStock": 15,
+      "stock": 8,
+      "threshold": 12,
       "unit": "bottles",
-      "costPrice": 580,
-      "price": 850,
-      "taxRate": 18,
-      "status": "In Stock",
-      "supplier": "Schwarzkopf India",
-      "reorderQty": 30,
-      "mfgDate": "2025-05-15",
-      "expiryDate": "2026-03-25"
+      "costPrice": 1200,
+      "sellingPrice": 2500,
+      "gstPercent": 18,
+      "status": "active",
+      "supplier": "Salon Supplies Inc",
+      "isShopProduct": true,
+      "appCategory": "trending",
+      "appImage": "https://images.unsplash.com/photo-1620331700435-0de318ca47af?q=80&w=1000",
+      "rating": 4.9,
+      "shopDescription": "A concentrated treatment that strengthens the hair from within."
     },
     {
       "id": 3,
-      "name": "OPI Gel Nail Polish - Red",
-      "sku": "OPI-NP-005",
+      "name": "Dyson Supersonic Dryer Filter",
+      "sku": "DYS-FL-003",
       "barcode": "8901030345678",
-      "category": "Nail Polish",
-      "brand": "OPI",
-      "type": "retail",
-      "stockByOutlet": { "main": 2, "outlet-1": 4, "outlet-2": 2 },
-      "minStock": 10,
+      "category": "Equipment",
+      "brand": "Dyson",
+      "type": "equipment",
+      "stock": 3,
+      "threshold": 5,
       "unit": "pcs",
-      "costPrice": 850,
-      "price": 1200,
-      "taxRate": 18,
-      "status": "Low Stock",
-      "supplier": "Lotus Cosmetics",
-      "reorderQty": 20
+      "costPrice": 800,
+      "sellingPrice": 1200,
+      "gstPercent": 12,
+      "status": "active",
+      "supplier": "Salon Supplies Inc",
+      "isShopProduct": false
     },
     {
       "id": 4,
-      "name": "Wella Conditioner 1L",
-      "sku": "WEL-CD-003",
+      "name": "Mac Studio Fix Foundation",
+      "sku": "MAC-FND-004",
       "barcode": "8901030456789",
-      "category": "Conditioner",
-      "brand": "Wella",
-      "type": "service_consumable",
-      "stockByOutlet": { "main": 6, "outlet-1": 4, "outlet-2": 2 },
-      "minStock": 10,
-      "unit": "bottles",
-      "costPrice": 1100,
-      "price": 1500,
-      "taxRate": 18,
-      "status": "Low Stock",
-      "supplier": "Wella Direct",
-      "reorderQty": 15
+      "category": "Skin Care",
+      "brand": "MAC",
+      "type": "retail",
+      "stock": 120,
+      "threshold": 20,
+      "unit": "pcs",
+      "costPrice": 1800,
+      "sellingPrice": 3200,
+      "gstPercent": 18,
+      "status": "active",
+      "supplier": "Glossy Cosmetics Ltd",
+      "isShopProduct": true,
+      "appCategory": "makeup",
+      "appImage": "https://images.unsplash.com/photo-1541812322301-447087034c4f?q=80&w=1000",
+      "rating": 4.7,
+      "shopDescription": "Long-wearing foundation that provides medium-to-full coverage."
     },
     {
       "id": 5,
-      "name": "Matrix Hair Serum",
-      "sku": "MAT-HS-009",
+      "name": "Gillette Shaving Foam",
+      "sku": "GIL-SF-005",
       "barcode": "8901030567890",
-      "category": "Serum",
-      "brand": "Matrix",
+      "category": "Grooming",
+      "brand": "Gillette",
       "type": "retail",
-      "stockByOutlet": { "main": 40, "outlet-1": 15, "outlet-2": 10 },
-      "minStock": 15,
-      "unit": "bottles",
-      "costPrice": 680,
-      "price": 950,
-      "taxRate": 18,
-      "status": "In Stock",
-      "supplier": "Matrix Distribution",
-      "reorderQty": 25
-    },
-    {
-      "id": 6,
-      "name": "Disposable Capes (50 pcs)",
-      "sku": "DSP-CP-010",
-      "barcode": "8901030678901",
-      "category": "Consumables",
-      "brand": "Generic",
-      "type": "service_consumable",
-      "stockByOutlet": { "main": 1, "outlet-1": 1, "outlet-2": 1 },
-      "minStock": 5,
-      "unit": "packs",
-      "costPrice": 180,
-      "price": 300,
-      "taxRate": 5,
-      "status": "Critical",
-      "supplier": "Beauty Hub Supplies",
-      "reorderQty": 10
-    },
-    {
-      "id": 7,
-      "name": "Sunscreen SPF 50+",
-      "sku": "SUN-SCR-001",
-      "barcode": "4234567890123",
-      "category": "Skin Care",
-      "brand": "Biotique",
-      "type": "retail",
-      "stockByOutlet": { "main": 10, "outlet-1": 6, "outlet-2": 4 },
-      "minStock": 8,
+      "stock": 12,
+      "threshold": 15,
       "unit": "pcs",
-      "costPrice": 380,
-      "price": 550,
-      "taxRate": 18,
-      "status": "In Stock",
-      "supplier": "Lotus Cosmetics",
-      "reorderQty": 20
+      "costPrice": 250,
+      "sellingPrice": 450,
+      "gstPercent": 18,
+      "status": "active",
+      "supplier": "Organic India",
+      "isShopProduct": true,
+      "appCategory": "haircare",
+      "appImage": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1000",
+      "rating": 4.5,
+      "shopDescription": "Classic shaving foam for a smooth and comfortable shave."
+    }
+  ],
+  "stockInHistory": [
+    {
+      "id": "1",
+      "date": "2024-03-20",
+      "supplier": "Glossy Cosmetics Ltd",
+      "product": "L'Oréal Professionnel Shampoo",
+      "quantity": 50,
+      "price": 850,
+      "addedBy": "Admin (Aryan)",
+      "outlet": "Andheri West"
+    },
+    {
+      "id": "2",
+      "date": "2024-03-18",
+      "supplier": "Salon Supplies Inc",
+      "product": "Dyson Supersonic Filter",
+      "quantity": 10,
+      "price": 1200,
+      "addedBy": "Manager (Raj)",
+      "outlet": "Bandra"
+    },
+    {
+      "id": "3",
+      "date": "2024-03-15",
+      "supplier": "Organic India",
+      "product": "Organic Shaving Cream",
+      "quantity": 100,
+      "price": 120,
+      "addedBy": "Admin (Aryan)",
+      "outlet": "All Outlets"
+    }
+  ],
+  "adjustmentLog": [
+    {
+      "id": "1",
+      "date": "2024-03-21",
+      "product": "Mac Studio Fix Foundation",
+      "quantity": -2,
+      "reason": "Damage",
+      "adjustedBy": "Admin (Aryan)",
+      "outlet": "Andheri West"
+    },
+    {
+      "id": "2",
+      "date": "2024-03-19",
+      "product": "Dyson Supersonic Filter",
+      "quantity": -1,
+      "reason": "Internal Use",
+      "adjustedBy": "Manager (Raj)",
+      "outlet": "Bandra"
+    },
+    {
+      "id": "3",
+      "date": "2024-03-10",
+      "product": "L'Oréal Shampoo",
+      "quantity": -5,
+      "reason": "Expiry",
+      "adjustedBy": "Admin (Aryan)",
+      "outlet": "Andheri West"
+    }
+  ],
+  "criticalAlerts": [
+    {
+      "id": "1",
+      "product": "Olplex No. 3 Hair Perfector",
+      "outlet": "Andheri West",
+      "current": 8,
+      "threshold": 12,
+      "status": "Critical",
+      "color": "rose"
+    },
+    {
+      "id": "2",
+      "product": "Dyson Supersonic Dryer Filter",
+      "outlet": "Bandra",
+      "current": 3,
+      "threshold": 5,
+      "status": "Warning",
+      "color": "orange"
+    },
+    {
+      "id": "3",
+      "product": "Gillette Shaving Foam",
+      "outlet": "Andheri West",
+      "current": 12,
+      "threshold": 15,
+      "status": "Warning",
+      "color": "orange"
     }
   ],
   "movements": [
-    { "id": 1, "type": "in", "product": "Matrix Hair Serum", "qty": 20, "source": "Beauty Hub Supplies", "outlet": "main", "time": "Today" },
-    { "id": 2, "type": "out", "product": "L'Oréal Hair Colour", "qty": 3, "source": "Service Usage", "outlet": "outlet-1", "time": "Today" },
-    { "id": 3, "type": "transfer", "product": "Schwarzkopf Shampoo", "qty": 5, "source": "main → outlet-2", "outlet": null, "time": "Yesterday" }
+    {
+      "id": 1,
+      "type": "in",
+      "product": "Matrix Hair Serum",
+      "qty": 20,
+      "source": "Beauty Hub Supplies",
+      "outlet": "main",
+      "time": "Today"
+    },
+    {
+      "id": 2,
+      "type": "out",
+      "product": "L'Oréal Hair Colour",
+      "qty": 3,
+      "source": "Service Usage",
+      "outlet": "outlet-1",
+      "time": "Today"
+    },
+    {
+      "id": 3,
+      "type": "transfer",
+      "product": "Schwarzkopf Shampoo",
+      "qty": 5,
+      "source": "main → outlet-2",
+      "outlet": null,
+      "time": "Yesterday"
+    }
   ],
   "purchases": [
-    { "id": "PUR001", "supplier": "Beauty Hub Supplies", "date": "Feb 22, 2024", "amount": 12500, "items": 8, "status": "Received" },
-    { "id": "PUR002", "supplier": "Lotus Cosmetics", "date": "Feb 20, 2024", "amount": 8900, "items": 12, "status": "Received" },
-    { "id": "PUR003", "supplier": "Matrix Distribution", "date": "Feb 18, 2024", "amount": 15200, "items": 5, "status": "Pending" }
+    {
+      "id": "PUR001",
+      "supplier": "Beauty Hub Supplies",
+      "date": "Feb 22, 2024",
+      "amount": 12500,
+      "items": 8,
+      "status": "Received"
+    },
+    {
+      "id": "PUR002",
+      "supplier": "Lotus Cosmetics",
+      "date": "Feb 20, 2024",
+      "amount": 8900,
+      "items": 12,
+      "status": "Received"
+    },
+    {
+      "id": "PUR003",
+      "supplier": "Matrix Distribution",
+      "date": "Feb 18, 2024",
+      "amount": 15200,
+      "items": 5,
+      "status": "Pending"
+    }
   ],
   "transfers": [
-    { "id": "TR089", "productName": "L'Oréal Hair Colour", "sku": "LOR-HC-001", "qty": 12, "from": "main", "to": "outlet-1", "date": "Today, 2:30 PM", "status": "Completed", "reason": "Low Stock Replenishment" },
-    { "id": "TR088", "productName": "Schwarzkopf Shampoo", "sku": "SCH-SH-002", "qty": 5, "from": "main", "to": "outlet-2", "date": "Yesterday", "status": "Completed", "reason": "Stock Balancing" }
+    {
+      "id": "TR089",
+      "productName": "L'Oréal Hair Colour",
+      "sku": "LOR-HC-001",
+      "qty": 12,
+      "from": "main",
+      "to": "outlet-1",
+      "date": "Today, 2:30 PM",
+      "status": "Completed",
+      "reason": "Low Stock Replenishment"
+    },
+    {
+      "id": "TR088",
+      "productName": "Schwarzkopf Shampoo",
+      "sku": "SCH-SH-002",
+      "qty": 5,
+      "from": "main",
+      "to": "outlet-2",
+      "date": "Yesterday",
+      "status": "Completed",
+      "reason": "Stock Balancing"
+    }
   ],
   "saleRecords": [
-    { "id": "SR001", "invoiceId": "INV-3482", "productName": "Schwarzkopf Shampoo 500ml", "sku": "SCH-SH-002", "subType": "retail_sale", "qty": 2, "unitPrice": 850, "total": 1700, "staffId": null, "outletId": "outlet-1", "date": "Feb 28, 2026" },
-    { "id": "SR002", "invoiceId": "INV-3480", "productName": "L'Oréal Hair Colour - Black", "sku": "LOR-HC-001", "subType": "service_usage", "qty": 3, "unitPrice": 450, "total": 1350, "staffId": "u1", "outletId": "outlet-1", "date": "Feb 28, 2026" },
-    { "id": "SR003", "invoiceId": "INV-3479", "productName": "OPI Gel Nail Polish - Red", "sku": "OPI-NP-005", "subType": "retail_sale", "qty": 1, "unitPrice": 1200, "total": 1200, "staffId": null, "outletId": "outlet-2", "date": "Feb 27, 2026" },
-    { "id": "SR004", "invoiceId": "INV-3478", "productName": "Wella Conditioner 1L", "sku": "WEL-CD-003", "subType": "service_usage", "qty": 2, "unitPrice": 1500, "total": 3000, "staffId": "u2", "outletId": "outlet-1", "date": "Feb 27, 2026" },
-    { "id": "SR005", "invoiceId": "INV-3477", "productName": "Matrix Hair Serum", "sku": "MAT-HS-009", "subType": "retail_sale", "qty": 3, "unitPrice": 950, "total": 2850, "staffId": null, "outletId": "outlet-2", "date": "Feb 26, 2026" },
-    { "id": "SR006", "invoiceId": "INV-3476", "productName": "Sunscreen SPF 50+", "sku": "SUN-SCR-001", "subType": "retail_sale", "qty": 4, "unitPrice": 550, "total": 2200, "staffId": null, "outletId": "outlet-1", "date": "Feb 26, 2026" },
-    { "id": "SR007", "invoiceId": "INV-3475", "productName": "L'Oréal Hair Colour - Black", "sku": "LOR-HC-001", "subType": "service_usage", "qty": 5, "unitPrice": 450, "total": 2250, "staffId": "u3", "outletId": "outlet-2", "date": "Feb 25, 2026" },
-    { "id": "SR008", "invoiceId": "INV-3474", "productName": "Schwarzkopf Shampoo 500ml", "sku": "SCH-SH-002", "subType": "service_usage", "qty": 1, "unitPrice": 850, "total": 850, "staffId": "u1", "outletId": "outlet-1", "date": "Feb 25, 2026" }
+    {
+      "id": "S1",
+      "sku": "LOR-HC-001",
+      "qty": 2,
+      "total": 900,
+      "type": "retail",
+      "subType": "direct_sale",
+      "time": "2026-02-14T10:00:00Z"
+    },
+    {
+      "id": "S2",
+      "sku": "OLP-HP-002",
+      "qty": 1,
+      "total": 2500,
+      "type": "retail",
+      "subType": "direct_sale",
+      "time": "2026-02-14T11:00:00Z"
+    }
   ],
   "monthlyHistory": [
-    { "month": "Sep 2025", "sku": "LOR-HC-001", "actual": 18 },
-    { "month": "Oct 2025", "sku": "LOR-HC-001", "actual": 22 },
-    { "month": "Nov 2025", "sku": "LOR-HC-001", "actual": 25 },
-    { "month": "Dec 2025", "sku": "LOR-HC-001", "actual": 30 },
-    { "month": "Jan 2026", "sku": "LOR-HC-001", "actual": 28 },
-    { "month": "Feb 2026", "sku": "LOR-HC-001", "actual": 8 },
-    { "month": "Sep 2025", "sku": "SCH-SH-002", "actual": 12 },
-    { "month": "Oct 2025", "sku": "SCH-SH-002", "actual": 10 },
-    { "month": "Nov 2025", "sku": "SCH-SH-002", "actual": 15 },
-    { "month": "Dec 2025", "sku": "SCH-SH-002", "actual": 18 },
-    { "month": "Jan 2026", "sku": "SCH-SH-002", "actual": 14 },
-    { "month": "Feb 2026", "sku": "SCH-SH-002", "actual": 3 }
+    {
+      "sku": "LOR-HC-001",
+      "month": "Sep 2025",
+      "actual": 45
+    },
+    {
+      "sku": "LOR-HC-001",
+      "month": "Oct 2025",
+      "actual": 50
+    },
+    {
+      "sku": "LOR-HC-001",
+      "month": "Nov 2025",
+      "actual": 48
+    },
+    {
+      "sku": "LOR-HC-001",
+      "month": "Dec 2025",
+      "actual": 55
+    },
+    {
+      "sku": "LOR-HC-001",
+      "month": "Jan 2026",
+      "actual": 60
+    },
+    {
+      "sku": "LOR-HC-001",
+      "month": "Feb 2026",
+      "actual": 12
+    },
+    {
+      "sku": "OLP-HP-002",
+      "month": "Jan 2026",
+      "actual": 5
+    },
+    {
+      "sku": "OLP-HP-002",
+      "month": "Feb 2026",
+      "actual": 8
+    }
   ]
 }

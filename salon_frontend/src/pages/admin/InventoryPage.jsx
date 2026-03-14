@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Plus,
     Download,
@@ -7,8 +7,10 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Package,
-    PieChart as PieIcon
+    PieChart as PieIcon,
+    Smartphone
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import {
     BarChart,
     Bar,
@@ -28,13 +30,17 @@ import StockAdjustment from '../../components/admin/inventory/StockAdjustment';
 import LowStockAlerts from '../../components/admin/inventory/LowStockAlerts';
 import ProductManager from '../../components/admin/inventory/ProductManager';
 import AddProductForm from '../../components/admin/inventory/AddProductForm';
-import { useBusiness } from '../../contexts/BusinessContext';
+import ShopCategoriesManager from '../../components/admin/inventory/ShopCategoriesManager';
+import { useInventory } from '../../contexts/InventoryContext';
+import { useNavigate } from 'react-router-dom'; // Added useNavigate for AddProductForm
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
 export default function InventoryPage({ tab = 'products' }) {
     const activeTab = tab;
-    const { products, addProduct, deleteProduct, toggleProductStatus } = useBusiness();
+    const navigate = useNavigate();
+    const { products, addProduct, deleteProduct, updateProduct, duplicateProduct, stats, lowStockItems } = useInventory();
+    const [editingProduct, setEditingProduct] = useState(null);
 
     const categoryData = useMemo(() => {
         const counts = {};
@@ -68,93 +74,150 @@ export default function InventoryPage({ tab = 'products' }) {
                     <button className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-[0.2em] shadow-sm">
                         <Download className="w-4 h-4" /> Export Log
                     </button>
-                    <button className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-8 py-3.5 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20">
+                    <button
+                        onClick={() => navigate('/admin/inventory/products/new')}
+                        className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-8 py-3.5 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20"
+                    >
                         <Plus className="w-4 h-4" /> New Asset Entry
                     </button>
                 </div>
             </div>
 
-            {/* Top Analytics Bar */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
-                    <InventoryStatCard title="Total SKU" value={products.length} icon={TrendingUp} color="blue" trend="Master Catalog" />
-                    <InventoryStatCard title="Critical Stock" value={products.filter(p => p.stock <= p.threshold).length} icon={AlertTriangle} color="rose" trend="Replenish Now" />
-                    <InventoryStatCard title="Live Assets" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="POS Ready" />
-                    <InventoryStatCard title="Cold Assets" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" />
-                </div>
-
-                {/* Categorization Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Matrix Density</span>
-                        <PieIcon className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="h-[120px] w-full text-left">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={categoryData} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
-                                    {categoryData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2 text-left">
-                        {categoryData.slice(0, 3).map(d => (
-                            <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                <div className="w-1.5 h-1.5 bg-primary rounded-none" style={{ backgroundColor: d.color }} />
-                                <span className="text-[7px] font-black uppercase text-text-muted">{d.name}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Volumetric Load Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Volume Load</span>
-                        <Package className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="h-[120px] w-full text-left">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={stockVolumeData}>
-                                <Bar dataKey="stock" radius={0}>
-                                    {stockVolumeData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center">Top 6 Stock Vectors</div>
-                </div>
+            {/* Premium Tab Navigation */}
+            <div className="flex items-center gap-1 border-b border-border/40 overflow-x-auto no-scrollbar pb-1">
+                {[
+                    { id: 'overview', label: 'Stock Scan', icon: TrendingUp },
+                    { id: 'products', label: 'Master List', icon: Package },
+                    { id: 'shop-categories', label: 'App Modules', icon: Smartphone },
+                    { id: 'stock-in', label: 'Inbound', icon: Download },
+                    { id: 'adjustment', label: 'Adjustment', icon: ArrowDownRight },
+                    { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
+                ].map((t) => (
+                    <button
+                        key={t.id}
+                        onClick={() => navigate(`/admin/inventory/${t.id}`)}
+                        className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${
+                            activeTab === t.id 
+                            ? 'text-primary' 
+                            : 'text-text-muted hover:text-text hover:bg-surface-alt'
+                        }`}
+                    >
+                        <t.icon className={`w-3.5 h-3.5 ${activeTab === t.id ? 'text-primary' : 'text-text-muted'}`} />
+                        {t.label}
+                        {activeTab === t.id && (
+                            <motion.div 
+                                layoutId="activeInventoryTab"
+                                className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                    </button>
+                ))}
             </div>
+
+            {/* Top Analytics Bar (Only show on overview) */}
+            {activeTab === 'overview' && (
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
+                        <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Master Catalog" />
+                        <InventoryStatCard title="Critical Stock" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish Now" />
+                        <InventoryStatCard title="Live Assets" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="POS Ready" />
+                        <InventoryStatCard title="Cold Assets" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" />
+                    </div>
+
+                    {/* Categorization Chart */}
+                    <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                        <div className="flex items-center justify-between mb-4 text-left">
+                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Matrix Density</span>
+                            <PieIcon className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="h-[120px] w-full text-left">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={categoryData} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
+                                        {categoryData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2 text-left">
+                            {categoryData.slice(0, 3).map(d => (
+                                <div key={d.name} className="flex items-center gap-1.5 text-left">
+                                    <div className="w-1.5 h-1.5 bg-primary rounded-none" style={{ backgroundColor: d.color }} />
+                                    <span className="text-[7px] font-black uppercase text-text-muted">{d.name}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Volumetric Load Chart */}
+                    <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                        <div className="flex items-center justify-between mb-4 text-left">
+                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Volume Load</span>
+                            <Package className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="h-[120px] w-full text-left">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={stockVolumeData}>
+                                    <Bar dataKey="stock" radius={0}>
+                                        {stockVolumeData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Bar>
+                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center">Top 6 Stock Vectors</div>
+                    </div>
+                </div>
+            )}
 
             {/* Main Content Container */}
             <div className="min-h-[650px] text-left font-black border-t border-border/20 pt-6">
-                {activeTab === 'products' && (
+                {activeTab === 'products' && !editingProduct && (
                     <ProductManager
                         products={products}
                         onDelete={deleteProduct}
-                        onToggleStatus={toggleProductStatus}
+                        onToggleStatus={(id) => {
+                            const p = products.find(prod => prod.id === id);
+                            if (p) updateProduct(id, { status: p.status === 'active' ? 'inactive' : 'active' });
+                        }}
+                        onEdit={(product) => {
+                            setEditingProduct(product);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        onDuplicate={duplicateProduct}
                     />
                 )}
-                {activeTab === 'add-product' && (
+                {(activeTab === 'add-product' || editingProduct) && (
                     <AddProductForm
-                        onSave={addProduct}
+                        key={editingProduct?.id || 'new'}
+                        onSave={(data) => {
+                            if (editingProduct) {
+                                updateProduct(editingProduct.id, data);
+                                setEditingProduct(null);
+                            } else {
+                                addProduct(data);
+                            }
+                        }}
+                        initialData={editingProduct}
+                        onCancel={() => setEditingProduct(null)}
                     />
                 )}
                 {activeTab === 'overview' && <StockOverview />}
                 {activeTab === 'stock-in' && <StockIn />}
                 {activeTab === 'adjustment' && <StockAdjustment />}
                 {activeTab === 'alerts' && <LowStockAlerts />}
+                {activeTab === 'shop-categories' && <ShopCategoriesManager />}
             </div>
         </div>
     );
 }
+
 
 function InventoryStatCard({ title, value, icon: Icon, color, trend }) {
     const trendColors = {

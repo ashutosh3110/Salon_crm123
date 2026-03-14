@@ -10,9 +10,13 @@ import {
     CheckCircle2,
     X,
     Save,
-    ClipboardCheck
+    ClipboardCheck,
+    Upload,
+    Image as ImageIcon,
+    ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CustomSelect from '../common/CustomSelect';
 
 export default function ServiceForm({ onSave, categories = [], initialData }) {
     const navigate = useNavigate();
@@ -22,6 +26,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
         description: '',
         duration: '',
         price: '',
+        image: '',
         gst: '18',
         commissionApplicable: true,
         commissionType: 'percent',
@@ -29,6 +34,21 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
         outlet: 'all',
         status: 'active'
     });
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("File size too large. Max 2MB allowed.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, image: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const isFormValid = formData.name && formData.category && formData.duration && formData.price;
 
@@ -90,24 +110,52 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                         />
                     </div>
 
+                    <CustomSelect 
+                        label="Category *" 
+                        value={formData.category} 
+                        onChange={(val) => setFormData({ ...formData, category: val })} 
+                        options={categories} 
+                        placeholder="Select Category..." 
+                    />
+
                     <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category <span className="text-rose-500">*</span></label>
-                        <select
-                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold outline-none"
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        >
-                            <option value="">Select Category...</option>
-                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
+                        <div className="relative group">
+                            {formData.image ? (
+                                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
+                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                        <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
+                                            <Upload className="w-4 h-4" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                        </label>
+                                        <button 
+                                            onClick={() => setFormData({ ...formData, image: '' })}
+                                            className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
+                                    <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                        <ImageIcon className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2">Click to Upload Image</p>
+                                    <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                </label>
+                            )}
+                        </div>
                     </div>
 
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
                         <textarea
-                            rows="2"
+                            rows="3"
                             className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold resize-none"
-                            placeholder="Details about the service..."
+                            placeholder="Details about the service that customers will see in the app..."
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
@@ -151,24 +199,25 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                     </div>
 
                     <div className="pt-4 border-t border-border/50">
-                        <div className="flex items-center gap-2 mb-3">
-                            <BadgePercent className="w-4 h-4 text-indigo-500" />
-                            <h3 className="text-xs font-bold text-text uppercase tracking-widest">3. Tax (GST)</h3>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">GST % <span className="text-rose-500">*</span></label>
-                            <select
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
-                                value={formData.gst}
-                                onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
-                            >
-                                <option value="0">0% (Nil)</option>
-                                <option value="5">5% (Essentials)</option>
-                                <option value="12">12%</option>
-                                <option value="18">18% (Standard Beauty)</option>
-                                <option value="28">28% (Luxury)</option>
-                            </select>
-                        </div>
+                        <CustomSelect 
+                            label="GST % *" 
+                            value={formData.gst === '0' ? '0% (Nil)' : 
+                                   formData.gst === '5' ? '5% (Essentials)' :
+                                   formData.gst === '12' ? '12%' :
+                                   formData.gst === '18' ? '18% (Standard Beauty)' :
+                                   formData.gst === '28' ? '28% (Luxury)' : formData.gst + '%'}
+                            onChange={(val) => {
+                                const numericValue = val.split('%')[0];
+                                setFormData({ ...formData, gst: numericValue });
+                            }} 
+                            options={[
+                                "0% (Nil)",
+                                "5% (Essentials)",
+                                "12%",
+                                "18% (Standard Beauty)",
+                                "28% (Luxury)"
+                            ]} 
+                        />
                     </div>
                 </div>
 

@@ -63,6 +63,8 @@
             "gst": 18,
             "outlets": "All Outlets",
             "status": "active",
+            "image": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000",
+            "description": "Executive haircut with premium wash, conditioning and expert styling by our senior stylists.",
             "commissionApplicable": true,
             "commissionType": "percent",
             "commissionValue": 10
@@ -76,6 +78,8 @@
             "gst": 12,
             "outlets": "Main Branch",
             "status": "active",
+            "image": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=1000",
+            "description": "Revitalizing skin treatment including deep cleansing, exfoliation, and a refreshing mask.",
             "commissionApplicable": true,
             "commissionType": "fixed",
             "commissionValue": 150
@@ -89,6 +93,8 @@
             "gst": 18,
             "outlets": "All Outlets",
             "status": "active",
+            "image": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1000",
+            "description": "Complete professional bridal look including HD makeup, hair styling, and saree draping.",
             "commissionApplicable": false
         },
         {
@@ -100,6 +106,8 @@
             "gst": 5,
             "outlets": "All Outlets",
             "status": "inactive",
+            "image": "https://images.unsplash.com/photo-1519415387722-a1c3bbef716c?q=80&w=1000",
+            "description": "Luxury foot treatment with sea salt soak, organic scrub, and relaxing massage.",
             "commissionApplicable": true,
             "commissionType": "percent",
             "commissionValue": 5
@@ -110,37 +118,43 @@
             "id": 1,
             "name": "Hair",
             "serviceCount": 12,
-            "status": "active"
+            "status": "active",
+            "gender": "women"
         },
         {
             "id": 2,
             "name": "Skin",
             "serviceCount": 8,
-            "status": "active"
+            "status": "active",
+            "gender": "women"
         },
         {
             "id": 3,
             "name": "Makeup",
             "serviceCount": 5,
-            "status": "active"
+            "status": "active",
+            "gender": "women"
         },
         {
             "id": 4,
             "name": "Spa",
             "serviceCount": 4,
-            "status": "active"
+            "status": "active",
+            "gender": "women"
         },
         {
             "id": 5,
             "name": "Nails",
             "serviceCount": 6,
-            "status": "active"
+            "status": "active",
+            "gender": "women"
         },
         {
             "id": 6,
             "name": "Massage",
             "serviceCount": 3,
-            "status": "inactive"
+            "status": "inactive",
+            "gender": "women"
         }
     ],
     "products": [
@@ -375,43 +389,51 @@
     "feedbacks": [
         {
             "id": "1",
-            "customer": "Aryan Khan",
+            "customerName": "Aryan Khan",
             "rating": 5,
-            "comment": "Amazing haircut as always! Zoya is very detailed and understands exactly what I want.",
+            "comment": "Amazing haircut as always! Rahul is very detailed and understands exactly what I want.",
             "service": "Haircut",
-            "staff": "Zoya Khan",
+            "staffName": "Rahul Sharma",
             "date": "2024-03-22",
-            "status": "active"
+            "status": "Pending",
+            "sentiment": "Positive",
+            "response": ""
         },
         {
             "id": "2",
-            "customer": "Ishita Sharma",
+            "customerName": "Ishita Sharma",
             "rating": 2,
             "comment": "Waiting time was too long even with an appointment. Service was okay but not exceptional.",
             "service": "Manicure",
-            "staff": "Sneha Rao",
+            "staffName": "Priya Singh",
             "date": "2024-03-21",
-            "status": "active"
+            "status": "Urgent",
+            "sentiment": "Negative",
+            "response": ""
         },
         {
             "id": "3",
-            "customer": "Rahul Verma",
+            "customerName": "Rahul Verma",
             "rating": 4,
             "comment": "Good experience, clean place. Will come back.",
             "service": "Shave",
-            "staff": "Haris Ali",
+            "staffName": "Rahul Sharma",
             "date": "2024-03-20",
-            "status": "active"
+            "status": "Pending",
+            "sentiment": "Positive",
+            "response": ""
         },
         {
             "id": "4",
-            "customer": "Simran Jit",
+            "customerName": "Simran Jit",
             "rating": 5,
             "comment": "The new color looks stunning. Best salon in town!",
             "service": "Hair Coloring",
-            "staff": "Mehak Rizvi",
+            "staffName": "Priya Singh",
             "date": "2024-03-19",
-            "status": "active"
+            "status": "Resolved",
+            "sentiment": "Positive",
+            "response": "Thank you so much Simran! Glad you loved the new look."
         }
     ],
     "segments": [

@@ -44,11 +44,11 @@ const computeStatus = (total, minStock, expiryDate) => {
 };
 
 // Initial constants removed to use JSON
-const INITIAL_PRODUCTS = inventoryData.products;
-const INITIAL_MOVEMENTS = inventoryData.movements;
-const INITIAL_PURCHASES = inventoryData.purchases;
-const INITIAL_TRANSFERS = inventoryData.transfers;
-const MONTHLY_HISTORY = inventoryData.monthlyHistory;
+const INITIAL_PRODUCTS = inventoryData.products || [];
+const INITIAL_MOVEMENTS = inventoryData.movements || [];
+const INITIAL_PURCHASES = inventoryData.purchases || [];
+const INITIAL_TRANSFERS = inventoryData.transfers || [];
+const MONTHLY_HISTORY_GLOBAL = inventoryData.monthlyHistory || [];
 
 // Enrich: add computed `stock` (total) to every product
 const enrichProduct = (p) => {
@@ -57,7 +57,7 @@ const enrichProduct = (p) => {
 };
 
 // Initial constants removed to use JSON
-const INITIAL_SALE_RECORDS = inventoryData.saleRecords;
+const INITIAL_SALE_RECORDS = inventoryData.saleRecords || [];
 
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
@@ -69,6 +69,11 @@ export const InventoryProvider = ({ children }) => {
 
     // ── Sale Records — Reconciliation log ────────────────────
     const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', INITIAL_SALE_RECORDS));
+    const [stockInHistory, setStockInHistory] = useState(() => getInitialState('inv_stock_in', inventoryData.stockInHistory || []));
+    const [adjustmentLog, setAdjustmentLog] = useState(() => getInitialState('inv_adjustments', inventoryData.adjustmentLog || []));
+    const [productCategories] = useState(inventoryData.productCategories || []);
+    const [suppliers] = useState(inventoryData.suppliers || []);
+    const [shopCategories, setShopCategories] = useState(() => getInitialState('inv_shop_categories', inventoryData.shopCategories || []));
 
     // Persistence Effect
     useEffect(() => {
@@ -78,10 +83,13 @@ export const InventoryProvider = ({ children }) => {
         localStorage.setItem('inv_transfers', JSON.stringify(transfers));
         localStorage.setItem('inv_outlets', JSON.stringify(outlets));
         localStorage.setItem('inv_sale_records', JSON.stringify(saleRecords));
-    }, [products, movements, purchases, transfers, outlets, saleRecords]);
+        localStorage.setItem('inv_stock_in', JSON.stringify(stockInHistory));
+        localStorage.setItem('inv_adjustments', JSON.stringify(adjustmentLog));
+        localStorage.setItem('inv_shop_categories', JSON.stringify(shopCategories));
+    }, [products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, adjustmentLog, shopCategories]);
 
     // ── Monthly History — 6 months of consumption per product ──
-    const MONTHLY_HISTORY = inventoryData.monthlyHistory;
+    const MONTHLY_HISTORY = inventoryData.monthlyHistory || [];
 
     // Manual projection overrides: { [sku]: projectedQty }
     const [projectionOverrides, setProjectionOverrides] = useState({});
@@ -128,6 +136,28 @@ export const InventoryProvider = ({ children }) => {
             const merged = { ...p, ...updates };
             return enrichProduct(merged);
         }));
+    };
+
+    const deleteProduct = (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            setProducts(prev => prev.filter(p => p.id !== id));
+        }
+    };
+
+    const duplicateProduct = (id) => {
+        const product = products.find(p => p.id === id);
+        if (product) {
+            const newProduct = {
+                ...product,
+                id: Date.now(),
+                name: `${product.name} (Copy)`,
+                sku: `${product.sku}-COPY`,
+                barcode: generateEAN13(),
+                stock: 0,
+                stockByOutlet: { 'main': 0 }
+            };
+            setProducts(prev => [enrichProduct(newProduct), ...prev]);
+        }
     };
 
     // ── Update stock for a specific outlet ────────────────────
@@ -224,6 +254,25 @@ export const InventoryProvider = ({ children }) => {
 
     const updateOutlet = (id, updates) => {
         setOutlets(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
+    };
+
+    // ── Shop Categories Management ──────────────────────────────
+    const addShopCategory = (category) => {
+        const newCat = {
+            id: category.id || `cat-${Date.now()}`,
+            name: category.name,
+            image: category.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
+            count: 0
+        };
+        setShopCategories(prev => [...prev, newCat]);
+    };
+
+    const updateShopCategory = (id, updates) => {
+        setShopCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    };
+
+    const deleteShopCategory = (id) => {
+        setShopCategories(prev => prev.filter(c => c.id !== id));
     };
 
     // ── Add purchase order ────────────────────────────────────
@@ -371,6 +420,8 @@ export const InventoryProvider = ({ children }) => {
         updateOutlet,
         addProduct,
         updateProduct,
+        deleteProduct,
+        duplicateProduct,
         updateStock,
         updateStockByOutlet,
         transferStock,
@@ -387,7 +438,15 @@ export const InventoryProvider = ({ children }) => {
             expiryAlertCount: expiryAlerts.length,
             pendingOrders: purchases.filter(p => p.status === 'Pending').length,
             totalValue: products.reduce((acc, p) => acc + (p.stock * p.costPrice), 0),
-        }
+        },
+        stockInHistory,
+        adjustmentLog,
+        productCategories,
+        suppliers,
+        shopCategories,
+        addShopCategory,
+        updateShopCategory,
+        deleteShopCategory
     };
 
     return (

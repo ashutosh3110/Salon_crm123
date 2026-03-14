@@ -12,11 +12,13 @@ import {
     Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CustomSelect from '../common/CustomSelect';
 
-export default function ProductManager({ products = [], onDelete, onToggleStatus }) {
+export default function ProductManager({ products = [], onDelete, onToggleStatus, onEdit, onDuplicate }) {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
+    const [openMenuId, setOpenMenuId] = useState(null);
 
     const categories = ['All', ...new Set(products.map(p => p.category))];
 
@@ -44,13 +46,12 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <select
-                        className="px-3 py-2 rounded-xl text-sm font-bold text-text-secondary bg-surface-alt border border-border focus:outline-none"
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                    >
-                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                    </select>
+                    <CustomSelect 
+                        value={filterCategory} 
+                        onChange={setFilterCategory} 
+                        options={categories}
+                        className="min-w-[160px]"
+                    />
                     <button
                         onClick={() => navigate('/admin/inventory/products/new')}
                         className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all scale-active"
@@ -141,7 +142,10 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all">
+                                                <button 
+                                                    onClick={() => onEdit?.(product)}
+                                                    className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all"
+                                                >
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
                                                 <button
@@ -150,9 +154,44 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all">
-                                                    <MoreVertical className="w-4 h-4" />
-                                                </button>
+                                                <div className="relative">
+                                                    <button 
+                                                        onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
+                                                        className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all"
+                                                    >
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </button>
+                                                    
+                                                    {openMenuId === product.id && (
+                                                        <>
+                                                            <div 
+                                                                className="fixed inset-0 z-30" 
+                                                                onClick={() => setOpenMenuId(null)} 
+                                                            />
+                                                            <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border rounded-xl shadow-xl z-40 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        onDuplicate?.(product.id);
+                                                                        setOpenMenuId(null);
+                                                                    }}
+                                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-text hover:bg-surface-alt transition-colors flex items-center gap-2 uppercase tracking-tighter"
+                                                                >
+                                                                    <Plus className="w-3.5 h-3.5" />
+                                                                    Duplicate Entry
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        onToggleStatus?.(product.id);
+                                                                        setOpenMenuId(null);
+                                                                    }}
+                                                                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-text hover:bg-surface-alt transition-colors flex items-center gap-2 uppercase tracking-tighter"
+                                                                >
+                                                                    {product.status === 'active' ? 'Mark Inactive' : 'Mark Active'}
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>

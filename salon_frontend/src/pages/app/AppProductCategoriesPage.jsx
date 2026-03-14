@@ -5,122 +5,8 @@ import { ArrowLeft, Heart, ShoppingBag, X, Plus, Minus, ArrowRight } from 'lucid
 import { createPortal } from 'react-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCart } from '../../contexts/CartContext';
+import { useInventory } from '../../contexts/InventoryContext';
 
-/* ── Left sidebar categories (with images) ── */
-const SIDEBAR = [
-    { id: 'trending', label: 'Trending Now', accent: '#C8956C', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-    { id: 'hair', label: 'Hair Care', accent: '#8B5CF6', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-    { id: 'skin', label: 'Skin Care', accent: '#EC4899', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-    { id: 'nails', label: 'Nail Art', accent: '#10B981', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-    { id: 'makeup', label: 'Makeup', accent: '#F59E0B', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-    { id: 'tools', label: 'Pro Tools', accent: '#3B82F6', img: 'https://images.unsplash.com/photo-1522338242992-e1a54906a8da?w=200&q=80' },
-    { id: 'body', label: 'Body Care', accent: '#06B6D4', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-    { id: 'spa', label: 'Spa & Relax', accent: '#F97316', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-];
-
-/* ── Right panel content per category ── */
-const CONTENT = {
-    trending: {
-        spotlight: [
-            { id: 1, label: "What's New", img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 2, label: 'Summer Sale', img: 'https://images.unsplash.com/photo-1525904097878-94fb15835963?w=200&q=80' },
-            { id: 3, label: 'Bridal', img: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=200&q=80' },
-            { id: 4, label: 'New Arrivals', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 5, label: 'Hot Deals', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 6, label: 'Budget Finds', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-            { id: 7, label: 'Top Rated', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200&q=80' },
-            { id: 8, label: 'Gift Cards', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-            { id: 9, label: 'Expert Picks', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'Rising Stars', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 2, label: 'Luxe', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 3, label: 'Pro Line', img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200&q=80' },
-            { id: 4, label: 'Organic', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 5, label: 'Global', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: "L'Oréal", img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=200&q=80' },
-            { id: 2, name: 'MAC', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 3, name: 'Kerastase', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-            { id: 4, name: 'Maybelline', img: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=200&q=80' },
-            { id: 5, name: 'Wella', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-        ],
-    },
-    hair: {
-        spotlight: [
-            { id: 1, label: 'Shampoo', img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=200&q=80' },
-            { id: 2, label: 'Conditioner', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-            { id: 3, label: 'Hair Oil', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 4, label: 'Hair Mask', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 5, label: 'Serum', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 6, label: 'Color Care', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200&q=80' },
-            { id: 7, label: 'Anti-Dandruff', img: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200&q=80' },
-            { id: 8, label: 'Growth', img: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=200&q=80' },
-            { id: 9, label: 'Argan Oil', img: 'https://images.unsplash.com/photo-1607006342411-b4f006fa1a11?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: "L'Oréal", img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=200&q=80' },
-            { id: 2, label: 'Kerastase', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-            { id: 3, label: 'Wella', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 4, label: 'Pantene', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-            { id: 5, label: 'Dove', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: "L'Oréal", img: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=200&q=80' },
-            { id: 2, name: 'Kerastase', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-            { id: 3, name: 'Wella', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&q=80' },
-            { id: 4, name: 'Pantene', img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=200&q=80' },
-            { id: 5, name: 'Dove', img: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=200&q=80' },
-        ],
-    },
-    skin: {
-        spotlight: [
-            { id: 1, label: 'Face Wash', img: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=200&q=80' },
-            { id: 2, label: 'Moisturizer', img: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&q=80' },
-            { id: 3, label: 'Sunscreen', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=200&q=80' },
-            { id: 4, label: 'Serum', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 5, label: 'Face Mask', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 6, label: 'Toner', img: 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=200&q=80' },
-            { id: 7, label: 'Eye Cream', img: 'https://images.unsplash.com/photo-1567721913486-6585f069b332?w=200&q=80' },
-            { id: 8, label: 'Exfoliator', img: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=200&q=80' },
-            { id: 9, label: 'Vitamin C', img: 'https://images.unsplash.com/photo-1519241047957-be31d7379a5d?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'DermaX', img: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=200&q=80' },
-            { id: 2, label: 'NatureSpa', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 3, label: 'GlowUp', img: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&q=80' },
-            { id: 4, label: 'CeraVe', img: 'https://images.unsplash.com/photo-1567721913486-6585f069b332?w=200&q=80' },
-            { id: 5, label: "Neutrogena", img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'DermaX', img: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=200&q=80' },
-            { id: 2, name: 'NatureSpa', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 3, name: 'CeraVe', img: 'https://images.unsplash.com/photo-1567721913486-6585f069b332?w=200&q=80' },
-            { id: 4, name: 'La Roche', img: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=200&q=80' },
-            { id: 5, name: 'Neutrogena', img: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=200&q=80' },
-        ],
-    },
-    // ... adding more for Spa/etc
-    spa: {
-        spotlight: [
-            { id: 1, label: 'Essential Oils', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-            { id: 2, label: 'Bath Bombs', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=200&q=80' },
-            { id: 3, label: 'Face Steam', img: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=200&q=80' },
-            { id: 9, label: 'Diffusers', img: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&q=80' },
-        ],
-        universe: [
-            { id: 1, label: 'Forest Essentials', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-            { id: 2, label: 'Kama Ayurveda', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-        ],
-        trending_stores: [
-            { id: 1, name: 'Forest', img: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=200&q=80' },
-            { id: 2, name: 'Kama', img: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=200&q=80' },
-        ],
-    }
-};
-
-/* gradients for 3D text cards — cycles through rich palette */
 const CARD_GRADIENTS = [
     'linear-gradient(145deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%)',
     'linear-gradient(145deg, #2D1B69 0%, #4A1A6B 60%, #7B2D8B 100%)',
@@ -305,12 +191,42 @@ export default function AppProductCategoriesPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+    const { shopCategories, products: inventoryProducts } = useInventory();
     const [active, setActive] = useState('trending');
     const [isCartOpen, setIsCartOpen] = useState(false);
     const { cart, cartTotal, cartCount, updateQuantity, removeFromCart } = useCart();
 
-    const cat = SIDEBAR.find(s => s.id === active);
-    const content = CONTENT[active] || CONTENT.trending;
+    const SIDEBAR = useMemo(() => {
+        return shopCategories.map((c, i) => ({
+            id: c.id,
+            label: c.name,
+            img: c.image,
+            accent: CARD_GRADIENTS[i % CARD_GRADIENTS.length].match(/#[a-fA-F0-9]{3,6}/g)?.[0] || '#C8956C'
+        }));
+    }, [shopCategories]);
+
+    useEffect(() => {
+        if (SIDEBAR.length > 0 && !SIDEBAR.find(s => s.id === active)) {
+            setActive(SIDEBAR[0].id);
+        }
+    }, [SIDEBAR, active]);
+
+    const cat = SIDEBAR.find(s => s.id === active) || SIDEBAR[0] || { label: 'Category', img: '' };
+
+    const content = useMemo(() => {
+        // Filter some products for this category to show in spotlight
+        const categoryProducts = inventoryProducts
+            .filter(p => p.isShopProduct && p.appCategory === active)
+            .slice(0, 9);
+        
+        return {
+            spotlight: categoryProducts.map(p => ({
+                id: p.id,
+                label: p.name,
+                img: p.appImage || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000'
+            }))
+        };
+    }, [active, inventoryProducts]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',

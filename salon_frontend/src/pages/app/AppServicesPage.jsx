@@ -5,8 +5,11 @@ import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, Slide
 import { MOCK_SERVICES, SERVICE_CATEGORIES } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useGender } from '../../contexts/GenderContext';
 
 const ServiceCard = ({ service, onBook, colors, isLight }) => {
+    const fallbackImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop";
+    
     return (
         <motion.div
             whileTap={{ scale: 0.98 }}
@@ -18,9 +21,9 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
             }}
             className="group overflow-hidden flex flex-col h-full"
         >
-            <div className="relative aspect-[16/10] overflow-hidden">
+            <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
                 <img
-                    src={service.image}
+                    src={service.image || fallbackImage}
                     alt={service.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
@@ -42,7 +45,7 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
                 </div>
 
                 <h3 className="text-[13px] font-bold mb-0.5 line-clamp-1" style={{ color: colors.text }}>{service.name}</h3>
-                <p className="text-[10px] mb-3 line-clamp-2 leading-tight" style={{ color: colors.textMuted }}>{service.description}</p>
+                <p className="text-[10px] mb-3 line-clamp-2 leading-tight" style={{ color: colors.textMuted }}>{service.description || "Premium salon service for your beauty and wellness."}</p>
 
                 <div className="mt-auto flex items-center justify-between pt-1">
                     <div className="flex flex-col">
@@ -52,7 +55,7 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
 
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => onBook(service._id)}
+                        onClick={() => onBook(service.id)}
                         style={{
                             background: '#C8956C',
                             borderRadius: '12px 4px 12px 4px',
@@ -71,14 +74,34 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
 export default function AppServicesPage() {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
-    const { activeOutlet, activeOutletId } = useBusiness();
+    const { 
+        activeOutlet, 
+        activeOutletId,
+        services: businessServices,
+        categories: businessCategories
+    } = useBusiness();
+    
+    const { gender: appGender } = useGender();
     const isLight = theme === 'light';
-    const categories = SERVICE_CATEGORIES;
+    
+    // Get unique active categories that have at least one active service AND match gender
+    const dynamicCategories = useMemo(() => {
+        const activeCats = businessCategories
+            .filter(c => {
+                if (c.status !== 'active') return false;
+                if (!appGender) return true;
+                // Match gender: 'both', or matches current gender choice
+                return c.gender === 'both' || c.gender === appGender;
+            })
+            .map(c => c.name);
+        return ['All', ...activeCats];
+    }, [businessCategories, appGender]);
+
     const [searchParams] = useSearchParams();
     const categoryParam = searchParams.get('category');
 
     // Check if category exists in canonical list, else use as search
-    const isCanonical = categories.includes(categoryParam);
+    const isCanonical = dynamicCategories.includes(categoryParam);
 
     const [searchQuery, setSearchQuery] = useState(isCanonical ? '' : (categoryParam || ''));
     const [activeCategory, setActiveCategory] = useState(isCanonical ? categoryParam : 'All');
@@ -94,12 +117,20 @@ export default function AppServicesPage() {
     };
 
     const filteredServices = useMemo(() => {
-        let result = MOCK_SERVICES;
+        let result = businessServices.filter(s => s.status === 'active');
 
         // Filter by Outlet if outletId is present on service
         result = result.filter(s => {
-            if (!s.outletId) return true; // Available in all salons
+            if (!s.outletId || s.outlet === 'All Outlets') return true; 
             return s.outletId === activeOutletId;
+        });
+
+        // Filter by Gender (via Category)
+        result = result.filter(s => {
+            const cat = businessCategories.find(c => c.name === s.category);
+            if (!cat) return true; // Show if no category found (edge case)
+            if (!appGender) return true;
+            return cat.gender === 'both' || cat.gender === appGender;
         });
 
         if (activeCategory !== 'All') {
@@ -110,7 +141,7 @@ export default function AppServicesPage() {
             result = result.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
         }
         return result;
-    }, [activeCategory, searchQuery, activeOutletId]);
+    }, [businessServices, activeCategory, searchQuery, activeOutletId, appGender, businessCategories]);
 
     const groupedServices = useMemo(() => {
         if (activeCategory !== 'All') return { [activeCategory]: filteredServices };
@@ -189,7 +220,7 @@ export default function AppServicesPage() {
 
                 {/* Categories */}
                 <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4">
-                    {categories.map(cat => (
+                    {dynamicCategories.map(cat => (
                         <motion.button
                             key={cat}
                             whileTap={{ scale: 0.95 }}
@@ -224,7 +255,7 @@ export default function AppServicesPage() {
 
                         <div className="app-scroll no-scrollbar flex gap-3 overflow-x-auto -mx-4 px-4 pb-2">
                             {groupedServices[categoryName].map((service) => (
-                                <div key={service._id} className="w-[210px] shrink-0">
+                                <div key={service.id} className="w-[210px] shrink-0">
                                     <ServiceCard
                                         service={service}
                                         onBook={handleBook}

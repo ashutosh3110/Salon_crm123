@@ -20,6 +20,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import { useBusiness } from '../../contexts/BusinessContext';
+import CustomSelect from '../../components/admin/common/CustomSelect';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -166,33 +167,18 @@ export default function StaffPage() {
                     />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <div className="relative group">
-                        <Shield className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
-                        <select
-                            value={roleFilter}
-                            onChange={(e) => setRoleFilter(e.target.value)}
-                            className="text-[10px] font-extrabold uppercase tracking-widest bg-surface-alt border border-border rounded-none pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none min-w-[140px]"
-                        >
-                            <option value="all">Every Role</option>
-                            <option value="admin">Admin</option>
-                            <option value="manager">Manager</option>
-                            <option value="receptionist">Receptionist</option>
-                            <option value="stylist">Stylist</option>
-                        </select>
-                    </div>
-                    <div className="relative group">
-                        <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
-                        <select
-                            value={outletFilter}
-                            onChange={(e) => setOutletFilter(e.target.value)}
-                            className="text-[10px] font-extrabold uppercase tracking-widest bg-surface-alt border border-border rounded-none pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer appearance-none min-w-[160px]"
-                        >
-                            <option value="all">Every Unit</option>
-                            {outlets.map(o => (
-                                <option key={o._id} value={o._id}>{o.name}</option>
-                            ))}
-                        </select>
-                    </div>
+                    <CustomSelect 
+                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)} 
+                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())} 
+                        options={['Every Role', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
+                        className="min-w-[140px]"
+                    />
+                    <CustomSelect 
+                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name} 
+                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)} 
+                        options={['Every Unit', ...outlets.map(o => o.name)]}
+                        className="min-w-[180px]"
+                    />
                 </div>
             </div>
 
@@ -364,35 +350,19 @@ export default function StaffPage() {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Command Role</label>
-                                        <select
-                                            value={form.role}
-                                            onChange={(e) => setForm({ ...form, role: e.target.value })}
-                                            className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/5 cursor-pointer appearance-none"
-                                        >
-                                            <option value="stylist">Stylist</option>
-                                            <option value="receptionist">Receptionist</option>
-                                            <option value="manager">Manager</option>
-                                            <option value="accountant">Accountant</option>
-                                            <option value="inventory_manager">Inventory Manager</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Station</label>
-                                        <select
-                                            value={form.outletId}
-                                            onChange={(e) => setForm({ ...form, outletId: e.target.value })}
-                                            required
-                                            className="w-full px-5 py-3 rounded-none bg-surface-alt border border-border text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-4 focus:ring-primary/5 cursor-pointer appearance-none"
-                                        >
-                                            <option value="">Choose Unit</option>
-                                            {outlets.map(o => (
-                                                <option key={o._id} value={o._id}>{o.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <CustomSelect 
+                                        label="Command Role" 
+                                        value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')} 
+                                        onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })} 
+                                        options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']} 
+                                    />
+                                    <CustomSelect 
+                                        label="Station" 
+                                        value={outlets.find(o => o._id === form.outletId)?.name} 
+                                        onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })} 
+                                        options={outlets.map(o => o.name)} 
+                                        placeholder="Choose Unit" 
+                                    />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5 px-1">

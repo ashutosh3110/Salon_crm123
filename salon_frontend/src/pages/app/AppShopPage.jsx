@@ -2,8 +2,9 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from 'framer-motion';
 import { Search, ShoppingBag, Star, Filter, ArrowRight, Heart, ChevronLeft, ChevronRight, ChevronDown, X, Plus, Minus, Share2, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
-import { MOCK_PRODUCTS, PRODUCT_CATEGORIES } from '../../data/appMockData';
+import { MOCK_PRODUCTS as STATIC_MOCK_PRODUCTS, PRODUCT_CATEGORIES as STATIC_PRODUCT_CATEGORIES } from '../../data/appMockData';
 import { useCart } from '../../contexts/CartContext';
+import { useInventory } from '../../contexts/InventoryContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
@@ -18,7 +19,7 @@ const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) 
                 className="w-full py-3.5 flex items-center justify-between text-left group"
             >
                 <div className="flex-1 pr-4">
-                    <h4 className="text-[13px] font-bold uppercase tracking-tight" style={{ color: colors.text }}>{title}</h4>
+                    <h4 className="text-[13px] font-bold uppercase tracking-tight" style={{ color: colors.text === '#1A1A1A' ? '#000' : colors.text }}>{title}</h4>
                     {subtext && !isOpen && <p className="text-[10px] opacity-40 mt-0.5 font-medium italic">{subtext}</p>}
                 </div>
                 <motion.div
@@ -280,6 +281,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
                             <Accordion
                                 title="Return and exchange policy"
                                 subtext="Know more about return and exchange"
+                                isInitialOpen={true}
                                 colors={colors}
                             >
                                 <p>Unopened products can be returned within 7 days of delivery. Due to the personal nature of our products, opened items are non-refundable unless defective.</p>
@@ -400,6 +402,7 @@ export default function AppShopPage() {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { products: inventoryProducts, shopCategories } = useInventory();
     const { activeOutletId, activeOutlet } = useBusiness();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
@@ -423,10 +426,37 @@ export default function AppShopPage() {
         return () => clearInterval(timer);
     }, []);
 
+    const MOCK_PRODUCTS = useMemo(() => {
+        return inventoryProducts
+            .filter(p => p.isShopProduct)
+            .map(p => ({
+                _id: String(p.id),
+                name: p.name,
+                brand: p.brand || 'Premium',
+                price: p.sellingPrice || 0,
+                image: p.appImage || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
+                rating: p.rating || '4.5',
+                category: shopCategories.find(c => c.id === p.appCategory)?.name || 'General',
+                description: p.shopDescription || p.description || '',
+                outletId: p.availability === 'selected' ? activeOutletId : null // Simplified mapping
+            }));
+    }, [inventoryProducts, shopCategories, activeOutletId]);
+
+    const categories = useMemo(() => ([
+        { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
+        ...shopCategories.map(c => ({ name: c.name, img: c.image }))
+    ]), [shopCategories]);
+
+    const handleSendToPOS = () => {
+        const orderData = { items: cart, total: cartTotal, timestamp: new Date().toISOString() };
+        localStorage.setItem('pending_pos_cart', JSON.stringify(orderData));
+        alert('Selection sent to checkout!');
+    };
+
     const selectedProductId = searchParams.get('product');
     const selectedProduct = useMemo(() =>
         MOCK_PRODUCTS.find(p => p._id === selectedProductId),
-        [selectedProductId]);
+        [selectedProductId, MOCK_PRODUCTS]);
 
     // Sync state with URL params for external navigation
     useEffect(() => {
@@ -487,18 +517,8 @@ export default function AppShopPage() {
         return result;
     }, [activeCategory, searchQuery, activeOutletId]);
 
-    const handleSendToPOS = () => {
-        const orderData = { items: cart, total: cartTotal, timestamp: new Date().toISOString() };
-        localStorage.setItem('pending_pos_cart', JSON.stringify(orderData));
-        alert('Selection sent to checkout!');
-    };
-
-    const categories = [
-        { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
-        ...PRODUCT_CATEGORIES
-    ];
-
     const handleAddToCart = (product, event) => {
+        // Map back to the format addToCart expects if needed, or unify.
         addToCart(product);
         if (event && cartIconRef.current) {
             const btnRect = event.currentTarget.getBoundingClientRect();

@@ -41,7 +41,19 @@ export function BusinessProvider({ children }) {
 
     const [feedbacks, setFeedbacks] = useState(() => {
         const saved = localStorage.getItem('mock_feedbacks');
-        return saved ? JSON.parse(saved) : businessMockData.feedbacks;
+        const initialData = saved ? JSON.parse(saved) : businessMockData.feedbacks;
+        
+        // Migration: Ensure all feedbacks use standardized keys
+        return initialData.map(fb => ({
+            ...fb,
+            customerName: fb.customerName || fb.customer || 'Guest',
+            service: fb.service || 'General Service',
+            staffName: fb.staffName || fb.staff || 'N/A',
+            comment: fb.comment || '',
+            sentiment: fb.sentiment || (fb.rating >= 4 ? 'Positive' : (fb.rating === 3 ? 'Neutral' : 'Negative')),
+            status: fb.status === 'active' ? (fb.rating <= 2 ? 'Urgent' : 'Pending') : (fb.status || 'Pending'),
+            response: fb.response || ''
+        }));
     });
 
     const [suppliers, setSuppliers] = useState(() => {
@@ -92,9 +104,10 @@ export function BusinessProvider({ children }) {
     const deleteService = (id) => setServices(prev => prev.filter(s => s.id !== id));
     const toggleServiceStatus = (id) => setServices(prev => prev.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' } : s));
 
-    const addCategory = (name) => setCategories(prev => [{ id: Date.now(), name, serviceCount: 0, status: 'active' }, ...prev]);
+    const addCategory = ({ name, gender }) => setCategories(prev => [{ id: Date.now(), name, gender: gender || 'both', serviceCount: 0, status: 'active' }, ...prev]);
     const deleteCategory = (id) => setCategories(prev => prev.filter(c => c.id !== id));
     const toggleCategoryStatus = (id) => setCategories(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'active' ? 'inactive' : 'active' } : c));
+    const updateCategory = (id, data) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
 
     const addProduct = (newProduct) => setProducts(prev => [{ ...newProduct, id: Date.now(), stock: 0 }, ...prev]);
     const deleteProduct = (id) => setProducts(prev => prev.filter(p => p.id !== id));
@@ -122,13 +135,19 @@ export function BusinessProvider({ children }) {
     const updateSupplier = (id, data) => setSuppliers(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
     const deleteSupplier = (id) => setSuppliers(prev => prev.filter(s => s.id !== id));
 
-    const addFeedback = (feedback) => setFeedbacks(prev => [{
-        ...feedback,
-        id: Date.now().toString(),
-        status: 'active',
-        date: new Date().toISOString().split('T')[0]
-    }, ...prev]);
-    const archiveFeedback = (id) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: 'archived' } : f));
+    const addFeedback = (feedback) => {
+        const sentiment = feedback.rating >= 4 ? 'Positive' : (feedback.rating === 3 ? 'Neutral' : 'Negative');
+        setFeedbacks(prev => [{
+            ...feedback,
+            id: Date.now().toString(),
+            status: feedback.rating <= 2 ? 'Urgent' : 'Pending',
+            sentiment,
+            date: new Date().toISOString().split('T')[0],
+            response: ''
+        }, ...prev]);
+    };
+    const updateFeedback = (id, data) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, ...data } : f));
+    const archiveFeedback = (id) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: 'Archived' } : f));
     const deleteFeedback = (id) => setFeedbacks(prev => prev.filter(f => f.id !== id));
 
     const addSegment = (segment) => setSegments(prev => [{ ...segment, id: Date.now().toString(), count: 0 }, ...prev]);
@@ -142,10 +161,10 @@ export function BusinessProvider({ children }) {
         addOutlet, updateOutlet, deleteOutlet,
         addStaff, updateStaff, deleteStaff,
         addService, updateService, deleteService, toggleServiceStatus,
-        addCategory, deleteCategory, toggleCategoryStatus,
+        addCategory, deleteCategory, toggleCategoryStatus, updateCategory,
         addProduct, deleteProduct, toggleProductStatus,
         addCustomer, updateCustomer, deleteCustomer,
-        feedbacks, addFeedback, archiveFeedback, deleteFeedback,
+        feedbacks, addFeedback, updateFeedback, archiveFeedback, deleteFeedback,
         suppliers, addSupplier, updateSupplier, deleteSupplier,
         segments, addSegment, deleteSegment,
         bookings, addBooking, updateBookingStatus,

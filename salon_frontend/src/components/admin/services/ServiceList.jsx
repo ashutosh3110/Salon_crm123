@@ -13,9 +13,12 @@ import {
     Tag,
     Building2,
     CheckCircle2,
-    XCircle
+    XCircle,
+    ChevronDown,
+    Trash2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CustomSelect from '../common/CustomSelect';
 
 export default function ServiceList({ services = [], onDelete, onToggleStatus }) {
     const navigate = useNavigate();
@@ -46,13 +49,12 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <select
-                        className="px-3 py-2 rounded-xl text-sm font-bold text-text-secondary bg-surface-alt border border-border focus:outline-none"
-                        value={filterCategory}
-                        onChange={(e) => setFilterCategory(e.target.value)}
-                    >
-                        {categories.map(cat => <option key={cat} value={cat}>{cat} Category</option>)}
-                    </select>
+                    <CustomSelect 
+                        value={filterCategory} 
+                        onChange={setFilterCategory} 
+                        options={categories}
+                        className="min-w-[180px]"
+                    />
 
                     <button
                         onClick={() => navigate('/admin/services/new')}
@@ -150,11 +152,15 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                     <Edit2 className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => onDelete?.(service.id)}
+                                                    onClick={() => {
+                                                        if (window.confirm(`Are you sure you want to delete "${service.name}"?`)) {
+                                                            onDelete?.(service.id);
+                                                        }
+                                                    }}
                                                     className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-rose-500 transition-all"
                                                     title="Delete Service"
                                                 >
-                                                    <EyeOff className="w-4 h-4" />
+                                                    <Trash2 className="w-4 h-4" />
                                                 </button>
                                                 <button className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all">
                                                     <MoreVertical className="w-4 h-4" />

@@ -1,0 +1,16 @@
+{
+    "BANNERS": [
+        { "id": 1, "title": "Summer Hair Revival", "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop", "link": "/services/hair-care", "status": "Active", "gender": "women" },
+        { "id": 2, "title": "Men's Grooming Special", "image": "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop", "link": "/services/barber", "status": "Paused", "gender": "men" }
+    ],
+    "OFFERS": [
+        { "id": 1, "title": "First Visit 20% Off", "description": "Available for all new customers on their first appointment.", "code": "FIRST20", "expiry": "31 Mar, 2024", "status": "Live", "gender": "women" },
+        { "id": 2, "title": "Wedding Package", "description": "Complete bridal makeover including hair, makeup and spa.", "code": "BRIDAL10", "expiry": "15 Jun, 2024", "status": "Draft", "gender": "women" }
+    ],
+    "LOOKBOOK": [
+        { "id": 1, "title": "Classic Taper Ritual", "tag": "Fade", "image": "https://images.unsplash.com/photo-1620331307335-df936021799c?w=400&q=80", "gender": "men", "status": "Active" },
+        { "id": 2, "title": "Solar Flare Glow", "tag": "Balayage", "image": "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400&q=80", "gender": "women", "status": "Active" },
+        { "id": 3, "title": "Artisan Sculpt", "tag": "Beard", "image": "https://images.unsplash.com/photo-1599351431247-f5091e38e1b6?w=400&q=80", "gender": "men", "status": "Active" },
+        { "id": 4, "title": "Royal Ethereal", "tag": "Bridal", "image": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=400&q=80", "gender": "women", "status": "Active" }
+    ]
+}

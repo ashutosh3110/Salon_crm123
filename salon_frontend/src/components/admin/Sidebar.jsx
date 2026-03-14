@@ -127,6 +127,7 @@ const menuItems = [
         path: '/admin/inventory',
         subItems: [
             { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
+            { label: 'Shop Modules', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
             { label: 'Stock Overview', icon: LayoutDashboard, path: '/admin/inventory/overview' },
             { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
             { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },

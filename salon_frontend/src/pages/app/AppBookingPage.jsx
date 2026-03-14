@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -9,7 +9,7 @@ import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 
-const STEPS = ['Service', 'Location', 'Date & Time', 'Stylist', 'Confirm'];
+const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
 const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 200 : -200, opacity: 0 }),
@@ -26,10 +26,15 @@ export default function AppBookingPage() {
 
     const preSelectedServiceId = searchParams.get('serviceId');
     const outletId = searchParams.get('outletId');
-    const { activeOutlet, outlets } = useBusiness();
+    const { 
+        activeOutlet, 
+        outlets, 
+        services: businessServices, 
+        staff: businessStaff 
+    } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
-        return outlets.find(o => o._id === outletId) || activeOutlet || null;
+        return outlets.find(o => o.id === outletId || o._id === outletId) || activeOutlet || null;
     });
 
     const currentOutlet = selectedOutlet;
@@ -75,23 +80,23 @@ export default function AppBookingPage() {
     // Pre-select service from query
     useEffect(() => {
         if (preSelectedServiceId) {
-            const svc = MOCK_SERVICES.find(s => s._id === preSelectedServiceId);
-            if (svc && !selectedServices.find(s => s._id === preSelectedServiceId)) {
+            const svc = businessServices.find(s => String(s.id) === String(preSelectedServiceId));
+            if (svc && !selectedServices.find(s => String(s.id) === String(preSelectedServiceId))) {
                 setSelectedServices([svc]);
                 // If we also have an outlet selected, move to date/time
                 if (outletId) {
-                    const out = outlets.find(o => o._id === outletId);
+                    const out = outlets.find(o => o.id === outletId || o._id === outletId);
                     if (out) setSelectedOutlet(out);
-                    setStep(2); // Jump to Date & Time skip Location selection
+                    setStep(1); // Jump to Date & Time skip Location selection
                 }
             }
         }
-    }, [preSelectedServiceId, outletId, outlets]);
+    }, [preSelectedServiceId, outletId, outlets, businessServices]);
 
     const toggleService = (svc) => {
         setSelectedServices(prev => {
-            const exists = prev.find(s => s._id === svc._id);
-            if (exists) return prev.filter(s => s._id !== svc._id);
+            const exists = prev.find(s => s.id === svc.id);
+            if (exists) return prev.filter(s => s.id !== svc.id);
             return [...prev, svc];
         });
     };
@@ -141,19 +146,20 @@ export default function AppBookingPage() {
     };
 
     const availableSalons = useMemo(() => {
-        if (!selectedServices.length) return MOCK_OUTLETS;
+        if (!selectedServices.length) return outlets;
         const selectedCategories = [...new Set(selectedServices.map(s => s.category))];
-        return MOCK_OUTLETS.filter(salon => {
+        return outlets.filter(salon => {
             if (!salon.categories || salon.categories.length === 0) return true;
             return selectedCategories.every(cat => salon.categories.includes(cat));
         });
-    }, [selectedServices]);
+    }, [selectedServices, outlets]);
 
-    // TODO: Replace with api.get('/services?status=active')
-    const services = MOCK_SERVICES;
-
-    // TODO: Replace with api.get('/users?role=stylist')
-    const staff = MOCK_STAFF;
+    // Use dynamic data from BusinessContext
+    const services = businessServices.filter(s => s.status === 'active');
+    const staff = businessStaff.filter(s => {
+        if (!currentOutlet) return true;
+        return s.outletId === currentOutlet.id || s.outletId === currentOutlet._id;
+    });
 
     const goTo = (newStep) => {
         setDirection(newStep > step ? 1 : -1);
@@ -252,7 +258,7 @@ export default function AppBookingPage() {
                 date: selectedDate.date.toISOString(),
                 appointmentDate: selectedDate.date.toISOString(), // For admin compatibility
                 time: selectedTime,
-                staffId: selectedStaff._id,
+                staffId: selectedStaff.id || selectedStaff._id,
                 staffName: selectedStaff.name,
                 status: 'upcoming',
                 timestamp: new Date().toISOString(),
@@ -452,10 +458,10 @@ export default function AppBookingPage() {
 
                         <div className="space-y-2.5 max-h-[55vh] overflow-y-auto custom-scrollbar pr-1">
                             {filteredServices.map((svc) => {
-                                const isSelected = selectedServices.some(s => s._id === svc._id);
+                                const isSelected = selectedServices.some(s => s.id === svc.id);
                                 return (
                                     <motion.button
-                                        key={svc._id}
+                                        key={svc.id}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => toggleService(svc)}
                                         style={{
@@ -491,7 +497,9 @@ export default function AppBookingPage() {
                 )}
 
 
-                {/* STEP 1: Select Location */}
+
+
+                {/* STEP 1: Date & Time */}
                 {step === 1 && (
                     <motion.div
                         key="step-1"
@@ -499,82 +507,10 @@ export default function AppBookingPage() {
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                        className="space-y-6"
-                    >
-                        <div className="flex flex-col gap-0">
-                            <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                Select <span className="text-[#C8956C]">Location</span>
-                            </h2>
-                            <p className="text-[10px] uppercase tracking-widest opacity-40 font-bold mt-1">Found {availableSalons.length} salons nearby</p>
-                        </div>
-
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-4">
-                            {availableSalons.map((salon, i) => (
-                                <motion.button
-                                    key={salon._id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.05 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => {
-                                        setSelectedOutlet(salon);
-                                        goTo(2);
-                                    }}
-                                    style={{
-                                        background: selectedOutlet?._id === salon._id ? 'rgba(200,149,108,0.08)' : colors.card,
-                                        borderColor: selectedOutlet?._id === salon._id ? '#C8956C' : colors.border,
-                                        fontFamily: "'Poppins', sans-serif"
-                                    }}
-                                    className="w-full text-left p-4 rounded-2xl border transition-all duration-300 shadow-sm relative overflow-hidden"
-                                >
-                                    <div className="flex gap-4">
-                                        <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0">
-                                            <img src={salon.image} alt={salon.name} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-sm font-bold uppercase tracking-tight truncate" style={{ color: colors.text }}>{salon.name}</h3>
-                                                <div className="flex items-center gap-1 text-[#C8956C]">
-                                                    <Star size={10} fill="#C8956C" />
-                                                    <span className="text-[10px] font-black">{salon.rating}</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-[10px] mt-1 opacity-60 leading-tight line-clamp-2" style={{ color: colors.textMuted }}>{salon.address}</p>
-                                            <div className="flex items-center gap-3 mt-2">
-                                                <span className="text-[9px] font-bold uppercase tracking-widest flex items-center gap-1" style={{ color: colors.textMuted }}>
-                                                    <MapPin size={10} className="text-[#C8956C]" /> {salon.distance}
-                                                </span>
-                                                <div className="flex gap-1">
-                                                    {salon.categories?.slice(0, 2).map(cat => (
-                                                        <span key={cat} className="text-[8px] px-1.5 py-0.5 rounded-full bg-black/5 dark:bg-white/5 font-bold uppercase tracking-widest">{cat}</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {selectedOutlet?._id === salon._id && (
-                                        <div className="absolute top-2 right-2 bg-[#C8956C] rounded-full p-1 scale-75">
-                                            <Check size={12} color="white" strokeWidth={3} />
-                                        </div>
-                                    )}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* STEP 2: Date & Time */}
-                {step === 2 && (
-                    <motion.div
-                        key="step-2"
-                        custom={direction}
-                        variants={slideVariants}
-                        initial="enter" animate="center" exit="exit"
-                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="space-y-8"
                     >
                         <button
-                            onClick={() => goTo(3)}
+                            onClick={() => goTo(2)}
                             disabled={!selectedDate || !selectedTime}
                             style={{ fontFamily: "'Poppins', sans-serif" }}
                             className="w-full py-4 rounded-xl bg-[#C8956C] text-white text-[11px] font-bold uppercase tracking-[0.3em] flex items-center justify-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
@@ -703,97 +639,106 @@ export default function AppBookingPage() {
                     </motion.div>
                 )}
 
-                {/* STEP 3: Stylist */}
-                {step === 3 && (
+                {/* STEP 2: Stylist */}
+                {step === 2 && (
                     <motion.div
-                        key="step-3"
+                        key="step-2"
                         custom={direction}
                         variants={slideVariants}
                         initial="enter" animate="center" exit="exit"
                         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                         className="space-y-6"
                     >
-                        <button
-                            onClick={() => goTo(4)}
-                            disabled={!selectedStaff}
-                            style={{
-                                fontFamily: "'Poppins', sans-serif",
-                                background: 'linear-gradient(135deg, #C8956C 0%, #A67C59 100%)'
-                            }}
-                            className="w-full py-5 rounded-[20px] text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-2xl shadow-[#C8956C]/30 active:scale-[0.98] transition-all"
-                        >
-                            Review Booking <ArrowRight className="w-4 h-4" />
-                        </button>
+                        <div className="flex flex-col gap-0">
+                            <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
+                                Choose <span className="text-[#C8956C]">Expert</span>
+                            </h2>
+                        </div>
 
-                        <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Choose <span className="text-[#C8956C]">Expert</span>
-                        </h2>
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-4">
-                            {staff.map((s, i) => (
-                                <motion.button
-                                    key={s._id}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.08 }}
-                                    whileHover={{ scale: 1.01 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => setSelectedStaff(s)}
-                                    style={{
-                                        background: selectedStaff?._id === s._id ? 'rgba(200,149,108,0.08)' : colors.card,
-                                        borderColor: selectedStaff?._id === s._id ? '#C8956C' : colors.border,
-                                        fontFamily: "'Poppins', sans-serif"
-                                    }}
-                                    className={`w-full flex items-center gap-5 p-4 rounded-[24px] border transition-all duration-300 shadow-sm relative overflow-hidden ${selectedStaff?._id === s._id ? 'shadow-lg shadow-[#C8956C]/10' : ''}`}
-                                >
-                                    {/* Profile Image with Ring */}
-                                    <div className="relative shrink-0">
-                                        <div
-                                            style={{ borderColor: selectedStaff?._id === s._id ? '#C8956C' : 'transparent' }}
-                                            className="w-16 h-16 rounded-full border-2 p-1 transition-all duration-300"
-                                        >
-                                            <div className="w-full h-full rounded-full overflow-hidden bg-black/5 dark:bg-white/5 border border-black/5">
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => goTo(3)}
+                                disabled={!selectedStaff}
+                                className={`w-full py-5 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 transition-all duration-300 shadow-xl ${
+                                    selectedStaff 
+                                        ? 'bg-[#C8956C] text-white shadow-[#C8956C]/30 active:scale-95' 
+                                        : 'bg-black/5 dark:bg-white/5 text-black/30 dark:text-white/30 cursor-not-allowed border border-dashed border-black/10'
+                                }`}
+                            >
+                                Continue <ArrowRight size={16} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 pb-4">
+                            {staff.map((s, i) => {
+                                const sid = s.id || s._id;
+                                const isSelected = !!selectedStaff && (String(selectedStaff.id || selectedStaff._id) === String(sid));
+                                
+                                return (
+                                    <motion.button
+                                        key={sid || i}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: i * 0.05 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setSelectedStaff(s)}
+                                        style={{
+                                            background: isSelected ? (isLight ? '#FFF9F5' : 'rgba(200,149,108,0.15)') : colors.card,
+                                            borderColor: isSelected ? '#C8956C' : colors.border,
+                                            fontFamily: "'Poppins', sans-serif"
+                                        }}
+                                        className={`w-full flex items-center gap-4 p-5 rounded-[24px] border-2 transition-all duration-300 relative overflow-hidden ${isSelected ? 'shadow-md border-[#C8956C]' : 'border-transparent shadow-sm'}`}
+                                    >
+                                        {/* Avatar Section */}
+                                        <div className="relative shrink-0">
+                                            <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-[#1A1A1A] border-2 flex items-center justify-center p-0.5 transition-all duration-300"
+                                                 style={{ borderColor: isSelected ? '#C8956C' : 'rgba(0,0,0,0.05)' }}>
                                                 {s.image ? (
-                                                    <img src={s.image} alt={s.name} className="w-full h-full object-cover" />
+                                                    <img src={s.image} alt={s.name} className="w-full h-full object-cover rounded-full" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] bg-white">
-                                                        {s.name.charAt(0)}
+                                                    <div className="w-full h-full rounded-full flex items-center justify-center font-black text-[#C8956C] bg-white dark:bg-[#2A211B] text-xl">
+                                                        {s.name?.charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
+                                            {/* Online Indicator */}
+                                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00D084] rounded-full border-2 border-white dark:border-[#1A1A1A] z-10 shadow-sm" />
                                         </div>
-                                    </div>
-
-                                    {/* Text Info */}
-                                    <div className="text-left flex-1 py-1">
-                                        <p className="text-[15px] font-bold tracking-tight mb-1" style={{ color: colors.text }}>
-                                            {s.name}
-                                        </p>
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-[10px] uppercase font-bold tracking-[0.1em] text-[#C8956C]/80">
-                                                {s.specialization}
+    
+                                        {/* Info Section */}
+                                        <div className="text-left flex-1 min-w-0">
+                                            <p className="text-[17px] font-bold tracking-tight mb-1" style={{ color: colors.text }}>
+                                                {s.name}
                                             </p>
+                                            <div className="flex items-center gap-1.5">
+                                                <Sparkles size={10} className="text-[#C8956C]" />
+                                                <p className="text-[9px] uppercase font-black tracking-[0.15em] text-[#C8956C]">
+                                                    {s.specialization}
+                                                </p>
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    {/* Selection Glow */}
-                                    {selectedStaff?._id === s._id && (
-                                        <motion.div
-                                            layoutId="checkGlow"
-                                            className="w-8 h-8 rounded-full bg-[#C8956C] flex items-center justify-center shadow-lg shadow-[#C8956C]/30 mr-2"
-                                        >
-                                            <Check className="w-4 h-4 text-white" strokeWidth={3} />
-                                        </motion.div>
-                                    )}
-                                </motion.button>
-                            ))}
+    
+                                        {/* Selection Checkmark Button Style */}
+                                        {isSelected && (
+                                            <motion.div 
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                animate={{ scale: 1, opacity: 1 }}
+                                                className="w-10 h-10 rounded-full bg-[#C8956C] flex items-center justify-center shadow-lg shadow-[#C8956C]/30"
+                                            >
+                                                <Check size={20} color="white" strokeWidth={3} />
+                                            </motion.div>
+                                        )}
+                                    </motion.button>
+                                );
+                            })}
                         </div>
 
 
                     </motion.div>
                 )}
 
-                {/* STEP 4: Confirm */}
-                {step === 4 && (
+                {/* STEP 3: Confirm */}
+                {step === 3 && (
                     <motion.div
                         key="step-4"
                         custom={direction}
@@ -822,7 +767,7 @@ export default function AppBookingPage() {
                         <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm">
                             <div className="space-y-3 pb-6 border-b border-black/5 dark:border-white/5">
                                 {selectedServices.map((svc) => (
-                                    <div key={svc._id} className="flex items-center gap-0">
+                                    <div key={svc.id || svc._id || svc.name} className="flex items-center gap-0">
                                         <div style={{ fontFamily: "'Poppins', sans-serif" }}>
                                             <h3 className="text-sm font-bold uppercase tracking-tight" style={{ color: colors.text }}>{svc.name}</h3>
                                             <p className="text-[8px] font-black uppercase tracking-widest mt-0.5 opacity-40" style={{ color: colors.textMuted }}>{svc.category} · {svc.duration} MIN</p>

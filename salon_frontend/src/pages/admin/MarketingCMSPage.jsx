@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useCMS } from '../../contexts/CMSContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Layout,
@@ -10,28 +11,136 @@ import {
     Smartphone,
     Tag,
     Zap,
-    CheckCircle2,
     X,
+    XCircle,
     Upload,
     ArrowRight,
     Star,
-    Clock
+    Clock,
+    Users,
+    User,
+    UserCircle,
+    Camera
 } from 'lucide-react';
 
 export default function MarketingCMSPage() {
-    const [banners, setBanners] = useState([
-        { id: 1, title: 'Summer Hair Revival', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop', link: '/services/hair-care', status: 'Active' },
-        { id: 2, title: 'Men\'s Grooming Special', image: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070&auto=format&fit=crop', link: '/services/barber', status: 'Paused' },
-    ]);
-
-    const [offers, setOffers] = useState([
-        { id: 1, title: 'First Visit 20% Off', description: 'Available for all new customers on their first appointment.', code: 'FIRST20', expiry: '31 Mar, 2024', status: 'Live' },
-        { id: 2, title: 'Wedding Package', description: 'Complete bridal makeover including hair, makeup and spa.', code: 'BRIDAL10', expiry: '15 Jun, 2024', status: 'Draft' },
-    ]);
+    const { 
+        banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
+        offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
+        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus 
+    } = useCMS();
 
     const [activeTab, setActiveTab] = useState('banners');
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalType, setModalType] = useState('banner'); // 'banner' or 'offer'
+    const [modalType, setModalType] = useState('banner'); // 'banner', 'offer', or 'lookbook'
+    const [selectedGender, setSelectedGender] = useState('all'); // 'all', 'men', 'women'
+    const [editingId, setEditingId] = useState(null);
+    const [showPreviewInfo, setShowPreviewInfo] = useState(false);
+
+    // Form states
+    const [formData, setFormData] = useState({
+        title: '',
+        link: '/app/home',
+        gender: 'men',
+        description: '',
+        tag: '',
+        code: '',
+        expiry: '',
+        image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+    });
+
+    const resetForm = () => {
+        setFormData({
+            title: '',
+            link: '/app/home',
+            gender: 'men',
+            description: '',
+            tag: '',
+            code: '',
+            expiry: '',
+            image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+        });
+        setEditingId(null);
+    };
+
+    const handlePublish = (e) => {
+        e.preventDefault();
+        
+        if (editingId) {
+            if (modalType === 'banner') {
+                updateBanner(editingId, formData);
+            } else if (modalType === 'offer') {
+                updateOffer(editingId, formData);
+            } else {
+                updateLookbookItem(editingId, formData);
+            }
+        } else {
+            const newItem = {
+                ...formData,
+                status: modalType === 'offer' ? 'Live' : 'Active'
+            };
+
+            if (modalType === 'banner') {
+                addBanner(newItem);
+            } else if (modalType === 'offer') {
+                addOffer(newItem);
+            } else {
+                addLookbookItem(newItem);
+            }
+        }
+
+        setIsModalOpen(false);
+        resetForm();
+    };
+
+    const handleDelete = (type, id) => {
+        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
+            if (type === 'banner') {
+                deleteBanner(id);
+            } else if (type === 'offer') {
+                deleteOffer(id);
+            } else {
+                deleteLookbookItem(id);
+            }
+        }
+    };
+
+    const handleEdit = (type, item) => {
+        setModalType(type);
+        setFormData({
+            title: item.title,
+            link: item.link || '/app/home',
+            gender: item.gender || 'men',
+            description: item.description || '',
+            tag: item.tag || '',
+            code: item.code || '',
+            expiry: item.expiry || '',
+            image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+        });
+        setEditingId(item.id);
+        setIsModalOpen(true);
+    };
+
+    const handleToggleStatus = (type, id) => {
+        if (type === 'banner') {
+            toggleBannerStatus(id);
+        } else if (type === 'offer') {
+            toggleOfferStatus(id);
+        } else {
+            toggleLookbookStatus(id);
+        }
+    };
+
+    const handleFileUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData({ ...formData, image: reader.result });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     return (
         <div className="space-y-8 pb-20">
@@ -45,40 +154,82 @@ export default function MarketingCMSPage() {
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-6 py-3 bg-surface border border-border/40 rounded-none text-[10px] font-black uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all">
+                    <button 
+                        onClick={() => {
+                            setShowPreviewInfo(true);
+                            setTimeout(() => setShowPreviewInfo(false), 3000);
+                        }}
+                        className="flex items-center gap-2 px-6 py-3 bg-surface border border-border/40 rounded-none text-[10px] font-black uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all relative"
+                    >
                         <Smartphone className="w-4 h-4" /> Preview App
+                        <AnimatePresence>
+                            {showPreviewInfo && (
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="absolute -bottom-12 left-0 right-0 py-2 bg-primary text-white text-[8px] font-black text-center uppercase tracking-widest z-50 shadow-xl"
+                                >
+                                    App Sync Active
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </button>
                     <button
                         onClick={() => {
-                            setModalType(activeTab === 'banners' ? 'banner' : 'offer');
+                            let type = 'banner';
+                            if (activeTab === 'offers') type = 'offer';
+                            if (activeTab === 'lookbook') type = 'lookbook';
+                            setModalType(type);
+                            resetForm();
                             setIsModalOpen(true);
                         }}
                         className="flex items-center gap-2 px-8 py-3 bg-primary text-primary-foreground rounded-none text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                     >
-                        <Plus className="w-4 h-4" /> New {activeTab === 'banners' ? 'Banner' : 'Offer'}
+                        <Plus className="w-4 h-4" /> New {activeTab === 'banners' ? 'Banner' : activeTab === 'offers' ? 'Offer' : 'Look'}
                     </button>
                 </div>
             </div>
 
-            {/* Navigation Tabs */}
-            <div className="flex gap-8 border-b border-border/40 pb-4">
-                {[
-                    { id: 'banners', label: 'App Banners', icon: ImageIcon },
-                    { id: 'offers', label: 'Exclusive Offers', icon: Tag },
-                ].map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
-                            }`}
-                    >
-                        <tab.icon className="w-3.5 h-3.5" />
-                        {tab.label}
-                        {activeTab === tab.id && (
-                            <motion.div layoutId="tab-underline" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-primary" />
-                        )}
-                    </button>
-                ))}
+            {/* Navigation & Filters */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-border/40 pb-4">
+                <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
+                    {[
+                        { id: 'banners', label: 'App Banners', icon: ImageIcon },
+                        { id: 'offers', label: 'Exclusive Offers', icon: Tag },
+                        { id: 'lookbook', label: 'Stylist Lookbook', icon: Camera },
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
+                                }`}
+                        >
+                            <tab.icon className="w-3.5 h-3.5" />
+                            {tab.label}
+                            {activeTab === tab.id && (
+                                <motion.div layoutId="tab-underline" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-primary" />
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex bg-surface-alt p-1 rounded-none border border-border/40">
+                    {[
+                        { id: 'all', label: 'All Protocols' },
+                        { id: 'men', label: 'Men\'s Sector' },
+                        { id: 'women', label: 'Women\'s Sector' },
+                    ].map((g) => (
+                        <button
+                            key={g.id}
+                            onClick={() => setSelectedGender(g.id)}
+                            className={`px-6 py-2 text-[8px] font-black uppercase tracking-widest transition-all ${selectedGender === g.id ? 'bg-primary text-primary-foreground shadow-lg' : 'text-text-muted hover:text-text'
+                                }`}
+                        >
+                            {g.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Content Area */}
@@ -91,40 +242,71 @@ export default function MarketingCMSPage() {
                         exit={{ opacity: 0, y: -10 }}
                         className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
                     >
-                        {banners.map((banner) => (
-                            <div key={banner.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-primary/40 transition-all text-left">
-                                <div className="aspect-[21/9] relative overflow-hidden bg-background">
-                                    <img src={banner.image} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                        <button className="p-2 bg-white text-black hover:bg-primary hover:text-white transition-colors"><Edit className="w-3.5 h-3.5" /></button>
-                                        <button className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                        {banners
+                            .filter(b => selectedGender === 'all' || b.gender === selectedGender)
+                            .map((banner) => (
+                                <div key={banner.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-primary/40 transition-all text-left">
+                                    <div className="aspect-[21/9] relative overflow-hidden bg-background">
+                                        <img src={banner.image} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
+                                                <button 
+                                                    onClick={() => window.open(banner.image, '_blank')}
+                                                    title="View Creative"
+                                                    className="p-2 bg-white text-black hover:bg-emerald-500 hover:text-white transition-colors"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleEdit('banner', banner)}
+                                                    title="Edit Banner"
+                                                    className="p-2 bg-white text-black hover:bg-primary hover:text-white transition-colors"
+                                                >
+                                                    <Edit className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDelete('banner', banner.id)}
+                                                    title="Delete Banner"
+                                                    className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                        </div>
+                                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handleToggleStatus('banner', banner.id)}
+                                                className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
+                                                }`}
+                                            >
+                                                {banner.status}
+                                            </button>
+                                            <span className="text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20">
+                                                {banner.gender === 'men' ? 'Men' : 'Women'}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${banner.status === 'Active' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border'
-                                            }`}>
-                                            {banner.status}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="p-5">
-                                    <h3 className="text-sm font-black text-text uppercase tracking-tight mb-1">{banner.title}</h3>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest break-all">Link: {banner.link}</p>
-                                    <div className="mt-4 flex items-center justify-between">
-                                        <button className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                                            Edit Details <ArrowRight className="w-3 h-3" />
-                                        </button>
-                                        <div className="flex -space-x-1.5 grayscale opacity-50">
-                                            {[1, 2, 3].map(i => <div key={i} className="w-5 h-5 rounded-full border border-surface-alt bg-background" />)}
+                                    <div className="p-5">
+                                        <h3 className="text-sm font-black text-text uppercase tracking-tight mb-1">{banner.title}</h3>
+                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest break-all">Link: {banner.link}</p>
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <button 
+                                                onClick={() => handleEdit('banner', banner)}
+                                                className="text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all outline-none"
+                                            >
+                                                Edit Details <ArrowRight className="w-3 h-3" />
+                                            </button>
+                                            <div className="flex items-center gap-1 opacity-50">
+                                                {banner.gender === 'men' ? <User className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
+                                                <span className="text-[8px] font-bold uppercase">{banner.gender}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))}
 
                         {/* New Banner Slot */}
                         <button
-                            onClick={() => { setModalType('banner'); setIsModalOpen(true); }}
+                            onClick={() => { setModalType('banner'); resetForm(); setIsModalOpen(true); }}
                             className="aspect-[21/9] sm:aspect-auto flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/[0.02] transition-all group min-h-[250px]"
                         >
                             <div className="w-12 h-12 rounded-none bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
@@ -146,39 +328,133 @@ export default function MarketingCMSPage() {
                         exit={{ opacity: 0, y: -10 }}
                         className="grid sm:grid-cols-2 gap-6"
                     >
-                        {offers.map((offer) => (
-                            <div key={offer.id} className="bg-surface border border-border/40 p-8 flex flex-col md:flex-row gap-8 hover:border-violet-500/40 transition-all group relative text-left">
-                                <div className="absolute top-0 right-0 p-4 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all">
-                                    <button className="p-2 bg-surface-alt border border-border text-text-muted hover:text-primary"><Edit className="w-4 h-4" /></button>
-                                    <button className="p-2 bg-surface-alt border border-border text-text-muted hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
-                                </div>
+                        {offers
+                            .filter(o => selectedGender === 'all' || o.gender === selectedGender)
+                            .map((offer) => (
+                                <div key={offer.id} className="bg-surface border border-border/40 p-8 flex flex-col md:flex-row gap-8 hover:border-violet-500/40 transition-all group relative text-left">
+                                    <div className="absolute top-0 right-0 p-4 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all z-10">
+                                        <button 
+                                            onClick={() => handleEdit('offer', offer)}
+                                            title="Edit Offer"
+                                            className="p-2 bg-surface-alt border border-border text-text-muted hover:text-primary"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDelete('offer', offer.id)}
+                                            title="Delete Offer"
+                                            className="p-2 bg-surface-alt border border-border text-text-muted hover:text-rose-600"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
 
-                                <div className="w-24 h-24 rounded-none bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-inner group-hover:border-violet-500/20 transition-all">
-                                    <Zap className="w-10 h-10 text-violet-500 animate-pulse" />
-                                </div>
-                                <div className="flex-1 space-y-4">
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border'
-                                            }`}>
-                                            {offer.status}
-                                        </span>
-                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1">
-                                            <Clock className="w-3 h-3" /> Ends: {offer.expiry}
-                                        </span>
+                                    <div className="w-24 h-24 rounded-none bg-background border border-border/10 flex items-center justify-center shrink-0 shadow-inner group-hover:border-violet-500/20 transition-all">
+                                        <Zap className="w-10 h-10 text-violet-500 animate-pulse" />
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">{offer.title}</h3>
-                                        <p className="text-xs text-text-secondary mt-2 leading-relaxed">{offer.description}</p>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="px-4 py-2 bg-background border border-border/40 border-dashed rounded-none text-xs font-black text-primary tracking-widest">
-                                            {offer.code}
+                                    <div className="flex-1 space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handleToggleStatus('offer', offer.id)}
+                                                className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${offer.status === 'Live' ? 'bg-emerald-500 text-white dark:text-primary-foreground' : 'bg-surface-alt text-text-muted border border-border hover:bg-violet-500 hover:text-white'
+                                                }`}>
+                                                {offer.status}
+                                            </button>
+                                            <span className="text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                                                {offer.gender === 'men' ? 'Men' : 'Women'}
+                                            </span>
+                                            <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-1 ml-auto">
+                                                <Clock className="w-3 h-3" /> Ends: {offer.expiry}
+                                            </span>
                                         </div>
-                                        <button className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-violet-500 transition-colors">Apply Rules →</button>
+                                        <div>
+                                            <h3 className="text-xl font-black text-text uppercase tracking-tight">{offer.title}</h3>
+                                            <p className="text-xs text-text-secondary mt-2 leading-relaxed">{offer.description}</p>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="px-4 py-2 bg-background border border-border/40 border-dashed rounded-none text-xs font-black text-primary tracking-widest uppercase">
+                                                {offer.code}
+                                            </div>
+                                            <button 
+                                                onClick={() => handleEdit('offer', offer)}
+                                                className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-violet-500 transition-colors"
+                                            >
+                                                Apply Rules →
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                            ))}
+                    </motion.div>
+                )}
+
+                {activeTab === 'lookbook' && (
+                    <motion.div
+                        key="lookbook"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {lookbook
+                            .filter(l => selectedGender === 'all' || l.gender === selectedGender)
+                            .map((item) => (
+                                <div key={item.id} className="group bg-surface border border-border/40 rounded-none overflow-hidden hover:border-emerald-500/40 transition-all text-left">
+                                    <div className="aspect-[3/4] relative overflow-hidden bg-background">
+                                        <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-80" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
+                                        
+                                        <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-auto z-10">
+                                            <button 
+                                                onClick={() => handleEdit('lookbook', item)}
+                                                className="p-2 bg-white text-black hover:bg-primary hover:text-white transition-colors"
+                                            >
+                                                <Edit className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDelete('lookbook', item.id)}
+                                                className="p-2 bg-white text-rose-600 hover:bg-rose-600 hover:text-white transition-colors"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+
+                                        <div className="absolute bottom-4 left-4 right-4 text-white">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <button 
+                                                    onClick={() => handleToggleStatus('lookbook', item.id)}
+                                                    className={`text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest transition-all ${item.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-surface-alt text-text-muted border border-border hover:bg-primary hover:text-white'
+                                                    }`}
+                                                >
+                                                    {item.status}
+                                                </button>
+                                                <span className="text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                                    {item.tag}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-lg font-black uppercase tracking-tight leading-tight">{item.title}</h3>
+                                            <div className="flex items-center gap-1 mt-1 opacity-60">
+                                                <User className="w-3 h-3" />
+                                                <span className="text-[8px] font-bold uppercase tracking-widest">{item.gender} Sector</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+
+                        {/* New Lookbook Slot */}
+                        <button
+                            onClick={() => { setModalType('lookbook'); resetForm(); setIsModalOpen(true); }}
+                            className="aspect-[3/4] flex flex-col items-center justify-center gap-4 border-2 border-dashed border-border/40 hover:border-primary/40 hover:bg-primary/[0.02] transition-all group min-h-[300px]"
+                        >
+                            <div className="w-12 h-12 rounded-none bg-surface-alt flex items-center justify-center border border-border group-hover:bg-primary group-hover:border-primary transition-all">
+                                <Plus className="w-6 h-6 text-text-muted group-hover:text-white" />
                             </div>
-                        ))}
+                            <div className="text-center">
+                                <p className="text-[10px] font-black text-text uppercase tracking-widest">Add New Look</p>
+                                <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mt-1">Portrait Aspect Ratio</p>
+                            </div>
+                        </button>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -192,97 +468,243 @@ export default function MarketingCMSPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsModalOpen(false)}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                            className="absolute inset-0 bg-white/60 backdrop-blur-md"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-surface w-full max-w-xl rounded-none border border-border/40 shadow-[0_30px_60px_rgba(0,0,0,0.5)] overflow-hidden relative"
-                        >
-                            <div className="p-10">
-                                <div className="flex items-center justify-between mb-10">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-none bg-primary/5 flex items-center justify-center border border-primary/20">
-                                            {modalType === 'banner' ? <ImageIcon className="w-6 h-6 text-primary" /> : <Tag className="w-6 h-6 text-primary" />}
+                            className="bg-white w-full max-w-sm rounded-2xl border border-border shadow-2xl overflow-hidden relative"
+                        >                            <div className="p-6">
+                                    <div className="px-6 py-4 border-b border-border flex items-center justify-between mx-[-1.5rem] mt-[-1.5rem] mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-text-secondary border border-border/50">
+                                                {modalType === 'banner' ? <ImageIcon className="w-5 h-5" /> : <Tag className="w-5 h-5" />}
+                                            </div>
+                                            <div className="text-left">
+                                                <h2 className="text-lg font-black text-text uppercase tracking-tight">
+                                                    {editingId ? 'Edit Content' : 
+                                                     modalType === 'banner' ? 'New Banner' : 
+                                                     modalType === 'offer' ? 'New Offer' : 'New Lookbook Entry'}
+                                                </h2>
+                                            </div>
                                         </div>
-                                        <div className="text-left">
-                                            <h2 className="text-2xl font-black text-text uppercase tracking-tight">
-                                                {modalType === 'banner' ? 'Add New Banner' : 'Create Exclusive Offer'}
-                                            </h2>
-                                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1 opacity-60">Mobile App Content System</p>
-                                        </div>
+                                        <button onClick={() => setIsModalOpen(false)} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors text-text-muted">
+                                            <X className="w-5 h-5" />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="w-10 h-10 border border-border/40 flex items-center justify-center text-text-muted hover:text-text transition-all"
-                                    >
-                                        <X className="w-5 h-5" />
-                                    </button>
-                                </div>
 
-                                <form className="space-y-6 text-left" onSubmit={(e) => { e.preventDefault(); setIsModalOpen(false); }}>
+                                <form className="space-y-4 text-left" onSubmit={handlePublish}>
                                     {modalType === 'banner' ? (
                                         <>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Headline</label>
-                                                <input required type="text" placeholder="e.g. Summer Special Sale" className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-bold focus:border-primary outline-none transition-all" />
+                                            <div className="grid gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Headline</label>
+                                                    <input 
+                                                        required 
+                                                        type="text" 
+                                                        value={formData.title}
+                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                                        placeholder="e.g. Summer Special Sale" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Gender Sector</label>
+                                                    <select 
+                                                        value={formData.gender}
+                                                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="men">Men Only</option>
+                                                        <option value="women">Women Only</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Redirection (Route)</label>
-                                                <select className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-bold focus:border-primary outline-none transition-all appearance-none cursor-pointer">
-                                                    <option>Home Page</option>
-                                                    <option>Services List</option>
-                                                    <option>Product Shop</option>
-                                                    <option>Membership Plans</option>
-                                                    <option>Specific Service/Product</option>
+                                                <select 
+                                                    value={formData.link}
+                                                    onChange={(e) => setFormData({...formData, link: e.target.value})}
+                                                    className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                                >
+                                                    <option value="/app/home">Home Page</option>
                                                 </select>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Creative</label>
-                                                <div className="border-2 border-dashed border-border/40 p-10 flex flex-col items-center justify-center gap-3 bg-background hover:border-primary/40 transition-all cursor-pointer group">
-                                                    <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
-                                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload high-res image</p>
-                                                    <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max 2MB)</p>
+                                                <input
+                                                    type="file"
+                                                    id="banner-upload"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleFileUpload}
+                                                />
+                                                <label 
+                                                    htmlFor="banner-upload"
+                                                    className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
+                                                >
+                                                    {formData.image ? (
+                                                        <>
+                                                            <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
+                                                            <div className="relative z-10 flex flex-col items-center">
+                                                                <Upload className="w-8 h-8 text-primary mb-2 shadow-sm" />
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-full">Change Image</p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
+                                                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload banner</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max 2MB)</p>
+                                                        </>
+                                                    )}
+                                                </label>
+                                            </div>
+                                        </>
+                                    ) : modalType === 'lookbook' ? (
+                                        <>
+                                            <div className="grid gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Look Heading</label>
+                                                    <input 
+                                                        required 
+                                                        type="text" 
+                                                        value={formData.title}
+                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                                        placeholder="e.g. Classic Taper Ritual" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
                                                 </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Style Subheading (Tag)</label>
+                                                    <input 
+                                                        required 
+                                                        type="text" 
+                                                        value={formData.tag}
+                                                        onChange={(e) => setFormData({...formData, tag: e.target.value})}
+                                                        placeholder="e.g. Fade / Balayage / Bridal" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Gender Segment</label>
+                                                <select 
+                                                    value={formData.gender}
+                                                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                                                    className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                                >
+                                                    <option value="men">Men's Sector</option>
+                                                    <option value="women">Women's Sector</option>
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Look Image</label>
+                                                <input
+                                                    type="file"
+                                                    id="lookbook-upload"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={handleFileUpload}
+                                                />
+                                                <label 
+                                                    htmlFor="lookbook-upload"
+                                                    className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
+                                                >
+                                                    {formData.image ? (
+                                                        <>
+                                                            <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
+                                                            <div className="relative z-10 flex flex-col items-center">
+                                                                <Upload className="w-8 h-8 text-primary mb-2 shadow-sm" />
+                                                                <p className="text-[10px] font-black text-white uppercase tracking-widest bg-black px-4 py-1.5 rounded-full">Change Image</p>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
+                                                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload look</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Portrait orientation preferred</p>
+                                                        </>
+                                                    )}
+                                                </label>
                                             </div>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Offer Title</label>
-                                                <input required type="text" placeholder="e.g. Bridal Glow Package" className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-bold focus:border-primary outline-none transition-all" />
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Offer Title</label>
+                                                    <input 
+                                                        required 
+                                                        type="text" 
+                                                        value={formData.title}
+                                                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                                        placeholder="e.g. Bridal Glow Package" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Sector</label>
+                                                    <select 
+                                                        value={formData.gender}
+                                                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
+                                                    >
+                                                        <option value="men">Men Only</option>
+                                                        <option value="women">Women Only</option>
+                                                    </select>
+                                                </div>
                                             </div>
-                                            <div className="grid sm:grid-cols-2 gap-6">
-                                                <div className="space-y-2">
+                                            <div className="grid sm:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Promo Code</label>
-                                                    <input required type="text" placeholder="GLOW50" className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-black text-primary focus:border-primary outline-none transition-all" />
+                                                    <input 
+                                                        required 
+                                                        type="text" 
+                                                        value={formData.code}
+                                                        onChange={(e) => setFormData({...formData, code: e.target.value})}
+                                                        placeholder="GLOW50" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-black text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
+                                                        />
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-1.5">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Expiry Date</label>
-                                                    <input required type="date" className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-bold focus:border-primary outline-none transition-all" />
+                                                    <input 
+                                                        required 
+                                                        type="date" 
+                                                        value={formData.expiry}
+                                                        onChange={(e) => setFormData({...formData, expiry: e.target.value})}
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
+                                                        />
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Short Description</label>
-                                                <textarea required rows="3" placeholder="Explain the value proposition..." className="w-full px-5 py-4 bg-background border border-border/40 rounded-none text-sm font-bold focus:border-primary outline-none transition-all resize-none"></textarea>
+                                                <textarea 
+                                                    required 
+                                                    rows="2" 
+                                                    value={formData.description}
+                                                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                                    placeholder="Explain the value proposition..."                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-none placeholder:opacity-30"
+                                                    ></textarea>
                                             </div>
                                         </>
                                     )}
 
-                                    <div className="flex gap-4 pt-4">
+                                    <div className="flex gap-3 pt-2">
                                         <button
                                             type="button"
                                             onClick={() => setIsModalOpen(false)}
-                                            className="flex-1 py-4.5 border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all"
+                                            className="flex-1 py-3 rounded-lg border border-border text-[10px] font-black uppercase tracking-wider text-text-muted hover:bg-slate-50 transition-all font-bold"
                                         >
                                             Abort
                                         </button>
                                         <button
                                             type="submit"
-                                            className="flex-1 py-4.5 bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all font-black"
+                                            className="flex-[1.5] py-3 bg-[#1a1a1a] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all"
                                         >
-                                            Publish Content
+                                            {editingId ? 'Update' : 'Confirm'}
                                         </button>
                                     </div>
                                 </form>
