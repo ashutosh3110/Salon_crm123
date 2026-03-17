@@ -16,18 +16,29 @@ import {
     MapPin,
     FileText,
     Layers,
-    MessageSquare
+    MessageSquare,
+    Wallet,
+    ArrowUpRight,
+    ArrowDownLeft,
+    CheckCircle,
+    Send,
+    Percent,
+    TrendingDown,
+    X
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
 import SegmentManager from '../../components/admin/customers/SegmentManager';
 import FeedbackList from '../../components/admin/customers/FeedbackList';
 import ReEngagementTool from '../../components/admin/customers/ReEngagementTool';
+import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomersPage({ tab = 'directory' }) {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { customers, addCustomer, deleteCustomer } = useBusiness();
     const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -112,6 +123,14 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* Content Container */}
                 <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
+                    <div className="flex border-b border-border bg-surface-alt">
+                        <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Directory</button>
+                        <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Wallet Monitor</button>
+                        <button onClick={() => navigate('/admin/crm/segments')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'segments' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Segments</button>
+                        <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Feedback</button>
+                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Re-engage</button>
+                    </div>
+
                     {activeTab === 'directory' && (
                         <CustomerDirectory
                             customers={customers}
@@ -119,6 +138,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                             onDelete={deleteCustomer}
                         />
                     )}
+                    {activeTab === 'wallets' && <WalletMonitor customers={customers} onCustomerClick={setSelectedCustomer} />}
                     {activeTab === 'segments' && <SegmentManager />}
                     {activeTab === 'feedback' && <FeedbackList />}
                     {activeTab === 'reengage' && <ReEngagementTool />}
@@ -280,6 +300,355 @@ export default function CustomersPage({ tab = 'directory' }) {
                 </div>
             )}
         </>
+    );
+}
+
+function WalletMonitor({ customers, onCustomerClick }) {
+    const { allWallets, bulkRecharge, initializeWallet, walletSettings, setWalletSettings, totalLiability } = useWallet();
+    const [showBulkModal, setShowBulkModal] = useState(false);
+    const [activeSubTab, setActiveSubTab] = useState('directory'); // 'directory' | 'mechanics' | 'security'
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [bulkAmount, setBulkAmount] = useState('');
+    const [bulkNote, setBulkNote] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+
+    const handleBulkRecharge = async (e) => {
+        e.preventDefault();
+        if (!bulkAmount || selectedIds.length === 0) return;
+        
+        setIsProcessing(true);
+        try {
+            await bulkRecharge(selectedIds, bulkAmount, bulkNote || 'Bulk Promotional Credit');
+            setBulkAmount('');
+            setBulkNote('');
+            setSelectedIds([]);
+            setShowBulkModal(false);
+            alert(`Successfully recharged ${selectedIds.length} wallets!`);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const updateOffer = (id, field, value) => {
+        const newOffers = walletSettings.offers.map(o => o.id === id ? { ...o, [field]: value } : o);
+        setWalletSettings(prev => ({ ...prev, offers: newOffers }));
+    };
+
+    const deleteOffer = (id) => {
+        const newOffers = walletSettings.offers.filter(o => o.id !== id);
+        setWalletSettings(prev => ({ ...prev, offers: newOffers }));
+    };
+
+    const addOffer = () => {
+        const newOffer = {
+            id: Date.now(),
+            title: 'NEW REWARD',
+            minAdd: 1000,
+            extra: 100,
+            isActive: true
+        };
+        setWalletSettings(prev => ({ ...prev, offers: [...prev.offers, newOffer] }));
+    };
+
+    const updateFraudRule = (field, value) => {
+        setWalletSettings(prev => ({
+            ...prev,
+            fraudRules: { ...prev.fraudRules, [field]: value }
+        }));
+    };
+
+    return (
+        <div className="p-8 space-y-8 animate-reveal">
+            {/* Sub-Header Navigation */}
+            <div className="flex bg-surface-alt p-1 border border-border w-fit">
+                <button 
+                    onClick={() => setActiveSubTab('directory')}
+                    className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'directory' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                >
+                    Wallet Directory
+                </button>
+                <button 
+                    onClick={() => setActiveSubTab('mechanics')}
+                    className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'mechanics' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                >
+                    Offers & Mechanics
+                </button>
+                <button 
+                    onClick={() => setActiveSubTab('security')}
+                    className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'security' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                >
+                    Fraud & Security
+                </button>
+            </div>
+
+            {activeSubTab === 'directory' && (
+                <>
+                    {/* Wallet Stats */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-text text-white p-6 border border-border shadow-xl">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Customer Liability</p>
+                            <h3 className="text-3xl font-black">₹{totalLiability.toLocaleString()}</h3>
+                        </div>
+                        <div className="bg-surface p-6 border border-border">
+                            <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2">Active Wallets</p>
+                            <h3 className="text-3xl font-black text-text">{Object.keys(allWallets).length}</h3>
+                        </div>
+                        <div className="bg-primary/5 p-6 border border-primary/20 flex flex-col justify-center">
+                            <button 
+                                onClick={() => setShowBulkModal(true)}
+                                disabled={selectedIds.length === 0}
+                                className="bg-primary text-white py-4 px-6 text-[10px] font-black uppercase tracking-widest hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
+                            >
+                                Bulk Recharge ({selectedIds.length} Selected)
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {activeSubTab === 'directory' && (
+                <div className="border border-border">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="bg-surface-alt border-b border-border">
+                                <th className="px-6 py-4">
+                                    <input 
+                                        type="checkbox" 
+                                        onChange={(e) => setSelectedIds(e.target.checked ? customers.map(c => c._id) : [])}
+                                        checked={selectedIds.length === customers.length && customers.length > 0}
+                                    />
+                                </th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Identity</th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Available Balance</th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Last Activity</th>
+                                <th className="px-6 py-4 text-right"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {customers.map(customer => {
+                                const wallet = allWallets[customer._id] || { balance: 0, transactions: [] };
+                                const lastTx = wallet.transactions[0];
+                                
+                                return (
+                                    <tr key={customer._id} className="hover:bg-surface transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(customer._id)}
+                                                onChange={() => toggleSelect(customer._id)}
+                                            />
+                                        </td>
+                                        <td className="px-6 py-4" onClick={() => onCustomerClick(customer)}>
+                                            <div className="flex items-center gap-3 cursor-pointer">
+                                                <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">
+                                                    {customer.name.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-text uppercase tracking-tight">{customer.name}</p>
+                                                    <p className="text-[10px] text-text-muted font-bold tracking-widest">{customer.phone}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`text-sm font-black ${wallet.balance > 0 ? 'text-emerald-600' : 'text-text-muted'}`}>
+                                                ₹{wallet.balance.toLocaleString()}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {lastTx ? (
+                                                <div>
+                                                    <p className="text-[10px] font-black text-text uppercase">{lastTx.description}</p>
+                                                    <p className="text-[9px] text-text-muted font-bold uppercase">{new Date(lastTx.date).toLocaleDateString()}</p>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[9px] font-black text-text-muted/30 uppercase">NO_RECORDS</span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <button 
+                                                onClick={() => onCustomerClick(customer)}
+                                                className="p-2 hover:bg-surface-alt border border-transparent hover:border-border transition-all"
+                                            >
+                                                <ChevronRight className="w-4 h-4 text-text-muted" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {activeSubTab === 'mechanics' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-2 duration-300">
+                    <div className="bg-surface p-8 border border-border">
+                        <div className="flex justify-between items-center mb-8">
+                            <h4 className="text-[11px] font-black text-text uppercase tracking-widest">Active Wallet Mechanics</h4>
+                            <button onClick={addOffer} className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">+ Create Reward</button>
+                        </div>
+                        <div className="space-y-4">
+                            {walletSettings.offers.map(offer => (
+                                <div key={offer.id} className="p-4 border border-border bg-surface-alt group hover:border-primary transition-all">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <input 
+                                            value={offer.title}
+                                            onChange={(e) => updateOffer(offer.id, 'title', e.target.value)}
+                                            className="text-xs font-black text-text uppercase bg-transparent border-none outline-none w-3/4"
+                                        />
+                                        <button 
+                                            onClick={() => updateOffer(offer.id, 'isActive', !offer.isActive)}
+                                            className={`w-2 h-2 rounded-full ${offer.isActive ? 'bg-emerald-500' : 'bg-text-muted'}`} 
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <span className="text-[10px] font-bold text-text-muted uppercase">Min ₹</span>
+                                        <input 
+                                            type="number"
+                                            value={offer.minAdd}
+                                            onChange={(e) => updateOffer(offer.id, 'minAdd', parseInt(e.target.value))}
+                                            className="w-16 bg-white border border-border px-1 text-[10px] font-black"
+                                        />
+                                        <span className="text-[10px] font-bold text-text-muted uppercase">• Extra ₹</span>
+                                        <input 
+                                            type="number"
+                                            value={offer.extra}
+                                            onChange={(e) => updateOffer(offer.id, 'extra', parseInt(e.target.value))}
+                                            className="w-16 bg-white border border-border px-1 text-[10px] font-black"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => deleteOffer(offer.id)} className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Remove</button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="bg-primary/5 p-8 border border-primary/20 flex flex-col justify-center text-center">
+                        <Percent className="w-12 h-12 text-primary mx-auto mb-4 opacity-20" />
+                        <h4 className="text-sm font-black text-primary uppercase tracking-tight mb-2">Dynamic Incentives</h4>
+                        <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest leading-relaxed px-4 opacity-60">
+                            Configure automated rewards that trigger when nodes recharge their credits via the application.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {activeSubTab === 'security' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-2 duration-300">
+                    <div className="bg-surface p-8 border border-border">
+                        <h4 className="text-[11px] font-black text-text uppercase tracking-widest mb-8">Fraud Mitigation Layer</h4>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
+                                    <TrendingDown className="w-3 h-3" /> Max Daily Debit Limit
+                                </span>
+                                <input 
+                                    type="number" 
+                                    className="bg-surface-alt border border-border px-3 py-1 text-xs font-black w-24 outline-none focus:border-primary"
+                                    value={walletSettings.fraudRules.maxDailyDebit}
+                                    onChange={(e) => updateFraudRule('maxDailyDebit', parseInt(e.target.value))}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
+                                    <TrendingUp className="w-3 h-3" /> Max Single Recharge
+                                </span>
+                                <input 
+                                    type="number" 
+                                    className="bg-surface-alt border border-border px-3 py-1 text-xs font-black w-24 outline-none focus:border-primary"
+                                    value={walletSettings.fraudRules.maxSingleRecharge}
+                                    onChange={(e) => updateFraudRule('maxSingleRecharge', parseInt(e.target.value))}
+                                />
+                            </div>
+                            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Reversal Authentication Req.</span>
+                                <button 
+                                    onClick={() => updateFraudRule('requireAdminAuthForReversals', !walletSettings.fraudRules.requireAdminAuthForReversals)}
+                                    className={`w-10 h-5 border border-border relative transition-all ${walletSettings.fraudRules.requireAdminAuthForReversals ? 'bg-primary' : 'bg-surface-alt'}`}
+                                >
+                                    <div className={`absolute top-0.5 w-3.5 h-3.5 bg-white transition-all ${walletSettings.fraudRules.requireAdminAuthForReversals ? 'right-0.5' : 'left-0.5'}`} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-rose-500/5 p-8 border border-rose-500/20">
+                        <h4 className="text-[11px] font-black text-rose-800 uppercase tracking-widest mb-4">Anomaly Log Stream</h4>
+                        <div className="space-y-3">
+                            <div className="p-3 bg-white/50 border border-rose-100 flex justify-between items-center text-[9px] font-bold text-rose-600">
+                                <span>UNUSUAL_DEBIT_ATTEMPT - NODE_492</span>
+                                <span>21 FEB 2026</span>
+                            </div>
+                            <div className="p-3 bg-white/50 border border-rose-100 flex justify-between items-center text-[9px] font-bold text-rose-600">
+                                <span>LIMIT_EXCEEDED - NODE_102</span>
+                                <span>20 FEB 2026</span>
+                            </div>
+                        </div>
+                        <p className="mt-6 text-[8px] font-black text-rose-800/50 uppercase tracking-[0.2em] text-center">Threat Vector Monitoring Active</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Recharge Modal */}
+            {showBulkModal && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[300] flex items-center justify-center p-4">
+                    <div className="bg-surface w-full max-w-md p-8 border border-border shadow-2xl animate-in zoom-in-95">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Bulk Identity Recharge</h3>
+                            <button onClick={() => setShowBulkModal(false)}><X className="w-6 h-6 text-text-muted" /></button>
+                        </div>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-8">
+                            Selected Matrix Nodes: <span className="text-primary">{selectedIds.length} Customers</span>
+                        </p>
+                        
+                        <form onSubmit={handleBulkRecharge} className="space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Recharge Amount (₹)</label>
+                                <input 
+                                    type="number" 
+                                    required
+                                    placeholder="e.g. 500"
+                                    value={bulkAmount}
+                                    onChange={(e) => setBulkAmount(e.target.value)}
+                                    className="w-full bg-surface-alt border border-border px-4 py-3 text-lg font-black outline-none focus:border-primary"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Promotion Note / Description</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. FESTIVAL BONUS"
+                                    value={bulkNote}
+                                    onChange={(e) => setBulkNote(e.target.value)}
+                                    className="w-full bg-surface-alt border border-border px-4 py-3 text-sm font-black uppercase outline-none focus:border-primary"
+                                />
+                            </div>
+                            
+                            <div className="flex flex-col gap-4 pt-4">
+                                <div className="p-4 bg-emerald-50 border border-emerald-100 flex items-start gap-3">
+                                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] font-bold text-emerald-800 uppercase leading-relaxed">
+                                        Executing this will trigger <span className="font-black underline">Automated WhatsApp Notifications</span> to all selected customers.
+                                    </p>
+                                </div>
+                                <button 
+                                    type="submit"
+                                    disabled={isProcessing}
+                                    className="w-full bg-primary text-white py-5 text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black flex items-center justify-center gap-3"
+                                >
+                                    {isProcessing ? 'SYNCHRONIZING...' : <><Send className="w-4 h-4"/> INITIALIZE BULK CREDIT</>}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 

@@ -1,0 +1,58 @@
+{
+  "walletSettings": {
+    "offers": [
+      { "id": 1, "title": "Early Bird Bonus", "minAdd": 500, "extra": 50, "isActive": true },
+      { "id": 2, "title": "Standard Reward", "minAdd": 1000, "extra": 100, "isActive": true },
+      { "id": 3, "title": "Mega Recharge", "minAdd": 2000, "extra": 300, "isActive": true }
+    ],
+    "fraudRules": {
+      "maxDailyDebit": 5000,
+      "maxSingleRecharge": 50000,
+      "requireAdminAuthForReversals": true
+    }
+  },
+  "mockWallets": {
+    "cust-1710580000000": {
+      "balance": 2450,
+      "transactions": [
+        {
+          "id": "tx-1710580000001",
+          "type": "CREDIT",
+          "amount": 2000,
+          "description": "Wallet Top-up",
+          "date": "2026-03-15T10:00:00Z",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "tx-1710580000002",
+          "type": "CREDIT",
+          "amount": 300,
+          "description": "Recharge Loyalty Bonus",
+          "date": "2026-03-15T10:00:01Z",
+          "status": "COMPLETED"
+        },
+        {
+          "id": "tx-1710580000003",
+          "type": "CREDIT",
+          "amount": 150,
+          "description": "Welcome Bonus",
+          "date": "2026-03-01T09:00:00Z",
+          "status": "COMPLETED"
+        }
+      ]
+    },
+    "cust-1710590000000": {
+      "balance": 1500,
+      "transactions": [
+        {
+          "id": "tx-1710590000001",
+          "type": "CREDIT",
+          "amount": 1500,
+          "description": "Welcome Bonus",
+          "date": "2026-03-10T11:00:00Z",
+          "status": "COMPLETED"
+        }
+      ]
+    }
+  }
+}

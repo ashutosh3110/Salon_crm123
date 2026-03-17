@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
 import { BusinessProvider } from './contexts/BusinessContext';
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
+import { WalletProvider } from './contexts/WalletContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Public pages
@@ -182,14 +183,16 @@ function App() {
       <ScrollToHash />
       <AuthProvider>
         <BusinessProvider>
-          <CMSProvider>
-            <BookingRegistryProvider>
-            <ThemeProvider>
-              <PettyCashProvider>
-                <AttendanceProvider>
-                  <FinanceProvider>
-                    <InventoryProvider>
-                      <Routes>
+          <CustomerAuthProvider>
+            <WalletProvider>
+              <CMSProvider>
+                <BookingRegistryProvider>
+                  <ThemeProvider>
+                    <PettyCashProvider>
+                      <AttendanceProvider>
+                        <FinanceProvider>
+                          <InventoryProvider>
+                            <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<LandingPage />} />
                         <Route path="/login" element={<AuthPage />} />
@@ -221,6 +224,7 @@ function App() {
 
                             {/* CRM Routes */}
                             <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
+                            <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
                             <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
                             <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
                             <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
@@ -453,30 +457,32 @@ function App() {
                           </div>
                         } />
 
-                        <Route path="*" element={
-                          <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center selection:bg-primary/30">
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.9 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="space-y-6"
-                            >
-                              <h1 className="text-8xl font-black text-primary/20 leading-none">404</h1>
-                              <div className="space-y-2">
-                                <h2 className="text-2xl font-bold text-text uppercase tracking-widest italic">Lost in Orbit.</h2>
-                                <p className="text-text-secondary max-w-xs mx-auto text-sm font-medium">The coordinates you're looking for do not exist in this system.</p>
+                            <Route path="*" element={
+                              <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center selection:bg-primary/30">
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="space-y-6"
+                                >
+                                  <h1 className="text-8xl font-black text-primary/20 leading-none">404</h1>
+                                  <div className="space-y-2">
+                                    <h2 className="text-2xl font-bold text-text uppercase tracking-widest italic">Lost in Orbit.</h2>
+                                    <p className="text-text-secondary max-w-xs mx-auto text-sm font-medium">The coordinates you're looking for do not exist in this system.</p>
+                                  </div>
+                                  <button onClick={() => window.location.href = '/login'} className="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all">Go to Login</button>
+                                </motion.div>
                               </div>
-                              <button onClick={() => window.location.href = '/login'} className="px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-none hover:bg-white hover:text-black transition-all">Go to Login</button>
-                            </motion.div>
-                          </div>
-                        } />
-                      </Routes>
-                    </InventoryProvider>
-                  </FinanceProvider>
-                </AttendanceProvider>
-              </PettyCashProvider>
-            </ThemeProvider>
-          </BookingRegistryProvider>
-          </CMSProvider>
+                            } />
+                          </Routes>
+                          </InventoryProvider>
+                        </FinanceProvider>
+                      </AttendanceProvider>
+                    </PettyCashProvider>
+                  </ThemeProvider>
+                </BookingRegistryProvider>
+              </CMSProvider>
+            </WalletProvider>
+          </CustomerAuthProvider>
         </BusinessProvider>
       </AuthProvider>
     </Router >

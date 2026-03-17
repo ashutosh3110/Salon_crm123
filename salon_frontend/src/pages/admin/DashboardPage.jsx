@@ -32,6 +32,7 @@ import {
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { useWallet } from '../../contexts/WalletContext';
 
 const stats = [
     { label: 'Total Revenue', value: 128450, prefix: '₹', trend: '+14.5%', positive: true, icon: DollarSign },
@@ -65,6 +66,20 @@ const recentActivity = [
 
 export default function DashboardPage() {
     const { bookings: registryBookings } = useBookingRegistry();
+    const { allWallets } = useWallet();
+
+    const totalLiability = useMemo(() => {
+        return Object.values(allWallets).reduce((acc, w) => acc + (w.balance || 0), 0);
+    }, [allWallets]);
+
+    const activeStats = useMemo(() => {
+        const base = [...stats];
+        // Replace or add 
+        return [
+            ...base,
+            { label: 'Wallet Liability', value: totalLiability, prefix: '₹', trend: 'Active', positive: false, icon: CreditCard }
+        ];
+    }, [totalLiability]);
 
     const liveRecentActivity = useMemo(() => {
         // Take last 5 from registry
@@ -100,8 +115,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left font-black">
-                {stats.map((stat, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-left font-black">
+                {activeStats.map((stat, i) => (
                     <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />

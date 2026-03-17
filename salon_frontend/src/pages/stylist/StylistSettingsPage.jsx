@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus, ShieldAlert, Activity, Zap, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../contexts/AuthContext';
+import { useCMS } from '../../contexts/CMSContext';
 
 const skills = [
     { name: 'HAIR_COLORING', level: 'EXPERT_UNIT', icon: '🎨' },
@@ -14,10 +16,54 @@ const skills = [
 export default function StylistSettingsPage() {
     const { section } = useParams();
     const navigate = useNavigate();
-    // Debugging protocol
+    const { user } = useAuth();
+    const { experts, updateExpertProfile } = useCMS();
+
+    // Find current expert profile
+    const profile = experts.find(e => e.userId === user?.id) || {
+        bio: '',
+        experience: '5 Years',
+        clients: '500+',
+        specializations: ['Master Styling'],
+        status: 'None'
+    };
+
+    const [formState, setFormState] = useState({
+        bio: profile.bio || '',
+        experience: profile.experience || '',
+        clients: profile.clients || '',
+        specializations: profile.specializations || [],
+        name: user?.name || '',
+        img: profile.img || `https://ui-avatars.com/api/?name=${user?.name || 'Stylist'}&background=C8956C&color=fff`
+    });
+
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Sync form state if profile changes
     useEffect(() => {
-        console.log(`[SYSTEM_SYNC] Entering sector: ${section || 'ROOT'}`);
-    }, [section]);
+        if (profile.userId) {
+            setFormState(prev => ({
+                ...prev,
+                bio: profile.bio,
+                experience: profile.experience,
+                clients: profile.clients,
+                specializations: profile.specializations,
+                status: profile.status,
+                img: profile.img || prev.img
+            }));
+        }
+    }, [profile.userId]);
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormState(prev => ({ ...prev, img: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     // Redirect to default section if none provided
     useEffect(() => {
@@ -46,12 +92,29 @@ export default function StylistSettingsPage() {
                     >
                         <div className="flex items-center gap-8 border-b border-border/10 pb-10">
                             <div className="relative group">
-                                <div className="w-28 h-28 bg-background border border-border flex items-center justify-center text-4xl font-black text-primary group-hover:border-primary/50 transition-all shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)]">
-                                    AN
-                                </div>
-                                <button className="absolute -bottom-2 -right-2 w-10 h-10 border border-border bg-surface text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all">
+                                <input
+                                    type="file"
+                                    id="profile-img-upload"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                />
+                                <label 
+                                    htmlFor="profile-img-upload"
+                                    className="w-28 h-28 bg-background border border-border flex items-center justify-center text-4xl font-black text-primary group-hover:border-primary/50 transition-all shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)] cursor-pointer overflow-hidden"
+                                >
+                                    {formState.img ? (
+                                        <img src={formState.img} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        user?.name?.substring(0, 2).toUpperCase() || 'AN'
+                                    )}
+                                </label>
+                                <label 
+                                    htmlFor="profile-img-upload"
+                                    className="absolute -bottom-2 -right-2 w-10 h-10 border border-border bg-surface text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer"
+                                >
                                     <Plus className="w-5 h-5" />
-                                </button>
+                                </label>
                             </div>
                             <div>
                                 <h2 className="text-2xl font-black text-text tracking-tighter">ANITA STYLIST</h2>
@@ -63,37 +126,86 @@ export default function StylistSettingsPage() {
                         <div className="grid sm:grid-cols-2 gap-x-10 gap-y-8">
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Full Name</label>
-                                <input type="text" defaultValue="ANITA STYLIST" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                                <input 
+                                    type="text" 
+                                    value={formState.name} 
+                                    onChange={(e) => setFormState({...formState, name: e.target.value})}
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" 
+                                />
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Email Address</label>
-                                <input type="email" defaultValue="STYLIST@NEXUS.SALON" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Phone Number</label>
-                                <input type="tel" defaultValue="+91 98765 43212" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Profile Status</label>
+                                <div className={`w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
+                                    profile.status === 'Approved' ? 'text-emerald-500' : profile.status === 'Pending' ? 'text-amber-500' : 'text-text-muted'
+                                }`}>
+                                    <div className={`w-2 h-2 rounded-full ${
+                                        profile.status === 'Approved' ? 'bg-emerald-500' : profile.status === 'Pending' ? 'bg-amber-500' : 'bg-text-muted'
+                                    }`} />
+                                    {profile.status || 'Not Submitted'}
+                                </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Years of Experience</label>
-                                <input type="text" defaultValue="8 YEARS" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                                <input 
+                                    type="text" 
+                                    value={formState.experience} 
+                                    onChange={(e) => setFormState({...formState, experience: e.target.value})}
+                                    placeholder="e.g. 8 Years"
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" 
+                                />
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Date of Birth</label>
-                                <input type="date" defaultValue="1995-05-15" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">PAN Card Number</label>
-                                <input type="text" defaultValue="ABCDE1234F" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Total Clients Served</label>
+                                <input 
+                                    type="text" 
+                                    value={formState.clients} 
+                                    onChange={(e) => setFormState({...formState, clients: e.target.value})}
+                                    placeholder="e.g. 1.2k+"
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" 
+                                />
                             </div>
                             <div className="sm:col-span-2 space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Residential Address</label>
-                                <textarea defaultValue="42 CYBER STREET, TECH DISTRICT, NEO-MUMBAI" className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all h-24 resize-none" />
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Profile Bio (Visible to Customers)</label>
+                                <textarea 
+                                    value={formState.bio} 
+                                    onChange={(e) => setFormState({...formState, bio: e.target.value})}
+                                    placeholder="Tell customers about your expertise and style..."
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all h-24 resize-none" 
+                                />
+                            </div>
+                            <div className="sm:col-span-2 space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Specializations (Comma separated)</label>
+                                <input 
+                                    type="text" 
+                                    value={formState.specializations.join(', ')} 
+                                    onChange={(e) => setFormState({...formState, specializations: e.target.value.split(',').map(s => s.trim())})}
+                                    placeholder="BRIDAL STYLE, EDITORIAL, GLAMOUR WAVES"
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all" 
+                                />
                             </div>
                         </div>
 
-                        <button className="bg-primary text-white px-10 py-4 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all">
-                            Save Profile
-                        </button>
+                        <div className="flex gap-4">
+                            <button 
+                                onClick={() => {
+                                    setIsSaving(true);
+                                    updateExpertProfile(user.id, { ...formState, status: 'Pending' });
+                                    setTimeout(() => {
+                                        setIsSaving(false);
+                                        alert('Profile submitted for Admin approval!');
+                                    }, 1000);
+                                }}
+                                disabled={isSaving}
+                                className="bg-primary text-white px-10 py-4 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50"
+                            >
+                                {isSaving ? 'Submitting...' : 'Submit for Approval'}
+                            </button>
+                            {profile.status === 'Approved' && (
+                                <div className="flex items-center gap-2 px-6 py-4 border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 text-[9px] font-black uppercase tracking-widest">
+                                    <Check className="w-4 h-4" /> Live on App
+                                </div>
+                            )}
+                        </div>
                     </motion.div>
                 );
             case 'skills':

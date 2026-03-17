@@ -14,24 +14,20 @@ export default function CustomerAppWrapper() {
     const location = useLocation();
 
     return (
-        <CustomerAuthProvider>
-            <GenderProvider>
-                <CartProvider>
-                    <CustomerThemeProvider>
-                        <WalletProvider>
-                            <FavoritesProvider>
-                                <AnimatePresence mode="wait">
-                                    {showSplash ? (
-                                        <AppSplashScreen key="splash" onComplete={() => setShowSplash(false)} />
-                                    ) : (
-                                        <Outlet key="app-content" />
-                                    )}
-                                </AnimatePresence>
-                            </FavoritesProvider>
-                        </WalletProvider>
-                    </CustomerThemeProvider>
-                </CartProvider>
-            </GenderProvider>
-        </CustomerAuthProvider>
+        <GenderProvider>
+            <CartProvider>
+                <CustomerThemeProvider>
+                    <FavoritesProvider>
+                        <AnimatePresence mode="wait">
+                            {showSplash ? (
+                                <AppSplashScreen key="splash" onComplete={() => setShowSplash(false)} />
+                            ) : (
+                                <Outlet key="app-content" />
+                            )}
+                        </AnimatePresence>
+                    </FavoritesProvider>
+                </CustomerThemeProvider>
+            </CartProvider>
+        </GenderProvider>
     );
 }

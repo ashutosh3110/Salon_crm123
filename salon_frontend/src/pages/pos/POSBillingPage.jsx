@@ -19,6 +19,7 @@ import { maskPhone } from '../../utils/phoneUtils';
 import {
     Document, Page, Text, View, StyleSheet, PDFDownloadLink, pdf, Font
 } from '@react-pdf/renderer';
+import { useWallet } from '../../contexts/WalletContext';
 
 // Register a custom font that supports the Rupee symbol (built-in fonts like Helvetica do not)
 Font.register({
@@ -138,6 +139,7 @@ export default function POSBillingPage() {
     const { addSaleRecord, products } = useInventory();
     const { services, customers: businessCustomers, addCustomer: addBusinessCustomer } = useBusiness();
     const { addRevenue } = useFinance();
+    const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
     const location = useLocation();
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
@@ -186,6 +188,7 @@ export default function POSBillingPage() {
             const existingClient = MOCK_CLIENTS.find(c => c.phone === phone);
             if (existingClient) {
                 setSelectedClient(existingClient);
+                initializeWallet(existingClient._id);
             } else {
                 setSelectedClient({ name, phone, email: '', loyaltyPoints: 0, walletBalance: 0, dueAmount: 0 });
             }
@@ -305,6 +308,12 @@ export default function POSBillingPage() {
 
         return { subtotal, discount, tax, total: grandTotal, taxable, currentBillTotal, previousDue };
     }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent, selectedClient, includePreviousDue]);
+
+    // Get real-time wallet balance
+    const clientWalletBalance = useMemo(() => {
+        if (!selectedClient?._id) return 0;
+        return allWallets[selectedClient._id]?.balance || 0;
+    }, [selectedClient, allWallets]);
 
     // Update auto-payment if single payment
     useMemo(() => {
@@ -460,7 +469,7 @@ export default function POSBillingPage() {
             setRedeemWallet(0);
         } else {
             const maxRedeemable = Math.max(0, totals.subtotal - totals.discount - redeemPoints);
-            setRedeemWallet(Math.min(selectedClient.walletBalance, maxRedeemable));
+            setRedeemWallet(Math.min(clientWalletBalance, maxRedeemable));
         }
     };
 
@@ -496,7 +505,19 @@ export default function POSBillingPage() {
         const balanceDue = totals.total - paidAmount;
 
         setCheckingOut(true);
-        setTimeout(() => {
+        setTimeout(async () => {
+            // Process Wallet Payment if any
+            if (redeemWallet > 0) {
+                try {
+                    if (clientWalletBalance < redeemWallet) throw new Error('Insufficient wallet balance');
+                    await adminAdjustBalance(selectedClient._id, redeemWallet, 'DEBIT', `POS Billing Payment - #${Date.now().toString().slice(-4)}`);
+                } catch (err) {
+                    alert(err.message);
+                    setCheckingOut(false);
+                    return;
+                }
+            }
+
             const invoiceData = {
                 number: `INV-${Date.now().toString().slice(-4)}`,
                 date: new Date(paymentDate).toLocaleString('en-IN', {
@@ -1031,7 +1052,7 @@ export default function POSBillingPage() {
                                     </div>
                                     <div className="bg-white/5 p-2 text-center">
                                         <p className="text-[9px] font-bold text-slate-400 uppercase">Wallet</p>
-                                        <p className="text-sm font-black text-emerald-400">₹{selectedClient.walletBalance}</p>
+                                        <p className="text-sm font-black text-emerald-400">₹{clientWalletBalance}</p>
                                     </div>
                                     <div className="bg-rose-500/10 p-2 text-center border border-rose-500/20 col-span-2">
                                         <div className="flex items-center justify-between">
@@ -1307,7 +1328,7 @@ export default function POSBillingPage() {
                                         <div className={`p-4 border transition-all ${redeemWallet > 0 ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-emerald-500/5 border-emerald-500/10'}`}>
                                             <p className={`text-[9px] font-bold uppercase mb-1 ${redeemWallet > 0 ? 'text-white/80' : 'text-emerald-500'}`}>Wallet Balance</p>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-black">₹{selectedClient?.walletBalance || 0}</span>
+                                                <span className="text-xs font-black">₹{clientWalletBalance}</span>
                                                 <button
                                                     onClick={handleRedeemWallet}
                                                     className={`text-[9px] font-black uppercase underline ${redeemWallet > 0 ? 'text-white' : 'text-emerald-600'}`}

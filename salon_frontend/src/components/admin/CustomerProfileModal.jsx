@@ -12,19 +12,33 @@ import {
     FileText,
     Cake,
     Layers,
-    MapPin
+    MapPin,
+    Wallet,
+    ArrowUpRight,
+    ArrowDownLeft,
+    Send
 } from 'lucide-react';
 
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useWallet } from '../../contexts/WalletContext';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const { user } = useAuth();
     const { updateCustomer } = useBusiness();
+    const { getWallet, adminAdjustBalance, initializeWallet } = useWallet();
     const [activeTab, setActiveTab] = useState('details');
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState(null);
+
+    // Recharge state
+    const [rechargeAmount, setRechargeAmount] = useState('');
+    const [rechargeType, setRechargeType] = useState('CREDIT');
+    const [rechargeNote, setRechargeNote] = useState('');
+    const [isRecharging, setIsRecharging] = useState(false);
+
+    const walletData = getWallet(customer?._id);
 
     // Initialize edit form when customer changes or editing starts
     React.useEffect(() => {
@@ -41,6 +55,8 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 remarks: customer.remarks || '',
                 category: customer.category || 'Regular'
             });
+            // Ensure wallet exists for this customer
+            initializeWallet(customer._id);
         }
     }, [customer, isEditing]);
 
@@ -49,6 +65,26 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const handleSave = () => {
         updateCustomer(customer._id, editForm);
         setIsEditing(false);
+    };
+
+    const handleRecharge = async (e) => {
+        e.preventDefault();
+        if (!rechargeAmount || isNaN(rechargeAmount)) return;
+        
+        setIsRecharging(true);
+        try {
+            await adminAdjustBalance(
+                customer._id, 
+                parseFloat(rechargeAmount), 
+                rechargeType, 
+                rechargeNote || `${rechargeType === 'CREDIT' ? 'Manual Top-up' : 'Manual Adjustment'}`
+            );
+            setRechargeAmount('');
+            setRechargeNote('');
+            // Optional: toast success
+        } finally {
+            setIsRecharging(false);
+        }
     };
 
     return (
@@ -73,7 +109,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                     <input
                                         type="text"
                                         value={editForm?.name}
-                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                         className="text-2xl font-black text-text bg-white border border-border px-4 py-2 rounded-none outline-none focus:border-primary uppercase tracking-tight"
                                     />
                                     <input
@@ -130,9 +166,9 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 {/* Sub-KPIs Bar */}
                 <div className="grid grid-cols-4 divide-x divide-border border-b border-border bg-white">
                     <ProfileMetric label="LIFETIME YIELD" value={`₹${customer.spend.toLocaleString()}`} icon={DollarSign} color="green" />
+                    <ProfileMetric label="WALLET BALANCE" value={`₹${walletData.balance.toLocaleString()}`} icon={Wallet} color="yellow" />
                     <ProfileMetric label="TOTAL MATRIX VISITS" value={customer.totalVisits} icon={History} color="blue" />
                     <ProfileMetric label="CORE PREFERENCE" value={customer.preferred} icon={Tag} color="purple" />
-                    <ProfileMetric label="TIER CATEGORY" value={customer.category || 'Regular'} icon={Layers} color="yellow" />
                 </div>
 
                 {/* Content Tabs */}
@@ -140,6 +176,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                     {/* Left Mini Sidebar */}
                     <div className="w-full md:w-52 bg-surface p-3 space-y-1.5 border-r border-border shrink-0">
                         <TabButton id="details" label="Identity Matrix" icon={FileText} active={activeTab === 'details'} onClick={setActiveTab} />
+                        <TabButton id="wallet" label="Wallet Matrix" icon={Wallet} active={activeTab === 'wallet'} onClick={setActiveTab} />
                         <TabButton id="history" label="Visit Timeline" icon={Clock3} active={activeTab === 'history'} onClick={setActiveTab} />
                     </div>
 
@@ -156,6 +193,91 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                 <div className="space-y-8">
                                     <DetailField label="Residential Address" value={customer.address} icon={MapPin} isEditing={isEditing} editValue={editForm?.address} onEdit={(val) => setEditForm({ ...editForm, address: val })} isFullWidth />
                                     <DetailField label="Intelligence Remarks / Notes" value={customer.remarks} icon={FileText} isEditing={isEditing} editValue={editForm?.remarks} onEdit={(val) => setEditForm({ ...editForm, remarks: val })} isFullWidth />
+                                </div>
+                            </div>
+                        )}
+                        {activeTab === 'wallet' && (
+                            <div className="space-y-8 animate-in fade-in slide-in-from-left-2 duration-400">
+                                {/* Recharge Form */}
+                                <div className="bg-surface p-6 border border-border">
+                                    <h3 className="text-[11px] font-black text-text uppercase tracking-[0.3em] mb-6 flex items-center gap-3">
+                                        <Wallet className="w-4 h-4 text-primary" /> Recharge Identity Wallet
+                                    </h3>
+                                    <form onSubmit={handleRecharge} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Type</label>
+                                            <select 
+                                                value={rechargeType}
+                                                onChange={(e) => setRechargeType(e.target.value)}
+                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
+                                            >
+                                                <option value="CREDIT">Credit (+)</option>
+                                                <option value="DEBIT">Debit (-)</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Amount (₹)</label>
+                                            <input 
+                                                type="number"
+                                                placeholder="0.00"
+                                                value={rechargeAmount}
+                                                onChange={(e) => setRechargeAmount(e.target.value)}
+                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black outline-none focus:border-primary"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Note / Reason</label>
+                                            <input 
+                                                type="text"
+                                                placeholder="OPTIONAL NOTE..."
+                                                value={rechargeNote}
+                                                onChange={(e) => setRechargeNote(e.target.value)}
+                                                className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
+                                            />
+                                        </div>
+                                        <div className="flex items-end">
+                                            <button 
+                                                type="submit"
+                                                disabled={isRecharging || !rechargeAmount}
+                                                className="w-full bg-text text-white py-2 text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                            >
+                                                {isRecharging ? 'PROCESSING...' : <><Send className="w-3 h-3"/> EXECUTE</>}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                {/* Wallet Transactions History */}
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between border-b border-border pb-2">
+                                        <h3 className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">WALLET TRANSACTION LOGS</h3>
+                                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">{walletData.transactions.length} ENTRIES</span>
+                                    </div>
+                                    <div className="space-y-2">
+                                        {walletData.transactions.length > 0 ? walletData.transactions.map((tx, idx) => (
+                                            <div key={tx.id} className="flex items-center justify-between p-3 bg-surface border border-border/50 hover:border-primary/20 transition-all">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-8 h-8 flex items-center justify-center ${tx.type === 'CREDIT' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'}`}>
+                                                        {tx.type === 'CREDIT' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownLeft className="w-4 h-4" />}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] font-black text-text uppercase tracking-tight">{tx.description}</p>
+                                                        <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest">{new Date(tx.date).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className={`text-[13px] font-black ${tx.type === 'CREDIT' ? 'text-emerald-600' : 'text-text'}`}>
+                                                        {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                                                    </p>
+                                                    {tx.isAdminAction && <span className="text-[8px] font-black text-primary/50 uppercase tracking-tighter">ADMIN_OVERRIDE</span>}
+                                                </div>
+                                            </div>
+                                        )) : (
+                                            <div className="text-center py-12 border-2 border-dashed border-border">
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">TRANSACTION_HISTORY_NULL</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -288,4 +410,3 @@ function DetailField({ label, value, icon: Icon, isFullWidth, isEditing, editVal
         </div>
     );
 }
-

@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useWallet } from '../../contexts/WalletContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import {
     RefreshCcw,
     CheckCircle2,
@@ -14,11 +16,30 @@ const MOCK_REFUNDS = [
 ];
 
 export default function POSRefundsPage() {
+    const { adminAdjustBalance } = useWallet();
+    const { customers } = useBusiness();
     const [selectedRefund, setSelectedRefund] = useState(null);
     const [remark, setRemark] = useState('');
 
-    const handleAction = (status) => {
-        alert(`Refund ${selectedRefund.id} ${status} with remark: ${remark}`);
+    const handleAction = async (status) => {
+        if (status === 'Approved') {
+            // Find customer to credit wallet
+            const customer = customers.find(c => c.name === selectedRefund.customer);
+            if (customer) {
+                const amount = parseInt(selectedRefund.amount.replace(/[^0-9]/g, ''));
+                await adminAdjustBalance(
+                    customer._id,
+                    amount,
+                    'credit',
+                    `Refund Approved for ${selectedRefund.inv}: ${remark || 'No remark'}`
+                );
+                alert(`Refund ${selectedRefund.id} APPROVED. ₹${amount} credited to ${customer.name}'s wallet.`);
+            } else {
+                alert(`Refund approved but customer "${selectedRefund.customer}" not found for wallet credit.`);
+            }
+        } else {
+            alert(`Refund ${selectedRefund.id} REJECTED with remark: ${remark}`);
+        }
         setSelectedRefund(null);
         setRemark('');
     };

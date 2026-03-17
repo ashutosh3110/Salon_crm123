@@ -27,7 +27,8 @@ export default function MarketingCMSPage() {
     const { 
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
-        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus 
+        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
+        experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile
     } = useCMS();
 
     const [activeTab, setActiveTab] = useState('banners');
@@ -198,6 +199,7 @@ export default function MarketingCMSPage() {
                         { id: 'banners', label: 'App Banners', icon: ImageIcon },
                         { id: 'offers', label: 'Exclusive Offers', icon: Tag },
                         { id: 'lookbook', label: 'Stylist Lookbook', icon: Camera },
+                        { id: 'experts', label: 'Expert Profiles', icon: UserCircle },
                     ].map((tab) => (
                         <button
                             key={tab.id}
@@ -455,6 +457,79 @@ export default function MarketingCMSPage() {
                                 <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mt-1">Portrait Aspect Ratio</p>
                             </div>
                         </button>
+                    </motion.div>
+                )}
+
+                {activeTab === 'experts' && (
+                    <motion.div
+                        key="experts"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                    >
+                        {experts.map((expert) => (
+                            <div key={expert.id} className="bg-surface border border-border/40 p-6 flex flex-col gap-4 text-left">
+                                <div className="flex items-center gap-4">
+                                    <img src={expert.img} className="w-16 h-16 rounded-full border border-border" alt={expert.name} />
+                                    <div>
+                                        <h3 className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</h3>
+                                        <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none mt-1 inline-block ${
+                                            expert.status === 'Approved' ? 'bg-emerald-500 text-white' : expert.status === 'Pending' ? 'bg-amber-500 text-white' : 'bg-rose-500 text-white'
+                                        }`}>
+                                            {expert.status}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-text-muted">
+                                        <span>Exp: {expert.experience}</span>
+                                        <span>Clients: {expert.clients}</span>
+                                    </div>
+                                    <p className="text-[10px] text-text-secondary leading-tight line-clamp-2">{expert.bio}</p>
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {expert.specializations?.map(s => (
+                                            <span key={s} className="text-[7px] font-black px-1.5 py-0.5 bg-surface-alt border border-border text-text-muted uppercase">{s}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-2 pt-4 border-t border-border/20">
+                                    {expert.status === 'Pending' && (
+                                        <>
+                                            <button 
+                                                onClick={() => approveExpertProfile(expert.id)}
+                                                className="flex-1 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all"
+                                            >
+                                                Approve
+                                            </button>
+                                            <button 
+                                                onClick={() => rejectExpertProfile(expert.id)}
+                                                className="flex-1 py-2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
+                                            >
+                                                Reject
+                                            </button>
+                                        </>
+                                    )}
+                                    <button 
+                                        onClick={() => expert.status === 'Approved' ? rejectExpertProfile(expert.id) : approveExpertProfile(expert.id)}
+                                        className="p-2 border border-border text-text-muted hover:text-primary transition-all"
+                                    >
+                                        {expert.status === 'Approved' ? <XCircle className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                                    </button>
+                                    <button 
+                                        onClick={() => deleteExpertProfile(expert.id)}
+                                        className="p-2 border border-border text-text-muted hover:text-rose-600 transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {experts.length === 0 && (
+                            <div className="col-span-full py-20 text-center border-2 border-dashed border-border/40">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">No expert profiles submitted yet</p>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

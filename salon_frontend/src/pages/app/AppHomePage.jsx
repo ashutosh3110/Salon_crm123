@@ -6,11 +6,12 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useInventory } from '../../contexts/InventoryContext';
+import { useWallet } from '../../contexts/WalletContext';
 import { MOCK_OUTLETS, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
 import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
@@ -90,7 +91,14 @@ export default function AppHomePage() {
     const { activeOutlet, activeOutletId, outlets, setActiveOutletId, services, categories: businessCategories } = useBusiness();
     const { bookings } = useBookingRegistry();
     const { shopCategories } = useInventory();
-    const { banners, lookbook: cmsLookbook, offers: cmsOffers } = useCMS();
+    const { balance, initializeWallet } = useWallet();
+    const { banners, lookbook: cmsLookbook, offers: cmsOffers, experts } = useCMS();
+
+    // Only show approved experts
+    const approvedExperts = experts.filter(e => e.status === 'Approved');
+
+    // Merge with defaults if no experts approved yet
+    const displayExperts = approvedExperts.length > 0 ? approvedExperts : (d?.experts || []);
 
     const lastBooking = bookings.length > 0 ? bookings[0] : null;
 
@@ -99,6 +107,7 @@ export default function AppHomePage() {
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const [selectedExpert, setSelectedExpert] = useState(null);
+    const [showExpertModal, setShowExpertModal] = useState(false);
 
     const [isMapView, setIsMapView] = useState(false);
 
@@ -118,6 +127,12 @@ export default function AppHomePage() {
         }
     }, [showWelcome]);
 
+    useEffect(() => {
+        if (customer?._id) {
+            initializeWallet(customer._id);
+        }
+    }, [customer?._id]);
+
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
     const d = GENDER_DATA[g];
@@ -128,7 +143,7 @@ export default function AppHomePage() {
         return (services || []).filter(s => {
             // Filter by outlet
             if (s.outletId && s.outletId !== 'all' && s.outletId !== activeOutletId) return false;
-            
+
             // Filter by gender
             const cat = businessCategories.find(c => c.name === s.category);
             if (!cat) return true;
@@ -156,7 +171,7 @@ export default function AppHomePage() {
                 btnText: 'Book Now',
                 link: p.link
             }));
-        
+
         // Take latest 3 lookbook items and convert to promo format
         const lookbookPromos = cmsLookbook
             .filter(l => l.status === 'Active' && (l.gender === 'all' || l.gender === g))
@@ -172,10 +187,6 @@ export default function AppHomePage() {
 
         return [...lookbookPromos, ...promos];
     }, [activeOutletId, banners, cmsLookbook, g]);
-
-    const filteredExperts = useMemo(() => {
-        return d.experts.filter(e => !e.outletId || e.outletId === activeOutletId);
-    }, [activeOutletId, d.experts]);
 
     const filteredOffers = useMemo(() => {
         return d.offers.filter(o => !o.outletId || o.outletId === activeOutletId);
@@ -920,32 +931,58 @@ export default function AppHomePage() {
 
 
 
-                {/* ── RUNNING OFFERS (NEW) ── */}
+                {/* ── EXCLUSIVE OFFERS (COMPACT DASHED STYLE) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Ticket size={20} color={colors.accent} />
+                            <Ticket size={18} color="#C8956C" />
                             <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Exclusive Offers</span>
                         </div>
                     </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {filteredOffers.map(offer => (
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {RUNNING_OFFERS.map(offer => (
                             <motion.div
                                 key={offer.id}
                                 whileTap={{ scale: 0.97 }}
                                 style={{
-                                    flexShrink: 0, width: '220px', background: colors.card, borderRadius: '18px', padding: '16px',
-                                    border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', gap: '6px',
-                                    position: 'relative', overflow: 'hidden'
+                                    flexShrink: 0,
+                                    width: '220px',
+                                    background: isLight ? '#FFFBF8' : 'rgba(20, 15, 10, 0.4)',
+                                    borderRadius: '24px',
+                                    padding: '16px',
+                                    border: `1.2px dashed ${isLight ? '#C8956C80' : '#C8956C50'}`,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '6px',
+                                    position: 'relative',
+                                    justifyContent: 'center'
                                 }}
                             >
-                                <div style={{ height: '80px', width: '100%', marginBottom: '4px', borderRadius: '12px', overflow: 'hidden' }}>
-                                    <img src={offer.img} alt={offer.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                </div>
-                                <p style={{ fontSize: '11px', color: colors.accent, margin: 0, fontWeight: 800 }}>{offer.tag}</p>
-                                <h4 style={{ fontSize: '14px', color: colors.text, margin: 0, fontWeight: 800 }}>{offer.title}</h4>
-                                <div style={{ background: `${colors.accent}15`, padding: '4px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: 900, color: colors.accent, alignSelf: 'flex-start', marginTop: '2px' }}>
-                                    USE {offer.discount} OFF
+                                <p style={{ fontSize: '11px', color: isLight ? '#777' : colors.textMuted, margin: 0, fontWeight: 500 }}>
+                                    {offer.subtitle}
+                                </p>
+                                <h3 style={{
+                                    fontSize: '20px',
+                                    fontWeight: 900,
+                                    color: isLight ? '#2D2D2A' : '#FFF',
+                                    margin: 0,
+                                    fontFamily: "'Playfair Display', serif",
+                                    letterSpacing: '-0.01em'
+                                }}>
+                                    {offer.discount}
+                                </h3>
+                                <div style={{
+                                    background: isLight ? '#EDF1F4' : 'rgba(255,255,255,0.05)',
+                                    padding: '5px 12px',
+                                    borderRadius: '10px',
+                                    fontSize: '11px',
+                                    fontWeight: 800,
+                                    color: '#C8956C',
+                                    width: 'max-content',
+                                    marginTop: '2px',
+                                    letterSpacing: '0.02em'
+                                }}>
+                                    {offer.code}
                                 </div>
                             </motion.div>
                         ))}
@@ -995,6 +1032,65 @@ export default function AppHomePage() {
                 </motion.div>
 
 
+
+                {/* ── WALLET HUB (Quick Access) ── */}
+                {customer && (
+                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 8px' }}>
+                        <div
+                            onClick={() => navigate('/app/wallet')}
+                            style={{
+                                background: isLight ? '#1A1A1A' : '#242424',
+                                borderRadius: '24px',
+                                padding: '20px 24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                color: '#FFF',
+                                position: 'relative',
+                                overflow: 'hidden',
+                                boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            {/* Decorative Background */}
+                            <div style={{
+                                position: 'absolute', top: '-50%', right: '-10%',
+                                width: '120px', height: '120px',
+                                background: 'radial-gradient(circle, rgba(200,149,108,0.2) 0%, transparent 70%)',
+                                borderRadius: '50%'
+                            }} />
+
+                            <div style={{ position: 'relative', zIndex: 1 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                    <Wallet size={14} color="#C8956C" />
+                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
+                                        Wapixo Wallet
+                                    </p>
+                                </div>
+                                <h2 style={{ fontSize: '24px', fontWeight: 900, margin: 0 }}>
+                                    ₹{balance.toLocaleString()}
+                                </h2>
+                            </div>
+
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                style={{
+                                    background: '#C8956C',
+                                    color: '#FFF',
+                                    border: 'none',
+                                    padding: '8px 16px',
+                                    borderRadius: '12px 4px 12px 4px',
+                                    fontSize: '11px',
+                                    fontWeight: 900,
+                                    zIndex: 1
+                                }}
+                            >
+                                Manage
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* ── POPULAR SERVICES (NEW) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
@@ -1118,26 +1214,64 @@ export default function AppHomePage() {
                             View All
                         </button>
                     </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {filteredExperts.map((expert) => (
+                    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6" style={{ margin: '0 -16px', padding: '0 16px' }}>
+                        {displayExperts.map((expert) => (
                             <motion.div
                                 key={expert.id}
-                                whileTap={{ scale: 0.96 }}
-                                onClick={() => setSelectedExpert(expert)}
-                                style={{ background: colors.card, borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', flexShrink: 0, width: '120px', textAlign: 'center', paddingBottom: '12px', border: `1px solid ${colors.border}` }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                    setSelectedExpert(expert);
+                                    setShowExpertModal(true);
+                                }}
+                                style={{
+                                    flexShrink: 0,
+                                    width: '120px',
+                                    background: isLight ? '#FFF' : '#1A1A1A',
+                                    borderRadius: '24px',
+                                    padding: '16px 8px',
+                                    textAlign: 'center',
+                                    border: `1px solid ${isLight ? '#F3F4F6' : '#262626'}`,
+                                    boxShadow: isLight ? '0 6px 20px rgba(0,0,0,0.03)' : 'none'
+                                }}
                             >
-                                <div style={{ position: 'relative', padding: '10px 10px 0' }}>
-                                    <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', borderRadius: '12px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
-                                        <img src={expert.img} alt={expert.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{
+                                    width: '70px',
+                                    height: '70px',
+                                    margin: '0 auto 12px',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
+                                        <img
+                                            src={expert.img}
+                                            alt={expert.name}
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                objectFit: 'cover'
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-4px',
+                                        right: '-8px',
+                                        background: '#C8956C',
+                                        padding: '2px 6px',
+                                        borderRadius: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '2px',
+                                        color: '#FFF',
+                                        fontSize: '9px',
+                                        fontWeight: 800,
+                                        boxShadow: '0 2px 6px rgba(200, 149, 108, 0.3)'
+                                    }}>
+                                        <Star size={8} fill="#FFF" color="#FFF" />
+                                        <span>{expert.rating || '4.9'}</span>
                                     </div>
                                 </div>
-                                <div style={{ padding: '8px 8px 0' }}>
-                                    <h4 style={{ fontSize: '12px', fontWeight: 700, color: colors.text, margin: '0 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{expert.name}</h4>
-                                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 6px' }}>{expert.role}</p>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-                                        <StarRow rating={expert.rating} />
-                                    </div>
-                                </div>
+                                <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{expert.name}</h4>
+                                <p style={{ fontSize: '11px', color: colors.textMuted, fontWeight: 500 }}>{expert.role || 'Hair Stylist'}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -1180,13 +1314,13 @@ export default function AppHomePage() {
 
             {/* ── EXPERT DETAIL MODAL ── */}
             < AnimatePresence >
-                {selectedExpert && (
+                {selectedExpert && showExpertModal && (
                     <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => setSelectedExpert(null)}
+                            onClick={() => setShowExpertModal(false)}
                             style={{ position: 'absolute', inset: 0, background: isLight ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)' }}
                         />
                         <motion.div
@@ -1228,39 +1362,44 @@ export default function AppHomePage() {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
-                                    <div style={{ background: isLight ? '#F9F9F9' : '#242424', p: '12px', borderRadius: '16px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '10px', color: colors.textMuted, textTransform: 'uppercase', margin: '0 0 4px', fontWeight: 700 }}>Experience</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>{EXPERT_DETAILS[selectedExpert.name]?.experience || "5+ Years"}</p>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                                    <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Experience</p>
+                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.experience || EXPERT_DETAILS[selectedExpert.name]?.experience || '5 Years'}</p>
                                     </div>
-                                    <div style={{ background: isLight ? '#F9F9F9' : '#242424', p: '12px', borderRadius: '16px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '10px', color: colors.textMuted, textTransform: 'uppercase', margin: '0 0 4px', fontWeight: 700 }}>Clients</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>1.2k+</p>
+                                    <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
+                                        <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Clients</p>
+                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.clients || '500+'}</p>
                                     </div>
                                 </div>
 
-                                <div style={{ mb: '24px' }}>
-                                    <h4 style={{ fontSize: '12px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', mb: '8px', letterSpacing: '0.05em' }}>Profile Bio</h4>
-                                    <p style={{ fontSize: '14px', lineHeight: '1.6', color: colors.text, opacity: 0.8, margin: 0 }}>
-                                        {EXPERT_DETAILS[selectedExpert.name]?.bio || "A dedicated professional committed to delivering the highest quality salon experience for every client."}
-                                    </p>
-                                </div>
+                                <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '8px', textTransform: 'uppercase' }}>Profile Bio</h5>
+                                <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '24px' }}>
+                                    {selectedExpert.bio || EXPERT_DETAILS[selectedExpert.name]?.bio || 'A dedicated professional committed to delivering excellence.'}
+                                </p>
 
-                                <div style={{ mt: '20px', mb: '32px' }}>
-                                    <h4 style={{ fontSize: '12px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', mb: '12px', letterSpacing: '0.05em', marginTop: '20px' }}>Specializations</h4>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {(EXPERT_DETAILS[selectedExpert.name]?.tags || ["Master Styling", "Classic Cut", "Detailing"]).map((tag, i) => (
-                                            <span key={i} style={{ padding: '6px 12px', background: colors.accent + '15', color: colors.accent, borderRadius: '8px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
-                                                {tag}
-                                            </span>
-                                        ))}
-                                    </div>
+                                <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '12px', textTransform: 'uppercase' }}>Specializations</h5>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '32px' }}>
+                                    {(selectedExpert.specializations || EXPERT_DETAILS[selectedExpert.name]?.tags || ["Precision Cut", "Style Master"]).map((spec, idx) => (
+                                        <span key={idx} style={{
+                                            padding: '6px 12px',
+                                            background: isLight ? '#FFF7ED' : '#2A1F14',
+                                            color: '#C8956C',
+                                            borderRadius: '8px',
+                                            fontSize: '11px',
+                                            fontWeight: 700,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.02em'
+                                        }}>
+                                            {spec}
+                                        </span>
+                                    ))}
                                 </div>
 
                                 <motion.button
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => {
-                                        setSelectedExpert(null);
+                                        setShowExpertModal(false);
                                         navigate(`/app/book?expertId=${selectedExpert.id}`);
                                     }}
                                     style={{

@@ -19,10 +19,16 @@ export function CMSProvider({ children }) {
         return saved ? JSON.parse(saved) : cmsMockData.LOOKBOOK;
     });
 
+    const [experts, setExperts] = useState(() => {
+        const saved = localStorage.getItem('cms_experts');
+        return saved ? JSON.parse(saved) : [];
+    });
+
     // Sync to localStorage
     useEffect(() => localStorage.setItem('cms_banners', JSON.stringify(banners)), [banners]);
     useEffect(() => localStorage.setItem('cms_offers', JSON.stringify(offers)), [offers]);
     useEffect(() => localStorage.setItem('cms_lookbook', JSON.stringify(lookbook)), [lookbook]);
+    useEffect(() => localStorage.setItem('cms_experts', JSON.stringify(experts)), [experts]);
 
     const addLookbookItem = (item) => setLookbook(prev => [{ ...item, id: Date.now() }, ...prev]);
     const updateLookbookItem = (id, data) => setLookbook(prev => prev.map(l => l.id === id ? { ...l, ...data } : l));
@@ -39,10 +45,22 @@ export function CMSProvider({ children }) {
     const deleteOffer = (id) => setOffers(prev => prev.filter(o => o.id !== id));
     const toggleOfferStatus = (id) => setOffers(prev => prev.map(o => o.id === id ? { ...o, status: o.status === 'Live' ? 'Draft' : 'Live' } : o));
 
+    const updateExpertProfile = (userId, data) => setExperts(prev => {
+        const exists = prev.find(e => e.userId === userId);
+        if (exists) {
+            return prev.map(e => e.userId === userId ? { ...e, ...data, updatedAt: new Date().toISOString() } : e);
+        }
+        return [...prev, { ...data, userId, id: Date.now(), status: 'Pending', createdAt: new Date().toISOString() }];
+    });
+    const approveExpertProfile = (id) => setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Approved' } : e));
+    const rejectExpertProfile = (id) => setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Rejected' } : e));
+    const deleteExpertProfile = (id) => setExperts(prev => prev.filter(e => e.id !== id));
+
     const value = {
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
-        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus
+        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
+        experts, setExperts, updateExpertProfile, approveExpertProfile, rejectExpertProfile, deleteExpertProfile
     };
 
     return <CMSContext.Provider value={value}>{children}</CMSContext.Provider>;

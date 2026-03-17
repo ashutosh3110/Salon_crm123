@@ -11,7 +11,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 export default function AppWalletPage() {
     const navigate = useNavigate();
-    const { balance, transactions, addMoney } = useWallet();
+    const { balance, transactions, addMoney, spentThisMonth } = useWallet();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -119,7 +119,7 @@ export default function AppWalletPage() {
                         <TrendingUp size={14} color="#10B981" />
                         <span style={{ color: colors.textMuted, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>Spent this month</span>
                     </div>
-                    <p style={{ color: colors.text, fontSize: '18px', fontWeight: 900 }}>₹4,250</p>
+                    <p style={{ color: colors.text, fontSize: '18px', fontWeight: 900 }}>₹{spentThisMonth.toLocaleString()}</p>
                 </div>
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '20px', padding: '16px' }}>
                     <div className="flex items-center gap-2 mb-2">
@@ -230,6 +230,15 @@ export default function AppWalletPage() {
                                                 }}
                                             />
                                         </div>
+                                        {addAmount >= 500 && (
+                                            <motion.p 
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                style={{ color: '#10B981', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', marginTop: '8px', letterSpacing: '0.05em' }}
+                                            >
+                                                + ₹{addAmount >= 2000 ? 300 : addAmount >= 1000 ? 100 : 50} Loyalty Bonus will be added
+                                            </motion.p>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-3 mb-8">
