@@ -115,14 +115,16 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 }
             </button>
 
-            {/* ── Logo ── */}
-            <div className={`flex items-center border-b border-border transition-all duration-300 ${effectiveCollapsed ? 'justify-center h-16 px-2' : 'px-5 h-20 justify-between'}`}>
+            {/* Logo */}
+            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
-                    <img
-                        src={logoFull}
-                        alt="Logo"
-                        className="h-14 w-auto object-contain animate-in fade-in duration-300"
-                    />
+                    <div className="w-45 h-45 flex items-center justify-center shrink-0">
+                        <img
+                            src="/2-removebg-preview.png"
+                            alt="Logo"
+                            className="w-full h-full object-contain"
+                        />
+                    </div>
                 </div>
                 {/* Mobile close button inside the branding area on small screens */}
                 <button

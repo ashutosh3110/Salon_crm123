@@ -63,16 +63,17 @@ export default function POSSidebar({ collapsed, setCollapsed, mobileOpen, setMob
                 )}
             </button>
 
-            {/* Logo / Header */}
-            <div className={`flex items-center h-20 border-b border-border/40 transition-all duration-300 ${effectiveCollapsed ? 'justify-center' : 'px-4 justify-between'}`}>
+            {/* Logo */}
+            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
-                    <img
-                        src="/2-removebg-preview.png"
-                        alt="Logo"
-                        className="w-14 h-14 object-contain"
-                    />
-                </div>
-                {/* Mobile Close */}
+                    <div className="w-45 h-45 flex items-center justify-center shrink-0">
+                        <img
+                            src="/2-removebg-preview.png"
+                            alt="Logo"
+                            className="w-full h-full object-contain"
+                        />
+                    </div>
+                </div> {/* Mobile Close */}
                 <button
                     onClick={() => setMobileOpen(false)}
                     className="md:hidden w-10 h-10 rounded-none flex items-center justify-center hover:bg-surface transition-colors"

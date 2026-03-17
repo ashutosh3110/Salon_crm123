@@ -89,8 +89,8 @@ export default function ProductsPage() {
                         <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">System scan complete</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    <div className="table-responsive">
+                        <table className="w-full text-sm min-w-[1000px]">
                             <thead><tr className="border-b border-border bg-surface-alt">
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Entity Item</th>
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden sm:table-cell">SKU ID</th>

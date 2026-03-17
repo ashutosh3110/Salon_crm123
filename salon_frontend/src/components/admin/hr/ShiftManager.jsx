@@ -111,21 +111,21 @@ export default function ShiftManager() {
                         <motion.div key={shift.id} layout initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
                             className="bg-surface p-6 rounded-none border border-border shadow-sm hover:shadow-xl transition-all group relative overflow-hidden text-left font-black">
                             <div className={`absolute top-0 left-0 w-2 h-full ${shift.color}`} />
-                            <div className="pl-4 flex flex-col sm:flex-row sm:items-center justify-between gap-6 text-left font-black">
+                            <div className="pl-4 flex flex-col md:flex-row md:items-center justify-between gap-6 text-left font-black">
                                 <div className="flex items-center gap-6 text-left">
-                                    <div className={`p-4 rounded-none ${shift.color}/5 border border-border/10`}>
+                                    <div className={`p-4 rounded-none ${shift.color}/5 border border-border/10 shrink-0`}>
                                         <Clock className={`w-6 h-6 ${shift.color.replace('bg-', 'text-')}`} />
                                     </div>
                                     <div className="text-left leading-tight">
                                         <h4 className="text-base font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors text-left">{shift.name}</h4>
-                                        <div className="flex items-center gap-3 mt-2 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
                                             <div className="flex items-center gap-1.5 text-left"><Clock className="w-3.5 h-3.5" /> {to12(shift.start)} — {to12(shift.end)}</div>
-                                            <div className="w-1 h-1 bg-border rounded-none" />
+                                            <div className="hidden sm:block w-1 h-1 bg-border rounded-none" />
                                             <div className="flex items-center gap-1.5 text-left"><Store className="w-3.5 h-3.5" /> {shift.outlet}</div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-8 border-t sm:border-t-0 pt-6 sm:pt-0 text-left font-black">
+                                <div className="flex flex-wrap items-center gap-4 sm:gap-8 border-t md:border-t-0 pt-6 md:pt-0 text-left font-black justify-between md:justify-end">
                                     <button onClick={() => setRosterModal(shift)} className="text-left group/roster hover:opacity-80 transition-opacity">
                                         <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 leading-none">Personnel</p>
                                         <div className="flex items-center gap-2 text-left font-black">

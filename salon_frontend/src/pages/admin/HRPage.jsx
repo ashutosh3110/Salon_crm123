@@ -88,18 +88,18 @@ export default function HRPage({ tab = 'staff' }) {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2 bg-surface p-1.5 rounded-none border border-border shadow-2xl shadow-primary/5 backdrop-blur-xl">
+                <div className="flex items-center gap-2 bg-surface p-1.5 rounded-none border border-border shadow-2xl shadow-primary/5 backdrop-blur-xl overflow-x-auto no-scrollbar max-w-full">
                     {HR_TABS.map((t) => (
                         <button
                             key={t.id}
                             onClick={() => navigate(`/admin/hr/${t.id}`)}
-                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab ${tab === t.id
+                            className={`flex items-center gap-3 px-8 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 relative group/tab whitespace-nowrap ${tab === t.id
                                 ? 'bg-primary text-primary-foreground shadow-xl shadow-primary/20 scale-100'
                                 : 'text-text-muted hover:text-text hover:bg-surface-alt'
                                 }`}
                         >
                             <t.icon className={`w-4 h-4 transition-transform group-hover/tab:scale-110 ${tab === t.id ? 'text-primary-foreground' : 'text-primary/60'}`} />
-                            <span className="hidden lg:inline">{t.label}</span>
+                            <span className="inline">{t.label}</span>
                             {tab === t.id && (
                                 <>
                                     <div className="absolute -top-[1px] -left-[1px] w-2 h-2 border-t-2 border-l-2 border-white/40" />

@@ -22,7 +22,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
 
     return (
         <div
-            className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel"
+            className="min-h-screen bg-background flex text-text transition-colors duration-300 admin-panel overflow-x-hidden"
             style={{ '--accent-color': activeAccentColor }}
         >
             {/* Global sharp-edge override for entire panel, with opt-out for pill toggles and consistent primary buttons */}
@@ -66,16 +66,20 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
             />
 
             {/* Main Content */}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[68px]' : 'lg:ml-64'}`}>
+            <div className={`flex-1 min-w-0 flex flex-col transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[68px]' : 'lg:ml-64'}`}>
                 {/* Top Bar */}
-                <header className="sticky top-0 z-30 h-16 bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 lg:px-6 gap-3">
+                <header className="sticky top-0 z-30 h-16 sm:h-20 bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 sm:px-8 gap-3">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setMobileOpen(true)}
-                            className="lg:hidden w-9 h-9 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
+                            className="lg:hidden w-11 h-11 bg-surface border border-border/40 flex items-center justify-center hover:bg-surface-alt transition-all shadow-sm active:scale-95"
                         >
-                            <Menu className="w-5 h-5 text-text-secondary" />
+                            <Menu className="w-5.5 h-5.5 text-text" />
                         </button>
+                        <div className="hidden sm:block">
+                            <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] opacity-40 leading-none mb-1">Sector_Control</h2>
+                            <p className="text-xs font-black text-text uppercase tracking-widest leading-none">{title}</p>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 font-black">
@@ -83,7 +87,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         <motion.button
                             whileTap={{ scale: 0.9 }}
                             onClick={toggleTheme}
-                            className="w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40"
+                            className="w-10 h-10 sm:w-11 sm:h-11 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40"
                             title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                         >
                             {theme === 'light' ? (
@@ -94,18 +98,18 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                         </motion.button>
 
                         {/* Notifications */}
-                        <button className="relative w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40">
+                        <button className="relative w-10 h-10 sm:w-11 sm:h-11 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40">
                             <Bell className="w-5 h-5 text-text-secondary" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-primary ring-2 ring-background dark:ring-surface" />
+                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary ring-2 ring-background dark:ring-surface" />
                         </button>
 
                         {/* User Profile */}
-                        <div className="flex items-center gap-3 pl-3 ml-1 border-l border-border/40">
-                            <div className="text-right hidden sm:block">
-                                <div className="text-[10px] font-black text-text leading-tight uppercase tracking-tighter">{user?.name || 'Authorized_User'}</div>
-                                <div className="text-[8px] text-text-muted uppercase tracking-[0.2em] mt-0.5">{user?.role || 'operator'}</div>
+                        <div className="flex items-center gap-3 pl-3 sm:pl-4 ml-1 sm:ml-2 border-l border-border/40">
+                            <div className="text-right hidden md:block leading-none">
+                                <div className="text-[11px] font-black text-text uppercase tracking-tight">{user?.name || 'Auth_User'}</div>
+                                <div className="text-[9px] text-text-muted uppercase tracking-[0.2em] mt-1">{user?.role || 'operator'}</div>
                             </div>
-                            <div className="w-9 h-9 bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20">
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20 shadow-inner">
                                 {user?.name?.split(' ').map(n => n[0]).join('') || 'AU'}
                             </div>
                         </div>
@@ -122,7 +126,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+                <main className="flex-1 w-full max-w-full p-3 sm:p-5 lg:p-8 overflow-y-auto overflow-x-hidden">
                     <Outlet />
                 </main>
             </div>

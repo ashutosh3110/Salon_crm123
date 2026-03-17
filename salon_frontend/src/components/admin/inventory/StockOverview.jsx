@@ -60,7 +60,7 @@ export default function StockOverview() {
             </div>
 
             {/* Table Area */}
-            <div className="flex-1 overflow-x-auto overflow-y-auto no-scrollbar">
+            <div className="flex-1 table-responsive no-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead className="sticky top-0 z-10">
                         <tr className="bg-surface border-b border-border">

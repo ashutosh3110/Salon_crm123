@@ -209,19 +209,19 @@ export default function InquiryPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Inquiry Tracker</h1>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Inquiry Tracker</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: visitor_inquiry_pipeline_v1.0</p>
                 </div>
                 <button
                     onClick={() => { closeModal(); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                    className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Log Inquiry
                 </button>
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                         <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
@@ -271,8 +271,8 @@ export default function InquiryPage() {
 
             {/* Table */}
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <div className="table-responsive">
+                    <table className="w-full text-left border-collapse min-w-[1100px]">
                         <thead>
                             <tr className="bg-surface border-b border-border">
                                 <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Visitor</th>

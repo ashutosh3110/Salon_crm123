@@ -74,48 +74,48 @@ export default function TeamPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Team Management</h1>
-                    <p className="text-sm text-text-muted font-medium">Manage your staff, roles, and performance</p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black">
+                <div className="leading-none text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Team Registry</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Unit :: personnel_load_v4.0 // operational_staff</p>
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-6 sm:px-10 py-3 sm:py-4 rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all font-black"
                 >
-                    <UserPlus className="w-4 h-4" /> Add Team Member
+                    <UserPlus className="w-4 h-4" /> Enroll Personnel
                 </button>
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {[
                     { label: 'Total Staff', value: '12', icon: Users, color: 'text-emerald-500' },
                     { label: 'Active Now', value: '8', icon: BadgeCheck, color: 'text-emerald-500' },
                     { label: 'On Leave', value: '2', icon: MailCheck, color: 'text-rose-500' },
                     { label: 'Pending Invitations', value: '3', icon: Shield, color: 'text-emerald-500' },
                 ].map((s) => (
-                    <div key={s.label} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={s.label} className="bg-surface py-4 px-5 sm:py-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <s.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
+                            <div className="flex items-center justify-between mb-2 sm:mb-3">
+                                <div className="flex items-center gap-2">
+                                    <s.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted transition-colors group-hover:text-primary" />
+                                    <p className="text-[9px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${s.color === 'text-rose-500' ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                    {s.color === 'text-rose-500' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                                <div className={`flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold ${s.color === 'text-rose-500' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                    {s.color === 'text-rose-500' ? <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                     {s.color === 'text-rose-500' ? '-2%' : '+4%'}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter value={parseFloat(s.value)} />
                                 </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity hidden sm:block">
                                     <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={s.color === 'text-rose-500' ? "text-rose-400" : "text-emerald-400"}>
                                         <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
@@ -127,84 +127,83 @@ export default function TeamPage() {
             </div>
 
             {/* Filters & Search */}
-            <div className="bg-white rounded-none border border-border/60 p-3 flex flex-col md:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            <div className="bg-surface rounded-none border border-border p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
+                <div className="relative flex-1 w-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted" />
                     <input
                         type="text"
-                        placeholder="Search team member..."
-                        className="w-full pl-10 pr-4 py-2 bg-white border border-border/60 rounded-none text-sm outline-none focus:border-primary/50 transition-colors"
+                        placeholder="Scan for personnel signature..."
+                        className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3.5 bg-surface-alt border border-border rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-border/60 rounded-none text-sm font-bold text-text-secondary hover:bg-surface-alt transition-colors">
-                        <Filter className="w-4 h-4" /> Filters
-                    </button>
-                </div>
+                <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3.5 bg-surface border border-border rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all">
+                    <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Parameters
+                </button>
             </div>
 
             {/* Team List */}
-            <div className="bg-white rounded-none border border-border/60 overflow-hidden shadow-none">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+            <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm">
+                <div className="w-full overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-surface-alt border-b border-border/40">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Member</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Role</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Performance</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest">Member</th>
+                                <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest">Role</th>
+                                <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest">Status</th>
+                                <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest">Performance</th>
+                                <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40">
                             {filteredTeam.map((member) => (
                                 <tr key={member.id} className="hover:bg-surface-alt/50 transition-colors group">
-                                    <td className="px-6 py-4">
+                                    <td className="px-5 sm:px-6 py-3 sm:py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shadow-sm">
+                                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-none bg-primary/10 flex items-center justify-center text-primary font-bold shadow-sm border border-primary/10">
                                                 {member.name.split(' ').map(n => n[0]).join('')}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{member.name}</p>
-                                                <p className="text-[11px] text-text-muted font-medium">{maskPhone(member.phone, user?.role)}</p>
+                                                <p className="text-xs sm:text-sm font-bold text-text group-hover:text-primary transition-colors">{member.name}</p>
+                                                <p className="text-[10px] sm:text-[11px] text-text-muted font-medium">{maskPhone(member.phone, user?.role)}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-xs font-bold text-text-secondary bg-background px-2.5 py-1 rounded-lg border border-border/10">{member.role}</span>
+                                    <td className="px-5 sm:px-6 py-3 sm:py-4">
+                                        <span className="text-[10px] sm:text-xs font-bold text-text-secondary bg-background px-2 py-0.5 rounded-none border border-border/10 uppercase tracking-tight">{member.role}</span>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tight ${statusStyles[member.status]}`}>
+                                    <td className="px-5 sm:px-6 py-3 sm:py-4">
+                                        <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-none uppercase tracking-tight ${statusStyles[member.status]}`}>
                                             {member.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
+                                    <td className="px-5 sm:px-6 py-3 sm:py-4">
+                                        <div className="flex items-center gap-3 sm:gap-4">
                                             <div className="flex items-center gap-1">
-                                                <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
-                                                <span className="text-sm font-bold text-text">{member.rating}</span>
+                                                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-500 fill-amber-500" />
+                                                <span className="text-xs sm:text-sm font-bold text-text">{member.rating}</span>
                                             </div>
-                                            <div className="text-[11px] font-medium text-text-muted">
+                                            <div className="text-[10px] sm:text-[11px] font-medium text-text-muted uppercase tracking-tight">
                                                 {member.appointments} service{member.appointments !== 1 ? 's' : ''}
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <td className="px-5 sm:px-6 py-3 sm:py-4 text-right">
+                                        <div className="flex items-center justify-end gap-1 sm:gap-2">
                                             <button
                                                 onClick={() => setEditingMember({ ...member })}
-                                                className="p-2 hover:bg-primary/10 rounded-none transition-colors text-text-muted hover:text-primary border border-transparent hover:border-primary/20"
+                                                className="p-1.5 sm:p-2 hover:bg-primary/10 rounded-none transition-colors text-text-muted hover:text-primary border border-transparent hover:border-primary/20"
                                                 title="Edit member"
                                             >
-                                                <Edit2 className="w-4 h-4" />
+                                                <Edit2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(member.id)}
-                                                className="p-2 hover:bg-white dark:hover:bg-surface-alt rounded-lg transition-colors text-text-muted hover:text-rose-500"
+                                                className="p-1.5 sm:p-2 hover:bg-rose-500/10 rounded-none transition-colors text-text-muted hover:text-rose-500 border border-transparent hover:border-rose-500/20"
+                                                title="Delete member"
                                             >
-                                                <Trash2 className="w-4 h-4" />
+                                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                             </button>
                                         </div>
                                     </td>

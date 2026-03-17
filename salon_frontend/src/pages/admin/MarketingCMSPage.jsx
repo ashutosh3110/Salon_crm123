@@ -146,15 +146,15 @@ export default function MarketingCMSPage() {
     return (
         <div className="space-y-8 pb-20">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="text-left">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="text-left font-black leading-none">
                     <h1 className="text-4xl font-black text-text uppercase tracking-tight leading-none mb-2">App CMS</h1>
                     <div className="flex items-center gap-3">
                         <span className="w-8 h-[2px] bg-primary"></span>
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Marketing & Brand Presence</p>
                     </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-3">
                     <button 
                         onClick={() => {
                             setShowPreviewInfo(true);
@@ -328,7 +328,7 @@ export default function MarketingCMSPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="grid sm:grid-cols-2 gap-6"
+                        className="grid grid-cols-1 xl:grid-cols-2 gap-6"
                     >
                         {offers
                             .filter(o => selectedGender === 'all' || o.gender === selectedGender)

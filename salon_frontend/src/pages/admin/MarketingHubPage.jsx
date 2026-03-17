@@ -165,18 +165,18 @@ export default function MarketingHub() {
     return (
         <div className="space-y-6 pb-12">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Marketing Command Center</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Automate your growth and reach customers where they are</p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+                <div className="text-left font-black leading-none">
+                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Marketing Command Center</h1>
+                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Automate your growth and reach customers where they are</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-bold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                    <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-none bg-white border border-border text-text-secondary text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all shadow-sm">
                         <Calendar className="w-4 h-4" /> Schedule
                     </button>
                     <button
                         onClick={startCampaign}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-primary-foreground text-sm font-black hover:brightness-110 transition-all shadow-xl shadow-primary/25 active:scale-95 leading-none"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-none bg-primary text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 shadow-xl shadow-primary/25 active:scale-[0.98] transition-all leading-none"
                     >
                         <Plus className="w-4 h-4" /> NEW CAMPAIGN
                     </button>
@@ -441,7 +441,7 @@ function DashboardContent() {
     return (
         <div className="space-y-6">
             {/* Quick KPIs */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard label="Campaign Reach" value="4,820" trend="+12%" icon={Users} color="bg-blue-50 text-blue-600" />
                 <StatCard label="Conv. Rate" value="8.4%" trend="+2.5%" icon={TrendingUp} color="bg-emerald-50 text-emerald-600" />
                 <StatCard label="Total Spent" value="₹12,450" icon={Zap} color="bg-amber-50 text-amber-600" />
@@ -564,8 +564,8 @@ function WhatsAppContent({ onNew }) {
                             <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Recent Campaigns</h3>
                             <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">View History</button>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
+                        <div className="table-responsive">
+                            <table className="w-full min-w-[800px]">
                                 <thead>
                                     <tr className="border-b border-border">
                                         <th className="px-6 py-4 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Campaign Name</th>

@@ -112,12 +112,12 @@ export default function AttendanceTracker() {
         <div className="space-y-6 font-black text-left">
             {/* Header card with Chart */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 text-left font-black">
-                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-8 text-left">
-                    <div className="flex items-center gap-6 text-left font-black">
+                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col xl:flex-row items-center justify-between gap-8 text-left">
+                    <div className="flex flex-col sm:flex-row items-center gap-6 text-left font-black w-full xl:w-auto">
                         <div className="p-4 rounded-none bg-primary/10 text-primary border border-primary/20 shrink-0">
                             <CalendarIcon className="w-6 h-6" />
                         </div>
-                        <div className="text-left">
+                        <div className="text-left w-full sm:w-auto">
                             <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Date</p>
                             <div className="flex items-center gap-3 mt-1 text-left font-black">
                                 <button onClick={() => changeDate(-1)} className="p-1.5 rounded-none hover:bg-surface-alt transition-colors text-text-muted hover:text-text border border-border/20"><ChevronLeft className="w-4 h-4" /></button>
@@ -128,7 +128,7 @@ export default function AttendanceTracker() {
                         </div>
                     </div>
 
-                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left">
+                    <div className="flex-1 h-[140px] w-full max-w-[200px] text-left hidden sm:block">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -157,7 +157,7 @@ export default function AttendanceTracker() {
                         </ResponsiveContainer>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black">
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 text-left font-black w-full xl:w-auto">
                         {[
                             { label: 'Present', value: stats.present, color: 'text-emerald-500' },
                             { label: 'Late', value: stats.late, color: 'text-amber-500' },
@@ -207,8 +207,8 @@ export default function AttendanceTracker() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
-                <div className="overflow-x-auto text-left font-black">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive">
+                <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border text-left font-black">

@@ -102,7 +102,7 @@ export default function StaffManager() {
         <div className="space-y-6 font-black text-left">
             {/* Stats and Role Chart */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left">
+                <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     {[
                         { label: 'Total Personnel', value: staff.length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
                         { label: 'Active States', value: activeCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
@@ -205,8 +205,8 @@ export default function StaffManager() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
-                <div className="overflow-x-auto text-left font-black">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive">
+                <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border text-left">

@@ -117,34 +117,33 @@ export default function CatalogueEditorPage() {
     return (
         <div className="flex flex-col lg:flex-row h-screen bg-background overflow-hidden selection:bg-primary/20">
             {/* Left: Editor Panel */}
-            <div className={`flex-1 min-w-[450px] border-r border-border overflow-y-auto custom-scrollbar p-8 space-y-8 bg-surface/10 ${showPreview ? 'lg:max-w-xl' : ''}`}>
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-3xl font-black tracking-tighter text-text italic">CATALOGUE <span className="text-primary">PRO</span></h1>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Management Console</p>
+            <div className={`flex-1 w-full lg:max-w-xl border-r border-border overflow-y-auto custom-scrollbar p-5 sm:p-8 space-y-6 sm:space-y-8 bg-surface/10 ${showPreview ? 'hidden lg:block' : 'block'}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 overflow-hidden mb-6 sm:mb-8 text-left">
+                    <div className="leading-none text-left">
+                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none italic">Catalogue <span className="text-primary">Pro</span></h1>
+                        <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Console :: brand_registry_v5.0</p>
                     </div>
-                    <div className="flex gap-3">
+                    {/* Desktop Actions */}
+                    <div className="hidden sm:flex items-center gap-2">
                         <button
                             onClick={handleDownloadPDF}
                             disabled={isDownloading || isSaving}
-                            className="bg-zinc-800 hover:bg-zinc-700 text-white flex items-center gap-3 px-6 py-3 rounded-2xl transition-all disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 px-6 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest text-text-muted hover:text-primary transition-all disabled:opacity-50"
                         >
-                            {isDownloading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                            {isDownloading ? 'EXPORTING...' : 'PDF'}
+                            {isDownloading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3" />} PDF
                         </button>
                         <button
                             onClick={handleSave}
                             disabled={isSaving || isDownloading}
-                            className="btn-salon flex items-center gap-3 px-8"
+                            className="flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                         >
-                            {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            {isSaving ? 'SAVING...' : 'PUBLISH'}
+                            {isSaving ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} Publish
                         </button>
                     </div>
                 </div>
 
                 {/* Main Tabs */}
-                <div className="flex gap-2 p-1.5 bg-surface/50 backdrop-blur-md border border-border/60 rounded-2xl shadow-inner">
+                <div className="flex gap-1.5 sm:gap-2 p-1 sm:p-1.5 bg-surface/50 backdrop-blur-md border border-border/60 rounded-2xl shadow-inner overflow-x-auto hide-scrollbar shrink-0">
                     {[
                         { id: 'landing', label: 'Landing', icon: ImageIcon },
                         { id: 'pages', label: 'Pages', icon: Layout },
@@ -154,10 +153,10 @@ export default function CatalogueEditorPage() {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 flex items-center justify-center gap-2 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02]' : 'text-text-muted hover:bg-surface hover:text-text'}`}
+                            className={`flex-1 min-w-max flex items-center justify-center gap-2 px-4 py-2.5 sm:py-3 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${activeTab === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-[1.02]' : 'text-text-muted hover:bg-surface hover:text-text'}`}
                         >
                             <tab.icon className="w-3 h-3" />
-                            {tab.label}
+                            <span>{tab.label}</span>
                         </button>
                     ))}
                 </div>
@@ -300,15 +299,35 @@ export default function CatalogueEditorPage() {
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Padding for Bottom Bar on Mobile */}
+                <div className="h-24 sm:h-0" />
+
+                {/* Mobile Sticky Action Bar */}
+                <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-surface/90 backdrop-blur-xl border-t border-border z-[100] flex gap-3">
+                    <button
+                        onClick={() => setShowPreview(true)}
+                        className="flex-1 flex items-center justify-center gap-2 py-4 bg-surface border border-border text-[10px] font-black uppercase tracking-widest text-text-muted active:bg-surface-alt transition-all"
+                    >
+                        <Eye className="w-4 h-4" /> Preview
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving || isDownloading}
+                        className="flex-[1.5] flex items-center justify-center gap-2 py-4 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                    >
+                        {isSaving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Publish
+                    </button>
+                </div>
             </div>
 
             {/* Right: Live Preview */}
-            <div className="flex-[2] relative bg-black flex flex-col group/preview">
+            <div className={`flex-[2] relative bg-black flex flex-col group/preview ${showPreview ? 'block' : 'hidden lg:flex'}`}>
                 {/* Mode Switcher Overlay */}
-                <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[100] p-1.5 bg-black/40 backdrop-blur-2xl rounded-2xl border border-white/20 shadow-2xl flex gap-1 items-center">
+                <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 z-[100] p-1.5 bg-black/60 backdrop-blur-2xl border border-white/10 flex gap-2 items-center overflow-x-auto max-w-[95%] hide-scrollbar rounded-none">
                     <button
                         onClick={() => setPreviewMode('landing')}
-                        className={`shrink-0 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${previewMode === 'landing' ? 'bg-white text-black shadow-lg scale-105' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                        className={`shrink-0 px-3 sm:px-4 py-2 text-[7px] sm:text-[8px] font-black uppercase tracking-widest transition-all ${previewMode === 'landing' ? 'bg-white text-black shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                     >
                         Landing
                     </button>
@@ -317,11 +336,21 @@ export default function CatalogueEditorPage() {
                         <button
                             key={idx}
                             onClick={() => setPreviewMode(idx)}
-                            className={`shrink-0 px-5 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${previewMode === idx ? 'bg-primary text-white shadow-lg scale-105' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
+                            className={`shrink-0 px-3 sm:px-4 py-2 text-[7px] sm:text-[8px] font-black uppercase tracking-widest transition-all ${previewMode === idx ? 'bg-primary text-white shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/10'}`}
                         >
                             {p.title}
                         </button>
                     ))}
+                </div>
+
+                <div className="absolute bottom-4 right-4 z-[100] lg:hidden">
+                    <button
+                        onClick={() => setShowPreview(false)}
+                        className="p-3 bg-white text-black rounded-full shadow-2xl flex items-center gap-2 border border-black/10"
+                    >
+                        <Edit3 className="w-4 h-4" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Edit Mode</span>
+                    </button>
                 </div>
 
                 <div id="preview-capture-area" className="flex-1 overflow-hidden">
@@ -349,24 +378,41 @@ const SectionHeader = ({ title, subtitle }) => (
     </div>
 );
 
-const EditorInput = ({ label, icon: Icon, value, onChange, placeholder }) => (
-    <div className="space-y-2">
+const EditorInput = ({ label, icon: Icon, value, onChange, placeholder, inputMode = "text" }) => (
+    <div className="space-y-2 p-1">
         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
-            <Icon className="w-3 h-3 text-primary" /> {label}
+            <Icon className="w-3.5 h-3.5 text-primary" /> {label}
         </label>
-        <div className="flex items-center gap-4 bg-surface border border-border/60 rounded-3xl p-2 px-5 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all group">
-            <input type="text" value={value || ''} onChange={(e) => onChange(e.target.value)} className="flex-1 bg-transparent border-none py-3 text-sm font-bold placeholder:text-text-muted/40 outline-none" placeholder={placeholder} />
+        <div className="flex items-center gap-4 bg-surface border border-border/60 rounded-2xl p-3 sm:p-2 px-5 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all group shadow-sm sm:shadow-none translate-y-0 active:translate-y-[1px]">
+            <input 
+                type="text" 
+                value={value || ''} 
+                onChange={(e) => onChange(e.target.value)} 
+                className="flex-1 bg-transparent border-none py-2 sm:py-3 text-sm font-bold placeholder:text-text-muted/40 outline-none" 
+                placeholder={placeholder}
+                inputMode={inputMode}
+                autoCapitalize="none"
+                autoComplete="off"
+            />
         </div>
     </div>
 );
 
 const EditorTextarea = ({ label, icon: Icon, value, onChange, placeholder }) => (
-    <div className="space-y-2">
+    <div className="space-y-2 p-1">
         <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-text-muted ml-2">
-            <Icon className="w-3 h-3 text-primary" /> {label}
+            <Icon className="w-3.5 h-3.5 text-primary" /> {label}
         </label>
-        <div className="bg-surface border border-border/60 rounded-3xl p-2 px-5 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all">
-            <textarea value={value || ''} onChange={(e) => onChange(e.target.value)} rows={3} className="w-full bg-transparent border-none py-3 text-sm font-bold placeholder:text-text-muted/40 outline-none resize-none leading-relaxed" placeholder={placeholder} />
+        <div className="bg-surface border border-border/60 rounded-2xl p-3 sm:p-2 px-5 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 transition-all shadow-sm sm:shadow-none active:translate-y-[1px]">
+            <textarea 
+                value={value || ''} 
+                onChange={(e) => onChange(e.target.value)} 
+                rows={3} 
+                className="w-full bg-transparent border-none py-2 sm:py-3 text-sm font-bold placeholder:text-text-muted/40 outline-none resize-none leading-relaxed" 
+                placeholder={placeholder}
+                autoCapitalize="sentences"
+                autoComplete="off"
+            />
         </div>
     </div>
 );

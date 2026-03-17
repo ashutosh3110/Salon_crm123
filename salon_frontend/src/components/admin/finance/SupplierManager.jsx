@@ -74,7 +74,7 @@ export default function SupplierManager() {
 
 function SupplierTable({ suppliers, onEdit, onDelete }) {
     return (
-        <div className="p-0 animate-fadeIn overflow-x-auto">
+        <div className="p-0 animate-fadeIn table-responsive">
             <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr className="bg-surface/50 border-b border-border">

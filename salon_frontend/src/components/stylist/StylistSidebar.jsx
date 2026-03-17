@@ -68,21 +68,15 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
             </button>
 
             {/* Logo Section */}
-            <div className={`flex items-center transition-all duration-300 border-b border-border/40 ${effectiveCollapsed ? 'justify-center h-16' : 'px-6 h-20'}`}>
-                <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-10 h-10 flex items-center justify-center shrink-0 bg-primary/5 rounded-xl border border-primary/10 shadow-inner">
+            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
                             src="/2-removebg-preview.png"
                             alt="Logo"
-                            className="w-7 h-7 object-contain drop-shadow-md focus:animate-pulse"
+                            className="w-full h-full object-contain"
                         />
                     </div>
-                    {!effectiveCollapsed && (
-                        <div className="animate-in fade-in slide-in-from-left-4 duration-500">
-                            <h1 className="text-sm font-black tracking-widest text-text uppercase">Wapixo</h1>
-                            <p className="text-[9px] font-bold text-primary tracking-tighter uppercase opacity-80">Stylist Panel</p>
-                        </div>
-                    )}
                 </div>
                 {/* Mobile close */}
                 {mobileOpen && (

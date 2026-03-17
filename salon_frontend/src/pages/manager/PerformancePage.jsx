@@ -33,43 +33,40 @@ export default function PerformancePage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-black text-text tracking-tight uppercase">Performance Analytics</h1>
-                <p className="text-sm text-text-muted font-medium">Real-time metrics and team performance insights</p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
+                <div className="leading-none text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Performance Analytics</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence :: vector_scoring_v2.0</p>
+                </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((s) => (
-                    <div key={s.label} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={s.label} className="bg-surface py-4 px-5 sm:py-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative text-left">
                         {/* Soft Glow Effect */}
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <s.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                                <div className="flex items-center gap-2">
+                                    <s.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted transition-colors group-hover:text-primary" />
+                                    <p className="text-[9px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${s.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                    {s.isUp ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                                <div className={`flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] font-bold ${s.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    {s.isUp ? <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                     {s.change}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter
                                         value={typeof s.value === 'string' ? parseFloat(s.value.replace(/[₹%,]/g, '')) : s.value}
                                         prefix={typeof s.value === 'string' && s.value.includes('₹') ? '₹' : ''}
                                         suffix={typeof s.value === 'string' && s.value.includes('%') ? '%' : ''}
                                     />
                                 </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={s.isUp ? "text-emerald-400" : "text-rose-400"}>
-                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -77,119 +74,109 @@ export default function PerformancePage() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="lg:col-span-2 bg-white rounded-none border border-border/60 p-6 shadow-none">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-sm font-black text-text uppercase tracking-widest">Revenue Growth</h2>
+            <div className="bg-white rounded-none border border-border/60 p-4 sm:p-6 sm:p-8 shadow-none overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                    <h2 className="text-[11px] sm:text-sm font-black text-text uppercase tracking-widest">Revenue Growth</h2>
                     <CustomDropdown
                         options={rangeOptions}
                         value={timeRange}
                         onChange={setTimeRange}
-                        className="w-44"
+                        className="w-full sm:w-44"
                     />
                 </div>
 
-                {(() => {
-                    const datasets = {
-                        '7d': { points: [32000, 48000, 41000, 67000, 53000, 71000, 62000], labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
-                        '30d': { points: [28000, 35000, 42000, 38000, 55000, 61000, 58000, 70000, 65000, 74000, 80000, 76000, 83000, 78000, 90000, 85000, 88000, 92000, 87000, 95000, 91000, 98000, 94000, 100000, 97000, 103000, 99000, 108000, 104000, 112000], labels: (() => { const d = []; for (let i = 1; i <= 30; i++) d.push(i % 5 === 0 ? `Day ${i}` : ''); return d; })() },
-                        'month': { points: [40000, 55000, 48000, 72000, 65000, 80000, 75000, 90000, 85000, 95000, 88000, 102000], labels: ['Jan 1', 'Jan 5', 'Jan 9', 'Jan 13', 'Jan 17', 'Jan 21', 'Jan 25', 'Feb 1', 'Feb 5', 'Feb 9', 'Feb 13', 'Feb 17'] },
-                        'quarter': { points: [120000, 145000, 138000, 162000, 175000, 190000, 185000, 210000, 225000, 215000, 240000, 255000], labels: ['Oct', 'Oct', 'Nov', 'Nov', 'Nov', 'Dec', 'Dec', 'Dec', 'Jan', 'Jan', 'Feb', 'Feb'] },
-                    };
-                    const data = datasets[timeRange] || datasets['7d'];
-                    const pts = data.points;
-                    const labels = data.labels;
-                    const W = 600, H = 200, PAD_L = 56, PAD_R = 16, PAD_T = 16, PAD_B = 32;
-                    const chartW = W - PAD_L - PAD_R;
-                    const chartH = H - PAD_T - PAD_B;
-                    const minV = Math.min(...pts);
-                    const maxV = Math.max(...pts);
-                    const range = maxV - minV || 1;
-                    const toX = (i) => PAD_L + (i / (pts.length - 1)) * chartW;
-                    const toY = (v) => PAD_T + chartH - ((v - minV) / range) * chartH;
+                <div className="w-full">
+                    {(() => {
+                        const datasets = {
+                            '7d': { points: [32000, 48000, 41000, 67000, 53000, 71000, 62000], labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+                            '30d': { points: [28000, 35000, 42000, 38000, 55000, 61000, 58000, 70000, 65000, 74000, 80000, 76000, 83000, 78000, 90000, 85000, 88000, 92000, 87000, 95000, 91000, 98000, 94000, 100000, 97000, 103000, 99000, 108000, 104000, 112000], labels: (() => { const d = []; for (let i = 1; i <= 30; i++) d.push(i % 5 === 0 ? `Day ${i}` : ''); return d; })() },
+                            'month': { points: [40000, 55000, 48000, 72000, 65000, 80000, 75000, 90000, 85000, 95000, 88000, 102000], labels: ['Jan 1', 'Jan 5', 'Jan 9', 'Jan 13', 'Jan 17', 'Jan 21', 'Jan 25', 'Feb 1', 'Feb 5', 'Feb 9', 'Feb 13', 'Feb 17'] },
+                            'quarter': { points: [120000, 145000, 138000, 162000, 175000, 190000, 185000, 210000, 225000, 215000, 240000, 255000], labels: ['Oct', 'Oct', 'Nov', 'Nov', 'Nov', 'Dec', 'Dec', 'Dec', 'Jan', 'Jan', 'Feb', 'Feb'] },
+                        };
+                        const data = datasets[timeRange] || datasets['7d'];
+                        const pts = data.points;
+                        const labels = data.labels;
+                        const W = 600, H = 240, PAD_L = 50, PAD_R = 10, PAD_T = 20, PAD_B = 40;
+                        const chartW = W - PAD_L - PAD_R;
+                        const chartH = H - PAD_T - PAD_B;
+                        const minV = Math.min(...pts) * 0.9;
+                        const maxV = Math.max(...pts) * 1.1;
+                        const range = maxV - minV || 1;
+                        const toX = (i) => PAD_L + (i / (pts.length - 1)) * chartW;
+                        const toY = (v) => PAD_T + chartH - ((v - minV) / range) * chartH;
 
-                    // Smooth bezier path
-                    const linePath = pts.map((v, i) => {
-                        if (i === 0) return `M ${toX(i)} ${toY(v)}`;
-                        const px = toX(i - 1), py = toY(pts[i - 1]);
-                        const cx = toX(i), cy = toY(v);
-                        const cpx = (px + cx) / 2;
-                        return `C ${cpx} ${py}, ${cpx} ${cy}, ${cx} ${cy}`;
-                    }).join(' ');
+                        const linePath = pts.map((v, i) => {
+                            if (i === 0) return `M ${toX(i)} ${toY(v)}`;
+                            const px = toX(i - 1), py = toY(pts[i - 1]);
+                            const cx = toX(i), cy = toY(v);
+                            const cpx = (px + cx) / 2;
+                            return `C ${cpx} ${py}, ${cpx} ${cy}, ${cx} ${cy}`;
+                        }).join(' ');
 
-                    const areaPath = linePath + ` L ${toX(pts.length - 1)} ${PAD_T + chartH} L ${PAD_L} ${PAD_T + chartH} Z`;
+                        const areaPath = linePath + ` L ${toX(pts.length - 1)} ${PAD_T + chartH} L ${PAD_L} ${PAD_T + chartH} Z`;
+                        const gridValues = [minV, minV + range * 0.33, minV + range * 0.66, maxV];
+                        const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${(v / 1000).toFixed(0)}K` : `₹${v}`;
 
-                    const gridValues = [minV, minV + range * 0.25, minV + range * 0.5, minV + range * 0.75, maxV];
+                        return (
+                            <div className="relative w-full overflow-hidden">
+                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
+                                    <defs>
+                                        <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.15" />
+                                            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
 
-                    const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : `₹${(v / 1000).toFixed(0)}K`;
+                                    {gridValues.map((v, i) => {
+                                        const y = toY(v);
+                                        return (
+                                            <g key={i}>
+                                                <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.4" />
+                                                <text x={PAD_L - 8} y={y + 3} textAnchor="end" fontSize="9" fill="var(--text-muted)" fontWeight="800" fontFamily="inherit">
+                                                    {fmt(v)}
+                                                </text>
+                                            </g>
+                                        );
+                                    })}
 
-                    return (
-                        <div className="relative w-full">
-                            <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: '220px' }}>
-                                <defs>
-                                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="var(--color-primary, #B85C5C)" stopOpacity="0.18" />
-                                        <stop offset="100%" stopColor="var(--color-primary, #B85C5C)" stopOpacity="0" />
-                                    </linearGradient>
-                                </defs>
+                                    <path d={areaPath} fill="url(#revGrad)" />
+                                    <path d={linePath} fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
-                                {/* Grid lines + Y labels */}
-                                {gridValues.map((v, i) => {
-                                    const y = toY(v);
-                                    return (
-                                        <g key={i}>
-                                            <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="#e5e7eb" strokeWidth="1" strokeDasharray="4 3" />
-                                            <text x={PAD_L - 6} y={y + 4} textAnchor="end" fontSize="9" fill="#9ca3af" fontWeight="700" fontFamily="inherit">
-                                                {fmt(v)}
-                                            </text>
+                                    {pts.map((v, i) => (
+                                        <g key={i} className="group" style={{ cursor: 'pointer' }}>
+                                            <circle cx={toX(i)} cy={toY(v)} r="8" fill="transparent" />
+                                            <circle cx={toX(i)} cy={toY(v)} r="3.5" fill="var(--surface)" stroke="var(--color-primary)" strokeWidth="2" />
+                                            <g opacity="0" className="chart-tooltip" style={{ pointerEvents: 'none' }}>
+                                                <rect x={toX(i) - 30} y={toY(v) - 32} width="60" height="20" fill="var(--text)" />
+                                                <text x={toX(i)} y={toY(v) - 18} textAnchor="middle" fontSize="9" fill="var(--surface)" fontWeight="900" textTransform="uppercase">
+                                                    {fmt(v)}
+                                                </text>
+                                            </g>
                                         </g>
-                                    );
-                                })}
+                                    ))}
 
-                                {/* Area fill */}
-                                <path d={areaPath} fill="url(#revGrad)" />
-
-                                {/* Line */}
-                                <path d={linePath} fill="none" stroke="var(--color-primary, #B85C5C)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-                                {/* Data points + tooltips */}
-                                {pts.map((v, i) => (
-                                    <g key={i} className="group" style={{ cursor: 'pointer' }}>
-                                        <circle cx={toX(i)} cy={toY(v)} r="8" fill="transparent" />
-                                        <circle cx={toX(i)} cy={toY(v)} r="4" fill="white" stroke="var(--color-primary, #B85C5C)" strokeWidth="2" />
-                                        {/* Tooltip */}
-                                        <g opacity="0" className="chart-tooltip" style={{ pointerEvents: 'none' }}>
-                                            <rect x={toX(i) - 28} y={toY(v) - 28} width="56" height="20" rx="0" fill="#1a1a2e" />
-                                            <text x={toX(i)} y={toY(v) - 14} textAnchor="middle" fontSize="9" fill="white" fontWeight="800">
-                                                {fmt(v)}
+                                    {labels.map((lbl, i) => {
+                                        const step = Math.max(1, Math.floor(labels.length / 8));
+                                        if (i % step !== 0 && i !== labels.length - 1) return null;
+                                        if (!lbl) return null;
+                                        return (
+                                            <text key={i} x={toX(i)} y={H - 10} textAnchor="middle" fontSize="9" fill="var(--text-muted)" fontWeight="800" fontFamily="inherit" textTransform="uppercase">
+                                                {lbl}
                                             </text>
-                                        </g>
-                                    </g>
-                                ))}
-
-                                {/* X-axis labels — show only every nth label */}
-                                {labels.map((lbl, i) => {
-                                    const step = Math.max(1, Math.floor(labels.length / 7));
-                                    if (i % step !== 0 && i !== labels.length - 1) return null;
-                                    if (!lbl) return null;
-                                    return (
-                                        <text key={i} x={toX(i)} y={H - 6} textAnchor="middle" fontSize="9" fill="#9ca3af" fontWeight="700" fontFamily="inherit">
-                                            {lbl}
-                                        </text>
-                                    );
-                                })}
-                            </svg>
-
-                            {/* CSS-based hover tooltips */}
-                            <style>{`
+                                        );
+                                    })}
+                                </svg>
+                                <style>{`
                                     svg g.group:hover .chart-tooltip { opacity: 1; }
-                                    svg g.group:hover circle[r="4"] { r: 5.5; }
+                                    svg g.group:hover circle[r="3.5"] { r: 5; fill: var(--color-primary); }
                                 `}</style>
-                        </div>
-                    );
-                })()}
+                            </div>
+                        );
+                    })()}
+                </div>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6 mt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 {/* Top Performers */}
                 <div className="bg-white rounded-none border border-border/60 p-6 shadow-none">
                     <div className="flex items-center gap-2 mb-6">

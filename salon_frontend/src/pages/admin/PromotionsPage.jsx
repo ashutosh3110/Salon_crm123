@@ -87,14 +87,14 @@ export default function PromotionsPage() {
     return (
         <div className="space-y-6 text-left font-black">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 text-left">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none">Campaign Matrix</h1>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Campaign Matrix</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">{promos.length} ACTIVE PROTOCOLS DEPLOYED</p>
                 </div>
                 <button
                     onClick={() => { setEditing(null); setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true }); setShowModal(true); }}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all"
+                    className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Add Protocol
                 </button>
@@ -102,8 +102,8 @@ export default function PromotionsPage() {
 
             {/* Top Analytics Section */}
             {!loading && promos.length > 0 && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
-                    <div className="lg:col-span-1 bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 text-left font-black">
+                    <div className="md:col-span-1 bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-8 text-left">
                             <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Deployment Intensity</span>
                             <BarChart3 className="w-5 h-5 text-primary" />
@@ -123,7 +123,7 @@ export default function PromotionsPage() {
                         <p className="mt-6 text-[8px] font-black text-text-muted uppercase tracking-[0.2em] text-center italic opacity-40">Vector Value Distribution</p>
                     </div>
 
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
+                    <div className="md:col-span-1 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
                         {[
                             { label: 'Active Matrix', value: promos.filter(p => p.isActive).length, icon: TrendingUp, color: 'emerald' },
                             { label: 'Avg Magnitude', value: `${Math.round(promos.reduce((s, p) => s + Number(p.value), 0) / promos.length)} units`, icon: Percent, color: 'blue' },

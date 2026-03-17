@@ -87,7 +87,7 @@ export default function EndOfDay() {
                             By closing the day, you lock all financial entries. No further edits will be allowed to POS invoices, expenses, or cash records for today.
                         </p>
                     </div>
-                    <div className="flex gap-4 w-full justify-center">
+                    <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
                         <button className="px-8 py-4 bg-white border border-rose-200 rounded-2xl text-sm font-bold text-rose-600 hover:bg-rose-100 transition-all shadow-sm">
                             <Download className="w-4 h-4 inline-block mr-2" />
                             EOD Report

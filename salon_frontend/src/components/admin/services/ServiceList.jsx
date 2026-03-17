@@ -67,8 +67,8 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
 
             {/* Service Table */}
             <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px]">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <div className="table-responsive">
+                    <table className="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border">
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Service Name</th>
