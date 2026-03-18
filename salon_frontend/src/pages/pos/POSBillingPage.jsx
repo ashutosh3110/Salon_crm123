@@ -59,9 +59,9 @@ const InvoicePDF = ({ invoice, role }) => (
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
                 <Text style={pdfStyles.salonName}>XYZ SALON & SPA</Text>
-                <Text style={pdfStyles.salonMeta}>Lucknow Main Branch</Text>
-                <Text style={pdfStyles.salonMeta}>Gomti Nagar, Lucknow, UP | +91 98765 43210</Text>
-                <Text style={pdfStyles.salonMeta}>GSTIN: 09AAFCC0301F1ZN</Text>
+                <Text style={pdfStyles.salonMeta}>{invoice.outlet?.address || ''}</Text>
+                <Text style={pdfStyles.salonMeta}>{invoice.outlet?.phone || ''} | {invoice.outlet?.email || ''}</Text>
+                <Text style={pdfStyles.salonMeta}>GSTIN: {invoice.outlet?.gstin || 'N/A'}</Text>
                 <Text style={pdfStyles.invoiceTitle}>INVOICE</Text>
             </View>
 
@@ -137,7 +137,12 @@ const InvoicePDF = ({ invoice, role }) => (
 export default function POSBillingPage() {
     const { user } = useAuth();
     const { addSaleRecord, products } = useInventory();
-    const { services, customers: businessCustomers, addCustomer: addBusinessCustomer } = useBusiness();
+    const { 
+        services, 
+        customers: businessCustomers, 
+        addCustomer: addBusinessCustomer,
+        activeOutlet 
+    } = useBusiness();
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
     const location = useLocation();
@@ -146,6 +151,7 @@ export default function POSBillingPage() {
     const [selectedClient, setSelectedClient] = useState(null);
     const [payments, setPayments] = useState([{ method: 'cash', amount: 0 }]);
     const [taxPercent, setTaxPercent] = useState(18);
+    const [customerGstin, setCustomerGstin] = useState('');
     const [pendingAppOrder, setPendingAppOrder] = useState(null);
 
     // UI State
@@ -162,6 +168,9 @@ export default function POSBillingPage() {
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [mobileView, setMobileView] = useState('items'); // 'items' | 'cart'
     const [showCameraScanner, setShowCameraScanner] = useState(false);
+    const [isBarcodeMode, setIsBarcodeMode] = useState(false);
+    const [lastScannedItem, setLastScannedItem] = useState(null);
+    const [scanError, setScanError] = useState(null);
 
     // Discount/Redemption
     const [manualDiscount, setManualDiscount] = useState({ type: 'fixed', value: 0 });
@@ -217,7 +226,27 @@ export default function POSBillingPage() {
     const clientInputRef = useRef(null);
     const html5QrScannerRef = useRef(null);
 
-    // ─── Camera Scanner (html5-qrcode) ──────────────────────────────
+    // ─── Audio Feedback ───────────────────────────────────────────
+    const playSuccessBeep = () => {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.1);
+        } catch (e) {
+            console.warn('Audio feedback failed', e);
+        }
+    };
     const openCameraScanner = () => {
         setShowCameraScanner(true);
     };
@@ -349,23 +378,50 @@ export default function POSBillingPage() {
     };
 
     // ─── Barcode Scan Handler ────────────────────────────────
-    useEffect(() => {
-        if (!searchItem || searchItem.length < 5) return; // Barcodes are usually long
+    const handleBarcodeSearch = (value) => {
+        if (!value) return;
 
-        const product = products.find(p => p.barcode === searchItem);
+        const cleanValue = value.trim();
+        const product = products.find(p => p.barcode === cleanValue || p.sku === cleanValue);
+
         if (product) {
             addToCart(product, 'product');
+            setLastScannedItem(product);
+            playSuccessBeep();
             setSearchItem('');
-            return;
-        }
+            setScanError(null);
 
-        // Optional: Check SKU too if it's an exact match
-        const productBySku = products.find(p => p.sku === searchItem);
-        if (productBySku) {
-            addToCart(productBySku, 'product');
-            setSearchItem('');
+            // Clear result after 3 seconds
+            setTimeout(() => setLastScannedItem(null), 3000);
+            return true;
         }
-    }, [searchItem]);
+        return false;
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            const found = handleBarcodeSearch(searchItem);
+            if (!found && isBarcodeMode) {
+                setScanError(`Barcode "${searchItem}" not found`);
+                setTimeout(() => setScanError(null), 3000);
+                setSearchItem('');
+            }
+        }
+    };
+
+    // Auto-search for barcodes of specific length if not in manual mode
+    useEffect(() => {
+        if (!searchItem || searchItem.length < 8) return; // Most barcodes are 8, 12, or 13 digits
+
+        // Physical scanners are very fast, so if it finishes quickly we can auto-process
+        const timer = setTimeout(() => {
+            if (isBarcodeMode) {
+                handleBarcodeSearch(searchItem);
+            }
+        }, 50); // Minimal delay to allow buffer completion
+
+        return () => clearTimeout(timer);
+    }, [searchItem, isBarcodeMode]);
 
     // ─── Filters & Search ────────────────────────────────────
     const categories = useMemo(() => {
@@ -878,20 +934,66 @@ export default function POSBillingPage() {
                             <input
                                 ref={searchInputRef}
                                 type="text"
-                                placeholder="Scan Barcode or Search Items..."
-                                className="w-full pl-10 pr-12 py-3 border border-border bg-background text-text outline-none focus:border-primary text-sm font-bold shadow-sm transition-all placeholder:text-text-muted/50"
+                                placeholder={isBarcodeMode ? "Scan Barcode Now..." : "Search Items or Barcode..."}
+                                className={`w-full pl-10 pr-12 py-3 border bg-background text-text outline-none text-sm font-bold shadow-sm transition-all placeholder:text-text-muted/50 ${isBarcodeMode ? 'border-primary ring-2 ring-primary/20' : 'border-border focus:border-primary'
+                                    }`}
                                 value={searchItem}
                                 autoFocus
                                 onChange={(e) => setSearchItem(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
                             />
-                            <button
-                                onClick={openCameraScanner}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-primary/10 text-primary transition-all active:scale-90"
-                                title="Open Camera Scanner"
-                            >
-                                <Scan className="w-5 h-5" />
-                            </button>
+                            <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                <button
+                                    onClick={() => setIsBarcodeMode(!isBarcodeMode)}
+                                    className={`p-1.5 transition-all active:scale-90 flex items-center gap-1 px-2 rounded-sm ${isBarcodeMode ? 'bg-primary text-white' : 'hover:bg-primary/10 text-text-muted'
+                                        }`}
+                                    title="Toggle Barcode Mode"
+                                >
+                                    <Tag className="w-3.5 h-3.5" />
+                                    <span className="text-[9px] font-black uppercase tracking-tighter">
+                                        {isBarcodeMode ? 'ON' : 'OFF'}
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={openCameraScanner}
+                                    className="p-1.5 hover:bg-primary/10 text-primary transition-all active:scale-90"
+                                    title="Open Camera Scanner"
+                                >
+                                    <Scan className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
+
+                        {/* Scan Status Overlays */}
+                        <AnimatePresence>
+                            {lastScannedItem && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, scale: 0.9 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-emerald-500 text-white px-6 py-3 shadow-2xl flex items-center gap-3 border border-emerald-400"
+                                >
+                                    <div className="bg-white/20 p-1 rounded-full">
+                                        <Check className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Added to Cart</p>
+                                        <p className="text-sm font-black truncate max-w-[200px]">{lastScannedItem.name}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {scanError && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute top-full left-0 right-0 mt-2 z-50 bg-rose-500 text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest text-center animate-pulse"
+                                >
+                                    {scanError}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         <div className="flex bg-surface-alt p-1 border border-border">
                             <button
