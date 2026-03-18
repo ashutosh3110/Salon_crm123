@@ -7,6 +7,7 @@ import {
     ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
+import api from '../../services/api';
 
 /* ─── Feature definitions ─────────────────────────────────────────────── */
 const ALL_FEATURES = [
@@ -195,7 +196,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
                     <div>
-                        <h3 className="text-base font-bold text-text">{plan?.id ? 'Edit Plan' : 'Create New Plan'}</h3>
+                        <h3 className="text-base font-bold text-text">{plan?._id ? 'Edit Plan' : 'Create New Plan'}</h3>
                         <p className="text-xs text-text-muted mt-0.5">Configure features, limits and pricing</p>
                     </div>
                     <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface transition-colors">
@@ -330,7 +331,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                     </button>
                     <button onClick={() => onSave(form)} disabled={saving || !form.name}
                         className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
-                        {saving ? 'Saving…' : plan?.id ? 'Save Changes' : 'Create Plan'}
+                        {saving ? 'Saving…' : plan?._id ? 'Save Changes' : 'Create Plan'}
                     </button>
                 </div>
             </div>
@@ -340,7 +341,9 @@ function PlanModal({ plan, onClose, onSave, saving }) {
 
 /* ══════════════════════════════════════════════════════════════════════ */
 export default function SAPlansPage() {
-    const [plans, setPlans] = useState(INITIAL_PLANS);
+    const [plans, setPlans] = useState([]);
+    const [statsData, setStatsData] = useState({ totalPlans: 0, activePlans: 0, totalSalons: 0, estimatedMRR: 0 });
+    const [loading, setLoading] = useState(true);
     const [modal, setModal] = useState(null);   // null | plan object (for edit) | 'new'
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
@@ -351,39 +354,98 @@ export default function SAPlansPage() {
         setTimeout(() => setToast(null), 3000);
     };
 
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            await Promise.all([fetchPlans(), fetchStats()]);
+        } catch (error) {
+            console.error('Error fetching plans data:', error);
+            showToast('Failed to load plans.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchPlans = async () => {
+        const response = await api.get('/subscriptions');
+        const data = response.data.data;
+        setPlans(Array.isArray(data) ? data : data.results || []);
+    };
+
+    const fetchStats = async () => {
+        try {
+            const response = await api.get('/subscriptions/stats');
+            setStatsData(response.data.data);
+        } catch (error) {
+            console.error('Error fetching subscription stats:', error);
+        }
+    };
+
     const handleSave = async (form) => {
         setSaving(true);
-        await new Promise(r => setTimeout(r, 600));
-        if (form.id) {
-            setPlans(p => p.map(pl => pl.id === form.id ? { ...pl, ...form } : pl));
-            showToast(`Plan "${form.name}" updated!`);
-        } else {
-            const newPlan = { ...form, id: 'p' + Date.now(), salonsCount: 0 };
-            setPlans(p => [...p, newPlan]);
-            showToast(`Plan "${form.name}" created!`);
+        try {
+            if (form._id) {
+                await api.patch(`/subscriptions/${form._id}`, form);
+                showToast(`Plan "${form.name}" updated!`);
+            } else {
+                await api.post('/subscriptions', form);
+                showToast(`Plan "${form.name}" created!`);
+            }
+            await fetchData();
+            setModal(null);
+        } catch (error) {
+            console.error('Error saving plan:', error);
+            showToast('Failed to save plan.', 'error');
+        } finally {
+            setSaving(false);
         }
-        setSaving(false);
-        setModal(null);
     };
 
     const handleClone = async (plan) => {
         setSaving(true);
-        await new Promise(r => setTimeout(r, 400));
-        const cloned = { ...plan, id: 'p' + Date.now(), name: plan.name + ' (Copy)', popular: false, salonsCount: 0 };
-        setPlans(p => [...p, cloned]);
-        showToast(`Plan "${plan.name}" cloned!`);
-        setSaving(false);
+        try {
+            const cloned = { ...plan, name: plan.name + ' (Copy)', popular: false, salonsCount: 0 };
+            delete cloned._id;
+            delete cloned.id;
+            delete cloned.createdAt;
+            delete cloned.updatedAt;
+
+            await api.post('/subscriptions', cloned);
+            showToast(`Plan "${plan.name}" cloned!`);
+            await fetchData();
+        } catch (error) {
+            console.error('Error cloning plan:', error);
+            showToast('Failed to clone plan.', 'error');
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleToggleActive = (plan) => {
-        setPlans(p => p.map(pl => pl.id === plan.id ? { ...pl, active: !pl.active } : pl));
-        showToast(`Plan "${plan.name}" ${plan.active ? 'disabled' : 'enabled'}.`, plan.active ? 'error' : 'success');
+    const handleToggleActive = async (plan) => {
+        try {
+            await api.patch(`/subscriptions/${plan._id}`, { active: !plan.active });
+            showToast(`Plan "${plan.name}" ${plan.active ? 'disabled' : 'enabled'}.`, plan.active ? 'error' : 'success');
+            await fetchData();
+        } catch (error) {
+            console.error('Error toggling plan status:', error);
+            showToast('Failed to update status.', 'error');
+        }
     };
 
-    const handleDelete = (plan) => {
+    const handleDelete = async (plan) => {
         if (window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
-            setPlans(p => p.filter(pl => pl.id !== plan.id));
-            showToast(`Plan "${plan.name}" deleted.`, 'error');
+            try {
+                await api.delete(`/subscriptions/${plan._id}`);
+                showToast(`Plan "${plan.name}" deleted.`, 'error');
+                await fetchData();
+            } catch (error) {
+                console.error('Error deleting plan:', error);
+                showToast('Failed to delete plan.', 'error');
+            }
         }
     };
 
@@ -418,10 +480,10 @@ export default function SAPlansPage() {
             {/* ── KPI strip ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Plans', value: plans.length, icon: Package, color: 'text-primary   bg-primary/10' },
-                    { label: 'Active Plans', value: activePlans, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
-                    { label: 'Salons on Plans', value: totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
-                    { label: 'Est. MRR', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
+                    { label: 'Total Plans', value: statsData.totalPlans, icon: Package, color: 'text-primary   bg-primary/10' },
+                    { label: 'Active Plans', value: statsData.activePlans, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
+                    { label: 'Salons on Plans', value: statsData.totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
+                    { label: 'Est. MRR', value: `₹${statsData.estimatedMRR.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border-border border shadow-sm p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl ${k.color} flex items-center justify-center shrink-0`}>
@@ -436,24 +498,30 @@ export default function SAPlansPage() {
             </div>
 
             {/* ── Plan cards ── */}
-            <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
-                {plans.map(plan => (
-                    <PlanCard
-                        key={plan.id}
-                        plan={plan}
-                        onEdit={p => setModal(p)}
-                        onClone={handleClone}
-                        onToggleActive={handleToggleActive}
-                        onDelete={handleDelete}
-                    />
-                ))}
-            </div>
+            {loading ? (
+                <div className="flex items-center justify-center p-20 text-text-muted animate-pulse font-bold uppercase tracking-widest text-sm">
+                    Loading Plans...
+                </div>
+            ) : (
+                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                    {plans.map(plan => (
+                        <PlanCard
+                            key={plan._id}
+                            plan={plan}
+                            onEdit={p => setModal(p)}
+                            onClone={handleClone}
+                            onToggleActive={handleToggleActive}
+                            onDelete={handleDelete}
+                        />
+                    ))}
+                </div>
+            )}
 
 
             {/* ── Modal ── */}
             {modal !== null && (
                 <PlanModal
-                    plan={modal?.id ? modal : null}
+                    plan={modal?._id ? modal : null}
                     onClose={() => setModal(null)}
                     onSave={handleSave}
                     saving={saving}

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
-export default function WapixoAbout() {
+export default function WapixoAbout({ data }) {
     const containerRef = useRef(null);
 
     // Mouse tracking for 3D tilt effect on the image
@@ -154,8 +154,8 @@ export default function WapixoAbout() {
                                 z: 100
                             }}
                         >
-                            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 0.4rem 0' }}>Trusted By</p>
-                            <h4 style={{ color: '#ffffff', fontSize: '1.4rem', fontWeight: 200, margin: 0 }}>500+ Salons</h4>
+                            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 0.4rem 0' }}>{data?.trusted_label || 'Trusted By'}</p>
+                            <h4 style={{ color: '#ffffff', fontSize: '1.4rem', fontWeight: 200, margin: 0 }}>{data?.trusted_value || '500+ Salons'}</h4>
                         </motion.div>
                     </motion.div>
 
@@ -176,7 +176,7 @@ export default function WapixoAbout() {
                                 display: 'block',
                                 marginBottom: '1.5rem'
                             }}>
-                                The Vision
+                                {data?.badge || 'The Vision'}
                             </span>
                             <h2 style={{
                                 fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
@@ -186,7 +186,18 @@ export default function WapixoAbout() {
                                 lineHeight: 1.05,
                                 margin: '0 0 2rem 0'
                             }}>
-                                Defined by Artists.<br />Driven by Data.
+                                {data?.title ? (
+                                    <>
+                                        {data.title.split('.').map((part, i, arr) => (
+                                            <span key={i}>
+                                                {part}{i !== arr.length - 1 ? '.' : ''}
+                                                {i === 0 && <br />}
+                                            </span>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <>Defined by Artists.<br />Driven by Data.</>
+                                )}
                             </h2>
                             <div style={{
                                 width: '40px',
@@ -202,7 +213,7 @@ export default function WapixoAbout() {
                                 marginBottom: '1.5rem',
                                 letterSpacing: '0.01em'
                             }}>
-                                Wapixo isn't just a management tool—it's a symphony of efficiency. We understand the heartbeat of the beauty industry, from the precision of a cut to the complexity of a multi-outlet empire.
+                                {data?.body || "Wapixo isn't just a management tool—it's a symphony of efficiency. We understand the heartbeat of the beauty industry, from the precision of a cut to the complexity of a multi-outlet empire."}
                             </p>
                             <p style={{
                                 color: 'rgba(255,255,255,0.35)',
@@ -210,7 +221,7 @@ export default function WapixoAbout() {
                                 fontWeight: 300,
                                 lineHeight: 1.7
                             }}>
-                                Our platform empowers owners to reclaim their time and creators to focus on their craft. With over 50,000 monthly appointments handled with surgical precision, we are the silent engine behind India's most successful salons.
+                                {data?.quote || "Our platform empowers owners to reclaim their time and creators to focus on their craft. With over 50,000 monthly appointments handled with surgical precision, we are the silent engine behind India's most successful salons."}
                             </p>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginTop: '3.5rem' }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-// import api from '../../services/api'; // Removed backend dependency
+import api from '../../services/api';
 import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
@@ -19,21 +19,6 @@ const MOCK_MONTHLY_REVENUE = superAdminData.monthlyRevenue;
 const MOCK_REGISTRATIONS = superAdminData.registrations;
 const MOCK_PLAN_DIST = superAdminData.planDistribution;
 const MOCK_CHURN = superAdminData.churn;
-const MOCK_RECENT = superAdminData.recentTenants;
-
-const MOCK_STATS = {
-    total: 127,
-    byStatus: {
-        active: 84,
-        trial: 22,
-        expired: 14,
-        suspended: 7
-    },
-    revenueToday: 8450,
-    revenueMonth: 81500,
-    expiredPlans: 14,
-    totalUsers: 485,
-};
 
 /* ─── Colour maps ────────────────────────────────────────────────────────── */
 const planColors = {
@@ -49,6 +34,7 @@ const statusColors = {
     expired: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
     suspended: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
     inactive: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
+    trial_expired: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
 };
 
 /* ─── Custom tooltip ─────────────────────────────────────────────────────── */
@@ -119,34 +105,52 @@ function SectionHeader({ title, subtitle, action }) {
 
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SADashboardPage() {
-    const [stats, setStats] = useState(MOCK_STATS);
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
-    const [recentTenants, setRecentTenants] = useState(MOCK_RECENT);
+    const [recentTenants, setRecentTenants] = useState([]);
     const [systemOk] = useState(true); // mock system health
 
-    const fetchStats = (isRefresh = false) => {
+    const fetchStats = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
-        // Pure mock logic now
-        setTimeout(() => {
-            setStats(MOCK_STATS);
+        try {
+            const response = await api.get('/tenants/stats');
+            const data = response.data.data;
+            setStats(data);
+            setRecentTenants(data.recentTenants || []);
+        } catch (error) {
+            console.error('Error fetching dashboard stats:', error);
+        } finally {
             setLoading(false);
             setRefreshing(false);
-        }, 1000);
+        }
     };
 
     useEffect(() => { fetchStats(); }, []);
 
     /* ── KPI values: Pure mock ── */
     const kpi = {
-        totalSalons: stats.total,
-        activeSubs: stats.byStatus.active,
-        trialSalons: stats.byStatus.trial,
-        revenueToday: stats.revenueToday,
-        revenueMonth: stats.revenueMonth,
-        expiredPlans: stats.expiredPlans,
-        totalUsers: stats.totalUsers,
+        totalSalons: stats?.totalSalons || 0,
+        activeSubs: stats?.activeSalons || 0,
+        trialSalons: stats?.countsByStatus?.find(v => v._id === 'trial')?.count || 0,
+        revenueToday: stats?.currentMonthlyRevenue ? Math.round(stats.currentMonthlyRevenue / 30) : 0, // mock daily revenue
+        revenueMonth: stats?.currentMonthlyRevenue || 0,
+        expiredPlans: stats?.countsByStatus?.find(v => v._id === 'expired')?.count || 0,
+        totalUsers: (stats?.activeSalons || 0) * 5 + 10, // heuristic mock users
     };
+
+    const planDataMapping = [
+        { name: 'Free', key: 'free', color: '#94a3b8' },
+        { name: 'Basic', key: 'basic', color: '#3b82f6' },
+        { name: 'Pro', key: 'pro', color: '#B85C5C' },
+        { name: 'Enterprise', key: 'enterprise', color: '#f59e0b' },
+    ];
+
+    const currentPlanDist = planDataMapping.map(p => ({
+        name: p.name,
+        value: stats?.countsByPlan?.find(v => v._id === p.key)?.count || 0,
+        color: p.color
+    }));
 
     const metricCards = [
         { label: 'Total Salons', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', change: 12 },
@@ -229,9 +233,9 @@ export default function SADashboardPage() {
                     <SectionHeader title="Plan Distribution" subtitle="Current active subscriptions" />
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
-                            <Pie data={MOCK_PLAN_DIST} cx="50%" cy="50%" innerRadius={45} outerRadius={72}
+                            <Pie data={currentPlanDist} cx="50%" cy="50%" innerRadius={45} outerRadius={72}
                                 dataKey="value" labelLine={false} label={renderPieLabel}>
-                                {MOCK_PLAN_DIST.map((entry, i) => (
+                                {currentPlanDist.map((entry, i) => (
                                     <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />
                                 ))}
                             </Pie>
@@ -240,7 +244,7 @@ export default function SADashboardPage() {
                     </ResponsiveContainer>
                     {/* Legend */}
                     <div className="grid grid-cols-2 gap-2 mt-2">
-                        {MOCK_PLAN_DIST.map(p => (
+                        {currentPlanDist.map(p => (
                             <div key={p.name} className="flex items-center gap-1.5">
                                 <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
                                 <span className="text-[11px] text-text-secondary font-medium">{p.name}</span>
@@ -343,7 +347,7 @@ export default function SADashboardPage() {
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-black text-primary shrink-0">
-                                                {t.name[0].toUpperCase()}
+                                                {t.name[0]?.toUpperCase() || 'S'}
                                             </div>
                                             <div>
                                                 <div className="text-sm font-semibold text-text">{t.name}</div>
@@ -352,7 +356,7 @@ export default function SADashboardPage() {
                                         </div>
                                     </td>
                                     <td className="px-5 py-3.5">
-                                        <span className="text-sm text-text-secondary">{t.owner}</span>
+                                        <span className="text-sm text-text-secondary">{t.ownerName}</span>
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <span className="text-sm text-text-secondary">{t.city}</span>

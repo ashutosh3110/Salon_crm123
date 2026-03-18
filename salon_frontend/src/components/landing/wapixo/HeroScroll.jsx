@@ -9,7 +9,7 @@ function getFrameUrl(index) {
     return `${FOLDER}/ezgif-frame-${num}.jpg`;
 }
 
-export default function HeroScroll() {
+export default function HeroScroll({ data }) {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const imagesRef = useRef([]);
@@ -165,7 +165,18 @@ export default function HeroScroll() {
                         padding: '0 1.5rem',
                         textShadow: '0 2px 40px rgba(0,0,0,0.5)',
                     }}>
-                        The New Standard of<br />Salon Mastery.
+                        {data?.title ? (
+                            <>
+                                {data.title.split('.').map((part, i, arr) => (
+                                    <span key={i}>
+                                        {part}{i !== arr.length - 1 ? '.' : ''}
+                                        {i === 0 && <br />}
+                                    </span>
+                                ))}
+                            </>
+                        ) : (
+                            <>The New Standard of<br />Salon Mastery.</>
+                        )}
                     </h1>
                 </motion.div>
 
@@ -231,7 +242,17 @@ export default function HeroScroll() {
                             padding: '0 1.5rem',
                         }}
                     >
-                        Where Excellence<br />Meets Precision.
+                        {data?.standard_title ? (
+                            <>
+                                {data.standard_title.split(' ').map((word, i, arr) => (
+                                    <span key={i}>
+                                        {word}{i === 1 ? <br /> : ' '}
+                                    </span>
+                                ))}
+                            </>
+                        ) : (
+                            <>Where Excellence<br />Meets Precision.</>
+                        )}
                     </motion.h2>
 
                     {/* Scroll indicator */}

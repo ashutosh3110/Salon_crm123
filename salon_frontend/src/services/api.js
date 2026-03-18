@@ -28,6 +28,8 @@ api.interceptors.request.use(
         const token = localStorage.getItem(`auth_token_${role}`);
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        } else {
+            console.warn(`[API] No token found for role: ${role}`);
         }
         return config;
     },

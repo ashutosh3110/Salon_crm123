@@ -7,7 +7,8 @@ import landingData from '../../../data/landingMockData.json';
 const testimonials = landingData.testimonials.map((t, i) => ({ ...t, id: i + 1 }));
 
 
-export default function WapixoTestimonials() {
+export default function WapixoTestimonials({ data }) {
+    const displayTestimonials = data && data.length > 0 ? data : testimonials;
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -117,7 +118,7 @@ export default function WapixoTestimonials() {
                             }
                         }
                     `}</style>
-                    {testimonials.map((t, idx) => (
+                    {displayTestimonials.map((t, idx) => (
                         <motion.div
                             key={t.id}
                             initial={{ opacity: 0, y: 30 }}

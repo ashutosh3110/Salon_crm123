@@ -1,7 +1,80 @@
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+
+export default function TermsOfService() {
+    const [cmsData, setCmsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCMS = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/v1/cms');
+                if (response.data && response.data.legal_terms) {
+                    setCmsData(response.data.legal_terms);
+                }
+            } catch (error) {
+                console.error('Error fetching CMS:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCMS();
+    }, []);
+
+    const title = cmsData?.title || "Terms of Service";
+    const lastUpdated = cmsData?.last_updated || "February 21, 2026";
+    const content = cmsData?.content;
+
+    return (
+        <LegalLayout title={title}>
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                </div>
+            ) : content ? (
+                <div dangerouslySetInnerHTML={{ __html: content }} />
+            ) : (
+                <>
+                    <section>
+                        <h2>1. Agreement to Terms</h2>
+                        <p>
+                            By accessing or using Salon CRM, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>2. Use License</h2>
+                        <p>
+                            Permission is granted to temporarily use the materials on the Salon CRM platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not modify or copy the materials.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>3. User Obligations</h2>
+                        <p>
+                            Users must provide accurate, current, and complete information during the registration process and keep their account information updated. Users are responsible for maintaining the confidentiality of their account and password.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>4. Limitations</h2>
+                        <p>
+                            In no event shall Salon CRM or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our platform.
+                        </p>
+                    </section>
+                </>
+            )}
+            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                    Last Updated: {lastUpdated}
+                </p>
+            </div>
+        </LegalLayout>
+    );
+}
 
 const LegalLayout = ({ title, children }) => {
     useEffect(() => {
@@ -73,12 +146,6 @@ const LegalLayout = ({ title, children }) => {
                             color: rgba(255,255,255,0.3);
                         }
                     `}</style>
-
-                    <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-                            Last Updated: February 21, 2026
-                        </p>
-                    </div>
                 </motion.div>
             </main>
 
@@ -91,38 +158,4 @@ const LegalLayout = ({ title, children }) => {
         </div>
     );
 };
-
-export default function TermsOfService() {
-    return (
-        <LegalLayout title="Terms of Service">
-            <section>
-                <h2>1. Agreement to Terms</h2>
-                <p>
-                    By accessing or using Salon CRM, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this site.
-                </p>
-            </section>
-
-            <section>
-                <h2>2. Use License</h2>
-                <p>
-                    Permission is granted to temporarily use the materials on the Salon CRM platform for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not modify or copy the materials.
-                </p>
-            </section>
-
-            <section>
-                <h2>3. User Obligations</h2>
-                <p>
-                    Users must provide accurate, current, and complete information during the registration process and keep their account information updated. Users are responsible for maintaining the confidentiality of their account and password.
-                </p>
-            </section>
-
-            <section>
-                <h2>4. Limitations</h2>
-                <p>
-                    In no event shall Salon CRM or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our platform.
-                </p>
-            </section>
-        </LegalLayout>
-    );
-}
 

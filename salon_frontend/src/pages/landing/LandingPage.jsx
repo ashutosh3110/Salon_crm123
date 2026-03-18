@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
 import WapixoLoader from '../../components/landing/wapixo/WapixoLoader';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import HeroScroll from '../../components/landing/wapixo/HeroScroll';
 import Features from '../../components/landing/wapixo/Features';
 import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
-import WapixoAbout from '../../components/landing/wapixo/WapixoAbout';
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
 import WapixoPricing from '../../components/landing/wapixo/WapixoPricing';
 import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
@@ -15,14 +15,25 @@ import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
 export default function LandingPage() {
     const [loaded, setLoaded] = useState(false);
+    const [cmsData, setCmsData] = useState(null);
 
     useEffect(() => {
         const originalBg = document.body.style.backgroundColor;
         document.body.style.backgroundColor = '#050505';
+        fetchCMS();
         return () => {
             document.body.style.backgroundColor = originalBg;
         };
     }, []);
+
+    const fetchCMS = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/v1/cms');
+            setCmsData(response.data);
+        } catch (error) {
+            console.error('Error fetching CMS:', error);
+        }
+    };
 
     return (
         <>
@@ -34,14 +45,13 @@ export default function LandingPage() {
                 <div className="new-dark-theme" style={{ minHeight: '100vh', position: 'relative' }}>
                     <WapixoNavbar />
                     <div style={{ paddingTop: '60px' }}>
-                        <HeroScroll />
+                        <HeroScroll data={cmsData?.landing_hero} />
                     </div>
-                    <Features />
+                    <Features data={cmsData?.landing_features} />
                     <ScissorsMorph />
-                    <WapixoAbout />
                     <WapixoSolutions />
                     <WapixoPricing />
-                    <WapixoTestimonials />
+                    <WapixoTestimonials data={cmsData?.landing_testimonials} />
                     <WapixoFAQ />
                     <ChairSection />
                     <WapixoFooter />

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import api from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -91,46 +92,38 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (email, password) => {
-        console.log('[Auth] Mock Login active for:', email);
+        try {
+            const response = await api.post('/auth/login', { email, password });
+            const { accessToken, user: userData } = response.data.data;
 
-        const mockInfo = MOCK_USERS[email] || { role: 'admin', name: (email || 'admin').split('@')[0] };
+            // Save session specific to the role
+            localStorage.setItem(`auth_token_${userData.role}`, accessToken);
+            localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
+            localStorage.setItem('active_auth_role', userData.role);
 
-        const mockUser = {
-            id: `mock-${Date.now()}`,
-            email: email || 'admin@salon.com',
-            name: mockInfo.name,
-            role: mockInfo.role,
-            isMock: true,
-        };
-        const mockToken = `mock-token-${Date.now()}`;
-
-        // Save session specific to the role
-        localStorage.setItem(`auth_token_${mockUser.role}`, mockToken);
-        localStorage.setItem(`auth_user_${mockUser.role}`, JSON.stringify(mockUser));
-        localStorage.setItem('active_auth_role', mockUser.role);
-
-        setUser(mockUser);
-        return { accessToken: mockToken, user: mockUser };
+            setUser(userData);
+            return { accessToken, user: userData };
+        } catch (error) {
+            console.error('[AuthContext] Login failed:', error);
+            throw error;
+        }
     };
 
     const register = async (payload) => {
-        console.log('[Auth] Mock Registration active for:', payload.email);
+        try {
+            const response = await api.post('/auth/register', payload);
+            const { accessToken, user: userData } = response.data.data;
 
-        const mockUser = {
-            id: `mock-reg-${Date.now()}`,
-            email: payload.email,
-            name: payload.name || payload.email.split('@')[0],
-            role: 'admin',
-            isMock: true,
-        };
-        const mockToken = `mock-token-${Date.now()}`;
+            localStorage.setItem(`auth_token_${userData.role}`, accessToken);
+            localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
+            localStorage.setItem('active_auth_role', userData.role);
 
-        localStorage.setItem(`auth_token_${mockUser.role}`, mockToken);
-        localStorage.setItem(`auth_user_${mockUser.role}`, JSON.stringify(mockUser));
-        localStorage.setItem('active_auth_role', mockUser.role);
-
-        setUser(mockUser);
-        return { accessToken: mockToken, user: mockUser };
+            setUser(userData);
+            return { accessToken, user: userData };
+        } catch (error) {
+            console.error('[AuthContext] Registration failed:', error);
+            throw error;
+        }
     };
 
     const logout = () => {

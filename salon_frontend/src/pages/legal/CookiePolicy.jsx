@@ -1,7 +1,83 @@
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+
+export default function CookiePolicy() {
+    const [cmsData, setCmsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCMS = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/v1/cms');
+                if (response.data && response.data.legal_cookies) {
+                    setCmsData(response.data.legal_cookies);
+                }
+            } catch (error) {
+                console.error('Error fetching CMS:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCMS();
+    }, []);
+
+    const title = cmsData?.title || "Cookie Policy";
+    const lastUpdated = cmsData?.last_updated || "February 21, 2026";
+    const content = cmsData?.content;
+
+    return (
+        <LegalLayout title={title}>
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                </div>
+            ) : content ? (
+                <div dangerouslySetInnerHTML={{ __html: content }} />
+            ) : (
+                <>
+                    <section>
+                        <h2>1. What are Cookies?</h2>
+                        <p>
+                            Cookies are small text files that are stored on your computer or mobile device when you visit a website.
+                            They are widely used to make websites work more efficiently and provide information to the owners of the site.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>2. How We Use Cookies</h2>
+                        <p>
+                            We use cookies to enhance your experience on our website, remember your login details, and gather analytics that help us improve our services.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>3. Types of Cookies</h2>
+                        <ul>
+                            <li><strong>Essential Cookies:</strong> Necessary for the website to function properly.</li>
+                            <li><strong>Analytical Cookies:</strong> Help us understand how visitors interact with our website.</li>
+                            <li><strong>Functional Cookies:</strong> Remember your preferences and settings.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>4. Managing Cookies</h2>
+                        <p>
+                            Most web browsers allow you to control cookies through their settings. However, disabling certain cookies may impact your user experience.
+                        </p>
+                    </section>
+                </>
+            )}
+            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                    Last Updated: {lastUpdated}
+                </p>
+            </div>
+        </LegalLayout>
+    );
+}
 
 const LegalLayout = ({ title, children }) => {
     useEffect(() => {
@@ -77,12 +153,6 @@ const LegalLayout = ({ title, children }) => {
                             font-weight: 400;
                         }
                     `}</style>
-
-                    <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-                            Last Updated: February 21, 2026
-                        </p>
-                    </div>
                 </motion.div>
             </main>
 
@@ -95,41 +165,4 @@ const LegalLayout = ({ title, children }) => {
         </div>
     );
 };
-
-export default function CookiePolicy() {
-    return (
-        <LegalLayout title="Cookie Policy">
-            <section>
-                <h2>1. What are Cookies?</h2>
-                <p>
-                    Cookies are small text files that are stored on your computer or mobile device when you visit a website.
-                    They are widely used to make websites work more efficiently and provide information to the owners of the site.
-                </p>
-            </section>
-
-            <section>
-                <h2>2. How We Use Cookies</h2>
-                <p>
-                    We use cookies to enhance your experience on our website, remember your login details, and gather analytics that help us improve our services.
-                </p>
-            </section>
-
-            <section>
-                <h2>3. Types of Cookies</h2>
-                <ul>
-                    <li><strong>Essential Cookies:</strong> Necessary for the website to function properly.</li>
-                    <li><strong>Analytical Cookies:</strong> Help us understand how visitors interact with our website.</li>
-                    <li><strong>Functional Cookies:</strong> Remember your preferences and settings.</li>
-                </ul>
-            </section>
-
-            <section>
-                <h2>4. Managing Cookies</h2>
-                <p>
-                    Most web browsers allow you to control cookies through their settings. However, disabling certain cookies may impact your user experience.
-                </p>
-            </section>
-        </LegalLayout>
-    );
-}
 

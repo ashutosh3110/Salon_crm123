@@ -14,6 +14,10 @@ import bookingRoute from './modules/booking/booking.routes.js';
 import inventoryRoute from './modules/inventory/inventory.routes.js';
 import invoiceRoute from './modules/invoice/invoice.routes.js';
 import catalogueRoute from './modules/catalogue/catalogue.routes.js';
+import subscriptionRoute from './modules/subscription/subscription.routes.js';
+import billingRoute from './modules/billing/billing.routes.js';
+import analyticsRoute from './modules/analytics/analytics.routes.js';
+import cmsRoute from './modules/cms/cms.routes.js';
 import onboardingGuard from './middlewares/onboardingGuard.js';
 
 const router = express.Router();
@@ -34,6 +38,22 @@ const defaultRoutes = [
     {
         path: '/catalogue',
         route: catalogueRoute,
+    },
+    {
+        path: '/subscriptions',
+        route: subscriptionRoute,
+    },
+    {
+        path: '/billing',
+        route: billingRoute,
+    },
+    {
+        path: '/analytics',
+        route: analyticsRoute,
+    },
+    {
+        path: '/cms',
+        route: cmsRoute,
     },
 ];
 
@@ -81,10 +101,6 @@ const protectedRoutes = [
     {
         path: '/invoices',
         route: invoiceRoute,
-    },
-    {
-        path: '/catalogue',
-        route: catalogueRoute,
     },
 ];
 

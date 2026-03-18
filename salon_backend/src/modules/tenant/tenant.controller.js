@@ -4,7 +4,11 @@ import tenantService from './tenant.service.js';
 const createTenant = async (req, res, next) => {
     try {
         const tenant = await tenantService.createTenant(req.body);
-        res.status(httpStatus.CREATED).send(tenant);
+        res.status(httpStatus.CREATED).send({
+            success: true,
+            message: 'Salon created successfully',
+            data: tenant
+        });
     } catch (error) {
         next(error);
     }
@@ -16,7 +20,20 @@ const getTenants = async (req, res, next) => {
         if (req.query.status) filter.status = req.query.status;
         if (req.query.subscriptionPlan) filter.subscriptionPlan = req.query.subscriptionPlan;
         if (req.query.search) {
-            filter.name = { $regex: req.query.search, $options: 'i' };
+            const searchRegex = { $regex: req.query.search, $options: 'i' };
+            filter.$or = [
+                { name: searchRegex },
+                { ownerName: searchRegex },
+                { email: searchRegex },
+                { phone: searchRegex },
+                { city: searchRegex }
+            ];
+        }
+        
+        if (req.query.startDate || req.query.endDate) {
+            filter.createdAt = {};
+            if (req.query.startDate) filter.createdAt.$gte = new Date(req.query.startDate);
+            if (req.query.endDate) filter.createdAt.$lte = new Date(req.query.endDate);
         }
 
         const options = {
@@ -24,7 +41,10 @@ const getTenants = async (req, res, next) => {
             limit: parseInt(req.query.limit) || 10,
         };
         const result = await tenantService.queryTenants(filter, options);
-        res.send(result);
+        res.send({
+            success: true,
+            data: result
+        });
     } catch (error) {
         next(error);
     }
@@ -33,7 +53,10 @@ const getTenants = async (req, res, next) => {
 const getTenant = async (req, res, next) => {
     try {
         const tenant = await tenantService.getTenantById(req.params.tenantId);
-        res.send(tenant);
+        res.send({
+            success: true,
+            data: tenant
+        });
     } catch (error) {
         next(error);
     }
@@ -42,7 +65,11 @@ const getTenant = async (req, res, next) => {
 const updateTenant = async (req, res, next) => {
     try {
         const tenant = await tenantService.updateTenantById(req.params.tenantId, req.body);
-        res.send(tenant);
+        res.send({
+            success: true,
+            message: 'Salon updated successfully',
+            data: tenant
+        });
     } catch (error) {
         next(error);
     }
@@ -51,7 +78,11 @@ const updateTenant = async (req, res, next) => {
 const deleteTenant = async (req, res, next) => {
     try {
         const tenant = await tenantService.deleteTenantById(req.params.tenantId);
-        res.send(tenant);
+        res.send({
+            success: true,
+            message: 'Salon deleted successfully',
+            data: tenant
+        });
     } catch (error) {
         next(error);
     }
@@ -60,7 +91,10 @@ const deleteTenant = async (req, res, next) => {
 const getTenantStats = async (req, res, next) => {
     try {
         const stats = await tenantService.getTenantStats();
-        res.send(stats);
+        res.send({
+            success: true,
+            data: stats
+        });
     } catch (error) {
         next(error);
     }
@@ -70,7 +104,10 @@ const getPublicTenants = async (req, res, next) => {
     try {
         const result = await tenantService.queryTenants({ status: 'active' }, { limit: 100 });
         const salons = result.results.map(t => ({ id: t._id, name: t.name }));
-        res.send(salons);
+        res.send({
+            success: true,
+            data: salons
+        });
     } catch (error) {
         next(error);
     }
