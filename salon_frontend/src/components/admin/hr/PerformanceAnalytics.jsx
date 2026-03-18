@@ -86,14 +86,17 @@ export default function PerformanceAnalytics() {
         <div className="space-y-5 font-black text-left">
             {/* Header controls */}
             <div className="flex items-center justify-between gap-3 flex-wrap text-left font-black">
-                <div className="relative">
-                    <button onClick={() => setPeriodOpen(v => !v)} className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-black text-text hover:border-primary/40 transition-all shadow-sm">
-                        <BarChart3 className="w-4 h-4 text-primary" /> {period} <ChevronDown className="w-4 h-4 text-text-muted" />
+                <div className="relative w-full sm:w-auto">
+                    <button onClick={() => setPeriodOpen(v => !v)} className="w-full sm:w-auto flex items-center justify-between gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-black text-text hover:border-primary/40 transition-all shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <BarChart3 className="w-4 h-4 text-primary" /> {period}
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />
                     </button>
                     <AnimatePresence>
                         {periodOpen && (
                             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                                className="absolute top-full left-0 mt-1 bg-surface border border-border/40 rounded-2xl shadow-xl z-30 w-48 py-1 overflow-hidden font-black">
+                                className="absolute top-full left-0 mt-1 bg-surface border border-border/40 rounded-2xl shadow-xl z-30 w-full sm:w-48 py-1 overflow-hidden font-black">
                                 {PERIODS.map(p => (
                                     <button key={p} onClick={() => { setPeriod(p); setPeriodOpen(false); }}
                                         className={`w-full px-4 py-2.5 text-xs font-black text-left hover:bg-surface-alt transition-colors ${period === p ? 'text-primary bg-primary/5' : 'text-text'}`}>
@@ -104,7 +107,7 @@ export default function PerformanceAnalytics() {
                         )}
                     </AnimatePresence>
                 </div>
-                <button onClick={exportReport} className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-black text-text-secondary hover:border-primary/40 transition-all shadow-sm">
+                <button onClick={exportReport} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-xl text-sm font-black text-text-secondary hover:border-primary/40 transition-all shadow-sm">
                     <Download className="w-4 h-4" /> Export Report
                 </button>
             </div>
@@ -137,13 +140,13 @@ export default function PerformanceAnalytics() {
                             <h3 className="text-sm font-black text-text uppercase tracking-widest text-left">Performance Rankings</h3>
                             <p className="text-[10px] text-text-muted font-bold mt-0.5 uppercase tracking-tighter text-left">Staff efficiency matrix</p>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="relative">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative flex-1 sm:flex-none">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
-                                <input type="text" placeholder="Search..." className="pl-9 pr-3 py-2 rounded-xl bg-background border border-border/40 text-xs font-black focus:border-primary outline-none w-40"
+                                <input type="text" placeholder="Search..." className="pl-9 pr-3 py-2 rounded-xl bg-background border border-border/40 text-xs font-black focus:border-primary outline-none w-full sm:w-40"
                                     value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                             </div>
-                            <select className="py-2 px-3 rounded-xl bg-background border border-border/40 text-xs font-black outline-none appearance-none cursor-pointer"
+                            <select className="flex-1 sm:flex-none py-2 px-3 rounded-xl bg-background border border-border/40 text-xs font-black outline-none appearance-none cursor-pointer"
                                 value={sortBy} onChange={e => setSortBy(e.target.value)}>
                                 <option value="revenue">By Revenue</option>
                                 <option value="rating">By Rating</option>

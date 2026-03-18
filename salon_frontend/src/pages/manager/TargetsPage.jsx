@@ -81,46 +81,46 @@ export default function TargetsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Performance Targets</h1>
-                    <p className="text-sm text-text-muted font-medium">Define and track KPIs for your salon</p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
+                <div className="leading-none text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Performance Targets</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Protocols :: objective_tracking_v1.2</p>
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-6 sm:px-10 py-3 sm:py-4 rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
                 >
-                    <Plus className="w-4 h-4" /> New Target
+                    <Plus className="w-4 h-4" /> Initialize Protocol
                 </button>
             </div>
 
             {/* Target Progress Cards */}
-            <div className="grid lg:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {targetList.map((t) => (
-                    <div key={t.id} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={t.id} className="bg-surface py-5 sm:py-6 px-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
-                        <div className="relative z-10">
+                        <div className="relative z-10 text-left">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <t.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{t.subtitle}</p>
+                                <div className="flex items-center gap-2 sm:gap-2.5">
+                                    <t.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted transition-colors group-hover:text-primary" />
+                                    <p className="text-[10px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{t.subtitle}</p>
                                 </div>
-                                <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500">
-                                    <ArrowUpRight className="w-3 h-3" />
-                                    ON TRACK
+                                <div className="flex items-center gap-1 text-[9px] sm:text-[11px] font-black text-emerald-500 uppercase">
+                                    <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                                    On Track
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter
                                         value={typeof t.current === 'string' ? parseFloat(t.current.replace(/[₹%,]/g, '')) : t.current}
                                         prefix={typeof t.current === 'string' && t.current.includes('₹') ? '₹' : ''}
                                     />
                                 </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity hidden sm:block">
                                     <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-emerald-400">
                                         <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
@@ -128,7 +128,7 @@ export default function TargetsPage() {
                             </div>
 
                             <div className="mt-4 space-y-2">
-                                <div className="w-full h-1 bg-background rounded-none overflow-hidden border border-border/5">
+                                <div className="w-full h-1 sm:h-1.5 bg-background rounded-none overflow-hidden border border-border/5">
                                     <motion.div
                                         className={`h-full ${t.percent >= 70 ? 'bg-emerald-500' : 'bg-primary'}`}
                                         initial={{ width: 0 }}
@@ -137,8 +137,8 @@ export default function TargetsPage() {
                                     />
                                 </div>
                                 <div className="flex justify-between items-center mt-1">
-                                    <span className="text-[9px] font-black text-primary uppercase">{t.percent}% ACHIEVED</span>
-                                    <span className="text-[9px] font-bold text-text-muted uppercase">GOAL: {t.goal}</span>
+                                    <span className="text-[8px] sm:text-[9px] font-black text-primary uppercase">{t.percent}% ACHIEVED</span>
+                                    <span className="text-[8px] sm:text-[9px] font-bold text-text-muted uppercase tracking-tight">GOAL: {t.goal}</span>
                                 </div>
                             </div>
                         </div>
@@ -146,53 +146,9 @@ export default function TargetsPage() {
                 ))}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
-                {/* Team Target Progress */}
-                <div className="lg:col-span-2 bg-white rounded-none border border-border/60 p-6 shadow-none">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-2">
-                            <Users className="w-4.5 h-4.5 text-primary" />
-                            <h2 className="text-sm font-black text-text uppercase tracking-widest">Team Target Tracker</h2>
-                        </div>
-                        <button className="text-[10px] font-black text-primary px-3 py-1.5 bg-white border border-primary/20 rounded-none uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
-                            Manage Weights
-                        </button>
-                    </div>
-
-                    <div className="space-y-6">
-                        {teamProgress.map((tp) => (
-                            <div key={tp.name} className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-none bg-white flex items-center justify-center border border-border/20 text-xs font-bold text-text-secondary">
-                                            {tp.name.split(' ').map(n => n[0]).join('')}
-                                        </div>
-                                        <div>
-                                            <p className="text-[13px] font-bold text-text leading-none">{tp.name}</p>
-                                            <p className="text-[10px] text-text-muted font-medium mt-1 uppercase tracking-wider">{tp.role}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-[13px] font-black text-text">{tp.progress}%</p>
-                                        <span className={`text-[9px] font-black uppercase tracking-tight ${tp.status === 'Peak' ? 'text-emerald-500' :
-                                            tp.status === 'On Track' ? 'text-blue-500' :
-                                                tp.status === 'Improving' ? 'text-amber-500' : 'text-rose-500'
-                                            }`}>{tp.status}</span>
-                                    </div>
-                                </div>
-                                <div className="w-full h-1 bg-background rounded-none overflow-hidden">
-                                    <div
-                                        className={`h-full ${tp.progress >= 90 ? 'bg-emerald-500' : tp.progress >= 70 ? 'bg-blue-500' : 'bg-primary'}`}
-                                        style={{ width: `${tp.progress}%` }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Achievement Badge Section */}
-                <div className="bg-primary rounded-none p-6 text-white relative overflow-hidden shadow-none flex flex-col justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Achievement Badge Section - Order first on mobile */}
+                <div className="order-first lg:order-last bg-primary rounded-none p-6 text-white relative overflow-hidden shadow-none flex flex-col justify-between min-h-[200px]">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-8 translate-x-8" />
                     <div className="relative">
                         <div className="w-12 h-12 rounded-none bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 border border-white/20">
@@ -211,6 +167,51 @@ export default function TargetsPage() {
                         <p className="text-[10px] text-white/60 font-medium mt-0.5">Maintain 90% targets for 10 more days.</p>
                     </div>
                 </div>
+
+                {/* Team Target Progress */}
+                <div className="lg:col-span-2 bg-white rounded-none border border-border/60 p-4 sm:p-6 shadow-none">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+                        <div className="flex items-center gap-2">
+                            <Users className="w-4 sm:w-4.5 h-4 sm:h-4.5 text-primary" />
+                            <h2 className="text-[13px] sm:text-sm font-black text-text uppercase tracking-widest">Team Tracker</h2>
+                        </div>
+                        <button className="w-full sm:w-auto text-[9px] sm:text-[10px] font-black text-primary px-3 py-2 sm:py-1.5 bg-white border border-primary/20 rounded-none uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                            Manage Weights
+                        </button>
+                    </div>
+
+                    <div className="space-y-4 sm:space-y-6 text-left">
+                        {teamProgress.map((tp) => (
+                            <div key={tp.name} className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white flex items-center justify-center border border-border/20 text-[10px] sm:text-xs font-bold text-text-secondary shrink-0">
+                                            {tp.name.split(' ').map(n => n[0]).join('')}
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-xs sm:text-[13px] font-bold text-text leading-none">{tp.name}</p>
+                                            <p className="text-[9px] sm:text-[10px] text-text-muted font-medium mt-1 uppercase tracking-wider">{tp.role}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-xs sm:text-[13px] font-black text-text leading-none">{tp.progress}%</p>
+                                        <span className={`text-[8px] sm:text-[9px] font-black uppercase tracking-tight ${tp.status === 'Peak' ? 'text-emerald-500' :
+                                            tp.status === 'On Track' ? 'text-blue-500' :
+                                                tp.status === 'Improving' ? 'text-amber-500' : 'text-rose-500'
+                                            }`}>{tp.status}</span>
+                                    </div>
+                                </div>
+                                <div className="w-full h-1 sm:h-1.5 bg-background rounded-none overflow-hidden">
+                                    <div
+                                        className={`h-full ${tp.progress >= 90 ? 'bg-emerald-500' : tp.progress >= 70 ? 'bg-blue-500' : 'bg-primary'}`}
+                                        style={{ width: `${tp.progress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
             </div>
 
             {/* Add Target Modal */}

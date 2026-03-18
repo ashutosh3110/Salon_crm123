@@ -126,16 +126,16 @@ export default function PayrollManager() {
             {/* KPI Row and Chart */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col sm:flex-row items-center justify-between gap-8 relative overflow-hidden group text-left">
-                    <div className="flex-1 text-left font-black">
-                        <div className="flex items-center gap-5 mb-8 text-left">
+                    <div className="flex-1 text-left font-black w-full">
+                        <div className="flex flex-col sm:flex-row items-center gap-5 mb-8 text-left">
                             <div className="p-4 rounded-none bg-primary text-white shadow-xl shadow-primary/20 shrink-0"><Calculator className="w-6 h-6" /></div>
-                            <div className="text-left font-black">
+                            <div className="text-left font-black w-full sm:w-auto">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Fiscal Period</p>
                                 <div className="relative text-left">
                                     <button onClick={() => setMonthPickerOpen(v => !v)} className="flex items-center gap-3 mt-1 group/btn">
                                         <Calendar className="w-4 h-4 text-primary" />
-                                        <h2 className="text-xl font-black text-text uppercase group-hover/btn:text-primary transition-colors tracking-tight">{MONTHS[monthIdx]}</h2>
-                                        <ChevronDown className="w-5 h-5 text-text-muted" />
+                                        <h2 className="text-lg sm:text-xl font-black text-text uppercase group-hover/btn:text-primary transition-colors tracking-tight whitespace-nowrap">{MONTHS[monthIdx]}</h2>
+                                        <ChevronDown className="w-5 h-5 text-text-muted shrink-0" />
                                     </button>
                                     <AnimatePresence>
                                         {monthPickerOpen && (
@@ -154,14 +154,14 @@ export default function PayrollManager() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-10 border-t border-border/40 pt-8 text-left font-black">
+                        <div className="grid grid-cols-2 gap-4 sm:gap-10 border-t border-border/40 pt-8 text-left font-black">
                             <div className="text-left">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Capital Outflow</p>
-                                <p className="text-3xl font-black text-text mt-1 tracking-tighter">₹{totalPayout.toLocaleString()}</p>
+                                <p className="text-xl sm:text-3xl font-black text-text mt-1 tracking-tighter shrink-0">₹{totalPayout.toLocaleString()}</p>
                             </div>
                             <div className="text-left">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Active Nodes</p>
-                                <p className="text-3xl font-black text-text mt-1 tracking-tighter">{payroll.length} units</p>
+                                <p className="text-xl sm:text-3xl font-black text-text mt-1 tracking-tighter shrink-0">{payroll.length} units</p>
                             </div>
                         </div>
                     </div>
@@ -244,8 +244,8 @@ export default function PayrollManager() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black">
-                <div className="overflow-x-auto text-left font-black">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive">
+                <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border text-left">

@@ -137,8 +137,8 @@ export default function StaffPage() {
     return (
         <div className="space-y-6 animate-reveal">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="text-left font-black leading-none">
                     <h1 className="text-2xl font-bold text-text uppercase">Personnel Roster</h1>
                     <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Manage your dream team & assignments</p>
                 </div>
@@ -184,8 +184,8 @@ export default function StaffPage() {
 
             {/* Table */}
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
-                <div className="overflow-x-auto no-scrollbar">
-                    <table className="w-full text-left border-collapse">
+                <div className="table-responsive no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-surface-alt border-b border-border">
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Human Asset</th>

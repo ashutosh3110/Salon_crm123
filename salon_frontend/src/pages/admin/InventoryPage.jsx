@@ -65,18 +65,18 @@ export default function InventoryPage({ tab = 'products' }) {
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
-                <div className="text-left font-black">
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Logistics Registry</h1>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+                <div className="text-left font-black leading-none">
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Logistics Registry</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: asset_management_v2.0 // global_inventory</p>
                 </div>
-                <div className="flex gap-4 text-left">
-                    <button className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-[0.2em] shadow-sm">
+                <div className="flex flex-wrap items-center gap-3">
+                    <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-surface border border-border px-8 py-4 rounded-none text-[10px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-[0.2em] shadow-sm font-black">
                         <Download className="w-4 h-4" /> Export Log
                     </button>
                     <button
                         onClick={() => navigate('/admin/inventory/products/new')}
-                        className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-8 py-3.5 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20"
+                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary text-primary-foreground border border-primary px-8 py-4 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20 font-black"
                     >
                         <Plus className="w-4 h-4" /> New Asset Entry
                     </button>
@@ -117,8 +117,8 @@ export default function InventoryPage({ tab = 'products' }) {
 
             {/* Top Analytics Bar (Only show on overview) */}
             {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
                         <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Master Catalog" />
                         <InventoryStatCard title="Critical Stock" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish Now" />
                         <InventoryStatCard title="Live Assets" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="POS Ready" />

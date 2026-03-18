@@ -284,7 +284,7 @@ export default function RemindersPage() {
                     {/* 1. BRIDAL REMINDERS */}
                     {activeTab === 'bridal' && (
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between mb-8">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
                                 <SectionHeader
                                     title="Bridal reminders"
                                     desc="Stay on top of wedding bookings with gentle follow-ups."
@@ -292,7 +292,7 @@ export default function RemindersPage() {
                                 />
                                 <button
                                     onClick={() => setShowBridalModal(true)}
-                                    className="px-6 py-4 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center gap-3"
+                                    className="px-6 py-4 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3"
                                 >
                                     <Plus className="w-4 h-4" /> Track Event
                                 </button>
@@ -323,16 +323,16 @@ export default function RemindersPage() {
                                                             <p className="text-[8px] text-text-muted uppercase tracking-[0.1em] mt-0.5">{rem.status.toUpperCase()}</p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-2">
+                                                    <div className="flex flex-wrap gap-2">
                                                         <button
                                                             onClick={() => sendBridalReminder(booking.clientPhone, booking.clientName, booking.eventName, rem.label)}
-                                                            className="px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500 hover:text-white flex items-center gap-1"
+                                                            className="flex-1 px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500 hover:text-white flex items-center justify-center gap-1"
                                                         >
                                                             <MessageSquare className="w-3 h-3" /> SEND
                                                         </button>
                                                         <button
                                                             onClick={() => toggleReminder(booking.id, rem.id)}
-                                                            className={`px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20' : 'bg-slate-100 dark:bg-surface-alt text-slate-400 dark:text-text-muted border-slate-200 dark:border-border/40 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20'}`}
+                                                            className={`flex-1 px-4 py-1.5 rounded-none text-[8px] font-black uppercase tracking-widest border transition-all ${rem.active ? 'bg-primary/5 text-primary border-primary/20 hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20' : 'bg-slate-100 dark:bg-surface-alt text-slate-400 dark:text-text-muted border-slate-200 dark:border-border/40 hover:bg-emerald-500/10 hover:text-emerald-500 hover:border-emerald-500/20'}`}
                                                         >
                                                             {rem.active ? 'ENABLED' : 'DISABLED'}
                                                         </button>
@@ -399,8 +399,8 @@ export default function RemindersPage() {
                                     icon={Clock}
                                 />
 
-                                <div className="bg-surface border border-border overflow-hidden">
-                                    <table className="w-full text-left">
+                                <div className="bg-surface border border-border table-responsive">
+                                    <table className="w-full text-left min-w-[800px]">
                                         <thead className="bg-background border-b border-border">
                                             <tr>
                                                 <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Identity</th>
@@ -495,12 +495,12 @@ export default function RemindersPage() {
                                 </div>
 
                                 <div className="md:col-span-2 space-y-6">
-                                    <div className="bg-white dark:bg-white/95 border border-border p-12 shadow-2xl flex flex-col items-center text-center">
+                                    <div className="bg-surface border border-border p-12 shadow-2xl flex flex-col items-center text-center">
                                         <div className="p-6 bg-white border border-border mb-8 shadow-inner">
-                                            <QRCodeSVG value={bookingURL} size={200} level="M" />
+                                            <QRCodeSVG value={bookingURL} size={150} level="M" />
                                         </div>
-                                        <h3 className="text-xs font-black text-text uppercase tracking-[0.3em] mb-2 dark:text-slate-900">Physical Access Unit</h3>
-                                        <p className="text-[9px] text-text-muted uppercase tracking-widest opacity-50 mb-8 dark:text-slate-500">Download and print for reception desks and windows</p>
+                                        <h3 className="text-xs font-black text-text uppercase tracking-[0.3em] mb-2">Physical Access Unit</h3>
+                                        <p className="text-[9px] text-text-muted uppercase tracking-widest opacity-50 mb-8 font-black">Download and print for reception desks and windows</p>
                                         <button className="w-full bg-slate-900 text-white py-4 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black transition-all flex items-center justify-center gap-3">
                                             <Save className="w-4 h-4" /> Download Vector
                                         </button>

@@ -42,9 +42,9 @@ export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen,
     const sidebarContent = (
         <div className="flex flex-col h-full bg-background transition-colors duration-300">
             {/* Logo */}
-            <div className="flex items-center justify-between h-16 px-6 border-b border-border/40">
+            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
-                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                    <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
                             src="/2-removebg-preview.png"
                             alt="Logo"

@@ -37,6 +37,7 @@ export default function FeedbackPage() {
     const [activeTab, setActiveTab] = useState('All'); // 'All', 'Pending', 'Critical'
     const [selectedRating, setSelectedRating] = useState('All');
     const [selectedSentiment, setSelectedSentiment] = useState('All');
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
     const filteredFeedback = useMemo(() => {
         return feedbacks.filter(fb => {
@@ -79,34 +80,21 @@ export default function FeedbackPage() {
     return (
         <div className="space-y-6 pb-12 selection:bg-primary/30">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 overflow-hidden">
-                <motion.div 
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="relative"
-                >
-                    <div className="absolute -left-4 top-0 w-1 h-full bg-primary/40 rounded-full" />
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tighter leading-none mb-1">
-                        Sentiment <span className="text-primary italic">Analytica</span>
-                    </h1>
-                    <p className="text-xs font-bold text-text-muted uppercase tracking-[0.3em] flex items-center gap-2">
-                        <Clock className="w-3 h-3" /> Real-time feedback processing active
-                    </p>
-                </motion.div>
-
-                <div className="flex items-center gap-3">
-                    <div className="px-5 py-2.5 bg-surface border border-border shadow-sm flex items-center gap-4">
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">Live Status</p>
-                            <p className="text-xs font-black text-emerald-500 uppercase tracking-widest">Optimized</p>
-                        </div>
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
+                <div className="leading-none text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Sentiment Analytica</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence :: feedback_vector_v4.5</p>
+                </div>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="px-4 sm:px-6 py-2.5 sm:py-3 bg-surface border border-border shadow-sm flex items-center gap-3 sm:gap-4 flex-1 sm:flex-none">
+                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-none bg-emerald-500 animate-pulse" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-text uppercase tracking-widest">System Status: Processing Live</span>
                     </div>
                 </div>
             </div>
 
             {/* Matrix Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((s, idx) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -115,30 +103,30 @@ export default function FeedbackPage() {
                         key={s.label} 
                         className="bg-surface p-4 border border-border/60 hover:border-primary/40 transition-all group relative overflow-hidden"
                     >
-                        <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-6 -bottom-6 w-16 h-16 sm:w-24 sm:h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
                         
-                        <div className="relative z-10 flex flex-col h-full">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-none ${s.color.replace('text', 'bg').replace('500', '500/10')} border border-current/20`}>
-                                        <s.icon className={`w-4 h-4 ${s.color}`} />
+                        <div className="relative z-10 flex flex-col h-full text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-3">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <div className={`p-1.5 sm:p-2 rounded-none ${s.color.replace('text', 'bg').replace('500', '500/10')} border border-current/20`}>
+                                        <s.icon className={`w-3 h-3 sm:w-4 sm:h-4 ${s.color}`} />
                                     </div>
-                                    <p className="text-[11px] font-black text-text-secondary uppercase tracking-[0.2em]">{s.label}</p>
+                                    <p className="text-[9px] sm:text-[11px] font-black text-text-secondary uppercase tracking-[0.2em]">{s.label}</p>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] font-black text-emerald-500 uppercase">
-                                    <ArrowUpRight className="w-3 h-3" /> {s.trend}
+                                <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase">
+                                    <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {s.trend}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between">
-                                <h3 className="text-2xl font-black text-text tracking-tighter">
+                                <h3 className="text-xl sm:text-2xl font-black text-text tracking-tighter leading-none">
                                     <AnimatedCounter 
                                         value={typeof s.value === 'string' ? parseFloat(s.value) : s.value} 
                                         suffix={s.label === 'Avg Rating' ? '' : (s.label === 'NPS' ? '' : '%')}
                                     />
-                                    {s.label === 'Avg Rating' && <span className="text-lg text-text-muted font-bold ml-1">/5</span>}
+                                    {s.label === 'Avg Rating' && <span className="text-sm sm:text-lg text-text-muted font-bold ml-1">/5</span>}
                                 </h3>
-                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-tighter text-right leading-tight">
+                                <div className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-tighter text-right leading-tight">
                                     {s.sub}
                                 </div>
                             </div>
@@ -148,10 +136,21 @@ export default function FeedbackPage() {
             </div>
 
             {/* Main Command Center */}
-            <div className="grid lg:grid-cols-12 gap-6">
+            <div className="grid md:grid-cols-12 gap-6 relative">
+                {/* Mobile Filter Toggle */}
+                <div className="md:hidden flex items-center justify-between bg-surface border border-border/80 p-3 mb-2">
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Signal Controls</p>
+                    <button 
+                        onClick={() => setShowMobileFilters(!showMobileFilters)}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-[9px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+                    >
+                        <Filter className="w-3 h-3" /> {showMobileFilters ? 'Hide' : 'Show'} Filters
+                    </button>
+                </div>
+
                 {/* Side Navigation / Filters */}
-                <div className="lg:col-span-3 space-y-4">
-                    <div className="bg-surface border border-border/80 p-4 space-y-4">
+                <div className={`${showMobileFilters ? 'block' : 'hidden'} md:block md:col-span-4 lg:col-span-3 space-y-4`}>
+                    <div className="bg-surface border border-border/80 p-4 space-y-4 shadow-xl md:shadow-none">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xs font-black text-text uppercase tracking-widest flex items-center gap-2">
                                 <Filter className="w-3 h-3 text-primary" /> Filter Matrix
@@ -226,7 +225,7 @@ export default function FeedbackPage() {
                         </div>
                     </div>
 
-                    <div className="bg-surface border-l-4 border-l-amber-500 border border-border/60 p-6">
+                    <div className="hidden md:block bg-surface border-l-4 border-l-amber-500 border border-border/60 p-6">
                         <div className="flex items-center gap-2 mb-3">
                             <AlertCircle className="w-4 h-4 text-amber-500" />
                             <h2 className="text-[10px] font-black text-text uppercase tracking-widest">Protocol Tip</h2>
@@ -238,34 +237,34 @@ export default function FeedbackPage() {
                 </div>
 
                 {/* Feedback Ledger */}
-                <div className="lg:col-span-9 space-y-5">
+                <div className="md:col-span-8 lg:col-span-9 space-y-5">
                     {/* Search & Bulk Actions */}
-                    <div className="bg-surface border border-border/80 p-3 flex flex-col sm:flex-row gap-4">
+                    <div className="bg-surface border border-border/80 p-3 flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted" />
                             <input
                                 type="text"
-                                placeholder="IDENTIFY CUSTOMER, STAFF OR COMMENT KEYWORDS..."
-                                className="w-full pl-12 pr-4 py-2 bg-white border border-border/60 rounded-none text-xs font-black uppercase tracking-widest outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/40"
+                                placeholder="IDENTIFY RECORD KEYWORDS..."
+                                className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-2 bg-white border border-border/60 rounded-none text-[10px] sm:text-xs font-black uppercase tracking-widest outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/40"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <button className="px-6 py-2 bg-white border border-border/60 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                            <button className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-white border border-border/60 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
                                 Export .CSV
                             </button>
                         </div>
                     </div>
 
                     {/* Result Counter */}
-                    <div className="flex items-center justify-between px-2">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-2 gap-2">
+                        <p className="text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">
                             Displaying <span className="text-primary">{filteredFeedback.length}</span> verified entries
                         </p>
                         <div className="flex items-center gap-4">
-                             <span className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase"><div className="w-2 h-2 rounded-full bg-primary" /> Unread</span>
-                             <span className="flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase"><div className="w-2 h-2 rounded-full bg-emerald-500" /> Resolved</span>
+                             <span className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-black text-text-muted uppercase"><div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-primary" /> Unread</span>
+                             <span className="flex items-center gap-1.5 text-[8px] sm:text-[9px] font-black text-text-muted uppercase"><div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" /> Resolved</span>
                         </div>
                     </div>
 
@@ -283,20 +282,20 @@ export default function FeedbackPage() {
                                         key={fb.id} 
                                         className="bg-surface border border-border/80 p-0 hover:border-primary/40 transition-all group overflow-hidden relative"
                                     >
-                                        <div className="p-4">
-                                            <div className="flex flex-col md:flex-row gap-5">
+                                        <div className="p-4 md:p-6">
+                                            <div className="flex flex-col md:flex-row gap-5 md:gap-8">
                                                 {/* Left Profile Area */}
-                                                <div className="flex flex-col items-center gap-3 shrink-0 sm:w-16">
-                                                    <div className="w-12 h-12 bg-background border border-border/60 flex items-center justify-center relative">
-                                                        <User className="w-5 h-5 text-text-muted" />
-                                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white border border-border/60 flex items-center justify-center">
-                                                            <span className="text-[9px] font-black text-text">{fb.rating}</span>
+                                                <div className="flex flex-row md:flex-col items-center md:items-center gap-4 md:gap-3 shrink-0 sm:w-16">
+                                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background border border-border/60 flex items-center justify-center relative shrink-0">
+                                                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted" />
+                                                        <div className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-white border border-border/60 flex items-center justify-center">
+                                                            <span className="text-[8px] sm:text-[9px] font-black text-text">{fb.rating}</span>
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-1 w-full text-center">
-                                                        <div className="flex justify-center gap-0.5">
+                                                    <div className="space-y-1 flex-1 md:w-full text-left md:text-center">
+                                                        <div className="flex md:justify-center gap-0.5">
                                                             {[...Array(5)].map((_, i) => (
-                                                                <Star key={i} className={`w-2.5 h-2.5 ${i < fb.rating ? 'text-amber-500 fill-amber-500' : 'text-text-muted opacity-20'}`} />
+                                                                <Star key={i} className={`w-2 h-2 sm:w-2.5 sm:h-2.5 ${i < fb.rating ? 'text-amber-500 fill-amber-500' : 'text-text-muted opacity-20'}`} />
                                                             ))}
                                                         </div>
                                                         <p className="text-[8px] font-black text-text-muted uppercase tracking-tighter">{formatDate(fb.date)}</p>
@@ -305,22 +304,22 @@ export default function FeedbackPage() {
 
                                                 {/* Center Content Area */}
                                                 <div className="flex-1 space-y-3">
-                                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                                                         <div>
-                                                            <h3 className="text-lg font-black text-text uppercase tracking-tighter flex items-center gap-3">
+                                                            <h3 className="text-base sm:text-lg font-black text-text uppercase tracking-tighter flex flex-wrap items-center gap-2 sm:gap-3">
                                                                 {fb.customerName}
-                                                                <span className={`px-2 py-0.5 text-[8px] border font-black uppercase tracking-widest rounded-none ${getSentimentColor(fb.sentiment)}`}>
+                                                                <span className={`px-1.5 py-0.5 text-[7px] sm:text-[8px] border font-black uppercase tracking-widest rounded-none ${getSentimentColor(fb.sentiment)}`}>
                                                                     {fb.sentiment}
                                                                 </span>
                                                             </h3>
                                                         </div>
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="text-right">
-                                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1 italic">Assigned Operator</p>
-                                                                <p className="text-xs font-black text-primary uppercase tracking-[0.1em]">{fb.staffName}</p>
+                                                        <div className="flex items-center gap-2 sm:gap-3 sm:text-right">
+                                                            <div className="sm:text-right">
+                                                                <p className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-widest sm:mb-1 italic">Operator</p>
+                                                                <p className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-[0.1em]">{fb.staffName}</p>
                                                             </div>
-                                                            <div className="w-8 h-8 rounded-full border border-primary/20 bg-primary/5 flex items-center justify-center">
-                                                                <UserCircle className="w-4 h-4 text-primary" />
+                                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-primary/20 bg-primary/5 flex items-center justify-center shrink-0">
+                                                                <UserCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                                                             </div>
                                                         </div>
                                                     </div>
@@ -346,30 +345,30 @@ export default function FeedbackPage() {
                                                 </div>
 
                                                 {/* Right Action Area */}
-                                                <div className="flex flex-col gap-2 shrink-0 sm:w-36">
+                                                <div className="flex flex-row md:flex-col gap-2 shrink-0 sm:w-36">
                                                     {!fb.response ? (
                                                         <button 
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setRespondingTo(respondingTo === fb.id ? null : fb.id);
                                                             }}
-                                                            className="w-full py-2 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                                            className="flex-1 sm:w-full py-2.5 sm:py-2 bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                                         >
-                                                            <Send className="w-3 h-3" /> Transmit Reply
+                                                            <Send className="w-3 h-3" /> Transmit
                                                         </button>
                                                     ) : (
-                                                        <div className="w-full py-3 bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center justify-center gap-1">
-                                                            <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Protocol Finished</span>
+                                                        <div className="flex-1 sm:w-full py-2 sm:py-3 bg-emerald-500/10 border border-emerald-500/20 flex flex-row sm:flex-col items-center justify-center gap-1.5 sm:gap-1">
+                                                            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
+                                                            <span className="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Resolved</span>
                                                         </div>
                                                     )}
                                                     
-                                                    <div className="grid grid-cols-2 gap-2 mt-auto">
-                                                        <button className="py-2 bg-white border border-border/60 text-text-muted hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center">
-                                                            <Share2 className="w-3.5 h-3.5" />
+                                                    <div className="flex sm:grid sm:grid-cols-2 gap-2 mt-auto">
+                                                        <button className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center">
+                                                            <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                         </button>
-                                                        <button className="py-2 bg-white border border-border/60 text-text-muted hover:text-rose-500 hover:border-rose-500/40 transition-all flex items-center justify-center">
-                                                            <Flag className="w-3.5 h-3.5" />
+                                                        <button className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-rose-500 hover:border-rose-500/40 transition-all flex items-center justify-center">
+                                                            <Flag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                         </button>
                                                     </div>
                                                 </div>

@@ -40,7 +40,7 @@ export default function SupplierInvoices() {
             </div>
 
             {/* Table Area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-0">
+            <div className="flex-1 overflow-y-auto no-scrollbar bg-white p-0 table-responsive">
                 <table className="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
                         <tr className="bg-surface/50 border-b border-border">

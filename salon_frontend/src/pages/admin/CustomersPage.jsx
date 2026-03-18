@@ -85,24 +85,24 @@ export default function CustomersPage({ tab = 'directory' }) {
         <>
             <div className="space-y-6 animate-reveal">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-text uppercase">Customer CRM</h1>
-                        <p className="text-sm text-text-secondary mt-1 font-bold uppercase tracking-widest text-[10px]">Manage loyalty & retention</p>
+                        <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Customer CRM</h1>
+                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">System :: identity_retention_v2.0 // global_crm</p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-3">
                         <button
                             onClick={handleExport}
-                            className="flex items-center gap-2 bg-surface border border-border px-4 py-2 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-all"
+                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-surface border border-border px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt hover:text-primary transition-all font-black shadow-sm"
                         >
-                            <Download className="w-3.5 h-3.5" />
-                            Export
+                            <Download className="w-4 h-4" />
+                            Export Log
                         </button>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                            className="flex-1 lg:flex-none flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                         >
-                            <UserPlus className="w-4 h-4" /> Add Customer
+                            <UserPlus className="w-4 h-4" /> Induct Customer
                         </button>
                     </div>
                 </div>
@@ -123,12 +123,27 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* Content Container */}
                 <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[600px]">
-                    <div className="flex border-b border-border bg-surface-alt">
-                        <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Directory</button>
-                        <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Wallet Monitor</button>
-                        <button onClick={() => navigate('/admin/crm/segments')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'segments' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Segments</button>
-                        <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Feedback</button>
-                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-4 text-[10px] font-black uppercase tracking-widest border-r border-border transition-all ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>Re-engage</button>
+                    <div className="flex border-b border-border bg-surface-alt/30 overflow-x-auto no-scrollbar">
+                        <button onClick={() => navigate('/admin/crm/customers')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'directory' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Directory
+                            {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
+                        <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Wallet Monitor
+                            {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
+                        <button onClick={() => navigate('/admin/crm/segments')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'segments' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Segments
+                            {activeTab === 'segments' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
+                        <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Feedback
+                            {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
+                        <button onClick={() => navigate('/admin/crm/reengage')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-border transition-all whitespace-nowrap relative ${activeTab === 'reengage' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
+                            Re-engage
+                            {activeTab === 'reengage' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
+                        </button>
                     </div>
 
                     {activeTab === 'directory' && (
@@ -412,8 +427,8 @@ function WalletMonitor({ customers, onCustomerClick }) {
             )}
 
             {activeSubTab === 'directory' && (
-                <div className="border border-border">
-                    <table className="w-full text-left">
+                <div className="table-responsive border border-border">
+                    <table className="w-full text-left min-w-[800px]">
                         <thead>
                             <tr className="bg-surface-alt border-b border-border">
                                 <th className="px-6 py-4">
@@ -825,8 +840,8 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
             </div>
 
             {/* Table */}
-            <div className="flex-1 border border-border rounded-none overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="flex-1 table-responsive border border-border rounded-none">
+                <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-surface-alt border-b border-border">
                             <th className="px-6 py-5 text-[10px] font-extrabold text-text-muted uppercase tracking-widest pl-8">Customer Matrix</th>

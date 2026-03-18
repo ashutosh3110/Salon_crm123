@@ -38,50 +38,48 @@ export default function AttendancePage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Attendance & Leaves</h1>
-                    <p className="text-sm text-text-muted font-medium">Monitor daily presence and manage leave approvals</p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
+                <div className="leading-none text-left">
+                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Attendance Log</h1>
+                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">System :: presence_monitor_v1.5 // global_roster</p>
                 </div>
-                <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-border/60 rounded-none text-sm font-bold text-text-secondary hover:bg-surface-alt transition-colors shadow-none">
-                        <Calendar className="w-4 h-4" /> Attendance Logs
-                    </button>
-                </div>
+                <button className="w-full sm:w-auto flex items-center justify-center gap-3 bg-surface border border-border px-6 sm:px-10 py-3 sm:py-4 rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt hover:text-primary transition-all font-black shadow-sm">
+                    <Calendar className="w-4 h-4" /> Export logs
+                </button>
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {[
                     { label: 'Present Today', value: '10/12', icon: UserCheck, color: 'text-emerald-500' },
                     { label: 'Late Arrivals', value: '2', icon: Clock, color: 'text-rose-500' },
                     { label: 'On Leave', value: '2', icon: UserMinus, color: 'text-rose-500' },
                     { label: 'Shift Coverage', value: '85%', icon: CalendarCheck, color: 'text-emerald-500' },
                 ].map((s) => (
-                    <div key={s.label} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={s.label} className="bg-surface py-4 px-5 sm:py-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <s.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
+                            <div className="flex items-center justify-between mb-2 sm:mb-3">
+                                <div className="flex items-center gap-2">
+                                    <s.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted transition-colors group-hover:text-primary" />
+                                    <p className="text-[9px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${s.color === 'text-rose-500' ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                    {s.color === 'text-rose-500' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                                <div className={`flex items-center gap-0.5 text-[9px] sm:text-[11px] font-bold ${s.color === 'text-rose-500' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                    {s.color === 'text-rose-500' ? <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                     {s.color === 'text-rose-500' ? '-1%' : '+2%'}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter
                                         value={typeof s.value === 'string' ? parseFloat(s.value.replace(/[₹%,]/g, '').split('/')[0]) : s.value}
                                         suffix={s.label === 'Shift Coverage' ? '%' : s.label === 'Present Today' ? `/${s.value.split('/')[1]}` : ''}
                                     />
                                 </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity hidden sm:block">
                                     <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={s.color === 'text-rose-500' ? "text-rose-400" : "text-emerald-400"}>
                                         <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
@@ -92,49 +90,49 @@ export default function AttendancePage() {
                 ))}
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Attendance Table */}
-                <div className="lg:col-span-2 bg-white rounded-none border border-border/60 overflow-hidden shadow-none">
-                    <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-white">
-                        <h2 className="text-sm font-black text-text uppercase tracking-widest">Today's Presence</h2>
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                <div className="col-span-1 lg:col-span-2 bg-white rounded-none border border-border/60 overflow-hidden shadow-none">
+                    <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border bg-surface-alt/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                        <h2 className="text-[10px] sm:text-[11px] font-black text-text uppercase tracking-widest">Today's Presence</h2>
+                        <div className="relative w-full sm:w-auto">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                             <input
                                 type="text"
-                                placeholder="Search staff..."
-                                className="pl-8 pr-3 py-1.5 bg-white border border-border/60 rounded-none text-xs outline-none focus:border-primary/50 transition-colors"
+                                placeholder="Scan Registry..."
+                                className="w-full sm:w-64 pl-10 pr-4 py-2.5 bg-surface border border-border rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="w-full overflow-x-auto custom-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[650px]">
                             <thead>
                                 <tr className="border-b border-border/40">
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest">Staff Name</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Check In</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Check Out</th>
-                                    <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Status</th>
+                                    <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest">Staff Name</th>
+                                    <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Check In</th>
+                                    <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Check Out</th>
+                                    <th className="px-5 sm:px-6 py-3 sm:py-4 text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40">
                                 {filteredAttendance.map((staff) => (
                                     <tr key={staff.id} className="hover:bg-surface-alt/50 transition-colors">
-                                        <td className="px-6 py-4">
+                                        <td className="px-5 sm:px-6 py-3 sm:py-4">
                                             <div>
-                                                <p className="text-sm font-bold text-text">{staff.name}</p>
-                                                <p className="text-[10px] text-text-muted font-medium">{staff.role}</p>
+                                                <p className="text-xs sm:text-sm font-bold text-text">{staff.name}</p>
+                                                <p className="text-[9px] sm:text-[10px] text-text-muted font-medium uppercase tracking-tight">{staff.role}</p>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-xs font-bold text-text-secondary">{staff.checkIn}</span>
+                                        <td className="px-5 sm:px-6 py-3 sm:py-4 text-center">
+                                            <span className="text-[11px] sm:text-xs font-bold text-text-secondary">{staff.checkIn}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="text-xs font-bold text-text-secondary">{staff.checkOut}</span>
+                                        <td className="px-5 sm:px-6 py-3 sm:py-4 text-center">
+                                            <span className="text-[11px] sm:text-xs font-bold text-text-secondary">{staff.checkOut}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tight ${staff.status === 'Present' ? 'bg-emerald-500/10 text-emerald-500' :
+                                        <td className="px-5 sm:px-6 py-3 sm:py-4 text-right">
+                                            <span className={`text-[8px] sm:text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tight ${staff.status === 'Present' ? 'bg-emerald-500/10 text-emerald-500' :
                                                 staff.status === 'Late' ? 'bg-amber-500/10 text-amber-500' :
                                                     staff.status === 'On Leave' ? 'bg-rose-500/10 text-rose-500' : 'bg-surface-alt text-text-muted'
                                                 }`}>

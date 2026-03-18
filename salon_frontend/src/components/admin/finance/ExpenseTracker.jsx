@@ -14,8 +14,8 @@ export default function ExpenseTracker() {
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden">
             {/* Header / Context Switcher */}
-            <div className="px-8 py-6 border-b border-border bg-surface/30 flex justify-between items-center">
-                <div className="flex gap-4 p-1 bg-surface-alt rounded-xl border border-border">
+            <div className="px-8 py-6 border-b border-border bg-surface/30 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex flex-wrap gap-4 p-1 bg-surface-alt rounded-xl border border-border">
                     <button
                         onClick={() => setView('list')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${view === 'list' ? 'bg-white text-primary shadow-sm' : 'text-text-muted hover:text-text'}`}
@@ -49,7 +49,7 @@ export default function ExpenseTracker() {
 
 function ExpenseList() {
     return (
-        <div className="p-0 animate-fadeIn overflow-x-auto">
+        <div className="p-0 animate-fadeIn table-responsive">
             <table className="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr className="bg-surface/50 border-b border-border">

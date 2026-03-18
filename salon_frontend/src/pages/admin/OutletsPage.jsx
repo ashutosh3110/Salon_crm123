@@ -96,22 +96,22 @@ export default function OutletsPage() {
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
             {/* Header Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
                     <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Business Infrastructure</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: node_management_v2.0 // network_status_online</p>
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="flex items-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Expand Network
                 </button>
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />

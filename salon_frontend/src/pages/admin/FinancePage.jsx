@@ -67,7 +67,7 @@ export default function FinancePage({ tab = 'dashboard' }) {
                     <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Finances</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Track revenue, expenses and cash position at a glance.</p>
                 </div>
-                <div className="flex flex-wrap gap-4 text-left font-black">
+                <div className="flex flex-wrap items-center gap-4 text-left font-black">
                     <button className="flex items-center gap-3 bg-surface border border-border px-8 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm">
                         <DownloadCloud className="w-4 h-4" />
                         Export Ledger
@@ -80,8 +80,8 @@ export default function FinancePage({ tab = 'dashboard' }) {
             </div>
 
             {/* Analytics Summary */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left font-black">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
                     <FinanceKPICard title="Gross Inflow" value="₹12.45L" icon={TrendingUp} color="blue" trend="+12.5% MTD" />
                     <FinanceKPICard title="Total Expenses" value="₹2.82L" icon={ArrowDownRight} color="rose" trend="Last 8 days" />
                     <FinanceKPICard title="Liability Load" value="₹84,200" icon={Users} color="orange" trend="3 OVERDUE" />

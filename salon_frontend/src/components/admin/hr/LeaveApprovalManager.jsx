@@ -111,24 +111,24 @@ export default function LeaveApprovalManager() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 mt-6 md:mt-0 w-full md:w-auto justify-end">
+                            <div className="flex flex-wrap items-center gap-3 mt-6 sm:mt-8 md:mt-0 w-full md:w-auto justify-end">
                                 {req.status === 'PENDING' ? (
                                     <>
                                         <button
                                             onClick={() => handleAction(req.id, 'REJECTED')}
-                                            className="px-6 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-500 hover:text-white transition-all active:scale-95"
+                                            className="flex-1 sm:flex-none px-6 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-rose-500 hover:text-white transition-all active:scale-95 whitespace-nowrap"
                                         >
                                             Terminate
                                         </button>
                                         <button
                                             onClick={() => handleAction(req.id, 'APPROVED')}
-                                            className="px-6 py-2.5 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95"
+                                            className="flex-1 sm:flex-none px-6 py-2.5 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 whitespace-nowrap"
                                         >
                                             Authorize
                                         </button>
                                     </>
                                 ) : (
-                                    <div className={`px-6 py-2.5 border text-[9px] font-black uppercase tracking-[0.2em] ${statusStyles[req.status]}`}>
+                                    <div className={`w-full sm:w-auto px-6 py-2.5 border text-[9px] font-black uppercase tracking-[0.2em] text-center ${statusStyles[req.status]}`}>
                                         {req.status}
                                     </div>
                                 )}

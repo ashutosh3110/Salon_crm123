@@ -72,14 +72,14 @@ export default function ServicesPage({ tab = 'list' }) {
                         <ChevronRight className="w-3.5 h-3.5 opacity-40" />
                         <span className="text-primary">Service Meta</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Service Protocols</h1>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">Service Protocols</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Module :: operational_logic_v1.0 // service_catalog</p>
                 </div>
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 text-left font-black">
-                <div className="lg:col-span-2 grid grid-cols-2 gap-4 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     {stats.map((stat, i) => (
                         <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
                             <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
