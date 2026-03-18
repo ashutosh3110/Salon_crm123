@@ -12,27 +12,6 @@ import {
 } from 'recharts';
 import { exportToExcel } from '../../utils/exportUtils';
 
-/* ─── Dataset ────────────────────────────────────────────────────────── */
-const MRR_TREND = [
-    { month: 'Aug 25', mrr: 38200, newMRR: 4100, churnedMRR: 1200, expansion: 800 },
-    { month: 'Sep 25', mrr: 43100, newMRR: 6300, churnedMRR: 1800, expansion: 1200 },
-    { month: 'Oct 25', mrr: 51400, newMRR: 9800, churnedMRR: 1600, expansion: 1400 },
-    { month: 'Nov 25', mrr: 58900, newMRR: 8200, churnedMRR: 2100, expansion: 1900 },
-    { month: 'Dec 25', mrr: 67100, newMRR: 9600, churnedMRR: 1700, expansion: 1500 },
-    { month: 'Jan 26', mrr: 72800, newMRR: 7300, churnedMRR: 2200, expansion: 2100 },
-    { month: 'Feb 26', mrr: 81500, newMRR: 9800, churnedMRR: 1900, expansion: 2700 },
-];
-
-const SALON_GROWTH = [
-    { month: 'Aug 25', total: 85, new: 12, churned: 3 },
-    { month: 'Sep 25', total: 94, new: 14, churned: 5 },
-    { month: 'Oct 25', total: 103, new: 11, churned: 2 },
-    { month: 'Nov 25', total: 112, new: 13, churned: 4 },
-    { month: 'Dec 25', total: 119, new: 10, churned: 3 },
-    { month: 'Jan 26', total: 124, new: 8, churned: 3 },
-    { month: 'Feb 26', total: 127, new: 6, churned: 3 },
-];
-
 const COHORT = [
     { cohort: 'Aug 25', m0: 100, m1: 78, m2: 65, m3: 58, m4: 52, m5: 48, m6: 45 },
     { cohort: 'Sep 25', m0: 100, m1: 82, m2: 69, m3: 61, m4: 55, m5: 50 },
@@ -43,45 +22,8 @@ const COHORT = [
     { cohort: 'Feb 26', m0: 100 },
 ];
 
-const PLAN_DIST = [
-    { name: 'Free', value: 38, color: '#94a3b8', mrr: 0 },
-    { name: 'Basic', value: 27, color: '#3b82f6', mrr: 53973 },
-    { name: 'Pro', value: 22, color: '#B85C5C', mrr: 109978 },
-    { name: 'Enterprise', value: 13, color: '#f59e0b', mrr: 168987 },
-];
-
-const GEO_DATA = [
-    { city: 'Mumbai', salons: 28, mrr: 24800 },
-    { city: 'Delhi', salons: 22, mrr: 19400 },
-    { city: 'Bangalore', salons: 19, mrr: 17200 },
-    { city: 'Hyderabad', salons: 14, mrr: 11900 },
-    { city: 'Chennai', salons: 12, mrr: 9800 },
-    { city: 'Pune', salons: 11, mrr: 8600 },
-    { city: 'Others', salons: 21, mrr: 16500 },
-];
-
-const FEATURE_USAGE = [
-    { feature: 'POS', usage: 89, change: 3 },
-    { feature: 'Bookings', usage: 94, change: 5 },
-    { feature: 'CRM', usage: 76, change: 8 },
-    { feature: 'Inventory', usage: 62, change: -2 },
-    { feature: 'Marketing', usage: 41, change: 12 },
-    { feature: 'Reports', usage: 55, change: 6 },
-    { feature: 'HR/Payroll', usage: 48, change: 4 },
-    { feature: 'Loyalty', usage: 37, change: 15 },
-    { feature: 'WhatsApp', usage: 29, change: 22 },
-];
-
-const CHURN_REASONS = [
-    { reason: 'Too Expensive', pct: 34 },
-    { reason: 'Missing Features', pct: 28 },
-    { reason: 'Going Offline', pct: 17 },
-    { reason: 'Competitor', pct: 13 },
-    { reason: 'Other', pct: 8 },
-];
-
 /* ─── Helpers ────────────────────────────────────────────────────────── */
-const fmtINR = v => `₹${v.toLocaleString('en-IN')}`;
+const fmtINR = v => `₹${(v || 0).toLocaleString('en-IN')}`;
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (!active || !payload?.length) return null;
@@ -99,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 /* ─── Metric card ────────────────────────────────────────────────────── */
-function MetricCard({ label, value, sub, icon: Icon, gradient, shadow }) {
+function MetricCard({ label, value, sub, icon: Icon, gradient, shadow, change }) {
     return (
         <div className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all group">
             <div className="flex items-center justify-between mb-3">
@@ -148,20 +90,49 @@ function CohortCell({ value }) {
 }
 
 /* ══════════════════════════════════════════════════════════════════════ */
+import { useEffect } from 'react';
+import api from '../../services/api';
+
 export default function SAAnalyticsPage() {
     const [range, setRange] = useState('6m');
     const [toast, setToast] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        const fetchAnalytics = async () => {
+            try {
+                setLoading(true);
+                const res = await api.get('/analytics/stats');
+                setData(res.data);
+            } catch (err) {
+                console.error('Failed to fetch analytics:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAnalytics();
+    }, []);
 
     const showToast = (msg) => {
         setToast(msg);
         setTimeout(() => setToast(null), 2800);
     };
 
-    const mrr = 81500;
-    const arr = mrr * 12;
-    const arpu = Math.round(mrr / 127);
-    const ltv = Math.round(arpu / 0.022);  // LTV = ARPU / churn%
-    const nps = 61;
+    if (loading || !data) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                <p className="text-sm font-bold text-text-secondary animate-pulse">Syncing real-time analytics...</p>
+            </div>
+        );
+    }
+
+    const { kpis, mrrTrend, salonGrowth, planDist, geoDist, featureUsage, churnReasons, ltv, nps, dauMau } = data;
+    const mrr = kpis.mrr;
+    const arr = kpis.arr;
+    const arpu = kpis.arpu;
+    const totalSalons = kpis.totalSalons;
 
     return (
         <div className="space-y-6 pb-8">
@@ -189,7 +160,7 @@ export default function SAAnalyticsPage() {
                         ))}
                     </div>
                     <button onClick={() => {
-                        exportToExcel(MRR_TREND, 'Wapixo_MRR_Analytics', 'MRR_Waterfall');
+                        exportToExcel(mrrTrend, 'Wapixo_MRR_Analytics', 'MRR_Waterfall');
                         showToast('Analytics report exported as Excel!');
                     }}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
@@ -206,17 +177,17 @@ export default function SAAnalyticsPage() {
                 <MetricCard label="LTV" value={fmtINR(ltv)} sub="Avg Lifetime Value" change={6.1} icon={Heart} gradient="from-violet-500 to-purple-600" shadow="shadow-violet-500/20" />
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value="127" sub="Active tenants" change={4.1} icon={Building2} gradient="from-sky-500 to-cyan-600" shadow="shadow-sky-500/20" />
+                <MetricCard label="Total Salons" value={totalSalons} sub="Active tenants" change={4.1} icon={Building2} gradient="from-sky-500 to-cyan-600" shadow="shadow-sky-500/20" />
                 <MetricCard label="Churn Rate" value="2.2%" sub="Monthly, ↓ improving" change={-0.3} icon={UserX} gradient="from-orange-500 to-red-500" shadow="shadow-orange-500/20" />
                 <MetricCard label="NPS Score" value={nps} sub="Net Promoter Score" change={4} icon={Star} gradient="from-amber-400 to-orange-500" shadow="shadow-amber-400/20" />
-                <MetricCard label="DAU/MAU Ratio" value="68%" sub="Stickiness index" change={2.8} icon={Activity} gradient="from-rose-500 to-pink-600" shadow="shadow-rose-500/20" />
+                <MetricCard label="DAU/MAU Ratio" value={dauMau} sub="Stickiness index" change={2.8} icon={Activity} gradient="from-rose-500 to-pink-600" shadow="shadow-rose-500/20" />
             </div>
 
             {/* ── MRR Waterfall / Trend ── */}
             <Section title="MRR Breakdown" subtitle="New, expansion and churned MRR each month"
                 action={<span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% MoM</span>}>
                 <ResponsiveContainer width="100%" height={240}>
-                    <ComposedChart data={MRR_TREND} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                    <ComposedChart data={mrrTrend} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient id="mrrGrad" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.3} />
@@ -242,7 +213,7 @@ export default function SAAnalyticsPage() {
                 {/* Salon growth */}
                 <Section title="Salon Growth" subtitle="New signups vs churned per month">
                     <ResponsiveContainer width="100%" height={210}>
-                        <BarChart data={SALON_GROWTH} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={18}>
+                        <BarChart data={salonGrowth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={18}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
                             <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
@@ -259,9 +230,9 @@ export default function SAAnalyticsPage() {
                     <div className="flex items-center gap-6">
                         <ResponsiveContainer width="55%" height={210}>
                             <PieChart>
-                                <Pie data={PLAN_DIST} cx="50%" cy="50%" innerRadius={55} outerRadius={90}
+                                <Pie data={planDist} cx="50%" cy="50%" innerRadius={55} outerRadius={90}
                                     dataKey="value" paddingAngle={3} stroke="none">
-                                    {PLAN_DIST.map((entry, i) => (
+                                    {planDist.map((entry, i) => (
                                         <Cell key={i} fill={entry.color} />
                                     ))}
                                 </Pie>
@@ -269,7 +240,7 @@ export default function SAAnalyticsPage() {
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="flex-1 space-y-3">
-                            {PLAN_DIST.map(p => (
+                            {planDist.map(p => (
                                 <div key={p.name}>
                                     <div className="flex items-center justify-between mb-1">
                                         <div className="flex items-center gap-2">
@@ -279,7 +250,7 @@ export default function SAAnalyticsPage() {
                                         <span className="text-xs text-text-muted">{p.value} salons</span>
                                     </div>
                                     <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                                        <div className="h-full rounded-full" style={{ width: `${(p.value / 127 * 100).toFixed(0)}%`, backgroundColor: p.color }} />
+                                        <div className="h-full rounded-full" style={{ width: `${(p.value / totalSalons * 100).toFixed(0)}%`, backgroundColor: p.color }} />
                                     </div>
                                 </div>
                             ))}
@@ -327,7 +298,7 @@ export default function SAAnalyticsPage() {
                 {/* Feature adoption */}
                 <Section title="Feature Adoption" subtitle="% of active salons using each feature this month">
                     <div className="space-y-3">
-                        {FEATURE_USAGE.sort((a, b) => b.usage - a.usage).map(f => (
+                        {featureUsage.sort((a, b) => b.usage - a.usage).map(f => (
                             <div key={f.feature}>
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-xs font-medium text-text-secondary">{f.feature}</span>
@@ -352,7 +323,7 @@ export default function SAAnalyticsPage() {
                 {/* Churn reasons */}
                 <Section title="Churn Reasons" subtitle="Why salons are cancelling their plan">
                     <div className="space-y-3">
-                        {CHURN_REASONS.map(c => (
+                        {churnReasons.map(c => (
                             <div key={c.reason}>
                                 <div className="flex items-center justify-between mb-1">
                                     <span className="text-xs font-medium text-text-secondary">{c.reason}</span>
@@ -382,8 +353,8 @@ export default function SAAnalyticsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {GEO_DATA.map((g, i) => {
-                                const totalMRR = GEO_DATA.reduce((a, x) => a + x.mrr, 0);
+                            {geoDist.map((g, i) => {
+                                const totalMRR = geoDist.reduce((a, x) => a + x.mrr, 0);
                                 const pct = ((g.mrr / totalMRR) * 100).toFixed(1);
                                 return (
                                     <tr key={g.city} className="hover:bg-surface/40 transition-colors">

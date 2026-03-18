@@ -1,7 +1,86 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+
+export default function PrivacyPolicy() {
+    const [cmsData, setCmsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchCMS = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/v1/cms');
+                if (response.data && response.data.legal_privacy) {
+                    setCmsData(response.data.legal_privacy);
+                }
+            } catch (error) {
+                console.error('Error fetching CMS:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCMS();
+    }, []);
+
+    const title = cmsData?.title || "Privacy Policy";
+    const lastUpdated = cmsData?.last_updated || "February 21, 2026";
+    const content = cmsData?.content;
+
+    return (
+        <LegalLayout title={title}>
+            {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                </div>
+            ) : content ? (
+                <div dangerouslySetInnerHTML={{ __html: content }} />
+            ) : (
+                <>
+                    <section>
+                        <h2>1. Introduction</h2>
+                        <p>
+                            Welcome to the Salon CRM platform. We are committed to protecting your privacy and ensuring that your personal information is handled in a safe and responsible manner. This Privacy Policy outlines how we collect, use, and safeguard your data.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>2. Information Collection</h2>
+                        <p>
+                            We collect various types of information to provide and improve our services to you:
+                        </p>
+                        <ul>
+                            <li>Personal identification information (Name, email address, phone number).</li>
+                            <li>Payment information and transaction history for salon services.</li>
+                            <li>Usage data and technical device information when you access our platform.</li>
+                            <li>Professional salon-related data provided by business owners.</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2>3. How We Use Your Data</h2>
+                        <p>
+                            Your data is used to facilitate bookings, process transactions, and communicate with you about your appointments. We also use aggregated, non-identifiable data to analyze platform performance and improve our features.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h2>4. Data Security</h2>
+                        <p>
+                            We implement a variety of security measures to maintain the safety of your personal information. Your personal information is contained behind secured networks and is only accessible by a limited number of persons who have special access rights to such systems.
+                        </p>
+                    </section>
+                </>
+            )}
+            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+                    Last Updated: {lastUpdated}
+                </p>
+            </div>
+        </LegalLayout>
+    );
+}
 
 const LegalLayout = ({ title, children }) => {
     useEffect(() => {
@@ -73,12 +152,6 @@ const LegalLayout = ({ title, children }) => {
                             color: rgba(255,255,255,0.3);
                         }
                     `}</style>
-
-                    <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                        <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
-                            Last Updated: February 21, 2026
-                        </p>
-                    </div>
                 </motion.div>
             </main>
 
@@ -91,44 +164,4 @@ const LegalLayout = ({ title, children }) => {
         </div>
     );
 };
-
-export default function PrivacyPolicy() {
-    return (
-        <LegalLayout title="Privacy Policy">
-            <section>
-                <h2>1. Introduction</h2>
-                <p>
-                    Welcome to the Salon CRM platform. We are committed to protecting your privacy and ensuring that your personal information is handled in a safe and responsible manner. This Privacy Policy outlines how we collect, use, and safeguard your data.
-                </p>
-            </section>
-
-            <section>
-                <h2>2. Information Collection</h2>
-                <p>
-                    We collect various types of information to provide and improve our services to you:
-                </p>
-                <ul>
-                    <li>Personal identification information (Name, email address, phone number).</li>
-                    <li>Payment information and transaction history for salon services.</li>
-                    <li>Usage data and technical device information when you access our platform.</li>
-                    <li>Professional salon-related data provided by business owners.</li>
-                </ul>
-            </section>
-
-            <section>
-                <h2>3. How We Use Your Data</h2>
-                <p>
-                    Your data is used to facilitate bookings, process transactions, and communicate with you about your appointments. We also use aggregated, non-identifiable data to analyze platform performance and improve our features.
-                </p>
-            </section>
-
-            <section>
-                <h2>4. Data Security</h2>
-                <p>
-                    We implement a variety of security measures to maintain the safety of your personal information. Your personal information is contained behind secured networks and is only accessible by a limited number of persons who have special access rights to such systems.
-                </p>
-            </section>
-        </LegalLayout>
-    );
-}
 

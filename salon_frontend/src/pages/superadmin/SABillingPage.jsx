@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
     CreditCard, FileText, BarChart2, DollarSign, TrendingUp,
     TrendingDown, RefreshCw, Download, Plus, Search, Filter,
@@ -11,7 +11,8 @@ import {
     Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell,
 } from 'recharts';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
-import { exportToExcel } from '../../utils/exportUtils';
+import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
+import api from '../../services/api';
 
 import superAdminData from '../../data/superAdminMockData.json';
 
@@ -56,7 +57,18 @@ const CustomTooltip = ({ active, payload, label, prefix = '', suffix = '' }) => 
 
 /* ─── Invoice modal ─────────────────────────────────────────────────── */
 function InvoiceModal({ onClose, onSend }) {
-    const [form, setForm] = useState({ salon: '', plan: 'basic', amount: 1999, dueDate: '', note: '' });
+    const [form, setForm] = useState({ tenantId: '', plan: 'basic', amount: 1999, dueDate: '', note: '' });
+    const [tenants, setTenants] = useState([]);
+    const [fetching, setFetching] = useState(false);
+
+    useEffect(() => {
+        setFetching(true);
+        api.get('/tenants', { params: { limit: 100 } })
+            .then(res => setTenants(res.data.data.results || []))
+            .catch(err => console.error('Error fetching tenants:', err))
+            .finally(() => setFetching(false));
+    }, []);
+
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
     const inputCls = 'w-full px-3.5 py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5';
@@ -75,8 +87,17 @@ function InvoiceModal({ onClose, onSend }) {
                 </div>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label className={labelCls}>Salon Name *</label>
-                        <input className={inputCls} value={form.salon} onChange={e => set('salon', e.target.value)} placeholder="Select or type salon name" />
+                        <label className={labelCls}>Select Salon (Tenant) *</label>
+                        <select 
+                            className={inputCls} 
+                            value={form.tenantId} 
+                            onChange={e => set('tenantId', e.target.value)}
+                        >
+                            <option value="">-- Choose a Salon --</option>
+                            {tenants.map(t => (
+                                <option key={t._id} value={t._id}>{t.name} ({t.slug})</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -124,7 +145,7 @@ function InvoiceModal({ onClose, onSend }) {
                 </div>
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
                     <button onClick={onClose} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">Cancel</button>
-                    <button onClick={() => onSend(form)} disabled={!form.salon}
+                    <button onClick={() => onSend(form)} disabled={!form.tenantId || !form.amount}
                         className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
                         <Send className="w-4 h-4" /> Send Invoice
                     </button>
@@ -181,34 +202,81 @@ export default function SABillingPage() {
     const [toast, setToast] = useState(null);
     const [retrying, setRetry] = useState(null);
 
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        totalRevenue: 0,
+        failedCount: 0,
+        refundedAmount: 0,
+        monthlyRevenue: [],
+        planDistribution: []
+    });
+    const [payments, setPayments] = useState([]);
+
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
         setTimeout(() => setToast(null), 3000);
     };
 
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const [statsRes, transRes] = await Promise.all([
+                api.get(`/billing/stats?t=${Date.now()}`),
+                api.get(`/billing/transactions?limit=100&t=${Date.now()}`)
+            ]);
+
+            console.log('[Billing] Stats received:', statsRes.data);
+            if (statsRes.data.code === 200) setStats(statsRes.data.data);
+            if (transRes.data.code === 200) setPayments(transRes.data.data.results);
+        } catch (err) {
+            console.error('[Billing] Fetch error:', err);
+            showToast('Failed to load billing data', 'error');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
     /* filtered payments */
-    const filteredPayments = MOCK_PAYMENTS.filter(p => {
+    const filteredPayments = payments.filter(p => {
         const q = search.toLowerCase();
-        const matchQ = !q || p.salon.toLowerCase().includes(q) || p.invoice.toLowerCase().includes(q) || p.plan.toLowerCase().includes(q);
+        const salonName = p.tenantId?.name || p.salonName || '';
+        const matchQ = !q || 
+                      salonName.toLowerCase().includes(q) || 
+                      p.invoiceNumber?.toLowerCase().includes(q) || 
+                      (p.planName || '').toLowerCase().includes(q);
         const matchS = !statusFilter || p.status === statusFilter;
-        const matchD = isInPeriod(p.date, datePeriod, customFrom, customTo);
+        const matchD = isInPeriod(p.createdAt, datePeriod, customFrom, customTo);
         return matchQ && matchS && matchD;
     });
 
-    const filteredInvoices = MOCK_INVOICES.filter(inv => {
-        const q = search.toLowerCase();
-        const matchQ = !q || inv.salon.toLowerCase().includes(q) || inv.id.toLowerCase().includes(q);
-        const matchS = !statusFilter || inv.status === statusFilter;
-        const matchD = isInPeriod(inv.date, datePeriod, customFrom, customTo);
-        return matchQ && matchS && matchD;
-    });
+    // Invoices derived from payments for now
+    const filteredInvoices = filteredPayments.map(p => ({
+        id: p.invoiceNumber,
+        salon: p.tenantId?.name || p.salonName || 'Unknown',
+        plan: p.planName || 'Plan',
+        amount: p.amount,
+        taxAmt: p.taxAmount,
+        total: p.totalAmount,
+        date: p.createdAt?.split('T')[0],
+        dueDate: p.dueDate?.split('T')[0],
+        status: p.status
+    }));
 
     /* KPIs */
-    const totalRevenue = MOCK_PAYMENTS.filter(p => p.status === 'paid').reduce((a, p) => a + p.amount, 0);
-    const failedCount = MOCK_PAYMENTS.filter(p => p.status === 'failed').length;
-    const refundTotal = MOCK_PAYMENTS.filter(p => p.status === 'refunded').reduce((a, p) => a + p.amount, 0);
-    const mrr = 81500;
-    const arr = mrr * 12;
+    const { totalRevenue, failedCount, refundedAmount, monthlyRevenue, planDistribution } = stats;
+    
+    const latestMonth = monthlyRevenue.length > 0 ? monthlyRevenue[monthlyRevenue.length - 1] : null;
+    const mrr = latestMonth?.revenue || 0;
+    const mrrSubtotal = latestMonth?.subtotal || 0;
+    const mrrTax = latestMonth?.tax || 0;
+
+    const currentMonthLabel = latestMonth
+        ? new Date(latestMonth.month + '-01').toLocaleString('default', { month: 'short', year: 'numeric' })
+        : new Date().toLocaleString('default', { month: 'short', year: 'numeric' });
 
     const handleRetry = async (payId) => {
         setRetry(payId);
@@ -218,8 +286,21 @@ export default function SABillingPage() {
     };
 
     const handleInvoiceSend = async (form) => {
-        setModal(false);
-        showToast(`Invoice sent to "${form.salon}" for ₹${Math.round(form.amount * 1.18).toLocaleString('en-IN')}!`);
+        try {
+            const res = await api.post('/billing/manual-invoice', {
+                tenantId: form.tenantId, // Assuming we add tenant picking logic
+                amount: form.amount,
+                notes: form.note,
+                dueDate: form.dueDate
+            });
+            if (res.data.code === 201) {
+                showToast(`Invoice ${res.data.data.invoiceNumber} created and sent!`);
+                fetchData(); // Refresh list
+                setModal(false);
+            }
+        } catch (err) {
+            showToast('Failed to create invoice', 'error');
+        }
     };
 
     const TABS = [
@@ -326,16 +407,16 @@ export default function SABillingPage() {
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Collected', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 11 },
-                    { label: 'Failed Payments', value: failedCount, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: -2 },
-                    { label: 'Refunded', value: `₹${refundTotal.toLocaleString('en-IN')}`, icon: RotateCcw, gradient: 'from-orange-500 to-amber-600', shadow: 'shadow-orange-500/20', change: null },
+                    { label: 'Total Collected', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 0 },
+                    { label: 'Failed Payments', value: failedCount, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: 0 },
+                    { label: 'Refunded', value: `₹${refundedAmount.toLocaleString('en-IN')}`, icon: RotateCcw, gradient: 'from-orange-500 to-amber-600', shadow: 'shadow-orange-500/20', change: null },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all">
                         <div className="flex items-center justify-between mb-3">
                             <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.gradient} flex items-center justify-center shadow-lg ${k.shadow}`}>
                                 <k.icon className="w-5 h-5 text-white" />
                             </div>
-                            {k.change !== null && (
+                            {k.change !== 0 && k.change !== null && (
                                 <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${k.change >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
                                     {k.change >= 0 ? '↑' : '↓'} {Math.abs(k.change)}%
                                 </span>
@@ -400,24 +481,24 @@ export default function SABillingPage() {
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {filteredPayments.map(p => {
-                                        const sc = STATUS_CFG[p.status];
+                                        const sc = STATUS_CFG[p.status] || STATUS_CFG.pending;
                                         return (
-                                            <tr key={p.id} className="hover:bg-surface/40 transition-colors">
-                                                <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{p.invoice}</td>
+                                            <tr key={p._id} className="hover:bg-surface/40 transition-colors">
+                                                <td className="px-4 py-3.5 text-sm font-mono text-primary font-semibold">{p.invoiceNumber}</td>
                                                 <td className="px-4 py-3.5">
                                                     <div className="flex items-center gap-2.5">
                                                         <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-black text-primary shrink-0">
-                                                            {p.salon[0]}
+                                                            {(p.tenantId?.name || p.salonName || 'S')[0]}
                                                         </div>
-                                                        <span className="text-sm text-text font-medium">{p.salon}</span>
+                                                        <span className="text-sm text-text font-medium">{p.tenantId?.name || p.salonName || 'Unknown'}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-4 py-3.5 text-sm text-text-secondary">{p.plan}</td>
+                                                <td className="px-4 py-3.5 text-sm text-text-secondary">{p.planName}</td>
                                                 <td className="px-4 py-3.5 text-sm font-bold text-text">
-                                                    {p.amount === 0 ? '—' : `₹${p.amount.toLocaleString('en-IN')}`}
+                                                    ₹{p.totalAmount.toLocaleString('en-IN')}
                                                 </td>
-                                                <td className="px-4 py-3.5 text-sm text-text-muted whitespace-nowrap">{p.date}</td>
-                                                <td className="px-4 py-3.5 text-sm text-text-secondary">{p.method}</td>
+                                                <td className="px-4 py-3.5 text-sm text-text-muted whitespace-nowrap">{p.createdAt?.split('T')[0]}</td>
+                                                <td className="px-4 py-3.5 text-sm text-text-secondary">{p.paymentMethod || '—'}</td>
                                                 <td className="px-4 py-3.5">
                                                     <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${sc.cls}`}>
                                                         <sc.icon className="w-3 h-3" /> {sc.label}
@@ -438,25 +519,25 @@ export default function SABillingPage() {
                     </div>
 
                     {/* Failed payments quick action */}
-                    {MOCK_PAYMENTS.filter(p => p.status === 'failed').length > 0 && (
-                        <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                    {payments.filter(p => p.status === 'failed').length > 0 && (
+                        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 mt-4">
                             <div className="flex items-center gap-2 mb-3">
                                 <AlertCircle className="w-4 h-4 text-red-500" />
                                 <span className="text-sm font-bold text-red-700">
-                                    {MOCK_PAYMENTS.filter(p => p.status === 'failed').length} Failed Payments Need Attention
+                                    {payments.filter(p => p.status === 'failed').length} Failed Payments Need Attention
                                 </span>
                             </div>
                             <div className="space-y-2">
-                                {MOCK_PAYMENTS.filter(p => p.status === 'failed').map(p => (
-                                    <div key={p.id} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-red-100">
+                                {payments.filter(p => p.status === 'failed').map(p => (
+                                    <div key={p._id} className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-red-100">
                                         <div>
-                                            <span className="text-sm font-semibold text-text">{p.salon}</span>
-                                            <span className="text-xs text-text-muted ml-2">— {p.plan} · ₹{p.amount.toLocaleString('en-IN')} · {p.date}</span>
+                                            <span className="text-sm font-semibold text-text">{p.tenantId?.name || p.salonName || 'Unknown'}</span>
+                                            <span className="text-xs text-text-muted ml-2">— {p.planName} · ₹{p.amount.toLocaleString('en-IN')} · {p.createdAt?.split('T')[0]}</span>
                                         </div>
-                                        <button onClick={() => handleRetry(p.id)} disabled={retrying === p.id}
+                                        <button onClick={() => handleRetry(p._id)} disabled={retrying === p._id}
                                             className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all disabled:opacity-60">
-                                            <RefreshCw className={`w-3 h-3 ${retrying === p.id ? 'animate-spin' : ''}`} />
-                                            {retrying === p.id ? 'Retrying…' : 'Retry Now'}
+                                            <RefreshCw className={`w-3 h-3 ${retrying === p._id ? 'animate-spin' : ''}`} />
+                                            {retrying === p._id ? 'Retry Now' : 'Retry Now'}
                                         </button>
                                     </div>
                                 ))}
@@ -551,7 +632,7 @@ export default function SABillingPage() {
                             <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% MoM</span>
                         </div>
                         <ResponsiveContainer width="100%" height={220}>
-                            <AreaChart data={MONTHLY_REV} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                            <AreaChart data={monthlyRevenue} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="revGrad2" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.25} />
@@ -575,14 +656,16 @@ export default function SABillingPage() {
                             <h3 className="font-bold text-text mb-1">Revenue by Plan</h3>
                             <p className="text-xs text-text-muted mb-4">Current month breakdown</p>
                             <div className="space-y-3">
-                                {PLAN_REV.map(p => {
-                                    const maxRev = Math.max(...PLAN_REV.map(x => x.revenue));
+                                {planDistribution.map((p, idx) => {
+                                    const COLORS = ['#B85C5C', '#E2A8A8', '#94a3b8', '#64748b'];
+                                    const maxRev = Math.max(...planDistribution.map(x => x.revenue));
                                     const pct = maxRev > 0 ? (p.revenue / maxRev) * 100 : 0;
+                                    const color = COLORS[idx % COLORS.length];
                                     return (
                                         <div key={p.name}>
                                             <div className="flex items-center justify-between mb-1">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+                                                    <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                                                     <span className="text-sm font-medium text-text">{p.name}</span>
                                                     <span className="text-xs text-text-muted">({p.value} salons)</span>
                                                 </div>
@@ -592,7 +675,7 @@ export default function SABillingPage() {
                                             </div>
                                             <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
                                                 <div className="h-full rounded-full transition-all duration-700"
-                                                    style={{ width: `${pct}%`, backgroundColor: p.color }} />
+                                                    style={{ width: `${pct}%`, backgroundColor: color }} />
                                             </div>
                                         </div>
                                     );
@@ -606,11 +689,12 @@ export default function SABillingPage() {
                             <p className="text-xs text-text-muted mb-4">GST breakdown for current month</p>
                             <div className="space-y-3">
                                 {[
-                                    { label: 'Gross Revenue (Feb 2026)', value: `₹${mrr.toLocaleString('en-IN')}` },
-                                    { label: 'CGST (9%)', value: `₹${Math.round(mrr * 0.09).toLocaleString('en-IN')}` },
-                                    { label: 'SGST (9%)', value: `₹${Math.round(mrr * 0.09).toLocaleString('en-IN')}` },
-                                    { label: 'Total GST (18%)', value: `₹${Math.round(mrr * 0.18).toLocaleString('en-IN')}`, bold: true },
-                                    { label: 'Net Revenue after GST', value: `₹${Math.round(mrr / 1.18).toLocaleString('en-IN')}`, bold: true, highlight: true },
+                                    { label: `Gross Revenue (${currentMonthLabel})`, value: `₹${(mrr || 0).toLocaleString('en-IN')}` },
+                                    { label: 'Taxable Value (Subtotal)', value: `₹${(mrrSubtotal || 0).toLocaleString('en-IN')}` },
+                                    { label: 'CGST (9%)', value: `₹${Math.round((mrrTax || 0) / 2).toLocaleString('en-IN')}` },
+                                    { label: 'SGST (9%)', value: `₹${Math.round((mrrTax || 0) / 2).toLocaleString('en-IN')}` },
+                                    { label: 'Total GST (18%)', value: `₹${(mrrTax || 0).toLocaleString('en-IN')}`, bold: true },
+                                    { label: 'Net Revenue after GST', value: `₹${(mrrSubtotal || 0).toLocaleString('en-IN')}`, bold: true, highlight: true },
                                 ].map(r => (
                                     <div key={r.label} className={`flex justify-between items-center py-2 ${r.bold ? 'border-t border-border mt-1' : ''}`}>
                                         <span className={`text-sm ${r.highlight ? 'font-bold text-emerald-700' : 'text-text-secondary'}`}>{r.label}</span>
@@ -619,8 +703,24 @@ export default function SABillingPage() {
                                 ))}
                             </div>
                             <button onClick={() => {
-                                exportToExcel(MOCK_INVOICES, 'Wapixo_GST_Tax_Report', 'Taxes');
-                                showToast('Tax report exported as Excel!', 'info');
+                                if (!filteredInvoices || filteredInvoices.length === 0) {
+                                    showToast('No transaction data found for the current filters', 'error');
+                                    return;
+                                }
+                                exportToPDF(
+                                    filteredInvoices.map(inv => ({
+                                        'Invoice #': inv.id,
+                                        'Salon Name': inv.salon,
+                                        'Plan': inv.plan,
+                                        'Amount': `INR ${inv.amount?.toLocaleString() || 0}`,
+                                        'Tax (18%)': `INR ${inv.taxAmt?.toLocaleString() || 0}`,
+                                        'Total': `INR ${inv.total?.toLocaleString() || 0}`,
+                                        'Due Date': inv.dueDate
+                                    })),
+                                    'Wapixo_GST_Tax_Report',
+                                    'GST Tax Summary Report'
+                                );
+                                showToast('Tax report exported as PDF!', 'info');
                             }}
                                 className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-xs font-bold text-text-secondary hover:border-primary/30 hover:text-primary transition-all">
                                 <Download className="w-3.5 h-3.5" /> Export GST Report
@@ -633,6 +733,20 @@ export default function SABillingPage() {
 
             {/* ── Invoice modal ── */}
             {showModal && <InvoiceModal onClose={() => setModal(false)} onSend={handleInvoiceSend} />}
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed bottom-6 right-6 z-[100] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border ${
+                    toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 
+                    toast.type === 'info' ? 'bg-slate-900 border-slate-800 text-white' :
+                    'bg-white border-border text-text'
+                } animate-in fade-in slide-in-from-bottom-4 duration-300`}>
+                    {toast.type === 'error' ? <XCircle className="w-5 h-5 text-red-500" /> : 
+                     toast.type === 'info' ? <Download className="w-5 h-5 text-blue-400" /> :
+                     <CheckCircle className="w-5 h-5 text-emerald-500" />}
+                    <span className="text-sm font-bold">{toast.msg}</span>
+                </div>
+            )}
         </div>
     );
 }

@@ -46,7 +46,14 @@ const itemVariants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
 };
 
-export default function Features() {
+export default function Features({ data }) {
+    // Merge static icons with dynamic content if data exists
+    const displayFeatures = data && data.length > 0 ? features.map((f, i) => ({
+        ...f,
+        title: data[i]?.title || f.title,
+        desc: data[i]?.desc || f.desc
+    })) : features;
+
     return (
         <section
             id="features"
@@ -115,7 +122,7 @@ export default function Features() {
                     border: '1px solid rgba(255,255,255,0.06)',
                 }}
             >
-                {features.map(({ icon: Icon, title, desc }) => (
+                {displayFeatures.map(({ icon: Icon, title, desc }) => (
                     <motion.div
                         key={title}
                         variants={itemVariants}

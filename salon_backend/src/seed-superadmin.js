@@ -6,8 +6,8 @@ dotenv.config();
 
 const SUPERADMIN = {
     name: 'Super Admin',
-    email: 'superadmin@saloncrm.com',
-    password: 'Admin@123',
+    email: 'superadmin@salon.com',
+    password: 'password',
     role: 'superadmin',
     isEmailVerified: true,
     status: 'active',

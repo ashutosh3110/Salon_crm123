@@ -10,8 +10,8 @@ async function verify() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: 'superadmin@saloncrm.com',
-                password: 'Admin@123'
+                email: 'superadmin@salon.com',
+                password: 'password'
             })
         });
 

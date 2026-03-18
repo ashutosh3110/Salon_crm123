@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import {
     Save, Layout, Type, Image as ImageIcon, MessageSquare,
     Shield, FileText, Smartphone, Zap, Heart, Target,
     Package, BarChart2, CheckCircle2, AlertCircle, Info,
-    Eye, Edit3, Globe, Smartphone as MobileIcon, Search
+    Eye, Edit3, Globe, Smartphone as MobileIcon, Search,
+    Monitor, RefreshCw
 } from 'lucide-react';
+
+// Import Landing Components for Live Preview
+import HeroScroll from '../../components/landing/wapixo/HeroScroll';
+import Features from '../../components/landing/wapixo/Features';
+import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
 
 /* ─── CMS Section/Field Mock Data ────────────────────────────────────── */
 const INITIAL_CMS_DATA = {
@@ -17,14 +24,6 @@ const INITIAL_CMS_DATA = {
         standard_label: "THE WAPIXO STANDARD",
         standard_title: "Unified Ecosystem",
         standard_desc: "A single, surgical command center for every aspect of your salon. One platform, zero friction."
-    },
-    landing_vision: {
-        badge: "THE VISION",
-        title: "Defined by Artists. Driven by Data.",
-        body: "Wapixo isn't just a management tool—it's a symphony of efficiency. We understand the heartbeat of the beauty industry, from the precision of a cut to the complexity of a multi-outlet empire.",
-        quote: "Our platform empowers owners to reclaim their time and creators to focus on their craft. With over 50,000 monthly appointments handled with surgical precision, we are the silent engine behind India's most successful salons.",
-        trusted_label: "TRUSTED BY",
-        trusted_value: "500+ Salons"
     },
     legal_privacy: {
         title: "Privacy Policy",
@@ -74,7 +73,27 @@ export default function SACMSPage() {
     const [activeTab, setActiveTab] = useState('landing');
     const [data, setData] = useState(INITIAL_CMS_DATA);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        fetchCMSData();
+    }, []);
+
+    const fetchCMSData = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('http://localhost:3000/v1/cms');
+            if (response.data && Object.keys(response.data).length > 0) {
+                setData(prev => ({ ...prev, ...response.data }));
+            }
+        } catch (error) {
+            console.error('Error fetching CMS data:', error);
+            showToast("Error loading content");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const showToast = (msg) => {
         setToast(msg);
@@ -83,9 +102,19 @@ export default function SACMSPage() {
 
     const handleSave = async () => {
         setSaving(true);
-        await new Promise(r => setTimeout(r, 1000));
-        setSaving(false);
-        showToast("Public content updated successfully!");
+        try {
+            // Save all sections that are currently in 'data'
+            const promises = Object.entries(data).map(([section, content]) => 
+                axios.patch(`http://localhost:3000/v1/cms/${section}`, { content })
+            );
+            await Promise.all(promises);
+            showToast("Public content updated successfully!");
+        } catch (error) {
+            console.error('Error saving CMS data:', error);
+            showToast("Failed to save changes");
+        } finally {
+            setSaving(false);
+        }
     };
 
     const updateField = (page, field, value) => {
@@ -164,9 +193,14 @@ export default function SACMSPage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-12 gap-8 mt-8">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mt-8 relative">
+                {loading && (
+                    <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex items-center justify-center min-h-[400px]">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                    </div>
+                )}
                 {/* Editor Area */}
-                <div className="col-span-12 lg:col-span-7 space-y-12">
+                <div className="col-span-1 md:col-span-7 space-y-12">
 
                     {activeTab === 'landing' && (
                         <div className="space-y-12">
@@ -190,26 +224,6 @@ export default function SACMSPage() {
                                     <div className="grid grid-cols-1 gap-6">
                                         {renderInput('landing_hero', 'standard_title', 'Box: Feature Title')}
                                         {renderInput('landing_hero', 'standard_desc', 'Box: Feature Description', 'textarea')}
-                                    </div>
-                                </div>
-                            </section>
-
-                            {/* Vision Section */}
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
-                                        <ImageIcon size={18} />
-                                    </div>
-                                    <h2 className="text-lg font-bold tracking-tight">The Vision & Quality</h2>
-                                </div>
-                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
-                                    {renderInput('landing_vision', 'badge', 'Legend Badge')}
-                                    {renderInput('landing_vision', 'title', 'Cinematic Headline')}
-                                    {renderInput('landing_vision', 'body', 'Main Body Text', 'textarea')}
-                                    {renderInput('landing_vision', 'quote', 'Secondary Vision Quote', 'textarea')}
-                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-                                        {renderInput('landing_vision', 'trusted_label', 'Trust Label')}
-                                        {renderInput('landing_vision', 'trusted_value', 'Trust Value')}
                                     </div>
                                 </div>
                             </section>
@@ -364,47 +378,90 @@ export default function SACMSPage() {
                         </section>
                     )}
 
-
                 </div>
 
-                {/* Sidebar Helper / Guideline */}
-                <div className="col-span-12 lg:col-span-5 space-y-6">
-                    <div className="bg-black text-white p-8">
-                        <h4 className="flex items-center gap-3 text-xs font-black uppercase tracking-[0.3em] mb-6">
-                            <Info size={16} className="text-primary" /> System Guidelines
-                        </h4>
-                        <ul className="space-y-6 text-[11px] leading-relaxed font-medium opacity-80">
-                            <li className="flex gap-4">
-                                <span className="text-primary font-black">01.</span>
-                                <span>All headline changes are reflected instantly across the public ecosystem upon saving.</span>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="text-primary font-black">02.</span>
-                                <span>Use semantic HTML in textarea fields if complex formatting like bold or bullet points is required.</span>
-                            </li>
-                            <li className="flex gap-4">
-                                <span className="text-primary font-black">03.</span>
-                                <span>Ensure cinematic quality of copy. Avoid generic marketing jargon to maintain the Wapixo brand voice.</span>
-                            </li>
-                        </ul>
-                    </div>
+                {/* Live Preview Pane */}
+                <div className="col-span-1 md:col-span-5 relative transition-all duration-700">
+                    <div className="sticky top-6 space-y-6">
+                        <div className="bg-black text-white p-6 border border-white/10 shadow-2xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <Monitor size={14} className="text-primary" /> Live Preview
+                                </h4>
+                                <div className="flex gap-2 items-center">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                                    <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Real-time Sync</span>
+                                </div>
+                            </div>
+                            
+                            {/* Preview Window Container */}
+                            <div className="bg-[#050505] border border-white/5 rounded-sm overflow-hidden h-[600px] shadow-inner relative group">
+                                <div className="absolute top-0 left-0 overflow-y-auto custom-scrollbar scale-[0.5] origin-top-left w-[200%] h-[200%] pb-40">
+                                    <div className="new-dark-theme pointer-events-none min-h-full bg-black">
+                                        {activeTab === 'landing' && (
+                                            <div className="space-y-0 w-full">
+                                                {data.landing_hero && <HeroScroll data={data.landing_hero} />}
+                                                {data.landing_features && <Features data={data.landing_features} />}
+                                                {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
+                                            </div>
+                                        )}
+                                        {activeTab === 'legal' && data.legal_privacy && data.legal_terms && (
+                                            <div className="p-16 text-white space-y-12 w-full">
+                                                <h1 className="text-5xl font-black italic border-b border-primary pb-4 inline-block">{data.legal_privacy.title}</h1>
+                                                <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_privacy.content }} />
+                                                
+                                                <h1 className="text-5xl font-black italic mt-32 border-b border-primary pb-4 inline-block">{data.legal_terms.title}</h1>
+                                                <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_terms.content }} />
+                                            </div>
+                                        )}
+                                        {activeTab === 'contact' && data.contact_page && (
+                                            <div className="p-16 text-white bg-black min-h-screen flex flex-col justify-center items-center text-center w-full">
+                                                <span className="text-[10px] text-primary font-black uppercase tracking-[0.4em] mb-4">Enterprise Support</span>
+                                                <h2 className="text-6xl font-black italic mb-6 leading-[1.1]">{data.contact_page.title}</h2>
+                                                <div className="w-12 h-0.5 bg-primary/40 mb-8" />
+                                                <p className="text-lg opacity-50 max-w-xl font-light leading-relaxed mb-12">{data.contact_page.subtitle}</p>
+                                                <div className="space-y-6">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">Global Outreach</p>
+                                                        <p className="text-xl font-medium">{data.contact_page.email}</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">Inquiry Hotline</p>
+                                                        <p className="text-xl font-medium">{data.contact_page.phone}</p>
+                                                    </div>
+                                                    <div className="pt-6">
+                                                        <p className="text-[8px] text-text-muted uppercase font-bold tracking-[0.3em]">{data.contact_page.address}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-                    <div className="bg-white border border-border p-8">
-                        <h4 className="text-xs font-black uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-                            <MobileIcon size={16} /> Public Status
-                        </h4>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between py-3 border-b border-border text-[11px]">
-                                <span className="font-bold text-text-muted tracking-widest uppercase">Ecosystem SSL</span>
-                                <span className="text-emerald-500 font-bold tracking-widest italic">ENCRYPTED</span>
+                                {/* Cinematic Vignette Overlay */}
+                                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] z-10" />
                             </div>
-                            <div className="flex items-center justify-between py-3 border-b border-border text-[11px]">
-                                <span className="font-bold text-text-muted tracking-widest uppercase">Global Reach</span>
-                                <span className="text-text font-bold tracking-widest italic">ACTIVE</span>
+
+                            <div className="mt-4 flex items-center gap-3">
+                                <RefreshCw size={10} className="text-primary animate-spin-slow" />
+                                <p className="text-[9px] text-white/30 font-medium italic tracking-tight">
+                                    Miniaturized real-time simulation active.
+                                </p>
                             </div>
-                            <div className="flex items-center justify-between py-3 text-[11px]">
-                                <span className="font-bold text-text-muted tracking-widest uppercase">Sync Latency</span>
-                                <span className="text-text font-bold tracking-widest italic">0.02ms</span>
+                        </div>
+
+                        {/* Status Stats */}
+                        <div className="bg-white border border-border p-5 grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Ecosystem Status</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-emerald-600 tracking-tighter uppercase italic">Secured</span>
+                                    <Shield size={10} className="text-emerald-500" />
+                                </div>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em]">Sync Latency</p>
+                                <p className="text-xs font-bold tracking-tighter italic">0.00ms</p>
                             </div>
                         </div>
                     </div>

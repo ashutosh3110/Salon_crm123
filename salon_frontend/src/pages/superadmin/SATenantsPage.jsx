@@ -199,6 +199,65 @@ function PlanChangeModal({ tenant, onClose, onSave }) {
     );
 }
 
+/* ─── City Autocomplete Component ────────────────────────────────────────── */
+const INDIAN_CITIES = [
+    "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Chennai", "Kolkata", "Surat", "Pune", "Jaipur",
+    "Lucknow", "Kanpur", "Nagpur", "Indore", "Thane", "Bhopal", "Visakhapatnam", "Pimpri-Chinchwad", "Patna", "Vadodara",
+    "Ghaziabad", "Ludhiana", "Agra", "Nashik", "Faridabad", "Meerut", "Rajkot", "Kalyan-Dombivli", "Vasai-Virar", "Varanasi",
+    "Srinagar", "Aurangabad", "Dhanbad", "Amritsar", "Navi Mumbai", "Prayagraj", "Howrah", "Ranchi", "Gwalior", "Jabalpur"
+];
+
+function CityAutocomplete({ value, onChange, labelCls, inputCls }) {
+    const [suggestions, setSuggestions] = useState([]);
+    const [show, setShow] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setShow(false); };
+        document.addEventListener('mousedown', h);
+        return () => document.removeEventListener('mousedown', h);
+    }, []);
+
+    const handleInput = (val) => {
+        onChange(val);
+        if (val.length > 0) {
+            const filtered = INDIAN_CITIES.filter(c => c.toLowerCase().includes(val.toLowerCase())).slice(0, 3);
+            setSuggestions(filtered);
+            setShow(true);
+        } else {
+            setSuggestions([]);
+            setShow(false);
+        }
+    };
+
+    return (
+        <div ref={ref} className="relative">
+            <label className={labelCls}>City</label>
+            <input
+                className={inputCls}
+                value={value}
+                onChange={e => handleInput(e.target.value)}
+                placeholder="Type city name..."
+                onFocus={() => value.length > 0 && setShow(true)}
+            />
+            {show && suggestions.length > 0 && (
+                <div className="absolute z-[100] left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-xl py-1 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                    {suggestions.map((s, i) => (
+                        <button
+                            key={i}
+                            onClick={() => { onChange(s); setShow(false); }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-text hover:bg-primary/5 hover:text-primary transition-colors flex items-center justify-between group"
+                        >
+                            {s}
+                            <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 /* ─── Create / Edit Salon Modal ──────────────────────────────────────────── */
 function SalonModal({ mode, tenant, onClose, onSave, saving }) {
     const [form, setForm] = useState({
@@ -260,10 +319,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                             <label className={labelCls}>GST Number</label>
                             <input className={inputCls} value={form.gstNumber} onChange={e => set('gstNumber', e.target.value)} placeholder="15-digit GSTIN" />
                         </div>
-                        <div>
-                            <label className={labelCls}>City</label>
-                            <input className={inputCls} value={form.city} onChange={e => set('city', e.target.value)} placeholder="Mumbai, Delhi…" />
-                        </div>
+                        <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
                         <div>
                             <label className={labelCls}>Plan</label>
                             <CustomDropdown
@@ -322,7 +378,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SATenantsPage() {
     const navigate = useNavigate();
-    const [tenants, setTenants] = useState(MOCK_TENANTS);
+    const [tenants, setTenants] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatus] = useState('');
@@ -335,21 +391,93 @@ export default function SATenantsPage() {
     const [planModalData, setPlanModalData] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState({ totalPages: 1, totalResults: 0, limit: 10 });
 
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
         setTimeout(() => setToast(null), 3000);
     };
 
-    /* live filter */
-    const filtered = tenants.filter(t => {
-        const q = search.toLowerCase();
-        const matchQ = !q || t.name.toLowerCase().includes(q) || t.ownerName.toLowerCase().includes(q) || t.city.toLowerCase().includes(q) || t.email.toLowerCase().includes(q);
-        const matchS = !statusFilter || t.status === statusFilter;
-        const matchP = !planFilter || t.subscriptionPlan === planFilter;
-        const matchD = isInPeriod(t.createdAt, datePeriod, customFrom, customTo);
-        return matchQ && matchS && matchP && matchD;
-    });
+    /* fetch data */
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const response = await api.get('/tenants/stats');
+            setStats(response.data.data);
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchTenants();
+        }, 300); // 300ms debounce
+        return () => clearTimeout(timer);
+    }, [search, statusFilter, planFilter, datePeriod, customFrom, customTo, page]);
+
+    // Reset page to 1 when filters change
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter, planFilter, datePeriod, customFrom, customTo]);
+
+    const fetchTenants = async () => {
+        setLoading(true);
+        try {
+            let startDate, endDate;
+            const now = new Date();
+
+            if (datePeriod === 'today') {
+                startDate = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+                endDate = new Date(new Date().setHours(23, 59, 59, 999)).toISOString();
+            } else if (datePeriod === 'week') {
+                const start = new Date(now);
+                start.setDate(now.getDate() - now.getDay());
+                startDate = new Date(start.setHours(0, 0, 0, 0)).toISOString();
+                endDate = new Date().toISOString();
+            } else if (datePeriod === 'month') {
+                startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+                endDate = new Date().toISOString();
+            } else if (datePeriod === 'custom') {
+                startDate = customFrom ? new Date(customFrom).toISOString() : undefined;
+                endDate = customTo ? new Date(customTo + 'T23:59:59').toISOString() : undefined;
+            }
+
+            const params = {
+                search: search || undefined,
+                status: statusFilter || undefined,
+                subscriptionPlan: planFilter || undefined,
+                startDate,
+                endDate,
+                page,
+                limit: 10
+            };
+            const response = await api.get('/tenants', { params });
+            const data = response.data.data;
+            if (data && data.results) {
+                setTenants(data.results);
+                setMeta({
+                    totalPages: data.totalPages,
+                    totalResults: data.totalResults,
+                    limit: data.limit
+                });
+            } else {
+                setTenants(Array.isArray(data) ? data : []);
+            }
+        } catch (error) {
+            console.error('Error fetching tenants:', error);
+            showToast('Failed to load salons.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    /* Display list is now directly the tenants array from backend */
+    const filtered = tenants;
 
     /* Date filter toggle button + collapsible panel */
     const isDateFiltered = datePeriod !== 'all';
@@ -415,46 +543,94 @@ export default function SATenantsPage() {
         </div>
     );
 
-    /* counts for tab badges */
-    const counts = FILTER_TABS.reduce((acc, f) => {
-        acc[f.key] = f.key ? tenants.filter(t => t.status === f.key).length : tenants.length;
-        return acc;
-    }, {});
+    /* counts for tab badges from backend stats */
+    const counts = {
+        '': stats?.totalSalons || 0,
+        active: stats?.countsByStatus?.find(v => v._id === 'active')?.count || 0,
+        trial: stats?.countsByStatus?.find(v => v._id === 'trial')?.count || 0,
+        expired: stats?.countsByStatus?.find(v => v._id === 'expired')?.count || 0,
+        suspended: stats?.countsByStatus?.find(v => v._id === 'suspended')?.count || 0,
+    };
 
     /* handlers */
     const handleSave = async (form) => {
-        setSaving(true);
-        await new Promise(r => setTimeout(r, 600)); // mock
-        if (modal.mode === 'create') {
-            const newT = { ...form, _id: 't' + Date.now(), slug: form.name.toLowerCase().replace(/\s+/g, '-'), staffCount: 0, createdAt: new Date().toISOString() };
-            setTenants(p => [newT, ...p]);
-            showToast(`Salon "${form.name}" created!`);
-        } else {
-            setTenants(p => p.map(t => t._id === modal.tenant._id ? { ...t, ...form } : t));
-            showToast(`"${form.name}" updated!`);
+        /* Basic Frontend Validation */
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form.email)) {
+            showToast('Please enter a valid email address.', 'error');
+            return;
         }
-        setSaving(false);
-        setModal(null);
+
+        if (form.gstNumber) {
+            const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+            if (!gstRegex.test(form.gstNumber)) {
+                showToast('Invalid GST format. (e.g. 22AAAAA0000A1Z5)', 'error');
+                return;
+            }
+        }
+
+        setSaving(true);
+        try {
+            if (modal.mode === 'create') {
+                await api.post('/tenants', form);
+                showToast(`Salon "${form.name}" created!`);
+            } else {
+                await api.put(`/tenants/${modal.tenant._id}`, form);
+                showToast(`"${form.name}" updated!`);
+            }
+            await fetchTenants();
+            await fetchStats(); // Update badges after save
+            setModal(null);
+        } catch (error) {
+            console.error('Error saving tenant:', error);
+            const msg = error.response?.data?.message || 'Failed to save salon.';
+            if (msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('already exists')) {
+                showToast('Email or GST Number already exists.', 'error');
+            } else {
+                showToast(msg, 'error');
+            }
+        } finally {
+            setSaving(false);
+        }
     };
 
-    const handleQuickPlanUpdate = (tenantId, newPlan) => {
-        setTenants(prev => prev.map(t => t._id === tenantId ? { ...t, subscriptionPlan: newPlan } : t));
-        showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
-        setModal(null);
+    const handleQuickPlanUpdate = async (tenantId, newPlan) => {
+        try {
+            await api.put(`/tenants/${tenantId}`, { subscriptionPlan: newPlan });
+            showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
+            fetchTenants();
+            setModal(null);
+        } catch (error) {
+            console.error('Error updating plan:', error);
+            showToast('Failed to update plan.', 'error');
+        }
     };
 
     const handleSuspend = async (tenant) => {
         const action = tenant.status === 'suspended' ? 'reactivate' : 'suspend';
         if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} "${tenant.name}"?`)) return;
-        setTenants(p => p.map(t => t._id === tenant._id
-            ? { ...t, status: tenant.status === 'suspended' ? 'active' : 'suspended' } : t));
-        showToast(`Salon ${action}d successfully.`);
+        
+        try {
+            const newStatus = tenant.status === 'suspended' ? 'active' : 'suspended';
+            await api.put(`/tenants/${tenant._id}`, { status: newStatus });
+            showToast(`Salon ${action}d successfully.`);
+            fetchTenants();
+        } catch (error) {
+            console.error(`Error ${action}ing tenant:`, error);
+            showToast(`Failed to ${action} salon.`, 'error');
+        }
     };
 
     const handleDelete = async (tenant) => {
         if (!confirm(`Permanently delete "${tenant.name}"? This cannot be undone.`)) return;
-        setTenants(p => p.filter(t => t._id !== tenant._id));
-        showToast(`Salon deleted.`, 'error');
+        try {
+            await api.delete(`/tenants/${tenant._id}`);
+            showToast(`Salon deleted.`, 'error');
+            fetchTenants();
+        } catch (error) {
+            console.error('Error deleting tenant:', error);
+            showToast('Failed to delete salon.', 'error');
+        }
     };
 
     const handleImpersonate = (tenant) => {
@@ -477,7 +653,7 @@ export default function SATenantsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-text tracking-tight">Salon Management</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Manage all onboarded salons — {tenants.length} total</p>
+                    <p className="text-sm text-text-secondary mt-0.5">Manage all onboarded salons — {stats?.totalSalons || 0} total</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -644,10 +820,40 @@ export default function SATenantsPage() {
                 )}
             </div>
 
-            {/* Result count */}
-            {filtered.length > 0 && (
+            {/* Pagination UI */}
+            {meta.totalPages > 1 && (
+                <div className="flex items-center justify-between px-2 pt-2 pb-1">
+                    <div className="text-xs text-text-muted">
+                        Showing <span className="font-bold text-text">{(page - 1) * meta.limit + 1}</span> to <span className="font-bold text-text">{Math.min(page * meta.limit, meta.totalResults)}</span> of <span className="font-bold text-text">{meta.totalResults}</span> salons
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1 || loading}
+                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-primary/30 hover:text-primary transition-all shadow-sm"
+                        >
+                            <ChevronDown className="w-4 h-4 rotate-90" />
+                        </button>
+                        
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface border border-border text-xs font-bold text-text-secondary shadow-sm">
+                            Page <span className="text-primary">{page}</span> of {meta.totalPages}
+                        </div>
+
+                        <button
+                            onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
+                            disabled={page === meta.totalPages || loading}
+                            className="p-2 rounded-xl bg-surface border border-border text-text-secondary disabled:opacity-40 hover:border-primary/30 hover:text-primary transition-all shadow-sm"
+                        >
+                            <ChevronDown className="w-4 h-4 -rotate-90" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Result count (fallback) */}
+            {meta.totalPages <= 1 && filtered.length > 0 && (
                 <p className="text-xs text-text-muted text-right">
-                    Showing {filtered.length} of {tenants.length} salons
+                    Showing {filtered.length} of {meta.totalResults || tenants.length} salons
                 </p>
             )}
 

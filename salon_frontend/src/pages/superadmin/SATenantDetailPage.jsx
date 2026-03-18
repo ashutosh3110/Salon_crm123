@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Building2, MapPin, Phone, Mail, Users, Home,
@@ -11,63 +12,7 @@ import {
     MessageSquare, Star, Activity, Plus, Minus
 } from 'lucide-react';
 
-/* ─── Full mock dataset (same IDs as list) ─────────────────────────────── */
-const MOCK_DB = {
-    t1: {
-        _id: 't1', name: 'Glam Studio', slug: 'glam-studio',
-        ownerName: 'Priya Shah', email: 'priya@glam.com', phone: '9876543210',
-        city: 'Mumbai', address: '14 Linking Road, Bandra West, Mumbai 400050',
-        gstNumber: '27AAAAA0000A1Z5',
-        subscriptionPlan: 'pro', status: 'active',
-        outletsCount: 3, staffCount: 12, trialDays: 0,
-        createdAt: '2026-01-15T10:00:00Z',
-        mrr: 4999, totalRevenue: 14997,
-        features: { pos: true, inventory: true, marketing: true, payroll: false, crm: true, mobileApp: true, reports: true, whatsapp: false, loyalty: true },
-        limits: { staffLimit: 25, outletLimit: 5, smsCredits: 1000, storageGB: 10 },
-        outlets: [
-            { id: 'o1', name: 'Bandra Main', address: '14 Linking Rd, Bandra', staff: 5, status: 'active' },
-            { id: 'o2', name: 'Juhu Branch', address: '22 Juhu Tara Rd', staff: 4, status: 'active' },
-            { id: 'o3', name: 'Andheri', address: '8 Marol MIDC', staff: 3, status: 'active' },
-        ],
-        staff: [
-            { id: 's1', name: 'Riya Mehta', role: 'Stylist', outlet: 'Bandra Main', status: 'active' },
-            { id: 's2', name: 'Ananya Roy', role: 'Receptionist', outlet: 'Bandra Main', status: 'active' },
-            { id: 's3', name: 'Kiran Das', role: 'Manager', outlet: 'Juhu Branch', status: 'active' },
-            { id: 's4', name: 'Pooja Singh', role: 'Stylist', outlet: 'Andheri', status: 'inactive' },
-        ],
-        billing: [
-            { id: 'b1', date: '2026-02-01', amount: 4999, plan: 'Pro', status: 'paid', invoice: 'INV-0023' },
-            { id: 'b2', date: '2026-01-01', amount: 4999, plan: 'Pro', status: 'paid', invoice: 'INV-0011' },
-            { id: 'b3', date: '2025-12-01', amount: 2999, plan: 'Basic', status: 'paid', invoice: 'INV-0004' },
-        ],
-        logs: [
-            { id: 'l1', time: '2026-02-22 14:32', action: 'Plan upgraded: Basic → Pro', actor: 'Super Admin' },
-            { id: 'l2', time: '2026-02-15 09:10', action: 'New outlet added: Andheri', actor: 'Priya Shah' },
-            { id: 'l3', time: '2026-01-15 10:00', action: 'Salon registered', actor: 'System' },
-        ],
-    },
-    t2: {
-        _id: 't2', name: 'The Barber Room', slug: 'barber-room',
-        ownerName: 'Raj Mehta', email: 'raj@barber.com', phone: '9123456780',
-        city: 'Delhi', address: '7 Connaught Place, New Delhi 110001',
-        gstNumber: '07BBBBB1111B1Z2',
-        subscriptionPlan: 'basic', status: 'trial',
-        outletsCount: 1, staffCount: 4, trialDays: 8,
-        createdAt: '2026-02-10T08:30:00Z',
-        mrr: 0, totalRevenue: 0,
-        features: { pos: true, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: true, whatsapp: false, loyalty: false },
-        limits: { staffLimit: 10, outletLimit: 2, smsCredits: 200, storageGB: 2 },
-        outlets: [{ id: 'o1', name: 'Main Branch', address: '7 Connaught Place', staff: 4, status: 'active' }],
-        staff: [
-            { id: 's1', name: 'Raj Mehta', role: 'Manager', outlet: 'Main Branch', status: 'active' },
-            { id: 's2', name: 'Vikram Bose', role: 'Barber', outlet: 'Main Branch', status: 'active' },
-        ],
-        billing: [],
-        logs: [
-            { id: 'l1', time: '2026-02-10 08:30', action: 'Salon registered — 14-day trial started', actor: 'System' },
-        ],
-    },
-};
+/* ─── Full mock dataset (deleted) ─────────────────────────────── */
 
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
 const planColors = {
@@ -141,20 +86,47 @@ export default function SATenantDetailPage() {
     const navigate = useNavigate();
     const [tab, setTab] = useState('info');
     const [toast, setToast] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedTenant, setSelectedTenant] = useState(null);
 
-    const t = MOCK_DB[id] || {
-        ...MOCK_DB.t1,
-        _id: id,
-        name: 'Unknown Salon',
-        ownerName: 'Unknown',
-        email: 'unknown@salon.com',
+    useEffect(() => {
+        fetchTenant();
+    }, [id]);
+
+    const fetchTenant = async () => {
+        setLoading(true);
+        try {
+            const response = await api.get(`/tenants/${id}`);
+            setSelectedTenant(response.data.data);
+        } catch (error) {
+            console.error('Error fetching tenant:', error);
+            showToast('Failed to load salon details.', 'error');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const sc = STATUS_CFG[t.status] || STATUS_CFG.active;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    if (!selectedTenant) {
+        return (
+            <div className="text-center py-20">
+                <p className="text-text-secondary">Salon not found.</p>
+                <Link to="/superadmin/tenants" className="text-primary hover:underline mt-4 inline-block">Back to Salons</Link>
+            </div>
+        );
+    }
+
+    const sc = STATUS_CFG[selectedTenant.status] || STATUS_CFG.active;
 
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
     const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
-    const [selectedTenant, setSelectedTenant] = useState(t);
 
     const [customForm, setCustomForm] = useState(null);
 
@@ -171,43 +143,31 @@ export default function SATenantDetailPage() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handlePlanChange = (newPlanId) => {
-        const planMap = {
-            free: { mrr: 0, limits: { staffLimit: 3, outletLimit: 1, smsCredits: 0, storageGB: 1 } },
-            basic: { mrr: 1999, limits: { staffLimit: 10, outletLimit: 2, smsCredits: 200, storageGB: 5 } },
-            pro: { mrr: 4999, limits: { staffLimit: 25, outletLimit: 5, smsCredits: 1000, storageGB: 10 } },
-            enterprise: { mrr: 12999, limits: { staffLimit: 999, outletLimit: 999, smsCredits: 10000, storageGB: 100 } },
-        };
-
-        const details = planMap[newPlanId];
-        setSelectedTenant(prev => ({
-            ...prev,
-            subscriptionPlan: newPlanId,
-            mrr: details.mrr,
-            limits: details.limits,
-            logs: [
-                { id: Date.now(), time: new Date().toISOString().slice(0, 16).replace('T', ' '), action: `Plan changed: ${prev.subscriptionPlan.toUpperCase()} → ${newPlanId.toUpperCase()}`, actor: 'Super Admin' },
-                ...prev.logs
-            ]
-        }));
-
-        setIsPlanModalOpen(false);
-        showToast(`Plan successfully changed to ${newPlanId.toUpperCase()}`);
+    const handlePlanChange = async (newPlanId) => {
+        try {
+            await api.put(`/tenants/${id}`, { subscriptionPlan: newPlanId });
+            showToast(`Plan successfully changed to ${newPlanId.toUpperCase()}`);
+            fetchTenant();
+            setIsPlanModalOpen(false);
+        } catch (error) {
+            console.error('Error changing plan:', error);
+            showToast('Failed to update plan.', 'error');
+        }
     };
 
-    const handleCustomSave = () => {
-        setSelectedTenant(prev => ({
-            ...prev,
-            subscriptionPlan: 'custom',
-            features: customForm.features,
-            limits: customForm.limits,
-            logs: [
-                { id: Date.now(), time: new Date().toISOString().slice(0, 16).replace('T', ' '), action: `Features & Limits manually customized`, actor: 'Super Admin' },
-                ...prev.logs
-            ]
-        }));
-        setIsCustomModalOpen(false);
-        showToast('Custom configuration applied successfully!');
+    const handleCustomSave = async () => {
+        try {
+            await api.put(`/tenants/${id}`, {
+                features: customForm.features,
+                limits: customForm.limits,
+            });
+            showToast('Custom configuration applied successfully!');
+            fetchTenant();
+            setIsCustomModalOpen(false);
+        } catch (error) {
+            console.error('Error saving custom config:', error);
+            showToast('Failed to apply custom config.', 'error');
+        }
     };
 
     const TABS = [
