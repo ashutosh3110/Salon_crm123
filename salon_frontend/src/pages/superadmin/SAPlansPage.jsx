@@ -90,7 +90,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                 ].map(s => (
                     <div key={s.label} className="py-2.5">
                         <div className="text-sm font-black text-text">{s.value}</div>
-                        <div className="text-[10px] text-text-muted font-medium">{s.label}</div>
+                        <div className="text-[10px] text-text-muted font-medium">{s.label === 'Staff ≤' ? 'Max Staff' : s.label}</div>
                     </div>
                 ))}
             </div>
@@ -236,7 +236,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                     {/* Feature toggles */}
                     <section>
                         <h4 className="text-xs font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <Zap className="w-3.5 h-3.5" /> Feature Access
+                            <Zap className="w-3.5 h-3.5" /> Select Features
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {ALL_FEATURES.map(f => (
@@ -273,8 +273,8 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         </h4>
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { key: 'staffLimit', label: 'Staff Limit', hint: '999 = unlimited' },
-                                { key: 'outletLimit', label: 'Outlet Limit', hint: '999 = unlimited' },
+                                { key: 'staffLimit', label: 'Max Staff Members', hint: '999 = unlimited' },
+                                { key: 'outletLimit', label: 'Max Salon Branches', hint: '999 = unlimited' },
                             ].map(l => (
                                 <div key={l.key}>
                                     <label className={labelCls}>{l.label} <span className="normal-case font-normal opacity-60">({l.hint})</span></label>
@@ -430,9 +430,9 @@ export default function SAPlansPage() {
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">Plans & Features</h1>
+                    <h1 className="text-2xl font-black text-text tracking-tight">Subscription Plans</h1>
                     <p className="text-sm text-text-secondary mt-0.5">
-                        Manage subscription plans, features access, and usage limits
+                        Create and manage membership plans for salons
                     </p>
                 </div>
                 <button onClick={() => setModal({})}
@@ -446,8 +446,8 @@ export default function SAPlansPage() {
                 {[
                     { label: 'Total Plans', value: statsData.totalPlans, icon: Package, color: 'text-primary   bg-primary/10' },
                     { label: 'Active Plans', value: statsData.activePlans, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
-                    { label: 'Salons on Plans', value: statsData.totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
-                    { label: 'Est. MRR', value: `₹${statsData.estimatedMRR.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
+                    { label: 'Active Salons', value: statsData.totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
+                    { label: 'Est. Monthly Income', value: `₹${statsData.estimatedMRR.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border-border border shadow-sm p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl ${k.color} flex items-center justify-center shrink-0`}>

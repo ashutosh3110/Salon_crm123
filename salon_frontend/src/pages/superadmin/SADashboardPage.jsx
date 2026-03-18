@@ -154,11 +154,11 @@ export default function SADashboardPage() {
 
     const metricCards = [
         { label: 'Total Salons', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', change: 12 },
-        { label: 'Active Subscriptions', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 8 },
-        { label: 'Trial Salons', value: kpi.trialSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 5 },
+        { label: 'Active Monthly Members', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 8 },
+        { label: 'Salons on Free Trial', value: kpi.trialSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 5 },
         { label: 'Revenue Today', value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 3, prefix: '₹' },
-        { label: 'Revenue This Month', value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 11, prefix: '₹' },
-        { label: 'Expired Plans', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: -4 },
+        { label: 'Monthly Earnings', value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 11, prefix: '₹' },
+        { label: 'Plans Ended', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: -4 },
         { label: 'Total Users', value: kpi.totalUsers, icon: Users, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20', change: 9 },
     ];
 
@@ -168,8 +168,8 @@ export default function SADashboardPage() {
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">Platform Dashboard</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Real-time overview of all salons, revenue & platform health.</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight">Main Dashboard</h1>
+                    <p className="text-sm text-text-secondary mt-0.5">Real-time overview of all salons, earnings & platform health.</p>
                 </div>
                 <div className="flex items-center gap-3">
 
@@ -196,7 +196,7 @@ export default function SADashboardPage() {
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
                 <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
-                        title="Monthly Revenue"
+                        title="Monthly Earnings"
                         subtitle="Last 6 months performance vs previous period"
                         action={
                             <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
@@ -230,7 +230,7 @@ export default function SADashboardPage() {
 
                 {/* Plan Distribution — PieChart */}
                 <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
-                    <SectionHeader title="Plan Distribution" subtitle="Current active subscriptions" />
+                    <SectionHeader title="Popular Plans" subtitle="Current active subscriptions" />
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
                             <Pie data={currentPlanDist} cx="50%" cy="50%" innerRadius={45} outerRadius={72}
@@ -261,7 +261,7 @@ export default function SADashboardPage() {
                 {/* New Registrations — BarChart */}
                 <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
-                        title="New Salon Registrations"
+                        title="New Salons Joined"
                         subtitle="Monthly signups over last 6 months"
                         action={
                             <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 px-2 py-1 rounded-full">
@@ -289,8 +289,8 @@ export default function SADashboardPage() {
                 {/* Churn Rate — LineChart */}
                 <div className="bg-surface rounded-2xl border border-border shadow-sm p-5">
                     <SectionHeader
-                        title="Churn Rate"
-                        subtitle="Monthly churn % — lower is better"
+                        title="Cancellations"
+                        subtitle="Monthly rate — lower is better"
                         action={
                             <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded-full">
                                 ↓ Improving
@@ -322,8 +322,8 @@ export default function SADashboardPage() {
             <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
                     <div>
-                        <h2 className="font-bold text-text">Recent Signups</h2>
-                        <p className="text-xs text-text-muted mt-0.5">Latest salons registered on the platform</p>
+                        <h2 className="font-bold text-text">Newly Registered Salons</h2>
+                        <p className="text-xs text-text-muted mt-0.5">Latest salons joined on the platform</p>
                     </div>
                     <Link to="/superadmin/tenants"
                         className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline underline-offset-2">

@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Plus, Search, Filter, MoreHorizontal, Edit2,
     Trash2, Eye, Globe, Lock, Clock, Calendar,
     CheckCircle2, AlertCircle, FileText, Image as ImageIcon,
     ChevronLeft, ChevronRight, Save, X, Sparkles,
-    MousePointer2, Share2, SearchCode, Megaphone
+    MousePointer2, Share2, SearchCode, Megaphone, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../services/api';
 
 const CATEGORIES = ["Growth", "Marketing", "Operations", "Insights", "Product"];
 
@@ -53,12 +54,34 @@ const INITIAL_POSTS = [
 ];
 
 export default function SABlogPage() {
-    const [posts, setPosts] = useState(INITIAL_POSTS);
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingPost, setEditingPost] = useState(null);
     const [toast, setToast] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+
+    const fetchPosts = async () => {
+        try {
+            setLoading(true);
+            const { data } = await api.get('/blogs');
+            setPosts(data);
+        } catch (err) {
+            console.error('Failed to fetch posts:', err);
+            showToast("Failed to fetch articles.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -67,39 +90,75 @@ export default function SABlogPage() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to decommission this editorial? This action is irreversible.")) {
-            setPosts(posts.filter(p => p.id !== id));
-            showToast("Editorial purged from ecosystem.");
+            try {
+                await api.delete(`/blogs/${id}`);
+                setPosts(posts.filter(p => p._id !== id));
+                showToast("Article deleted.");
+            } catch (err) {
+                console.error('Delete failed:', err);
+                showToast("Delete failed.");
+            }
         }
     };
 
-    const handleSavePost = (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const postData = {
-            id: editingPost?.id || Date.now(),
-            title: formData.get('title'),
-            slug: formData.get('slug'),
-            category: formData.get('category'),
-            excerpt: formData.get('excerpt'),
-            status: formData.get('status'),
-            isFeatured: formData.get('isFeatured') === 'on',
-            author: formData.get('author') || "Wapixo HQ",
-            date: editingPost?.date || new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-            reads: editingPost?.reads || 0,
-            image: editingPost?.image || "https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200"
-        };
-
-        if (editingPost) {
-            setPosts(posts.map(p => p.id === editingPost.id ? postData : p));
-        } else {
-            setPosts([postData, ...posts]);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedImage(file);
+            setPreviewUrl(URL.createObjectURL(file));
         }
+    };
 
-        setIsEditorOpen(false);
-        setEditingPost(null);
-        showToast(editingPost ? "Protocol updated." : "Editorial deployed.");
+    const handleSavePost = async (e) => {
+        e.preventDefault();
+        setUploading(true);
+        try {
+            const formData = new FormData(e.target);
+            let imageUrl = editingPost?.image || "https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200";
+
+            // 1. Upload image if selected
+            if (selectedImage) {
+                const imageFormData = new FormData();
+                imageFormData.append('image', selectedImage);
+                const { data: uploadRes } = await api.post('/blogs/upload-image', imageFormData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                imageUrl = uploadRes.url;
+            }
+
+            const postData = {
+                title: formData.get('title'),
+                slug: formData.get('slug'),
+                category: formData.get('category'),
+                excerpt: formData.get('excerpt'),
+                content: formData.get('content'), // Need to make sure this matches textarea name
+                status: formData.get('status'),
+                isFeatured: formData.get('isFeatured') === 'on',
+                author: formData.get('author') || "Wapixo HQ",
+                image: imageUrl
+            };
+
+            if (editingPost) {
+                const { data: updated } = await api.patch(`/blogs/${editingPost._id}`, postData);
+                setPosts(posts.map(p => p._id === editingPost._id ? updated : p));
+            } else {
+                const { data: created } = await api.post('/blogs', postData);
+                setPosts([created, ...posts]);
+            }
+
+            setIsEditorOpen(false);
+            setEditingPost(null);
+            setSelectedImage(null);
+            setPreviewUrl('');
+            showToast(editingPost ? "Article updated." : "Article published.");
+        } catch (err) {
+            console.error('Save failed:', err);
+            showToast("Failed to save article.");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const filteredPosts = posts.filter(p => {
@@ -132,13 +191,13 @@ export default function SABlogPage() {
                         W
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Wapixo <span className="text-primary">Journal</span></h1>
-                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-2">Editorial Command & Deployment Hub</p>
+                        <h1 className="text-3xl font-black italic tracking-tighter uppercase leading-none">Articles & <span className="text-primary">News</span></h1>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-2">Manage your blog posts and news updates</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="px-6 py-3 border border-border bg-surface regular-radius flex flex-col items-center">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">Total Units</span>
+                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">Total Articles</span>
                         <span className="text-lg font-black italic leading-none">{posts.length}</span>
                     </div>
                     <button
@@ -148,7 +207,7 @@ export default function SABlogPage() {
                         }}
                         className="px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all flex items-center gap-3 regular-radius shadow-2xl shadow-black/10 active:scale-[0.98]"
                     >
-                        <Plus size={16} /> Deploy New Narrative
+                        <Plus size={16} /> Create New Article
                     </button>
                 </div>
             </div>
@@ -159,7 +218,7 @@ export default function SABlogPage() {
                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors" size={18} />
                     <input
                         type="text"
-                        placeholder="Search narrative titles or categories..."
+                        placeholder="Search article titles or categories..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-full bg-white border border-border pl-16 pr-6 py-5 text-xs font-bold uppercase tracking-widest outline-none regular-radius focus:ring-1 ring-primary/20 transition-all shadow-sm"
@@ -174,20 +233,31 @@ export default function SABlogPage() {
                                 ${filter === f ? 'bg-black text-white shadow-lg' : 'bg-transparent text-text-muted hover:text-text'}
                             `}
                         >
-                            {f === 'all' ? 'All Units' : f}
+                            {f === 'all' ? 'All Articles' : f}
                         </button>
                     ))}
                 </div>
             </div>
 
             {/* Feed Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredPosts.map((post) => (
-                    <motion.div
-                        layout
-                        key={post.id}
-                        className="group bg-white border border-border regular-radius overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
-                    >
+            {loading ? (
+                <div className="flex flex-col items-center justify-center py-40 bg-white border border-border regular-radius shadow-sm">
+                    <Loader2 size={40} className="text-primary animate-spin mb-4" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Loading Articles...</p>
+                </div>
+            ) : filteredPosts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-40 bg-white border border-border regular-radius shadow-sm">
+                    <AlertCircle size={40} className="text-text-muted mb-4" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">No articles found.</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredPosts.map((post) => (
+                        <motion.div
+                            layout
+                            key={post._id}
+                            className="group bg-white border border-border regular-radius overflow-hidden flex flex-col h-full hover:shadow-2xl transition-all duration-700"
+                        >
                         {/* Preview Asset */}
                         <div className="relative h-64 overflow-hidden bg-black">
                             <img
@@ -220,10 +290,10 @@ export default function SABlogPage() {
                                         onClick={() => { setEditingPost(post); setIsEditorOpen(true); }}
                                         className="flex-1 bg-white text-black py-3 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center justify-center gap-2 regular-radius shadow-xl"
                                     >
-                                        <Edit2 size={12} /> Configure
+                                        <Edit2 size={12} /> Edit
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(post.id)}
+                                        onClick={() => handleDelete(post._id)}
                                         className="w-12 h-12 bg-red-600/90 text-white flex items-center justify-center hover:bg-black transition-all shadow-xl"
                                     >
                                         <Trash2 size={16} />
@@ -235,7 +305,7 @@ export default function SABlogPage() {
                         {/* Narrative Intel */}
                         <div className="p-8 flex-1 flex flex-col">
                             <div className="flex items-center gap-3 text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">
-                                <Calendar size={12} /> {post.date}
+                                <Calendar size={12} /> {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </div>
                             <h3 className="text-xl font-black italic tracking-tighter uppercase leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-4">
                                 {post.title}
@@ -262,7 +332,8 @@ export default function SABlogPage() {
                         </div>
                     </motion.div>
                 ))}
-            </div>
+                </div>
+            )}
 
             {/* Editorial Configurator Modal */}
             <AnimatePresence>
@@ -275,9 +346,9 @@ export default function SABlogPage() {
                             <div className="flex items-center justify-between px-10 py-8 border-b border-border bg-[#fafafa]">
                                 <div>
                                     <h3 className="text-2xl font-black italic uppercase tracking-tighter">
-                                        The <span className="text-primary">Narrative</span> Forge
+                                        Article <span className="text-primary">Editor</span>
                                     </h3>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-1">Configuring: {editingPost ? editingPost.slug : 'New Operational Unit'}</p>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-1">Editing: {editingPost ? editingPost.slug : 'New Article'}</p>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex items-center gap-2 bg-black text-white px-5 py-2.5 shadow-xl">
@@ -299,7 +370,7 @@ export default function SABlogPage() {
                                                 required name="title"
                                                 defaultValue={editingPost?.title}
                                                 className="w-full text-4xl font-black italic uppercase border-none outline-none placeholder:text-text-muted/20 focus:ring-0 px-0"
-                                                placeholder="ENTER NARRATIVE TITLE..."
+                                                placeholder="ENTER ARTICLE TITLE..."
                                             />
                                             <div className="flex items-center gap-4 text-[10px] font-bold text-text-muted tracking-[0.2em] uppercase">
                                                 <span>WAPIXO.IO/JOURNAL/</span>
@@ -309,11 +380,14 @@ export default function SABlogPage() {
 
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                                <Megaphone size={14} className="text-primary" /> Primary Narrative Body (Supports Cinematic Assets)
+                                                <Megaphone size={14} className="text-primary" /> Article Content (Supports images and media)
                                             </label>
                                             <textarea
+                                                name="content"
+                                                defaultValue={editingPost?.content}
+                                                required
                                                 className="w-full bg-[#fafafa] border border-border p-10 text-sm leading-loose focus:border-primary outline-none transition-all min-h-[500px] shadow-inner font-medium"
-                                                placeholder="# Provide the surgical breakdown of this editorial..."
+                                                placeholder="# Write your article content here..."
                                             />
                                         </div>
 
@@ -330,7 +404,7 @@ export default function SABlogPage() {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="text-[9px] font-black text-text-muted uppercase italic">Metadata Narrative Snippet</label>
-                                                    <textarea className="w-full bg-white border border-border px-5 py-4 text-xs font-medium outline-none focus:border-primary min-h-[120px] resize-none leading-relaxed" placeholder="Max 160 chars" maxLength={160} />
+                                                    <textarea name="seoDescription" defaultValue={editingPost?.seoDescription} className="w-full bg-white border border-border px-5 py-4 text-xs font-medium outline-none focus:border-primary min-h-[120px] resize-none leading-relaxed" placeholder="Max 160 chars" maxLength={160} />
                                                 </div>
                                             </div>
                                         </div>
@@ -342,15 +416,25 @@ export default function SABlogPage() {
                                     {/* Asset Upload */}
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <ImageIcon size={16} className="text-primary" /> Narrative Visual Hero
+                                            <ImageIcon size={16} className="text-primary" /> Main Article Image
                                         </label>
-                                        <div className="relative group aspect-video bg-black/5 border-2 border-dashed border-border flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-all shadow-sm">
-                                            {editingPost?.image ? (
-                                                <img src={editingPost.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-100" />
+                                        <div 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="relative group aspect-video bg-black/5 border-2 border-dashed border-border flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-all shadow-sm"
+                                        >
+                                            <input 
+                                                type="file" 
+                                                ref={fileInputRef} 
+                                                onChange={handleImageChange} 
+                                                className="hidden" 
+                                                accept="image/*" 
+                                            />
+                                            {(previewUrl || editingPost?.image) ? (
+                                                <img src={previewUrl || editingPost.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-100" />
                                             ) : (
                                                 <div className="text-center p-6">
                                                     <ImageIcon size={32} className="text-text-muted mx-auto mb-3" />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Deploy Visual Protocol</span>
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Upload Image</span>
                                                 </div>
                                             )}
                                         </div>
@@ -359,16 +443,16 @@ export default function SABlogPage() {
                                     {/* Category & Status */}
                                     <div className="space-y-6 mt-8">
                                         <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Tactical Category</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Category</label>
                                             <select name="category" defaultValue={editingPost?.category || "Growth"} className="w-full bg-white border border-border px-5 py-4 text-xs font-black uppercase outline-none cursor-pointer focus:ring-2 ring-primary/10 transition-all appearance-none">
                                                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Operational Status</label>
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Status</label>
                                             <select name="status" defaultValue={editingPost?.status || "published"} className="w-full bg-white border border-border px-5 py-4 text-xs font-black uppercase outline-none cursor-pointer focus:ring-2 ring-primary/10 transition-all appearance-none">
-                                                <option value="published">DEPLOY INSTANTLY</option>
-                                                <option value="draft">STAGING / DRAFT</option>
+                                                <option value="published">PUBLISH NOW</option>
+                                                <option value="draft">STAY AS DRAFT</option>
                                             </select>
                                         </div>
                                         <div className="pt-4 flex items-center gap-4 bg-white p-6 border border-border shadow-sm">
@@ -379,22 +463,31 @@ export default function SABlogPage() {
 
                                     {/* Excerpt */}
                                     <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Surgical Narrative Excerpt</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Short Summary</label>
                                         <textarea
                                             name="excerpt"
                                             defaultValue={editingPost?.excerpt}
                                             className="w-full bg-white border border-border p-6 text-xs font-bold leading-relaxed focus:border-primary outline-none transition-all h-[180px] resize-none shadow-sm placeholder:italic"
-                                            placeholder="Provide a condensed summary of the editorial thesis..."
+                                            placeholder="Provide a short summary of this article..."
                                         />
                                     </div>
 
                                     {/* Action Hub */}
                                     <div className="pt-10 border-t border-border space-y-4">
-                                        <button type="submit" className="w-full py-6 bg-black text-white text-[11px] font-black uppercase tracking-[0.5em] hover:bg-primary transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 group active:scale-[0.98]">
-                                            <Save size={18} /> INITIALIZE DEPLOYMENT
+                                        <button 
+                                            type="submit" 
+                                            disabled={uploading}
+                                            className="w-full py-6 bg-black text-white text-[11px] font-black uppercase tracking-[0.5em] hover:bg-primary transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {uploading ? (
+                                                <Loader2 size={18} className="animate-spin" />
+                                            ) : (
+                                                <Save size={18} />
+                                            )}
+                                            {uploading ? 'SAVING ARTICLE...' : 'SAVE & PUBLISH'}
                                         </button>
                                         <button type="button" onClick={() => setIsEditorOpen(false)} className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 transition-all text-center">
-                                            ABORT MISSION
+                                            CANCEL
                                         </button>
                                     </div>
                                 </div>

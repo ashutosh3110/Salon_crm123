@@ -27,9 +27,6 @@ export default function AuthPage() {
         password: '',
         confirmPassword: '',
     });
-    const [customerPhone, setCustomerPhone] = useState('');
-    const [otp, setOtp] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
 
     // Sync view with URL and handle auto-fill role from Launchpad
     useEffect(() => {
@@ -109,43 +106,6 @@ export default function AuthPage() {
             navigate('/admin');
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRequestOtp = async (e) => {
-        e.preventDefault();
-        if (!customerPhone || customerPhone.length < 10) {
-            setError('Enter a valid 10-digit number');
-            return;
-        }
-        setLoading(true);
-        try {
-            await new Promise(r => setTimeout(r, 800));
-            setOtpSent(true);
-        } catch {
-            setError('Failed to send OTP');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        if (otp !== '1234') {
-            setError('Invalid OTP (1234)');
-            return;
-        }
-        setLoading(true);
-        try {
-            await new Promise(r => setTimeout(r, 800));
-            const mockCustomer = { _id: `cust-${Date.now()}`, phone: customerPhone, role: 'customer' };
-            localStorage.setItem('customer_user', JSON.stringify(mockCustomer));
-            localStorage.setItem('customer_token', `token-${挑Date.now()}`);
-            navigate('/app');
-        } catch {
-            setError('Verification failed');
         } finally {
             setLoading(false);
         }
@@ -260,18 +220,7 @@ export default function AuthPage() {
                                                 Sign <span className="text-primary">In.</span>
                                             </h2>
 
-                                            {/* Role Switcher */}
-                                            <div className="flex justify-center md:justify-start gap-2 pt-2">
-                                                {['staff', 'customer'].map((m) => (
-                                                    <button
-                                                        key={m}
-                                                        onClick={() => setMode(m)}
-                                                        className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${mode === m ? 'bg-white text-black border-white shadow-lg' : 'border-white/10 text-white/40 hover:text-white'}`}
-                                                    >
-                                                        {m}
-                                                    </button>
-                                                ))}
-                                            </div>
+                                            {/* Role Switcher - REMOVED CUSTOMER OPTION */}
                                         </div>
 
                                         {error && (
@@ -281,125 +230,81 @@ export default function AuthPage() {
                                             </motion.div>
                                         )}
 
-                                        {mode === 'staff' ? (
-                                            <form onSubmit={handleStaffSignin} className="space-y-6">
-                                                <div className="space-y-4">
-                                                    <div className="group space-y-1">
-                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Email Protocol</label>
-                                                        <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
-                                                            <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                            <input
-                                                                type="email" name="email" value={signinForm.email} onChange={handleSigninChange} required
-                                                                className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
-                                                                placeholder="name@nexus.com"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    <div className="group space-y-1">
-                                                        <div className="flex justify-between items-center ml-1">
-                                                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Access Key</label>
-                                                            <Link to="/forgot-password" size="sm" className="text-[9px] font-black text-primary/80 uppercase tracking-widest hover:text-primary transition-colors">Recover</Link>
-                                                        </div>
-                                                        <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
-                                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                            <input
-                                                                type={showPassword ? 'text' : 'password'} name="password" value={signinForm.password} onChange={handleSigninChange} required
-                                                                className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
-                                                                placeholder="••••••••"
-                                                            />
-                                                        </div>
+                                        <form onSubmit={handleStaffSignin} className="space-y-6">
+                                            <div className="space-y-4">
+                                                <div className="group space-y-1">
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Email Address</label>
+                                                    <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
+                                                        <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                                        <input
+                                                            type="email" name="email" value={signinForm.email} onChange={handleSigninChange} required
+                                                            className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                            placeholder="admin@salon.com"
+                                                        />
                                                     </div>
                                                 </div>
-                                                <button type="submit" disabled={loading} className="w-full h-14 bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-white hover:text-black transition-all duration-500 shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50">
-                                                    {loading ? 'Authenticating...' : 'Initialize Session'}
-                                                </button>
+                                                <div className="group space-y-1">
+                                                    <div className="flex justify-between items-center ml-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Password</label>
+                                                        <Link to="/forgot-password" size="sm" className="text-[9px] font-black text-primary/80 uppercase tracking-widest hover:text-primary transition-colors">Recover</Link>
+                                                    </div>
+                                                    <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
+                                                        <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                                                        <input
+                                                            type={showPassword ? 'text' : 'password'} name="password" value={signinForm.password} onChange={handleSigninChange} required
+                                                            className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                            placeholder="••••••••"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button type="submit" disabled={loading} className="w-full h-14 bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-white hover:text-black transition-all duration-500 shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50">
+                                                {loading ? 'Authenticating...' : 'Login'}
+                                            </button>
 
-                                                {/* Expanded Quick Access Box - Filtered by role from Launchpad */}
-                                                <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] space-y-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-                                                            <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 italic">Verified Identity</span>
-                                                        </div>
-                                                        <span className="text-[7px] font-bold text-white/20 uppercase tracking-[0.2em]">Secure Access</span>
+                                            {/* Expanded Quick Access Box - Filtered by role from Launchpad */}
+                                            <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <Sparkles className="w-3 h-3 text-primary animate-pulse" />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 italic">Quick Setup</span>
                                                     </div>
+                                                    <span className="text-[7px] font-bold text-white/20 uppercase tracking-[0.2em]">Demo Accounts</span>
+                                                </div>
 
-                                                    <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                                                        {[
-                                                            { r: 'admin', e: 'admin@salon.com' },
-                                                            { r: 'manager', e: 'manager@salon.com' },
-                                                            { r: 'receptionists', e: 'reception@salon.com' },
-                                                            { r: 'stylist', e: 'stylist@salon.com' },
-                                                            { r: 'accountant', e: 'accounts@salon.com' },
-                                                            { r: 'inventory_manager', e: 'inventory@salon.com' },
-                                                            { r: 'superadmin', e: 'superadmin@salon.com' },
-                                                            { r: 'pos', e: 'admin@salon.com' },
-                                                        ]
-                                                            .filter(item => {
-                                                                const params = new URLSearchParams(location.search);
-                                                                const roleParam = params.get('role');
-                                                                if (!roleParam) return true; // Show all if no role in URL
-                                                                // Match the role parameter (handling special cases like pos)
-                                                                if (roleParam === 'pos') return item.r === 'admin';
-                                                                if (roleParam === 'receptionist') return item.r === 'receptionists';
-                                                                return item.r === roleParam;
-                                                            })
-                                                            .map((item) => (
-                                                                <button
-                                                                    key={item.e + item.r} type="button"
-                                                                    onClick={() => setSigninForm({ email: item.e, password: 'password' })}
-                                                                    className="flex flex-col items-start p-3 bg-black/40 border border-white/5 hover:border-primary/50 transition-all rounded-2xl group text-left"
-                                                                >
-                                                                    <span className="text-[8px] font-black uppercase text-white/40 group-hover:text-primary/80 transition-colors uppercase">{item.r.replace('_', ' ')} Portal</span>
-                                                                    <span className="text-[10px] font-bold text-white/60 truncate w-full group-hover:text-white transition-colors">{item.e}</span>
-                                                                </button>
-                                                            ))}
-                                                    </div>
+                                                <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
+                                                    {[
+                                                        { r: 'admin', e: 'admin@salon.com' },
+                                                        { r: 'manager', e: 'manager@salon.com' },
+                                                        { r: 'receptionists', e: 'reception@salon.com' },
+                                                        { r: 'stylist', e: 'stylist@salon.com' },
+                                                        { r: 'accountant', e: 'accounts@salon.com' },
+                                                        { r: 'inventory_manager', e: 'inventory@salon.com' },
+                                                        { r: 'superadmin', e: 'superadmin@salon.com' },
+                                                        { r: 'pos', e: 'admin@salon.com' },
+                                                    ]
+                                                        .filter(item => {
+                                                            const params = new URLSearchParams(location.search);
+                                                            const roleParam = params.get('role');
+                                                            if (!roleParam) return true; // Show all if no role in URL
+                                                            // Match the role parameter (handling special cases like pos)
+                                                            if (roleParam === 'pos') return item.r === 'admin';
+                                                            if (roleParam === 'receptionist') return item.r === 'receptionists';
+                                                            return item.r === roleParam;
+                                                        })
+                                                        .map((item) => (
+                                                            <button
+                                                                key={item.e + item.r} type="button"
+                                                                onClick={() => setSigninForm({ email: item.e, password: 'password' })}
+                                                                className="flex flex-col items-start p-3 bg-black/40 border border-white/5 hover:border-primary/50 transition-all rounded-2xl group text-left"
+                                                            >
+                                                                <span className="text-[8px] font-black uppercase text-white/40 group-hover:text-primary/80 transition-colors uppercase">{item.r.replace('_', ' ')} Access</span>
+                                                                <span className="text-[10px] font-bold text-white/60 truncate w-full group-hover:text-white transition-colors">{item.e}</span>
+                                                            </button>
+                                                        ))}
                                                 </div>
-                                            </form>
-                                        ) : (
-                                            <form onSubmit={otpSent ? handleVerifyOtp : handleRequestOtp} className="space-y-8">
-                                                <div className="space-y-6">
-                                                    {!otpSent ? (
-                                                        <div className="group space-y-1">
-                                                            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1 text-center block">Secure Comms</label>
-                                                            <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
-                                                                <div className="flex items-center justify-center">
-                                                                    <span className="text-xl font-black text-white/20 mr-2">+91</span>
-                                                                    <input
-                                                                        type="tel" value={customerPhone}
-                                                                        onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                                                                        className="w-full py-4 bg-transparent text-3xl font-black focus:outline-none placeholder:text-white/5 tracking-[0.2em] text-center"
-                                                                        placeholder="0000000000"
-                                                                        maxLength={10}
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="group space-y-6 text-center">
-                                                            <div className="space-y-1">
-                                                                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.1em]">Token sent to</p>
-                                                                <p className="text-xl font-black text-white tracking-widest">+91 {customerPhone}</p>
-                                                            </div>
-                                                            <div className="relative border-b-2 border-white/10 focus-within:border-primary transition-all duration-300">
-                                                                <input
-                                                                    type="text" value={otp} autoFocus
-                                                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                                                                    className="w-full py-4 bg-transparent text-4xl font-black focus:outline-none placeholder:text-white/5 tracking-[0.5em] text-center"
-                                                                    placeholder="••••"
-                                                                    maxLength={4}
-                                                                />
-                                                            </div>
-                                                            <button type="button" onClick={() => setOtpSent(false)} className="text-[9px] font-black text-primary/80 uppercase tracking-widest hover:text-primary transition-colors underline decoration-primary/20">Change Link</button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <button type="submit" disabled={loading} className="w-full h-14 bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-white hover:text-black transition-all duration-500 shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50">
-                                                    {loading ? 'Validating...' : otpSent ? 'Authorize Access' : 'Request Token'}
-                                                </button>
-                                            </form>
-                                        )}
+                                            </div>
+                                        </form>
                                     </motion.div>
                                 ) : (
                                     <motion.div

@@ -69,18 +69,18 @@ const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterpr
 
 const STATUS_CFG = {
     active: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
-    trial: { label: 'Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
-    expired: { label: 'Expired', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
-    suspended: { label: 'Suspended', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
+    trial: { label: 'On Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
+    expired: { label: 'Ended', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
+    suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
     inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
 };
 
 const FILTER_TABS = [
     { key: '', label: 'All', icon: Layers },
     { key: 'active', label: 'Active', icon: CheckCircle },
-    { key: 'trial', label: 'Trial', icon: Clock },
-    { key: 'expired', label: 'Expired', icon: AlertTriangle },
-    { key: 'suspended', label: 'Suspended', icon: XCircle },
+    { key: 'trial', label: 'On Trial', icon: Clock },
+    { key: 'expired', label: 'Ended', icon: AlertTriangle },
+    { key: 'suspended', label: 'Paused', icon: XCircle },
 ];
 
 /* ─── Row action dropdown ─────────────────────────────────────────────────── */
@@ -100,12 +100,12 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
         { label: 'Upgrade Plan', icon: ArrowUpRight, onClick: () => { onEdit(tenant, 'plan'); setOpen(false); }, color: 'text-amber-600', hover: 'hover:bg-amber-50' },
         { divider: true },
         {
-            label: tenant.status === 'suspended' ? 'Reactivate Salon' : 'Suspend Salon',
+            label: tenant.status === 'suspended' ? 'Start Salon Again' : 'Pause Salon',
             icon: Ban, onClick: () => { onSuspend(tenant); setOpen(false); },
             color: tenant.status === 'suspended' ? 'text-emerald-600' : 'text-orange-500',
             hover: tenant.status === 'suspended' ? 'hover:bg-emerald-50' : 'hover:bg-orange-50'
         },
-        { label: 'Delete Permanently', icon: Trash2, onClick: () => { onDelete(tenant); setOpen(false); }, color: 'text-red-500', hover: 'hover:bg-red-50' },
+        { label: 'Delete Account', icon: Trash2, onClick: () => { onDelete(tenant); setOpen(false); }, color: 'text-red-500', hover: 'hover:bg-red-50' },
     ];
 
     return (
@@ -653,7 +653,7 @@ export default function SATenantsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-text tracking-tight">Salon Management</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Manage all onboarded salons — {stats?.totalSalons || 0} total</p>
+                    <p className="text-sm text-text-secondary mt-0.5">Manage all registered salons — {stats?.totalSalons || 0} total</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -696,7 +696,7 @@ export default function SATenantsPage() {
                 <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="Search by name, owner, city, email…"
+                        placeholder="Find a salon..."
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" />
                 </div>
                 <CustomDropdown

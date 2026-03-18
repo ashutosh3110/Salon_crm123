@@ -8,7 +8,13 @@ import logger from './utils/logger.js';
 import routes from './routes.js';
 import { globalLimiter } from './middlewares/rateLimiter.js';
 
+import fs from 'fs';
+
 const app = express();
+
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
 
 if (config.env !== 'test') {
     app.use(morgan('dev'));
@@ -32,6 +38,9 @@ app.use(express.json());
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
 
 // Apply global rate limiter
 app.use('/v1', globalLimiter);

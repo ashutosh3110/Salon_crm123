@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     User, Mail, Phone, Lock, Eye, EyeOff, Save,
     CheckCircle, Shield, Edit3, KeyRound,
-    BadgeCheck, AlertCircle,
+    BadgeCheck, AlertCircle, Loader2
 } from 'lucide-react';
+import api from '../../services/api';
 
 /* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
@@ -36,7 +37,7 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
                 )}
                 <input
                     type={type}
-                    value={value}
+                    value={value || ''}
                     onChange={onChange}
                     placeholder={placeholder}
                     readOnly={readOnly}
@@ -55,15 +56,16 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
 /* ══════════════════════════════════════════════════════════════════════ */
 export default function SASettingsPage() {
     const [toast, setToast] = useState(null);
+    const [loading, setLoading] = useState(true);
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
 
     /* Profile form */
     const [profile, setProfile] = useState({
-        name: 'Super Admin',
-        email: 'admin@wapixo.com',
-        phone: '+91 98765 43210',
-        role: 'Super Administrator',
+        name: '',
+        email: '',
+        phone: '',
+        role: '',
     });
     const setP = (k, v) => setProfile(p => ({ ...p, [k]: v }));
 
@@ -73,6 +75,28 @@ export default function SASettingsPage() {
     const [showCur, setShowCur] = useState(false);
     const [showNew, setShowNew] = useState(false);
     const [showCon, setShowCon] = useState(false);
+
+    useEffect(() => {
+        fetchProfile();
+    }, []);
+
+    const fetchProfile = async () => {
+        try {
+            setLoading(true);
+            const { data } = await api.get('/users/me');
+            setProfile({
+                name: data.name,
+                email: data.email,
+                phone: data.phone || '',
+                role: data.role,
+            });
+        } catch (err) {
+            console.error('Failed to fetch profile:', err);
+            showToast('Failed to load profile settings.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     /* Validation helpers */
     const pwdStrength = (p) => {
@@ -95,24 +119,53 @@ export default function SASettingsPage() {
     const handleSaveProfile = async () => {
         if (!profile.name || !profile.email) return showToast('Name and Email are required.', 'error');
         setSavingProfile(true);
-        await new Promise(r => setTimeout(r, 700));
-        setSavingProfile(false);
-        showToast('Profile updated successfully!');
+        try {
+            await api.patch('/users/me', {
+                name: profile.name,
+                email: profile.email,
+                phone: profile.phone
+            });
+            showToast('Profile updated successfully!');
+        } catch (err) {
+            console.error('Update failed:', err);
+            showToast(err.response?.data?.message || 'Failed to update profile.', 'error');
+        } finally {
+            setSavingProfile(false);
+        }
     };
 
     const handleChangePassword = async () => {
         if (!pwd.current) return showToast('Enter your current password.', 'error');
         if (pwd.newPwd.length < 8) return showToast('New password must be at least 8 characters.', 'error');
         if (pwd.newPwd !== pwd.confirm) return showToast('New passwords do not match.', 'error');
+        
         setSavingPassword(true);
-        await new Promise(r => setTimeout(r, 800));
-        setSavingPassword(false);
-        setPwd({ current: '', newPwd: '', confirm: '' });
-        showToast('Password changed successfully!');
+        try {
+            await api.post('/users/change-password', {
+                currentPassword: pwd.current,
+                newPassword: pwd.newPwd
+            });
+            setPwd({ current: '', newPwd: '', confirm: '' });
+            showToast('Password changed successfully!');
+        } catch (err) {
+            console.error('Password change failed:', err);
+            showToast(err.response?.data?.message || 'Password change failed.', 'error');
+        } finally {
+            setSavingPassword(false);
+        }
     };
 
     /* Avatar initials */
-    const initials = profile.name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const initials = profile.name ? profile.name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'SA';
+
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-primary animate-spin mb-3" />
+                <p className="text-xs font-bold text-text-muted uppercase tracking-[0.2em]">Authenticating Identity...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 pb-8">

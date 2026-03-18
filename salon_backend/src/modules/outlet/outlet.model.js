@@ -12,9 +12,27 @@ const outletSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        city: {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        state: {
+            type: String,
+            trim: true,
+        },
+        pincode: {
+            type: String,
+            trim: true,
+        },
         phone: {
             type: String,
             required: true,
+        },
+        email: {
+            type: String,
+            trim: true,
+            lowercase: true,
         },
         workingHours: [
             {

@@ -159,8 +159,8 @@ export default function SACMSPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black italic tracking-tighter">LANDING <span className="text-primary">CMS</span></h1>
-                    <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Manage public-facing narratives and legal protocols</p>
+                    <h1 className="text-2xl font-black italic tracking-tighter">WEBSITE <span className="text-primary">EDITOR</span></h1>
+                    <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Change your website text and legal pages</p>
                 </div>
                 <div className="flex gap-3">
                     <button className="px-5 py-2.5 bg-surface border border-border text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function SACMSPage() {
                         disabled={saving}
                         className="px-6 py-2.5 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all flex items-center gap-2 disabled:opacity-50"
                     >
-                        {saving ? 'Transmitting...' : <><Save size={14} /> Save Global Changes</>}
+                        {saving ? 'Saving...' : <><Save size={14} /> Save Global Changes</>}
                     </button>
                 </div>
             </div>
@@ -210,7 +210,7 @@ export default function SACMSPage() {
                                     <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
                                         <Type size={18} />
                                     </div>
-                                    <h2 className="text-lg font-bold tracking-tight">The Transition Section</h2>
+                                    <h2 className="text-lg font-bold tracking-tight">Website Introduction</h2>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border regular-radius">
                                     {renderInput('landing_hero', 'badge', 'Small Legend / Badge')}
@@ -234,7 +234,7 @@ export default function SACMSPage() {
                                     <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
                                         <Package size={18} />
                                     </div>
-                                    <h2 className="text-lg font-bold tracking-tight">Core Platform Modules</h2>
+                                    <h2 className="text-lg font-bold tracking-tight">Key Features</h2>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -273,7 +273,7 @@ export default function SACMSPage() {
                                     <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
                                         <Heart size={18} />
                                     </div>
-                                    <h2 className="text-lg font-bold tracking-tight">Voices of Excellence (Testimonials)</h2>
+                                    <h2 className="text-lg font-bold tracking-tight">Customer Reviews</h2>
                                 </div>
                                 <div className="grid grid-cols-1 gap-8 bg-white p-8 border border-border">
                                     {data.landing_testimonials.map((t, idx) => (

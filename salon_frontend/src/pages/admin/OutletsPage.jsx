@@ -37,14 +37,15 @@ export default function OutletsPage() {
     const [cityFilter, setCityFilter] = useState('all');
     const [filteredOutlets, setFilteredOutlets] = useState(outlets);
 
-    const cities = ['all', ...new Set(outlets.map(o => o.city))];
+    // Get unique cities for filter
+    const cities = ['all', ...new Set(outlets.map(o => o.city).filter(Boolean))];
 
     useEffect(() => {
         let result = outlets;
         if (search) {
             result = result.filter(o =>
-                o.name.toLowerCase().includes(search.toLowerCase()) ||
-                o.city.toLowerCase().includes(search.toLowerCase())
+                o.name?.toLowerCase().includes(search.toLowerCase()) ||
+                o.city?.toLowerCase().includes(search.toLowerCase())
             );
         }
         if (cityFilter !== 'all') {
@@ -59,7 +60,7 @@ export default function OutletsPage() {
             counts[o.city] = (counts[o.city] || 0) + 1;
         });
         return Object.keys(counts).map((city, i) => ({
-            name: city.toUpperCase(),
+            name: (city || 'UNKNOWN').toUpperCase(),
             value: counts[city],
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
@@ -67,7 +68,7 @@ export default function OutletsPage() {
 
     const staffingData = useMemo(() => {
         return outlets.slice(0, 6).map((o, i) => ({
-            name: o.name.split(' ')[0],
+            name: (o.name || 'UNNAMED').split(' ')[0],
             staff: o.staffCount,
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
@@ -175,16 +176,19 @@ export default function OutletsPage() {
                         className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all placeholder:text-[10px] uppercase font-mono"
                     />
                 </div>
-                <div className="flex gap-2">
-                    <select
-                        value={cityFilter}
-                        onChange={(e) => setCityFilter(e.target.value)}
-                        className="text-[9px] font-black uppercase tracking-[0.2em] bg-surface border border-border pl-3 pr-8 py-1.5 outline-none focus:border-primary cursor-pointer appearance-none min-w-[140px] font-mono"
-                    >
-                        {cities.map(city => (
-                            <option key={city} value={city}>{city === 'all' ? 'Every City' : city.toUpperCase()}</option>
-                        ))}
-                    </select>
+                <div className="flex gap-4 text-left">
+                    <div className="relative group text-left">
+                        <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                        <select
+                            value={cityFilter}
+                            onChange={(e) => setCityFilter(e.target.value)}
+                            className="text-[9px] font-black uppercase tracking-[0.2em] bg-background border border-border rounded-none pl-12 pr-10 py-3.5 outline-none focus:border-primary cursor-pointer appearance-none min-w-[160px]"
+                        >
+                            {cities.map(city => (
+                                <option key={city} value={city}>{(city || 'UNKNOWN').toUpperCase()}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -228,9 +232,9 @@ export default function OutletsPage() {
                                     </h3>
                                     <div className={`w-1.5 h-1.5 shrink-0 ${outlet.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                 </div>
-                                <div className="flex items-center gap-1.5 text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">
-                                    <MapPin className="w-2.5 h-2.5" />
-                                    {outlet.city}
+                                <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60 leading-none">
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    COORD :: {(outlet.city || 'N/A').toUpperCase()}
                                 </div>
                             </div>
 
