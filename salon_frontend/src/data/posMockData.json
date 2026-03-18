@@ -178,7 +178,8 @@
             "category": "Makeup",
             "status": "active",
             "commission": 15,
-            "hsnCode": "9983"
+            "hsnCode": "9983",
+            "gstRate": 18
         }
     ],
     "products": [
@@ -192,7 +193,8 @@
             "category": "Hair Care",
             "status": "active",
             "stock": 12,
-            "lowStockLevel": 5
+            "lowStockLevel": 5,
+            "gstRate": 18
         },
         {
             "_id": "p2",
@@ -264,7 +266,8 @@
             "category": "Styling",
             "status": "active",
             "stock": 1,
-            "lowStockLevel": 3
+            "lowStockLevel": 3,
+            "gstRate": 12
         }
     ],
     "clients": [

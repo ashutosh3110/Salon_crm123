@@ -10,6 +10,36 @@ export default function SettingsPage({ tab }) {
     // Determine active tab from prop or URL
     const activeTab = tab || location.pathname.split('/').pop() || 'profile';
 
+    const [fiscal, setFiscal] = useState(() => {
+        const saved = localStorage.getItem('pos_fiscal_settings');
+        return saved ? JSON.parse(saved) : {
+            businessName: 'XYZ SALON & SPA',
+            gstin: '09AAFCC0301F1ZN',
+            state: 'Uttar Pradesh',
+            stateCode: '09',
+            defaultGst: 18,
+            inclusiveTax: true
+        };
+    });
+
+    const states = [
+        { name: 'Maharashtra', code: '27' },
+        { name: 'Delhi', code: '07' },
+        { name: 'Karnataka', code: '29' },
+        { name: 'Tamil Nadu', code: '33' },
+        { name: 'Uttar Pradesh', code: '09' },
+        { name: 'West Bengal', code: '19' },
+        { name: 'Gujarat', code: '24' },
+        { name: 'Telangana', code: '36' },
+        { name: 'Rajasthan', code: '08' }
+    ];
+
+    const handleFiscalSubmit = (e) => {
+        e.preventDefault();
+        localStorage.setItem('pos_fiscal_settings', JSON.stringify(fiscal));
+        alert('Business fiscal settings updated successfully.');
+    };
+
     // If we're at /admin/settings, redirect to /admin/settings/profile
     useEffect(() => {
         if (location.pathname === '/admin/settings' || location.pathname === '/admin/settings/') {
@@ -21,7 +51,7 @@ export default function SettingsPage({ tab }) {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-black text-text uppercase tracking-tight">Settings</h1>
-                <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Update profile details, notifications and security.</p>
+                <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Update profile details, business info, and security.</p>
             </div>
 
             <div className="bg-surface rounded-none border border-border overflow-hidden shadow-sm transition-all">
@@ -98,7 +128,7 @@ export default function SettingsPage({ tab }) {
                     )}
 
                     {activeTab === 'security' && (
-                        <div className="space-y-8 max-w-xl">
+                        <div className="space-y-8 max-w-xl text-left">
                             <div>
                                 <h2 className="text-sm font-black text-text uppercase tracking-widest">Security</h2>
                                 <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Change your password to keep your account safe.</p>
@@ -124,6 +154,79 @@ export default function SettingsPage({ tab }) {
                             <div className="pt-6 flex justify-end border-t border-border">
                                 <button className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Update Password</button>
                             </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'business' && (
+                        <div className="space-y-8 max-w-2xl text-left font-sans">
+                            <div>
+                                <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Business & Tax Info</h2>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] leading-none">Configure your Legal Entity and GST registration details.</p>
+                            </div>
+
+                            <form onSubmit={handleFiscalSubmit} className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Legal Business Name</label>
+                                    <input
+                                        type="text"
+                                        value={fiscal.businessName}
+                                        onChange={e => setFiscal({ ...fiscal, businessName: e.target.value })}
+                                        className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50 uppercase"
+                                    />
+                                </div>
+
+                                <div className="grid sm:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">GSTIN Number</label>
+                                        <input
+                                            type="text"
+                                            maxLength={15}
+                                            value={fiscal.gstin}
+                                            onChange={e => setFiscal({ ...fiscal, gstin: e.target.value.toUpperCase() })}
+                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Registration State</label>
+                                        <select
+                                            value={fiscal.state}
+                                            onChange={e => {
+                                                const s = states.find(st => st.name === e.target.value);
+                                                setFiscal({ ...fiscal, state: s.name, stateCode: s.code });
+                                            }}
+                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        >
+                                            {states.map(s => <option key={s.code} value={s.name}>{s.name} ({s.code})</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="grid sm:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Default GST Rate (%)</label>
+                                        <input
+                                            type="number"
+                                            value={fiscal.defaultGst}
+                                            onChange={e => setFiscal({ ...fiscal, defaultGst: Number(e.target.value) })}
+                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-3 pt-6">
+                                        <input
+                                            type="checkbox"
+                                            id="inclusive"
+                                            checked={fiscal.inclusiveTax}
+                                            onChange={e => setFiscal({ ...fiscal, inclusiveTax: e.target.checked })}
+                                            className="w-4 h-4 accent-primary"
+                                        />
+                                        <label htmlFor="inclusive" className="text-[10px] font-black text-text-muted uppercase tracking-widest cursor-pointer select-none">Prices are Inclusive of Tax</label>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 flex justify-end border-t border-border">
+                                    <button type="submit" className="px-8 py-3.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">Save Business Info</button>
+                                </div>
+                            </form>
                         </div>
                     )}
 

@@ -111,14 +111,23 @@ const InvoicePDF = ({ invoice, role }) => (
                             <Text style={{ color: '#E53E3E' }}>-₹ {invoice.totals.discount.toFixed(0)}</Text>
                         </View>
                     )}
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>CGST (9%)</Text>
-                        <Text>₹ {(invoice.totals.tax / 2).toFixed(2)}</Text>
-                    </View>
-                    <View style={pdfStyles.summaryRow}>
-                        <Text>SGST (9%)</Text>
-                        <Text>₹ {(invoice.totals.tax / 2).toFixed(2)}</Text>
-                    </View>
+                    {invoice.totals.isSameState ? (
+                        <>
+                            <View style={pdfStyles.summaryRow}>
+                                <Text>CGST ({taxPercent / 2}%)</Text>
+                                <Text>₹ {invoice.totals.cgst.toFixed(2)}</Text>
+                            </View>
+                            <View style={pdfStyles.summaryRow}>
+                                <Text>SGST ({taxPercent / 2}%)</Text>
+                                <Text>₹ {invoice.totals.sgst.toFixed(2)}</Text>
+                            </View>
+                        </>
+                    ) : (
+                        <View style={pdfStyles.summaryRow}>
+                            <Text>IGST ({taxPercent}%)</Text>
+                            <Text>₹ {invoice.totals.igst.toFixed(2)}</Text>
+                        </View>
+                    )}
                     <View style={[pdfStyles.summaryRow, pdfStyles.grandTotal]}>
                         <Text>GRAND TOTAL</Text>
                         <Text>₹ {invoice.totals.total.toFixed(0)}</Text>
@@ -152,7 +161,26 @@ export default function POSBillingPage() {
     const [payments, setPayments] = useState([{ method: 'cash', amount: 0 }]);
     const [taxPercent, setTaxPercent] = useState(18);
     const [customerGstin, setCustomerGstin] = useState('');
+    const [customerState, setCustomerState] = useState('Uttar Pradesh'); // Default to Salon State
     const [pendingAppOrder, setPendingAppOrder] = useState(null);
+
+    // Fiscal Settings (from localStorage)
+    const fiscal = useMemo(() => {
+        const saved = localStorage.getItem('pos_fiscal_settings');
+        return saved ? JSON.parse(saved) : {
+            businessName: 'XYZ SALON & SPA',
+            gstin: '09AAFCC0301F1ZN',
+            state: 'Uttar Pradesh',
+            stateCode: '09',
+            defaultGst: 18,
+            inclusiveTax: true
+        };
+    }, []);
+
+    useEffect(() => {
+        if (fiscal.state) setCustomerState(fiscal.state);
+        if (fiscal.defaultGst) setTaxPercent(fiscal.defaultGst);
+    }, [fiscal]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
@@ -329,14 +357,45 @@ export default function POSBillingPage() {
         }
 
         const taxable = Math.max(0, subtotal - discount - (redeemPoints || 0) - (redeemWallet || 0));
-        const tax = (taxable * taxPercent) / 100;
-        const currentBillTotal = taxable + tax;
+        
+        // Real-time GST Calculation
+        // If inclusive, we back-calculate. If exclusive, we add on top.
+        // For now, let's assume item-wise tax or default.
+        const effectiveTaxRate = taxPercent / 100;
+        let tax = 0;
+        let taxableValue = taxable;
+
+        if (fiscal.inclusiveTax) {
+            taxableValue = taxable / (1 + effectiveTaxRate);
+            tax = taxable - taxableValue;
+        } else {
+            tax = taxable * effectiveTaxRate;
+        }
+
+        const isSameState = customerState === fiscal.state;
+        const cgst = isSameState ? tax / 2 : 0;
+        const sgst = isSameState ? tax / 2 : 0;
+        const igst = !isSameState ? tax : 0;
+
+        const currentBillTotal = fiscal.inclusiveTax ? taxable : taxable + tax;
 
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
 
-        return { subtotal, discount, tax, total: grandTotal, taxable, currentBillTotal, previousDue };
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent, selectedClient, includePreviousDue]);
+        return { 
+            subtotal, 
+            discount, 
+            tax, 
+            cgst, 
+            sgst, 
+            igst, 
+            isSameState,
+            total: grandTotal, 
+            taxable: taxableValue, 
+            currentBillTotal, 
+            previousDue 
+        };
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, redeemPoints, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, customerState]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -746,10 +805,10 @@ export default function POSBillingPage() {
                 {/* ─── Thermal Receipt (80mm) ─── */}
                 <div id="thermal-receipt" className="bg-white text-black p-6 w-[320px] shadow-2xl border border-slate-200 font-mono text-[12px] leading-tight print:shadow-none print:border-0 print:m-0">
                     <div className="text-center space-y-1 mb-4">
-                        <h2 className="text-lg font-black uppercase tracking-tighter">XYZ SALON & SPA</h2>
+                        <h2 className="text-lg font-black uppercase tracking-tighter">{fiscal.businessName}</h2>
                         <p className="text-[10px]">Lucknow Gomti Nagar, UP 226010</p>
                         <p className="text-[10px]">Ph: +91 98765 43210</p>
-                        <p className="text-[10px] font-bold">GSTIN: 09AAFCC0301F1ZN</p>
+                        <p className="text-[10px] font-bold">GSTIN: {fiscal.gstin}</p>
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mb-2 space-y-0.5">
@@ -796,8 +855,15 @@ export default function POSBillingPage() {
                         {successInvoice.discounts.points > 0 && <div className="flex justify-between text-[10px] italic font-bold text-blue-800"><span>Loyalty Points Used:</span><span>-₹{successInvoice.discounts.points}</span></div>}
                         {successInvoice.discounts.wallet > 0 && <div className="flex justify-between text-[10px] italic font-bold text-emerald-800"><span>Wallet Balance Used:</span><span>-₹{successInvoice.discounts.wallet}</span></div>}
 
-                        <div className="flex justify-between font-bold"><span>Taxable:</span><span>{successInvoice.totals.taxable.toFixed(0)}</span></div>
-                        <div className="flex justify-between"><span>GST @{taxPercent}%:</span><span>{successInvoice.totals.tax.toFixed(2)}</span></div>
+                        <div className="flex justify-between font-bold"><span>Taxable Value:</span><span>{successInvoice.totals.taxable.toFixed(2)}</span></div>
+                        {successInvoice.totals.isSameState ? (
+                            <>
+                                <div className="flex justify-between"><span>CGST ({taxPercent/2}%):</span><span>{successInvoice.totals.cgst.toFixed(2)}</span></div>
+                                <div className="flex justify-between"><span>SGST ({taxPercent/2}%):</span><span>{successInvoice.totals.sgst.toFixed(2)}</span></div>
+                            </>
+                        ) : (
+                            <div className="flex justify-between"><span>IGST ({taxPercent}%):</span><span>{successInvoice.totals.igst.toFixed(2)}</span></div>
+                        )}
                         <div className="flex justify-between text-base font-black border-t border-black pt-1 mt-1">
                             <span>TOTAL:</span>
                             <span>₹{successInvoice.totals.total.toFixed(0)}</span>
@@ -1142,6 +1208,25 @@ export default function POSBillingPage() {
                                 <button onClick={() => setSelectedClient(null)} className="p-2 text-text-muted hover:text-rose-500 transition-colors">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
+                            </div>
+                        )}
+
+                        {selectedClient && (
+                            <div className="flex items-center gap-2 mt-2 px-1">
+                                <Globe className="w-3 h-3 text-text-muted" />
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Billing State / Location:</span>
+                                <select 
+                                    value={customerState}
+                                    onChange={(e) => setCustomerState(e.target.value)}
+                                    className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
+                                >
+                                    {fiscal.state && <option value={fiscal.state}>{fiscal.state} (INTRA)</option>}
+                                    <option value="Delhi">Delhi (INTER)</option>
+                                    <option value="Maharashtra">Maharashtra (INTER)</option>
+                                    <option value="Karnataka">Karnataka (INTER)</option>
+                                    <option value="Gujarat">Gujarat (INTER)</option>
+                                    <option value="Haryana">Haryana (INTER)</option>
+                                </select>
                             </div>
                         )}
 

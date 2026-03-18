@@ -179,6 +179,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             path: '/admin/settings',
             subItems: [
                 { label: 'Profile', icon: User, path: '/admin/settings/profile' },
+                { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business' },
                 { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications', badge: { count: 12, color: 'bg-orange-400' } },
                 { label: 'Security', icon: Shield, path: '/admin/settings/security' },
             ]

@@ -143,8 +143,8 @@ export default function StaffPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl font-bold text-text uppercase">Personnel Roster</h1>
-                    <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Manage your dream team & assignments</p>
+                    <h1 className="text-2xl font-bold text-text uppercase">Staff Management</h1>
+                    <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Manage your team and their roles</p>
                 </div>
                 <button
                     onClick={() => {
@@ -154,7 +154,7 @@ export default function StaffPage() {
                     }}
                     className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Recruit Talent
+                    <Plus className="w-3.5 h-3.5" /> Add New Staff
                 </button>
             </div>
 
@@ -189,21 +189,21 @@ export default function StaffPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Scan for name or email..."
+                        placeholder="Search staff by name or email..."
                         className="w-full pl-11 pr-4 py-2.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                     />
                 </div>
                 <div className="flex flex-wrap gap-3">
                     <CustomSelect
-                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
-                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())}
-                        options={['Every Role', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
+                        value={roleFilter === 'all' ? 'All Roles' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                        onChange={(val) => setRoleFilter(val === 'All Roles' ? 'all' : val.toLowerCase())}
+                        options={['All Roles', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
                         className="min-w-[140px]"
                     />
                     <CustomSelect
-                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name}
-                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)}
-                        options={['Every Unit', ...outlets.map(o => o.name)]}
+                        value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
+                        onChange={(val) => setOutletFilter(val === 'All Salons' ? 'all' : outlets.find(o => o.name === val)?._id)}
+                        options={['All Salons', ...outlets.map(o => o.name)]}
                         className="min-w-[180px]"
                     />
                 </div>
@@ -215,11 +215,11 @@ export default function StaffPage() {
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-surface-alt border-b border-border">
-                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Human Asset</th>
-                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Contact Protocol</th>
-                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Authority</th>
-                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Base Center</th>
-                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Lifecycle</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest pl-8">Staff Member</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Contact Info</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Role</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Salon / Outlet</th>
+                                <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right pr-8">Actions</th>
                             </tr>
                         </thead>
@@ -229,8 +229,8 @@ export default function StaffPage() {
                                     <td colSpan="5" className="px-6 py-24 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-30">
                                             <UserCog className="w-16 h-16 text-text-muted mb-4 stroke-1" />
-                                            <h3 className="text-lg font-bold text-text">Zero Team Members Found</h3>
-                                            <p className="text-[10px] text-text-secondary mt-1 font-bold uppercase tracking-widest">Adjust filters or recruit new talent.</p>
+                                            <h3 className="text-lg font-bold text-text">No Staff Members Found</h3>
+                                            <p className="text-[10px] text-text-secondary mt-1 font-bold uppercase tracking-widest">Try adjusting filters or add new staff.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -314,11 +314,11 @@ export default function StaffPage() {
                 {/* Analytics Footer */}
                 <div className="bg-surface-alt px-8 py-5 border-t border-border flex items-center justify-between">
                     <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                        Monitoring {filteredStaff.length} Core Team members
+                        Managing {filteredStaff.length} Staff members
                     </span>
                     <div className="flex gap-6">
-                        <button className="text-[10px] font-bold text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-30" disabled>Previous Shift</button>
-                        <button className="text-[10px] font-bold text-text-muted uppercase tracking-widest hover:text-primary transition-colors">Next Roster</button>
+                        <button className="text-[10px] font-bold text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-30" disabled>Previous Page</button>
+                        <button className="text-[10px] font-bold text-text-muted uppercase tracking-widest hover:text-primary transition-colors">Next Page</button>
                     </div>
                 </div>
             </div>
@@ -332,15 +332,15 @@ export default function StaffPage() {
                                 <UserCog className="w-8 h-8" />
                             </div>
                             <h2 className="text-2xl font-bold text-text uppercase">
-                                {editing ? 'Evolve Profile' : 'Recruit Human Asset'}
+                                {editing ? 'Edit Staff Profile' : 'Add New Staff Member'}
                             </h2>
-                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] opacity-40 mt-1">Personnel Induction Protocol</p>
+                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.2em] opacity-40 mt-1">Enter staff details below</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="space-y-4">
                                 <div className="space-y-1.5 px-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Asset Identity</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Staff Name</label>
                                     <input
                                         type="text"
                                         required
@@ -352,7 +352,7 @@ export default function StaffPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Digital Link</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Email Address</label>
                                         <input
                                             type="email"
                                             required
@@ -363,7 +363,7 @@ export default function StaffPage() {
                                         />
                                     </div>
                                     <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Comm Channel</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Phone Number</label>
                                         <input
                                             type="tel"
                                             value={form.phone}
@@ -378,22 +378,22 @@ export default function StaffPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <CustomSelect
-                                        label="Command Role"
+                                        label="Select Role"
                                         value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')}
                                         onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })}
                                         options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']}
                                     />
                                     <CustomSelect
-                                        label="Station"
+                                        label="Assign to Salon"
                                         value={outlets.find(o => o._id === form.outletId)?.name}
                                         onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })}
                                         options={outlets.map(o => o.name)}
-                                        placeholder="Choose Unit"
+                                        placeholder="Choose Salon"
                                     />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Birth_Epoch (DOB)</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Date of Birth</label>
                                         <input
                                             type="date"
                                             value={form.dob || ''}
@@ -402,7 +402,7 @@ export default function StaffPage() {
                                         />
                                     </div>
                                     <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Tax_Identifier (PAN)</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">PAN Number</label>
                                         <input
                                             type="text"
                                             value={form.pan || ''}
@@ -413,7 +413,7 @@ export default function StaffPage() {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 px-1">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Physical_Node (Address)</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Residential Address</label>
                                     <textarea
                                         value={form.address || ''}
                                         onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -423,7 +423,7 @@ export default function StaffPage() {
                                 </div>
                                 {!editing && (
                                     <div className="space-y-1.5 px-1">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Gate Pass (Password)</label>
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">Set Password</label>
                                         <input
                                             type="password"
                                             required
@@ -442,7 +442,7 @@ export default function StaffPage() {
                                     onClick={() => setShowModal(false)}
                                     className="flex-1 py-4 rounded-none text-[10px] font-extrabold uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt border border-transparent hover:border-border transition-all"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"
@@ -452,7 +452,7 @@ export default function StaffPage() {
                                     {loading ? (
                                         <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-none animate-spin" />
                                     ) : (
-                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Commit' : 'Induct'}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Save Changes' : 'Add Staff'}</span>
                                     )}
                                 </button>
                             </div>

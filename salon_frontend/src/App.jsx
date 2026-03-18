@@ -285,6 +285,7 @@ function App() {
                               <Route path="profile" element={<SettingsPage tab="profile" />} />
                               <Route path="notifications" element={<SettingsPage tab="notifications" />} />
                               <Route path="security" element={<SettingsPage tab="security" />} />
+                              <Route path="business" element={<SettingsPage tab="business" />} />
                             </Route>
                           </Route>
                         </Route>

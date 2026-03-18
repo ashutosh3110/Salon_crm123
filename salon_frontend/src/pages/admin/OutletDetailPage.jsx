@@ -45,7 +45,7 @@ export default function OutletDetailPage() {
     }, [id, outlets]);
 
     if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
-    if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Registry entity not found</div>;
+    if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Salon details not found</div>;
 
     const stats = [
         { label: 'Total Staff', value: '12', icon: Users, color: 'text-blue-600 bg-blue-50' },
@@ -66,14 +66,14 @@ export default function OutletDetailPage() {
                     </button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name || 'Unnamed Node'}</h1>
+                            <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name || 'Unnamed Salon'}</h1>
                             <span className={`px-2.5 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border ${outlet.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                                 }`}>
-                                {outlet.status || 'inactive'} PROXY
+                                {outlet.status || 'inactive'}
                             </span>
                         </div>
                         <p className="text-[10px] font-black text-text-muted mt-1 flex items-center gap-2 uppercase tracking-[0.2em]">
-                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.city || 'Location Unknown'}, {outlet.state || 'MISSION CONTROL'}
+                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.city || 'Location Unknown'}, {outlet.state || 'Location'}
                         </p>
                     </div>
                 </div>
@@ -81,7 +81,7 @@ export default function OutletDetailPage() {
                     onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
                     className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
-                    <Edit className="w-3.5 h-3.5" /> RECONFIG PROPERTY
+                    <Edit className="w-3.5 h-3.5" /> EDIT SALON DETAILS
                 </button>
             </div>
 
@@ -112,7 +112,10 @@ export default function OutletDetailPage() {
                             : 'text-text-muted hover:bg-surface'
                             }`}
                     >
-                        {tab} ARRAY
+                        {tab === 'staff' ? 'Staff Details' : 
+                         tab === 'hours' ? 'Opening Hours' :
+                         tab === 'services' ? 'Services' :
+                         tab === 'products' ? 'Products' : 'Overview'} 
                     </button>
                 ))}
             </div>
@@ -124,23 +127,23 @@ export default function OutletDetailPage() {
                     {activeTab === 'overview' && (
                         <div className="bg-surface p-8 rounded-none border border-border shadow-sm space-y-8">
                             <h3 className="text-sm font-black text-text uppercase tracking-widest flex items-center gap-3">
-                                <Info className="w-4 h-4 text-primary" /> Physical Registry
+                                <Info className="w-4 h-4 text-primary" /> Contact & Address
                             </h3>
                             <div className="grid sm:grid-cols-2 gap-10">
                                 <div className="space-y-6">
                                     <div>
-                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Geo-Spatial Data</p>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Salon Address</p>
                                         <p className="text-sm font-black text-text leading-relaxed uppercase tracking-tight">{outlet.address}</p>
-                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">{outlet.city || 'Unknown City'}, {outlet.state || 'Mission Control'} - {outlet.pincode || '000000'}</p>
+                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">{outlet.city || 'Unknown City'}, {outlet.state || 'Location'} - {outlet.pincode || '000000'}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Communication Pulse</p>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Contact Details</p>
                                         <div className="space-y-3">
                                             <p className="text-sm font-black text-text flex items-center gap-3 uppercase tracking-tight">
                                                 <Phone className="w-3.5 h-3.5 text-primary/40" /> {outlet.phone}
                                             </p>
                                             <p className="text-sm font-black text-text flex items-center gap-3 uppercase tracking-tight">
-                                                <Mail className="w-3.5 h-3.5 text-primary/40" /> {outlet.email || 'N/A PROTOCOL'}
+                                                <Mail className="w-3.5 h-3.5 text-primary/40" /> {outlet.email || 'No email provided'}
                                             </p>
                                         </div>
                                     </div>
@@ -148,15 +151,15 @@ export default function OutletDetailPage() {
                                 <div className="space-y-6">
                                     <div className="bg-surface-alt p-6 rounded-none border border-border">
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                                            <Clock className="w-3.5 h-3.5 text-primary/40" /> Active Pulse
+                                            <Clock className="w-3.5 h-3.5 text-primary/40" /> Opening Hours
                                         </p>
                                         <p className="text-xl font-black text-text uppercase tracking-tight">09:00 - 21:00 HRS</p>
                                         <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" /> SYSTEM ONLINE
+                                            <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" /> SALON OPEN
                                         </p>
                                     </div>
                                     <button className="w-full py-4 rounded-none bg-surface-alt border border-border border-dashed text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface transition-all">
-                                        <Map className="w-4 h-4 mr-2 inline" /> Locate Mapping
+                                        <Map className="w-4 h-4 mr-2 inline" /> View on Map
                                     </button>
                                 </div>
                             </div>
@@ -166,8 +169,8 @@ export default function OutletDetailPage() {
                     {activeTab === 'staff' && (
                         <div className="bg-surface rounded-none border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
-                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Active Personnel</h3>
-                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">12 UNITS</span>
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Staff</h3>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">12 STAFF MEMBERS</span>
                             </div>
                             <div className="divide-y divide-border">
                                 {experts.filter(e => e.outletId === outlet._id).map((expert, i) => (
@@ -198,7 +201,7 @@ export default function OutletDetailPage() {
                                     </div>
                                 )}
                                 <div className="p-6 text-center border-t border-border bg-surface-alt/20">
-                                    <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:underline">Sync Master Roster</button>
+                                    <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:underline">Sync Staff List</button>
                                 </div>
                             </div>
                         </div>
@@ -206,7 +209,7 @@ export default function OutletDetailPage() {
 
                     {activeTab === 'hours' && (
                         <div className="bg-surface p-8 rounded-none border border-border shadow-sm">
-                            <h3 className="text-sm font-black text-text uppercase tracking-widest mb-8">Weekly Operation Loop</h3>
+                            <h3 className="text-sm font-black text-text uppercase tracking-widest mb-8">Weekly Schedule</h3>
                             <div className="space-y-4">
                                 {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(day => (
                                     <div key={day} className="flex items-center justify-between p-5 rounded-none border border-border hover:bg-surface-alt group transition-all">
@@ -283,9 +286,9 @@ export default function OutletDetailPage() {
                     {activeTab === 'products' && (
                         <div className="bg-surface rounded-none border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
-                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Mapped Merchandise</h3>
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Inventory / Products</h3>
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
-                                    {products.filter(p => !p.outletIds || p.outletIds.length === 0 || p.outletIds.includes(outlet._id)).length} UNITS
+                                    {products.filter(p => !p.outletIds || p.outletIds.length === 0 || p.outletIds.includes(outlet._id)).length} PRODUCTS
                                 </span>
                             </div>
                             <div className="divide-y divide-border">
@@ -339,26 +342,26 @@ export default function OutletDetailPage() {
                 <div className="space-y-6">
                     <div className="bg-primary p-8 rounded-none text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
                         <div className="relative z-10">
-                            <h4 className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Protocol Override</h4>
-                            <p className="text-xl font-black mb-6 uppercase tracking-tight">Management Grid</p>
+                            <h4 className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
+                            <p className="text-xl font-black mb-6 uppercase tracking-tight">Manage Salon</p>
                             <div className="space-y-3">
                                 <button 
                                     onClick={() => setActiveTab('staff')}
                                     className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
-                                    <Users className="w-4 h-4" /> Personnel Roster
+                                    <Users className="w-4 h-4" /> Manage Staff
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('hours')}
                                     className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
-                                    <Clock className="w-4 h-4" /> Timeline Control
+                                    <Clock className="w-4 h-4" /> Manage Opening Hours
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('products')}
                                     className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
                                 >
-                                    <Package className="w-4 h-4" /> Inventory Pulse
+                                    <Package className="w-4 h-4" /> Manage Inventory
                                 </button>
                             </div>
                         </div>
@@ -366,14 +369,14 @@ export default function OutletDetailPage() {
                     </div>
 
                     <div className="bg-surface p-6 rounded-none border border-border shadow-sm">
-                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-6 border-b border-border pb-3">Registry Audit</h4>
+                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-6 border-b border-border pb-3">Update History</h4>
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <div className="w-10 h-10 rounded-none bg-surface-alt border border-border flex items-center justify-center shrink-0">
                                     <User className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Initial Genesis</p>
+                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Created On</p>
                                     <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">
                                         Admin • {outlet.createdAt ? new Date(outlet.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Feb 21, 2026'}
                                     </p>
@@ -384,9 +387,9 @@ export default function OutletDetailPage() {
                                     <Edit className="w-5 h-5 text-text-muted" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Last Mutation</p>
+                                    <p className="text-[10px] font-black text-text uppercase tracking-widest">Last Updated</p>
                                     <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">
-                                        Manager • {outlet.updatedAt ? new Date(outlet.updatedAt).toLocaleDateString() : 'SYNCED'}
+                                        Manager • {outlet.updatedAt ? new Date(outlet.updatedAt).toLocaleDateString() : 'Just Now'}
                                     </p>
                                 </div>
                             </div>

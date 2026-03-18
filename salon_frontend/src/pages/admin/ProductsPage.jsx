@@ -86,14 +86,14 @@ export default function ProductsPage() {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Merchandise Catalog</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} registered units</p>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Product Inventory</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} products in stock</p>
                 </div>
                 <button
                     onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] }); setShowModal(true); }}
                     className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
-                    <Plus className="w-4 h-4" /> Add Protocol
+                    <Plus className="w-4 h-4" /> Add New Product
                 </button>
             </div>
 
@@ -104,7 +104,7 @@ export default function ProductsPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Scan products or SKU codes..."
+                        placeholder="Search products by name or SKU..."
                         className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
                     />
                 </div>
@@ -132,20 +132,20 @@ export default function ProductsPage() {
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-24">
                         <Package className="w-12 h-12 text-text-muted mx-auto mb-4 opacity-20" />
-                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Inventory Found</h3>
-                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">System scan complete</p>
+                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Products Found</h3>
+                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">We couldn't find any products matching your search.</p>
                     </div>
                 ) : (
                     <div className="table-responsive">
                         <table className="w-full text-sm min-w-[1000px]">
                             <thead><tr className="border-b border-border bg-surface-alt">
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Entity Item</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden sm:table-cell">SKU ID</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Unit Price</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Stock pulse</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Outlet Mapping</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Metadata</th>
-                                <th className="text-right px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Control</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Product Name</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden sm:table-cell">SKU Code</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Price</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Stock Status</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Available at</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Category</th>
+                                <th className="text-right px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Actions</th>
                             </tr></thead>
                             <tbody>
                                 {filtered.map((p) => (
@@ -213,27 +213,27 @@ export default function ProductsPage() {
                             <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20">
                                 <Package className="w-8 h-8" />
                             </div>
-                            <h2 className="text-2xl font-black text-text uppercase tracking-tight">{editing ? 'Edit Protocol' : 'New Protocol'}</h2>
-                            <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Provisioning material data</p>
+                            <h2 className="text-2xl font-black text-text uppercase tracking-tight">{editing ? 'Edit Product' : 'Add New Product'}</h2>
+                            <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Enter product details below</p>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Item Identity *</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Product Name *</label>
                                 <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. Silk Serum Pro" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">SKU identifier</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">SKU Code</label>
                                     <input type="text" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="SKU-XXXX" />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Category tag</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Category</label>
                                     <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. HAIRCARE" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Value (₹) *</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Price (₹) *</label>
                                     <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
                                 </div>
                                 <div className="space-y-2">
@@ -250,7 +250,7 @@ export default function ProductsPage() {
                             <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Store className="w-4 h-4 text-primary" />
-                                    <label className="text-[10px] font-black text-text uppercase tracking-[0.2em]">7. Outlet Availability Protocol</label>
+                                    <label className="text-[10px] font-black text-text uppercase tracking-[0.2em]">{editing ? 'Edit' : 'Select'} Outlet Availability</label>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
@@ -305,8 +305,8 @@ export default function ProductsPage() {
                                 )}
                             </div>
                             <div className="flex gap-4 pt-6">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-4.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all">{editing ? 'Commit' : 'Deploy Item'}</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
+                                <button type="submit" className="flex-1 py-4.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Add Product'}</button>
                             </div>
                         </form>
                     </div>
