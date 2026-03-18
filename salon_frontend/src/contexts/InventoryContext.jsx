@@ -125,7 +125,8 @@ export const InventoryProvider = ({ children }) => {
             'outlet-1': 0,
             'outlet-2': 0,
         };
-        const raw = { ...product, id: Date.now(), barcode, stockByOutlet };
+        const outletIds = product.outletIds || [];
+        const raw = { ...product, id: Date.now(), barcode, stockByOutlet, outletIds };
         setProducts(prev => [enrichProduct(raw), ...prev]);
     };
 

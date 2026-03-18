@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ProductManager({ products = [], onDelete, onToggleStatus, onEdit, onDuplicate }) {
     const navigate = useNavigate();
+    const { outlets } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
     const [openMenuId, setOpenMenuId] = useState(null);
@@ -72,6 +74,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Brand & Category</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Selling Price</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Current Stock</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlet Visibility</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                             </tr>

@@ -119,9 +119,15 @@ export default function AppServicesPage() {
     const filteredServices = useMemo(() => {
         let result = businessServices.filter(s => s.status === 'active');
 
-        // Filter by Outlet if outletId is present on service
+        // Filter by Outlet if outletIds or outletId is present on service
         result = result.filter(s => {
+            // New logic: Check outletIds array first
+            if (s.outletIds && s.outletIds.length > 0) {
+                return s.outletIds.includes(activeOutletId);
+            }
+            // Backward compatibility: If it was marked as All Outlets or had no specific outlet assignment
             if (!s.outletId || s.outlet === 'All Outlets') return true; 
+            // Old logic legacy support
             return s.outletId === activeOutletId;
         });
 

@@ -19,18 +19,39 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ServiceList({ services = [], onDelete, onToggleStatus }) {
     const navigate = useNavigate();
+    const { outlets } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
+    const [filterOutlet, setFilterOutlet] = useState('All Outlets');
 
     const categories = ['All', ...new Set(services.map(s => s.category))];
+    const outletOptions = ['All Outlets', ...outlets.map(o => o.name)];
 
     const filteredServices = services.filter(service => {
         const matchesSearch = service.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = filterCategory === 'All' || service.category === filterCategory;
-        return matchesSearch && matchesCategory;
+        
+        // Filter by Outlet
+        let matchesOutlet = true;
+        if (filterOutlet !== 'All Outlets') {
+            const selectedOutlet = outlets.find(o => o.name === filterOutlet);
+            if (selectedOutlet) {
+                // Check if service is mapped to this outlet ID, or if it has NO specific mapping (defaults to all)
+                if (service.outletIds && service.outletIds.length > 0) {
+                    matchesOutlet = service.outletIds.includes(selectedOutlet._id);
+                } else {
+                    // Backward compatibility: If it doesn't have outletIds, check the legacy 'outlets' string
+                    // Or if it's 'All Outlets'
+                    matchesOutlet = service.outlets === 'All Outlets' || service.outlets === filterOutlet || !service.outletId;
+                }
+            }
+        }
+
+        return matchesSearch && matchesCategory && matchesOutlet;
     });
 
     return (
@@ -53,6 +74,13 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                         value={filterCategory} 
                         onChange={setFilterCategory} 
                         options={categories}
+                        className="min-w-[150px]"
+                    />
+
+                    <CustomSelect 
+                        value={filterOutlet} 
+                        onChange={setFilterOutlet} 
+                        options={outletOptions}
                         className="min-w-[180px]"
                     />
 

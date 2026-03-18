@@ -93,8 +93,22 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            const response = await api.post('/auth/login', { email, password });
-            const { accessToken, user: userData } = response.data.data;
+            // Mock Login Logic
+            const mockUser = MOCK_USERS[email];
+            if (!mockUser) {
+                throw new Error('User not found in mock database.');
+            }
+
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            const userData = {
+                id: `mock-${Date.now()}`,
+                email,
+                ...mockUser
+            };
+
+            const accessToken = `mock-token-${Date.now()}`;
 
             // Save session specific to the role
             localStorage.setItem(`auth_token_${userData.role}`, accessToken);
@@ -104,15 +118,25 @@ export function AuthProvider({ children }) {
             setUser(userData);
             return { accessToken, user: userData };
         } catch (error) {
-            console.error('[AuthContext] Login failed:', error);
+            console.error('[AuthContext] Mock Login failed:', error);
             throw error;
         }
     };
 
     const register = async (payload) => {
         try {
-            const response = await api.post('/auth/register', payload);
-            const { accessToken, user: userData } = response.data.data;
+            // Mock Registration Logic
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const userData = {
+                id: `mock-${Date.now()}`,
+                name: payload.fullName,
+                email: payload.email,
+                role: 'admin', // Default mock role
+                salonName: payload.salonName
+            };
+
+            const accessToken = `mock-token-${Date.now()}`;
 
             localStorage.setItem(`auth_token_${userData.role}`, accessToken);
             localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
@@ -121,7 +145,7 @@ export function AuthProvider({ children }) {
             setUser(userData);
             return { accessToken, user: userData };
         } catch (error) {
-            console.error('[AuthContext] Registration failed:', error);
+            console.error('[AuthContext] Mock Registration failed:', error);
             throw error;
         }
     };

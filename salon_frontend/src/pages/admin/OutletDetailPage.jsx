@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCMS } from '../../contexts/CMSContext';
 import {
     ArrowLeft,
     Edit,
@@ -16,14 +17,19 @@ import {
     Info,
     Calendar,
     User,
-    ArrowUpRight
+    ArrowUpRight,
+    Star
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useInventory } from '../../contexts/InventoryContext';
+import { Scissors, Tag, IndianRupee, Package } from 'lucide-react';
 
 export default function OutletDetailPage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { outlets } = useBusiness();
+    const { outlets, services } = useBusiness();
+    const { products } = useInventory();
+    const { experts } = useCMS();
     const [outlet, setOutlet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
@@ -97,7 +103,7 @@ export default function OutletDetailPage() {
 
             {/* Tabs */}
             <div className="flex gap-2 p-1.5 bg-surface-alt border border-border rounded-none w-fit">
-                {['overview', 'staff', 'hours'].map(tab => (
+                {['overview', 'staff', 'hours', 'services', 'products'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -164,20 +170,33 @@ export default function OutletDetailPage() {
                                 <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">12 UNITS</span>
                             </div>
                             <div className="divide-y divide-border">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
+                                {experts.filter(e => e.outletId === outlet._id).map((expert, i) => (
+                                    <div key={expert.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary font-black group-hover:scale-110 transition-transform">
-                                                S
+                                            <div className="w-11 h-11 overflow-hidden border border-border flex items-center justify-center group-hover:scale-105 transition-transform">
+                                                <img src={expert.img} className="w-full h-full object-cover" alt={expert.name} />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-text uppercase tracking-tight">Staff Protocol {i}</p>
-                                                <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-0.5">Assigned Specialist</p>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</p>
+                                                <div className="flex items-center gap-3 mt-0.5">
+                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
+                                                        <Star className="w-3 h-3 text-amber-500" /> {expert.experience} EXP
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
+                                                        {expert.status}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                         <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-all group-hover:translate-x-1" />
                                     </div>
                                 ))}
+                                {experts.filter(e => e.outletId === outlet._id).length === 0 && (
+                                    <div className="px-8 py-20 text-center opacity-40">
+                                        <Users className="w-8 h-8 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No expert personnel assigned to this unit</p>
+                                    </div>
+                                )}
                                 <div className="p-6 text-center border-t border-border bg-surface-alt/20">
                                     <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:underline">Sync Master Roster</button>
                                 </div>
@@ -203,6 +222,117 @@ export default function OutletDetailPage() {
                             </div>
                         </div>
                     )}
+                    
+                    {activeTab === 'services' && (
+                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                            <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Available Services</h3>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
+                                    {services.filter(s => (!s.outletIds || s.outletIds.length === 0) ? (s.outlet === 'All Outlets' || !s.outletId) : s.outletIds.includes(outlet._id)).length} SERVICES
+                                </span>
+                            </div>
+                            <div className="divide-y divide-border">
+                                {services.filter(s => {
+                                    // Match if outletIds contains this ID, or if it's a legacy "All Outlets" service
+                                    if (s.outletIds && s.outletIds.length > 0) {
+                                        return s.outletIds.includes(outlet._id);
+                                    }
+                                    return !s.outletId || s.outlet === 'All Outlets';
+                                }).map(service => (
+                                    <div key={service.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <Scissors className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{service.name}</p>
+                                                <div className="flex items-center gap-3 mt-0.5">
+                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
+                                                        <Tag className="w-3 h-3 opacity-40" /> {service.category}
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                                                        <IndianRupee className="w-3 h-3 opacity-40" /> {service.price}
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
+                                                        <Clock className="w-3 h-3 opacity-40" /> {service.duration} MIN
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate(`/admin/services/edit/${service.id}`)}
+                                            className="px-4 py-2 bg-surface-alt border border-border text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all"
+                                        >
+                                            RECONF
+                                        </button>
+                                    </div>
+                                ))}
+                                {services.filter(s => {
+                                    if (s.outletIds && s.outletIds.length > 0) return s.outletIds.includes(outlet._id);
+                                    return !s.outletId || s.outlet === 'All Outlets';
+                                }).length === 0 && (
+                                    <div className="px-8 py-20 text-center opacity-40">
+                                        <Scissors className="w-8 h-8 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No services mapped to this unit</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'products' && (
+                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                            <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Mapped Merchandise</h3>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
+                                    {products.filter(p => !p.outletIds || p.outletIds.length === 0 || p.outletIds.includes(outlet._id)).length} UNITS
+                                </span>
+                            </div>
+                            <div className="divide-y divide-border">
+                                {products.filter(p => {
+                                    if (!p.outletIds || p.outletIds.length === 0) return true;
+                                    return p.outletIds.includes(outlet._id);
+                                }).map(product => (
+                                    <div key={product.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-11 h-11 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                                                <Package className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{product.name}</p>
+                                                <div className="flex items-center gap-3 mt-0.5">
+                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
+                                                        <Tag className="w-3 h-3 opacity-40" /> {product.category}
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest flex items-center gap-1">
+                                                        <IndianRupee className="w-3 h-3 opacity-40" /> {product.sellingPrice || product.price}
+                                                    </p>
+                                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
+                                                        <Package className="w-3 h-3 opacity-40" /> {product.stockQuantity || product.stock} IN STOCK
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate(`/admin/inventory/products`)}
+                                            className="px-4 py-2 bg-surface-alt border border-border text-[9px] font-black uppercase tracking-widest hover:bg-white transition-all"
+                                        >
+                                            RECONF
+                                        </button>
+                                    </div>
+                                ))}
+                                {products.filter(p => {
+                                    if (!p.outletIds || p.outletIds.length === 0) return true;
+                                    return p.outletIds.includes(outlet._id);
+                                }).length === 0 && (
+                                    <div className="px-8 py-20 text-center opacity-40">
+                                        <Package className="w-8 h-8 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No products mapped to this unit</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Side: Quick Actions / Small Info */}
@@ -212,11 +342,23 @@ export default function OutletDetailPage() {
                             <h4 className="text-[10px] font-black opacity-60 uppercase tracking-[0.3em] mb-2">Protocol Override</h4>
                             <p className="text-xl font-black mb-6 uppercase tracking-tight">Management Grid</p>
                             <div className="space-y-3">
-                                <button className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10">
+                                <button 
+                                    onClick={() => setActiveTab('staff')}
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                >
                                     <Users className="w-4 h-4" /> Personnel Roster
                                 </button>
-                                <button className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10">
-                                    <Calendar className="w-4 h-4" /> Timeline Control
+                                <button 
+                                    onClick={() => setActiveTab('hours')}
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                >
+                                    <Clock className="w-4 h-4" /> Timeline Control
+                                </button>
+                                <button 
+                                    onClick={() => setActiveTab('products')}
+                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                >
+                                    <Package className="w-4 h-4" /> Inventory Pulse
                                 </button>
                             </div>
                         </div>
@@ -232,7 +374,9 @@ export default function OutletDetailPage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-text uppercase tracking-widest">Initial Genesis</p>
-                                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">Admin • Feb 21, 2026</p>
+                                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">
+                                        Admin • {outlet.createdAt ? new Date(outlet.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Feb 21, 2026'}
+                                    </p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
@@ -241,7 +385,9 @@ export default function OutletDetailPage() {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-text uppercase tracking-widest">Last Mutation</p>
-                                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">Manager • PROXY TIME</p>
+                                    <p className="text-[10px] font-bold text-text-muted mt-1 uppercase opacity-60">
+                                        Manager • {outlet.updatedAt ? new Date(outlet.updatedAt).toLocaleDateString() : 'SYNCED'}
+                                    </p>
                                 </div>
                             </div>
                         </div>

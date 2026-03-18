@@ -21,7 +21,7 @@ export function CMSProvider({ children }) {
 
     const [experts, setExperts] = useState(() => {
         const saved = localStorage.getItem('cms_experts');
-        return saved ? JSON.parse(saved) : [];
+        return saved ? JSON.parse(saved) : cmsMockData.EXPERTS;
     });
 
     // Sync to localStorage
@@ -60,7 +60,8 @@ export function CMSProvider({ children }) {
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
         lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
-        experts, setExperts, updateExpertProfile, approveExpertProfile, rejectExpertProfile, deleteExpertProfile
+        experts, setExperts, updateExpertProfile, approveExpertProfile, rejectExpertProfile, deleteExpertProfile,
+        pendingExpertsCount: experts.filter(e => e.status === 'Pending').length
     };
 
     return <CMSContext.Provider value={value}>{children}</CMSContext.Provider>;

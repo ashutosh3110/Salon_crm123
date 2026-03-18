@@ -125,36 +125,6 @@
                     "img": "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=300&q=80"
                 }
             ],
-            "experts": [
-                {
-                    "id": 1,
-                    "name": "Jake Rivera",
-                    "role": "Master Barber",
-                    "rating": 4.9,
-                    "img": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80"
-                },
-                {
-                    "id": 2,
-                    "name": "Carlos Mendez",
-                    "role": "Hair Stylist",
-                    "rating": 4.7,
-                    "img": "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?w=200&q=80"
-                },
-                {
-                    "id": 3,
-                    "name": "Dan Fisher",
-                    "role": "Beard Expert",
-                    "rating": 4.8,
-                    "img": "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80"
-                },
-                {
-                    "id": 4,
-                    "name": "Mark Chen",
-                    "role": "Colorist",
-                    "rating": 4.6,
-                    "img": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80"
-                }
-            ],
             "categories": [
                 {
                     "id": 1,
@@ -263,36 +233,6 @@
                     "img": "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=300&q=80"
                 }
             ],
-            "experts": [
-                {
-                    "id": 1,
-                    "name": "Sofiya Liss",
-                    "role": "Stylist",
-                    "rating": 4.9,
-                    "img": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80"
-                },
-                {
-                    "id": 2,
-                    "name": "Adrin Ross",
-                    "role": "Colorist",
-                    "rating": 4.7,
-                    "img": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80"
-                },
-                {
-                    "id": 3,
-                    "name": "Nina Patel",
-                    "role": "Nail Artist",
-                    "rating": 4.8,
-                    "img": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80"
-                },
-                {
-                    "id": 4,
-                    "name": "Priya Kapoor",
-                    "role": "Skin Expert",
-                    "rating": 4.6,
-                    "img": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80"
-                }
-            ],
             "categories": [
                 {
                     "id": 1,
@@ -385,80 +325,6 @@
             "salon": "The Royal Salon"
         }
     ],
-    "EXPERT_DETAILS": {
-        "Jake Rivera": {
-            "experience": "12 Years",
-            "bio": "Award-winning master barber specializing in heritage cuts and modern beard tailoring. Transforming style since 2012.",
-            "tags": [
-                "Classic Fade",
-                "Royal Shave",
-                "Taper Design"
-            ]
-        },
-        "Carlos Mendez": {
-            "experience": "8 Years",
-            "bio": "Leading hair stylist with a focus on contemporary trends and precision scissor work. Artist of the craft.",
-            "tags": [
-                "Modern Quiff",
-                "Texture Cut",
-                "Precision Styling"
-            ]
-        },
-        "Dan Fisher": {
-            "experience": "15 Years",
-            "bio": "The master of beard sculpting. Dan treats every beard like a piece of art. Renowned for detail.",
-            "tags": [
-                "Beard Sculpt",
-                "Stubble Groom",
-                "Hot Towel"
-            ]
-        },
-        "Mark Chen": {
-            "experience": "10 Years",
-            "bio": "Expert colorist with a deep understanding of men's color dynamics and gray blending techniques.",
-            "tags": [
-                "Gray Blend",
-                "Sunlight Tints",
-                "Creative Color"
-            ]
-        },
-        "Sofiya Liss": {
-            "experience": "9 Years",
-            "bio": "High-fashion stylist with a passion for bridal and editorial hair design. Making every client a muse.",
-            "tags": [
-                "Bridal Style",
-                "Editorial",
-                "Glamour Waves"
-            ]
-        },
-        "Adrin Ross": {
-            "experience": "11 Years",
-            "bio": "Master colorist known for stunning transformations and protecting hair integrity. Color perfectionist.",
-            "tags": [
-                "Balayage",
-                "Vibrant Hues",
-                "Color Correction"
-            ]
-        },
-        "Nina Patel": {
-            "experience": "7 Years",
-            "bio": "Elite nail artist specializing in luxury extensions and intricate hand-painted designs.",
-            "tags": [
-                "Nail Extensions",
-                "Hand Painted",
-                "Luxury Spa"
-            ]
-        },
-        "Priya Kapoor": {
-            "experience": "14 Years",
-            "bio": "Advanced skin therapist dedicated to holistic rejuvenation and clinical skin health.",
-            "tags": [
-                "Dermal Therapy",
-                "Glow Facial",
-                "Skin Ritual"
-            ]
-        }
-    },
     "PLACEHOLDERS": [
         "Search categories...",
         "Search for salons...",

@@ -20,7 +20,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCMS } from '../../contexts/CMSContext';
 import CustomSelect from '../../components/admin/common/CustomSelect';
+import { useNavigate } from 'react-router-dom';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -40,6 +42,8 @@ const statusColors = {
 export default function StaffPage() {
     const { user } = useAuth();
     const { staff, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
+    const { pendingExpertsCount } = useCMS();
+    const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -153,6 +157,29 @@ export default function StaffPage() {
                     <Plus className="w-3.5 h-3.5" /> Recruit Talent
                 </button>
             </div>
+
+            {/* Pending Approvals Alert */}
+            {pendingExpertsCount > 0 && (
+                <div 
+                    onClick={() => navigate('/admin/marketing/cms')}
+                    className="bg-amber-500/10 border border-amber-500/20 p-4 flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-none bg-amber-500 flex items-center justify-center text-white">
+                            <ShieldAlert className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none mb-1">Attention Required</p>
+                            <h4 className="text-sm font-black text-text uppercase tracking-tight italic">
+                                {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Pending Approval
+                            </h4>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest group-hover:gap-3 transition-all">
+                        Review Protocol <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                </div>
+            )}
 
             {/* Filters */}
             <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col md:flex-row gap-4">

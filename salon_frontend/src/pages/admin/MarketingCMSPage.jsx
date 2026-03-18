@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Layout,
@@ -17,10 +18,10 @@ import {
     ArrowRight,
     Star,
     Clock,
-    Users,
     User,
     UserCircle,
-    Camera
+    Camera,
+    MapPin
 } from 'lucide-react';
 
 export default function MarketingCMSPage() {
@@ -28,8 +29,9 @@ export default function MarketingCMSPage() {
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
         lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
-        experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile
+        experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile, pendingExpertsCount
     } = useCMS();
+    const { outlets } = useBusiness();
 
     const [activeTab, setActiveTab] = useState('banners');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -207,8 +209,12 @@ export default function MarketingCMSPage() {
                             className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative ${activeTab === tab.id ? 'text-primary' : 'text-text-muted hover:text-text'
                                 }`}
                         >
-                            <tab.icon className="w-3.5 h-3.5" />
                             {tab.label}
+                            {tab.id === 'experts' && pendingExpertsCount > 0 && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-rose-500 text-white text-[8px] font-black rounded-full animate-pulse">
+                                    {pendingExpertsCount}
+                                </span>
+                            )}
                             {activeTab === tab.id && (
                                 <motion.div layoutId="tab-underline" className="absolute -bottom-[17px] left-0 right-0 h-[2px] bg-primary" />
                             )}
@@ -486,6 +492,12 @@ export default function MarketingCMSPage() {
                                         <span>Exp: {expert.experience}</span>
                                         <span>Clients: {expert.clients}</span>
                                     </div>
+                                    {expert.outletId && (
+                                        <div className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 border border-primary/10 w-fit">
+                                            <MapPin className="w-2.5 h-2.5" />
+                                            {outlets.find(o => o._id === expert.outletId || o.id === expert.outletId)?.name || 'Unknown Outlet'}
+                                        </div>
+                                    )}
                                     <p className="text-[10px] text-text-secondary leading-tight line-clamp-2">{expert.bio}</p>
                                     <div className="flex flex-wrap gap-1 mt-2">
                                         {expert.specializations?.map(s => (

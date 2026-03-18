@@ -88,7 +88,8 @@ export default function AppSplashScreen({ onComplete }) {
                     zIndex: 10
                 }}
             >
-                <img
+                {/* {isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'} */}
+                {/* <img
                     src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
                     alt="Salon Logo"
                     style={{
@@ -97,7 +98,7 @@ export default function AppSplashScreen({ onComplete }) {
                         margin: '0 auto',
                         filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.5))'
                     }}
-                />
+                /> */}
             </motion.div>
 
 

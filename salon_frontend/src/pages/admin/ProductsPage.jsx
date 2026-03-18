@@ -1,14 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Package, AlertTriangle, IndianRupee } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Package, AlertTriangle, IndianRupee, Store, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function ProductsPage() {
+    const { outlets } = useBusiness();
+    const { addProduct, updateProduct: updateInvProduct, products: invProducts } = useInventory(); // Using context for robustness if needed, but the page uses API
+    // Actually, this page uses direct API calls. I should stick to that but add outletIds.
+    
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [filterOutlet, setFilterOutlet] = useState('All');
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5 });
+    const [form, setForm] = useState({ 
+        name: '', 
+        sku: '', 
+        price: '', 
+        category: '', 
+        stockQuantity: '', 
+        lowStockThreshold: 5,
+        availabilityType: 'all', // 'all' or 'selected'
+        outletIds: []
+    });
 
     const fetchProducts = async () => {
         try {
@@ -33,7 +49,7 @@ export default function ProductsPage() {
             if (editing) { await api.put(`/products/${editing._id}`, form); }
             else { await api.post('/products', form); }
             setShowModal(false); setEditing(null);
-            setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5 });
+            setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] });
             fetchProducts();
         } catch (err) { alert(err.response?.data?.message || 'Error saving product'); }
     };
@@ -45,11 +61,26 @@ export default function ProductsPage() {
 
     const openEdit = (p) => {
         setEditing(p);
-        setForm({ name: p.name, sku: p.sku || '', price: p.price, category: p.category || '', stockQuantity: p.stockQuantity, lowStockThreshold: p.lowStockThreshold || 5 });
+        setForm({ 
+            name: p.name, 
+            sku: p.sku || '', 
+            price: p.price, 
+            category: p.category || '', 
+            stockQuantity: p.stockQuantity, 
+            lowStockThreshold: p.lowStockThreshold || 5,
+            availabilityType: p.outletIds?.length > 0 ? 'selected' : 'all',
+            outletIds: p.outletIds || []
+        });
         setShowModal(true);
     };
 
-    const filtered = products.filter((p) => p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase()));
+    const filtered = products.filter((p) => {
+        const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
+        const matchesOutlet = filterOutlet === 'All' || 
+                             (p.outletIds?.includes(filterOutlet)) || 
+                             (filterOutlet === 'General' && (!p.outletIds || p.outletIds.length === 0));
+        return matchesSearch && matchesOutlet;
+    });
 
     return (
         <div className="space-y-6">
@@ -59,22 +90,38 @@ export default function ProductsPage() {
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} registered units</p>
                 </div>
                 <button
-                    onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5 }); setShowModal(true); }}
+                    onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] }); setShowModal(true); }}
                     className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" /> Add Protocol
                 </button>
             </div>
 
-            <div className="flex items-center bg-surface-alt rounded-none border border-border px-4 py-3 max-w-md shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
-                <Search className="w-4 h-4 text-text-muted mr-3" />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Scan products or SKU codes..."
-                    className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
-                />
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1 flex items-center bg-surface-alt rounded-none border border-border px-4 py-3 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+                    <Search className="w-4 h-4 text-text-muted mr-3" />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Scan products or SKU codes..."
+                        className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
+                    />
+                </div>
+
+                <div className="w-full sm:w-64">
+                    <select
+                        value={filterOutlet}
+                        onChange={(e) => setFilterOutlet(e.target.value)}
+                        className="w-full bg-surface-alt border border-border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-text outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                        <option value="All">All Outlets</option>
+                        <option value="General">Global (No Outlet)</option>
+                        {outlets.map(o => (
+                            <option key={o._id} value={o._id}>{o.name}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
@@ -96,6 +143,7 @@ export default function ProductsPage() {
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden sm:table-cell">SKU ID</th>
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Unit Price</th>
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Stock pulse</th>
+                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Outlet Mapping</th>
                                 <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Metadata</th>
                                 <th className="text-right px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Control</th>
                             </tr></thead>
@@ -123,6 +171,22 @@ export default function ProductsPage() {
                                                 {p.stockQuantity} UNITS
                                             </span>
                                         </td>
+                                        <td className="px-8 py-5 hidden md:table-cell">
+                                            <div className="flex flex-wrap gap-1">
+                                                {!p.outletIds || p.outletIds.length === 0 ? (
+                                                    <span className="text-[9px] font-black text-text-muted bg-surface-alt px-2 py-1 border border-border uppercase tracking-widest">All Outlets</span>
+                                                ) : (
+                                                    p.outletIds.map(oid => {
+                                                        const o = outlets.find(out => out._id === oid);
+                                                        return (
+                                                            <span key={oid} className="text-[9px] font-black text-primary bg-primary/5 px-2 py-1 border border-primary/20 uppercase tracking-widest">
+                                                                {o ? o.name : oid}
+                                                            </span>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{p.category || 'GENERAL'}</td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
@@ -144,7 +208,7 @@ export default function ProductsPage() {
 
             {showModal && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowModal(false)}>
-                    <div className="bg-surface rounded-none w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-surface rounded-3xl w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center text-center mb-10">
                             <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20">
                                 <Package className="w-8 h-8" />
@@ -180,6 +244,65 @@ export default function ProductsPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Threshold</label>
                                     <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
                                 </div>
+                            </div>
+
+                            {/* Outlet Availability Section */}
+                            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Store className="w-4 h-4 text-primary" />
+                                    <label className="text-[10px] font-black text-text uppercase tracking-[0.2em]">7. Outlet Availability Protocol</label>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
+                                        <input
+                                            type="radio"
+                                            name="availability"
+                                            checked={form.availabilityType === 'all'}
+                                            onChange={() => setForm({ ...form, availabilityType: 'all', outletIds: [] })}
+                                            className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
+                                        />
+                                        <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
+                                        <input
+                                            type="radio"
+                                            name="availability"
+                                            checked={form.availabilityType === 'selected'}
+                                            onChange={() => setForm({ ...form, availabilityType: 'selected' })}
+                                            className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
+                                        />
+                                        <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Selected Outlets Only</span>
+                                    </label>
+                                </div>
+
+                                {form.availabilityType === 'selected' && (
+                                    <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
+                                        {outlets.map(outlet => (
+                                            <button
+                                                key={outlet._id}
+                                                type="button"
+                                                onClick={() => {
+                                                    const ids = form.outletIds.includes(outlet._id)
+                                                        ? form.outletIds.filter(id => id !== outlet._id)
+                                                        : [...form.outletIds, outlet._id];
+                                                    setForm({ ...form, outletIds: ids });
+                                                }}
+                                                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${form.outletIds.includes(outlet._id)
+                                                    ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                                    : 'bg-white border-border text-text-muted hover:border-primary/40'
+                                                }`}
+                                            >
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${form.outletIds.includes(outlet._id)
+                                                    ? 'bg-primary border-primary text-white'
+                                                    : 'bg-white border-border'
+                                                }`}>
+                                                    {form.outletIds.includes(outlet._id) && <CheckCircle2 className="w-3 h-3" />}
+                                                </div>
+                                                <span className="text-xs font-bold uppercase tracking-tight">{outlet.name}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <div className="flex gap-4 pt-6">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>

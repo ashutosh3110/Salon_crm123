@@ -29,9 +29,11 @@ import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
 import Barcode from 'react-barcode';
 import { useInventory } from '../../../contexts/InventoryContext';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
     const { productCategories, suppliers, shopCategories } = useInventory();
+    const { outlets } = useBusiness();
     const navigate = useNavigate();
     const defaultFormData = {
         name: '',
@@ -49,6 +51,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         status: 'active',
         mfgDate: '',
         expiryDate: '',
+        outletIds: initialData?.outletIds || [],
         isShopProduct: false,
         appCategory: '',
         appImage: '',
@@ -360,7 +363,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 type="radio"
                                 name="outlet"
                                 checked={formData.availability === 'all'}
-                                onChange={() => setFormData({ ...formData, availability: 'all' })}
+                                onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
                                 className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
                             />
                             <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
@@ -376,6 +379,35 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Selected Outlets Only</span>
                         </label>
                     </div>
+
+                    {formData.availability === 'selected' && (
+                        <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
+                            {outlets.map(outlet => (
+                                <button
+                                    key={outlet._id}
+                                    type="button"
+                                    onClick={() => {
+                                        const ids = (formData.outletIds || []).includes(outlet._id)
+                                            ? formData.outletIds.filter(id => id !== outlet._id)
+                                            : [...(formData.outletIds || []), outlet._id];
+                                        setFormData({ ...formData, outletIds: ids });
+                                    }}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(formData.outletIds || []).includes(outlet._id)
+                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        : 'bg-white border-border text-text-muted hover:border-primary/40'
+                                    }`}
+                                >
+                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${(formData.outletIds || []).includes(outlet._id)
+                                        ? 'bg-primary border-primary text-white'
+                                        : 'bg-white border-border'
+                                    }`}>
+                                        {(formData.outletIds || []).includes(outlet._id) && <CheckCircle2 className="w-3 h-3" />}
+                                    </div>
+                                    <span className="text-xs font-bold uppercase tracking-tight">{outlet.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* 8. Production & Expiry */}
