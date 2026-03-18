@@ -21,7 +21,7 @@ import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
 import SalonMapView from '../../components/app/SalonMapView';
 
-const { MEMBERSHIP_PLANS, RUNNING_OFFERS, GENDER_DATA, LOOKBOOK, REVIEWS, EXPERT_DETAILS, PLACEHOLDERS } = homeData;
+const { MEMBERSHIP_PLANS, RUNNING_OFFERS, GENDER_DATA, LOOKBOOK, REVIEWS, PLACEHOLDERS } = homeData;
 
 function HeartBtn({ size = 20 }) {
     const [liked, setLiked] = useState(false);
@@ -94,8 +94,12 @@ export default function AppHomePage() {
     const { balance, initializeWallet } = useWallet();
     const { banners, lookbook: cmsLookbook, offers: cmsOffers, experts } = useCMS();
 
-    // Only show approved experts
-    const approvedExperts = experts.filter(e => e.status === 'Approved');
+    // Fallback if gender is null
+    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
+    const d = GENDER_DATA[g];
+
+    // Only show approved experts for this outlet
+    const approvedExperts = experts.filter(e => e.status === 'Approved' && (e.outletId === activeOutletId || !e.outletId));
 
     // Merge with defaults if no experts approved yet
     const displayExperts = approvedExperts.length > 0 ? approvedExperts : (d?.experts || []);
@@ -133,9 +137,7 @@ export default function AppHomePage() {
         }
     }, [customer?._id]);
 
-    // Fallback if gender is null
-    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
-    const d = GENDER_DATA[g];
+
 
 
 
@@ -1365,7 +1367,7 @@ export default function AppHomePage() {
                                 <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
                                     <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
                                         <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Experience</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.experience || EXPERT_DETAILS[selectedExpert.name]?.experience || '5 Years'}</p>
+                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.experience || '5 Years'}</p>
                                     </div>
                                     <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
                                         <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Clients</p>
@@ -1375,12 +1377,12 @@ export default function AppHomePage() {
 
                                 <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '8px', textTransform: 'uppercase' }}>Profile Bio</h5>
                                 <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '24px' }}>
-                                    {selectedExpert.bio || EXPERT_DETAILS[selectedExpert.name]?.bio || 'A dedicated professional committed to delivering excellence.'}
+                                    {selectedExpert.bio || 'A dedicated professional committed to delivering excellence.'}
                                 </p>
 
                                 <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '12px', textTransform: 'uppercase' }}>Specializations</h5>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '32px' }}>
-                                    {(selectedExpert.specializations || EXPERT_DETAILS[selectedExpert.name]?.tags || ["Precision Cut", "Style Master"]).map((spec, idx) => (
+                                    {(selectedExpert.specializations || ["Precision Cut", "Style Master"]).map((spec, idx) => (
                                         <span key={idx} style={{
                                             padding: '6px 12px',
                                             background: isLight ? '#FFF7ED' : '#2A1F14',

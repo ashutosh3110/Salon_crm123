@@ -9,6 +9,7 @@
             "status": "active",
             "phone": "+91 98765 43210",
             "email": "downtown@graceglamour.com",
+            "gstin": "27AAACG1234A1Z5",
             "location": {
                 "lat": 12.9352,
                 "lng": 77.6245
@@ -23,6 +24,7 @@
             "status": "active",
             "phone": "+91 98765 43211",
             "email": "bandra@royalsalon.com",
+            "gstin": "27BBBCG5678B1Z2",
             "location": {
                 "lat": 12.9400,
                 "lng": 77.6300

@@ -20,7 +20,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCMS } from '../../contexts/CMSContext';
 import CustomSelect from '../../components/admin/common/CustomSelect';
+import { useNavigate } from 'react-router-dom';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -40,6 +42,8 @@ const statusColors = {
 export default function StaffPage() {
     const { user } = useAuth();
     const { staff, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
+    const { pendingExpertsCount } = useCMS();
+    const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -154,6 +158,29 @@ export default function StaffPage() {
                 </button>
             </div>
 
+            {/* Pending Approvals Alert */}
+            {pendingExpertsCount > 0 && (
+                <div 
+                    onClick={() => navigate('/admin/marketing/cms')}
+                    className="bg-amber-500/10 border border-amber-500/20 p-4 flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-none bg-amber-500 flex items-center justify-center text-white">
+                            <ShieldAlert className="w-5 h-5" />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest leading-none mb-1">Attention Required</p>
+                            <h4 className="text-sm font-black text-text uppercase tracking-tight italic">
+                                {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Pending Approval
+                            </h4>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest group-hover:gap-3 transition-all">
+                        Review Protocol <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                </div>
+            )}
+
             {/* Filters */}
             <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
@@ -167,15 +194,15 @@ export default function StaffPage() {
                     />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <CustomSelect 
-                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)} 
-                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())} 
+                    <CustomSelect
+                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())}
                         options={['Every Role', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
                         className="min-w-[140px]"
                     />
-                    <CustomSelect 
-                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name} 
-                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)} 
+                    <CustomSelect
+                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name}
+                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)}
                         options={['Every Unit', ...outlets.map(o => o.name)]}
                         className="min-w-[180px]"
                     />
@@ -350,18 +377,18 @@ export default function StaffPage() {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <CustomSelect 
-                                        label="Command Role" 
-                                        value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')} 
-                                        onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })} 
-                                        options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']} 
+                                    <CustomSelect
+                                        label="Command Role"
+                                        value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')}
+                                        onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })}
+                                        options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']}
                                     />
-                                    <CustomSelect 
-                                        label="Station" 
-                                        value={outlets.find(o => o._id === form.outletId)?.name} 
-                                        onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })} 
-                                        options={outlets.map(o => o.name)} 
-                                        placeholder="Choose Unit" 
+                                    <CustomSelect
+                                        label="Station"
+                                        value={outlets.find(o => o._id === form.outletId)?.name}
+                                        onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })}
+                                        options={outlets.map(o => o.name)}
+                                        placeholder="Choose Unit"
                                     />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

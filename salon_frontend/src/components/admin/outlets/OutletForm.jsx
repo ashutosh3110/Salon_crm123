@@ -10,7 +10,8 @@ import {
     Clock,
     Calendar,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    FileText
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
@@ -55,6 +56,7 @@ export default function OutletForm() {
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         openingTime: '09:00 AM',
         closingTime: '09:00 PM',
+        gstin: '',
     });
 
     useEffect(() => {
@@ -171,6 +173,20 @@ export default function OutletForm() {
                                             className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter text-primary">GSTIN Protocol</label>
+                                <div className="relative">
+                                    <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                    <input
+                                        name="gstin"
+                                        value={form.gstin}
+                                        onChange={handleChange}
+                                        placeholder="e.g. 27AAACG1234A1Z5"
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    />
                                 </div>
                             </div>
 

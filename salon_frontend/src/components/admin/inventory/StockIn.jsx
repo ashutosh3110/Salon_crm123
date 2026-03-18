@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useInventory } from '../../../contexts/InventoryContext';
-import { Plus, History, Package, User, Hash, Calendar, DollarSign, Store, Send, ChevronRight, Download } from 'lucide-react';
+import { Plus, History, Package, User, Hash, Calendar, DollarSign, Store, Send, ChevronRight, Download, ArrowUpRight } from 'lucide-react';
 
 export default function StockIn() {
     const { stockInHistory, suppliers, products, outlets } = useInventory();

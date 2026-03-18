@@ -4,6 +4,7 @@ import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check,
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCMS } from '../../contexts/CMSContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const skills = [
     { name: 'HAIR_COLORING', level: 'EXPERT_UNIT', icon: '🎨' },
@@ -18,6 +19,7 @@ export default function StylistSettingsPage() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { experts, updateExpertProfile } = useCMS();
+    const { outlets } = useBusiness();
 
     // Find current expert profile
     const profile = experts.find(e => e.userId === user?.id) || {
@@ -33,6 +35,7 @@ export default function StylistSettingsPage() {
         experience: profile.experience || '',
         clients: profile.clients || '',
         specializations: profile.specializations || [],
+        outletId: profile.outletId || '',
         name: user?.name || '',
         img: profile.img || `https://ui-avatars.com/api/?name=${user?.name || 'Stylist'}&background=C8956C&color=fff`
     });
@@ -142,6 +145,24 @@ export default function StylistSettingsPage() {
                                         profile.status === 'Approved' ? 'bg-emerald-500' : profile.status === 'Pending' ? 'bg-amber-500' : 'bg-text-muted'
                                     }`} />
                                     {profile.status || 'Not Submitted'}
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 font-bold italic">Assigned Outlet</label>
+                                <div className="relative group">
+                                    <select 
+                                        value={formState.outletId} 
+                                        onChange={(e) => setFormState({...formState, outletId: e.target.value})}
+                                        className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                                    >
+                                        <option value="">Select Your Outlet</option>
+                                        {outlets.map(o => (
+                                            <option key={o._id} value={o._id}>{o.name}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+                                        <MapPin className="w-4 h-4" />
+                                    </div>
                                 </div>
                             </div>
                             <div className="space-y-3">

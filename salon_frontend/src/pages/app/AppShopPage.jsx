@@ -438,9 +438,9 @@ export default function AppShopPage() {
                 rating: p.rating || '4.5',
                 category: shopCategories.find(c => c.id === p.appCategory)?.name || 'General',
                 description: p.shopDescription || p.description || '',
-                outletId: p.availability === 'selected' ? activeOutletId : null // Simplified mapping
+                outletIds: p.outletIds || []
             }));
-    }, [inventoryProducts, shopCategories, activeOutletId]);
+    }, [inventoryProducts, shopCategories]);
 
     const categories = useMemo(() => ([
         { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
@@ -503,8 +503,8 @@ export default function AppShopPage() {
 
         // Filter by Outlet
         result = result.filter(p => {
-            if (!p.outletId) return true; // Available in all salons
-            return p.outletId === activeOutletId;
+            if (!p.outletIds || p.outletIds.length === 0) return true; // Available in all salons
+            return p.outletIds.includes(activeOutletId);
         });
 
         if (activeCategory !== 'All') {

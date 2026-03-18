@@ -4,21 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Star, MapPin, Clock, Award, ShieldCheck, ChevronRight, Search } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCMS } from '../../contexts/CMSContext';
 import { useGender } from '../../contexts/GenderContext';
 import homeData from '../../data/appHomeData.json';
 
 const { GENDER_DATA } = homeData;
-
-const EXPERT_DETAILS = {
-    "Jake Rivera": { experience: "12 Years", bio: "Award-winning master barber specializing in heritage cuts and modern beard tailoring. Transforming style since 2012.", tags: ["Classic Fade", "Royal Shave", "Taper Design"] },
-    "Carlos Mendez": { experience: "8 Years", bio: "Leading hair stylist with a focus on contemporary trends and precision scissor work. Artist of the craft.", tags: ["Modern Quiff", "Texture Cut", "Precision Styling"] },
-    "Dan Fisher": { experience: "15 Years", bio: "The master of beard sculpting. Dan treats every beard like a piece of art. Renowned for detail.", tags: ["Beard Sculpt", "Stubble Groom", "Hot Towel"] },
-    "Mark Chen": { experience: "10 Years", bio: "Expert colorist with a deep understanding of men's color dynamics and gray blending techniques.", tags: ["Gray Blend", "Sunlight Tints", "Creative Color"] },
-    "Sofiya Liss": { experience: "9 Years", bio: "High-fashion stylist with a passion for bridal and editorial hair design. Making every client a muse.", tags: ["Bridal Style", "Editorial", "Glamour Waves"] },
-    "Adrin Ross": { experience: "11 Years", bio: "Master colorist known for stunning transformations and protecting hair integrity. Color perfectionist.", tags: ["Balayage", "Vibrant Hues", "Color Correction"] },
-    "Nina Patel": { experience: "7 Years", bio: "Elite nail artist specializing in luxury extensions and intricate hand-painted designs.", tags: ["Nail Extensions", "Hand Painted", "Luxury Spa"] },
-    "Priya Kapoor": { experience: "14 Years", bio: "Advanced skin therapist dedicated to holistic rejuvenation and clinical skin health.", tags: ["Dermal Therapy", "Glow Facial", "Skin Ritual"] }
-};
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
@@ -27,6 +17,7 @@ export default function AppExpertsPage() {
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
     const { activeOutletId, activeOutlet } = useBusiness();
+    const { experts } = useCMS();
     const { gender } = useGender();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedExpert, setSelectedExpert] = useState(null);
@@ -36,15 +27,19 @@ export default function AppExpertsPage() {
     const d = GENDER_DATA[g];
 
     const filteredExperts = useMemo(() => {
-        let list = d.experts.filter(e => !e.outletId || e.outletId === activeOutletId);
+        // Use CMS experts if they exist, otherwise fallback to homeData (legacy)
+        let list = experts.length > 0 
+            ? experts.filter(e => e.status === 'Approved' && (e.outletId === activeOutletId || !e.outletId))
+            : d.experts.filter(e => !e.outletId || e.outletId === activeOutletId);
+
         if (searchQuery) {
             list = list.filter(e =>
                 e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                e.role.toLowerCase().includes(searchQuery.toLowerCase())
+                (e.role || '').toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
         return list;
-    }, [activeOutletId, d.experts, searchQuery]);
+    }, [activeOutletId, experts, d.experts, searchQuery]);
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh', paddingBottom: '40px' }}>
@@ -128,7 +123,7 @@ export default function AppExpertsPage() {
                             <div style={{ display: 'flex', gap: '12px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <Award size={12} color={colors.textMuted} />
-                                    <span style={{ fontSize: '11px', color: colors.textMuted }}>{EXPERT_DETAILS[expert.name]?.experience || '5+ Years'} Exp.</span>
+                                    <span style={{ fontSize: '11px', color: colors.textMuted }}>{expert.experience || '5+ Years'} Exp.</span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                     <ShieldCheck size={12} color={colors.textMuted} />
@@ -186,25 +181,25 @@ export default function AppExpertsPage() {
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
                                     <div style={{ background: isLight ? '#F9F9F9' : '#242424', padding: '12px', borderRadius: '16px', textAlign: 'center' }}>
                                         <p style={{ fontSize: '10px', color: colors.textMuted, textTransform: 'uppercase', margin: '0 0 4px', fontWeight: 700 }}>Experience</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>{EXPERT_DETAILS[selectedExpert.name]?.experience || '5+ Years'}</p>
+                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>{selectedExpert.experience || '5+ Years'}</p>
                                     </div>
                                     <div style={{ background: isLight ? '#F9F9F9' : '#242424', padding: '12px', borderRadius: '16px', textAlign: 'center' }}>
                                         <p style={{ fontSize: '10px', color: colors.textMuted, textTransform: 'uppercase', margin: '0 0 4px', fontWeight: 700 }}>Clients</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>1.2k+</p>
+                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>{selectedExpert.clients || '1.2k+'}</p>
                                     </div>
                                 </div>
 
                                 <div style={{ marginBottom: '24px' }}>
                                     <h4 style={{ fontSize: '12px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.05em' }}>Profile Bio</h4>
                                     <p style={{ fontSize: '14px', lineHeight: '1.6', color: colors.text, opacity: 0.8, margin: 0 }}>
-                                        {EXPERT_DETAILS[selectedExpert.name]?.bio || "A dedicated professional committed to delivering the highest quality salon experience for every client."}
+                                        {selectedExpert.bio || "A dedicated professional committed to delivering the highest quality salon experience for every client."}
                                     </p>
                                 </div>
 
                                 <div style={{ marginBottom: '32px' }}>
                                     <h4 style={{ fontSize: '12px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>Specializations</h4>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                                        {(EXPERT_DETAILS[selectedExpert.name]?.tags || ["Master Styling", "Classic Cut", "Detailing"]).map(tag => (
+                                        {(selectedExpert.specializations || ["Master Styling", "Classic Cut", "Detailing"]).map(tag => (
                                             <span key={tag} style={{ padding: '6px 12px', background: `${colors.accent}15`, color: colors.accent, borderRadius: '8px', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>
                                                 {tag}
                                             </span>

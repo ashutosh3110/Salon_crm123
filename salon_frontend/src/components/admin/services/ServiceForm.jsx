@@ -17,22 +17,25 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ServiceForm({ onSave, categories = [], initialData }) {
     const navigate = useNavigate();
-    const [formData, setFormData] = useState(initialData || {
-        name: '',
-        category: '',
-        description: '',
-        duration: '',
-        price: '',
-        image: '',
-        gst: '18',
-        commissionApplicable: true,
-        commissionType: 'percent',
-        commissionValue: '10',
-        outlet: 'all',
-        status: 'active'
+    const { outlets } = useBusiness();
+    const [formData, setFormData] = useState({
+        name: initialData?.name || '',
+        category: initialData?.category || '',
+        description: initialData?.description || '',
+        duration: initialData?.duration || '',
+        price: initialData?.price || '',
+        image: initialData?.image || '',
+        gst: initialData?.gst || '18',
+        commissionApplicable: initialData?.commissionApplicable !== undefined ? initialData.commissionApplicable : true,
+        commissionType: initialData?.commissionType || 'percent',
+        commissionValue: initialData?.commissionValue || '10',
+        outlet: initialData?.outlet === 'All Outlets' ? 'all' : (initialData?.outletIds?.length > 0 ? 'selected' : 'all'),
+        outletIds: initialData?.outletIds || [],
+        status: initialData?.status || 'active'
     });
 
     const handleImageUpload = (e) => {
@@ -62,7 +65,7 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
             duration: parseInt(formData.duration),
             price: parseFloat(formData.price),
             gst: parseInt(formData.gst),
-            outlets: formData.outlet === 'all' ? 'All Outlets' : 'Selected Outlets'
+            outlets: formData.outlet === 'all' ? 'All Outlets' : `${formData.outletIds.length} Outlet${formData.outletIds.length !== 1 ? 's' : ''}`
         });
         navigate('/admin/services/list');
     };
@@ -310,6 +313,35 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Selected Outlets Only</span>
                         </label>
                     </div>
+
+                    {formData.outlet === 'selected' && (
+                        <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
+                            {outlets.map(outlet => (
+                                <button
+                                    key={outlet._id}
+                                    type="button"
+                                    onClick={() => {
+                                        const ids = formData.outletIds.includes(outlet._id)
+                                            ? formData.outletIds.filter(id => id !== outlet._id)
+                                            : [...formData.outletIds, outlet._id];
+                                        setFormData({ ...formData, outletIds: ids });
+                                    }}
+                                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${formData.outletIds.includes(outlet._id)
+                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        : 'bg-white border-border text-text-muted hover:border-primary/40'
+                                    }`}
+                                >
+                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${formData.outletIds.includes(outlet._id)
+                                        ? 'bg-primary border-primary text-white'
+                                        : 'bg-white border-border'
+                                    }`}>
+                                        {formData.outletIds.includes(outlet._id) && <CheckCircle2 className="w-3 h-3" />}
+                                    </div>
+                                    <span className="text-xs font-bold uppercase tracking-tight">{outlet.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* 6. Status */}
