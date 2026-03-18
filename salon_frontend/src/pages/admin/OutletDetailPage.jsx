@@ -18,43 +18,25 @@ import {
     User,
     ArrowUpRight
 } from 'lucide-react';
-import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function OutletDetailPage() {
     const navigate = useNavigate();
     const { id } = useParams();
+    const { outlets } = useBusiness();
     const [outlet, setOutlet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
-        const fetchOutlet = async () => {
-            if (id?.startsWith('mock-')) {
-                const mockId = id.split('-')[1];
-                const mock = {
-                    '1': { _id: 'mock-1', name: 'Grace & Glamour - Downtown', city: 'Mumbai', state: 'Maharashtra', address: '123, Marine Drive, South Mumbai', pincode: '400020', phone: '+91 98765 43210', email: 'downtown@graceglamour.com', status: 'active' },
-                    '2': { _id: 'mock-2', name: 'The Royal Salon - Bandra', city: 'Mumbai', state: 'Maharashtra', address: 'B-42, Pali Hill, Bandra West', pincode: '400050', phone: '+91 98765 43211', email: 'bandra@royalsalon.com', status: 'active' },
-                    '3': { _id: 'mock-3', name: 'Elegance Spa & Unisex Salon', city: 'Pune', state: 'Maharashtra', address: 'Koregaon Park, Lane 7, Pune', pincode: '411001', phone: '+91 98765 43212', email: 'pune@elegance.com', status: 'inactive' },
-                }[mockId];
-
-                if (mock) {
-                    setOutlet(mock);
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            try {
-                const { data } = await api.get(`/outlets/${id}`);
-                setOutlet(data.data || data);
-            } catch (err) {
-                console.error('Failed to fetch outlet:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOutlet();
-    }, [id]);
+        const found = outlets.find(o => o._id === id);
+        if (found) {
+            setOutlet(found);
+        } else {
+            console.error('Failed to fetch outlet');
+        }
+        setLoading(false);
+    }, [id, outlets]);
 
     if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
     if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Registry entity not found</div>;

@@ -91,6 +91,7 @@ export function BusinessProvider({ children }) {
     const addOutlet = (outlet) => setOutlets(prev => [{ ...outlet, _id: `out-${Date.now()}`, staffCount: 0 }, ...prev]);
     const updateOutlet = (id, data) => setOutlets(prev => prev.map(o => o._id === id ? { ...o, ...data } : o));
     const deleteOutlet = (id) => setOutlets(prev => prev.filter(o => o._id !== id));
+    const toggleOutletStatus = (id) => setOutlets(prev => prev.map(o => o._id === id ? { ...o, status: o.status === 'active' ? 'inactive' : 'active' } : o));
 
     const addStaff = (member) => {
         const newMember = { ...member, _id: `s-${Date.now()}`, inviteStatus: 'accepted', joinedDate: new Date().toISOString().split('T')[0], outletName: outlets.find(o => o._id === member.outletId)?.name || 'Main' };
@@ -158,7 +159,7 @@ export function BusinessProvider({ children }) {
 
     const value = {
         outlets, staff, services, categories, products, customers,
-        addOutlet, updateOutlet, deleteOutlet,
+        addOutlet, updateOutlet, deleteOutlet, toggleOutletStatus,
         addStaff, updateStaff, deleteStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         addCategory, deleteCategory, toggleCategoryStatus, updateCategory,

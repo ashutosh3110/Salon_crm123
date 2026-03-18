@@ -167,15 +167,15 @@ export default function StaffPage() {
                     />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                    <CustomSelect 
-                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)} 
-                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())} 
+                    <CustomSelect
+                        value={roleFilter === 'all' ? 'Every Role' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                        onChange={(val) => setRoleFilter(val === 'Every Role' ? 'all' : val.toLowerCase())}
                         options={['Every Role', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
                         className="min-w-[140px]"
                     />
-                    <CustomSelect 
-                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name} 
-                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)} 
+                    <CustomSelect
+                        value={outletFilter === 'all' ? 'Every Unit' : outlets.find(o => o._id === outletFilter)?.name}
+                        onChange={(val) => setOutletFilter(val === 'Every Unit' ? 'all' : outlets.find(o => o.name === val)?._id)}
                         options={['Every Unit', ...outlets.map(o => o.name)]}
                         className="min-w-[180px]"
                     />
@@ -350,18 +350,18 @@ export default function StaffPage() {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <CustomSelect 
-                                        label="Command Role" 
-                                        value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')} 
-                                        onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })} 
-                                        options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']} 
+                                    <CustomSelect
+                                        label="Command Role"
+                                        value={form.role.charAt(0).toUpperCase() + form.role.slice(1).replace('_', ' ')}
+                                        onChange={(val) => setForm({ ...form, role: val.toLowerCase().replace(' ', '_') })}
+                                        options={['Stylist', 'Receptionist', 'Manager', 'Accountant', 'Inventory Manager', 'Admin']}
                                     />
-                                    <CustomSelect 
-                                        label="Station" 
-                                        value={outlets.find(o => o._id === form.outletId)?.name} 
-                                        onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })} 
-                                        options={outlets.map(o => o.name)} 
-                                        placeholder="Choose Unit" 
+                                    <CustomSelect
+                                        label="Station"
+                                        value={outlets.find(o => o._id === form.outletId)?.name}
+                                        onChange={(val) => setForm({ ...form, outletId: outlets.find(o => o.name === val)?._id })}
+                                        options={outlets.map(o => o.name)}
+                                        placeholder="Choose Unit"
                                     />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
