@@ -453,7 +453,7 @@ export default function StaffPage() {
                                     onClick={() => setShowModal(false)}
                                     className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono"
                                 >
-                                    Abort
+                                    Cancel
                                 </button>
                                 <button
                                     type="submit"

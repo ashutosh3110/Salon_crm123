@@ -173,10 +173,10 @@ export default function BookingsPage() {
     const stats = useMemo(() => {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
-            { label: "Total Load", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
-            { label: 'Upcoming', value: safeBookings.filter(b => b.status === 'upcoming').length, icon: RotateCcw, color: 'text-blue-500' },
-            { label: 'Success Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
-            { label: 'Risk Factor', value: safeBookings.filter(b => b.status === 'no-show').length, icon: AlertCircle, color: 'text-rose-500' },
+            { label: "Total Bookings", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
+            { label: 'Confirmed', value: safeBookings.filter(b => b.status === 'upcoming').length, icon: RotateCcw, color: 'text-blue-500' },
+            { label: 'Completion Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
+            { label: 'No-Shows', value: safeBookings.filter(b => b.status === 'no-show').length, icon: AlertCircle, color: 'text-rose-500' },
         ];
     }, [bookings]);
 
@@ -190,8 +190,8 @@ export default function BookingsPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Booking Protocols</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: scheduling_intelligence_active </p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Manage Bookings</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">View and manage all salon appointments</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4 text-left font-black">
@@ -213,7 +213,7 @@ export default function BookingsPage() {
                             onClick={() => setView('list')}
                             className={`flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${view === 'list' ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' : 'text-text-muted hover:bg-surface-alt'}`}
                         >
-                            <List className="w-3.5 h-3.5" /> LIST ARRAY
+                            <List className="w-3.5 h-3.5" /> LIST VIEW
                         </button>
                     </div>
                 </div>
@@ -250,7 +250,7 @@ export default function BookingsPage() {
                 {/* Status Composition Chart */}
                 <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Status Matrix</span>
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Booking Status</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[120px] w-full text-left">
@@ -278,7 +278,7 @@ export default function BookingsPage() {
                 {/* Source Intelligence Chart */}
                 <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Source Vectors</span>
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Booking Sources</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[120px] w-full text-left">
@@ -293,7 +293,7 @@ export default function BookingsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Entry Point Analysis</div>
+                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Entry Analysis</div>
                 </div>
             </div>
 
@@ -303,7 +303,7 @@ export default function BookingsPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search system registry (name/comm)..."
+                        placeholder="Search by name or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-12 pr-4 py-3.5 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
@@ -336,7 +336,7 @@ export default function BookingsPage() {
                         <div className="p-8 border-b border-border bg-surface-alt/50">
                             <h3 className="text-[11px] font-black text-text uppercase tracking-widest flex items-center gap-3">
                                 <Calendar className="w-4 h-4 text-primary" />
-                                Sequence Map
+                                Select Date
                             </h3>
                         </div>
 
@@ -358,7 +358,7 @@ export default function BookingsPage() {
                                             const d = new Date(b.appointmentDate);
                                             return d.getDate() === selectedDate.getDate() &&
                                                 d.getMonth() === selectedDate.getMonth();
-                                        }).length} Pulse
+                                        }).length} Bookings
                                     </span>
                                 </div>
                                 <div className="space-y-4">
@@ -367,7 +367,7 @@ export default function BookingsPage() {
                                         return d.getDate() === selectedDate.getDate() &&
                                             d.getMonth() === selectedDate.getMonth();
                                     }).length === 0 ? (
-                                        <p className="text-[11px] text-gray-400 px-2 font-black uppercase mt-10 text-center italic opacity-40 italic">Null Data Stream.</p>
+                                        <p className="text-[11px] text-gray-400 px-2 font-black uppercase mt-10 text-center italic opacity-40 italic">No bookings on this day.</p>
                                     ) : (
                                         filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
@@ -396,7 +396,7 @@ export default function BookingsPage() {
                         <div className="p-6 border-t border-border bg-surface-alt/30">
                             <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest">
                                 <div className="w-3 h-3 rounded-none bg-primary" />
-                                <span>Core Synchronization Hub</span>
+                                <span>Calendar Sync Active</span>
                             </div>
                         </div>
                     </div>
@@ -417,13 +417,13 @@ export default function BookingsPage() {
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-surface border-b border-border">
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Internal ID</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Signal Time</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Identity</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Service Logic</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Entry</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Protocol Status</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Operations</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Booking ID</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Date & Time</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Customer</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Service</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Source</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Status</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/40 text-left font-black">
@@ -432,7 +432,7 @@ export default function BookingsPage() {
                                         <td colSpan="7" className="px-8 py-32 text-center">
                                             <div className="flex flex-col items-center justify-center opacity-20">
                                                 <RotateCcw className="w-16 h-16 mb-6 animate-spin-slow" />
-                                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">No Bookings Detected in Current Matrix.</p>
+                                                <p className="text-[10px] font-black uppercase tracking-[0.3em]">No bookings found matching your search.</p>
                                             </div>
                                         </td>
                                     </tr>

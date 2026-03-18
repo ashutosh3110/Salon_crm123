@@ -75,10 +75,10 @@ export default function OutletsPage() {
     }, [outlets]);
 
     const stats = useMemo(() => ([
-        { label: 'Total Nodes', value: outlets.length, icon: Store, trend: 'Network' },
-        { label: 'Workforce', value: outlets.reduce((s, o) => s + (o.staffCount || 0), 0), icon: Users, trend: 'Deployed' },
-        { label: 'Clusters', value: cities.length - 1, icon: Network, trend: 'Regions' },
-        { label: 'Pulse', value: 'Prime', icon: TrendingUp, trend: 'Signal' }
+        { label: 'Total Salons', value: outlets.length, icon: Store, color: 'blue', trend: 'Active' },
+        { label: 'Total Staff', value: outlets.reduce((s, o) => s + (o.staffCount || 0), 0), icon: Users, color: 'emerald', trend: 'Working' },
+        { label: 'Cities Covered', value: cities.length - 1, icon: Network, color: 'orange', trend: 'Locations' },
+        { label: 'System status', value: 'Healthy', icon: TrendingUp, color: 'violet', trend: 'Online' }
     ]), [outlets, cities]);
 
     const handleDelete = (id) => {
@@ -88,18 +88,18 @@ export default function OutletsPage() {
     };
 
     return (
-        <div className="space-y-4 animate-reveal text-left max-w-[1600px] mx-auto pb-8">
-            {/* Header - Compact */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-1">
-                <div className="text-left font-mono">
-                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Business Infrastructure</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">System Core :: Nodes & Network</p>
+        <div className="space-y-6 animate-reveal text-left font-black">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-left">
+                <div className="text-left font-black leading-none">
+                    <h1 className="text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Manage My Salons</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Viewing and managing all your salon locations</p>
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
                     className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black uppercase tracking-[0.15em] shadow-lg hover:bg-primary hover:text-white transition-all font-mono"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Expand Network
+                    <Plus className="w-4 h-4" /> Add New Salon
                 </button>
             </div>
 
@@ -122,10 +122,11 @@ export default function OutletsPage() {
                     ))}
                 </div>
 
-                <div className="bg-white p-4 border border-border flex flex-col justify-between relative overflow-hidden group">
-                    <div className="flex items-center justify-between mb-2 z-10">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">Regions</span>
-                        <PieIcon className="w-3 h-3 text-primary" />
+                {/* Regional Distribution Chart */}
+                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4 text-left">
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Salons by City</span>
+                        <PieIcon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[80px] w-full z-10">
                         <ResponsiveContainer width="100%" height="100%">
@@ -144,10 +145,11 @@ export default function OutletsPage() {
                     </div>
                 </div>
 
-                <div className="bg-white p-4 border border-border flex flex-col justify-between relative overflow-hidden group">
-                    <div className="flex items-center justify-between mb-2 z-10">
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">Density</span>
-                        <BarChart3 className="w-3 h-3 text-primary" />
+                {/* Personnel Density Chart */}
+                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4 text-left">
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Staffing Details</span>
+                        <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[80px] w-full z-10">
                         <ResponsiveContainer width="100%" height="100%">
@@ -161,6 +163,7 @@ export default function OutletsPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
+                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Staff count per salon</div>
                 </div>
             </div>
 
@@ -172,8 +175,8 @@ export default function OutletsPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Scan for unit or city..."
-                        className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all placeholder:text-[10px] uppercase font-mono"
+                        placeholder="Search by salon name or city..."
+                        className="w-full pl-14 pr-4 py-3.5 rounded-none border border-border bg-background text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/10"
                     />
                 </div>
                 <div className="flex gap-4 text-left">
@@ -195,9 +198,10 @@ export default function OutletsPage() {
             {/* Outlets Grid - Smaller Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {filteredOutlets.length === 0 ? (
-                    <div className="col-span-full py-20 text-center bg-white border border-border border-dashed font-mono uppercase italic">
-                        <SearchX className="w-10 h-10 text-text-muted/20 mx-auto mb-4" />
-                        <h3 className="text-[10px] font-black text-text-muted tracking-widest leading-none">No Nodes Detected / Scanning Protocol Empty</h3>
+                    <div className="col-span-full py-32 text-center bg-surface border border-border border-dashed text-left">
+                        <SearchX className="w-16 h-16 text-text-muted/20 mx-auto mb-8" />
+                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Salons Found</h3>
+                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.25em]">We couldn't find any salon matching your search.</p>
                     </div>
                 ) : (
                     filteredOutlets.map((outlet) => (
@@ -234,21 +238,21 @@ export default function OutletsPage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60 leading-none">
                                     <MapPin className="w-3.5 h-3.5" />
-                                    COORD :: {(outlet.city || 'N/A').toUpperCase()}
+                                    CITY: {(outlet.city || 'N/A').toUpperCase()}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-2 mb-4">
-                                <div className="bg-surface p-2 border border-border/40">
-                                    <p className="text-[7px] font-black text-text-muted uppercase tracking-widest font-mono leading-none mb-1">Asset Load</p>
-                                    <div className="flex items-center gap-1.5">
-                                        <Users className="w-2.5 h-2.5 text-primary" />
-                                        <span className="text-[10px] font-black text-text font-mono italic">{outlet.staffCount} U</span>
+                            <div className="grid grid-cols-2 gap-4 mb-10 text-left font-black">
+                                <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
+                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Staff Count</div>
+                                    <div className="flex items-center gap-3">
+                                        <Users className="w-4 h-4 text-primary" />
+                                        <span className="text-sm font-black text-text">{outlet.staffCount} STAFF</span>
                                     </div>
                                 </div>
-                                <div className="bg-surface p-2 border border-border/40 flex flex-col justify-center items-center">
-                                    <p className="text-[7px] font-black text-text-muted uppercase tracking-widest font-mono leading-none mb-1 text-center w-full">Pulse</p>
-                                    <span className="text-[8px] font-black text-emerald-500 font-mono tracking-tighter text-center w-full">LIVE</span>
+                                <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
+                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Status</div>
+                                    <div className="text-sm font-black text-emerald-500 uppercase tracking-tighter">ACTIVE NOW</div>
                                 </div>
                             </div>
 
@@ -256,7 +260,7 @@ export default function OutletsPage() {
                                 onClick={() => navigate(`/admin/outlets/${outlet._id}`)}
                                 className="w-full py-2 bg-background border border-border text-text-muted text-[8px] font-black uppercase tracking-widest hover:bg-text hover:text-white transition-all font-mono italic flex items-center justify-center gap-2"
                             >
-                                Dashboard <ChevronRight className="w-3 h-3" />
+                                Open Salon Dashboard <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     ))

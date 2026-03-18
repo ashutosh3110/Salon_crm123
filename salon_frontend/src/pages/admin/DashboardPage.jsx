@@ -100,14 +100,14 @@ export default function DashboardPage() {
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 text-left font-black">
                 <div className="leading-none">
                     <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Welcome Back, Admin</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Real-time salon intelligence overview</p>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Daily salon overview and performance</p>
                 </div>
                 <div className="flex items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 lg:flex-none">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input
                             type="text"
-                            placeholder="Scan system registry..."
+                            placeholder="Search everything..."
                             className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-none bg-surface-alt border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all font-black"
                         />
                     </div>
@@ -158,8 +158,8 @@ export default function DashboardPage() {
                 <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em]">Revenue Performance Matrix</h2>
-                            <p className="text-[10px] text-text-muted font-bold tracking-widest mt-1 uppercase">7-Day Transactional Flux</p>
+                            <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em]">Revenue Trends</h2>
+                            <p className="text-[10px] text-text-muted font-bold tracking-widest mt-1 uppercase">Last 7 days income and bookings</p>
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
@@ -224,7 +224,7 @@ export default function DashboardPage() {
 
                 {/* Service Distribution Pie */}
                 <div className="bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col">
-                    <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em] mb-8">Service Utilization</h2>
+                    <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em] mb-8">Most Booked Services</h2>
                     <div className="flex-1 min-h-[220px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -273,7 +273,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left">
                     <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Live Salon Activity</h3>
+                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Recent Activity</h3>
                         <button className="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-70 transition-opacity">Full Stream</button>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="bg-surface rounded-none border border-border shadow-sm p-5 space-y-5 text-left font-black">
-                    <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Quick Operations</h3>
+                    <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Quick Actions</h3>
                     <div className="grid grid-cols-2 gap-2.5">
                         <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
                             <Calendar className="w-4 h-4 opacity-60 group-hover:opacity-100" />
@@ -325,7 +325,7 @@ export default function DashboardPage() {
                         <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
                             <TrendingUp className="w-20 h-20" />
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 text-left">Pro Intelligence</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 text-left">Business Tip</p>
                         <p className="text-sm font-black tracking-tight leading-tight uppercase text-left">Track stylist performance to optimize schedules.</p>
                     </div>
                 </div>

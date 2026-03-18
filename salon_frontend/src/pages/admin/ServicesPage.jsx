@@ -56,10 +56,10 @@ export default function ServicesPage({ tab = 'list' }) {
     }, [services]);
 
     const stats = useMemo(() => ([
-        { label: 'Active Matrix', value: services.length, icon: Zap, color: 'blue', trend: 'Operational' },
-        { label: 'Total Magnitude', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald', trend: 'Catalog Value' },
-        { label: 'Logic Groups', value: categories.length, icon: Layers, color: 'orange', trend: 'Segments' },
-        { label: 'Avg Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}m`, icon: Settings2, color: 'violet', trend: 'Signal Flow' }
+        { label: 'Active Services', value: services.length, icon: Zap, color: 'blue', trend: 'Live' },
+        { label: 'Catalog Value', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald', trend: 'Total Value' },
+        { label: 'Service Categories', value: categories.length, icon: Layers, color: 'orange', trend: 'Groups' },
+        { label: 'Avg. Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}m`, icon: Settings2, color: 'violet', trend: 'Average Time' }
     ]), [services, categories]);
 
     return (
@@ -70,10 +70,10 @@ export default function ServicesPage({ tab = 'list' }) {
                     <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3">
                         <span className="opacity-60">Operations</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-                        <span className="text-primary">Service Meta</span>
+                        <span className="text-primary">Service Details</span>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">Service Protocols</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Module :: operational_logic_v1.0 // service_catalog</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">Manage Services</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Manage and organize your salon services</p>
                 </div>
             </div>
 
@@ -109,7 +109,7 @@ export default function ServicesPage({ tab = 'list' }) {
                 {/* Logic Group Distribution */}
                 <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Logic Groups</span>
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Service Categories</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[120px] w-full text-left">
@@ -137,7 +137,7 @@ export default function ServicesPage({ tab = 'list' }) {
                 {/* Magnitude Vector Chart */}
                 <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Magnitude Vector</span>
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Price comparison</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[120px] w-full text-left">

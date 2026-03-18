@@ -7,7 +7,11 @@ import {
     CheckCircle2,
     AlertCircle,
     Eye,
-    EyeOff
+    EyeOff,
+    Building2,
+    Percent,
+    Globe,
+    FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -36,11 +40,13 @@ export default function POSSettingsPage() {
         confirm: false
     });
 
+
     const handleProfileSubmit = (e) => {
         e.preventDefault();
-        setStatus({ type: 'success', msg: 'Identity parameters updated in local vault.' });
+        setStatus({ type: 'success', msg: 'Profile updated successfully.' });
         setTimeout(() => setStatus(null), 3000);
     };
+
 
     const handlePasswordSubmit = (e) => {
         e.preventDefault();
@@ -81,14 +87,14 @@ export default function POSSettingsPage() {
                         className={`w-full flex items-center gap-4 px-6 py-4 border transition-all ${activeTab === 'profile' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:border-primary/40 hover:text-text'}`}
                     >
                         <User className="w-4 h-4" />
-                        <span className="text-[10px] uppercase tracking-[0.2em]">Operator Profile</span>
+                        <span className="text-[10px] uppercase tracking-[0.2em]">Profile Info</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('security')}
                         className={`w-full flex items-center gap-4 px-6 py-4 border transition-all ${activeTab === 'security' ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:border-primary/40 hover:text-text'}`}
                     >
                         <Lock className="w-4 h-4" />
-                        <span className="text-[10px] uppercase tracking-[0.2em]">Security Access</span>
+                        <span className="text-[10px] uppercase tracking-[0.2em]">Password & Security</span>
                     </button>
                 </div>
 
@@ -231,6 +237,7 @@ export default function POSSettingsPage() {
                             </div>
                         </div>
                     )}
+
                 </div>
             </div>
         </div>
