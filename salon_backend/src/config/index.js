@@ -14,6 +14,9 @@ const envVarsSchema = Joi.object()
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(15).description('minutes after which access tokens expire'),
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(7).description('days after which refresh tokens expire'),
     CORS_ORIGIN: Joi.any().default('*').description('CORS allowed origin'),
+    CLOUDINARY_CLOUD_NAME: Joi.string().description('Cloudinary cloud name'),
+    CLOUDINARY_API_KEY: Joi.string().description('Cloudinary API key'),
+    CLOUDINARY_API_SECRET: Joi.string().description('Cloudinary API secret'),
   })
   .unknown();
 
@@ -43,5 +46,10 @@ export const config = {
   },
   cors: {
     origin: envVars.CORS_ORIGIN,
+  },
+  cloudinary: {
+    cloud_name: envVars.CLOUDINARY_CLOUD_NAME,
+    api_key: envVars.CLOUDINARY_API_KEY,
+    api_secret: envVars.CLOUDINARY_API_SECRET,
   },
 };

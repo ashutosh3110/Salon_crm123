@@ -18,6 +18,7 @@ import subscriptionRoute from './modules/subscription/subscription.routes.js';
 import billingRoute from './modules/billing/billing.routes.js';
 import analyticsRoute from './modules/analytics/analytics.routes.js';
 import cmsRoute from './modules/cms/cms.routes.js';
+import blogRoute from './modules/blog/blog.routes.js';
 import onboardingGuard from './middlewares/onboardingGuard.js';
 
 const router = express.Router();
@@ -54,6 +55,10 @@ const defaultRoutes = [
     {
         path: '/cms',
         route: cmsRoute,
+    },
+    {
+        path: '/blogs',
+        route: blogRoute,
     },
 ];
 

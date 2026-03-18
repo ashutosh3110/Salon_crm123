@@ -4,68 +4,48 @@ import { useParams, useNavigate } from 'react-router-dom';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
-const blogPosts = [
-    {
-        id: 1,
-        category: "Growth",
-        title: "How to Scale Your Salon to Multiple Outlets",
-        content: `
-            <p>Scaling a salon business is an exhilarating journey, but it requires more than just passion—it requires a robust operational blueprint. When moving from a single boutique to a multi-outlet empire, consistency becomes your most valuable currency.</p>
-            <h3>1. Standardize Your Service Menu</h3>
-            <p>Whether a client walks into your original branch or your tenth location, the experience must be identical. This means standardized training for all stylists, unified product lines, and a consistent color palette in your interior design.</p>
-            <h3>2. Centralize Your Management</h3>
-            <p>Using a cloud-based CRM allows you to monitor performance across all branches from a single dashboard. You can track inventory levels, staff attendance, and revenue in real-time without having to be physically present at every location.</p>
-            <h3>3. Empower Local Leaders</h3>
-            <p>As you grow, you cannot micro-manage every detail. Hiring salon managers who share your vision and giving them the tools to succeed is crucial for sustainable scaling.</p>
-        `,
-        image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200",
-        date: "Feb 15, 2026",
-        author: "Sophia Laurent"
-    },
-    {
-        id: 2,
-        category: "Marketing",
-        title: "Automated WhatsApp Marketing for Beauty Businesses",
-        content: `
-            <p>In today's digital age, your clients' attention is held within their messaging apps. WhatsApp has emerged as the most powerful tool for customer retention in the beauty industry.</p>
-            <h3>The Power of Instant Connection</h3>
-            <p>Automated reminders reduce no-shows by up to 60%. But marketing goes beyond just reminders. You can send personalized birthday offers, loyalty point updates, and seasonal campaign galleries directly to their pockets.</p>
-            <h3>Segmenting Your Audience</h3>
-            <p>Don't just blast messages. Use your CRM data to target clients based on their visit history. Send haircare tips to those who just got a color service, or a special discount to those who haven't visited in 60 days.</p>
-        `,
-        image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&q=80&w=1200",
-        date: "Feb 10, 2026",
-        author: "Marcus Chen"
-    },
-    {
-        id: 3,
-        category: "Operations",
-        title: "The Future of POS in the Salon Industry",
-        content: `
-            <p>The traditional cash register is a relic of the past. Modern salon owners are looking for integrated ecosystems that handle every aspect of the transaction and beyond.</p>
-            <h3>Beyond Simple Billing</h3>
-            <p>A modern POS system should integrate with your inventory, staff commissions, and loyalty programs. When a client pays, the system should automatically deduct products used, calculate the stylist's cut, and update the client's reward balance.</p>
-            <h3>The Cloud Advantage</h3>
-            <p>Accessing your financial data from anywhere is no longer a luxury—it's a necessity. Real-time reporting allows you to make data-driven decisions on the fly, ensuring your salon remains profitable and competitive.</p>
-        `,
-        image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&q=80&w=1200",
-        date: "Feb 05, 2026",
-        author: "Emma Richards"
-    }
-];
+import axios from 'axios';
 
 export default function BlogPostDetailPage() {
-    const { id } = useParams();
+    const { slug } = useParams();
     const navigate = useNavigate();
-    const post = blogPosts.find(p => p.id === parseInt(id));
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const getImageUrl = (url) => {
+        if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
+        if (url.startsWith('http')) return url;
+        // Prefix with backend URL for local uploads
+        return `http://localhost:3000${url.startsWith('/') ? '' : '/'}${url}`;
+    };
 
     useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:3000/v1/blogs/${slug}`);
+                setPost(data);
+            } catch (err) {
+                console.error('Failed to fetch article:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPost();
+
         const originalBg = document.body.style.backgroundColor;
         document.body.style.backgroundColor = '#050505';
         return () => {
             document.body.style.backgroundColor = originalBg;
         };
-    }, []);
+    }, [slug]);
+
+    if (loading) {
+        return (
+            <div className="new-dark-theme" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', sans-serif", color: '#ffffff' }}>
+                <p style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.4em' }}>Synchronizing Narrative...</p>
+            </div>
+        );
+    }
 
     if (!post) {
         return (
@@ -106,7 +86,7 @@ export default function BlogPostDetailPage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.2em' }}>
                         <span>By {post.author}</span>
                         <div style={{ height: '12px', width: '1px', background: 'rgba(255,255,255,0.15)' }} />
-                        <span>{post.date}</span>
+                        <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</span>
                     </div>
                 </motion.div>
             </div>
@@ -119,7 +99,7 @@ export default function BlogPostDetailPage() {
                     <div style={{ width: '100%' }}>
                         <div style={{ background: 'rgba(255,255,255,0.02)', padding: 'clamp(2rem, 5vw, 5rem)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px' }}>
                             <div style={{ aspectRatio: '16/9', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.06)', marginBottom: '4rem' }}>
-                                <img src={post.image} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={getImageUrl(post.image)} alt={post.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
 
                             <div

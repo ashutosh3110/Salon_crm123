@@ -6,16 +6,17 @@ import userController from './user.controller.js';
 const router = express.Router();
 
 router.use(auth);
+
+router.get('/me', userController.getMe);
+router.patch('/me', userController.updateMe);
+router.post('/change-password', userController.changePassword);
+
 router.use(validateTenant);
 
-router
-    .route('/')
-    .post(userController.createUser)
-    .get(userController.getUsers);
+router.post('/', userController.createUser);
+router.get('/', userController.getUsers);
 
-router
-    .route('/:userId')
-    .get(userController.getUser)
-    .patch(userController.updateUser);
+router.get('/:userId', userController.getUser);
+router.patch('/:userId', userController.updateUser);
 
 export default router;

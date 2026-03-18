@@ -60,12 +60,12 @@ export default function SuperAdminLoginPage() {
                     {/* Visual Section */}
                     <div className="md:w-5/12 bg-[#0F0F0F] relative p-12 flex flex-col items-center justify-between border-r border-white/5">
                         <div className="w-full relative z-10 text-center md:text-left">
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 mb-2 block tracking-widest">Master Terminal</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60 mb-2 block tracking-widest">SuperAdmin Access</span>
                             <h1 className="text-4xl font-black tracking-tighter uppercase italic leading-none mb-6">
                                 Platform <br /> <span className="text-white/40">Control.</span>
                             </h1>
                             <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest leading-relaxed max-w-[220px] mx-auto md:mx-0">
-                                High-privileged access node for platform administration and oversight.
+                                Manage your salons, users, and platform settings.
                             </p>
 
                             <div className="hidden md:block relative aspect-[3/4] w-full max-w-[240px] mt-12 overflow-hidden rounded-[2.5rem] border border-white/10 group">
@@ -116,7 +116,7 @@ export default function SuperAdminLoginPage() {
                                 <div className="space-y-6">
                                     {/* Email */}
                                     <div className="group space-y-2">
-                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Admin sequence</label>
+                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Email Address</label>
                                         <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
                                             <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                                             <input
@@ -129,7 +129,7 @@ export default function SuperAdminLoginPage() {
 
                                     {/* Password */}
                                     <div className="group space-y-2">
-                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Authentication key</label>
+                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Password</label>
                                         <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
                                             <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                                             <input
@@ -149,21 +149,21 @@ export default function SuperAdminLoginPage() {
                                         type="submit" disabled={loading}
                                         className="w-full h-14 bg-white text-black font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-primary hover:text-white transition-all duration-500 shadow-xl shadow-white/5 flex items-center justify-center gap-3 disabled:opacity-50"
                                     >
-                                        {loading ? 'Decrypting Access...' : <><span>Initialize Access</span><ArrowRight className="w-4 h-4" /></>}
+                                        {loading ? 'Authenticating...' : <><span>Sign In</span><ArrowRight className="w-4 h-4" /></>}
                                     </button>
 
                                     {/* Demo Credentials */}
                                     <div className="p-6 bg-white/[0.02] border border-white/[0.05] rounded-3xl space-y-4">
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="w-3 h-3 text-primary" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 italic">Master Credentials</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary/60 italic">Quick Setup</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setForm({ email: 'superadmin@salon.com', password: 'password' })}
                                             className="w-full flex flex-col items-start p-4 bg-black/40 border border-white/5 hover:border-primary/30 transition-all rounded-2xl group"
                                         >
-                                            <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-primary/60 block mb-1">Click to Inject</span>
+                                            <span className="text-[8px] font-black uppercase tracking-widest text-white/20 group-hover:text-primary/60 block mb-1">Use Demo Account</span>
                                             <span className="text-[11px] font-black text-white/60 group-hover:text-white tracking-widest uppercase">superadmin@salon.com</span>
                                         </button>
                                     </div>

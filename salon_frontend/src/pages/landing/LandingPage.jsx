@@ -8,6 +8,7 @@ import Features from '../../components/landing/wapixo/Features';
 import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
 import WapixoPricing from '../../components/landing/wapixo/WapixoPricing';
+import WapixoBlog from '../../components/landing/wapixo/WapixoBlog';
 import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
 import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
 import ChairSection from '../../components/landing/wapixo/ChairSection';
@@ -51,6 +52,7 @@ export default function LandingPage() {
                     <ScissorsMorph />
                     <WapixoSolutions />
                     <WapixoPricing />
+                    <WapixoBlog />
                     <WapixoTestimonials data={cmsData?.landing_testimonials} />
                     <WapixoFAQ />
                     <ChairSection />

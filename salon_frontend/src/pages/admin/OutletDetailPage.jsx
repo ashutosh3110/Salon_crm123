@@ -78,14 +78,14 @@ export default function OutletDetailPage() {
                     </button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name}</h1>
+                            <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name || 'Unnamed Node'}</h1>
                             <span className={`px-2.5 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border ${outlet.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                                 }`}>
-                                {outlet.status} PROXY
+                                {outlet.status || 'inactive'} PROXY
                             </span>
                         </div>
                         <p className="text-[10px] font-black text-text-muted mt-1 flex items-center gap-2 uppercase tracking-[0.2em]">
-                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.city}, {outlet.state || 'MISSION CONTROL'}
+                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.city || 'Location Unknown'}, {outlet.state || 'MISSION CONTROL'}
                         </p>
                     </div>
                 </div>
@@ -143,7 +143,7 @@ export default function OutletDetailPage() {
                                     <div>
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Geo-Spatial Data</p>
                                         <p className="text-sm font-black text-text leading-relaxed uppercase tracking-tight">{outlet.address}</p>
-                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">{outlet.city}, {outlet.state} - {outlet.pincode}</p>
+                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">{outlet.city || 'Unknown City'}, {outlet.state || 'Mission Control'} - {outlet.pincode || '000000'}</p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Communication Pulse</p>

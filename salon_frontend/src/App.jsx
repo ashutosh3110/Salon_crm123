@@ -200,7 +200,7 @@ function App() {
                         <Route path="/admin/login" element={<AuthPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         <Route path="/blog" element={<BlogPage />} />
-                        <Route path="/blog/:id" element={<BlogPostDetailPage />} />
+                        <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
                         <Route path="/contact" element={<WapixoContactPage />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />

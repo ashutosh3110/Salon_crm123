@@ -6,7 +6,7 @@ const tenantPlugin = (schema) => {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Tenant',
             required: true,
-            index: true,
+            index: false,
         },
     });
 

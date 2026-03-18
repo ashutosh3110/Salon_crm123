@@ -44,14 +44,14 @@ export default function OutletsPage() {
     const [filteredOutlets, setFilteredOutlets] = useState(outlets);
 
     // Get unique cities for filter
-    const cities = ['all', ...new Set(outlets.map(o => o.city))];
+    const cities = ['all', ...new Set(outlets.map(o => o.city).filter(Boolean))];
 
     useEffect(() => {
         let result = outlets;
         if (search) {
             result = result.filter(o =>
-                o.name.toLowerCase().includes(search.toLowerCase()) ||
-                o.city.toLowerCase().includes(search.toLowerCase())
+                o.name?.toLowerCase().includes(search.toLowerCase()) ||
+                o.city?.toLowerCase().includes(search.toLowerCase())
             );
         }
         if (cityFilter !== 'all') {
@@ -66,7 +66,7 @@ export default function OutletsPage() {
             counts[o.city] = (counts[o.city] || 0) + 1;
         });
         return Object.keys(counts).map((city, i) => ({
-            name: city.toUpperCase(),
+            name: (city || 'UNKNOWN').toUpperCase(),
             value: counts[city],
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
@@ -74,7 +74,7 @@ export default function OutletsPage() {
 
     const staffingData = useMemo(() => {
         return outlets.slice(0, 6).map((o, i) => ({
-            name: o.name.split(' ')[0],
+            name: (o.name || 'UNNAMED').split(' ')[0],
             staff: o.staffCount,
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
@@ -209,7 +209,7 @@ export default function OutletsPage() {
                             className="text-[9px] font-black uppercase tracking-[0.2em] bg-background border border-border rounded-none pl-12 pr-10 py-3.5 outline-none focus:border-primary cursor-pointer appearance-none min-w-[160px]"
                         >
                             {cities.map(city => (
-                                <option key={city} value={city}>{city.toUpperCase()}</option>
+                                <option key={city} value={city}>{(city || 'UNKNOWN').toUpperCase()}</option>
                             ))}
                         </select>
                     </div>
@@ -261,7 +261,7 @@ export default function OutletsPage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60 leading-none">
                                     <MapPin className="w-3.5 h-3.5" />
-                                    COORD :: {outlet.city.toUpperCase()}
+                                    COORD :: {(outlet.city || 'N/A').toUpperCase()}
                                 </div>
                             </div>
 
