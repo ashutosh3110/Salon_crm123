@@ -4,13 +4,10 @@ import {
     Plus,
     Search,
     Edit,
-    Eye,
-    MoreVertical,
     Store,
     MapPin,
     Users,
     Filter,
-    Ban,
     ChevronRight,
     SearchX,
     Trash2,
@@ -26,10 +23,7 @@ import {
     ResponsiveContainer,
     Tooltip,
     BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid
+    Bar
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
@@ -38,7 +32,7 @@ const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6
 
 export default function OutletsPage() {
     const navigate = useNavigate();
-    const { outlets, deleteOutlet, toggleOutletStatus } = useBusiness();
+    const { outlets, deleteOutlet } = useBusiness();
     const [search, setSearch] = useState('');
     const [cityFilter, setCityFilter] = useState('all');
     const [filteredOutlets, setFilteredOutlets] = useState(outlets);
@@ -88,7 +82,7 @@ export default function OutletsPage() {
     ]), [outlets, cities]);
 
     const handleDelete = (id) => {
-        if (window.confirm('Are you sure you want to delete this outlet?')) {
+        if (window.confirm('Delete this outlet?')) {
             deleteOutlet(id);
         }
     };
@@ -103,37 +97,27 @@ export default function OutletsPage() {
                 </div>
                 <button
                     onClick={() => navigate('/admin/outlets/new')}
-                    className="flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                    className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black uppercase tracking-[0.15em] shadow-lg hover:bg-primary hover:text-white transition-all font-mono"
                 >
                     <Plus className="w-4 h-4" /> Add New Salon
                 </button>
             </div>
 
-            {/* Analytics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+            {/* Analytics Grid - Combined Smaller Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div className="lg:col-span-2 grid grid-cols-2 gap-3">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
-                            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
-                            <div className="relative z-10 flex flex-col justify-between h-full text-left font-black">
-                                <div className="flex items-center justify-between mb-4 text-left">
-                                    <div className="flex items-center gap-3 text-left">
-                                        <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
-                                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
-                                    </div>
-                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.trend}</span>
+                        <div key={i} className="bg-white p-4 border border-border flex flex-col justify-between group hover:border-primary transition-all">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <stat.icon className="w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors" />
+                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">{stat.label}</p>
                                 </div>
-                                <div className="flex items-end justify-between text-left">
-                                    <h3 className="text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">
-                                        {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
-                                    </h3>
-                                    <div className="opacity-20 group-hover:opacity-100 transition-opacity stroke-[2px]">
-                                        <svg width="40" height="12" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
-                                            <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
-                                </div>
+                                <span className="text-[7px] font-black text-primary uppercase tracking-widest font-mono italic">{stat.trend}</span>
                             </div>
+                            <h3 className="text-xl font-black text-text tracking-tighter uppercase font-mono italic">
+                                {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
+                            </h3>
                         </div>
                     ))}
                 </div>
@@ -144,25 +128,20 @@ export default function OutletsPage() {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Salons by City</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left">
+                    <div className="h-[80px] w-full z-10">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={cityData} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
+                                <Pie data={cityData} innerRadius={18} outerRadius={35} paddingAngle={4} dataKey="value" stroke="transparent">
                                     {cityData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2 text-left">
-                        {cityData.slice(0, 4).map(d => (
-                            <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                <div className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
-                                <span className="text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
-                            </div>
-                        ))}
+                    <div className="absolute bottom-1 right-1 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <Network className="w-12 h-12" />
                     </div>
                 </div>
 
@@ -172,7 +151,7 @@ export default function OutletsPage() {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Staffing Details</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left">
+                    <div className="h-[80px] w-full z-10">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={staffingData}>
                                 <Bar dataKey="staff" radius={0}>
@@ -180,7 +159,7 @@ export default function OutletsPage() {
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -188,10 +167,10 @@ export default function OutletsPage() {
                 </div>
             </div>
 
-            {/* Filters Section */}
-            <div className="bg-surface p-4 rounded-none border border-border shadow-sm flex flex-col md:flex-row gap-4 text-left font-black">
-                <div className="relative flex-1 text-left">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+            {/* Filters - Compact */}
+            <div className="bg-white p-2 border border-border shadow-sm flex flex-col md:flex-row gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
                         value={search}
@@ -216,8 +195,8 @@ export default function OutletsPage() {
                 </div>
             </div>
 
-            {/* Outlets Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left font-black">
+            {/* Outlets Grid - Smaller Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {filteredOutlets.length === 0 ? (
                     <div className="col-span-full py-32 text-center bg-surface border border-border border-dashed text-left">
                         <SearchX className="w-16 h-16 text-text-muted/20 mx-auto mb-8" />
@@ -225,39 +204,37 @@ export default function OutletsPage() {
                         <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.25em]">We couldn't find any salon matching your search.</p>
                     </div>
                 ) : (
-                    filteredOutlets.map((outlet, index) => (
+                    filteredOutlets.map((outlet) => (
                         <div
                             key={outlet._id}
-                            className="group bg-surface rounded-none border border-border p-10 hover:shadow-2xl hover:translate-y-[-4px] transition-all duration-500 relative overflow-hidden text-left font-black"
+                            className="group bg-white border border-border p-4 hover:border-text transition-all duration-300 relative overflow-hidden flex flex-col h-full"
                         >
-                            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
-
-                            <div className="flex justify-between items-start mb-10 text-left">
-                                <div className="w-16 h-16 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-inner">
-                                    <Store className="w-7 h-7" />
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black group-hover:bg-text group-hover:text-white transition-all">
+                                    <Store className="w-4 h-4" />
                                 </div>
-                                <div className="flex gap-3 text-left">
+                                <div className="flex gap-1.5">
                                     <button
                                         onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
-                                        className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all shadow-sm"
+                                        className="p-1.5 text-text-muted hover:text-primary transition-colors"
                                     >
-                                        <Edit className="w-4 h-4" />
+                                        <Edit className="w-3.5 h-3.5" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(outlet._id)}
-                                        className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-rose-600 hover:border-rose-600 transition-all shadow-sm"
+                                        className="p-1.5 text-text-muted hover:text-rose-600 transition-colors"
                                     >
-                                        <Trash2 className="w-4 h-4" />
+                                        <Trash2 className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="space-y-2 mb-8 text-left leading-none font-black">
-                                <div className="flex items-center gap-3 text-left leading-none font-black">
-                                    <h3 className="text-2xl font-black text-text group-hover:text-primary transition-colors uppercase tracking-tight leading-none">
+                            <div className="flex-1 space-y-1 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-black text-text uppercase italic tracking-tight font-mono leading-none truncate">
                                         {outlet.name}
                                     </h3>
-                                    <div className={`w-2 h-2 rounded-none ${outlet.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-rose-500'}`} />
+                                    <div className={`w-1.5 h-1.5 shrink-0 ${outlet.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60 leading-none">
                                     <MapPin className="w-3.5 h-3.5" />
@@ -281,7 +258,7 @@ export default function OutletsPage() {
 
                             <button
                                 onClick={() => navigate(`/admin/outlets/${outlet._id}`)}
-                                className="w-full py-5 rounded-none border border-primary/20 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-primary-foreground transition-all duration-300 flex items-center justify-center gap-3"
+                                className="w-full py-2 bg-background border border-border text-text-muted text-[8px] font-black uppercase tracking-widest hover:bg-text hover:text-white transition-all font-mono italic flex items-center justify-center gap-2"
                             >
                                 Open Salon Dashboard <ChevronRight className="w-4 h-4" />
                             </button>

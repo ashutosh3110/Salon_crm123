@@ -16,8 +16,14 @@ const getInitialState = (key, defaultValue) => {
 
 export const PettyCashProvider = ({ children }) => {
     const [transactions, setTransactions] = useState(() => getInitialState('pc_transactions', initialData.transactions));
-    const [closingLogs, setClosingLogs] = useState(() => getInitialState('pc_closing_logs', initialData.closingLogs));
+    const [closingLogs, setClosingLogs] = useState(() => getInitialState('pc_closing_logs', initialData.closingLogs || []));
     const [categories] = useState(initialData.categories);
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Status Check
+    const isOpenedToday = transactions.some(t => t.date === today && t.type === 'DAY_OPEN');
+    const isClosedToday = closingLogs.some(log => log.date === today);
 
     // Persistence
     useEffect(() => {
@@ -33,10 +39,21 @@ export const PettyCashProvider = ({ children }) => {
         const newTxn = {
             ...txn,
             id: `TXN_${Date.now()}`,
-            date: new Date().toISOString().split('T')[0],
+            date: today,
             timestamp: new Date().toISOString()
         };
         setTransactions(prev => [newTxn, ...prev]);
+    };
+
+    const openDay = (staffName) => {
+        if (isOpenedToday) return;
+        addTransaction({
+            type: 'DAY_OPEN',
+            category: 'System',
+            amount: 0, // Opening balance is calculated from previous history
+            description: 'Day Opened',
+            staff: staffName || 'Manager'
+        });
     };
 
     const addClosingLog = (log) => {
@@ -56,6 +73,9 @@ export const PettyCashProvider = ({ children }) => {
         currentBalance,
         addTransaction,
         addClosingLog,
+        openDay,
+        isOpenedToday,
+        isClosedToday,
         denominations: initialData.denominations
     };
 

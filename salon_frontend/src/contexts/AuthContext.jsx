@@ -159,12 +159,21 @@ export function AuthProvider({ children }) {
         navigate('/login');
     };
 
+    const updateSubscription = (newPlanId) => {
+        if (!user) return;
+        const updatedUser = { ...user, subscriptionPlan: newPlanId };
+        const role = user.role;
+        localStorage.setItem(`auth_user_${role}`, JSON.stringify(updatedUser));
+        setUser(updatedUser);
+    };
+
     const value = {
         user,
         loading,
         login,
         register,
         logout,
+        updateSubscription,
         isAuthenticated: !!user,
         getRedirectPath: () => getRedirectPath(user),
         getExitPath,

@@ -8,54 +8,18 @@ import {
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import api from '../../services/api';
+import subscriptionData from '../../data/subscriptionPlans.json';
 
 /* ─── Feature definitions ─────────────────────────────────────────────── */
-const ALL_FEATURES = [
-    { key: 'pos', label: 'POS Terminal', icon: CreditCard, desc: 'High-speed billing & terminals' },
-    { key: 'appointments', label: 'Appointments', icon: Calendar, desc: 'Real-time booking & calendar' },
-    { key: 'inventory', label: 'Inventory Pro', icon: Package, desc: 'Stock management & POs' },
-    { key: 'crm', label: 'CRM & Clients', icon: Heart, desc: 'History & membership tracking' },
-    { key: 'marketing', label: 'Marketing Hub', icon: Target, desc: 'SMS campaigns & promotions' },
-    { key: 'payroll', label: 'Staff & HR', icon: Users, desc: 'Attendance & commissions' },
-    { key: 'mobileApp', label: 'Customer App', icon: Smartphone, desc: 'Branded mobile booking app' },
-    { key: 'finance', label: 'Finance Hub', icon: DollarSign, desc: 'Tax reports & reconciliation' },
-    { key: 'reports', label: 'Analytics AI', icon: BarChart2, desc: 'Business insights & performance' },
-    { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'Automated confirmations' },
-    { key: 'loyalty', label: 'Loyalty Flow', icon: Star, desc: 'Points, rewards & cashback' },
-    { key: 'feedback', label: 'Feedback Loop', icon: Activity, desc: 'Automated reviews & ratings' },
-];
+const ALL_FEATURES = subscriptionData.ALL_FEATURES.map(f => ({
+    ...f,
+    icon: {
+        CreditCard, Calendar, Package, Heart, Target, Users, Smartphone, DollarSign, BarChart2, MessageSquare, Star, Activity
+    }[f.icon] || CreditCard
+}));
 
 /* ─── Mock plan data ─────────────────────────────────────────────────── */
-const INITIAL_PLANS = [
-    {
-        id: 'p1', name: 'Free', tag: 'Starter', color: 'slate', active: true, popular: false,
-        monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
-        features: { pos: true, appointments: true, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
-        limits: { staffLimit: 3, outletLimit: 1, smsCredits: 0, storageGB: 1, apiCalls: 1000 },
-        salonsCount: 38,
-    },
-    {
-        id: 'p2', name: 'Basic', tag: 'Growth', color: 'blue', active: true, popular: false,
-        monthlyPrice: 1999, yearlyPrice: 19990, trialDays: 14,
-        features: { pos: true, appointments: true, inventory: true, marketing: false, payroll: false, crm: true, mobileApp: false, reports: true, whatsapp: false, loyalty: false, finance: true, feedback: false },
-        limits: { staffLimit: 10, outletLimit: 2, smsCredits: 200, storageGB: 5, apiCalls: 10000 },
-        salonsCount: 27,
-    },
-    {
-        id: 'p3', name: 'Pro', tag: 'Popular', color: 'primary', active: true, popular: true,
-        monthlyPrice: 4999, yearlyPrice: 49990, trialDays: 7,
-        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: false, loyalty: true, finance: true, feedback: true },
-        limits: { staffLimit: 25, outletLimit: 5, smsCredits: 1000, storageGB: 20, apiCalls: 100000 },
-        salonsCount: 22,
-    },
-    {
-        id: 'p4', name: 'Enterprise', tag: 'Unlimited', color: 'amber', active: true, popular: false,
-        monthlyPrice: 12999, yearlyPrice: 129990, trialDays: 0,
-        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: true, loyalty: true, finance: true, feedback: true },
-        limits: { staffLimit: 999, outletLimit: 999, smsCredits: 10000, storageGB: 100, apiCalls: 999999 },
-        salonsCount: 13,
-    },
-];
+const INITIAL_PLANS = subscriptionData.INITIAL_PLANS;
 
 /* ─── Color maps ─────────────────────────────────────────────────────── */
 const COLOR = {
