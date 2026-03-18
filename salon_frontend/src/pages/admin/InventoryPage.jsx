@@ -63,103 +63,99 @@ export default function InventoryPage({ tab = 'products' }) {
     }, [products]);
 
     return (
-        <div className="space-y-6 animate-reveal text-left font-black">
-            {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
-                <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none text-left">Logistics Registry</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">System :: asset_management_v2.0 // global_inventory</p>
+        <div className="space-y-4 animate-reveal text-left max-w-[1600px] mx-auto pb-8">
+            {/* Header - Compact */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
+                <div className="text-left font-mono">
+                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Logistics Registry</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">System :: Asset & SKU Management</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-surface border border-border px-8 py-4 rounded-none text-[10px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-[0.2em] shadow-sm font-black">
-                        <Download className="w-4 h-4" /> Export Log
+                <div className="flex flex-wrap items-center gap-2">
+                    <button className="flex items-center gap-2 bg-surface border border-border px-4 py-2 text-[9px] font-black text-text-muted hover:bg-surface-alt hover:text-primary transition-all uppercase tracking-widest font-mono shadow-sm">
+                        <Download className="w-3.5 h-3.5" /> Export Log
                     </button>
                     <button
                         onClick={() => navigate('/admin/inventory/products/new')}
-                        className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-primary text-primary-foreground border border-primary px-8 py-4 rounded-none text-[10px] font-black hover:bg-primary/90 transition-all uppercase tracking-[0.2em] shadow-xl shadow-primary/20 font-black"
+                        className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black hover:bg-primary hover:text-white transition-all uppercase tracking-widest font-mono shadow-lg"
                     >
-                        <Plus className="w-4 h-4" /> New Asset Entry
+                        <Plus className="w-3.5 h-3.5" /> New Asset
                     </button>
                 </div>
             </div>
 
-            {/* Premium Tab Navigation */}
-            <div className="flex items-center gap-1 border-b border-border/40 overflow-x-auto no-scrollbar pb-1">
+            {/* Premium Tab Navigation - Compact */}
+            <div className="flex items-center gap-0.5 border-b border-border/40 overflow-x-auto no-scrollbar">
                 {[
-                    { id: 'overview', label: 'Stock Scan', icon: TrendingUp },
-                    { id: 'products', label: 'Master List', icon: Package },
-                    { id: 'shop-categories', label: 'App Modules', icon: Smartphone },
+                    { id: 'overview', label: 'Scan', icon: TrendingUp },
+                    { id: 'products', label: 'Master', icon: Package },
+                    { id: 'shop-categories', label: 'Modules', icon: Smartphone },
                     { id: 'stock-in', label: 'Inbound', icon: Download },
-                    { id: 'adjustment', label: 'Adjustment', icon: ArrowDownRight },
+                    { id: 'adjustment', label: 'Adjust', icon: ArrowDownRight },
                     { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
                 ].map((t) => (
                     <button
                         key={t.id}
                         onClick={() => navigate(`/admin/inventory/${t.id}`)}
-                        className={`flex items-center gap-2 px-6 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative whitespace-nowrap ${
+                        className={`flex items-center gap-2 px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap font-mono ${
                             activeTab === t.id 
                             ? 'text-primary' 
                             : 'text-text-muted hover:text-text hover:bg-surface-alt'
                         }`}
                     >
-                        <t.icon className={`w-3.5 h-3.5 ${activeTab === t.id ? 'text-primary' : 'text-text-muted'}`} />
+                        <t.icon className={`w-3 h-3 ${activeTab === t.id ? 'text-primary' : 'text-text-muted'}`} />
                         {t.label}
                         {activeTab === t.id && (
                             <motion.div 
                                 layoutId="activeInventoryTab"
-                                className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                             />
                         )}
                     </button>
                 ))}
             </div>
 
-            {/* Top Analytics Bar (Only show on overview) */}
+            {/* Analytics Grid - Compact */}
             {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
-                        <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Master Catalog" />
-                        <InventoryStatCard title="Critical Stock" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish Now" />
-                        <InventoryStatCard title="Live Assets" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="POS Ready" />
-                        <InventoryStatCard title="Cold Assets" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" />
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="lg:col-span-2 grid grid-cols-2 gap-3">
+                        <InventoryStatCard title="Total SKU" value={stats.totalProducts} icon={TrendingUp} color="blue" trend="Catalog" />
+                        <InventoryStatCard title="Critical" value={stats.lowStockCount} icon={AlertTriangle} color="rose" trend="Replenish" />
+                        <InventoryStatCard title="Live" value={products.filter(p => p.status === 'active').length} icon={ArrowUpRight} color="emerald" trend="Active" />
+                        <InventoryStatCard title="Cold" value={products.filter(p => p.status === 'inactive').length} icon={ArrowDownRight} color="orange" trend="Archived" />
                     </div>
 
-                    {/* Categorization Chart */}
-                    <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                        <div className="flex items-center justify-between mb-4 text-left">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Matrix Density</span>
-                            <PieIcon className="w-4 h-4 text-primary" />
+                    <div className="bg-white p-4 border border-border flex flex-col justify-between group h-[120px]">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">Density Matrix</span>
+                            <PieIcon className="w-3 h-3 text-primary" />
                         </div>
-                        <div className="h-[120px] w-full text-left">
+                        <div className="h-[60px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie data={categoryData} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
+                                    <Pie data={categoryData} innerRadius={15} outerRadius={28} paddingAngle={4} dataKey="value" stroke="transparent">
                                         {categoryData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
-                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="mt-4 flex flex-wrap gap-2 text-left">
+                        <div className="flex flex-wrap gap-2 mt-1">
                             {categoryData.slice(0, 3).map(d => (
-                                <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                    <div className="w-1.5 h-1.5 bg-primary rounded-none" style={{ backgroundColor: d.color }} />
-                                    <span className="text-[7px] font-black uppercase text-text-muted">{d.name}</span>
+                                <div key={d.name} className="flex items-center gap-1">
+                                    <div className="w-1 h-1" style={{ backgroundColor: d.color }} />
+                                    <span className="text-[6px] font-black uppercase text-text-muted font-mono">{d.name}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Volumetric Load Chart */}
-                    <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                        <div className="flex items-center justify-between mb-4 text-left">
-                            <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Volume Load</span>
-                            <Package className="w-4 h-4 text-primary" />
+                    <div className="bg-white p-4 border border-border flex flex-col justify-between group h-[120px]">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">Volume Load</span>
+                            <Package className="w-3 h-3 text-primary" />
                         </div>
-                        <div className="h-[120px] w-full text-left">
+                        <div className="h-[60px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={stockVolumeData}>
                                     <Bar dataKey="stock" radius={0}>
@@ -167,11 +163,10 @@ export default function InventoryPage({ tab = 'products' }) {
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Bar>
-                                    <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                        <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center">Top 6 Stock Vectors</div>
+                        <div className="text-[6px] font-black uppercase text-text-muted text-center font-mono mt-1 italic">Top 6 Vectors</div>
                     </div>
                 </div>
             )}

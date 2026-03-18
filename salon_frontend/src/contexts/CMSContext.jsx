@@ -1,9 +1,12 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useBusiness } from './BusinessContext';
 import cmsMockData from '../data/cmsMockData.json';
 
 const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
+    const { staff, updateStaff } = useBusiness();
+    
     const [banners, setBanners] = useState(() => {
         const saved = localStorage.getItem('cms_banners');
         return saved ? JSON.parse(saved) : cmsMockData.BANNERS;
@@ -52,8 +55,35 @@ export function CMSProvider({ children }) {
         }
         return [...prev, { ...data, userId, id: Date.now(), status: 'Pending', createdAt: new Date().toISOString() }];
     });
-    const approveExpertProfile = (id) => setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Approved' } : e));
-    const rejectExpertProfile = (id) => setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Rejected' } : e));
+
+    const approveExpertProfile = (id) => {
+        const expert = experts.find(e => e.id === id);
+        if (expert) {
+            // Find corresponding staff member by userId or email
+            const staffMember = staff.find(s => s._id === expert.userId || s.email === expert.email);
+            if (staffMember) {
+                updateStaff(staffMember._id, {
+                    bio: expert.bio,
+                    specializations: expert.specializations,
+                    experience: expert.experience,
+                    profileStatus: 'Approved'
+                });
+            }
+        }
+        setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Approved' } : e));
+    };
+
+    const rejectExpertProfile = (id) => {
+        const expert = experts.find(e => e.id === id);
+        if (expert) {
+            const staffMember = staff.find(s => s._id === expert.userId || s.email === expert.email);
+            if (staffMember) {
+                updateStaff(staffMember._id, { profileStatus: 'Rejected' });
+            }
+        }
+        setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Rejected' } : e));
+    };
+
     const deleteExpertProfile = (id) => setExperts(prev => prev.filter(e => e.id !== id));
 
     const value = {

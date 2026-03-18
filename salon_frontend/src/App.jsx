@@ -63,6 +63,7 @@ import LoyaltyMembershipPage from './pages/admin/LoyaltyMembershipPage';
 import InquiryPage from './pages/admin/InquiryPage';
 import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
+import SubscriptionPage from './pages/admin/SubscriptionPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -286,6 +287,7 @@ function App() {
                               <Route path="notifications" element={<SettingsPage tab="notifications" />} />
                               <Route path="security" element={<SettingsPage tab="security" />} />
                             </Route>
+                            <Route path="/admin/subscription" element={<SubscriptionPage />} />
                           </Route>
                         </Route>
 

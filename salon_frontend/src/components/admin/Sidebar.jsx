@@ -56,6 +56,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+        { label: 'Subscription & Plans', icon: Crown, path: '/admin/subscription' },
         {
             label: 'Business Setup',
             icon: Briefcase,
