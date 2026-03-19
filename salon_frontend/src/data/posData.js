@@ -13,6 +13,7 @@ export const MOCK_STAFF = posData.staff;
 export const MOCK_PROMOTIONS = posData.promotions;
 export const MOCK_VOUCHERS = posData.vouchers;
 export const MOCK_APPOINTMENTS = posData.appointments;
+export const MOCK_COMPANY_INFO = posData.companyInfo;
 
 // --- Mock Invoices with dynamic dates ---
 export const MOCK_INVOICES = posData.invoices.map(inv => ({

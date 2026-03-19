@@ -31,19 +31,19 @@ export default function PerformancePage() {
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-3">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
                 <div className="leading-none text-left">
-                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">Performance Analytics</h1>
-                    <p className="text-[9px] sm:text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence :: vector_scoring_v2.0</p>
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-text tracking-tight uppercase leading-none">Performance Analytics</h1>
+                    <p className="text-[8px] sm:text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence :: vector_scoring_v2.0</p>
                 </div>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((s) => (
-                    <div key={s.label} className="bg-surface py-4 px-5 sm:py-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative text-left">
+                    <div key={s.label} className="bg-surface py-2.5 px-3 sm:py-3 sm:px-4 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative text-left">
                         {/* Soft Glow Effect */}
                         <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
@@ -60,7 +60,7 @@ export default function PerformancePage() {
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-text tracking-tight uppercase leading-none">
+                                <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter
                                         value={typeof s.value === 'string' ? parseFloat(s.value.replace(/[₹%,]/g, '')) : s.value}
                                         prefix={typeof s.value === 'string' && s.value.includes('₹') ? '₹' : ''}
@@ -74,14 +74,14 @@ export default function PerformancePage() {
             </div>
 
             {/* Revenue Chart */}
-            <div className="bg-white rounded-none border border-border/60 p-4 sm:p-6 sm:p-8 shadow-none overflow-hidden">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-                    <h2 className="text-[11px] sm:text-sm font-black text-text uppercase tracking-widest">Revenue Growth</h2>
+            <div className="bg-white rounded-none border border-border/60 p-3 sm:p-4 shadow-none overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+                    <h2 className="text-[10px] sm:text-[11px] font-black text-text uppercase tracking-widest leading-none">Revenue Growth</h2>
                     <CustomDropdown
                         options={rangeOptions}
                         value={timeRange}
                         onChange={setTimeRange}
-                        className="w-full sm:w-44"
+                        className="w-full sm:w-36 h-8 text-[10px]"
                     />
                 </div>
 
@@ -178,15 +178,15 @@ export default function PerformancePage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 {/* Top Performers */}
-                <div className="bg-white rounded-none border border-border/60 p-6 shadow-none">
-                    <div className="flex items-center gap-2 mb-6">
-                        <Award className="w-4 h-4 text-primary" />
-                        <h2 className="text-sm font-black text-text uppercase tracking-widest">Team Rankings</h2>
+                <div className="bg-white rounded-none border border-border/60 p-4 shadow-none">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Award className="w-3.5 h-3.5 text-primary" />
+                        <h2 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Team Rankings</h2>
                     </div>
                     <div className="space-y-4">
                         {topPerformers.map((p, i) => (
                             <div key={p.id} className="flex items-center gap-3 p-3 rounded-none bg-white border border-border/40 hover:border-primary/20 transition-all cursor-pointer">
-                                <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-none relative">
+                                <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-none relative text-[11px]">
                                     {p.name.split(' ').map(n => n[0]).join('')}
                                     {i === 0 && (
                                         <div className="absolute -top-1.5 -right-1.5 bg-amber-500 rounded-full p-1 shadow-sm">
@@ -208,7 +208,7 @@ export default function PerformancePage() {
                             </div>
                         ))}
                     </div>
-                    <button className="w-full mt-6 py-2.5 bg-white border border-border/60 rounded-none text-xs font-black text-text-muted uppercase tracking-widest hover:text-primary hover:border-primary transition-all">
+                    <button className="w-full mt-4 py-2 bg-white border border-border/60 rounded-none text-[9px] font-black text-text-muted uppercase tracking-widest hover:text-primary hover:border-primary transition-all">
                         View Detailed Report
                     </button>
                 </div>

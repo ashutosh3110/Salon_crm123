@@ -1,4 +1,13 @@
 {
+    "companyInfo": {
+        "name": "XYZ SALON & SPA",
+        "outlet": "Lucknow Branch",
+        "cashier": "Priya",
+        "address": "Lucknow Gomti Nagar, UP 226010",
+        "phone": "+91 98765 43210",
+        "email": "contact@xyzsalon.com",
+        "gstin": "09AAFCC0301F1ZN"
+    },
     "services": [
         {
             "_id": "s1",

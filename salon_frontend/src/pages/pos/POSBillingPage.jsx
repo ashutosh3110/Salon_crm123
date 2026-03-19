@@ -8,7 +8,7 @@ import {
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
 } from 'lucide-react';
 import {
-    MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS
+    MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS, MOCK_COMPANY_INFO
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -58,7 +58,7 @@ const InvoicePDF = ({ invoice, role }) => (
     <Document>
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
-                <Text style={pdfStyles.salonName}>XYZ SALON & SPA</Text>
+                <Text style={pdfStyles.salonName}>{MOCK_COMPANY_INFO.name}</Text>
                 <Text style={pdfStyles.salonMeta}>{invoice.outlet?.address || ''}</Text>
                 <Text style={pdfStyles.salonMeta}>{invoice.outlet?.phone || ''} | {invoice.outlet?.email || ''}</Text>
                 <Text style={pdfStyles.salonMeta}>GSTIN: {invoice.outlet?.gstin || 'N/A'}</Text>
@@ -194,7 +194,7 @@ export default function POSBillingPage() {
     const [successInvoice, setSuccessInvoice] = useState(null);
     const [showNewClient, setShowNewClient] = useState(false);
     const [showDiscountModal, setShowDiscountModal] = useState(false);
-    const [showClientInfo, setShowClientInfo] = useState(false);
+    const [showClientInfo, setShowClientInfo] = useState(true);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [mobileView, setMobileView] = useState('items'); // 'items' | 'cart'
     const [showCameraScanner, setShowCameraScanner] = useState(false);
@@ -227,9 +227,11 @@ export default function POSBillingPage() {
             const existingClient = MOCK_CLIENTS.find(c => c.phone === phone);
             if (existingClient) {
                 setSelectedClient(existingClient);
+                setShowClientInfo(true);
                 initializeWallet(existingClient._id);
             } else {
                 setSelectedClient({ name, phone, email: '', loyaltyPoints: 0, walletBalance: 0, dueAmount: 0 });
+                setShowClientInfo(true);
             }
 
             // If a service was pre-selected, add it to cart
@@ -520,7 +522,8 @@ export default function POSBillingPage() {
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {
         const type = forcedType || (activeTab === 'services' ? 'service' : 'product');
-        const existingId = cart.findIndex(c => c.itemId === item._id && c.type === type);
+        const itemId = item.id || item._id;
+        const existingId = cart.findIndex(c => c.itemId === itemId && c.type === type);
 
         if (existingId > -1) {
             const newCart = [...cart];
@@ -529,7 +532,7 @@ export default function POSBillingPage() {
         } else {
             setCart([...cart, {
                 ...item,
-                itemId: item._id,
+                itemId: item.id || item._id,
                 type,
                 quantity: 1,
                 staffIds: [''],
@@ -649,8 +652,8 @@ export default function POSBillingPage() {
                     day: '2-digit', month: '2-digit', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hour12: true
                 }),
-                outlet: 'Lucknow Branch',
-                cashier: 'Priya',
+                outlet: MOCK_COMPANY_INFO.outlet,
+                cashier: MOCK_COMPANY_INFO.cashier,
                 client: selectedClient,
                 items: cart.map(item => ({
                     ...item,
@@ -682,7 +685,7 @@ export default function POSBillingPage() {
                 .filter(item => !item.isPackageRedemption)
                 .map(item => {
                     const isProduct = item.type === 'product';
-                    const posProduct = products.find(p => p._id === item.itemId || p._id === item._id);
+                    const posProduct = products.find(p => (p.id || p._id) === item.itemId || p.sku === item.sku);
                     if (!posProduct) return null;
                     return {
                         invoiceId: invoiceNum,
@@ -746,6 +749,7 @@ export default function POSBillingPage() {
 
         addBusinessCustomer(newClient);
         setSelectedClient(newClient);
+        setShowClientInfo(true);
         setShowNewClient(false);
         setNewClientForm({ name: '', phone: '', email: '' });
         setSearchClient('');
@@ -815,10 +819,10 @@ export default function POSBillingPage() {
                 {/* ─── Thermal Receipt (80mm) ─── */}
                 <div id="thermal-receipt" className="bg-white text-black p-6 w-[320px] shadow-2xl border border-slate-200 font-mono text-[12px] leading-tight print:shadow-none print:border-0 print:m-0">
                     <div className="text-center space-y-1 mb-4">
-                        <h2 className="text-lg font-black uppercase tracking-tighter">{fiscal.businessName}</h2>
-                        <p className="text-[10px]">Lucknow Gomti Nagar, UP 226010</p>
-                        <p className="text-[10px]">Ph: +91 98765 43210</p>
-                        <p className="text-[10px] font-bold">GSTIN: {fiscal.gstin}</p>
+                        <h2 className="text-lg font-black uppercase tracking-tighter">{MOCK_COMPANY_INFO.name}</h2>
+                        <p className="text-[10px]">{MOCK_COMPANY_INFO.address}</p>
+                        <p className="text-[10px]">Ph: {MOCK_COMPANY_INFO.phone}</p>
+                        <p className="text-[10px] font-bold">GSTIN: {MOCK_COMPANY_INFO.gstin}</p>
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mb-2 space-y-0.5">
@@ -1114,7 +1118,7 @@ export default function POSBillingPage() {
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
                         {filteredItems.map(item => (
                             <button
-                                key={item._id}
+                                key={item.id || item._id}
                                 onClick={() => addToCart(item)}
                                 className="bg-background border border-border p-4 text-left hover:border-primary transition-all group flex flex-col justify-between h-[120px] shadow-sm hover:shadow-md active:scale-95"
                             >
@@ -1173,8 +1177,8 @@ export default function POSBillingPage() {
                                         <div className="max-h-[300px] overflow-y-auto scrollbar-thin">
                                             {filteredClients.length > 0 ? filteredClients.map(c => (
                                                 <button
-                                                    key={c._id}
-                                                    onClick={() => { setSelectedClient(c); setShowClientDropdown(false); setSearchClient(''); }}
+                                                    key={c.id || c._id}
+                                                    onClick={() => { setSelectedClient(c); setShowClientInfo(true); setShowClientDropdown(false); setSearchClient(''); }}
                                                     className="w-full p-4 text-left hover:bg-surface-alt flex items-center justify-between border-b border-border/50 group transition-all"
                                                 >
                                                     <div>
@@ -1243,13 +1247,35 @@ export default function POSBillingPage() {
                         {selectedClient && showClientInfo && (
                             <div className="bg-slate-900 border border-slate-800 p-4 space-y-3 animate-in slide-in-from-top-4 duration-300">
                                 <div className="grid grid-cols-2 gap-2">
-                                    <div className="bg-white/5 p-2 text-center">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Loyalty</p>
-                                        <p className="text-sm font-black text-amber-400">{selectedClient.loyaltyPoints} pts</p>
+                                    <div className={`p-2 text-center border transition-all ${redeemPoints > 0 ? 'bg-amber-500 border-amber-400 text-white' : 'bg-white/5 border-white/10'}`}>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className={`text-[9px] font-bold uppercase ${redeemPoints > 0 ? 'text-white/80' : 'text-slate-400'}`}>Loyalty</p>
+                                            {selectedClient.loyaltyPoints > 0 && (
+                                                <button 
+                                                    onClick={handleRedeemPoints}
+                                                    className={`px-2 py-0.5 text-[8px] font-black uppercase border transition-all ${redeemPoints > 0 ? 'bg-white text-amber-500 border-white' : 'bg-amber-500 text-white border-amber-400 hover:bg-amber-600'}`}
+                                                >
+                                                    {redeemPoints > 0 ? 'Added' : 'Add to Bill'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-sm font-black">{selectedClient.loyaltyPoints} pts</p>
+                                        {redeemPoints > 0 && <p className="text-[9px] font-bold mt-0.5 opacity-90">-₹{redeemPoints}</p>}
                                     </div>
-                                    <div className="bg-white/5 p-2 text-center">
-                                        <p className="text-[9px] font-bold text-slate-400 uppercase">Wallet</p>
-                                        <p className="text-sm font-black text-emerald-400">₹{clientWalletBalance}</p>
+                                    <div className={`p-2 text-center border transition-all ${redeemWallet > 0 ? 'bg-emerald-500 border-emerald-400 text-white' : 'bg-white/5 border-white/10'}`}>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <p className={`text-[9px] font-bold uppercase ${redeemWallet > 0 ? 'text-white/80' : 'text-slate-400'}`}>Wallet</p>
+                                            {clientWalletBalance > 0 && (
+                                                <button 
+                                                    onClick={handleRedeemWallet}
+                                                    className={`px-2 py-0.5 text-[8px] font-black uppercase border transition-all ${redeemWallet > 0 ? 'bg-white text-emerald-500 border-white' : 'bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600'}`}
+                                                >
+                                                    {redeemWallet > 0 ? 'Added' : 'Add to Bill'}
+                                                </button>
+                                            )}
+                                        </div>
+                                        <p className="text-sm font-black">₹{clientWalletBalance}</p>
+                                        {redeemWallet > 0 && <p className="text-[9px] font-bold mt-0.5 opacity-90">-₹{redeemWallet}</p>}
                                     </div>
                                     <div className="bg-rose-500/10 p-2 text-center border border-rose-500/20 col-span-2">
                                         <div className="flex items-center justify-between">
