@@ -17,8 +17,21 @@ router
     .post(checkSubscriptionLimit('services'), validate(serviceValidation.createService), serviceController.createService)
     .get(authorize(['admin', 'manager', 'receptionist', 'customer']), validate(serviceValidation.getServices), serviceController.getServices);
 
+// Category Routes
+router
+    .route('/categories')
+    .get(serviceController.getCategories)
+    .post(authorize(['admin', 'manager']), validate(serviceValidation.createCategory), serviceController.createCategory);
+
+router
+    .route('/categories/:categoryId')
+    .patch(authorize(['admin', 'manager']), validate(serviceValidation.updateCategory), serviceController.updateCategory)
+    .delete(authorize(['admin', 'manager']), validate(serviceValidation.deleteCategory), serviceController.deleteCategory);
+
 router
     .route('/:serviceId')
-    .get(serviceController.getService);
+    .get(validate(serviceValidation.getService), serviceController.getService)
+    .patch(authorize(['admin', 'manager']), validate(serviceValidation.updateService), serviceController.updateService)
+    .delete(authorize(['admin', 'manager']), validate(serviceValidation.deleteService), serviceController.deleteService);
 
 export default router;

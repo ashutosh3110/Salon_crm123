@@ -11,7 +11,6 @@ import {
     Search
 } from 'lucide-react';
 import api from '../../../services/api';
-import loyaltyData from '../../../data/loyaltyMockData.json';
 
 
 export default function LoyaltyTransactionsTab() {
@@ -22,12 +21,11 @@ export default function LoyaltyTransactionsTab() {
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                // We'll try to fetch all but if not exists, we'll try to get it some other way
                 const { data } = await api.get('/loyalty/transactions');
                 setTransactions(data.data || data || []);
             } catch (err) {
                 console.error('Fetch error:', err);
-                setTransactions(loyaltyData.transactions);
+                setTransactions([]);
             } finally {
                 setLoading(false);
             }

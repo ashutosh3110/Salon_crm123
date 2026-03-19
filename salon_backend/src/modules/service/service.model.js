@@ -23,6 +23,32 @@ const serviceSchema = new mongoose.Schema(
             type: String, // e.g., Hair, Skin, Nails
             required: true,
         },
+        image: {
+            type: String,
+        },
+        gst: {
+            type: Number,
+            default: 18,
+        },
+        commissionApplicable: {
+            type: Boolean,
+            default: true,
+        },
+        commissionType: {
+            type: String,
+            enum: ['percent', 'fixed'],
+            default: 'percent',
+        },
+        commissionValue: {
+            type: Number,
+            default: 0,
+        },
+        outletIds: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Outlet',
+            }
+        ],
         status: {
             type: String,
             enum: ['active', 'inactive'],

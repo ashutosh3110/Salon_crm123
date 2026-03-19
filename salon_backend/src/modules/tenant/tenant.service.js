@@ -89,6 +89,9 @@ class TenantService {
         if (updateBody.limits) {
             updateBody.limits = { ...tenant.limits.toObject(), ...updateBody.limits };
         }
+        if (updateBody.settings) {
+            updateBody.settings = { ...tenant.settings.toObject(), ...updateBody.settings };
+        }
 
         // Duplicate checks for update
         if (updateBody.email && updateBody.email.toLowerCase() !== tenant.email.toLowerCase()) {

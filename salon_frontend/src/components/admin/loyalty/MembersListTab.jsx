@@ -16,21 +16,22 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { maskPhone } from '../../../utils/phoneUtils';
 import { motion } from 'framer-motion';
 
-import loyaltyData from '../../../data/loyaltyMockData.json';
-
-const MOCK_MEMBERS = loyaltyData.members;
-
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function MembersListTab() {
+    const { customers } = useBusiness();
     const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
 
-    const filteredMembers = MOCK_MEMBERS.filter(m => {
-        const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''));
+    const filteredMembers = (customers || []).filter(m => {
+        const name = m.name || '';
+        const phone = m.phone || '';
+        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''));
+        const status = m.loyaltyStatus || 'active'; // Fallback
         if (filter === 'all') return matchesSearch;
-        return matchesSearch && m.status === filter;
+        return matchesSearch && status === filter;
     });
 
     return (
@@ -83,38 +84,38 @@ export default function MembersListTab() {
                         </thead>
                         <tbody className="divide-y divide-border/20">
                             {filteredMembers.map((member) => (
-                                <tr key={member.id} className="hover:bg-surface-alt/30 transition-colors group">
+                                <tr key={member._id || member.id} className="hover:bg-surface-alt/30 transition-colors group">
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black italic">
-                                                {member.name.split(' ').map(n => n[0]).join('')}
+                                                {(member.name || 'U').split(' ').map(n => n[0]).join('')}
                                             </div>
                                             <div>
-                                                <div className="text-sm font-black text-foreground italic tracking-tight">{member.name}</div>
-                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{maskPhone(member.phone, user?.role)}</div>
+                                                <div className="text-sm font-black text-foreground italic tracking-tight">{member.name || 'Unknown'}</div>
+                                                <div className="text-[10px] font-bold text-text-muted uppercase tracking-widest leading-none mt-1">{maskPhone(member.phone || '', user?.role)}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
                                             <ShieldCheck className="w-4 h-4 text-primary" />
-                                            <span className="text-xs font-black text-foreground uppercase italic tracking-tighter">{member.plan}</span>
+                                            <span className="text-xs font-black text-foreground uppercase italic tracking-tighter">{member.loyaltyPlan || 'Standard'}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <StatusBadge status={member.status} />
+                                        <StatusBadge status={member.loyaltyStatus || 'active'} />
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-foreground opacity-80">{new Date(member.joinDate).toLocaleDateString()}</span>
+                                            <span className="text-xs font-bold text-foreground opacity-80">{member.createdAt ? new Date(member.createdAt).toLocaleDateString() : 'N/A'}</span>
                                             <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">Initialization</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-2">
                                             <Clock className="w-3 h-3 text-text-muted" />
-                                            <span className={`text-xs font-bold ${member.status === 'expired' ? 'text-rose-500' : 'text-foreground'}`}>
-                                                {new Date(member.expiry).toLocaleDateString()}
+                                            <span className={`text-xs font-bold ${(member.loyaltyStatus || 'active') === 'expired' ? 'text-rose-500' : 'text-foreground'}`}>
+                                                {member.loyaltyExpiry ? new Date(member.loyaltyExpiry).toLocaleDateString() : 'NEVER'}
                                             </span>
                                         </div>
                                     </td>

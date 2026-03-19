@@ -43,7 +43,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
         if (modalState.type === 'add') {
             onAdd?.({ name, gender });
         } else {
-            onUpdate?.(modalState.data.id, { name, gender });
+            onUpdate?.(modalState.data._id, { name, gender });
         }
         setModalState({ isOpen: false, type: 'add', data: null });
     };
@@ -80,7 +80,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
             {/* Category Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredCategories.map((cat) => (
-                    <div key={cat.id} className="bg-surface p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                    <div key={cat._id} className="bg-surface p-6 rounded-3xl border border-border shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div className="p-3 rounded-2xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-110 transition-transform flex items-center gap-2">
                                 <Tag className="w-6 h-6" />
@@ -97,14 +97,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
-                                    onClick={() => onToggleStatus?.(cat.id)}
+                                    onClick={() => onToggleStatus?.(cat._id)}
                                     className={`p-2 rounded-xl hover:bg-surface-alt transition-all ${cat.status === 'active' ? 'text-emerald-500 hover:text-emerald-400' : 'text-text-muted hover:text-rose-500'}`}
                                     title={cat.status === 'active' ? "Deactivate" : "Activate"}
                                 >
                                     {cat.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(cat.id, cat.name)}
+                                    onClick={() => handleDelete(cat._id, cat.name)}
                                     className="p-2 rounded-xl hover:bg-surface-alt text-text-muted hover:text-rose-500 transition-all"
                                     title="Delete Category"
                                 >

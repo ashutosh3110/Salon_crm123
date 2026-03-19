@@ -101,6 +101,20 @@ async function changePassword(req, res, next) {
     }
 }
 
+async function deleteUser(req, res, next) {
+    const { userId } = req.params;
+    try {
+        const user = await userService.getUserById(userId);
+        if (!user || user.tenantId.toString() !== req.tenantId) {
+            return res.status(httpStatus.NOT_FOUND).send({ message: 'User not found' });
+        }
+        await userService.deleteUserById(userId);
+        res.status(httpStatus.NO_CONTENT).send();
+    } catch (error) {
+        next(error);
+    }
+}
+
 export default {
     createUser,
     getUsers,
@@ -109,4 +123,5 @@ export default {
     getMe,
     updateMe,
     changePassword,
+    deleteUser,
 };

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calendar as CalendarIcon, Search, Filter, CheckCircle2, XCircle, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download, Laptop, Smartphone, Fingerprint, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -6,14 +6,9 @@ import {
     Pie,
     Cell,
     ResponsiveContainer,
-    Tooltip,
-    Legend
+    Tooltip
 } from 'recharts';
-
-import hrData from '../../../data/hrMockData.json';
-
-const INITIAL_ATTENDANCE = hrData.attendance;
-
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -24,7 +19,26 @@ const STATUS_META = {
 };
 
 export default function AttendanceTracker() {
-    const [records, setRecords] = useState(INITIAL_ATTENDANCE);
+    const { staff } = useBusiness();
+    const [records, setRecords] = useState([]);
+
+    useEffect(() => {
+        if (staff && staff.length > 0) {
+            // Generate basic shell for today if records are empty
+            const shell = staff.map(s => ({
+                id: s._id || s.id,
+                staff: s.name,
+                role: s.role,
+                outlet: s.outlet,
+                checkIn: '-',
+                checkOut: '-',
+                hours: '0',
+                status: 'absent',
+                loc: 'Remote'
+            }));
+            setRecords(shell);
+        }
+    }, [staff]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
@@ -174,11 +188,11 @@ export default function AttendanceTracker() {
 
                 <div className="bg-text p-8 rounded-none shadow-xl shadow-text/10 relative overflow-hidden flex flex-col justify-between text-left font-black">
                     <div className="relative z-10 text-background text-left">
-                        <p className="text-[10px] font-black text-background/60 uppercase tracking-[0.3em]">System Protocol</p>
-                        <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Command</h3>
+                        <p className="text-[10px] font-black text-background/60 uppercase tracking-[0.3em]">Quick Actions</p>
+                        <h3 className="text-lg font-black mt-2 uppercase tracking-tight">Bulk Status Update</h3>
                     </div>
                     <button onClick={() => setBulkModal(true)} className="relative z-10 mt-6 flex items-center justify-center gap-3 px-6 py-4 rounded-none bg-white text-text text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all active:scale-95">
-                        <Check className="w-4 h-4" /> Initialize Mark All
+                        <Check className="w-4 h-4" /> Mark All Members
                     </button>
                     <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-none bg-white/5 rotate-45" />
                 </div>
@@ -188,7 +202,7 @@ export default function AttendanceTracker() {
             <div className="bg-surface p-5 rounded-none border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left font-black">
                 <div className="relative flex-1 max-w-sm text-left">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="QUERY STAFF REGISTRY..."
+                    <input type="text" placeholder="Search staff members..."
                         className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
@@ -201,7 +215,7 @@ export default function AttendanceTracker() {
                     ))}
                     <div className="w-[1px] h-6 bg-border mx-2" />
                     <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2 rounded-none border border-border text-[9px] font-black uppercase tracking-[0.1em] text-text-muted hover:bg-surface-alt transition-all">
-                        <Download className="w-3.5 h-3.5" /> Output Data
+                        <Download className="w-3.5 h-3.5" /> Export Report
                     </button>
                 </div>
             </div>
@@ -211,10 +225,14 @@ export default function AttendanceTracker() {
                 <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
-                            <tr className="bg-surface-alt/50 border-b border-border text-left font-black">
-                                {['Employee_node', 'Check_In', 'Check_Out', 'Intensity', 'Geolocation', 'Status_Bit', 'Control'].map(h => (
-                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : 'text-left'}`}>{h}</th>
-                                ))}
+                            <tr className="bg-surface-alt/50 border-b border-border/40 text-left font-black">
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check Out</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Hours</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Location</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left font-black">
@@ -285,7 +303,7 @@ export default function AttendanceTracker() {
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <div>
-                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Override Status</h2>
+                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Update Status</h2>
                                     <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">{changeStatusModal.staff}</p>
                                 </div>
                                 <button onClick={() => setChangeStatusModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-5 h-5" /></button>
@@ -301,15 +319,15 @@ export default function AttendanceTracker() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">In_Bound</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In</label>
                                         <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Out_Bound</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check Out</label>
                                         <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Execute Change</button>
+                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>
                             </form>
                         </motion.div>
                     </div>
@@ -324,7 +342,7 @@ export default function AttendanceTracker() {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-8">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Attach Remark</h2>
+                                <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Add Remark</h2>
                                 <button onClick={() => setRemarkModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-5 h-5" /></button>
                             </div>
                             <p className="text-[10px] font-black text-primary mb-4 uppercase tracking-widest">{remarkModal.staff} · {STATUS_META[remarkModal.status]?.label}</p>
@@ -332,7 +350,7 @@ export default function AttendanceTracker() {
                                 <textarea required rows={4} placeholder="ENTER LOG DETAIL..."
                                     className="w-full px-5 py-4 rounded-none bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none resize-none"
                                     value={remark} onChange={e => setRemark(e.target.value)} />
-                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Submit Entry</button>
+                                <button type="submit" className="w-full py-4 bg-amber-500 text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-amber-500/20 hover:scale-[1.02] transition-all">Save Remark</button>
                             </form>
                         </motion.div>
                     </div>
@@ -347,8 +365,8 @@ export default function AttendanceTracker() {
                             className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-8 text-center">
                             <button onClick={() => setBulkModal(false)} className="absolute top-4 right-4 w-9 h-9 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text"><X className="w-4 h-4" /></button>
                             <div className="w-14 h-14 bg-primary/10 rounded-none flex items-center justify-center mx-auto mb-6 border border-primary/20"><Users className="w-6 h-6 text-primary" /></div>
-                            <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Global Override</h3>
-                            <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest">Applying status to all sequence nodes for {selectedDate}</p>
+                             <h3 className="text-xs font-black text-text uppercase tracking-[0.2em]">Mark All Status</h3>
+                             <p className="text-[10px] text-text-muted mt-2 mb-8 uppercase font-bold tracking-widest">Applying status to all staff members for {selectedDate}</p>
                             <div className="flex flex-col gap-3">
                                 <button onClick={bulkMarkPresent} className="w-full py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:scale-[1.02] transition-all">Force Present</button>
                                 <button onClick={bulkMarkAbsent} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:scale-[1.02] transition-all">Force Absent</button>

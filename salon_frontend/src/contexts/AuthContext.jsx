@@ -93,59 +93,51 @@ export function AuthProvider({ children }) {
 
     const login = async (email, password) => {
         try {
-            // Mock Login Logic
-            const mockUser = MOCK_USERS[email];
-            if (!mockUser) {
-                throw new Error('User not found in mock database.');
+            const response = await api.post('/auth/login', { email, password });
+            
+            if (response.data.success) {
+                const { accessToken, user: userData } = response.data.data;
+                
+                // Save session specific to the role
+                localStorage.setItem(`auth_token_${userData.role}`, accessToken);
+                localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
+                localStorage.setItem('active_auth_role', userData.role);
+                
+                // Set unified token for API service
+                localStorage.setItem('token', accessToken);
+
+                setUser(userData);
+                return { accessToken, user: userData };
+            } else {
+                throw new Error(response.data.message || 'Login failed');
             }
-
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            const userData = {
-                id: `mock-${Date.now()}`,
-                email,
-                ...mockUser
-            };
-
-            const accessToken = `mock-token-${Date.now()}`;
-
-            // Save session specific to the role
-            localStorage.setItem(`auth_token_${userData.role}`, accessToken);
-            localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
-            localStorage.setItem('active_auth_role', userData.role);
-
-            setUser(userData);
-            return { accessToken, user: userData };
         } catch (error) {
-            console.error('[AuthContext] Mock Login failed:', error);
+            console.error('[AuthContext] Login failed:', error);
             throw error;
         }
     };
 
     const register = async (payload) => {
         try {
-            // Mock Registration Logic
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await api.post('/auth/register', payload);
+            
+            if (response.data.success) {
+                const { accessToken, user: userData } = response.data.data;
 
-            const userData = {
-                id: `mock-${Date.now()}`,
-                name: payload.fullName,
-                email: payload.email,
-                role: 'admin', // Default mock role
-                salonName: payload.salonName
-            };
+                localStorage.setItem(`auth_token_${userData.role}`, accessToken);
+                localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
+                localStorage.setItem('active_auth_role', userData.role);
+                
+                // Set unified token for API service
+                localStorage.setItem('token', accessToken);
 
-            const accessToken = `mock-token-${Date.now()}`;
-
-            localStorage.setItem(`auth_token_${userData.role}`, accessToken);
-            localStorage.setItem(`auth_user_${userData.role}`, JSON.stringify(userData));
-            localStorage.setItem('active_auth_role', userData.role);
-
-            setUser(userData);
-            return { accessToken, user: userData };
+                setUser(userData);
+                return { accessToken, user: userData };
+            } else {
+                throw new Error(response.data.message || 'Registration failed');
+            }
         } catch (error) {
-            console.error('[AuthContext] Mock Registration failed:', error);
+            console.error('[AuthContext] Registration failed:', error);
             throw error;
         }
     };
@@ -167,6 +159,37 @@ export function AuthProvider({ children }) {
         setUser(updatedUser);
     };
 
+    const updateProfile = async (data) => {
+        try {
+            const response = await api.patch('/users/me', data);
+            if (response.data.success) {
+                const updatedUser = response.data.data;
+                const role = updatedUser.role || 'admin';
+                localStorage.setItem(`auth_user_${role}`, JSON.stringify(updatedUser));
+                setUser(updatedUser);
+                return updatedUser;
+            } else {
+                throw new Error(response.data.message || 'Profile update failed');
+            }
+        } catch (error) {
+            console.error('[AuthContext] Profile update failed:', error);
+            throw error;
+        }
+    };
+
+    const changePassword = async (currentPassword, newPassword) => {
+        try {
+            const response = await api.post('/users/change-password', { currentPassword, newPassword });
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Password change failed');
+            }
+            return response.data;
+        } catch (error) {
+            console.error('[AuthContext] Password change failed:', error);
+            throw error;
+        }
+    };
+
     const value = {
         user,
         loading,
@@ -174,6 +197,8 @@ export function AuthProvider({ children }) {
         register,
         logout,
         updateSubscription,
+        updateProfile,
+        changePassword,
         isAuthenticated: !!user,
         getRedirectPath: () => getRedirectPath(user),
         getExitPath,

@@ -42,13 +42,38 @@ const createManualInvoice = async (invoiceData) => {
     const count = await billingRepository.model.countDocuments();
     const invoiceNumber = `WXP-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
     
-    const taxAmount = Math.round(amount * 0.18);
-    const totalAmount = amount + taxAmount;
-
     let planName = 'Manual Invoice';
+    let taxAmount = 0;
+    let totalAmount = 0;
+    let finalBaseAmount = amount;
+
     if (planId) {
         const plan = await subscriptionRepository.findOne({ _id: planId });
-        if (plan) planName = plan.name;
+        if (plan) {
+            planName = plan.name;
+            const rate = plan.gstRate || 0;
+            if (plan.gstStatus) {
+                if (plan.gstType === 'inclusive') {
+                    finalBaseAmount = Math.round(amount / (1 + (rate / 100)));
+                    taxAmount = amount - finalBaseAmount;
+                    totalAmount = amount;
+                } else {
+                    // exclusive
+                    taxAmount = Math.round(amount * (rate / 100));
+                    totalAmount = amount + taxAmount;
+                    finalBaseAmount = amount;
+                }
+            } else {
+                taxAmount = 0;
+                totalAmount = amount;
+                finalBaseAmount = amount;
+            }
+        }
+    } else {
+        // Fallback for manual invoices without a linked plan (e.g. 18% Exclusive)
+        taxAmount = Math.round(amount * 0.18);
+        totalAmount = amount + taxAmount;
+        finalBaseAmount = amount;
     }
 
     const billingBody = {
@@ -56,7 +81,7 @@ const createManualInvoice = async (invoiceData) => {
         tenantId,
         planId,
         planName,
-        amount,
+        amount: finalBaseAmount,
         taxAmount,
         totalAmount,
         notes,

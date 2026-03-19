@@ -27,6 +27,7 @@ const tenantSchema = new mongoose.Schema(
         phone: {
             type: String,
             trim: true,
+            padding: true,
         },
         city: {
             type: String,
@@ -110,6 +111,11 @@ const tenantSchema = new mongoose.Schema(
         settings: {
             currency: { type: String, default: 'INR' },
             timezone: { type: String, default: 'UTC' },
+            state: { type: String, trim: true },
+            stateCode: { type: String, trim: true },
+            serviceGst: { type: Number, default: 18 },
+            productGst: { type: Number, default: 12 },
+            inclusiveTax: { type: Boolean, default: true },
         },
     },
     {

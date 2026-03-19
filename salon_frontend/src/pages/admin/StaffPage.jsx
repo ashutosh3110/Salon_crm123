@@ -36,14 +36,14 @@ const roleColors = {
 };
 
 const statusColors = {
-    accepted: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
+    active: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
+    inactive: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
     pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
-    expired: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
 };
 
 export default function StaffPage() {
     const { user } = useAuth();
-    const { staff, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
+    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff } = useBusiness();
     const { pendingExpertsCount } = useCMS();
     const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
@@ -83,33 +83,37 @@ export default function StaffPage() {
         setFilteredStaff(result);
     }, [search, roleFilter, outletFilter, staff]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setTimeout(() => {
+        try {
             if (editing) {
-                updateStaff(editing._id, {
-                    ...form,
-                    outletName: outlets.find(o => o._id === form.outletId)?.name || 'N/A'
-                });
+                await updateStaff(editing._id, form);
             } else {
-                addStaff(form);
+                await addStaff(form);
             }
             setShowModal(false);
             setEditing(null);
             setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
+        } catch (error) {
+            alert('Operation failed: ' + error.message);
+        } finally {
             setLoading(false);
-        }, 500);
+        }
     };
 
-    const handleToggleStatus = (id, currentStatus) => {
-        const newStatus = currentStatus === 'accepted' ? 'expired' : 'accepted';
-        updateStaff(id, { inviteStatus: newStatus });
+    const handleToggleStatus = async (id, currentStatus) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        await updateStaff(id, { status: newStatus });
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Delete this staff member?')) {
-            deleteStaff(id);
+            try {
+                await deleteStaff(id);
+            } catch (error) {
+                alert('Delete failed: ' + error.message);
+            }
         }
     };
 
@@ -138,8 +142,8 @@ export default function StaffPage() {
             {/* Header - Compact */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
                 <div className="text-left">
-                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight font-mono leading-none">Personnel Roster</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">Team & Authority Matrix</p>
+                    <h1 className="text-2xl font-bold text-text tracking-tight leading-none">Our Team</h1>
+                    <p className="text-[11px] font-medium text-text-muted mt-1 uppercase tracking-wider">Manage Staff & Permissions</p>
                 </div>
                 <button
                     onClick={() => {
@@ -147,9 +151,9 @@ export default function StaffPage() {
                         setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black uppercase tracking-[0.15em] shadow-lg hover:bg-primary hover:text-white transition-all font-mono"
+                    className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm hover:bg-primary hover:text-white transition-all"
                 >
-                    <Plus className="w-3 h-3" /> Recruit Asset
+                    <Plus className="w-4 h-4" /> Add New Member
                 </button>
             </div>
 
@@ -164,9 +168,9 @@ export default function StaffPage() {
                             <ShieldAlert className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                            <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest leading-none mb-0.5 font-mono">Attention Alert</p>
-                            <h4 className="text-[11px] font-black text-text uppercase tracking-tight italic">
-                                {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Pending Audit
+                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider leading-none mb-1">Update Required</p>
+                            <h4 className="text-sm font-semibold text-text tracking-tight">
+                                {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Under Review
                             </h4>
                         </div>
                     </div>
@@ -184,7 +188,7 @@ export default function StaffPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Scan for name or email..."
+                        placeholder="Search by name or email..."
                         className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all placeholder:text-[10px]"
                     />
                 </div>
@@ -197,9 +201,9 @@ export default function StaffPage() {
                         className="min-w-[120px]"
                     />
                     <CustomSelect
-                        value={outletFilter === 'all' ? 'All Units' : outlets.find(o => o._id === outletFilter)?.name}
-                        onChange={(val) => setOutletFilter(val === 'All Units' ? 'all' : outlets.find(o => o.name === val)?._id)}
-                        options={['All Units', ...outlets.map(o => o.name)]}
+                        value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
+                        onChange={(val) => setOutletFilter(val === 'All Salons' ? 'all' : outlets.find(o => o.name === val)?._id)}
+                        options={['All Salons', ...outlets.map(o => o.name)]}
                         variant="compact"
                         className="min-w-[150px]"
                     />
@@ -211,13 +215,13 @@ export default function StaffPage() {
                 <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-surface font-mono border-b border-border">
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Asset Identity</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-center">Comm Link</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Authority</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Base Center</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-center">Lifecycle</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
+                            <tr className="bg-surface border-b border-border">
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Staff Member</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-center">Contact Number</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Role</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Primary Salon</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-center">Status</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
@@ -226,7 +230,7 @@ export default function StaffPage() {
                                     <td colSpan="6" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-20">
                                             <UserCog className="w-12 h-12 text-text-muted mb-3" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest">No matching assets found.</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest">No matching members found.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -247,8 +251,8 @@ export default function StaffPage() {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2 text-center">
-                                            <span className="text-[9px] font-black text-text-secondary font-mono tracking-tighter uppercase whitespace-nowrap">
+                                        <td className="px-4 py-4 text-center">
+                                            <span className="text-xs font-medium text-text-secondary tracking-tight">
                                                 {maskPhone(s.phone, user?.role)}
                                             </span>
                                         </td>
@@ -260,13 +264,13 @@ export default function StaffPage() {
                                         <td className="px-4 py-2">
                                             <div className="flex items-center gap-1 text-[9px] font-black text-text-muted uppercase italic font-mono truncate max-w-[120px]">
                                                 <MapPin className="w-2.5 h-2.5" />
-                                                {s.outletName}
+                                                {outlets.find(o => o._id === s.outletId)?.name || 'Main Unit'}
                                             </div>
                                         </td>
-                                        <td className="px-4 py-2 text-center">
-                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black border uppercase tracking-widest font-mono ${statusColors[s.inviteStatus]}`}>
-                                                {s.inviteStatus === 'accepted' ? <CheckCircle2 className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
-                                                {s.inviteStatus}
+                                        <td className="px-4 py-4 text-center">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-semibold border rounded-full uppercase tracking-wide ${statusColors[s.status] || statusColors.active}`}>
+                                                {s.status === 'active' ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                                {s.status || 'active'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-2 text-right">
@@ -286,7 +290,7 @@ export default function StaffPage() {
                                                     <Edit className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleToggleStatus(s._id, s.inviteStatus)}
+                                                    onClick={() => handleToggleStatus(s._id, s.status || 'active')}
                                                     className="p-1.5 text-text-muted hover:text-rose-500 transition-colors"
                                                     title="Toggle"
                                                 >
@@ -311,11 +315,11 @@ export default function StaffPage() {
                 {/* Footer - Compact */}
                 <div className="bg-surface px-4 py-2 border-t border-border flex items-center justify-between">
                     <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
-                        Node Audit: {filteredStaff.length} Assets Online
+                        Team Overview: {filteredStaff.length} Members
                     </span>
                     <div className="flex gap-4">
-                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20" disabled>Backward</button>
-                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors">Forward</button>
+                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20" disabled>Previous</button>
+                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors">Next</button>
                     </div>
                 </div>
             </div>
@@ -331,9 +335,9 @@ export default function StaffPage() {
                             </div>
                             <div className="text-left">
                                 <h2 className="text-lg font-black text-text uppercase italic font-mono leading-none">
-                                    {editing ? 'Update Profile' : 'New Asset Entry'}
+                                    {editing ? 'Update Profile' : 'Add New Member'}
                                 </h2>
-                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">Personnel Induction Flux</p>
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">New Staff Registration</p>
                             </div>
                             <button onClick={() => setShowModal(false)} className="ml-auto p-1 hover:bg-surface transition-colors">
                                 <XCircle className="w-5 h-5 text-text-muted" />
@@ -343,7 +347,7 @@ export default function StaffPage() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Full Identity</label>
+                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name</label>
                                     <input
                                         type="text"
                                         required
@@ -351,22 +355,22 @@ export default function StaffPage() {
                                         value={form.name}
                                         onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text uppercase font-mono"
-                                        placeholder="SYSTEM NAME"
+                                        placeholder="ENTER NAME"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Digital Link</label>
+                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address</label>
                                     <input
                                         type="email"
                                         required
                                         value={form.email}
                                         onChange={(e) => setForm({ ...form, email: e.target.value })}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono"
-                                        placeholder="email@node.com"
+                                        placeholder="email@example.com"
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Comm Channel</label>
+                                 <div className="space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone Number</label>
                                     <input
                                         type="tel"
                                         value={form.phone}
@@ -375,11 +379,11 @@ export default function StaffPage() {
                                             if (val.length <= 10) setForm({ ...form, phone: val });
                                         }}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono"
-                                        placeholder="10D NUM"
+                                        placeholder="10-DIGIT NUM"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Auth Role</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
                                     <select 
                                         value={form.role} 
                                         onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -394,13 +398,13 @@ export default function StaffPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Unit Station</label>
+                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon</label>
                                     <select 
                                         value={form.outletId} 
                                         onChange={(e) => setForm({ ...form, outletId: e.target.value })}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
                                     >
-                                        <option value="">Choose Unit</option>
+                                        <option value="">Select Salon</option>
                                         {outlets.map(o => <option key={o._id} value={o._id}>{o.name}</option>)}
                                     </select>
                                 </div>
@@ -414,7 +418,7 @@ export default function StaffPage() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN ID</label>
+                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number</label>
                                     <input
                                         type="text"
                                         value={form.pan || ''}
@@ -424,24 +428,24 @@ export default function StaffPage() {
                                     />
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Address Node</label>
+                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>
                                     <textarea
                                         value={form.address || ''}
                                         onChange={(e) => setForm({ ...form, address: e.target.value })}
                                         className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12"
-                                        placeholder="PHYSICAL LOCATION"
+                                        placeholder="FULL ADDRESS"
                                     />
                                 </div>
                                 {!editing && (
                                     <div className="space-y-1 col-span-2">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Gate Pass (Password)</label>
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Create Password</label>
                                         <input
                                             type="password"
                                             required
                                             value={form.password}
                                             onChange={(e) => setForm({ ...form, password: e.target.value })}
                                             className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
-                                            placeholder="SECURE ACCESS"
+                                            placeholder="PASSWORD"
                                         />
                                     </div>
                                 )}
@@ -463,7 +467,7 @@ export default function StaffPage() {
                                     {loading ? (
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white animate-spin" />
                                     ) : (
-                                        <span className="text-[9px] font-black uppercase tracking-widest font-mono">{editing ? 'Commit Change' : 'Induct Asset'}</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{editing ? 'Save Changes' : 'Add Member'}</span>
                                     )}
                                 </button>
                             </div>

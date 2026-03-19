@@ -31,40 +31,18 @@ import {
     Bar
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useWallet } from '../../contexts/WalletContext';
 
-const stats = [
-    { label: 'Total Revenue', value: 128450, prefix: '₹', trend: '+14.5%', positive: true, icon: DollarSign },
-    { label: 'Total Appointments', value: 842, prefix: '', trend: '+8.2%', positive: true, icon: Calendar },
-    { label: 'Active Clients', value: 3240, prefix: '', trend: '+22.4%', positive: true, icon: Users },
-    { label: 'Avg. Rating', value: 4.8, prefix: '', suffix: '/5', trend: 'Stable', positive: true, icon: TrendingUp },
-];
-
-const revenueData = [
-    { name: 'Mon', revenue: 4000, appointments: 24 },
-    { name: 'Tue', revenue: 3000, appointments: 18 },
-    { name: 'Wed', revenue: 5000, appointments: 29 },
-    { name: 'Thu', revenue: 2780, appointments: 15 },
-    { name: 'Fri', revenue: 6890, appointments: 42 },
-    { name: 'Sat', revenue: 8390, appointments: 54 },
-    { name: 'Sun', revenue: 7490, appointments: 48 },
-];
-
-const serviceDistribution = [
-    { name: 'Haircut', value: 400, color: '#3b82f6' },
-    { name: 'Skin Care', value: 300, color: '#ec4899' },
-    { name: 'Massage', value: 300, color: '#f59e0b' },
-    { name: 'Nails', value: 200, color: '#10b981' },
-];
-
-const recentActivity = [
-    { client: 'Rahul Sharma', service: 'Haircut & Styling', time: '5 mins ago', amount: '₹850', status: 'Completed' },
-    { client: 'Priya Singh', service: 'Facial Spa', time: '15 mins ago', amount: '₹2,200', status: 'In Progress' },
-    { client: 'Anita Verma', service: 'Manicure', time: '45 mins ago', amount: '₹1,200', status: 'Pending' },
-];
-
 export default function DashboardPage() {
+    const { 
+        outlets, 
+        customers, 
+        services, 
+        staff,
+        bookings: businessBookings
+    } = useBusiness();
     const { bookings: registryBookings } = useBookingRegistry();
     const { allWallets } = useWallet();
 
@@ -73,13 +51,14 @@ export default function DashboardPage() {
     }, [allWallets]);
 
     const activeStats = useMemo(() => {
-        const base = [...stats];
-        // Replace or add 
         return [
-            ...base,
+            { label: 'Total Salons', value: outlets.length, prefix: '', trend: 'Live', positive: true, icon: Globe },
+            { label: 'Total Appointments', value: registryBookings.length, prefix: '', trend: 'Bookings', positive: true, icon: Calendar },
+            { label: 'Active Clients', value: customers.length, prefix: '', trend: 'Database', positive: true, icon: Users },
+            { label: 'Staff Members', value: staff.length, prefix: '', trend: 'Team', positive: true, icon: TrendingUp },
             { label: 'Wallet Liability', value: totalLiability, prefix: '₹', trend: 'Active', positive: false, icon: CreditCard }
         ];
-    }, [totalLiability]);
+    }, [outlets, registryBookings, customers, staff, totalLiability]);
 
     const liveRecentActivity = useMemo(() => {
         // Take last 5 from registry
@@ -91,16 +70,38 @@ export default function DashboardPage() {
             status: b.status === 'upcoming' ? 'Upcoming' : 'Completed',
             isLive: true
         }));
-        return [...live, ...recentActivity].slice(0, 5);
+        
+        // If no live activity, return empty array (no fallback to mock)
+        return live;
     }, [registryBookings]);
+
+    // Use empty/initial values for charts if no live data is available yet
+    const revenueData = useMemo(() => [
+        { name: 'Mon', revenue: 0, appointments: 0 },
+        { name: 'Tue', revenue: 0, appointments: 0 },
+        { name: 'Wed', revenue: 0, appointments: 0 },
+        { name: 'Thu', revenue: 0, appointments: 0 },
+        { name: 'Fri', revenue: 0, appointments: 0 },
+        { name: 'Sat', revenue: 0, appointments: 0 },
+        { name: 'Sun', revenue: 0, appointments: 0 },
+    ], []);
+
+    const serviceDistribution = useMemo(() => {
+        if (services.length === 0) return [];
+        return services.slice(0, 4).map((s, i) => ({
+            name: s.name,
+            value: 1, // Placeholder for distribution if no booking data yet
+            color: ['#3b82f6', '#ec4899', '#f59e0b', '#10b981'][i]
+        }));
+    }, [services]);
 
     return (
         <div className="space-y-6 animate-reveal">
             {/* Top Bar / Welcome */}
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 text-left font-black">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 text-left">
                 <div className="leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Welcome Back, Admin</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Daily salon overview and performance</p>
+                    <h1 className="text-2xl sm:text-4xl font-bold text-text tracking-tight leading-tight">Welcome Back</h1>
+                    <p className="text-sm font-medium text-text-muted mt-2 tracking-wide font-sans">Daily salon overview and performance</p>
                 </div>
                 <div className="flex items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 lg:flex-none">
@@ -108,33 +109,35 @@ export default function DashboardPage() {
                         <input
                             type="text"
                             placeholder="Search everything..."
-                            className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-none bg-surface-alt border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all font-black"
+                            className="w-full lg:min-w-[300px] pl-12 pr-4 py-3.5 rounded-xl bg-surface border border-border text-sm font-medium outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="responsive-grid-5 text-left font-black">
+            <div className="responsive-grid-5 text-left">
                 {activeStats.map((stat, i) => (
-                    <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={i} className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
                         <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3 text-left font-black">
-                                <div className="flex items-center gap-2.5">
-                                    <stat.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+                            <div className="flex items-center justify-between mb-4 text-left">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center transition-colors group-hover:bg-primary/10">
+                                        <stat.icon className="w-4 h-4 text-primary" />
+                                    </div>
+                                    <p className="text-[12px] font-semibold text-text-secondary tracking-wide">{stat.label}</p>
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'} bg-white dark:bg-white/5 px-2 py-0.5 rounded-full border border-border/50`}>
                                     {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {stat.trend}
                                 </div>
                             </div>
 
                             <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-3xl font-black text-text tracking-tight uppercase">
+                                <h3 className="text-3xl font-bold text-text tracking-tight">
                                     <AnimatedCounter
                                         value={stat.value}
                                         prefix={stat.prefix}
@@ -153,13 +156,13 @@ export default function DashboardPage() {
             </div>
 
             {/* Performance Analysis */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
                 {/* Revenue Trend Chart */}
-                <div className="lg:col-span-2 bg-surface p-8 rounded-none border border-border shadow-sm">
+                <div className="lg:col-span-2 bg-surface p-8 rounded-2xl border border-border shadow-sm">
                     <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em]">Revenue Trends</h2>
-                            <p className="text-[10px] text-text-muted font-bold tracking-widest mt-1 uppercase">Last 7 days income and bookings</p>
+                        <div className="text-left">
+                            <h2 className="text-lg font-bold text-text tracking-tight">Revenue Trends</h2>
+                            <p className="text-xs text-text-muted font-medium mt-1">Last 7 days income and bookings</p>
                         </div>
                         <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2">
@@ -223,8 +226,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Service Distribution Pie */}
-                <div className="bg-surface p-8 rounded-none border border-border shadow-sm flex flex-col">
-                    <h2 className="text-[11px] font-black text-text uppercase tracking-[0.2em] mb-8">Most Booked Services</h2>
+                <div className="bg-surface p-8 rounded-2xl border border-border shadow-sm flex flex-col">
+                    <h2 className="text-lg font-bold text-text tracking-tight mb-8 text-left">Most Booked Services</h2>
                     <div className="flex-1 min-h-[220px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -270,25 +273,25 @@ export default function DashboardPage() {
             </div>
 
             {/* Bottom Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
-                <div className="lg:col-span-2 bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left">
-                    <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Recent Activity</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
+                <div className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm overflow-hidden text-left">
+                    <div className="px-8 py-6 border-b border-border bg-surface-alt/10 flex items-center justify-between">
+                        <h3 className="text-lg font-bold text-text tracking-tight text-left">Recent Activity</h3>
                         <button className="text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:opacity-70 transition-opacity">Full Stream</button>
                     </div>
                     <div className="divide-y divide-border/50 text-left">
                         {(liveRecentActivity || []).map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors group">
                                 <div className="flex items-center gap-4 text-left font-black">
-                                    <div className={`w-10 h-10 rounded-none bg-surface-alt border flex items-center justify-center font-black transition-all ${activity.isLive ? 'border-primary/50 text-primary animate-pulse shadow-[0_0_10px_rgba(var(--primary-rgb),0.3)]' : 'border-border text-text-muted group-hover:text-primary'}`}>
+                                    <div className={`w-12 h-12 rounded-xl bg-surface-alt border flex items-center justify-center font-bold transition-all ${activity.isLive ? 'border-primary/50 text-primary animate-pulse shadow-lg shadow-primary/10' : 'border-border text-text-muted group-hover:text-primary'}`}>
                                         {activity.client?.[0] || 'C'}
                                     </div>
-                                    <div className="text-left font-black">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">
+                                    <div className="text-left">
+                                        <p className="text-[15px] font-bold text-text group-hover:text-primary transition-colors">
                                             {activity.client}
-                                            {activity.isLive && <span className="ml-2 text-[8px] px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20">LIVE_APP</span>}
+                                            {activity.isLive && <span className="ml-2 text-[10px] font-bold px-2 py-0.5 bg-primary/10 text-primary rounded-full border border-primary/20 tracking-wide">LIVE</span>}
                                         </p>
-                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{activity.service}</p>
+                                        <p className="text-xs font-medium text-text-muted mt-0.5">{activity.service}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
@@ -300,33 +303,33 @@ export default function DashboardPage() {
                     </div>
                 </div>
 
-                <div className="bg-surface rounded-none border border-border shadow-sm p-5 space-y-5 text-left font-black">
-                    <h3 className="text-[11px] font-black text-text uppercase tracking-widest text-left">Quick Actions</h3>
-                    <div className="grid grid-cols-2 gap-2.5">
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
-                            <Calendar className="w-4 h-4 opacity-60 group-hover:opacity-100" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Booking</span>
+                <div className="bg-surface rounded-2xl border border-border shadow-sm p-6 space-y-6 text-left">
+                    <h3 className="text-lg font-bold text-text tracking-tight text-left">Quick Actions</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <button className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg">
+                            <Calendar className="w-5 h-5 opacity-60 group-hover:opacity-100" />
+                            <span className="text-xs font-bold tracking-tight">Booking</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
-                            <Users className="w-4 h-4 opacity-60 group-hover:opacity-100" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Staff</span>
+                        <button className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg">
+                            <Users className="w-5 h-5 opacity-60 group-hover:opacity-100" />
+                            <span className="text-xs font-bold tracking-tight">Staff</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
-                            <TrendingUp className="w-4 h-4 opacity-60 group-hover:opacity-100" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Sales</span>
+                        <button className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg">
+                            <TrendingUp className="w-5 h-5 opacity-60 group-hover:opacity-100" />
+                            <span className="text-xs font-bold tracking-tight">Sales</span>
                         </button>
-                        <button className="p-5 rounded-none bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm">
-                            <Settings className="w-4 h-4 opacity-60 group-hover:opacity-100" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.2em]">Settings</span>
+                        <button className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg">
+                            <Settings className="w-5 h-5 opacity-60 group-hover:opacity-100" />
+                            <span className="text-xs font-bold tracking-tight">Settings</span>
                         </button>
                     </div>
 
-                    <div className="p-6 rounded-none bg-primary text-primary-foreground space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left font-black">
+                    <div className="p-6 rounded-2xl bg-primary text-primary-foreground space-y-3 relative overflow-hidden group shadow-lg shadow-primary/20 text-left">
                         <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-4 -translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-700">
                             <TrendingUp className="w-20 h-20" />
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 text-left">Business Tip</p>
-                        <p className="text-sm font-black tracking-tight leading-tight uppercase text-left">Track stylist performance to optimize schedules.</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 text-left">Business Tip</p>
+                        <p className="text-sm font-bold tracking-tight leading-snug text-left">Track stylist performance to optimize schedules and boost revenue.</p>
                     </div>
                 </div>
             </div>

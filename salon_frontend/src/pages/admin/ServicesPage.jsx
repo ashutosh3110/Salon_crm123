@@ -29,13 +29,14 @@ export default function ServicesPage({ tab = 'list' }) {
         services,
         categories,
         addService,
-        updateService,
         deleteService,
         toggleServiceStatus,
         addCategory,
         deleteCategory,
         toggleCategoryStatus,
-        updateCategory
+        updateCategory,
+        servicesLoading,
+        categoriesLoading
     } = useBusiness();
 
     const categoryStats = useMemo(() => {
@@ -168,14 +169,13 @@ export default function ServicesPage({ tab = 'list' }) {
                 {activeTab === 'add-service' && (
                     <ServiceForm
                         onSave={addService}
-                        categories={categories.map(c => c.name)}
+                        categories={categories}
                     />
                 )}
                 {activeTab === 'edit-service' && (
                     <ServiceForm
-                        onSave={(data) => updateService(data.id, data)}
-                        categories={categories.map(c => c.name)}
-                        initialData={services.find(s => s.id === parseInt(window.location.pathname.split('/').pop()))}
+                        categories={categories}
+                        initialData={services.find(s => s._id === window.location.pathname.split('/').pop())}
                     />
                 )}
                 {activeTab === 'categories' && (

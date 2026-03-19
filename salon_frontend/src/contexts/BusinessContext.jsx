@@ -1,70 +1,43 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import businessMockData from '../data/businessMockData.json';
+import { useAuth } from './AuthContext';
+import api from '../services/api';
 
 const BusinessContext = createContext(null);
 
 export function BusinessProvider({ children }) {
-    const [outlets, setOutlets] = useState(() => {
-        const saved = localStorage.getItem('mock_outlets');
-        return saved ? JSON.parse(saved) : businessMockData.outlets;
-    });
+    const { isAuthenticated } = useAuth();
+    const [salon, setSalon] = useState(null);
+    const [salonLoading, setSalonLoading] = useState(false);
 
-    const [staff, setStaff] = useState(() => {
-        const saved = localStorage.getItem('mock_staff');
-        return saved ? JSON.parse(saved) : businessMockData.staff;
-    });
+    const [outlets, setOutlets] = useState([]);
+    const [outletsLoading, setOutletsLoading] = useState(false);
 
-    const [services, setServices] = useState(() => {
-        const saved = localStorage.getItem('mock_services');
-        return saved ? JSON.parse(saved) : businessMockData.services;
-    });
+    const [staff, setStaff] = useState([]);
+    const [staffLoading, setStaffLoading] = useState(false);
 
-    const [categories, setCategories] = useState(() => {
-        const saved = localStorage.getItem('mock_categories');
-        return saved ? JSON.parse(saved) : businessMockData.categories;
-    });
+    const [services, setServices] = useState([]);
+    const [servicesLoading, setServicesLoading] = useState(false);
 
-    const [products, setProducts] = useState(() => {
-        const saved = localStorage.getItem('mock_products');
-        return saved ? JSON.parse(saved) : businessMockData.products;
-    });
+    const [categories, setCategories] = useState([]);
+    const [categoriesLoading, setCategoriesLoading] = useState(false);
 
-    const [customers, setCustomers] = useState(() => {
-        const saved = localStorage.getItem('mock_customers');
-        return saved ? JSON.parse(saved) : businessMockData.customers;
-    });
+    const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(false);
 
-    const [bookings, setBookings] = useState(() => {
-        const saved = localStorage.getItem('mock_bookings');
-        return saved ? JSON.parse(saved) : businessMockData.bookings;
-    });
+    const [customers, setCustomers] = useState([]);
+    const [customersLoading, setCustomersLoading] = useState(false);
 
-    const [feedbacks, setFeedbacks] = useState(() => {
-        const saved = localStorage.getItem('mock_feedbacks');
-        const initialData = saved ? JSON.parse(saved) : businessMockData.feedbacks;
-        
-        // Migration: Ensure all feedbacks use standardized keys
-        return initialData.map(fb => ({
-            ...fb,
-            customerName: fb.customerName || fb.customer || 'Guest',
-            service: fb.service || 'General Service',
-            staffName: fb.staffName || fb.staff || 'N/A',
-            comment: fb.comment || '',
-            sentiment: fb.sentiment || (fb.rating >= 4 ? 'Positive' : (fb.rating === 3 ? 'Neutral' : 'Negative')),
-            status: fb.status === 'active' ? (fb.rating <= 2 ? 'Urgent' : 'Pending') : (fb.status || 'Pending'),
-            response: fb.response || ''
-        }));
-    });
+    const [bookings, setBookings] = useState([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
 
-    const [suppliers, setSuppliers] = useState(() => {
-        const saved = localStorage.getItem('mock_suppliers');
-        return saved ? JSON.parse(saved) : businessMockData.suppliers;
-    });
+    const [feedbacks, setFeedbacks] = useState([]);
+    const [feedbacksLoading, setFeedbacksLoading] = useState(false);
 
-    const [segments, setSegments] = useState(() => {
-        const saved = localStorage.getItem('mock_segments');
-        return saved ? JSON.parse(saved) : businessMockData.segments;
-    });
+    const [suppliers, setSuppliers] = useState([]);
+    const [suppliersLoading, setSuppliersLoading] = useState(false);
+
+    const [segments, setSegments] = useState([]);
+    const [segmentsLoading, setSegmentsLoading] = useState(false);
 
     const [activeOutletId, setActiveOutletId] = useState(() => {
         return localStorage.getItem('active_outlet_id') || null;
@@ -72,43 +45,283 @@ export function BusinessProvider({ children }) {
 
     const activeOutlet = outlets.find(o => o._id === activeOutletId) || null;
 
-    // Persist to localStorage
-    useEffect(() => { localStorage.setItem('mock_outlets', JSON.stringify(outlets)); }, [outlets]);
-    useEffect(() => { localStorage.setItem('mock_staff', JSON.stringify(staff)); }, [staff]);
-    useEffect(() => { localStorage.setItem('mock_services', JSON.stringify(services)); }, [services]);
-    useEffect(() => { localStorage.setItem('mock_categories', JSON.stringify(categories)); }, [categories]);
-    useEffect(() => { localStorage.setItem('mock_products', JSON.stringify(products)); }, [products]);
-    useEffect(() => { localStorage.setItem('mock_customers', JSON.stringify(customers)); }, [customers]);
-    useEffect(() => { localStorage.setItem('mock_bookings', JSON.stringify(bookings)); }, [bookings]);
-    useEffect(() => { localStorage.setItem('mock_feedbacks', JSON.stringify(feedbacks)); }, [feedbacks]);
-    useEffect(() => { localStorage.setItem('mock_segments', JSON.stringify(segments)); }, [segments]);
+    // Fetch Initial Data on login
+    useEffect(() => {
+        if (isAuthenticated) {
+            if (!salon && !salonLoading) fetchSalon();
+            fetchOutlets();
+            fetchStaff();
+            fetchServices();
+            fetchCategories();
+            fetchCustomers();
+            fetchBookings();
+            fetchProducts();
+        }
+    }, [isAuthenticated]);
+
+    const fetchSalon = async () => {
+        setSalonLoading(true);
+        try {
+            const response = await api.get('/tenant/me');
+            if (response.data.success) {
+                setSalon(response.data.data);
+            }
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch salon:', error);
+        } finally {
+            setSalonLoading(false);
+        }
+    };
+
+    const fetchOutlets = async () => {
+        setOutletsLoading(true);
+        try {
+            const response = await api.get('/outlets');
+            setOutlets(response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch outlets:', error);
+        } finally {
+            setOutletsLoading(false);
+        }
+    };
+
+    const fetchCustomers = async () => {
+        setCustomersLoading(true);
+        try {
+            const response = await api.get('/clients');
+            setCustomers(response.data.results || response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch customers:', error);
+        } finally {
+            setCustomersLoading(false);
+        }
+    };
+
+    const fetchBookings = async () => {
+        setBookingsLoading(true);
+        try {
+            const response = await api.get('/bookings');
+            setBookings(response.data.results || response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch bookings:', error);
+        } finally {
+            setBookingsLoading(false);
+        }
+    };
+
+    const fetchProducts = async () => {
+        setProductsLoading(true);
+        try {
+            const response = await api.get('/products');
+            setProducts(response.data.results || response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch products:', error);
+        } finally {
+            setProductsLoading(false);
+        }
+    };
+
+    const updateSalon = async (data) => {
+        try {
+            const response = await api.patch('/tenant/me', data);
+            if (response.data.success) {
+                setSalon(response.data.data);
+                return response.data.data;
+            }
+        } catch (error) {
+            console.error('[BusinessContext] Update salon failed:', error);
+            throw error;
+        }
+    };
+
+    const fetchStaff = async () => {
+        setStaffLoading(true);
+        try {
+            const response = await api.get('/users');
+            const staffData = response.data.success ? response.data.data : response.data;
+            setStaff(staffData.filter(u => u.role !== 'superadmin'));
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch staff:', error);
+        } finally {
+            setStaffLoading(false);
+        }
+    };
+
+    const fetchServices = async () => {
+        setServicesLoading(true);
+        try {
+            const response = await api.get('/services');
+            setServices(response.data.results || response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch services:', error);
+        } finally {
+            setServicesLoading(false);
+        }
+    };
+
+    const fetchCategories = async () => {
+        setCategoriesLoading(true);
+        try {
+            const response = await api.get('/services/categories');
+            setCategories(response.data || []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch categories:', error);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
+
+    // Persist active outlet ID to localStorage
     useEffect(() => {
         if (activeOutletId) localStorage.setItem('active_outlet_id', activeOutletId);
         else localStorage.removeItem('active_outlet_id');
     }, [activeOutletId]);
 
     // Actions
-    const addOutlet = (outlet) => setOutlets(prev => [{ ...outlet, _id: `out-${Date.now()}`, staffCount: 0 }, ...prev]);
-    const updateOutlet = (id, data) => setOutlets(prev => prev.map(o => o._id === id ? { ...o, ...data } : o));
-    const deleteOutlet = (id) => setOutlets(prev => prev.filter(o => o._id !== id));
+    const addOutlet = async (outletData) => {
+        try {
+            const response = await api.post('/outlets', outletData);
+            setOutlets(prev => [response.data, ...prev]);
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Add outlet failed:', error);
+            throw error;
+        }
+    };
+
+    const updateOutlet = async (id, data) => {
+        try {
+            const response = await api.patch(`/outlets/${id}`, data);
+            setOutlets(prev => prev.map(o => (o._id === id || o.id === id) ? response.data : o));
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Update outlet failed:', error);
+            throw error;
+        }
+    };
+
+    const deleteOutlet = async (id) => {
+        try {
+            await api.delete(`/outlets/${id}`);
+            setOutlets(prev => prev.filter(o => o._id !== id && o.id !== id));
+        } catch (error) {
+            console.error('[BusinessContext] Delete outlet failed:', error);
+            throw error;
+        }
+    };
     const toggleOutletStatus = (id) => setOutlets(prev => prev.map(o => o._id === id ? { ...o, status: o.status === 'active' ? 'inactive' : 'active' } : o));
 
-    const addStaff = (member) => {
-        const newMember = { ...member, _id: `s-${Date.now()}`, inviteStatus: 'accepted', joinedDate: new Date().toISOString().split('T')[0], outletName: outlets.find(o => o._id === member.outletId)?.name || 'Main' };
-        setStaff(prev => [newMember, ...prev]);
+    const addStaff = async (member) => {
+        try {
+            const response = await api.post('/users', member);
+            const newStaff = response.data.success ? response.data.data : response.data;
+            setStaff(prev => [newStaff, ...prev]);
+            return newStaff;
+        } catch (error) {
+            console.error('[BusinessContext] Add staff failed:', error);
+            throw error;
+        }
     };
-    const updateStaff = (id, data) => setStaff(prev => prev.map(s => s._id === id ? { ...s, ...data } : s));
-    const deleteStaff = (id) => setStaff(prev => prev.filter(s => s._id !== id));
 
-    const addService = (newService) => setServices(prev => [{ ...newService, id: Date.now() }, ...prev]);
-    const updateService = (id, updatedData) => setServices(prev => prev.map(s => s.id === id ? { ...s, ...updatedData } : s));
-    const deleteService = (id) => setServices(prev => prev.filter(s => s.id !== id));
-    const toggleServiceStatus = (id) => setServices(prev => prev.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' } : s));
+    const updateStaff = async (id, data) => {
+        try {
+            const response = await api.patch(`/users/${id}`, data);
+            const updatedStaff = response.data.success ? response.data.data : response.data;
+            setStaff(prev => prev.map(s => (s._id === id || s.id === id) ? updatedStaff : s));
+            return updatedStaff;
+        } catch (error) {
+            console.error('[BusinessContext] Update staff failed:', error);
+            throw error;
+        }
+    };
 
-    const addCategory = ({ name, gender }) => setCategories(prev => [{ id: Date.now(), name, gender: gender || 'both', serviceCount: 0, status: 'active' }, ...prev]);
-    const deleteCategory = (id) => setCategories(prev => prev.filter(c => c.id !== id));
-    const toggleCategoryStatus = (id) => setCategories(prev => prev.map(c => c.id === id ? { ...c, status: c.status === 'active' ? 'inactive' : 'active' } : c));
-    const updateCategory = (id, data) => setCategories(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+    const deleteStaff = async (id) => {
+        try {
+            await api.delete(`/users/${id}`);
+            setStaff(prev => prev.filter(s => (s._id !== id && s.id !== id)));
+        } catch (error) {
+            console.error('[BusinessContext] Delete staff failed:', error);
+            throw error;
+        }
+    };
+
+    const addService = async (newService) => {
+        try {
+            const response = await api.post('/services', newService);
+            setServices(prev => [response.data, ...prev]);
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Add service failed:', error);
+            throw error;
+        }
+    };
+
+    const updateService = async (id, updatedData) => {
+        try {
+            const response = await api.patch(`/services/${id}`, updatedData);
+            setServices(prev => prev.map(s => (s._id === id || s.id === id) ? response.data : s));
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Update service failed:', error);
+            throw error;
+        }
+    };
+
+    const deleteService = async (id) => {
+        try {
+            await api.delete(`/services/${id}`);
+            setServices(prev => prev.filter(s => (s._id !== id && s.id !== id)));
+        } catch (error) {
+            console.error('[BusinessContext] Delete service failed:', error);
+            throw error;
+        }
+    };
+
+    const toggleServiceStatus = async (id) => {
+        const item = services.find(s => s._id === id || s.id === id);
+        if (!item) return;
+        const newStatus = item.status === 'active' ? 'inactive' : 'active';
+        await updateService(id, { status: newStatus });
+    };
+
+    const addCategory = async (data) => {
+        try {
+            const response = await api.post('/services/categories', data);
+            setCategories(prev => [response.data, ...prev]);
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Add category failed:', error);
+            throw error;
+        }
+    };
+
+    const updateCategory = async (id, data) => {
+        try {
+            const response = await api.patch(`/services/categories/${id}`, data);
+            setCategories(prev => prev.map(c => (c._id === id || c.id === id) ? response.data : c));
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Update category failed:', error);
+            throw error;
+        }
+    };
+
+    const deleteCategory = async (id) => {
+        try {
+            await api.delete(`/services/categories/${id}`);
+            setCategories(prev => prev.filter(c => (c._id !== id && c.id !== id)));
+        } catch (error) {
+            console.error('[BusinessContext] Delete category failed:', error);
+            throw error;
+        }
+    };
+
+    const toggleCategoryStatus = async (id) => {
+        const item = categories.find(c => c._id === id || c.id === id);
+        if (!item) return;
+        const newStatus = item.status === 'active' ? 'inactive' : 'active';
+        await updateCategory(id, { status: newStatus });
+    };
 
     const addProduct = (newProduct) => setProducts(prev => [{ ...newProduct, id: Date.now(), stock: 0 }, ...prev]);
     const deleteProduct = (id) => setProducts(prev => prev.filter(p => p.id !== id));
@@ -158,7 +371,11 @@ export function BusinessProvider({ children }) {
     const updateBookingStatus = (id, status) => setBookings(prev => prev.map(b => b._id === id ? { ...b, status } : b));
 
     const value = {
-        outlets, staff, services, categories, products, customers,
+        salon, salonLoading, updateSalon, fetchSalon,
+        staff, staffLoading, addStaff, updateStaff, deleteStaff, fetchStaff,
+        services, servicesLoading, addService, updateService, deleteService, toggleServiceStatus, fetchServices,
+        categories, categoriesLoading, addCategory, updateCategory, deleteCategory, toggleCategoryStatus, fetchCategories,
+        outlets, products, customers,
         addOutlet, updateOutlet, deleteOutlet, toggleOutletStatus,
         addStaff, updateStaff, deleteStaff,
         addService, updateService, deleteService, toggleServiceStatus,

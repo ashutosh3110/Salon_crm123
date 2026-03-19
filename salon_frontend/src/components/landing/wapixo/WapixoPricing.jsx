@@ -1,81 +1,65 @@
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const plans = [
-    {
-        name: 'Free',
-        price: '₹0',
-        period: 'forever',
-        desc: 'Perfect to get started with a single salon.',
-        features: [
-            '2 Staff Members',
-            '10 Products',
-            '5 Services',
-            '1 Outlet',
-            'Basic Booking',
-            'POS Billing',
-        ],
-        cta: 'Get Started',
-        popular: false,
-    },
-    {
-        name: 'Basic',
-        price: '₹1,499',
-        period: '/mo',
-        desc: 'For growing salons that need more power.',
-        features: [
-            '10 Staff Members',
-            '100 Products',
-            '50 Services',
-            '2 Outlets',
-            'Analytics Dashboard',
-            'Loyalty Program',
-            'Promotions',
-            'Email Support',
-        ],
-        cta: 'Start Free Trial',
-        popular: false,
-    },
-    {
-        name: 'Premium',
-        price: '₹3,999',
-        period: '/mo',
-        desc: 'The most popular choice for established salons.',
-        features: [
-            '50 Staff Members',
-            '1,000 Products',
-            '500 Services',
-            '10 Outlets',
-            'Advanced Analytics',
-            'HR & Payroll',
-            'WhatsApp Campaigns',
-            'Priority Support',
-        ],
-        cta: 'Start Free Trial',
-        popular: true,
-    },
-    {
-        name: 'Enterprise',
-        price: 'Custom',
-        period: '',
-        desc: 'For salon chains with unlimited needs.',
-        features: [
-            'Unlimited Staff',
-            'Unlimited Products',
-            'Unlimited Services',
-            'Unlimited Outlets',
-            'Dedicated Manager',
-            'API Access',
-            'SLA Guarantee',
-            'Custom Branding',
-        ],
-        cta: 'Contact Sales',
-        popular: false,
-    },
-];
+import { useState, useEffect } from 'react';
+import api from '../../../services/api';
 
 export default function WapixoPricing() {
+    const [fetchedPlans, setFetchedPlans] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSubscriptions = async () => {
+            try {
+                const res = await api.get('/subscriptions?active=true&limit=100');
+                if (res.data.success) {
+                    // Sort plans by price
+                    const sorted = (res.data.data.results || []).sort((a, b) => a.monthlyPrice - b.monthlyPrice);
+                    setFetchedPlans(sorted);
+                }
+            } catch (err) {
+                console.error('Error fetching plans:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSubscriptions();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    // Default plans if none found in backend
+    const defaultPlans = [
+        {
+            name: 'Free',
+            monthlyPrice: 0,
+            features: { pos: true, appointments: true, crm: true },
+            popular: false
+        }
+    ];
+
+    const displayPlans = fetchedPlans.length > 0 ? fetchedPlans : defaultPlans;
+
+    const featureLabels = {
+        pos: 'POS Billing',
+        appointments: 'Appointments',
+        inventory: 'Inventory',
+        marketing: 'Marketing',
+        payroll: 'Payroll',
+        crm: 'Customer CRM',
+        mobileApp: 'Mobile App',
+        reports: 'Reports',
+        whatsapp: 'WhatsApp',
+        loyalty: 'Loyalty',
+        finance: 'Finance',
+        feedback: 'Feedback'
+    };
     return (
         <section id="pricing" style={{ background: '#050505', padding: '100px 1.5rem', position: 'relative', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
             {/* Background Glow */}
@@ -105,7 +89,7 @@ export default function WapixoPricing() {
 
                 {/* Plans Grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.2rem', alignItems: 'stretch' }}>
-                    {plans.map((plan, idx) => (
+                    {displayPlans.map((plan, idx) => (
                         <motion.div
                             key={plan.name}
                             initial={{ opacity: 0, y: 30 }}
@@ -163,27 +147,56 @@ export default function WapixoPricing() {
 
                             <div style={{ marginBottom: '2rem' }}>
                                 <h3 style={{ fontSize: '1rem', fontWeight: 300, color: '#ffffff', marginBottom: '1rem', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                                    {plan.name}
+                                     {plan.name}
                                 </h3>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                                    <span style={{ fontSize: '2.2rem', fontWeight: 200, color: '#ffffff' }}>{plan.price}</span>
-                                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: 300 }}>{plan.period}</span>
+                                    <span style={{ fontSize: '2.2rem', fontWeight: 200, color: '#ffffff' }}>
+                                        {plan.monthlyPrice === 0 ? 'Free' : `₹${plan.monthlyPrice}`}
+                                    </span>
+                                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', fontWeight: 300 }}>
+                                        {plan.monthlyPrice === 0 ? 'forever' : '/mo'}
+                                    </span>
                                 </div>
                                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', fontWeight: 300, lineHeight: 1.6, marginTop: '0.75rem' }}>
-                                    {plan.desc}
+                                    {plan.description || `Perfect for ${plan.name.toLowerCase()} salons.`}
                                 </p>
                             </div>
 
-                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', flex: 1 }}>
-                                {plan.features.map((feature) => (
-                                    <li key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: 300 }}>
-                                        <Check size={13} style={{ opacity: 0.4 }} />
-                                        {feature}
-                                    </li>
-                                ))}
+                             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 2rem 0', flex: 1 }}>
+                                {plan.features && typeof plan.features === 'object' && !Array.isArray(plan.features) ? (
+                                    Object.entries(plan.features)
+                                        .filter(([_, value]) => value === true)
+                                        .map(([key, _]) => (
+                                            <li key={key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: 300 }}>
+                                                <Check size={13} style={{ opacity: 0.4 }} />
+                                                {featureLabels[key] || key}
+                                            </li>
+                                        ))
+                                ) : Array.isArray(plan.features) ? (
+                                    plan.features.map((feature) => (
+                                        <li key={feature} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: 300 }}>
+                                            <Check size={13} style={{ opacity: 0.4 }} />
+                                            {feature}
+                                        </li>
+                                    ))
+                                ) : null}
+
+                                {/* Show Limits as well */}
+                                {plan.limits && (
+                                    <>
+                                        <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: 300 }}>
+                                            <Check size={13} style={{ opacity: 0.4 }} />
+                                            {plan.limits.staffLimit} Staff Members
+                                        </li>
+                                        <li style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', fontWeight: 300 }}>
+                                            <Check size={13} style={{ opacity: 0.4 }} />
+                                            {plan.limits.outletLimit} Outlet{plan.limits.outletLimit > 1 ? 's' : ''}
+                                        </li>
+                                    </>
+                                )}
                             </ul>
 
-                            <Link to="/register" style={{ textDecoration: 'none' }}>
+                            <Link to={`/register?plan=${plan.name.toLowerCase()}`} style={{ textDecoration: 'none' }}>
                                 <motion.button
                                     whileHover={{ scale: 1.02, background: plan.popular ? '#ffffff' : 'rgba(255,255,255,0.1)' }}
                                     whileTap={{ scale: 0.98 }}
@@ -202,7 +215,7 @@ export default function WapixoPricing() {
                                         transition: 'all 0.3s ease',
                                     }}
                                 >
-                                    {plan.cta}
+                                    {plan.monthlyPrice === 0 ? 'Get Started' : (plan.trialDays > 0 ? 'Start Free Trial' : 'Buy Now')}
                                 </motion.button>
                             </Link>
                         </motion.div>

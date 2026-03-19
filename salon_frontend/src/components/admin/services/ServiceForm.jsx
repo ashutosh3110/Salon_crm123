@@ -13,7 +13,8 @@ import {
     ClipboardCheck,
     Upload,
     Image as ImageIcon,
-    ChevronDown
+    ChevronDown,
+    Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -22,7 +23,9 @@ import { useBusiness } from '../../../contexts/BusinessContext';
 export default function ServiceForm({ onSave, categories = [], initialData }) {
     const navigate = useNavigate();
     const { outlets } = useBusiness();
+    const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({
+        _id: initialData?._id || null,
         name: initialData?.name || '',
         category: initialData?.category || '',
         description: initialData?.description || '',
@@ -55,19 +58,38 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
 
     const isFormValid = formData.name && formData.category && formData.duration && formData.price;
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!isFormValid) {
             alert('Please fill in all required fields marked with *');
             return;
         }
-        onSave?.({
-            ...formData,
-            duration: parseInt(formData.duration),
-            price: parseFloat(formData.price),
-            gst: parseInt(formData.gst),
-            outlets: formData.outlet === 'all' ? 'All Outlets' : `${formData.outletIds.length} Outlet${formData.outletIds.length !== 1 ? 's' : ''}`
-        });
-        navigate('/admin/services/list');
+        setIsSaving(true);
+        try {
+            const payload = {
+                ...formData,
+                duration: parseInt(formData.duration),
+                price: parseFloat(formData.price),
+                gst: parseInt(formData.gst),
+                commissionValue: parseFloat(formData.commissionValue) || 0,
+                outletIds: formData.outlet === 'all' ? [] : formData.outletIds
+            };
+
+            // Remove internal UI state fields that backend validation rejects
+            delete payload._id;
+            delete payload.outlet;
+            
+            if (formData._id) {
+                await onSave?.(formData._id, payload);
+            } else {
+                await onSave?.(payload);
+            }
+            navigate('/admin/services/list');
+        } catch (error) {
+            console.error('[ServiceForm] Save failed:', error);
+            alert('Failed to save service. Check console for details.');
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -109,17 +131,35 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                             placeholder="e.g. Executive Men's Haircut"
                             value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '') })}
                         />
                     </div>
 
-                    <CustomSelect 
-                        label="Category *" 
-                        value={formData.category} 
-                        onChange={(val) => setFormData({ ...formData, category: val })} 
-                        options={categories} 
-                        placeholder="Select Category..." 
-                    />
+                    {categories.length === 0 ? (
+                        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100 space-y-3">
+                            <div className="flex items-center gap-2 text-rose-600">
+                                <Tag className="w-4 h-4" />
+                                <span className="text-[10px] font-black uppercase tracking-widest">No Categories Found</span>
+                            </div>
+                            <p className="text-[10px] text-rose-900/60 font-bold leading-relaxed uppercase tracking-tighter">
+                                You need at least one category (e.g., Hair, Skin) before you can add services.
+                            </p>
+                            <button
+                                onClick={() => navigate('/admin/services/categories')}
+                                className="w-full py-2 bg-white border border-rose-200 text-rose-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-50 transition-all flex items-center justify-center gap-2 shadow-sm"
+                            >
+                                <Plus className="w-3.5 h-3.5" /> Manage Categories
+                            </button>
+                        </div>
+                    ) : (
+                        <CustomSelect 
+                            label="Category *" 
+                            value={formData.category} 
+                            onChange={(val) => setFormData({ ...formData, category: val })} 
+                            options={categories.map(c => c.name)} 
+                            placeholder="Select Category..." 
+                        />
+                    )}
 
                     <div className="space-y-1">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
@@ -381,11 +421,11 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 </button>
                 <button
                     onClick={handleSave}
-                    disabled={!isFormValid}
-                    className={`flex items-center gap-2 px-10 py-3 rounded-2xl text-primary-foreground text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
+                    disabled={!isFormValid || isSaving}
+                    className={`flex items-center gap-2 px-10 py-3 rounded-2xl text-primary-foreground text-sm font-bold shadow-lg transition-all active:scale-95 ${isFormValid && !isSaving ? 'bg-primary shadow-primary/20 hover:shadow-xl hover:shadow-primary/30' : 'bg-slate-300 dark:bg-slate-800 shadow-none cursor-not-allowed'}`}
                 >
                     <Save className="w-4 h-4" />
-                    Save Service
+                    {isSaving ? 'Saving...' : 'Save Service'}
                 </button>
             </div>
 

@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema(
             ref: 'Tenant',
             required: function () { return this.role !== 'superadmin'; }
         },
+        outletId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Outlet',
+        },
         isEmailVerified: {
             type: Boolean,
             default: false,
@@ -40,6 +44,18 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ['active', 'inactive'],
             default: 'active',
+        },
+        phone: {
+            type: String,
+            trim: true,
+        },
+        specialist: {
+            type: String,
+            trim: true,
+        },
+        joinedDate: {
+            type: Date,
+            default: Date.now,
         },
         onboardingStatus: {
             type: String,

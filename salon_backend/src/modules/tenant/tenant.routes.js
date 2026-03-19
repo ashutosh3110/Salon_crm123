@@ -9,6 +9,9 @@ const router = express.Router();
 
 router.get('/public-list', tenantController.getPublicTenants);
 
+router.get('/me', auth, tenantController.getTenantMe);
+router.patch('/me', auth, tenantController.updateTenantMe);
+
 router.get('/stats', auth, authorize(['superadmin']), tenantController.getTenantStats);
 
 router

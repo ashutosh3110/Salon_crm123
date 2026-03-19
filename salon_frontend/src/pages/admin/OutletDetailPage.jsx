@@ -27,9 +27,8 @@ import { Scissors, Tag, IndianRupee, Package } from 'lucide-react';
 export default function OutletDetailPage() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { outlets, services } = useBusiness();
+    const { outlets, services, staff, bookings } = useBusiness();
     const { products } = useInventory();
-    const { experts } = useCMS();
     const [outlet, setOutlet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
@@ -47,11 +46,24 @@ export default function OutletDetailPage() {
     if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
     if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Salon details not found</div>;
 
+    const outletStaff = staff.filter(s => s.outletId === outlet._id || (s.assignedSalon === outlet.name));
+    const outletBookings = bookings.filter(b => b.outletId === outlet._id);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todaysBookings = outletBookings.filter(b => b.date === todayStr);
+
     const stats = [
-        { label: 'Total Staff', value: '12', icon: Users, color: 'text-blue-600 bg-blue-50' },
-        { label: "Today's Bookings", value: '8', icon: CalendarCheck, color: 'text-purple-600 bg-purple-50' },
-        { label: "Today's Sales", value: '₹4,250', icon: CreditCard, color: 'text-green-600 bg-green-50' },
+        { label: 'Total Staff', value: outletStaff.length.toString(), icon: Users, color: 'text-blue-600 bg-blue-50' },
+        { label: "Today's Bookings", value: todaysBookings.length.toString(), icon: CalendarCheck, color: 'text-purple-600 bg-purple-50' },
+        { label: "Today's Sales", value: '₹0', icon: CreditCard, color: 'text-green-600 bg-green-50' },
     ];
+
+    const handleViewOnMap = () => {
+        if (!outlet) return;
+        const fullAddress = `${outlet.address}, ${outlet.city}, ${outlet.state} ${outlet.pincode || ''}`;
+        const encodedAddress = encodeURIComponent(fullAddress.trim());
+        const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+        window.open(mapUrl, '_blank', 'noopener,noreferrer');
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -158,7 +170,10 @@ export default function OutletDetailPage() {
                                             <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" /> SALON OPEN
                                         </p>
                                     </div>
-                                    <button className="w-full py-4 rounded-none bg-surface-alt border border-border border-dashed text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface transition-all">
+                                    <button 
+                                        onClick={handleViewOnMap}
+                                        className="w-full py-4 rounded-none bg-surface-alt border border-border border-dashed text-[10px] font-black uppercase tracking-widest text-text hover:bg-surface transition-all"
+                                    >
                                         <Map className="w-4 h-4 mr-2 inline" /> View on Map
                                     </button>
                                 </div>
@@ -170,23 +185,27 @@ export default function OutletDetailPage() {
                         <div className="bg-surface rounded-none border border-border shadow-sm">
                             <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
                                 <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Staff</h3>
-                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">12 STAFF MEMBERS</span>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">{outletStaff.length} STAFF MEMBERS</span>
                             </div>
                             <div className="divide-y divide-border">
-                                {experts.filter(e => e.outletId === outlet._id).map((expert, i) => (
-                                    <div key={expert.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
+                                {outletStaff.map((member, i) => (
+                                    <div key={member._id || member.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all cursor-pointer group">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-11 h-11 overflow-hidden border border-border flex items-center justify-center group-hover:scale-105 transition-transform">
-                                                <img src={expert.img} className="w-full h-full object-cover" alt={expert.name} />
+                                            <div className="w-11 h-11 overflow-hidden border border-border flex items-center justify-center group-hover:scale-105 transition-transform bg-surface-alt">
+                                                {member.img || member.image ? (
+                                                    <img src={member.img || member.image} className="w-full h-full object-cover" alt={member.name} />
+                                                ) : (
+                                                    <User className="w-6 h-6 text-text-muted" />
+                                                )}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</p>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{member.name}</p>
                                                 <div className="flex items-center gap-3 mt-0.5">
                                                     <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest flex items-center gap-1">
-                                                        <Star className="w-3 h-3 text-amber-500" /> {expert.experience} EXP
+                                                        <Star className="w-3 h-3 text-amber-500" /> {member.role}
                                                     </p>
-                                                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
-                                                        {expert.status}
+                                                    <p className={`text-[9px] font-bold uppercase tracking-widest ${member.status === 'Active' || member.status === 'active' ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                                        {member.status || 'Active'}
                                                     </p>
                                                 </div>
                                             </div>
@@ -194,7 +213,7 @@ export default function OutletDetailPage() {
                                         <ChevronRight className="w-4 h-4 text-text-muted group-hover:text-primary transition-all group-hover:translate-x-1" />
                                     </div>
                                 ))}
-                                {experts.filter(e => e.outletId === outlet._id).length === 0 && (
+                                {outletStaff.length === 0 && (
                                     <div className="px-8 py-20 text-center opacity-40">
                                         <Users className="w-8 h-8 mx-auto mb-3" />
                                         <p className="text-[10px] font-black uppercase tracking-widest">No expert personnel assigned to this unit</p>

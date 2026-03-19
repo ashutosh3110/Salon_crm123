@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Clock, Users, Plus, Edit2, Trash2, Store, Calendar, ArrowRight, Briefcase, Shield, X, CheckCircle2, MoreVertical, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -13,32 +13,33 @@ import {
     PieChart,
     Pie
 } from 'recharts';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
-import hrData from '../../../data/hrMockData.json';
-
-const OUTLETS = hrData.meta.outlets;
-const STAFF_LIST = hrData.staff_list_summary;
-const INITIAL_SHIFTS = hrData.shifts;
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6366f1'];
 const TW_COLORS = ['bg-emerald-500', 'bg-blue-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-primary'];
 
-
-const EMPTY_FORM = { name: '', start: '09:00', end: '17:00', outlet: OUTLETS[0], color: TW_COLORS[0], hex: COLORS[0] };
-
 const to12 = (t) => {
+    if (!t) return '-';
     const [h, m] = t.split(':').map(Number);
     const ampm = h >= 12 ? 'PM' : 'AM';
     return `${(h % 12) || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 };
 
 export default function ShiftManager() {
-    const [shifts, setShifts] = useState(INITIAL_SHIFTS);
+    const { staff, outlets } = useBusiness();
+    const [shifts, setShifts] = useState([]);
     const [shiftModal, setShiftModal] = useState(false);
     const [editTarget, setEditTarget] = useState(null);
-    const [form, setForm] = useState(EMPTY_FORM);
+    const [form, setForm] = useState({ name: '', start: '09:00', end: '17:00', outlet: '', color: TW_COLORS[0], hex: COLORS[0] });
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [rosterModal, setRosterModal] = useState(null);
     const [toast, setToast] = useState(null);
+
+    useEffect(() => {
+        if (outlets && outlets.length > 0 && !form.outlet) {
+            setForm(f => ({ ...f, outlet: outlets[0].name || outlets[0] }));
+        }
+    }, [outlets]);
 
     const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
@@ -48,7 +49,7 @@ export default function ShiftManager() {
         color: s.hex
     })), [shifts]);
 
-    const openAdd = () => { setEditTarget(null); setForm(EMPTY_FORM); setShiftModal(true); };
+    const openAdd = () => { setEditTarget(null); setForm({ name: '', start: '09:00', end: '17:00', outlet: outlets[0]?.name || outlets[0] || '', color: TW_COLORS[0], hex: COLORS[0] }); setShiftModal(true); };
     const openEdit = (s) => { setEditTarget(s); setForm({ name: s.name, start: s.start, end: s.end, outlet: s.outlet, color: s.color, hex: s.hex }); setShiftModal(true); };
 
     const saveShift = (e) => {
@@ -243,7 +244,7 @@ export default function ShiftManager() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Target Node</label>
                                     <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                         value={form.outlet} onChange={e => setForm(f => ({ ...f, outlet: e.target.value }))}>
-                                        {OUTLETS.map(o => <option key={o}>{o}</option>)}
+                                        {outlets.map(o => <option key={o._id || o.id || o}>{o.name || o}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-3">
@@ -279,16 +280,16 @@ export default function ShiftManager() {
                                 <button onClick={() => setRosterModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-5 h-5" /></button>
                             </div>
                             <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                {STAFF_LIST.map(s => {
+                                {staff.map(s => {
                                     const currentShift = shifts.find(sh => sh.id === rosterModal.id);
-                                    const isAssigned = currentShift?.assignedStaff.includes(s.id);
+                                    const isAssigned = currentShift?.assignedStaff.includes(s._id || s.id);
                                     return (
-                                        <button key={s.id} type="button"
-                                            onClick={() => { toggleRosterStaff(rosterModal.id, s.id); setRosterModal(sh => ({ ...sh, assignedStaff: isAssigned ? sh.assignedStaff.filter(i => i !== s.id) : [...sh.assignedStaff, s.id] })); }}
+                                        <button key={s._id || s.id} type="button"
+                                            onClick={() => { toggleRosterStaff(rosterModal.id, s._id || s.id); setRosterModal(sh => ({ ...sh, assignedStaff: isAssigned ? sh.assignedStaff.filter(i => i !== (s._id || s.id)) : [...sh.assignedStaff, (s._id || s.id)] })); }}
                                             className={`w-full flex items-center justify-between p-4 rounded-none border transition-all text-left ${isAssigned ? 'bg-primary/5 border-primary shadow-lg shadow-primary/5' : 'bg-background border-border/40 hover:border-primary/20'}`}>
                                             <div className="flex items-center gap-4 text-left">
                                                 <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-xs border border-primary/10">
-                                                    {s.name.split(' ').map(n => n[0]).join('')}
+                                                    {(s.name || '').split(' ').map(n => n[0]).join('')}
                                                 </div>
                                                 <div className="text-left leading-tight">
                                                     <p className="text-xs font-black text-text uppercase tracking-tight text-left">{s.name}</p>

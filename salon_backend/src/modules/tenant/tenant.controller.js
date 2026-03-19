@@ -113,6 +113,33 @@ const getPublicTenants = async (req, res, next) => {
     }
 };
 
+const getTenantMe = async (req, res, next) => {
+    try {
+        const tenantId = req.user.tenantId || req.user._id; // Supporting both staff (tenantId) and owner (_id if schema varies)
+        const tenant = await tenantService.getTenantById(tenantId);
+        res.send({
+            success: true,
+            data: tenant
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateTenantMe = async (req, res, next) => {
+    try {
+        const tenantId = req.user.tenantId || req.user._id;
+        const tenant = await tenantService.updateTenantById(tenantId, req.body);
+        res.send({
+            success: true,
+            message: 'Settings updated successfully',
+            data: tenant
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createTenant,
     getTenants,
@@ -121,4 +148,6 @@ export default {
     deleteTenant,
     getTenantStats,
     getPublicTenants,
+    getTenantMe,
+    updateTenantMe,
 };

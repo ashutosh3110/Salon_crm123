@@ -78,7 +78,7 @@ export default function OutletsPage() {
         { label: 'Total Salons', value: outlets.length, icon: Store, color: 'blue', trend: 'Active' },
         { label: 'Total Staff', value: outlets.reduce((s, o) => s + (o.staffCount || 0), 0), icon: Users, color: 'emerald', trend: 'Working' },
         { label: 'Cities Covered', value: cities.length - 1, icon: Network, color: 'orange', trend: 'Locations' },
-        { label: 'System status', value: 'Healthy', icon: TrendingUp, color: 'violet', trend: 'Online' }
+        { label: 'Business Health', value: 'Excellent', icon: TrendingUp, color: 'violet', trend: 'Online' }
     ]), [outlets, cities]);
 
     const handleDelete = (id) => {
@@ -125,7 +125,7 @@ export default function OutletsPage() {
                 {/* Regional Distribution Chart */}
                 <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                     <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Salons by City</span>
+                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Branches by City</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[80px] w-full z-10">
@@ -244,15 +244,15 @@ export default function OutletsPage() {
 
                             <div className="grid grid-cols-2 gap-4 mb-10 text-left font-black">
                                 <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
-                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Staff Count</div>
+                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Staff Strength</div>
                                     <div className="flex items-center gap-3">
                                         <Users className="w-4 h-4 text-primary" />
                                         <span className="text-sm font-black text-text">{outlet.staffCount} STAFF</span>
                                     </div>
                                 </div>
                                 <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
-                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Status</div>
-                                    <div className="text-sm font-black text-emerald-500 uppercase tracking-tighter">ACTIVE NOW</div>
+                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Operations</div>
+                                    <div className="text-sm font-black text-emerald-500 uppercase tracking-tighter">OPEN FOR BUSINESS</div>
                                 </div>
                             </div>
 

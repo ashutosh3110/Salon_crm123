@@ -34,8 +34,8 @@ export default function FinanceDashboard() {
             <div className="p-8 border-b border-border bg-surface/30 text-left font-black">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 text-left">
                     <div className="text-left font-black">
-                        <h2 className="text-xl font-black text-text tracking-tight uppercase">Financial Performance Matrix</h2>
-                        <p className="text-[11px] text-text-secondary mt-1 font-bold uppercase tracking-widest text-left">Real-time fiscal intelligence stream</p>
+                        <h2 className="text-xl font-black text-text tracking-tight uppercase">Financial Performance Overview</h2>
+                        <p className="text-[11px] text-text-secondary mt-1 font-bold uppercase tracking-widest text-left">Real-time financial summary</p>
                     </div>
                     <div className="flex items-center gap-4 bg-white p-4 rounded-none border border-border shadow-sm text-left">
                         <div className="flex flex-col items-end text-right font-black">
@@ -56,7 +56,7 @@ export default function FinanceDashboard() {
                 <div className="lg:col-span-2 space-y-6 text-left font-black">
                     <div className="bg-surface/30 border border-border rounded-none p-8 h-[400px] flex flex-col text-left">
                         <div className="flex justify-between items-center mb-10 text-left">
-                            <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Revenue vs Expense Vector</h3>
+                            <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Revenue vs Expense Trend</h3>
                             <div className="flex gap-6 text-left">
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 rounded-none bg-primary" />
@@ -99,7 +99,7 @@ export default function FinanceDashboard() {
                                 </div>
                                 <ArrowUpRight className="w-4 h-4 text-text-muted" />
                             </div>
-                            <h4 className="font-black text-text text-sm uppercase tracking-tight text-left">Vendor Matrix</h4>
+                            <h4 className="font-black text-text text-sm uppercase tracking-tight text-left">Vendor Payments</h4>
                             <p className="text-[10px] text-text-muted font-black uppercase tracking-widest mt-1 text-left">3 SETTLEMENTS PENDING</p>
                         </div>
                         <div className="p-6 bg-white border border-border rounded-none hover:shadow-md transition-all group text-left">
@@ -117,7 +117,7 @@ export default function FinanceDashboard() {
 
                 <div className="space-y-6 text-left font-black">
                     <div className="bg-white border border-border rounded-none p-6 flex flex-col gap-6 shadow-sm text-left">
-                        <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Recent Journals</h3>
+                        <h3 className="text-[10px] font-black text-text uppercase tracking-[0.2em] text-left">Recent Transactions</h3>
                         <div className="space-y-4 text-left">
                             <TransactionRow label="Service Sale" amount="+₹1,500" type="income" staff="ARYAN K." time="2H AGO" />
                             <TransactionRow label="Product Sale" amount="+₹850" type="income" staff="RIYA S." time="3H AGO" />
@@ -126,7 +126,7 @@ export default function FinanceDashboard() {
                             <TransactionRow label="Miscellaneous" amount="-₹120" type="expense" staff="MANAGER" time="1D AGO" />
                         </div>
                         <button className="w-full py-4 bg-surface border border-border rounded-none text-[9px] font-black text-text uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all">
-                            Open Audit Ledger
+                            View Full Ledger
                         </button>
                     </div>
 

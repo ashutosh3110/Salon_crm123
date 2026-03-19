@@ -172,14 +172,16 @@ export default function POSBillingPage() {
             gstin: '09AAFCC0301F1ZN',
             state: 'Uttar Pradesh',
             stateCode: '09',
-            defaultGst: 18,
+            serviceGst: 18,
+            productGst: 12,
             inclusiveTax: true
         };
     }, []);
 
     useEffect(() => {
         if (fiscal.state) setCustomerState(fiscal.state);
-        if (fiscal.defaultGst) setTaxPercent(fiscal.defaultGst);
+        // Fallback tax percent for general display
+        if (fiscal.serviceGst) setTaxPercent(fiscal.serviceGst);
     }, [fiscal]);
 
     // UI State
@@ -356,28 +358,36 @@ export default function POSBillingPage() {
             else discount += appliedVoucher.value;
         }
 
-        const taxable = Math.max(0, subtotal - discount - (redeemPoints || 0) - (redeemWallet || 0));
-        
-        // Real-time GST Calculation
-        // If inclusive, we back-calculate. If exclusive, we add on top.
-        // For now, let's assume item-wise tax or default.
-        const effectiveTaxRate = taxPercent / 100;
-        let tax = 0;
-        let taxableValue = taxable;
+        const totalDeductions = discount + (redeemPoints || 0) + (redeemWallet || 0);
+        const discountFactor = subtotal > 0 ? (subtotal - totalDeductions) / subtotal : 1;
 
-        if (fiscal.inclusiveTax) {
-            taxableValue = taxable / (1 + effectiveTaxRate);
-            tax = taxable - taxableValue;
-        } else {
-            tax = taxable * effectiveTaxRate;
-        }
+        let totalTax = 0;
+        let totalTaxableValue = 0;
+
+        cart.forEach(item => {
+            if (item.isPackageRedemption) return;
+            
+            const netItemTotal = (item.price * item.quantity) * discountFactor;
+            const itemTaxRate = (item.type === 'service' ? (fiscal.serviceGst || 18) : (fiscal.productGst || 12)) / 100;
+            
+            if (fiscal.inclusiveTax) {
+                const taxableVal = netItemTotal / (1 + itemTaxRate);
+                totalTaxableValue += taxableVal;
+                totalTax += (netItemTotal - taxableVal);
+            } else {
+                totalTaxableValue += netItemTotal;
+                totalTax += (netItemTotal * itemTaxRate);
+            }
+        });
 
         const isSameState = customerState === fiscal.state;
-        const cgst = isSameState ? tax / 2 : 0;
-        const sgst = isSameState ? tax / 2 : 0;
-        const igst = !isSameState ? tax : 0;
+        const cgst = isSameState ? totalTax / 2 : 0;
+        const sgst = isSameState ? totalTax / 2 : 0;
+        const igst = !isSameState ? totalTax : 0;
 
-        const currentBillTotal = fiscal.inclusiveTax ? taxable : taxable + tax;
+        const currentBillTotal = fiscal.inclusiveTax 
+            ? Math.max(0, subtotal - totalDeductions) 
+            : Math.max(0, subtotal - totalDeductions) + totalTax;
 
         const previousDue = (selectedClient?.dueAmount || 0);
         const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
@@ -385,13 +395,13 @@ export default function POSBillingPage() {
         return { 
             subtotal, 
             discount, 
-            tax, 
+            tax: totalTax, 
             cgst, 
             sgst, 
             igst, 
             isSameState,
             total: grandTotal, 
-            taxable: taxableValue, 
+            taxable: totalTaxableValue, 
             currentBillTotal, 
             previousDue 
         };

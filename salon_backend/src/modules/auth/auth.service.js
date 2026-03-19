@@ -4,18 +4,23 @@ import userService from '../user/user.service.js';
 import tokenService from './token.service.js';
 import User from '../user/user.model.js';
 import Tenant from '../tenant/tenant.model.js';
+import Subscription from '../subscription/subscription.model.js';
+import Billing from '../billing/billing.model.js';
 import Otp from './otp.model.js';
 import Client from '../client/client.model.js';
 import ApiError from '../../utils/ApiError.js';
 
 const registerSalonOwner = async (registrationData) => {
-    const { salonName, fullName, email, phone, password, subscriptionPlan = 'free' } = registrationData;
+    const { salonName, fullName, email, phone, password, subscriptionPlan = 'free', paymentId, orderId } = registrationData;
 
     // Check if user already exists
     if (await User.isEmailTaken(email)) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
     }
 
+    // 0. Fetch Subscription Plan Details
+    const plan = await Subscription.findOne({ name: new RegExp(`^${subscriptionPlan}$`, 'i'), active: true });
+    
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -25,14 +30,21 @@ const registerSalonOwner = async (registrationData) => {
         const tenant = new Tenant({
             name: salonName,
             slug,
-            subscriptionPlan
+            email: String(email).trim().toLowerCase(),
+            phone,
+            ownerName: fullName,
+            subscriptionPlan: plan ? plan.name.toLowerCase() : subscriptionPlan,
+            status: paymentId ? 'active' : (plan && plan.trialDays > 0 ? 'trial' : (plan && plan.monthlyPrice === 0 ? 'active' : 'inactive')),
+            trialDays: plan ? plan.trialDays : 14,
+            features: plan ? plan.features : undefined,
+            limits: plan ? plan.limits : undefined
         });
         await tenant.save({ session });
 
         // 2. Create Admin User linked to Tenant
         const user = new User({
             name: fullName,
-            email,
+            email: String(email).trim().toLowerCase(),
             password,
             phone,
             role: 'admin',
@@ -44,6 +56,32 @@ const registerSalonOwner = async (registrationData) => {
         // 3. Link Owner back to Tenant
         tenant.owner = user._id;
         await tenant.save({ session });
+
+        // 4. Create Billing record if payment was made
+        if (paymentId && plan) {
+            const amount = plan.monthlyPrice;
+            const taxAmount = plan.gstStatus && plan.gstType === 'exclusive' ? (amount * plan.gstRate / 100) : 0;
+            const totalAmount = amount + taxAmount;
+
+            const billing = new Billing({
+                invoiceNumber: `INV-${Date.now()}`,
+                tenantId: tenant._id,
+                planId: plan._id,
+                planName: plan.name,
+                amount,
+                taxAmount,
+                totalAmount,
+                status: 'paid',
+                paymentMethod: 'razorpay',
+                paymentDate: new Date(),
+                transactionId: paymentId,
+                billingPeriod: {
+                    from: new Date(),
+                    to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 1 month
+                }
+            });
+            await billing.save({ session });
+        }
 
         await session.commitTransaction();
         return { user, tenant };

@@ -35,6 +35,9 @@ const EMPTY_PLAN = {
     monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
     features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
     limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000 },
+    gstStatus: true,
+    gstType: 'exclusive',
+    gstRate: 18,
     salonsCount: 0,
 };
 
@@ -75,8 +78,15 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                     </div>
                 </div>
                 {plan.monthlyPrice > 0 && (
-                    <div className="text-[11px] text-white/60 mt-1 relative z-10">
-                        ₹{plan.yearlyPrice.toLocaleString('en-IN')}/yr · Save {Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100)}%
+                    <div className="flex flex-col gap-0.5 mt-1 relative z-10">
+                        <div className="text-[11px] text-white/60">
+                            ₹{plan.yearlyPrice.toLocaleString('en-IN')}/yr · Save {Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100)}%
+                        </div>
+                        {plan.gstStatus && (
+                            <div className="text-[9px] font-black uppercase tracking-widest text-white/40">
+                                {plan.gstType === 'inclusive' ? 'GST Inclusive' : `+ ${plan.gstRate}% GST Extra`}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -210,6 +220,47 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                     ]}
                                 />
                             </div>
+                        </div>
+
+                        {/* GST Configuration */}
+                        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-1.5 rounded-lg bg-white border border-slate-200">
+                                        <DollarSign className="w-3.5 h-3.5 text-slate-500" />
+                                    </div>
+                                    <span className="text-xs font-bold text-text">GST Configuration</span>
+                                </div>
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <div onClick={() => set('gstStatus', !form.gstStatus)}
+                                        className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.gstStatus ? 'bg-primary' : 'bg-slate-200'}`}
+                                        style={{ height: '22px', width: '40px' }}>
+                                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.gstStatus ? 'translate-x-[18px]' : 'translate-x-0'}`} />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Charge GST</span>
+                                </label>
+                            </div>
+
+                            {form.gstStatus && (
+                                <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div>
+                                        <label className={labelCls}>GST Type</label>
+                                        <CustomDropdown
+                                            variant="form"
+                                            value={form.gstType}
+                                            onChange={v => set('gstType', v)}
+                                            options={[
+                                                { value: 'exclusive', label: 'Exclusive (Add-on)' },
+                                                { value: 'inclusive', label: 'Inclusive (Included)' },
+                                            ]}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={labelCls}>GST Rate (%)</label>
+                                        <input type="number" min={0} max={100} className={inputCls} value={form.gstRate} onChange={e => set('gstRate', +e.target.value)} />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         <div className="flex items-center gap-4 mt-3">
                             <label className="flex items-center gap-2 cursor-pointer select-none">

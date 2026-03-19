@@ -40,13 +40,12 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
         if (filterOutlet !== 'All Outlets') {
             const selectedOutlet = outlets.find(o => o.name === filterOutlet);
             if (selectedOutlet) {
-                // Check if service is mapped to this outlet ID, or if it has NO specific mapping (defaults to all)
+                // If service has specific outletIds, check if selected matches. 
+                // If outletIds is empty, it's global and matches everything.
                 if (service.outletIds && service.outletIds.length > 0) {
                     matchesOutlet = service.outletIds.includes(selectedOutlet._id);
                 } else {
-                    // Backward compatibility: If it doesn't have outletIds, check the legacy 'outlets' string
-                    // Or if it's 'All Outlets'
-                    matchesOutlet = service.outlets === 'All Outlets' || service.outlets === filterOutlet || !service.outletId;
+                    matchesOutlet = true;
                 }
             }
         }
@@ -121,7 +120,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                 </tr>
                             ) : (
                                 filteredServices.map((service) => (
-                                    <tr key={service.id} className="hover:bg-surface-alt/50 transition-colors group">
+                                    <tr key={service._id} className="hover:bg-surface-alt/50 transition-colors group">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
@@ -151,13 +150,15 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-text-secondary uppercase tracking-tighter">
                                                 <Building2 className="w-3.5 h-3.5 text-text-muted" />
-                                                {service.outlets}
+                                                {(!service.outletIds || service.outletIds.length === 0) 
+                                                    ? 'All Outlets' 
+                                                    : `${service.outletIds.length} Outlet${service.outletIds.length > 1 ? 's' : ''}`}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex justify-center">
                                                 <button
-                                                    onClick={() => onToggleStatus?.(service.id)}
+                                                    onClick={() => onToggleStatus?.(service._id)}
                                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all active:scale-90 ${service.status === 'active'
                                                         ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
                                                         : 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900 hover:bg-rose-100 dark:hover:bg-rose-900/50'
@@ -173,7 +174,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => navigate(`/admin/services/edit/${service.id}`)}
+                                                    onClick={() => navigate(`/admin/services/edit/${service._id}`)}
                                                     className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all"
                                                     title="Edit Service"
                                                 >
@@ -182,7 +183,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                 <button
                                                     onClick={() => {
                                                         if (window.confirm(`Are you sure you want to delete "${service.name}"?`)) {
-                                                            onDelete?.(service.id);
+                                                            onDelete?.(service._id);
                                                         }
                                                     }}
                                                     className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-rose-500 transition-all"

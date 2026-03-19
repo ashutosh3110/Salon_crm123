@@ -59,6 +59,19 @@ const subscriptionSchema = new mongoose.Schema({
         storageGB: { type: Number, default: 5 },
         apiCalls: { type: Number, default: 10000 }
     },
+    gstStatus: {
+        type: Boolean,
+        default: true
+    },
+    gstType: {
+        type: String,
+        enum: ['inclusive', 'exclusive'],
+        default: 'exclusive'
+    },
+    gstRate: {
+        type: Number,
+        default: 18
+    },
     salonsCount: {
         type: Number,
         default: 0

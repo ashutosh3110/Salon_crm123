@@ -6,28 +6,25 @@ import {
     Pie,
     Cell,
     ResponsiveContainer,
-    Tooltip,
-    Legend
+    Tooltip
 } from 'recharts';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
-import hrData from '../../../data/hrMockData.json';
-
-const ROLES = hrData.meta.roles;
-const OUTLETS = hrData.meta.outlets;
+const DEFAULT_ROLES = ['Stylist', 'Receptionist', 'Manager', 'Assistant', 'Therapist', 'Helper'];
 const PAGE_SIZE = 5;
-
-const INITIAL_STAFF = hrData.staff;
-
-const COLORS = hrData.meta.colors;
-
-
-const EMPTY_FORM = {
-    name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: '', salary: '', status: 'active',
-    dob: '', pan: '', address: '', bankName: '', accountNo: '', ifsc: ''
-};
+const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#f43f5e'];
 
 export default function StaffManager() {
-    const [staff, setStaff] = useState(INITIAL_STAFF);
+    const { staff, addStaff, updateStaff, deleteStaff, outlets } = useBusiness();
+    
+    const ROLES = DEFAULT_ROLES;
+    const OUTLETS = useMemo(() => outlets.length > 0 ? outlets.map(o => o.name) : ['All Salons'], [outlets]);
+    
+    const EMPTY_FORM = {
+        name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: new Date().toISOString().split('T')[0], salary: '', status: 'active',
+        dob: '', pan: '', address: '', bankName: '', accountNo: '', ifsc: ''
+    };
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('All');
     const [filterOutlet, setFilterOutlet] = useState('All');
@@ -71,28 +68,38 @@ export default function StaffManager() {
     const openAdd = () => { setEditTarget(null); setForm(EMPTY_FORM); setModal(true); };
     const openEdit = (s) => { setEditTarget(s); setForm({ ...s }); setModal(true); setMenuOpen(null); };
 
-    const saveStaff = (e) => {
+    const saveStaff = async (e) => {
         e.preventDefault();
-        if (editTarget) {
-            setStaff(prev => prev.map(s => s.id === editTarget.id ? { ...s, ...form } : s));
-            showToast(`${form.name} updated successfully`);
-        } else {
-            const newStaff = { ...form, id: Date.now(), salary: Number(form.salary) };
-            setStaff(prev => [...prev, newStaff]);
-            showToast(`${form.name} added to staff`);
+        try {
+            if (editTarget) {
+                await updateStaff(editTarget._id || editTarget.id, form);
+                showToast(`${form.name} updated successfully`);
+            } else {
+                await addStaff(form);
+                showToast(`${form.name} added to staff`);
+            }
+            setModal(false);
+        } catch (error) {
+            showToast("Failed to save staff member");
         }
-        setModal(false);
     };
 
-    const deleteStaff = (id) => {
-        const target = staff.find(s => s.id === id);
-        setStaff(prev => prev.filter(s => s.id !== id));
-        setMenuOpen(null); setDeleteConfirm(null);
-        showToast(`${target?.name} removed from staff`);
+    const handleDelete = async (id) => {
+        try {
+            await deleteStaff(id);
+            setMenuOpen(null); setDeleteConfirm(null);
+            showToast(`Staff member removed`);
+        } catch (error) {
+            showToast("Failed to delete staff member");
+        }
     };
 
-    const toggleStatus = (id) => {
-        setStaff(prev => prev.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' } : s));
+    const toggleStatus = async (id) => {
+        const member = staff.find(s => s._id === id || s.id === id);
+        if (member) {
+            const newStatus = member.status === 'active' ? 'inactive' : 'active';
+            await updateStaff(id, { status: newStatus });
+        }
         setMenuOpen(null);
     };
 
@@ -104,10 +111,10 @@ export default function StaffManager() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     {[
-                        { label: 'Total Personnel', value: staff.length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
-                        { label: 'Active States', value: activeCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                        { label: 'Dormant Nodes', value: staff.length - activeCount, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                        { label: 'Recent Cycles', value: staff.filter(s => new Date(s.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: 'Total Team Members', value: staff.length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+                        { label: 'Active Members', value: activeCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                        { label: 'Inactive Members', value: staff.length - activeCount, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                        { label: 'Recently Joined', value: staff.filter(s => new Date(s.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     ].map((stat, i) => (
                         <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                             className="p-6 rounded-none bg-surface border border-border shadow-sm flex items-center gap-6 hover:shadow-xl transition-all group text-left font-black">
@@ -122,7 +129,7 @@ export default function StaffManager() {
 
                 <div className="bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black">
                     <div className="flex items-center justify-between mb-6 text-left">
-                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Occupation Matrix</span>
+                        <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Team Composition</span>
                         <PieChartIcon className="w-4 h-4 text-primary" />
                     </div>
                     <div className="h-[140px] w-full text-left">
@@ -161,7 +168,7 @@ export default function StaffManager() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-5 rounded-none border border-border shadow-sm text-left font-black">
                 <div className="relative flex-1 max-w-sm text-left">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="QUERY MASTER REGISTRY..."
+                    <input type="text" placeholder="Search for team members..."
                         className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setPage(1); }} />
                 </div>
@@ -169,7 +176,7 @@ export default function StaffManager() {
                     <div className="relative text-left">
                         <button onClick={() => setShowFilter(v => !v)}
                             className={`flex items-center gap-3 px-6 py-3 rounded-none text-[10px] font-black uppercase tracking-[0.1em] border transition-all ${showFilter ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'text-text-secondary border-border hover:border-primary bg-surface'}`}>
-                            <Filter className="w-4 h-4" /> Filter Matrix
+                            <Filter className="w-4 h-4" /> Quick Filter
                             {(filterRole !== 'All' || filterOutlet !== 'All') && <span className="w-2 h-2 bg-rose-500 rounded-none shadow-lg shadow-rose-500/40" />}
                         </button>
                         <AnimatePresence>
@@ -177,29 +184,29 @@ export default function StaffManager() {
                                 <motion.div initial={{ opacity: 0, y: -8, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.95 }}
                                     className="absolute right-0 top-full mt-3 w-72 bg-surface border border-border rounded-none shadow-2xl z-50 p-6 space-y-6">
                                     <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Variant</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Filter by Profession</label>
                                         <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1); }}>
-                                            <option value="All">Full Occupation Spectrum</option>
+                                            <option value="All">All Roles</option>
                                             {ROLES.map(r => <option key={r}>{r}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2 text-left">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Active Node</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Filter by Salon</label>
                                         <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterOutlet} onChange={e => { setFilterOutlet(e.target.value); setPage(1); }}>
-                                            <option value="All">All Operational Nodes</option>
+                                            <option value="All">All Salons</option>
                                             {OUTLETS.map(o => <option key={o}>{o}</option>)}
                                         </select>
                                     </div>
-                                    <button onClick={() => { setFilterRole('All'); setFilterOutlet('All'); }} className="w-full py-3 text-[9px] font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-none transition-all uppercase tracking-widest">Clear Constraints</button>
+                                    <button onClick={() => { setFilterRole('All'); setFilterOutlet('All'); }} className="w-full py-3 text-[9px] font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-none transition-all uppercase tracking-widest">Reset Filters</button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
                     <button onClick={openAdd}
                         className="flex items-center gap-3 px-8 py-3 rounded-none bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
-                        <Plus className="w-4 h-4" /> Enroll Unit
+                        <Plus className="w-4 h-4" /> Add Team Member
                     </button>
                 </div>
             </div>
@@ -210,16 +217,19 @@ export default function StaffManager() {
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border text-left">
-                                {['Identitiy_Node', 'Specialization', 'Comm_Links', 'Credits', 'Status_Bit', 'Control'].map(h => (
-                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : ''}`}>{h}</th>
-                                ))}
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Staff Member</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role & Location</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Details</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left font-black">
                             {paginated.length === 0 ? (
-                                <tr><td colSpan={6} className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-text-muted italic opacity-50">Empty Personnel Matrix</td></tr>
+                                <tr><td colSpan={6} className="py-20 text-center text-[10px] font-black uppercase tracking-[0.3em] text-text-muted italic opacity-50">No team members found</td></tr>
                             ) : paginated.map(s => (
-                                <tr key={s.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
+                                <tr key={s._id || s.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
                                     <td className="px-6 py-5 text-left">
                                         <div className="flex items-center gap-4 text-left">
                                             <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0">
@@ -227,7 +237,7 @@ export default function StaffManager() {
                                             </div>
                                             <div className="text-left">
                                                 <p className="text-xs font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors text-left">{s.name}</p>
-                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">Cycle_Start: {new Date(s.joined).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">Started on: {new Date(s.joined).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -243,7 +253,7 @@ export default function StaffManager() {
                                     <td className="px-6 py-5 text-left font-black">
                                         <span className={`inline-flex items-center gap-2.5 px-3 py-1 border text-[9px] font-black uppercase tracking-widest ${s.status === 'active' ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10' : 'bg-rose-500/5 text-rose-500 border-rose-500/10'}`}>
                                             <div className={`w-1.5 h-1.5 rounded-none ${s.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                                            {s.status}
+                                            {s.status === 'active' ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
@@ -251,16 +261,16 @@ export default function StaffManager() {
                                             <button onClick={() => setViewModal(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Eye className="w-4 h-4" /></button>
                                             <button onClick={() => openEdit(s)} className="p-2 rounded-none border border-border hover:bg-primary/10 hover:text-primary transition-all"><Edit2 className="w-4 h-4" /></button>
                                             <div className="relative text-left">
-                                                <button onClick={() => setMenuOpen(menuOpen === s.id ? null : s.id)} className="p-2 rounded-none border border-border hover:bg-surface transition-all text-text-muted"><MoreVertical className="w-4 h-4" /></button>
+                                                <button onClick={() => setMenuOpen(menuOpen === (s._id || s.id) ? null : (s._id || s.id))} className="p-2 rounded-none border border-border hover:bg-surface transition-all text-text-muted"><MoreVertical className="w-4 h-4" /></button>
                                                 <AnimatePresence>
-                                                    {menuOpen === s.id && (
+                                                    {menuOpen === (s._id || s.id) && (
                                                         <motion.div initial={{ opacity: 0, scale: 0.9, y: -4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }}
                                                             className="absolute right-0 top-full mt-2 bg-surface border border-border rounded-none shadow-2xl z-50 w-52 overflow-hidden py-2 text-left">
-                                                            <button onClick={() => toggleStatus(s.id)} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-colors">
-                                                                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Toggle Bit
+                                                            <button onClick={() => toggleStatus(s._id || s.id)} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-colors">
+                                                                <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Update Status
                                                             </button>
-                                                            <button onClick={() => { setDeleteConfirm(s.id); setMenuOpen(null); }} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/5 transition-colors">
-                                                                <Trash2 className="w-4 h-4 text-rose-500" /> Void Unit
+                                                            <button onClick={() => { setDeleteConfirm(s._id || s.id); setMenuOpen(null); }} className="w-full flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500/5 transition-colors">
+                                                                <Trash2 className="w-4 h-4 text-rose-500" /> Remove Member
                                                             </button>
                                                         </motion.div>
                                                     )}
@@ -275,7 +285,7 @@ export default function StaffManager() {
                 </div>
                 {/* Pagination industrial */}
                 <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center justify-between text-left font-black">
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Showing <span className="text-text">{paginated.length}</span> of <span className="text-text">{filtered.length}</span> matrix nodes</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Showing <span className="text-text">{paginated.length}</span> of <span className="text-text">{filtered.length}</span> team members</p>
                     <div className="flex items-center gap-2 text-left">
                         <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-2 rounded-none border border-border text-text-muted disabled:opacity-30 hover:bg-surface transition-all"><ChevronLeft className="w-4 h-4" /></button>
                         <div className="flex gap-1.5 mx-1">
@@ -297,45 +307,45 @@ export default function StaffManager() {
                             className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative max-h-[90vh] flex flex-col">
                             <div className="px-10 py-8 border-b border-border flex items-center justify-between">
                                 <div className="text-left font-black">
-                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">{editTarget ? 'Edit Personnel Data' : 'New Enrollment'}</h2>
-                                    <p className="text-[10px] font-black text-primary mt-2 uppercase tracking-[0.3em]">Module :: HCM_V4.2</p>
+                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">{editTarget ? 'Edit Member Profile' : 'Add New Member'}</h2>
+                                    <p className="text-[10px] font-black text-primary mt-2 uppercase tracking-[0.3em]">Team Settings</p>
                                 </div>
                                 <button onClick={() => setModal(false)} className="w-12 h-12 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all"><X className="w-6 h-6" /></button>
                             </div>
                             <form onSubmit={saveStaff} className="flex flex-col flex-1 overflow-hidden font-black">
                                 <div className="p-8 space-y-6 overflow-y-auto flex-1 text-left">
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-5 text-left">
-                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">Audit Identity & Protocol</div>
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">General Details</div>
 
                                         <div className="col-span-2 space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Legal Identity *</label>
-                                            <input required type="text" placeholder="FULL_NAME"
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Member Name *</label>
+                                            <input required type="text" placeholder="e.g. John Doe"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Vector Role *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role *</label>
                                             <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
                                                 {ROLES.map(r => <option key={r}>{r}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Assigned Node *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon *</label>
                                             <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.outlet} onChange={e => setForm(f => ({ ...f, outlet: e.target.value }))}>
                                                 {OUTLETS.map(o => <option key={o}>{o}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Digital Uplink *</label>
-                                            <input required type="email" placeholder="UPLINK_MAIL"
+                                            <label className="text-[10px) font-black text-text-muted uppercase tracking-[0.2em]">Email Address *</label>
+                                            <input required type="email" placeholder="e.g. john@example.com"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Comm_Frequency *</label>
-                                            <input required type="text" placeholder="PHONE_STREAM"
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>
+                                            <input required type="text" placeholder="10-digit number"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.phone} onChange={e => {
                                                     const val = e.target.value.replace(/\D/g, '');
@@ -343,63 +353,63 @@ export default function StaffManager() {
                                                 }} />
                                         </div>
 
-                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Personnel Metadata</div>
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Personal Information</div>
 
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Genesis Date (Joining)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Work Start Date</label>
                                             <input type="date"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.joined} onChange={e => setForm(f => ({ ...f, joined: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Birth Cycle (DOB)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date of Birth</label>
                                             <input type="date"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.dob} onChange={e => setForm(f => ({ ...f, dob: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Tax ID (PAN)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">PAN Number</label>
                                             <input type="text" placeholder="PAN_IDENTIFIER"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left font-black">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Bit</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Account Status</label>
                                             <select className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                                                <option value="active">Active State</option>
-                                                <option value="inactive">Dormant State</option>
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
                                             </select>
                                         </div>
                                         <div className="col-span-2 space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Logistics (Address)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Residential Address</label>
                                             <textarea placeholder="FULL_PHYSICAL_LOCATION"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-20 resize-none"
                                                 value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}></textarea>
                                         </div>
 
-                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Financial Settlement Details</div>
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Payout & Bank Details</div>
 
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Base Credit (Salary)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Monthly Salary</label>
                                             <input type="number" placeholder="CURRENCY_VAL"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Banking Institution</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Bank Institution</label>
                                             <input type="text" placeholder="BANK_NAME"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.bankName} onChange={e => setForm(f => ({ ...f, bankName: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">A/C Sequence</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Account Number</label>
                                             <input type="text" placeholder="ACCOUNT_NUMBER"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.accountNo} onChange={e => setForm(f => ({ ...f, accountNo: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Route Index (IFSC)</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">IFSC Code</label>
                                             <input type="text" placeholder="IFSC_CODE"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.ifsc} onChange={e => setForm(f => ({ ...f, ifsc: e.target.value }))} />
@@ -408,7 +418,7 @@ export default function StaffManager() {
                                 </div>
                                 <div className="px-10 py-8 border-t border-border bg-surface-alt/20">
                                     <button type="submit" className="w-full py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all active:scale-[0.99]">
-                                        {editTarget ? 'Overwrite Matrix Entry' : 'Finalize Enrollment'}
+                                        {editTarget ? 'Save Profile' : 'Register Member'}
                                     </button>
                                 </div>
                             </form>
@@ -439,57 +449,57 @@ export default function StaffManager() {
 
                             <div className="p-10 overflow-y-auto space-y-8 flex-1 font-black">
                                 <div className="grid grid-cols-2 gap-x-10 gap-y-6 text-left">
-                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 border-b border-border/10 pb-2">Operational Context</div>
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2 border-b border-border/10 pb-2">Work Details</div>
 
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Building2 className="w-3 h-3" /> Assigned Node</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Building2 className="w-3 h-3" /> Primary Salon</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.outlet}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Genesis Date</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Start Date</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.joined ? new Date(viewModal.joined).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'NULL'}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Mail className="w-3 h-3" /> Digital Uplink</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Mail className="w-3 h-3" /> Email Address</p>
                                         <p className="text-[11px] font-black text-text lowercase truncate leading-none">{viewModal.email}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Phone className="w-3 h-3" /> Comm_Freq</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Phone className="w-3 h-3" /> Phone Number</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.phone}</p>
                                     </div>
 
-                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Personnel Metadata</div>
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Personal Information</div>
 
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Birth Cycle</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Calendar className="w-3 h-3" /> Date of Birth</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.dob || 'NOT_DECLARED'}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Shield className="w-3 h-3" /> Tax ID (PAN)</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><Shield className="w-3 h-3" /> PAN Number</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.pan || 'NOT_FOUND'}</p>
                                     </div>
                                     <div className="col-span-2 text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Physical Logistics</p>
-                                        <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.address || 'NO_PHYSICAL_RECORD'}</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Residential Address</p>
+                                        <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.address || 'Address not provided'}</p>
                                     </div>
 
-                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Financial Architecture</div>
+                                    <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Bank Account Details</div>
 
                                     <div className="text-left font-black">
                                         <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Banking Institution</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.bankName || 'NULL'}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">A/C Sequence</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Account Number</p>
                                         <p className="text-[11px] font-black text-text uppercase tracking-widest font-mono leading-none">{viewModal.accountNo || 'XXXXXXXXXXXX'}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Route Index (IFSC)</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">IFSC Code</p>
                                         <p className="text-[11px] font-black text-text uppercase tracking-widest font-mono leading-none">{viewModal.ifsc || 'XXXX0000XXX'}</p>
                                     </div>
                                     <div className="text-left font-black">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Status Bit</p>
-                                        <p className={`text-[11px] font-black uppercase leading-none ${viewModal.status === 'active' ? 'text-emerald-500' : 'text-rose-500'}`}>{viewModal.status} STATE</p>
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Account Status</p>
+                                        <p className={`text-[11px] font-black uppercase leading-none ${viewModal.status === 'active' ? 'text-emerald-500' : 'text-rose-500'}`}>{viewModal.status === 'active' ? 'Active' : 'Inactive'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -497,7 +507,7 @@ export default function StaffManager() {
                             <div className="p-10 border-t border-border bg-surface-alt/5 shrink-0">
                                 <button onClick={() => { openEdit(viewModal); setViewModal(null); }}
                                     className="w-full py-5 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">
-                                    Initiate Protocol Edit
+                                    Modify Profile
                                 </button>
                             </div>
                         </motion.div>
@@ -513,11 +523,11 @@ export default function StaffManager() {
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                             className="bg-surface w-full max-w-xs rounded-none border border-border shadow-2xl relative p-10 text-center font-black">
                             <div className="w-16 h-16 bg-rose-500/10 rounded-none flex items-center justify-center mx-auto mb-8 border border-rose-500/10 text-rose-500"><Trash2 className="w-8 h-8" /></div>
-                            <h3 className="text-sm font-black text-text uppercase tracking-widest">Terminate Node?</h3>
-                            <p className="text-[10px] text-text-muted mt-3 mb-8 uppercase font-bold tracking-widest leading-relaxed italic">Warning: Irreversible deletion of matrix entity.</p>
+                            <h3 className="text-sm font-black text-text uppercase tracking-widest">Remove Member from Team?</h3>
+                            <p className="text-[10px] text-text-muted mt-3 mb-8 uppercase font-bold tracking-widest leading-relaxed italic">Warning: This will permanently delete the member record.</p>
                             <div className="flex flex-col gap-3 font-black">
-                                <button onClick={() => deleteStaff(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">TERMINATE</button>
-                                <button onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">ABORT</button>
+                                <button onClick={() => handleDelete(deleteConfirm._id || deleteConfirm.id)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">Delete</button>
+                                <button onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Cancel</button>
                             </div>
                         </motion.div>
                     </div>

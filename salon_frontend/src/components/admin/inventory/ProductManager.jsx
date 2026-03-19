@@ -40,7 +40,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                     <input
                         type="text"
-                        placeholder="Scan products by name, brand or SKU..."
+                        placeholder="Search products by name, brand or SKU..."
                         className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-black focus:outline-none focus:border-primary outline-none transition-all font-mono uppercase placeholder:text-[10px]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -58,7 +58,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                         onClick={() => navigate('/admin/inventory/products/new')}
                         className="flex items-center gap-2 px-4 py-1.5 bg-text text-white text-[9px] font-black hover:bg-primary transition-all uppercase tracking-widest font-mono shadow-md"
                     >
-                        <Plus className="w-3.5 h-3.5" /> Add SKU
+                        <Plus className="w-3.5 h-3.5" /> Add Product
                     </button>
                 </div>
             </div>
@@ -73,7 +73,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Brand & Category</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Selling Price</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Current Stock</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Outlet Visibility</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Available in Salons</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Status</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                             </tr>
@@ -82,7 +82,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                             {filteredProducts.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-20 text-center text-text-muted bg-surface-alt/20">
-                                        No products found in the master list.
+                                        No products found.
                                     </td>
                                 </tr>
                             ) : (
@@ -170,7 +170,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                                     onClick={() => { onDuplicate?.(product.id); setOpenMenuId(null); }}
                                                                     className="w-full px-3 py-2 text-left text-[8px] font-black text-text hover:bg-surface transition-colors flex items-center gap-2 uppercase"
                                                                 >
-                                                                    <Plus className="w-2.5 h-2.5" /> DUPLICATE
+                                                                    <Plus className="w-2.5 h-2.5" /> COPY PRODUCT
                                                                 </button>
                                                             </div>
                                                         </>

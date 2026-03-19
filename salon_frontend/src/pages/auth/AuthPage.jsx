@@ -4,6 +4,8 @@ import { Mail, Lock, Phone, ArrowRight, Sparkles, AlertCircle, Store, User, Chec
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, getRedirectPath } from '../../contexts/AuthContext';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
+import axios from 'axios';
+import api from '../../services/api';
 
 export default function AuthPage() {
     const location = useLocation();
@@ -27,6 +29,8 @@ export default function AuthPage() {
         password: '',
         confirmPassword: '',
     });
+    const [selectedPlan, setSelectedPlan] = useState(null);
+    const [plans, setPlans] = useState([]);
 
     // Sync view with URL and handle auto-fill role from Launchpad
     useEffect(() => {
@@ -56,7 +60,44 @@ export default function AuthPage() {
                 setMode('staff');
             }
         }
+
+        // Fetch Plans
+        const fetchPlans = async () => {
+            try {
+                const res = await api.get('/subscriptions?active=true&limit=100');
+                if (res.data.success) {
+                    console.log('Fetched Plans:', res.data.data.results);
+                    setPlans(res.data.data.results);
+                }
+            } catch (err) {
+                console.error('Error fetching plans:', err);
+            }
+        };
+        fetchPlans();
+
+        // Load Razorpay Script
+        if (!window.Razorpay) {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.async = true;
+            document.body.appendChild(script);
+        }
+
     }, [location.pathname, location.search, view]);
+
+    // Handle selected plan from URL
+    useEffect(() => {
+        if (plans.length > 0) {
+            const params = new URLSearchParams(location.search);
+            const planParam = params.get('plan');
+            if (planParam) {
+                const plan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
+                if (plan) {
+                    setSelectedPlan(plan);
+                }
+            }
+        }
+    }, [plans, location.search]);
 
     const handleSigninChange = (e) => {
         setSigninForm({ ...signinForm, [e.target.name]: e.target.value });
@@ -98,15 +139,95 @@ export default function AuthPage() {
         }
 
         setLoading(true);
+
         try {
-            await register({
-                ...signupForm,
-                subscriptionPlan: 'free'
-            });
-            navigate('/admin');
+            const params = new URLSearchParams(location.search);
+            const planParam = params.get('plan');
+            
+            // Use selectedPlan state or find it from plans array as fallback
+            let currentPlan = selectedPlan;
+            if (!currentPlan && plans.length > 0 && planParam) {
+                currentPlan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
+            }
+
+            console.log('Signup Attempt:', { planParam, currentPlan });
+
+            // Trigger Razorpay ONLY if it's a paid plan with 0 trial days
+            if (currentPlan && currentPlan.monthlyPrice > 0 && Number(currentPlan.trialDays) === 0) {
+                console.log('Triggering Razorpay flow for:', currentPlan.name);
+                const orderRes = await api.post('/billing/razorpay/create-order', {
+                    planId: currentPlan._id,
+                    billingCycle: 'monthly'
+                });
+
+                if (!orderRes.data.success) {
+                    throw new Error('Failed to create Razorpay order');
+                }
+
+                const { orderId, amount, currency, keyId } = orderRes.data.data;
+
+                const options = {
+                    key: keyId,
+                    amount: amount,
+                    currency: currency,
+                    name: 'Wapixo Salon CMS',
+                    description: `Subscription for ${selectedPlan.name} Plan`,
+                    order_id: orderId,
+                    handler: async (response) => {
+                        try {
+                            // Verify payment on backend
+                            const verifyRes = await api.post('/billing/razorpay/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            });
+
+                            if (verifyRes.data.success) {
+                                // Finalize registration
+                                await register({
+                                    ...signupForm,
+                                    subscriptionPlan: selectedPlan.name.toLowerCase(),
+                                    paymentId: response.razorpay_payment_id,
+                                    orderId: response.razorpay_order_id
+                                });
+                                navigate('/admin');
+                            }
+                        } catch (err) {
+                            setError('Payment verification failed. Please contact support.');
+                            setLoading(false);
+                        }
+                    },
+                    prefill: {
+                        name: signupForm.fullName,
+                        email: signupForm.email,
+                        contact: signupForm.phone
+                    },
+                    theme: {
+                        color: '#ffffff'
+                    },
+                    modal: {
+                        ondismiss: () => {
+                            setLoading(false);
+                        }
+                    }
+                };
+
+                if (!window.Razorpay) {
+                    throw new Error('Razorpay SDK failed to load. Please refresh and try again.');
+                }
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } else {
+                // Free Plan or default
+                await register({
+                    ...signupForm,
+                    subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'free'
+                });
+                navigate('/admin');
+            }
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed.');
-        } finally {
             setLoading(false);
         }
     };
@@ -169,14 +290,14 @@ export default function AuthPage() {
                                     <div className="space-y-2">
                                         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/80">Premium Access</span>
                                         <h1 className="text-3xl md:text-4xl font-black tracking-tight uppercase italic leading-none">
-                                            {view === 'signin' ? "Hello, Friend!" : "Welcome Back!"}
+                                            {view === 'signin' ? "Welcome!" : "Create Account"}
                                         </h1>
                                     </div>
 
                                     <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40 max-w-[220px] mx-auto leading-relaxed">
                                         {view === 'signin'
-                                            ? "Establish your digital presence and join our elite network of salon owners."
-                                            : "Resume your journey and continue scaling your legacy with precision."}
+                                            ? "Register your salon today and start managing your business effortlessly."
+                                            : "Log in to your dashboard to manage bookings, staff, and sales."}
                                     </p>
 
                                     <div className="pt-6">
@@ -184,7 +305,7 @@ export default function AuthPage() {
                                             onClick={() => toggleView(view === 'signin' ? 'signup' : 'signin')}
                                             className="px-10 py-3 border-2 border-primary/20 bg-primary/5 rounded-full text-[10px] font-black uppercase tracking-[0.3em] text-primary hover:bg-primary hover:text-white hover:border-primary transition-all duration-500 active:scale-95 shadow-[0_0_20px_rgba(var(--primary-rgb),0.1)]"
                                         >
-                                            {view === 'signin' ? "Create Account" : "Return to Login"}
+                                            {view === 'signin' ? "Register Now" : "Back to Login"}
                                         </button>
                                     </div>
                                 </motion.div>
@@ -317,10 +438,23 @@ export default function AuthPage() {
                                     >
                                         <div className="text-center md:text-left space-y-2">
                                             <h2 className="text-4xl font-black uppercase tracking-tighter italic">
-                                                Register <span className="text-primary">Admin.</span>
+                                                Register <span className="text-primary">Now.</span>
                                             </h2>
-                                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Deploy your workspace infrastructure</p>
+                                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Setup your salon management panel</p>
                                         </div>
+
+                                        {selectedPlan && (
+                                            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-[9px] font-black uppercase text-primary tracking-widest leading-none mb-1">Selected Plan</p>
+                                                    <h4 className="text-lg font-black text-white uppercase italic tracking-tight">{selectedPlan.name}</h4>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="text-xl font-black text-white leading-none">₹{selectedPlan.monthlyPrice}</p>
+                                                    <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest mt-1">/ Month + GST</p>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {error && (
                                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
@@ -332,54 +466,54 @@ export default function AuthPage() {
                                         <form onSubmit={handleSignup} className="space-y-6">
                                             <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Brand Name</label>
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Salon Name</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <Store className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="text" name="salonName" value={signupForm.salonName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Nexus Salon" />
+                                                        <input type="text" name="salonName" value={signupForm.salonName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="My Premium Salon" />
                                                     </div>
                                                 </div>
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Admin Identity</label>
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Full Name</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="text" name="fullName" value={signupForm.fullName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="John Wick" />
+                                                        <input type="text" name="fullName" value={signupForm.fullName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Your Name" />
                                                     </div>
                                                 </div>
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Work Comms</label>
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Email Address</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="email" name="email" value={signupForm.email} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="admin@nexus.com" />
+                                                        <input type="email" name="email" value={signupForm.email} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="name@example.com" />
                                                     </div>
                                                 </div>
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Direct Line</label>
+                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Phone Number</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <Phone className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
                                                         <input type="tel" name="phone" value={signupForm.phone} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="+91 00000" />
                                                     </div>
                                                 </div>
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Master Key</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Password</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="password" name="password" value={signupForm.password} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Create Key" />
+                                                        <input type="password" name="password" value={signupForm.password} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Create Password" />
                                                     </div>
                                                 </div>
                                                 <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Re-verify Key</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Confirm Password</label>
                                                     <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="password" name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Confirm Key" />
+                                                        <input type="password" name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Repeat Password" />
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="pt-4 space-y-6">
                                                 <button type="submit" disabled={loading} className="w-full h-14 bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-white hover:text-black transition-all duration-500 shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50">
-                                                    {loading ? 'Initializing Workspace...' : 'Deploy Workspace'}
+                                                    {loading ? 'Creating Account...' : 'Register Now'}
                                                 </button>
                                                 <p className="text-[8px] text-white/20 text-center uppercase tracking-widest font-black leading-relaxed">
-                                                    By deploying this environment, you accept our <br />
+                                                    By registering, you accept our <br />
                                                     <span className="text-white/40 hover:text-primary transition-colors cursor-pointer decoration-white/10 underline">Operational Protocols</span> & <span className="text-white/40 hover:text-primary transition-colors cursor-pointer decoration-white/10 underline">Privacy Sandbox</span>.
                                                 </p>
                                             </div>

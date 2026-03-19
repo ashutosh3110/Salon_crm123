@@ -10,8 +10,7 @@ import {
     Clock,
     Calendar,
     AlertCircle,
-    CheckCircle2,
-    FileText
+    CheckCircle2
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
@@ -56,7 +55,6 @@ export default function OutletForm() {
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         openingTime: '09:00 AM',
         closingTime: '09:00 PM',
-        gstin: '',
     });
 
     useEffect(() => {
@@ -114,8 +112,8 @@ export default function OutletForm() {
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-text uppercase">{isEdit ? 'Evolve Unit' : 'Induct New Unit'}</h1>
-                        <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Architect your salon network layout.</p>
+                        <h1 className="text-2xl font-bold text-text uppercase">{isEdit ? 'Update Salon' : 'Add New Salon'}</h1>
+                        <p className="text-xs font-bold text-text-secondary mt-1 uppercase tracking-widest opacity-60">Add a new location to your business.</p>
                     </div>
                 </div>
             </div>
@@ -129,12 +127,12 @@ export default function OutletForm() {
                             <div className="p-2 rounded-xl bg-primary/10 text-primary">
                                 <Store className="w-4 h-4" />
                             </div>
-                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Core Identity</h2>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Salon Information</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Unit Nomenclature <span className="text-rose-500">*</span></label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Salon Name <span className="text-rose-500">*</span></label>
                                 <input
                                     name="name"
                                     required
@@ -147,7 +145,7 @@ export default function OutletForm() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Comm Link <span className="text-rose-500">*</span></label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Phone Number <span className="text-rose-500">*</span></label>
                                     <div className="relative">
                                         <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                         <input
@@ -161,7 +159,7 @@ export default function OutletForm() {
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">POS Digital Path</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Email Address</label>
                                     <div className="relative">
                                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                         <input
@@ -176,22 +174,10 @@ export default function OutletForm() {
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter text-primary">GSTIN Protocol</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                    <input
-                                        name="gstin"
-                                        value={form.gstin}
-                                        onChange={handleChange}
-                                        placeholder="e.g. 27AAACG1234A1Z5"
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
+
 
                             <div className="space-y-3 pt-2">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Network Pulse</label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Salon Status</label>
                                 <div className="flex p-1 bg-slate-50 rounded-2xl border border-border w-fit">
                                     <button
                                         type="button"
@@ -218,12 +204,12 @@ export default function OutletForm() {
                             <div className="p-2 rounded-xl bg-orange-50 text-orange-500">
                                 <MapPin className="w-4 h-4" />
                             </div>
-                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Geo Anchor</h2>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Location Details</h2>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Physical Coordinate <span className="text-rose-500">*</span></label>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Full Address <span className="text-rose-500">*</span></label>
                                 <textarea
                                     name="address"
                                     required
@@ -237,7 +223,7 @@ export default function OutletForm() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Urban Center</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">City</label>
                                     <input
                                         name="city"
                                         required
@@ -248,7 +234,7 @@ export default function OutletForm() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Zone Code</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Pincode</label>
                                     <input
                                         name="pincode"
                                         required
@@ -263,7 +249,7 @@ export default function OutletForm() {
 
                             <div className="p-3 bg-blue-50/50 rounded-2xl border border-blue-100">
                                 <p className="text-[9px] text-blue-800 font-bold leading-relaxed">
-                                    * These credentials will be etched onto all POS invoice outputs.
+                                    * These details will be printed on all invoices.
                                 </p>
                             </div>
                         </div>
@@ -277,14 +263,14 @@ export default function OutletForm() {
                                     <div className="p-2 rounded-xl bg-white/10 border border-white/20">
                                         <Clock className="w-4 h-4 text-primary" />
                                     </div>
-                                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">Shift Control</h3>
+                                    <h3 className="text-[10px] font-bold uppercase tracking-widest text-primary">Working Hours</h3>
                                 </div>
-                                <h4 className="text-xl font-bold">Slot Rules</h4>
-                                <p className="text-[10px] text-white/40 leading-relaxed font-bold tracking-tighter uppercase">Define temporal constraints for this unit.</p>
+                                <h4 className="text-xl font-bold">Timing Rules</h4>
+                                <p className="text-[10px] text-white/40 leading-relaxed font-bold tracking-tighter uppercase">Set opening and closing times for this salon.</p>
 
                                 <div className="space-y-4 pt-4">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase">Open Window</label>
+                                        <label className="text-[10px] font-bold text-white/40 uppercase">Opening Time</label>
                                         <select
                                             name="openingTime"
                                             value={form.openingTime}
@@ -295,7 +281,7 @@ export default function OutletForm() {
                                         </select>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] font-bold text-white/40 uppercase">Close Window</label>
+                                        <label className="text-[10px] font-bold text-white/40 uppercase">Closing Time</label>
                                         <select
                                             name="closingTime"
                                             value={form.closingTime}
@@ -309,7 +295,7 @@ export default function OutletForm() {
                             </div>
 
                             <div className="md:w-2/3 space-y-4">
-                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-4">Weekly Cycle</label>
+                                <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest block mb-4">Working Days</label>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
                                     {DAYS.map(day => (
                                         <button
@@ -330,8 +316,8 @@ export default function OutletForm() {
                                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold text-white uppercase">Protocol Locked</p>
-                                        <p className="text-[9px] text-white/40 font-bold">POS engine will hard-sync with this temporal data.</p>
+                                        <p className="text-xs font-bold text-white uppercase">Hours Confirmed</p>
+                                        <p className="text-[9px] text-white/40 font-bold">The booking system will follow these hours.</p>
                                     </div>
                                 </div>
                             </div>
@@ -350,7 +336,7 @@ export default function OutletForm() {
 
                 <div className="flex items-center justify-between gap-3 p-6 bg-slate-50 rounded-3xl border border-border">
                     <p className="text-[10px] text-text-muted font-bold uppercase hidden sm:block">
-                        Finalize all metadata before executing commit.
+                        Please check all details before saving.
                     </p>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button
@@ -358,7 +344,7 @@ export default function OutletForm() {
                             onClick={() => navigate('/admin/outlets')}
                             className="flex-1 sm:flex-none px-8 py-3 rounded-2xl text-xs font-bold text-text-secondary hover:bg-white transition-all border border-transparent hover:border-border"
                         >
-                            Abort
+                            Cancel
                         </button>
                         <button
                             type="submit"
@@ -370,7 +356,7 @@ export default function OutletForm() {
                             ) : (
                                 <>
                                     <Save className="w-4 h-4" />
-                                    {isEdit ? 'Commit Changes' : 'Execute Induction'}
+                                    {isEdit ? 'Save Changes' : 'Create Salon'}
                                 </>
                             )}
                         </button>

@@ -8,17 +8,17 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select...", lab
     return (
         <div className={`relative ${className}`}>
             {label && (
-                <label className={`text-[10px] font-bold uppercase tracking-tighter mb-1 block text-left ${dark ? 'text-white/40' : 'text-text-muted'}`}>
+                <label className={`text-[11px] font-semibold uppercase tracking-wide mb-1.5 block text-left ${dark ? 'text-white/40' : 'text-text-muted'}`}>
                     {label}
                 </label>
             )}
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex items-center justify-between gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-bold transition-all outline-none shadow-sm border ${
+                className={`flex items-center justify-between gap-2 w-full px-4 py-2.5 rounded-xl text-sm font-semibold transition-all outline-none shadow-sm border ${
                     dark 
                     ? 'bg-white/5 border-white/10 text-white hover:bg-white/10' 
-                    : 'bg-surface-alt border-border text-text hover:border-primary/40'
+                    : 'bg-surface border-border text-text hover:border-primary/40'
                 }`}
             >
                 <span className={`truncate ${!value && !dark ? "text-text-muted/60" : !value && dark ? "text-white/30" : ""}`}>{value || placeholder}</span>
@@ -59,7 +59,7 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select...", lab
                                 ) : (
                                     <div className="px-4 py-8 text-center">
                                         <p className={`text-[10px] font-black uppercase tracking-widest ${dark ? 'text-white/30' : 'text-text-muted/50'}`}>
-                                            No options available
+                                            No categories found
                                         </p>
                                     </div>
                                 )}

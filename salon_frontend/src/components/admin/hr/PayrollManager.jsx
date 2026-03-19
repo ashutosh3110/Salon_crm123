@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Calculator, FileText, Download, CheckCircle2, Clock, ArrowRight, Search, Filter, ChevronDown, Lock, Unlock, AlertCircle, Calendar, Users, X, Edit2, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,13 +11,9 @@ import {
     ResponsiveContainer,
     Cell
 } from 'recharts';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 const MONTHS = ['January 2025', 'February 2025', 'March 2025', 'April 2025', 'May 2025', 'June 2025', 'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025', 'December 2025'];
-
-import hrData from '../../../data/hrMockData.json';
-
-const INITIAL_PAYROLL = hrData.payroll;
-
 
 const STATUS_META = {
     paid: { label: 'Paid', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
@@ -26,7 +22,28 @@ const STATUS_META = {
 };
 
 export default function PayrollManager() {
-    const [payroll, setPayroll] = useState(INITIAL_PAYROLL);
+    const { staff } = useBusiness();
+    const [payroll, setPayroll] = useState([]);
+
+    useEffect(() => {
+        if (staff && staff.length > 0) {
+            const shell = staff.map(s => ({
+                id: s._id || s.id,
+                staff: s.name,
+                role: s.role,
+                base: Number(s.salary || 0),
+                commission: 0,
+                deductions: 0,
+                net: Number(s.salary || 0),
+                status: 'draft',
+                days: 30,
+                bankName: s.bankName,
+                accountNo: s.accountNo,
+                ifsc: s.ifsc
+            }));
+            setPayroll(shell);
+        }
+    }, [staff]);
     const [monthIdx, setMonthIdx] = useState(1);
     const [isLocked, setIsLocked] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -130,7 +147,7 @@ export default function PayrollManager() {
                         <div className="flex flex-col sm:flex-row items-center gap-5 mb-8 text-left">
                             <div className="p-4 rounded-none bg-primary text-white shadow-xl shadow-primary/20 shrink-0"><Calculator className="w-6 h-6" /></div>
                             <div className="text-left font-black w-full sm:w-auto">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Fiscal Period</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Payroll Month</p>
                                 <div className="relative text-left">
                                     <button onClick={() => setMonthPickerOpen(v => !v)} className="flex items-center gap-3 mt-1 group/btn">
                                         <Calendar className="w-4 h-4 text-primary" />
@@ -156,12 +173,12 @@ export default function PayrollManager() {
 
                         <div className="grid grid-cols-2 gap-4 sm:gap-10 border-t border-border/40 pt-8 text-left font-black">
                             <div className="text-left">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Capital Outflow</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Payout</p>
                                 <p className="text-xl sm:text-3xl font-black text-text mt-1 tracking-tighter shrink-0">₹{totalPayout.toLocaleString()}</p>
                             </div>
                             <div className="text-left">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Active Nodes</p>
-                                <p className="text-xl sm:text-3xl font-black text-text mt-1 tracking-tighter shrink-0">{payroll.length} units</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Active Staff</p>
+                                <p className="text-xl sm:text-3xl font-black text-text mt-1 tracking-tighter shrink-0">{payroll.length} Members</p>
                             </div>
                         </div>
                     </div>
@@ -195,25 +212,25 @@ export default function PayrollManager() {
                 <div className="bg-background rounded-none shadow-sm border border-border p-8 relative overflow-hidden flex flex-col justify-between text-left font-black">
                     <div className="relative z-10 text-left">
                         <div className="flex items-center justify-between mb-4 text-left">
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Protocol Isolation</span>
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Lock Payroll</span>
                             <button onClick={() => setIsLocked(v => !v)} className="transition-transform active:scale-95">
                                 {isLocked ? <Lock className="w-5 h-5 text-rose-500" /> : <Unlock className="w-5 h-5 text-emerald-500" />}
                             </button>
                         </div>
-                        <h3 className="text-lg font-black text-text uppercase tracking-tight">System Payout</h3>
-                        <p className="text-[10px] text-text-muted mt-2 leading-relaxed font-bold uppercase tracking-widest">Global disbursement and record locking.</p>
+                        <h3 className="text-lg font-black text-text uppercase tracking-tight">Process Payments</h3>
+                        <p className="text-[10px] text-text-muted mt-2 leading-relaxed font-bold uppercase tracking-widest">Finalize payments and lock records for the month.</p>
                     </div>
                     <div className="flex flex-col gap-3 mt-8 relative z-10 text-left font-black">
                         <button onClick={() => {
                             showToast('Generating Payroll Drafts...');
-                            setTimeout(() => showToast('Sync Complete: 5 Nodes Populated'), 1500);
+                            setTimeout(() => showToast('Sync Complete: Payroll Data Ready'), 1500);
                         }} disabled={isLocked}
                             className="w-full flex items-center justify-center gap-3 py-4 rounded-none font-black text-[10px] uppercase tracking-[0.2em] bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5 disabled:opacity-30">
-                            <Calculator className="w-4 h-4" /> Run Generation Run
+                            <Calculator className="w-4 h-4" /> Generate Payslips
                         </button>
                         <button onClick={() => setPayAllConfirm(true)} disabled={isLocked}
                             className="w-full flex items-center justify-center gap-3 py-4 rounded-none font-black text-[10px] uppercase tracking-[0.2em] bg-emerald-500 text-white hover:bg-emerald-600 shadow-xl shadow-emerald-500/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                            <CheckCircle2 className="w-4 h-4" /> Finalize & Disburse
+                            <CheckCircle2 className="w-4 h-4" /> Mark All as Paid
                         </button>
                     </div>
                 </div>
@@ -223,7 +240,7 @@ export default function PayrollManager() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface p-5 rounded-none border border-border shadow-sm text-left font-black">
                 <div className="relative flex-1 max-w-sm text-left">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" placeholder="FILTER PAYROLL STREAM..."
+                    <input type="text" placeholder="Search payroll records..."
                         className="w-full pl-12 pr-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
                         value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
@@ -249,9 +266,13 @@ export default function PayrollManager() {
                     <table className="w-full text-left font-black">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border text-left">
-                                {['Entity', 'Base_val', 'Bonus', 'Dedit', 'Net_Settlement', 'Status_bit', 'Control'].map(h => (
-                                    <th key={h} className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ${h === 'Control' ? 'text-right' : ''}`}>{h}</th>
-                                ))}
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Employee</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Basic Salary</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Commission</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Deductions</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Net Payable</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left font-black">
@@ -297,7 +318,7 @@ export default function PayrollManager() {
                 </div>
                 <div className="px-6 py-4 border-t border-border bg-surface-alt/30 flex items-center gap-3 font-black">
                     <AlertCircle className="w-4 h-4 text-amber-500" />
-                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none">Status report: <span className="text-text">{MONTHS[monthIdx]}</span> sequence is and flagged as <span className={`font-black ${isLocked ? 'text-rose-500' : 'text-amber-600'}`}>{isLocked ? 'PROHIBITED' : 'DRAFT_MODE'}</span>.</p>
+                    <p className="text-[10px] text-text-muted font-black uppercase tracking-widest leading-none">Payroll summary: <span className="text-text">{MONTHS[monthIdx]}</span> is currently in <span className={`font-black ${isLocked ? 'text-rose-500' : 'text-amber-600'}`}>{isLocked ? 'LOCKED MODE' : 'DRAFT MODE'}</span>.</p>
                 </div>
             </div>
 
@@ -310,16 +331,16 @@ export default function PayrollManager() {
                             className="bg-surface w-full max-w-md rounded-none border border-border shadow-2xl relative p-10">
                             <div className="flex items-center justify-between mb-8">
                                 <div>
-                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Override Salary</h2>
+                                    <h2 className="text-sm font-black text-text uppercase tracking-[0.2em]">Edit Salary</h2>
                                     <p className="text-[10px] font-black text-primary mt-2 uppercase tracking-widest font-bold">{editModal.staff}</p>
                                 </div>
                                 <button onClick={() => setEditModal(null)} className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted hover:text-text transition-all"><X className="w-5 h-5" /></button>
                             </div>
                             <form onSubmit={saveEdit} className="space-y-6">
                                 {[
-                                    { key: 'base', label: 'Primary Base (₹)', color: 'text-text' },
-                                    { key: 'commission', label: 'Incentive Vector (+₹)', color: 'text-emerald-500' },
-                                    { key: 'deductions', label: 'Loss Recovery (-₹)', color: 'text-rose-500' },
+                                    { key: 'base', label: 'Basic Salary (₹)', color: 'text-text' },
+                                    { key: 'commission', label: 'Commission (+₹)', color: 'text-emerald-500' },
+                                    { key: 'deductions', label: 'Deductions (-₹)', color: 'text-rose-500' },
                                 ].map(field => (
                                     <div key={field.key} className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{field.label}</label>
@@ -329,10 +350,10 @@ export default function PayrollManager() {
                                     </div>
                                 ))}
                                 <div className="py-5 px-6 bg-primary/5 rounded-none border border-primary/20 flex justify-between items-center">
-                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Settlement Val</span>
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Payable</span>
                                     <span className="text-xl font-black text-primary tracking-tighter">₹{(Number(editForm.base || 0) + Number(editForm.commission || 0) - Number(editForm.deductions || 0)).toLocaleString()}</span>
                                 </div>
-                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Write To Register</button>
+                                <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Save Changes</button>
                             </form>
                         </motion.div>
                     </div>
@@ -421,12 +442,12 @@ export default function PayrollManager() {
                         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                             className="bg-surface w-full max-w-sm rounded-none border border-border shadow-2xl relative p-10 text-center">
                             <div className="w-16 h-16 bg-emerald-500/10 rounded-none flex items-center justify-center mx-auto mb-8 border border-emerald-500/10"><CheckCircle2 className="w-8 h-8 text-emerald-500" /></div>
-                            <h3 className="text-sm font-black text-text uppercase tracking-[0.2em]">Global Payout Command?</h3>
-                            <p className="text-[10px] text-text-muted mt-3 mb-2 uppercase font-bold tracking-widest">Aggregate Val: <span className="text-primary font-black">₹{totalPayout.toLocaleString()}</span></p>
-                            <p className="text-[10px] text-rose-500 mb-8 uppercase font-black tracking-widest leading-relaxed italic">Warning: This will set all {payroll.length} nodes to PAID state permanently.</p>
+                            <h3 className="text-sm font-black text-text uppercase tracking-[0.2em]">Confirm Bulk Payment?</h3>
+                            <p className="text-[10px] text-text-muted mt-3 mb-2 uppercase font-bold tracking-widest">Total Payout: <span className="text-primary font-black">₹{totalPayout.toLocaleString()}</span></p>
+                            <p className="text-[10px] text-rose-500 mb-8 uppercase font-black tracking-widest leading-relaxed italic">Warning: This will mark all {payroll.length} staff members as PAID.</p>
                             <div className="flex flex-col gap-3">
-                                <button onClick={payAll} className="w-full py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:bg-emerald-600 transition-all">Confirm Execution</button>
-                                <button onClick={() => setPayAllConfirm(false)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Abort Protocol</button>
+                                <button onClick={payAll} className="w-full py-4 bg-emerald-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/10 hover:bg-emerald-600 transition-all">Confirm Payment</button>
+                                <button onClick={() => setPayAllConfirm(false)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Cancel</button>
                             </div>
                         </motion.div>
                     </div>
