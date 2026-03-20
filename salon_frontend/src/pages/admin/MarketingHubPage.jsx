@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     MessageSquare, Mail, Share2, TrendingUp, Users, Send,
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
@@ -12,69 +12,7 @@ import {
     Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-
-/* ─── Mock Data ────────────────────────────────────────────────────────── */
-const CAMPAIGN_STATS = [
-    { name: 'Mon', whatsapp: 450, email: 210, social: 120 },
-    { name: 'Tue', whatsapp: 520, email: 180, social: 150 },
-    { name: 'Wed', whatsapp: 380, email: 320, social: 100 },
-    { name: 'Thu', whatsapp: 610, email: 410, social: 280 },
-    { name: 'Fri', whatsapp: 890, email: 530, social: 450 },
-    { name: 'Sat', whatsapp: 950, email: 480, social: 620 },
-    { name: 'Sun', whatsapp: 720, email: 390, social: 380 },
-];
-
-const AUDIENCE_SEGMENTS = [
-    { label: 'All Customers', count: 1248, color: 'text-slate-400' },
-    { label: 'Loyal (5+ visits)', count: 284, color: 'text-primary' },
-    { label: 'At Risk (30d+ gap)', count: 156, color: 'text-amber-500' },
-    { label: 'New This Month', count: 92, color: 'text-emerald-500' },
-];
-
-const WHATSAPP_CAMPAIGNS = [
-    { id: 'wa1', name: 'Valentine\'s Special Offer', status: 'completed', sent: 850, read: 720, date: '2026-02-12' },
-    { id: 'wa2', name: 'Winter Hair Spa Day', status: 'completed', sent: 1200, read: 980, date: '2026-01-25' },
-    { id: 'wa3', name: 'Weekend Grooming Alert', status: 'draft', sent: 0, read: 0, date: '--' },
-];
-
-const AUTOMATION_FLOWS = [
-    {
-        id: 'birthday',
-        name: 'Birthday Wishes',
-        short: 'Send a warm message with an offer on the customer\'s birthday.',
-        triggerLabel: 'On the customer\'s birthday',
-        channelLabel: 'WhatsApp + optional SMS',
-        badge: 'Popular',
-        preview: 'Happy Birthday {{name}} 🎉\nWe\'d love to spoil you today. Enjoy {{offer}} on any service this week. Reply YES to book.',
-    },
-    {
-        id: 'after_visit',
-        name: 'Visit Thank You + Review',
-        short: 'Say thanks after every visit and ask for a review link.',
-        triggerLabel: '2 hours after the appointment is marked as completed',
-        channelLabel: 'WhatsApp',
-        badge: 'Recommended',
-        preview: 'Hi {{name}}, thank you for visiting {{salon_name}} today.\nTap here to rate your experience: {{review_link}}',
-    },
-    {
-        id: 'winback',
-        name: 'Win Back Inactive Clients',
-        short: 'Gently remind clients who have not visited in a while.',
-        triggerLabel: 'When there is no visit for 60 days',
-        channelLabel: 'WhatsApp broadcast',
-        badge: 'Re-activation',
-        preview: 'We miss you at {{salon_name}} 💛\nBook any service this week and get {{offer}} as a welcome back gift.',
-    },
-    {
-        id: 'no_show',
-        name: 'No-show Follow Up',
-        short: 'Send a polite note after a missed appointment.',
-        triggerLabel: '30 minutes after a missed or cancelled booking',
-        channelLabel: 'WhatsApp',
-        badge: 'Care',
-        preview: 'Hi {{name}}, we noticed today\'s booking did not happen.\nIf you want to reschedule, just reply here or tap this link: {{booking_link}}',
-    },
-];
+import api from '../../services/api';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 
@@ -132,33 +70,121 @@ export default function MarketingHub() {
     const [sendingProgress, setSendingProgress] = useState(0);
     const [isSending, setIsSending] = useState(false);
     const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [isContactListOpen, setIsContactListOpen] = useState(false);
+    const [campaignError, setCampaignError] = useState('');
+    const NEWSLETTER_STORAGE_KEY = 'marketing_newsletter_draft';
+    const [newsletterDraft, setNewsletterDraft] = useState(() => {
+        try {
+            const saved = localStorage.getItem('marketing_newsletter_draft');
+            return saved ? JSON.parse(saved) : { headline: 'Your Salon Name', bodyText: 'Edit this text or drag new blocks here to build your email.', buttonText: 'Book Now' };
+        } catch {
+            return { headline: 'Your Salon Name', bodyText: 'Edit this text or drag new blocks here to build your email.', buttonText: 'Book Now' };
+        }
+    });
+    const [newsletterSaved, setNewsletterSaved] = useState(false);
+    const [testEmailSent, setTestEmailSent] = useState(false);
+
+    useEffect(() => {
+        if (isEmailModalOpen) {
+            try {
+                const saved = localStorage.getItem(NEWSLETTER_STORAGE_KEY);
+                if (saved) setNewsletterDraft(JSON.parse(saved));
+            } catch { /* ignore */ }
+        }
+    }, [isEmailModalOpen]);
+
+    const [dashboardData, setDashboardData] = useState(null);
+    const [segments, setSegments] = useState([]);
+    const [campaigns, setCampaigns] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [campaignsLoading, setCampaignsLoading] = useState(false);
+
+    const loadDashboard = async () => {
+        try {
+            const res = await api.get('/marketing/dashboard');
+            if (res.data?.success) setDashboardData(res.data.data);
+        } catch (e) {
+            setDashboardData(null);
+        }
+    };
+
+    const loadSegments = async () => {
+        try {
+            const res = await api.get('/marketing/segments');
+            if (res.data?.success) setSegments(res.data.data || []);
+        } catch (e) {
+            setSegments([]);
+        }
+    };
+
+    const loadCampaigns = async () => {
+        setCampaignsLoading(true);
+        try {
+            const res = await api.get('/marketing/campaigns?limit=100');
+            if (res.data?.success) setCampaigns(res.data.data?.results || []);
+        } catch (e) {
+            setCampaigns([]);
+        } finally {
+            setCampaignsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        const load = async () => {
+            setLoading(true);
+            await Promise.allSettled([loadDashboard(), loadSegments(), loadCampaigns()]);
+            setLoading(false);
+        };
+        load();
+    }, []);
 
     const startCampaign = () => {
         setIsCampaignModalOpen(true);
         setCampaignStep(1);
         setIsSending(false);
         setSendingProgress(0);
+        setCampaignError('');
+        loadSegments();
     };
 
-    const handleSendCampaign = () => {
+    const handleSendCampaign = async () => {
+        setCampaignError('');
         setCampaignStep(3);
         setIsSending(true);
         let progress = 0;
-        const interval = setInterval(() => {
-            progress += 5;
-            setSendingProgress(progress);
-            if (progress >= 100) {
-                clearInterval(interval);
-                setIsSending(false);
-                setTimeout(() => setIsCampaignModalOpen(false), 1500);
-            }
-        }, 150);
+        const interval = setInterval(() => setSendingProgress((p) => Math.min(p + 5, 90)), 150);
+
+        try {
+            const payload = {
+                name: campaignForm.name,
+                type: campaignForm.type,
+                segment: campaignForm.type === 'segmented' ? campaignForm.segment : 'all',
+                message: campaignForm.message,
+                channel: 'whatsapp',
+            };
+            await api.post('/marketing/campaigns', payload);
+            clearInterval(interval);
+            setSendingProgress(100);
+            await loadCampaigns();
+            await loadDashboard();
+            await loadSegments();
+        } catch (err) {
+            clearInterval(interval);
+            setCampaignError(err?.response?.data?.message || err?.message || 'Failed to create campaign');
+            setIsSending(false);
+            return;
+        }
+        setIsSending(false);
+        setTimeout(() => {
+            setIsCampaignModalOpen(false);
+            setCampaignForm({ name: '', type: 'bulk', segment: 'all', message: '', schedule: 'now' });
+        }, 600);
     };
 
     const tabs = [
         { id: 'dashboard', label: 'Dashboard', icon: Layout },
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare },
-        { id: 'email', label: 'Email Center', icon: Mail },
+        { id: 'email', label: 'Email', icon: Mail },
         { id: 'automations', label: 'Automations', icon: Zap },
     ];
 
@@ -167,18 +193,18 @@ export default function MarketingHub() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Marketing Command Center</h1>
-                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Automate your growth and reach customers where they are</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Marketing Hub</h1>
+                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Run campaigns and connect with customers easily</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-none bg-white border border-border text-text-secondary text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all shadow-sm">
-                        <Calendar className="w-4 h-4" /> Schedule
+                        <Calendar className="w-4 h-4" /> Schedule Campaign
                     </button>
                     <button
                         onClick={startCampaign}
                         className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-8 py-4 rounded-none bg-primary text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] hover:brightness-110 shadow-xl shadow-primary/25 active:scale-[0.98] transition-all leading-none"
                     >
-                        <Plus className="w-4 h-4" /> NEW CAMPAIGN
+                        <Plus className="w-4 h-4" /> Create Campaign
                     </button>
                 </div>
             </div>
@@ -209,9 +235,9 @@ export default function MarketingHub() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                 >
-                    {activeTab === 'dashboard' && <DashboardContent />}
-                    {activeTab === 'whatsapp' && <WhatsAppContent onNew={() => startCampaign()} />}
-                    {activeTab === 'email' && <EmailContent onOpen={() => setIsEmailModalOpen(true)} />}
+                    {activeTab === 'dashboard' && <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />}
+                    {activeTab === 'whatsapp' && <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />}
+                    {activeTab === 'email' && <EmailContent onOpenNewsletter={() => setIsEmailModalOpen(true)} onOpenContactList={() => setIsContactListOpen(true)} />}
                     {activeTab === 'automations' && <AutomationsContent />}
                 </motion.div>
             </AnimatePresence>
@@ -254,16 +280,16 @@ export default function MarketingHub() {
                                             placeholder="e.g. Summer Special 2026"
                                             className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
                                             value={campaignForm.name}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
+                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3 block">Target Audience</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3 block">Choose Audience</label>
                                         <div className="grid grid-cols-2 gap-3">
                                             {[
-                                                { id: 'bulk', label: 'Bulk Campaign', desc: 'All Customers', icon: Users },
-                                                { id: 'segmented', label: 'Smart Targeting', desc: 'Specific Groups', icon: Zap },
+                                                { id: 'bulk', label: 'Send to Everyone', desc: 'All Customers', icon: Users },
+                                                { id: 'segmented', label: 'Send to Specific Group', desc: 'Selected Segment', icon: Zap },
                                             ].map(t => (
                                                 <button
                                                     key={t.id}
@@ -286,17 +312,21 @@ export default function MarketingHub() {
                                                     { id: 'inactive_60', label: 'Inactive (60d+)' },
                                                     { id: 'high_spenders', label: 'High Spenders' },
                                                     { id: 'birthday', label: 'Birthday Today' },
-                                                    { id: 'facial_only', label: 'Facial Clients' },
-                                                    { id: 'membership_exp', label: 'Membership Expired' },
-                                                ].map(s => (
-                                                    <button
-                                                        key={s.id}
-                                                        onClick={() => setCampaignForm({ ...campaignForm, segment: s.id })}
-                                                        className={`px-3 py-2 rounded-lg text-left text-[10px] font-black uppercase tracking-tight border ${campaignForm.segment === s.id ? 'bg-primary text-white border-primary' : 'bg-white text-text-secondary border-border hover:border-primary/30'}`}
-                                                    >
-                                                        {s.label}
-                                                    </button>
-                                                ))}
+                                                    { id: 'at_risk', label: 'At Risk (30d+)' },
+                                                    { id: 'new_month', label: 'New This Month' },
+                                                ].map(s => {
+                                                    const seg = segments.find(se => se.id === s.id);
+                                                    const cnt = seg?.count ?? 0;
+                                                    return (
+                                                        <button
+                                                            key={s.id}
+                                                            onClick={() => setCampaignForm({ ...campaignForm, segment: s.id })}
+                                                            className={`px-3 py-2 rounded-lg text-left text-[10px] font-black uppercase tracking-tight border ${campaignForm.segment === s.id ? 'bg-primary text-white border-primary' : 'bg-white text-text-secondary border-border hover:border-primary/30'}`}
+                                                        >
+                                                            {s.label} {cnt > 0 && `(${cnt})`}
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         </motion.div>
                                     )}
@@ -306,7 +336,7 @@ export default function MarketingHub() {
                                         disabled={!campaignForm.name}
                                         className="w-full py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        Next: Compose Message
+                                                Next: Write Message
                                     </button>
                                 </div>
                             )}
@@ -316,8 +346,8 @@ export default function MarketingHub() {
                                 <div className="p-8 space-y-6">
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Body</label>
-                                            <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Pick Template</button>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message</label>
+                                            <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Use Template</button>
                                         </div>
                                         <textarea
                                             rows={5}
@@ -337,20 +367,28 @@ export default function MarketingHub() {
                                                 <Zap className="w-4 h-4" />
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Estimated Cost</div>
-                                                <div className="text-sm font-black text-emerald-900">₹{campaignForm.type === 'bulk' ? '1,248' : '156'} <span className="text-[10px] font-bold opacity-60">(1 Credit per Msg)</span></div>
+                                                <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Estimated Recipients</div>
+                                                <div className="text-sm font-black text-emerald-900">
+                                                    {campaignForm.type === 'bulk'
+                                                        ? (segments.find(s => s.id === 'all')?.count ?? 0).toLocaleString()
+                                                        : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0).toLocaleString()
+                                                    } <span className="text-[10px] font-bold opacity-60">customers</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
+                                    {campaignError && (
+                                        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
+                                    )}
                                     <div className="flex gap-3">
-                                        <button onClick={() => setCampaignStep(1)} className="flex-1 py-4 bg-white border border-border text-text-secondary text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-surface transition-all">Back</button>
+                                        <button onClick={() => { setCampaignStep(1); setCampaignError(''); }} className="flex-1 py-4 bg-white border border-border text-text-secondary text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-surface transition-all">Back</button>
                                         <button
                                             onClick={handleSendCampaign}
-                                            disabled={!campaignForm.message}
+                                            disabled={!campaignForm.message || isSending}
                                             className="flex-[2] py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:brightness-110 shadow-xl shadow-primary/20 transition-all disabled:opacity-50"
                                         >
-                                            Send Campaign Now
+                                            {isSending ? 'Saving...' : 'Send Campaign Now'}
                                         </button>
                                     </div>
                                 </div>
@@ -359,35 +397,44 @@ export default function MarketingHub() {
                             {/* Step 3: Sending */}
                             {campaignStep === 3 && (
                                 <div className="p-12 flex flex-col items-center text-center space-y-8">
-                                    <div className="relative w-32 h-32 flex items-center justify-center">
-                                        <svg className="w-full h-full -rotate-90">
-                                            <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
-                                            <motion.circle
-                                                cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
-                                                strokeDasharray={380}
-                                                animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
-                                                className="text-primary"
-                                            />
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-text">
-                                            {Math.round(sendingProgress)}%
+                                    {!campaignError && (
+                                        <div className="relative w-32 h-32 flex items-center justify-center">
+                                            <svg className="w-full h-full -rotate-90">
+                                                <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                                <motion.circle
+                                                    cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
+                                                    strokeDasharray={380}
+                                                    animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
+                                                    className="text-primary"
+                                                />
+                                            </svg>
+                                            <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-text">
+                                                {Math.round(sendingProgress)}%
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     <div>
-                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">{isSending ? 'Blasting Messages...' : 'Campaign Launched!'}</h3>
+                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">{isSending ? 'Sending Messages...' : campaignError ? 'Error' : 'Campaign Sent!'}</h3>
                                         <p className="text-sm text-text-muted mt-2 font-medium">
-                                            {isSending
-                                                ? `Sending to ${campaignForm.type === 'bulk' ? '1,248' : '156'} customers across WhatsApp.`
-                                                : `Successfully delivered to all recipients in the segment.`
+                                            {campaignError
+                                                ? campaignError
+                                                : isSending
+                                                    ? `Saving campaign for ${(campaignForm.type === 'bulk' ? (segments.find(s => s.id === 'all')?.count ?? 0) : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0)).toLocaleString()} customers.`
+                                                    : 'Campaign saved successfully. Connect WhatsApp API to send messages.'
                                             }
                                         </p>
                                     </div>
 
-                                    {!isSending && (
+                                    {!isSending && !campaignError && (
                                         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200">
                                             <CheckCircle className="w-8 h-8" />
                                         </motion.div>
+                                    )}
+                                    {campaignError && (
+                                        <button onClick={() => { setCampaignStep(2); setCampaignError(''); }} className="px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:brightness-110">
+                                            Try Again
+                                        </button>
                                     )}
                                 </div>
                             )}
@@ -406,46 +453,126 @@ export default function MarketingHub() {
                                 <h3 className="text-xl font-black text-text uppercase tracking-tight">Newsletter Builder</h3>
                                 <button onClick={() => setIsEmailModalOpen(false)} className="p-2 hover:bg-surface rounded-full"><XCircle className="w-6 h-6 text-text-muted" /></button>
                             </div>
-                            <div className="flex-1 flex bg-slate-50">
-                                <div className="w-64 border-r border-border p-6 space-y-4 bg-white">
-                                    <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">DRAG BLOCKS</h4>
+                            <div className="flex-1 flex bg-slate-50 overflow-hidden">
+                                <div className="w-64 border-r border-border p-6 space-y-4 bg-white shrink-0">
+                                    <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">BLOCKS</h4>
                                     {['Hero Image', 'Button', 'Text Block', 'Service List', 'Footer'].map(b => (
-                                        <div key={b} className="p-3 bg-surface border border-border rounded-xl text-xs font-bold cursor-move hover:border-primary transition-all flex items-center gap-2">
+                                        <div key={b} className="p-3 bg-surface border border-border rounded-xl text-xs font-bold cursor-default hover:border-primary/50 transition-all flex items-center gap-2">
                                             <Layout className="w-3.5 h-3.5 text-primary" /> {b}
                                         </div>
                                     ))}
+                                    <p className="text-[10px] text-text-muted mt-4">Edit content in the preview area.</p>
                                 </div>
-                                <div className="flex-1 p-12 flex items-center justify-center overflow-y-auto">
-                                    <div className="w-full max-w-md bg-white shadow-xl min-h-[500px] border border-border p-8 text-center space-y-6">
-                                        <div className="w-full h-32 bg-slate-100 rounded-xl flex items-center justify-center italic text-text-muted">Upload Header</div>
-                                        <h2 className="text-2xl font-black text-slate-800">Your Salon Name</h2>
-                                        <p className="text-sm text-slate-500">Edit this text or drag new blocks here to build your email.</p>
-                                        <div className="py-3 px-8 bg-slate-900 text-white inline-block rounded-lg font-black uppercase text-[10px] tracking-widest">Book Now</div>
+                                <div className="flex-1 p-8 overflow-y-auto">
+                                    <div className="w-full max-w-md mx-auto bg-white shadow-xl min-h-[500px] border border-border p-8 space-y-6">
+                                        <div className="w-full h-32 bg-slate-100 rounded-xl flex items-center justify-center italic text-text-muted text-xs">Header image (upload coming soon)</div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Headline</label>
+                                            <input
+                                                type="text"
+                                                value={newsletterDraft.headline}
+                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, headline: e.target.value }))}
+                                                className="w-full text-2xl font-black text-slate-800 bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none py-1"
+                                                placeholder="Your Salon Name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Body Text</label>
+                                            <textarea
+                                                value={newsletterDraft.bodyText}
+                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, bodyText: e.target.value }))}
+                                                rows={4}
+                                                className="w-full text-sm text-slate-600 bg-transparent border border-transparent hover:border-border focus:border-primary focus:outline-none rounded-lg p-2 resize-none"
+                                                placeholder="Edit this text..."
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Button Text</label>
+                                            <input
+                                                type="text"
+                                                value={newsletterDraft.buttonText}
+                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, buttonText: e.target.value }))}
+                                                className="w-full text-sm font-black uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
+                                                placeholder="Book Now"
+                                            />
+                                        </div>
+                                        <div className="pt-4">
+                                            <div className="py-3 px-8 bg-slate-900 text-white inline-block rounded-lg font-black uppercase text-[10px] tracking-widest cursor-default">
+                                                {newsletterDraft.buttonText || 'Book Now'}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="p-6 border-t border-border flex justify-end gap-3 bg-white">
-                                <button className="px-6 py-2.5 rounded-xl border border-border text-xs font-black uppercase tracking-widest">Save Draft</button>
-                                <button className="px-8 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest">Send Test Email</button>
+                                <button
+                                    onClick={() => {
+                                        try {
+                                            localStorage.setItem(NEWSLETTER_STORAGE_KEY, JSON.stringify(newsletterDraft));
+                                            setNewsletterSaved(true);
+                                            setTimeout(() => setNewsletterSaved(false), 2000);
+                                        } catch (e) { /* ignore */ }
+                                    }}
+                                    className="px-6 py-2.5 rounded-xl border border-border text-xs font-black uppercase tracking-widest hover:bg-surface transition-colors"
+                                >
+                                    {newsletterSaved ? 'Saved!' : 'Save Draft'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setTestEmailSent(true);
+                                        setTimeout(() => setTestEmailSent(false), 2500);
+                                    }}
+                                    className="px-8 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                                >
+                                    {testEmailSent ? 'Sent!' : 'Send Test Email'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
+
+            {/* ── Contact List Modal ── */}
+            <ContactListModal isOpen={isContactListOpen} onClose={() => setIsContactListOpen(false)} />
         </div>
     );
 }
 
 /* ─── Dashboard Tab ─────────────────────────────────────────────────────── */
-function DashboardContent() {
+function DashboardContent({ dashboardData, segments, loading, onRefresh }) {
+    const stats = dashboardData?.stats || [
+        { label: 'Campaign Reach', value: '0', trend: null },
+        { label: 'Conv. Rate', value: '0%', trend: null },
+        { label: 'Total Spent', value: '₹0', trend: null },
+        { label: 'Campaigns', value: '0', trend: null },
+    ];
+    const chartData = dashboardData?.chartData || [
+        { name: 'Mon', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Tue', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Wed', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Thu', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Fri', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Sat', whatsapp: 0, email: 0, social: 0 },
+        { name: 'Sun', whatsapp: 0, email: 0, social: 0 },
+    ];
+    const displaySegments = segments.length > 0 ? segments.filter(s => ['all', 'loyal', 'at_risk', 'new_month'].includes(s.id)) : [];
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-24">
+                <p className="text-text-muted font-bold uppercase tracking-widest">Loading...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             {/* Quick KPIs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard label="Campaign Reach" value="4,820" trend="+12%" icon={Users} color="bg-blue-50 text-blue-600" />
-                <StatCard label="Conv. Rate" value="8.4%" trend="+2.5%" icon={TrendingUp} color="bg-emerald-50 text-emerald-600" />
-                <StatCard label="Total Spent" value="₹12,450" icon={Zap} color="bg-amber-50 text-amber-600" />
-                <StatCard label="App Installs" value="342" trend="+15%" icon={Smartphone} color="bg-primary/10 text-primary" />
+                <StatCard label={stats[0]?.label || 'Campaign Reach'} value={stats[0]?.value || '0'} trend={stats[0]?.trend} icon={Users} color="bg-blue-50 text-blue-600" />
+                <StatCard label={stats[1]?.label || 'Conv. Rate'} value={stats[1]?.value || '0%'} trend={stats[1]?.trend} icon={TrendingUp} color="bg-emerald-50 text-emerald-600" />
+                <StatCard label={stats[2]?.label || 'Total Spent'} value={stats[2]?.value || '₹0'} icon={Zap} color="bg-amber-50 text-amber-600" />
+                <StatCard label={stats[3]?.label || 'Campaigns'} value={stats[3]?.value || '0'} trend={stats[3]?.trend} icon={Smartphone} color="bg-primary/10 text-primary" />
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
@@ -454,7 +581,7 @@ function DashboardContent() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-sm font-black text-text uppercase tracking-wider">Campaign Performance</h3>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Metrics across all channels</p>
+                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Last 7 days by channel</p>
                         </div>
                         <div className="flex gap-4">
                             <div className="flex items-center gap-1.5">
@@ -469,7 +596,7 @@ function DashboardContent() {
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={CAMPAIGN_STATS}>
+                            <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorWa" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#AD0B2A" stopOpacity={0.1} />
@@ -495,27 +622,36 @@ function DashboardContent() {
                 <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-sm font-black text-text uppercase tracking-wider">Audience Segments</h3>
-                        <button className="p-2 hover:bg-surface rounded-lg transition-colors"><Plus className="w-4 h-4 text-primary" /></button>
+                        <button onClick={onRefresh} className="p-2 hover:bg-surface rounded-lg transition-colors"><Plus className="w-4 h-4 text-primary" /></button>
                     </div>
                     <div className="space-y-4">
-                        {AUDIENCE_SEGMENTS.map(s => (
-                            <div key={s.label} className="p-4 rounded-2xl border border-border hover:border-primary/30 transition-all cursor-pointer group">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-[10px] font-black uppercase tracking-tight text-text-secondary">{s.label}</span>
-                                    <span className={`text-xs font-black ${s.color}`}>{s.count}</span>
+                        {(displaySegments.length > 0 ? displaySegments : [
+                            { id: 'all', label: 'All Customers', count: 0, color: 'text-slate-400' },
+                            { id: 'loyal', label: 'Loyal (5+ visits)', count: 0, color: 'text-primary' },
+                            { id: 'at_risk', label: 'At Risk (30d+ gap)', count: 0, color: 'text-amber-500' },
+                            { id: 'new_month', label: 'New This Month', count: 0, color: 'text-emerald-500' },
+                        ]).map(s => {
+                            const total = displaySegments.find(x => x.id === 'all')?.count || 1;
+                            const pct = total > 0 ? Math.min(100, (s.count / total) * 100) : 0;
+                            return (
+                                <div key={s.id || s.label} className="p-4 rounded-2xl border border-border hover:border-primary/30 transition-all cursor-pointer group">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="text-[10px] font-black uppercase tracking-tight text-text-secondary">{s.label}</span>
+                                        <span className={`text-xs font-black ${s.color}`}>{s.count}</span>
+                                    </div>
+                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            whileInView={{ width: `${pct}%` }}
+                                            className="h-full bg-primary"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        whileInView={{ width: `${(s.count / 1248) * 100}%` }}
-                                        className={`h-full bg-primary`}
-                                    />
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
-                    <button className="w-full mt-6 py-3 bg-surface text-text-secondary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all">
-                        View All Segments
+                    <button onClick={onRefresh} className="w-full mt-6 py-3 bg-surface text-text-secondary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all">
+                        Refresh Segments
                     </button>
                 </div>
             </div>
@@ -524,22 +660,36 @@ function DashboardContent() {
 }
 
 /* ─── WhatsApp Tab ─────────────────────────────────────────────────────── */
-function WhatsAppContent({ onNew }) {
+function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
+    const mapCampaign = (c) => ({
+        id: c._id || c.id,
+        name: c.name || 'Untitled',
+        status: (c.status || 'draft').toLowerCase(),
+        sent: c.sentCount ?? c.sent ?? 0,
+        read: c.readCount ?? c.read ?? 0,
+        date: c.sentAt ? new Date(c.sentAt).toISOString().slice(0, 10) : (c.createdAt ? new Date(c.createdAt).toISOString().slice(0, 10) : '--'),
+    });
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between mb-6">
                 <SectionHeader
-                    title="WhatsApp Promotions"
-                    desc="Send high-converting bulk messages and track read rates in real-time."
+                    title="WhatsApp Campaigns"
+                    desc="Send messages to customers and track delivery and reads."
                     icon={MessageSquare}
-                    badge="Premium"
+                    badge="Live"
                 />
-                <button
-                    onClick={onNew}
-                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-emerald-200"
-                >
-                    <Plus className="w-4 h-4" /> Start New Campaign
-                </button>
+                <div className="flex items-center gap-2">
+                    <button onClick={onRefresh} className="flex items-center gap-2 px-4 py-2.5 border border-border rounded-xl text-xs font-black uppercase tracking-widest hover:border-primary/30 transition-all">
+                        Refresh
+                    </button>
+                    <button
+                        onClick={onNew}
+                        className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-emerald-200"
+                    >
+                        <Plus className="w-4 h-4" /> New Campaign
+                    </button>
+                </div>
             </div>
 
             <div className="grid lg:grid-cols-4 gap-6">
@@ -562,7 +712,7 @@ function WhatsAppContent({ onNew }) {
                     <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden text-center justify-center">
                         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface/30">
                             <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Recent Campaigns</h3>
-                            <button className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">View History</button>
+                            <button onClick={onRefresh} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Refresh</button>
                         </div>
                         <div className="table-responsive">
                             <table className="w-full min-w-[800px]">
@@ -576,25 +726,34 @@ function WhatsAppContent({ onNew }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {WHATSAPP_CAMPAIGNS.map(c => (
-                                        <tr key={c.id} className="border-b border-border/50 hover:bg-surface/10 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="text-xs font-black text-text uppercase tracking-tight">{c.name}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${c.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                    {c.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center font-black text-xs text-text-secondary">
-                                                {c.sent} <span className="text-text-muted font-bold mx-1">/</span> <span className="text-primary">{c.read}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center font-bold text-xs text-text-muted italic">{c.date}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button className="p-2 hover:bg-surface rounded-lg transition-colors"><MoreVertical className="w-4 h-4 text-text-muted" /></button>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                    {campaignsLoading ? (
+                                        <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold">Loading campaigns...</td></tr>
+                                    ) : campaigns.length === 0 ? (
+                                        <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted font-bold">No campaigns yet. Create one to get started.</td></tr>
+                                    ) : (
+                                        campaigns.map(c => {
+                                            const row = mapCampaign(c);
+                                            return (
+                                                <tr key={row.id} className="border-b border-border/50 hover:bg-surface/10 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-xs font-black text-text uppercase tracking-tight">{row.name}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${row.status === 'completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                            {row.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center font-black text-xs text-text-secondary">
+                                                        {row.sent} <span className="text-text-muted font-bold mx-1">/</span> <span className="text-primary">{row.read}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center font-bold text-xs text-text-muted italic">{row.date}</td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button className="p-2 hover:bg-surface rounded-lg transition-colors"><MoreVertical className="w-4 h-4 text-text-muted" /></button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -607,16 +766,76 @@ function WhatsAppContent({ onNew }) {
 
 /* ─── Automations Tab ──────────────────────────────────────────────────── */
 function AutomationsContent() {
-    const [selectedId, setSelectedId] = useState(AUTOMATION_FLOWS[0]?.id ?? null);
-    const selected = AUTOMATION_FLOWS.find(flow => flow.id === selectedId) ?? AUTOMATION_FLOWS[0];
+    const [flows, setFlows] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedId, setSelectedId] = useState(null);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [editModal, setEditModal] = useState(null);
+
+    const loadAutomations = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/marketing/automations');
+            const data = res.data?.data || [];
+            setFlows(Array.isArray(data) ? data : []);
+            if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
+        } catch {
+            setFlows([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadAutomations();
+    }, []);
+
+    useEffect(() => {
+        if (flows.length > 0 && !selectedId) setSelectedId(flows[0].id);
+    }, [flows]);
+
+    const selected = flows.find((f) => f.id === selectedId) ?? flows[0];
+
+    const handleToggle = async (flowId, enabled) => {
+        setActionLoading(true);
+        try {
+            await api.patch(`/marketing/automations/${flowId}`, { enabled });
+            setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, enabled } : f)));
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleSaveMessage = async (flowId, messageTemplate) => {
+        setActionLoading(true);
+        try {
+            const res = await api.patch(`/marketing/automations/${flowId}`, { messageTemplate });
+            setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, preview: res.data?.data?.preview ?? messageTemplate } : f)));
+            setEditModal(null);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-24">
+                <p className="text-text-muted font-bold uppercase tracking-widest">Loading automations...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
             <SectionHeader
                 title="Automatic Messages"
-                desc="Set up once, and let the system send friendly, on-brand messages for you."
+                desc="Set once and messages will be sent automatically."
                 icon={Zap}
-                badge="Coming Soon"
+                badge="Live"
             />
 
             <div className="grid lg:grid-cols-3 gap-6">
@@ -626,7 +845,7 @@ function AutomationsContent() {
                         Ready-made automations
                     </p>
                     <div className="space-y-3">
-                        {AUTOMATION_FLOWS.map(flow => {
+                        {flows.map((flow) => {
                             const isActive = selected?.id === flow.id;
                             return (
                                 <button
@@ -640,7 +859,7 @@ function AutomationsContent() {
                                 >
                                     <div className="flex items-center justify-between gap-2 mb-1.5">
                                         <div className="flex items-center gap-2">
-                                            <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-primary bg-primary/10 group-hover:bg-primary/15`}>
+                                            <div className="w-7 h-7 rounded-xl flex items-center justify-center text-primary bg-primary/10">
                                                 <Zap className="w-4 h-4" />
                                             </div>
                                             <span className="text-xs font-black text-text uppercase tracking-tight">
@@ -661,144 +880,252 @@ function AutomationsContent() {
                         })}
                     </div>
                     <div className="mt-4 rounded-2xl border border-dashed border-border px-4 py-3 bg-surface/60 text-[11px] text-text-muted font-medium">
-                        We will not send anything automatically until you turn a flow on in a later version.
+                        Messages will start only after you enable a flow. Connect WhatsApp API to send.
                     </div>
                 </div>
 
                 {/* Right: selected flow details */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-                        <div className="flex items-center justify-between gap-3 mb-4">
-                            <div>
-                                <h3 className="text-sm font-black text-text uppercase tracking-wider flex items-center gap-2">
-                                    {selected.name}
-                                </h3>
-                                <p className="text-xs text-text-muted font-medium mt-1">
-                                    {selected.short}
-                                </p>
-                            </div>
-                            <div className="flex flex-col items-end gap-2">
-                                <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    Runs automatically
-                                </div>
-                                <button
-                                    type="button"
-                                    className="text-[10px] font-black uppercase tracking-[0.18em] text-primary hover:underline"
-                                >
-                                    Edit rules (visual builder)
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4 mb-6">
-                            <div className="rounded-2xl bg-surface p-4 border border-border/60">
-                                <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">
-                                    When it runs
-                                </div>
-                                <p className="text-xs text-text font-medium leading-relaxed">
-                                    {selected.triggerLabel}
-                                </p>
-                            </div>
-                            <div className="rounded-2xl bg-surface p-4 border border-border/60">
-                                <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">
-                                    Where it sends
-                                </div>
-                                <p className="text-xs text-text font-medium leading-relaxed">
-                                    {selected.channelLabel}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4 items-start">
-                            {/* Message preview */}
-                            <div className="rounded-2xl border border-border bg-surface p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">
-                                            WA
-                                        </div>
-                                        <div>
-                                            <p className="text-[11px] font-black text-text uppercase tracking-[0.18em]">
-                                                Message preview
-                                            </p>
-                                            <p className="text-[10px] text-text-muted font-medium">
-                                                Personalised with {{ name: 'name', offer: 'offer', salon: 'salon_name' } && 'tags like {{name}}'}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="text-[10px] font-black uppercase tracking-[0.18em] text-text-muted hover:text-primary"
-                                    >
-                                        Edit text
-                                    </button>
-                                </div>
-                                <div className="rounded-2xl bg-white border border-border/60 px-4 py-3 text-[11px] text-text leading-relaxed whitespace-pre-line">
-                                    {selected.preview}
-                                </div>
-                            </div>
-
-                            {/* Summary checklist */}
-                            <div className="rounded-2xl border border-border bg-surface p-4 space-y-3">
-                                <p className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em]">
-                                    Who will get this
-                                </p>
-                                <ul className="space-y-2 text-xs text-text font-medium">
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                        <span>Only active customers in your client list.</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                        <span>Messages respect opt-out / DND flags.</span>
-                                    </li>
-                                    <li className="flex items-start gap-2">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
-                                        <span>Timing windows are spread out to avoid spamming.</span>
-                                    </li>
-                                </ul>
-                                <div className="pt-2 border-t border-border/60 mt-2">
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em] mb-2">
-                                        Status
+                    {selected && (
+                        <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div>
+                                    <h3 className="text-sm font-black text-text uppercase tracking-wider">
+                                        {selected.name}
+                                    </h3>
+                                    <p className="text-xs text-text-muted font-medium mt-1">
+                                        {selected.short}
                                     </p>
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 text-slate-700 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
-                                            <Clock className="w-3.5 h-3.5" />
-                                            Not sending yet
-                                        </span>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${selected.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
+                                        <Clock className="w-3.5 h-3.5" />
+                                        {selected.enabled ? 'Enabled' : 'Not Active'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-2 gap-4 mb-6">
+                                <div className="rounded-2xl bg-surface p-4 border border-border/60">
+                                    <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">When it runs</div>
+                                    <p className="text-xs text-text font-medium leading-relaxed">{selected.triggerLabel}</p>
+                                </div>
+                                <div className="rounded-2xl bg-surface p-4 border border-border/60">
+                                    <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1.5">Where it sends</div>
+                                    <p className="text-xs text-text font-medium leading-relaxed">{selected.channelLabel}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4 items-start">
+                                <div className="rounded-2xl border border-border bg-surface p-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-black">WA</div>
+                                            <div>
+                                                <p className="text-[11px] font-black text-text uppercase tracking-[0.18em]">Message preview</p>
+                                                <p className="text-[10px] text-text-muted font-medium">Use tags like &#123;&#123;name&#125;&#125;, &#123;&#123;offer&#125;&#125;, &#123;&#123;salon_name&#125;&#125;</p>
+                                            </div>
+                                        </div>
                                         <button
                                             type="button"
-                                            className="px-3 py-1.5 rounded-full bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.18em] hover:bg-black transition-colors"
+                                            onClick={() => setEditModal({ flowId: selected.id, preview: selected.preview })}
+                                            className="text-[10px] font-black uppercase tracking-[0.18em] text-text-muted hover:text-primary"
                                         >
-                                            Turn on (soon)
+                                            Edit text
                                         </button>
+                                    </div>
+                                    <div className="rounded-2xl bg-white border border-border/60 px-4 py-3 text-[11px] text-text leading-relaxed whitespace-pre-line">
+                                        {selected.preview}
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-border bg-surface p-4 space-y-3">
+                                    <p className="text-[11px] font-black text-text-muted uppercase tracking-[0.2em]">Who will get this</p>
+                                    <ul className="space-y-2 text-xs text-text font-medium">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                            <span>Only active customers in your client list.</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                            <span>Messages respect opt-out / DND flags.</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-[2px]" />
+                                            <span>Timing windows are spread out to avoid spamming.</span>
+                                        </li>
+                                    </ul>
+                                    <div className="pt-2 border-t border-border/60 mt-2">
+                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.2em] mb-2">Status</p>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] ${selected.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
+                                                <Clock className="w-3.5 h-3.5" />
+                                                {selected.enabled ? 'Enabled' : 'Not Active'}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                disabled={actionLoading}
+                                                onClick={() => handleToggle(selected.id, !selected.enabled)}
+                                                className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.18em] transition-colors disabled:opacity-50 ${selected.enabled ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' : 'bg-slate-900 text-white hover:bg-black'}`}
+                                            >
+                                                {selected.enabled ? 'Disable' : 'Enable'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
+
+            {/* Edit Message Modal */}
+            <AnimatePresence>
+                {editModal && (
+                    <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditModal(null)} />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="bg-white rounded-2xl w-full max-w-lg shadow-2xl p-6 relative"
+                        >
+                            <h4 className="text-lg font-black text-text uppercase tracking-tight mb-4">Edit Message</h4>
+                            <textarea
+                                rows={6}
+                                value={editModal.preview}
+                                onChange={(e) => setEditModal((p) => ({ ...p, preview: e.target.value }))}
+                                className="w-full border border-border rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                                placeholder="Message template..."
+                            />
+                            <div className="flex justify-end gap-3 mt-4">
+                                <button onClick={() => setEditModal(null)} className="px-4 py-2 border border-border rounded-xl text-xs font-black uppercase">Cancel</button>
+                                <button
+                                    onClick={() => handleSaveMessage(editModal.flowId, editModal.preview)}
+                                    disabled={actionLoading}
+                                    className="px-6 py-2 bg-primary text-white rounded-xl text-xs font-black uppercase disabled:opacity-50"
+                                >
+                                    {actionLoading ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+/* ─── Contact List Modal ───────────────────────────────────────────────── */
+function ContactListModal({ isOpen, onClose }) {
+    const [contacts, setContacts] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        if (isOpen) {
+            setLoading(true);
+            api.get('/clients?limit=500')
+                .then((res) => {
+                    const rows = res.data?.results || res.data || [];
+                    setContacts(Array.isArray(rows) ? rows : []);
+                })
+                .catch(() => setContacts([]))
+                .finally(() => setLoading(false));
+        }
+    }, [isOpen]);
+
+    const filtered = useMemo(() => {
+        if (!search.trim()) return contacts;
+        const q = search.trim().toLowerCase();
+        return contacts.filter((c) =>
+            (c.name || '').toLowerCase().includes(q) ||
+            (c.email || '').toLowerCase().includes(q) ||
+            (c.phone || '').includes(search)
+        );
+    }, [contacts, search]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-[2rem] w-full max-w-4xl max-h-[85vh] shadow-2xl relative overflow-hidden flex flex-col"
+            >
+                <div className="px-8 py-6 border-b border-border flex items-center justify-between flex-wrap gap-4">
+                    <h3 className="text-xl font-black text-text uppercase tracking-tight">Contact List</h3>
+                    <div className="flex items-center gap-3">
+                        <input
+                            type="text"
+                            placeholder="Search by name, email, phone..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="px-4 py-2 border border-border rounded-xl text-sm font-medium w-64 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                        <button onClick={onClose} className="p-2 hover:bg-surface rounded-full">
+                            <XCircle className="w-6 h-6 text-text-muted" />
+                        </button>
+                    </div>
+                </div>
+                <div className="flex-1 overflow-auto p-6">
+                    {loading ? (
+                        <div className="py-16 text-center text-text-muted font-bold">Loading contacts...</div>
+                    ) : filtered.length === 0 ? (
+                        <div className="py-16 text-center text-text-muted font-bold">No customers found.</div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[600px]">
+                                <thead>
+                                    <tr className="border-b border-border">
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Name</th>
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Email</th>
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Phone</th>
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Gender</th>
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Birthday</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map((c) => (
+                                        <tr key={c._id || c.id} className="border-b border-border/50 hover:bg-surface/30">
+                                            <td className="px-4 py-3 text-sm font-bold text-text">{c.name || '—'}</td>
+                                            <td className="px-4 py-3 text-sm text-text-secondary">{c.email || '—'}</td>
+                                            <td className="px-4 py-3 text-sm text-text-secondary font-mono">{c.phone || '—'}</td>
+                                            <td className="px-4 py-3 text-xs text-text-muted capitalize">{c.gender || '—'}</td>
+                                            <td className="px-4 py-3 text-xs text-text-muted">
+                                                {c.birthday ? new Date(c.birthday).toISOString().slice(0, 10) : '—'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+                <div className="px-8 py-4 border-t border-border bg-surface/30 text-[10px] font-black text-text-muted uppercase tracking-widest">
+                    {filtered.length} contact{filtered.length !== 1 ? 's' : ''} shown
+                </div>
+            </motion.div>
         </div>
     );
 }
 
 /* ─── Email Tab ────────────────────────────────────────────────────────── */
-function EmailContent({ onOpen }) {
+function EmailContent({ onOpenNewsletter, onOpenContactList }) {
     return (
         <div className="space-y-6">
             <SectionHeader
                 title="Email Marketing"
-                desc="Create stunning visual newsletters and automate booking confirmations."
+                desc="Create email campaigns and send updates to your customers."
                 icon={Mail}
             />
 
             <div className="grid md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Newsletter Builder', icon: Layout, desc: 'Drag-and-drop visuals', color: 'from-blue-500 to-indigo-600', action: onOpen },
-                    { label: 'Auto-Responders', icon: Zap, desc: 'Instant birthday & visit triggers', color: 'from-primary to-[#8B1A2D]' },
-                    { label: 'Contact Lists', icon: Users, desc: 'Verify and clean your lists', color: 'from-emerald-500 to-teal-600' },
+                    { label: 'Newsletter Builder', icon: Layout, desc: 'Create emails with easy blocks', color: 'from-blue-500 to-indigo-600', action: onOpenNewsletter },
+                    { label: 'Auto Replies', icon: Zap, desc: 'Birthday and visit based emails', color: 'from-primary to-[#8B1A2D]' },
+                    { label: 'Contact Lists', icon: Users, desc: 'Manage and clean customer lists', color: 'from-emerald-500 to-teal-600', action: onOpenContactList },
                 ].map(b => (
                     <motion.button
                         whileHover={{ y: -5 }}
@@ -821,8 +1148,8 @@ function EmailContent({ onOpen }) {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div>
-                        <h3 className="text-xl font-black uppercase tracking-tight mb-2">Domain Reputation: 98%</h3>
-                        <p className="text-sm text-white/50 font-medium">Your email deliverability is excellent. Your emails are landing in the Inbox.</p>
+                        <h3 className="text-xl font-black uppercase tracking-tight mb-2">Email Health: 98%</h3>
+                        <p className="text-sm text-white/50 font-medium">Your email delivery is strong and most emails are reaching inbox.</p>
                     </div>
                     <div className="flex gap-4">
                         <div className="text-center">

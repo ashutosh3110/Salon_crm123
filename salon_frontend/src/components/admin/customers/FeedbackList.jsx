@@ -134,7 +134,7 @@ export default function FeedbackList() {
 
                             {/* Quick Action Footer */}
                             <div className="mt-4 pt-3 border-t border-border flex justify-between items-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
-                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Internal ID: #FB-{fb.id}</span>
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Feedback #{fb.id}</span>
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => archiveFeedback(fb.id)}
@@ -178,7 +178,7 @@ export default function FeedbackList() {
                             </div>
                             <div>
                                 <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-1">{selectedFeedback.customerName}</h3>
-                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-60">Verified Experience Protocol</p>
+                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] opacity-60">Customer feedback</p>
                             </div>
                         </div>
 
@@ -199,7 +199,7 @@ export default function FeedbackList() {
 
                             <div className="grid grid-cols-2 gap-8 py-6 border-y border-border">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Service Context</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Service</label>
                                     <div className="font-extrabold text-text text-sm flex items-center gap-3 uppercase tracking-tight">
                                         <div className="p-2 bg-text text-white"><Scissors className="w-3.5 h-3.5" /></div>
                                         {selectedFeedback.service}
@@ -222,10 +222,10 @@ export default function FeedbackList() {
                                     }}
                                     className="flex-1 py-5 border border-border bg-white text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:bg-surface transition-all active:scale-[0.98]"
                                 >
-                                    ARCHIVE RECORD
+                                    Archive
                                 </button>
                                 <button
-                                    onClick={() => alert('Initiating Communication Protocol...')}
+                                    onClick={() => alert('Reply to this customer...')}
                                     className="flex-1 py-5 bg-text text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-text/20 hover:bg-primary transition-all active:scale-[0.98]"
                                 >
                                     RESPOND TO CLIENT

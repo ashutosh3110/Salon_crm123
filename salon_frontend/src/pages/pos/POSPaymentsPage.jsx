@@ -1,19 +1,38 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
     CreditCard, Smartphone, Banknote, Ban,
     Clock, CheckCircle2
 } from 'lucide-react';
-import { MOCK_INVOICES } from '../../data/posData';
+import api from '../../services/api';
 
 export default function POSPaymentsPage() {
-    const invoices = MOCK_INVOICES;
+    const [invoices, setInvoices] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadInvoices = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get('/invoices?limit=200');
+                const rows = response?.data?.results || response?.data || [];
+                setInvoices(Array.isArray(rows) ? rows : []);
+            } catch (error) {
+                console.error('[POSPayments] Failed to load invoices:', error);
+                setInvoices([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadInvoices();
+    }, []);
 
     const paymentSummary = useMemo(() => {
         const summary = { cash: { total: 0, count: 0 }, card: { total: 0, count: 0 }, online: { total: 0, count: 0 }, unpaid: { total: 0, count: 0 } };
         invoices.forEach(inv => {
             const method = inv.paymentMethod || 'cash';
+            const amount = Number(inv.total || inv.totalAmount || 0);
             if (summary[method]) {
-                summary[method].total += inv.total || 0;
+                summary[method].total += amount;
                 summary[method].count += 1;
             }
         });
@@ -49,10 +68,10 @@ export default function POSPaymentsPage() {
         <div className="space-y-8 animate-in fade-in duration-700 pb-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Treasury Log</h1>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Payments</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
-                        Authenticated Financial Node Status
+                        Payment summary and recent transactions
                     </p>
                 </div>
             </div>
@@ -65,7 +84,7 @@ export default function POSPaymentsPage() {
                         <div className="flex items-center justify-between mb-6 relative z-10">
                             <div className="flex items-center gap-3">
                                 <item.icon className="w-4 h-4 text-primary" />
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{item.mode} PROTOCOL</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{item.mode}</p>
                             </div>
                             <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border ${item.trendColor.replace('text-', 'bg-').replace('500', '500/10')} ${item.trendColor} border-current/20`}>
                                 {item.trend}
@@ -74,7 +93,7 @@ export default function POSPaymentsPage() {
                         <div className="flex items-end justify-between relative z-10">
                             <div>
                                 <h3 className="text-3xl font-black text-text tracking-tighter uppercase">₹{item.value.toLocaleString()}</h3>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">LVL_{i + 1} • {item.count} SEGMENTS</p>
+                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">{item.count} Transactions</p>
                             </div>
                             <div className="mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
                                 <Sparkline />
@@ -88,30 +107,34 @@ export default function POSPaymentsPage() {
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col">
                 <div className="px-8 py-6 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                     <h3 className="text-[11px] font-black text-text uppercase tracking-[0.2em] flex items-center gap-3">
-                        <Clock className="w-4 h-4 text-primary" /> Multi-Mode Stream
+                        <Clock className="w-4 h-4 text-primary" /> Recent Payments
                     </h3>
                     <div className="flex items-center gap-4">
                         <div className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-none bg-emerald-500" />
-                            Live_Inflow
+                            Live
                         </div>
                     </div>
                 </div>
-                {invoices.length === 0 ? (
+                {loading ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Log sequence empty • No active transfers</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Loading payment stream...</p>
+                    </div>
+                ) : invoices.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No payment records found</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto bg-background">
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                    <th className="px-8 py-5">NODE_ID</th>
-                                    <th className="px-8 py-5 whitespace-nowrap">TIMESTAMP_UTC</th>
-                                    <th className="px-8 py-5">SOURCE_ENTITY</th>
-                                    <th className="px-8 py-5">TRANSFER_PRTCL</th>
-                                    <th className="px-8 py-5 text-right">VAL_CREDIT</th>
-                                    <th className="px-8 py-5">SIG_STATUS</th>
+                                    <th className="px-8 py-5">Invoice</th>
+                                    <th className="px-8 py-5 whitespace-nowrap">Time</th>
+                                    <th className="px-8 py-5">Customer</th>
+                                    <th className="px-8 py-5">Method</th>
+                                    <th className="px-8 py-5 text-right">Amount</th>
+                                    <th className="px-8 py-5">Status</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/30">
@@ -121,20 +144,20 @@ export default function POSPaymentsPage() {
                                         <td className="px-8 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
                                             <Clock className="w-3.5 h-3.5 opacity-40" /> {formatTime(inv.createdAt)}
                                         </td>
-                                        <td className="px-8 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'ANN_GUEST'}</td>
+                                        <td className="px-8 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'Guest'}</td>
                                         <td className="px-8 py-5">
                                             <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
                                                 <div className="p-1 bg-surface-alt border border-border group-hover:bg-background transition-colors">
                                                     {getMethodIcon(inv.paymentMethod)}
                                                 </div>
-                                                {inv.paymentMethod === 'online' ? 'UPI_INT' : `${inv.paymentMethod?.toUpperCase()}_HND`}
+                                                {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-5 text-right font-black text-text tracking-tighter text-base">₹{inv.total?.toLocaleString()}</td>
+                                        <td className="px-8 py-5 text-right font-black text-text tracking-tighter text-base">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
                                         <td className="px-8 py-5">
-                                            <span className={`inline-flex items-center gap-3 px-4 py-1.5 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
-                                                <div className={`w-1.5 h-1.5 rounded-none ${inv.paymentStatus === 'paid' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-500'}`} />
-                                                {inv.paymentStatus === 'paid' ? 'SIG_VERIFIED' : 'PENDING_AUTH'}
+                                            <span className={`inline-flex items-center gap-3 px-4 py-1.5 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                <div className={`w-1.5 h-1.5 rounded-none ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500 animate-pulse' : 'bg-orange-500'}`} />
+                                                {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
                                             </span>
                                         </td>
                                     </tr>

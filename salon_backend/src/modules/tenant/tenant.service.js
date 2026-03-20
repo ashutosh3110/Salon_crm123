@@ -79,6 +79,49 @@ class TenantService {
         return tenantRepository.find(filter, options);
     }
 
+    /**
+     * Haversine formula - distance in km between two lat/lng points
+     */
+    _haversineKm(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    async getNearbyTenants(lat, lng, radiusKm = 3) {
+        const result = await tenantRepository.find(
+            { status: 'active', latitude: { $exists: true, $ne: null }, longitude: { $exists: true, $ne: null } },
+            { limit: 200 }
+        );
+        const withDistance = result.results
+            .map(t => {
+                const doc = t.toObject ? t.toObject() : t;
+                const dist = this._haversineKm(lat, lng, doc.latitude, doc.longitude);
+                return { ...doc, distanceKm: Math.round(dist * 100) / 100 };
+            })
+            .filter(t => t.distanceKm <= radiusKm)
+            .sort((a, b) => a.distanceKm - b.distanceKm);
+        if (withDistance.length === 0) {
+            // Fallback: return all active tenants if none have location set
+            const fallback = await tenantRepository.find({ status: 'active' }, { limit: 50 });
+            return (fallback.results || []).map(t => {
+                const doc = t.toObject ? t.toObject() : t;
+                return { id: doc._id, _id: doc._id, name: doc.name, address: doc.address, city: doc.city, distanceKm: null };
+            });
+        }
+        return withDistance.map(t => ({
+            id: t._id,
+            _id: t._id,
+            name: t.name,
+            address: t.address,
+            city: t.city,
+            distanceKm: t.distanceKm,
+        }));
+    }
+
     async updateTenantById(id, updateBody) {
         const tenant = await this.getTenantById(id);
         

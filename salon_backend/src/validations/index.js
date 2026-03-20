@@ -8,3 +8,5 @@ export * as loyaltyValidation from './loyalty.validation.js';
 export * as promotionValidation from './promotion.validation.js';
 export * as onboardingValidation from './onboarding.validation.js';
 export * as inventoryValidation from './inventory.validation.js';
+export * as inquiryValidation from './inquiry.validation.js';
+export * as reminderLinkValidation from './reminderLink.validation.js';

@@ -114,6 +114,64 @@ class InvoiceService {
             onlineTotal: 0,
         };
     }
+
+    async queryRefunds(tenantId, filters = {}) {
+        const query = {
+            tenantId,
+            'refund.requested': true,
+        };
+
+        if (filters.status && ['pending', 'approved', 'rejected'].includes(String(filters.status).toLowerCase())) {
+            query['refund.status'] = String(filters.status).toLowerCase();
+        }
+
+        const page = parseInt(filters.page) || 1;
+        const limit = parseInt(filters.limit) || 50;
+        const skip = (page - 1) * limit;
+
+        const [invoices, total] = await Promise.all([
+            Invoice.find(query)
+                .populate('clientId', 'name phone email')
+                .sort({ 'refund.requestedAt': -1, createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .exec(),
+            Invoice.countDocuments(query),
+        ]);
+
+        return {
+            results: invoices,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+            totalResults: total,
+        };
+    }
+
+    async processRefundAction(tenantId, invoiceId, payload = {}) {
+        const status = String(payload.status || '').toLowerCase();
+        if (!['approved', 'rejected'].includes(status)) {
+            throw new Error('Invalid refund status');
+        }
+
+        const invoice = await Invoice.findOne({ _id: invoiceId, tenantId });
+        if (!invoice) {
+            throw new Error('Invoice not found');
+        }
+        if (!invoice.refund?.requested) {
+            throw new Error('No refund request found for this invoice');
+        }
+        if (invoice.refund?.status !== 'pending') {
+            throw new Error('Refund is already processed');
+        }
+
+        invoice.refund.status = status;
+        invoice.refund.remark = String(payload.remark || '');
+        invoice.refund.processedAt = new Date();
+        await invoice.save();
+
+        return invoice;
+    }
 }
 
 export default new InvoiceService();

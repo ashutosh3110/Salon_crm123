@@ -70,6 +70,9 @@ const loginWithOtp = async (req, res, next) => {
         // Use token service to generate tokens (ensure it works with client object)
         const tokens = await tokenService.generateAuthTokens(client);
 
+        // isNewUser: client created with default name "Customer-XXXX"
+        const isNewUser = !client.name || client.name.startsWith('Customer-');
+
         res.send({
             success: true,
             message: 'OTP login successful',
@@ -79,7 +82,18 @@ const loginWithOtp = async (req, res, next) => {
                 user: {
                     userId: client._id,
                     tenantId: client.tenantId,
-                    role: 'customer', // Default role for OTP logins
+                    role: 'customer',
+                },
+                client: {
+                    _id: client._id,
+                    name: client.name || '',
+                    phone: client.phone,
+                    email: client.email || '',
+                    gender: client.gender || '',
+                    birthday: client.birthday || null,
+                    loyaltyPoints: client.loyaltyPoints || 0,
+                    tenantId: client.tenantId,
+                    isNewUser,
                 }
             }
         });
@@ -89,9 +103,33 @@ const loginWithOtp = async (req, res, next) => {
     }
 };
 
+const registerCustomer = async (req, res, next) => {
+    try {
+        const client = await authService.registerCustomer(req.body);
+        res.send({
+            success: true,
+            message: 'Customer registered successfully',
+            data: {
+                client: {
+                    _id: client._id,
+                    tenantId: client.tenantId,
+                    name: client.name,
+                    phone: client.phone,
+                    email: client.email,
+                    birthday: client.birthday || null,
+                    anniversary: client.anniversary || null,
+                },
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     register,
     login,
     requestOtp,
     loginWithOtp,
+    registerCustomer,
 };

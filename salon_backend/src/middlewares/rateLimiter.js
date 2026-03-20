@@ -15,6 +15,7 @@ export const authLimiter = rateLimit({
 export const globalLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 minute
     max: 100, // Limit each IP to 100 requests per minute
+    skip: (req, res) => config.env !== 'production', // Skip in development to avoid blocking local testing
     message: {
         code: 429,
         message: 'Too many requests, please slow down',

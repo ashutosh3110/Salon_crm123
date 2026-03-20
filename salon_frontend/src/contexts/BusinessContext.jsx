@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
 
 const BusinessContext = createContext(null);
 
 export function BusinessProvider({ children }) {
     const { isAuthenticated } = useAuth();
+    const { customer } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [salonLoading, setSalonLoading] = useState(false);
 
@@ -45,7 +47,7 @@ export function BusinessProvider({ children }) {
 
     const activeOutlet = outlets.find(o => o._id === activeOutletId) || null;
 
-    // Fetch Initial Data on login
+    // Fetch Initial Data on login (admin/staff)
     useEffect(() => {
         if (isAuthenticated) {
             if (!salon && !salonLoading) fetchSalon();
@@ -59,10 +61,17 @@ export function BusinessProvider({ children }) {
         }
     }, [isAuthenticated]);
 
+    // Fetch outlets when customer logs in (for /app)
+    useEffect(() => {
+        if (customer && typeof window !== 'undefined' && window.location.pathname.startsWith('/app')) {
+            fetchOutlets();
+        }
+    }, [customer]);
+
     const fetchSalon = async () => {
         setSalonLoading(true);
         try {
-            const response = await api.get('/tenant/me');
+            const response = await api.get('/tenants/me');
             if (response.data.success) {
                 setSalon(response.data.data);
             }
@@ -73,13 +82,22 @@ export function BusinessProvider({ children }) {
         }
     };
 
-    const fetchOutlets = async () => {
+    const fetchOutlets = async (opts = {}) => {
         setOutletsLoading(true);
         try {
-            const response = await api.get('/outlets');
-            setOutlets(response.data || []);
+            const params = {};
+            const hasLocationFilter = opts.lat != null && opts.lng != null && opts.radius != null;
+            if (hasLocationFilter) {
+                params.lat = opts.lat;
+                params.lng = opts.lng;
+                params.radius = opts.radius;
+            }
+            const response = await api.get('/outlets', { params });
+            const data = response.data || [];
+            setOutlets(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('[BusinessContext] Failed to fetch outlets:', error);
+            if (opts.lat != null) setOutlets([]);
         } finally {
             setOutletsLoading(false);
         }
@@ -97,11 +115,23 @@ export function BusinessProvider({ children }) {
         }
     };
 
+    const normalizeBooking = (b) => {
+        if (!b) return b;
+        return {
+            ...b,
+            client: b.client || b.clientId || null,
+            service: b.service || b.serviceId || null,
+            staff: b.staff || b.staffId || null,
+            outletName: b.outletName || b.outletId?.name || '',
+        };
+    };
+
     const fetchBookings = async () => {
         setBookingsLoading(true);
         try {
             const response = await api.get('/bookings');
-            setBookings(response.data.results || response.data || []);
+            const rows = response.data.results || response.data || [];
+            setBookings((Array.isArray(rows) ? rows : []).map(normalizeBooking));
         } catch (error) {
             console.error('[BusinessContext] Failed to fetch bookings:', error);
         } finally {
@@ -123,7 +153,7 @@ export function BusinessProvider({ children }) {
 
     const updateSalon = async (data) => {
         try {
-            const response = await api.patch('/tenant/me', data);
+            const response = await api.patch('/tenants/me', data);
             if (response.data.success) {
                 setSalon(response.data.data);
                 return response.data.data;
@@ -367,15 +397,35 @@ export function BusinessProvider({ children }) {
     const addSegment = (segment) => setSegments(prev => [{ ...segment, id: Date.now().toString(), count: 0 }, ...prev]);
     const deleteSegment = (id) => setSegments(prev => prev.filter(s => s.id !== id));
 
-    const addBooking = (booking) => setBookings(prev => [{ ...booking, _id: `b-${Date.now()}` }, ...prev]);
-    const updateBookingStatus = (id, status) => setBookings(prev => prev.map(b => b._id === id ? { ...b, status } : b));
+    const addBooking = async (booking) => {
+        try {
+            const response = await api.post('/bookings', booking);
+            const created = normalizeBooking(response.data);
+            setBookings(prev => [created, ...prev]);
+            return created;
+        } catch (error) {
+            console.error('[BusinessContext] Add booking failed:', error);
+            throw error;
+        }
+    };
+    const updateBookingStatus = async (id, status) => {
+        try {
+            const response = await api.patch(`/bookings/${id}`, { status });
+            const updated = normalizeBooking(response.data);
+            setBookings(prev => prev.map(b => (b._id === id ? updated : b)));
+            return updated;
+        } catch (error) {
+            console.error('[BusinessContext] Update booking status failed:', error);
+            throw error;
+        }
+    };
 
     const value = {
         salon, salonLoading, updateSalon, fetchSalon,
         staff, staffLoading, addStaff, updateStaff, deleteStaff, fetchStaff,
         services, servicesLoading, addService, updateService, deleteService, toggleServiceStatus, fetchServices,
         categories, categoriesLoading, addCategory, updateCategory, deleteCategory, toggleCategoryStatus, fetchCategories,
-        outlets, products, customers,
+        outlets, outletsLoading, fetchOutlets, setOutlets, products, customers,
         addOutlet, updateOutlet, deleteOutlet, toggleOutletStatus,
         addStaff, updateStaff, deleteStaff,
         addService, updateService, deleteService, toggleServiceStatus,

@@ -38,8 +38,33 @@ const getDashboardStats = async (req, res, next) => {
     }
 };
 
+const getRefunds = async (req, res, next) => {
+    try {
+        const filters = {
+            status: req.query.status,
+            page: req.query.page,
+            limit: req.query.limit,
+        };
+        const result = await invoiceService.queryRefunds(req.tenantId, filters);
+        res.status(httpStatus.OK).send(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const processRefundAction = async (req, res, next) => {
+    try {
+        const invoice = await invoiceService.processRefundAction(req.tenantId, req.params.invoiceId, req.body);
+        res.status(httpStatus.OK).send(invoice);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getInvoices,
     getInvoice,
     getDashboardStats,
+    getRefunds,
+    processRefundAction,
 };

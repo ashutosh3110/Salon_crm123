@@ -17,6 +17,7 @@ router
 
 router
     .route('/:clientId')
-    .get(clientController.getClient);
+    .get(clientController.getClient)
+    .patch(validate(clientValidation.updateClient), clientController.updateClient);
 
 export default router;

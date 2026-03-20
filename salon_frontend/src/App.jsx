@@ -183,8 +183,8 @@ function App() {
     <Router>
       <ScrollToHash />
       <AuthProvider>
-        <BusinessProvider>
-          <CustomerAuthProvider>
+        <CustomerAuthProvider>
+          <BusinessProvider>
             <WalletProvider>
               <CMSProvider>
                 <BookingRegistryProvider>
@@ -485,8 +485,8 @@ function App() {
                 </BookingRegistryProvider>
               </CMSProvider>
             </WalletProvider>
-          </CustomerAuthProvider>
-        </BusinessProvider>
+          </BusinessProvider>
+        </CustomerAuthProvider>
       </AuthProvider>
     </Router >
   );

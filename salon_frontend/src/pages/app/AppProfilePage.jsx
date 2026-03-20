@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
@@ -46,6 +46,18 @@ export default function AppProfilePage() {
     });
     const [focusedField, setFocusedField] = useState(null);
 
+    // Sync form when customer loads or changes
+    useEffect(() => {
+        if (customer) {
+            setForm({
+                name: customer.name || '',
+                email: customer.email || '',
+                gender: customer.gender || '',
+                birthday: customer.birthday || '',
+            });
+        }
+    }, [customer?._id]);
+
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
         card: isLight ? '#FFFFFF' : '#1A1A1A',
@@ -72,8 +84,7 @@ export default function AppProfilePage() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await new Promise(r => setTimeout(r, 800));
-            updateCustomer(form);
+            await updateCustomer(form);
             setEditing(false);
         } catch {
             console.error('Failed to update profile');
@@ -140,7 +151,17 @@ export default function AppProfilePage() {
                     </div>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => setEditing(!editing)}
+                        onClick={() => {
+                            if (!editing) {
+                                setForm({
+                                    name: customer?.name || '',
+                                    email: customer?.email || '',
+                                    gender: customer?.gender || '',
+                                    birthday: customer?.birthday || '',
+                                });
+                            }
+                            setEditing(!editing);
+                        }}
                         style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }}
                         className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
                     >

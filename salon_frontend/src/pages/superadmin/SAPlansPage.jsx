@@ -160,6 +160,12 @@ function PlanModal({ plan, onClose, onSave, saving }) {
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
     const setFeature = (k, v) => setForm(p => ({ ...p, features: { ...p.features, [k]: v } }));
     const setLimit = (k, v) => setForm(p => ({ ...p, limits: { ...p.limits, [k]: v } }));
+    const autoYearlyFromMonthly = (monthly) => {
+        const monthlyValue = Number(monthly) || 0;
+        if (monthlyValue <= 0) return 0;
+        // Keep yearly aligned with existing UI assumption: 20% off on annual billing
+        return Math.round(monthlyValue * 12 * 0.8);
+    };
 
     const inputCls = 'w-full px-3 py-2 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
     const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1';
@@ -196,11 +202,30 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             </div>
                             <div>
                                 <label className={labelCls}>Monthly Price (₹)</label>
-                                <input type="number" min={0} className={inputCls} value={form.monthlyPrice} onChange={e => set('monthlyPrice', +e.target.value)} />
+                                <input
+                                    type="number"
+                                    min={0}
+                                    className={inputCls}
+                                    value={form.monthlyPrice}
+                                    onChange={e => {
+                                        const monthly = +e.target.value;
+                                        setForm(prev => ({
+                                            ...prev,
+                                            monthlyPrice: monthly,
+                                            yearlyPrice: autoYearlyFromMonthly(monthly),
+                                        }));
+                                    }}
+                                />
                             </div>
                             <div>
-                                <label className={labelCls}>Yearly Price (₹)</label>
-                                <input type="number" min={0} className={inputCls} value={form.yearlyPrice} onChange={e => set('yearlyPrice', +e.target.value)} />
+                                <label className={labelCls}>Yearly Price (₹) - Auto</label>
+                                <input
+                                    type="number"
+                                    min={0}
+                                    className={`${inputCls} bg-slate-50 text-text-muted`}
+                                    value={form.yearlyPrice}
+                                    readOnly
+                                />
                             </div>
                             <div>
                                 <label className={labelCls}>Trial Days</label>

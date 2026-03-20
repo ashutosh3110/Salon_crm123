@@ -76,7 +76,7 @@ export default function SegmentManager() {
                     className="flex items-center gap-2 bg-primary text-white px-5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Plus className="w-4 h-4" />
-                    CREATE NEW SEGMENT
+                    Add Segment
                 </button>
             </div>
 
@@ -122,7 +122,7 @@ export default function SegmentManager() {
                                 onClick={() => setViewingSegmentCustomers(segment)}
                                 className="mt-6 w-full flex items-center justify-between bg-surface hover:bg-primary px-4 py-2.5 rounded-xl transition-all group/btn"
                             >
-                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest group-hover/btn:text-white">View Full List</span>
+                                <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest group-hover/btn:text-white">View customers</span>
                                 <ArrowRight className="w-4 h-4 text-text-muted group-hover/btn:text-white transition-colors" />
                             </button>
                         </div>
@@ -138,8 +138,8 @@ export default function SegmentManager() {
                         <Tag className="w-6 h-6" />
                     </div>
                     <div>
-                        <h5 className="text-sm font-bold text-text-secondary">Add Custom Group</h5>
-                        <p className="text-[10px] text-text-muted uppercase tracking-widest mt-0.5">Define your own logic</p>
+                        <h5 className="text-sm font-bold text-text-secondary">Add custom segment</h5>
+                        <p className="text-[10px] text-text-muted uppercase tracking-widest mt-0.5">Create your own customer group</p>
                     </div>
                 </div>
             </div>
@@ -180,14 +180,14 @@ export default function SegmentManager() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-sm font-black text-text mb-0.5">₹{cust.spend.toLocaleString()}</div>
-                                            <div className="text-[9px] font-extrabold text-primary uppercase tracking-[0.2em]">{cust.totalVisits} VISITS</div>
+                                            <div className="text-[9px] font-extrabold text-primary uppercase tracking-[0.2em]">{cust.totalVisits} visits</div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
                                 <div className="text-center py-16 opacity-40">
                                     <Users className="w-16 h-16 mx-auto mb-4 stroke-[1px]" />
-                                    <p className="text-xs font-extrabold uppercase tracking-[0.3em]">NO DATA FOUND</p>
+                                    <p className="text-xs font-extrabold uppercase tracking-[0.3em]">No customers in this segment</p>
                                 </div>
                             )}
                         </div>
@@ -206,14 +206,14 @@ export default function SegmentManager() {
                                 className="py-4 border border-border bg-white text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:bg-surface transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
                             >
                                 <Download className="w-4 h-4" />
-                                EXPORT SEGMENT
+                                Export List
                             </button>
                             <button
-                                onClick={() => alert('Initiating Broadcast Protocol...')}
+                                onClick={() => alert('Send message to this segment...')}
                                 className="py-4 bg-text text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-text/20 hover:bg-primary transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
                             >
                                 <Zap className="w-4 h-4" />
-                                REACH OUT
+                                Send Message
                             </button>
                         </div>
                     </div>
@@ -232,17 +232,17 @@ export default function SegmentManager() {
                         </button>
 
                         <div className="mb-10 text-center">
-                            <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-2">Initialize Segment</h3>
-                            <p className="text-[10px] text-text-secondary font-extrabold uppercase tracking-[0.2em] opacity-60">Define automation parameters</p>
+                            <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-2">Create Segment</h3>
+                            <p className="text-[10px] text-text-secondary font-extrabold uppercase tracking-[0.2em] opacity-60">Group customers by your criteria</p>
                         </div>
 
                         <form onSubmit={handleAddSegment} className="space-y-8">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Identification</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Segment Name</label>
                                 <input
                                     type="text"
                                     required
-                                    placeholder="e.g. HIGH_VALUE_CLIENTS"
+                                    placeholder="e.g. High Value Customers"
                                     value={newSegment.name}
                                     onChange={(e) => setNewSegment({ ...newSegment, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
                                     className="w-full px-5 py-4 bg-surface border border-border focus:border-primary focus:bg-white outline-none transition-all font-bold text-sm uppercase"
@@ -250,10 +250,10 @@ export default function SegmentManager() {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Logic Protocol</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Criteria</label>
                                 <textarea
                                     required
-                                    placeholder="IF: VISITS > 10 AND SPEND > 10000"
+                                    placeholder="e.g. Visits > 10 and spend > ₹10,000"
                                     value={newSegment.rule}
                                     onChange={(e) => setNewSegment({ ...newSegment, rule: e.target.value })}
                                     className="w-full px-5 py-4 bg-surface border border-border focus:border-primary focus:bg-white outline-none transition-all font-bold text-sm h-28 resize-none uppercase"
@@ -262,29 +262,29 @@ export default function SegmentManager() {
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Visual ID</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Icon</label>
                                     <select
                                         value={newSegment.iconName}
                                         onChange={(e) => setNewSegment({ ...newSegment, iconName: e.target.value })}
                                         className="w-full px-5 py-4 bg-surface border border-border focus:border-primary focus:bg-white outline-none transition-all font-black text-[11px] uppercase tracking-widest appearance-none"
                                     >
-                                        <option value="Zap">Zap (New)</option>
-                                        <option value="Crown">Crown (VIP)</option>
-                                        <option value="TrendingUp">Trending (Growth)</option>
-                                        <option value="UserMinus">Minus (Inactive)</option>
+                                        <option value="Zap">New customers</option>
+                                        <option value="Crown">VIP</option>
+                                        <option value="TrendingUp">Growing</option>
+                                        <option value="UserMinus">Inactive</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Visual Theme</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Colour</label>
                                     <select
                                         value={newSegment.color}
                                         onChange={(e) => setNewSegment({ ...newSegment, color: e.target.value })}
                                         className="w-full px-5 py-4 bg-surface border border-border focus:border-primary focus:bg-white outline-none transition-all font-black text-[11px] uppercase tracking-widest appearance-none"
                                     >
-                                        <option value="bg-blue-50 text-blue-600 border-blue-100">Cerulean Core</option>
-                                        <option value="bg-amber-50 text-amber-600 border-amber-100">Aureolin Elite</option>
-                                        <option value="bg-emerald-50 text-emerald-600 border-emerald-100">Emerald Growth</option>
-                                        <option value="bg-red-50 text-red-600 border-red-100">Crimson Halt</option>
+                                        <option value="bg-blue-50 text-blue-600 border-blue-100">Blue</option>
+                                        <option value="bg-amber-50 text-amber-600 border-amber-100">Amber</option>
+                                        <option value="bg-emerald-50 text-emerald-600 border-emerald-100">Green</option>
+                                        <option value="bg-red-50 text-red-600 border-red-100">Red</option>
                                     </select>
                                 </div>
                             </div>
@@ -293,7 +293,7 @@ export default function SegmentManager() {
                                 type="submit"
                                 className="w-full py-5 bg-text text-white font-black text-xs uppercase tracking-[0.3em] shadow-2xl shadow-text/20 hover:bg-primary transition-all active:scale-[0.98]"
                             >
-                                EXECUTE INITIALIZATION
+                                Create Segment
                             </button>
                         </form>
                     </div>

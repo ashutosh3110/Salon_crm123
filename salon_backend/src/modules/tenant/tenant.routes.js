@@ -8,6 +8,7 @@ import { tenantValidation } from '../../validations/index.js';
 const router = express.Router();
 
 router.get('/public-list', tenantController.getPublicTenants);
+router.get('/nearby', tenantController.getNearbyTenants);
 
 router.get('/me', auth, tenantController.getTenantMe);
 router.patch('/me', auth, tenantController.updateTenantMe);

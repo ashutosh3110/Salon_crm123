@@ -37,6 +37,14 @@ const tenantSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        latitude: {
+            type: Number,
+            default: null,
+        },
+        longitude: {
+            type: Number,
+            default: null,
+        },
         gstNumber: {
             type: String,
             trim: true,

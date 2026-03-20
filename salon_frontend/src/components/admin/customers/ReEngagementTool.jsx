@@ -93,7 +93,7 @@ export default function ReEngagementTool() {
                         onClick={handleExport}
                         className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline flex items-center gap-1"
                     >
-                        EXPORT LIST <ExternalLink className="w-3 h-3" />
+                        Export List <ExternalLink className="w-3 h-3" />
                     </button>
                 </div>
 
@@ -178,22 +178,22 @@ export default function ReEngagementTool() {
                                 <div className="w-24 h-24 bg-red-50 text-red-600 border border-red-100 flex items-center justify-center mx-auto mb-8 shadow-inner">
                                     <ShieldAlert className="w-12 h-12" />
                                 </div>
-                                <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-3">Execute Retention?</h3>
+                                <h3 className="text-2xl font-black text-text uppercase tracking-tight mb-3">Start Re-engagement?</h3>
                                 <p className="text-[10px] text-text-secondary font-extrabold uppercase tracking-[0.2em] mb-10 leading-relaxed max-w-xs mx-auto">
-                                    Initiating automated broadcast to <span className="text-red-600 font-black">{atRiskCustomers.length} targeted nodes</span>.
+                                    Send message to <span className="text-red-600 font-black">{atRiskCustomers.length} customer{atRiskCustomers.length !== 1 ? 's' : ''}</span> who haven't visited recently.
                                 </p>
                                 <div className="space-y-4">
                                     <button
                                         onClick={runCampaign}
                                         className="w-full py-5 bg-text text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-2xl shadow-text/20 hover:bg-red-600 transition-all active:scale-[0.98]"
                                     >
-                                        CONFIRM PROTOCOL
+                                        Send Messages
                                     </button>
                                     <button
                                         onClick={() => setShowCampaignModal(false)}
                                         className="w-full py-5 border border-border bg-white text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:bg-surface transition-all active:scale-[0.98]"
                                     >
-                                        ABORT OPERATION
+                                        Cancel
                                     </button>
                                 </div>
                             </>
@@ -202,8 +202,8 @@ export default function ReEngagementTool() {
                         {campaignStatus === 'sending' && (
                             <div className="py-20 text-center">
                                 <div className="w-20 h-20 border-t-2 border-primary border-r-2 border-surface-alt rounded-full animate-spin mx-auto mb-8"></div>
-                                <h3 className="text-xl font-black text-text uppercase tracking-[0.2em]">Transmitting...</h3>
-                                <p className="text-[10px] font-extrabold text-primary uppercase tracking-[0.3em] mt-4">Syncing {atRiskCustomers.length} Identity Ports</p>
+                                <h3 className="text-xl font-black text-text uppercase tracking-[0.2em]">Sending...</h3>
+                                <p className="text-[10px] font-extrabold text-primary uppercase tracking-[0.3em] mt-4">Sending to {atRiskCustomers.length} customer{atRiskCustomers.length !== 1 ? 's' : ''}</p>
                             </div>
                         )}
 
@@ -218,7 +218,7 @@ export default function ReEngagementTool() {
                                     onClick={() => setShowCampaignModal(false)}
                                     className="w-full py-5 bg-emerald-600 text-white font-black text-[11px] uppercase tracking-[0.3em] shadow-xl shadow-emerald-600/20 hover:bg-emerald-700 transition-all active:scale-[0.98]"
                                 >
-                                    TERMINATE
+                                    Close
                                 </button>
                             </div>
                         )}

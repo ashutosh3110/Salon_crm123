@@ -19,6 +19,9 @@ import billingRoute from './modules/billing/billing.routes.js';
 import analyticsRoute from './modules/analytics/analytics.routes.js';
 import cmsRoute from './modules/cms/cms.routes.js';
 import blogRoute from './modules/blog/blog.routes.js';
+import marketingRoute from './modules/marketing/marketing.routes.js';
+import inquiryRoute from './modules/inquiry/inquiry.routes.js';
+import reminderLinkRoute from './modules/reminderLink/reminderLink.routes.js';
 import onboardingGuard from './middlewares/onboardingGuard.js';
 
 const router = express.Router();
@@ -106,6 +109,18 @@ const protectedRoutes = [
     {
         path: '/invoices',
         route: invoiceRoute,
+    },
+    {
+        path: '/marketing',
+        route: marketingRoute,
+    },
+    {
+        path: '/inquiries',
+        route: inquiryRoute,
+    },
+    {
+        path: '/reminders-links',
+        route: reminderLinkRoute,
     },
 ];
 

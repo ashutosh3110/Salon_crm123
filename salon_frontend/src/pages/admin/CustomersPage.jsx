@@ -87,8 +87,8 @@ export default function CustomersPage({ tab = 'directory' }) {
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Customer CRM</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">System :: identity_retention_v2.0 // global_crm</p>
+                        <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Customers</h1>
+                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Manage your customers, wallets, feedback and re-engagement</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">
                         <button
@@ -96,13 +96,13 @@ export default function CustomersPage({ tab = 'directory' }) {
                             className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-surface border border-border px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt hover:text-primary transition-all font-black shadow-sm"
                         >
                             <Download className="w-4 h-4" />
-                            Export Log
+                            Export List
                         </button>
                         <button
                             onClick={() => setShowAddModal(true)}
                             className="flex-1 lg:flex-none flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                         >
-                            <UserPlus className="w-4 h-4" /> Induct Customer
+                            <UserPlus className="w-4 h-4" /> Add Customer
                         </button>
                     </div>
                 </div>
@@ -115,10 +115,10 @@ export default function CustomersPage({ tab = 'directory' }) {
 
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <KPICard title="Total Base" value={customers.length} icon={Users} color="blue" trend="+12%" />
-                    <KPICard title="VIP Elite" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="Stable" />
-                    <KPICard title="Gross Rev" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="Total" />
-                    <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="At Risk" />
+                    <KPICard title="Total Customers" value={customers.length} icon={Users} color="blue" trend="" />
+                    <KPICard title="VIP Customers" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="" />
+                    <KPICard title="Total Revenue" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
+                    <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="Needs attention" />
                 </div>
 
                 {/* Content Container */}
@@ -129,7 +129,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                             {activeTab === 'directory' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
                         <button onClick={() => navigate('/admin/crm/wallets')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'wallets' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Wallet Monitor
+                            Wallets
                             {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
                         <button onClick={() => navigate('/admin/crm/segments')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'segments' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
@@ -174,25 +174,25 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20 shadow-inner">
                                     <UserPlus className="w-10 h-10" />
                                 </div>
-                                <h2 className="text-3xl font-black text-text uppercase tracking-tight">Induct Customer</h2>
-                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">New Identity Matrix Registration</p>
+                                <h2 className="text-3xl font-black text-text uppercase tracking-tight">Add Customer</h2>
+                                <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.3em] opacity-40 mt-2">Add a new customer to your list</p>
                             </div>
 
                             <form onSubmit={handleAddCustomer} className="space-y-6">
                                 <div className="space-y-5">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Full Identification</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Customer Name</label>
                                         <input
                                             type="text"
                                             required
-                                            placeholder="e.g. ADITYA_SHARMA"
+                                            placeholder="e.g. Aditya Sharma"
                                             value={newCustomerForm.name}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                             className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Contact Node</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
@@ -239,19 +239,19 @@ export default function CustomersPage({ tab = 'directory' }) {
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Residential Address</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Address</label>
                                         <textarea
-                                            placeholder="STREET, AREA, CITY, PIN"
+                                            placeholder="Street, area, city, PIN"
                                             value={newCustomerForm.address}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, address: e.target.value })}
                                             className="w-full px-6 py-3 rounded-none bg-surface border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase h-24 resize-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Internal Remarks / Notes</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Notes</label>
                                         <input
                                             type="text"
-                                            placeholder="ANY SPECIAL REQUIREMENTS..."
+                                            placeholder="Any special requirements or notes..."
                                             value={newCustomerForm.remarks}
                                             onChange={(e) => setNewCustomerForm({ ...newCustomerForm, remarks: e.target.value })}
                                             className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase"
@@ -260,8 +260,8 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 </div>
 
                                 <div className="flex gap-4 pt-8">
-                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all active:scale-[0.98]">ABORT</button>
-                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-5 rounded-none shadow-2xl shadow-primary/20 text-[11px] font-black uppercase tracking-[0.3em] hover:brightness-110 active:scale-[0.98] transition-all">INITIALIZE</button>
+                                    <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 py-5 rounded-none border border-border text-[11px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all active:scale-[0.98]">Cancel</button>
+                                    <button type="submit" className="flex-1 bg-primary text-primary-foreground py-5 rounded-none shadow-2xl shadow-primary/20 text-[11px] font-black uppercase tracking-[0.3em] hover:brightness-110 active:scale-[0.98] transition-all">Add Customer</button>
                                 </div>
                             </form>
                         </div>
@@ -278,13 +278,13 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 <MessageSquare className="w-6 h-6" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Compose Manual Message</h3>
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Send WhatsApp Message</h3>
                                 <p className="text-[10px] font-bold text-text-muted uppercase mt-0.5">To: {whatsappModal.customer?.name}</p>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Payload</label>
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Your Message</label>
                             <textarea
                                 value={whatsappModal.message}
                                 onChange={(e) => setWhatsappModal({ ...whatsappModal, message: e.target.value })}
@@ -298,7 +298,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}
                                 className="flex-1 py-4 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface transition-all"
                             >
-                                CANCEL
+                                Cancel
                             </button>
                             <button
                                 onClick={() => {
@@ -308,7 +308,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 }}
                                 className="flex-1 bg-emerald-500 text-primary-foreground py-4 text-[10px] font-black uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
                             >
-                                DISPATCH
+                                Send
                             </button>
                         </div>
                     </div>
@@ -362,7 +362,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
     const addOffer = () => {
         const newOffer = {
             id: Date.now(),
-            title: 'NEW REWARD',
+            title: 'New Offer',
             minAdd: 1000,
             extra: 100,
             isActive: true
@@ -385,19 +385,19 @@ function WalletMonitor({ customers, onCustomerClick }) {
                     onClick={() => setActiveSubTab('directory')}
                     className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'directory' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                 >
-                    Wallet Directory
+                    Wallet List
                 </button>
                 <button 
                     onClick={() => setActiveSubTab('mechanics')}
                     className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'mechanics' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                 >
-                    Offers & Mechanics
+                    Recharge Offers
                 </button>
                 <button 
                     onClick={() => setActiveSubTab('security')}
                     className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeSubTab === 'security' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
                 >
-                    Fraud & Security
+                    Security Settings
                 </button>
             </div>
 
@@ -406,7 +406,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                     {/* Wallet Stats */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="bg-text text-white p-6 border border-border shadow-xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Customer Liability</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Total Wallet Balance (Owed to Customers)</p>
                             <h3 className="text-3xl font-black">₹{totalLiability.toLocaleString()}</h3>
                         </div>
                         <div className="bg-surface p-6 border border-border">
@@ -438,7 +438,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                         checked={selectedIds.length === customers.length && customers.length > 0}
                                     />
                                 </th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Identity</th>
+                                <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer</th>
                                 <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Available Balance</th>
                                 <th className="px-6 py-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Last Activity</th>
                                 <th className="px-6 py-4 text-right"></th>
@@ -481,7 +481,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                                     <p className="text-[9px] text-text-muted font-bold uppercase">{new Date(lastTx.date).toLocaleDateString()}</p>
                                                 </div>
                                             ) : (
-                                                <span className="text-[9px] font-black text-text-muted/30 uppercase">NO_RECORDS</span>
+                                                <span className="text-[9px] font-black text-text-muted/30 uppercase">No transactions yet</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -504,8 +504,8 @@ function WalletMonitor({ customers, onCustomerClick }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-2 duration-300">
                     <div className="bg-surface p-8 border border-border">
                         <div className="flex justify-between items-center mb-8">
-                            <h4 className="text-[11px] font-black text-text uppercase tracking-widest">Active Wallet Mechanics</h4>
-                            <button onClick={addOffer} className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">+ Create Reward</button>
+                            <h4 className="text-[11px] font-black text-text uppercase tracking-widest">Recharge Offers</h4>
+                            <button onClick={addOffer} className="text-primary text-[10px] font-black uppercase tracking-widest hover:underline">+ Add Offer</button>
                         </div>
                         <div className="space-y-4">
                             {walletSettings.offers.map(offer => (
@@ -514,6 +514,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                         <input 
                                             value={offer.title}
                                             onChange={(e) => updateOffer(offer.id, 'title', e.target.value)}
+                                            placeholder="Offer name"
                                             className="text-xs font-black text-text uppercase bg-transparent border-none outline-none w-3/4"
                                         />
                                         <button 
@@ -546,9 +547,9 @@ function WalletMonitor({ customers, onCustomerClick }) {
                     </div>
                     <div className="bg-primary/5 p-8 border border-primary/20 flex flex-col justify-center text-center">
                         <Percent className="w-12 h-12 text-primary mx-auto mb-4 opacity-20" />
-                        <h4 className="text-sm font-black text-primary uppercase tracking-tight mb-2">Dynamic Incentives</h4>
+                        <h4 className="text-sm font-black text-primary uppercase tracking-tight mb-2">Recharge Bonuses</h4>
                         <p className="text-[10px] font-bold text-text-secondary uppercase tracking-widest leading-relaxed px-4 opacity-60">
-                            Configure automated rewards that trigger when nodes recharge their credits via the application.
+                            Add bonus when customers recharge their wallet. E.g. Add ₹1000, get ₹100 extra.
                         </p>
                     </div>
                 </div>
@@ -557,11 +558,11 @@ function WalletMonitor({ customers, onCustomerClick }) {
             {activeSubTab === 'security' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-bottom-2 duration-300">
                     <div className="bg-surface p-8 border border-border">
-                        <h4 className="text-[11px] font-black text-text uppercase tracking-widest mb-8">Fraud Mitigation Layer</h4>
+                        <h4 className="text-[11px] font-black text-text uppercase tracking-widest mb-8">Wallet Limits</h4>
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
-                                    <TrendingDown className="w-3 h-3" /> Max Daily Debit Limit
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
+                                    <TrendingDown className="w-3 h-3" /> Max daily spend from wallet
                                 </span>
                                 <input 
                                     type="number" 
@@ -571,8 +572,8 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                 />
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
-                                    <TrendingUp className="w-3 h-3" /> Max Single Recharge
+                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest flex items-center gap-2">
+                                    <TrendingUp className="w-3 h-3" /> Max single recharge amount
                                 </span>
                                 <input 
                                     type="number" 
@@ -582,7 +583,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                 />
                             </div>
                             <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Reversal Authentication Req.</span>
+                                <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">Require admin approval for refunds</span>
                                 <button 
                                     onClick={() => updateFraudRule('requireAdminAuthForReversals', !walletSettings.fraudRules.requireAdminAuthForReversals)}
                                     className={`w-10 h-5 border border-border relative transition-all ${walletSettings.fraudRules.requireAdminAuthForReversals ? 'bg-primary' : 'bg-surface-alt'}`}
@@ -593,18 +594,18 @@ function WalletMonitor({ customers, onCustomerClick }) {
                         </div>
                     </div>
                     <div className="bg-rose-500/5 p-8 border border-rose-500/20">
-                        <h4 className="text-[11px] font-black text-rose-800 uppercase tracking-widest mb-4">Anomaly Log Stream</h4>
+                        <h4 className="text-[11px] font-black text-rose-800 uppercase tracking-widest mb-4">Recent Alerts</h4>
                         <div className="space-y-3">
                             <div className="p-3 bg-white/50 border border-rose-100 flex justify-between items-center text-[9px] font-bold text-rose-600">
-                                <span>UNUSUAL_DEBIT_ATTEMPT - NODE_492</span>
-                                <span>21 FEB 2026</span>
+                                <span>Unusual transaction attempt</span>
+                                <span>21 Feb 2026</span>
                             </div>
                             <div className="p-3 bg-white/50 border border-rose-100 flex justify-between items-center text-[9px] font-bold text-rose-600">
-                                <span>LIMIT_EXCEEDED - NODE_102</span>
-                                <span>20 FEB 2026</span>
+                                <span>Limit exceeded</span>
+                                <span>20 Feb 2026</span>
                             </div>
                         </div>
-                        <p className="mt-6 text-[8px] font-black text-rose-800/50 uppercase tracking-[0.2em] text-center">Threat Vector Monitoring Active</p>
+                        <p className="mt-6 text-[8px] font-black text-rose-800/50 uppercase tracking-[0.2em] text-center">Security monitoring active</p>
                     </div>
                 </div>
             )}
@@ -614,11 +615,11 @@ function WalletMonitor({ customers, onCustomerClick }) {
                 <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[300] flex items-center justify-center p-4">
                     <div className="bg-surface w-full max-w-md p-8 border border-border shadow-2xl animate-in zoom-in-95">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Bulk Identity Recharge</h3>
+                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Bulk Recharge</h3>
                             <button onClick={() => setShowBulkModal(false)}><X className="w-6 h-6 text-text-muted" /></button>
                         </div>
                         <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-8">
-                            Selected Matrix Nodes: <span className="text-primary">{selectedIds.length} Customers</span>
+                            Selected: <span className="text-primary">{selectedIds.length} customer{selectedIds.length !== 1 ? 's' : ''}</span>
                         </p>
                         
                         <form onSubmit={handleBulkRecharge} className="space-y-6">
@@ -637,7 +638,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Promotion Note / Description</label>
                                 <input 
                                     type="text" 
-                                    placeholder="e.g. FESTIVAL BONUS"
+                                    placeholder="e.g. Festival bonus"
                                     value={bulkNote}
                                     onChange={(e) => setBulkNote(e.target.value)}
                                     className="w-full bg-surface-alt border border-border px-4 py-3 text-sm font-black uppercase outline-none focus:border-primary"
@@ -656,7 +657,7 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                     disabled={isProcessing}
                                     className="w-full bg-primary text-white py-5 text-[11px] font-black uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black flex items-center justify-center gap-3"
                                 >
-                                    {isProcessing ? 'SYNCHRONIZING...' : <><Send className="w-4 h-4"/> INITIALIZE BULK CREDIT</>}
+                                    {isProcessing ? 'Processing...' : <><Send className="w-4 h-4"/> Add Credit to All</>}
                                 </button>
                             </div>
                         </form>
@@ -698,9 +699,9 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
         <div className="bg-primary/5 border border-primary/20 p-6 flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-500">
             <div className="flex items-center justify-between">
                 <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-3">
-                    <Cake className="w-4 h-4" /> Celebration Matrix Reminders
+                    <Cake className="w-4 h-4" /> Birthdays & Anniversaries
                 </h3>
-                <span className="text-[9px] font-black text-primary/50 uppercase tracking-widest">{reminders.length} UPCOMING THIS WEEK</span>
+                <span className="text-[9px] font-black text-primary/50 uppercase tracking-widest">{reminders.length} coming up this week</span>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                 {reminders.map(c => {
@@ -729,10 +730,10 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                                 <button
                                     onClick={() => prepareWhatsAppWish(c, isBday || (birthday && !isAnniv) ? 'birthday' : 'anniversary')}
                                     className="p-2.5 bg-emerald-500 text-primary-foreground hover:brightness-110 transition-all shadow-lg shadow-emerald-500/20 group/wa relative"
-                                    title="Compose WhatsApp Wish"
+                                    title="Send WhatsApp wish"
                                 >
                                     <MessageSquare className="w-3.5 h-3.5" />
-                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface border border-border text-text text-[8px] font-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover/wa:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">Edit & Send</span>
+                                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface border border-border text-text text-[8px] font-black px-2 py-1 uppercase tracking-widest opacity-0 group-hover/wa:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-xl">Edit and send</span>
                                 </button>
                                 <button className="p-2.5 hover:bg-primary hover:text-primary-foreground text-primary transition-all border border-primary/10">
                                     <ChevronRight className="w-3.5 h-3.5" />
@@ -762,7 +763,7 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
                 <div className={`p-2.5 rounded-none border ${colors[color]} group-hover:scale-110 transition-transform`}>
                     <Icon className="w-4 h-4" />
                 </div>
-                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{trend}</span>
+                {trend && <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{trend}</span>}
             </div>
             <div className="space-y-1">
                 <h3 className="text-text-secondary text-[10px] font-bold uppercase tracking-widest opacity-60">{title}</h3>
@@ -805,7 +806,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                     <input
                         type="text"
-                        placeholder="Search Identity (Name or Phone)..."
+                        placeholder="Search by name or phone..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border rounded-none text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
@@ -821,7 +822,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                         <option value="All">All Tiers</option>
                         <option value="Regular">Regular</option>
                         <option value="Inactive">Inactive</option>
-                        <option value="VIP">VIP Elite</option>
+                        <option value="VIP">VIP</option>
                     </select>
                 </div>
                 <div className="relative">
@@ -844,10 +845,10 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                 <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-surface-alt border-b border-border">
-                            <th className="px-6 py-5 text-[10px] font-extrabold text-text-muted uppercase tracking-widest pl-8">Customer Matrix</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">History</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Finance</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Tiers</th>
+                            <th className="px-6 py-5 text-[10px] font-extrabold text-text-muted uppercase tracking-widest pl-8">Customer</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Last Visit</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Total Spend</th>
+                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Tags</th>
                             <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right pr-8">Actions</th>
                         </tr>
                     </thead>
@@ -878,7 +879,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Gross Yield</span>
+                                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Total Spend</span>
                                         <span className="text-sm font-bold text-text">₹{customer.spend.toLocaleString()}</span>
                                     </div>
                                 </td>
@@ -921,10 +922,10 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
 
             {/* Pagination Footer */}
             <div className="flex items-center justify-between px-8 py-5 bg-surface-alt border border-border rounded-none text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                <span>Displaying {filtered.length} Elite Customer Records</span>
+                <span>Showing {filtered.length} customer{filtered.length !== 1 ? 's' : ''}</span>
                 <div className="flex gap-6">
-                    <button className="hover:text-primary transition-colors disabled:opacity-30" disabled>Previous Page</button>
-                    <button className="hover:text-primary transition-colors">Next Analytics</button>
+                    <button className="hover:text-primary transition-colors disabled:opacity-30" disabled>Previous</button>
+                    <button className="hover:text-primary transition-colors">Next</button>
                 </div>
             </div>
         </div >

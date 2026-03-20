@@ -24,27 +24,46 @@ const getCurrentRole = () => {
 // Request interceptor — attach JWT token
 api.interceptors.request.use(
     (config) => {
-        const role = getCurrentRole();
-        const token = localStorage.getItem(`auth_token_${role}`);
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
+        const path = window.location.pathname;
+        // Customer app uses customer_token
+        if (path.startsWith('/app')) {
+            const token = localStorage.getItem('customer_token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
         } else {
-            console.warn(`[API] No token found for role: ${role}`);
+            const role = getCurrentRole();
+            const token = localStorage.getItem(`auth_token_${role}`);
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            } else {
+                console.warn(`[API] No token found for role: ${role}`);
+            }
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle 401 + token refresh
+// Response interceptor — handle 401 (avoid redirect loop on login/register pages)
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            const role = getCurrentRole();
-            localStorage.removeItem(`auth_token_${role}`);
-            localStorage.removeItem(`auth_user_${role}`);
-            window.location.href = '/login';
+            const path = window.location.pathname;
+            const isPublicPage = path === '/' || ['/login', '/register', '/forgot-password', '/admin/login', '/superadmin/login', '/blog', '/contact', '/launchpad', '/app/login'].some(p => path === p || path.startsWith(p)) || path.startsWith('/c/');
+            if (!isPublicPage) {
+                if (path.startsWith('/app')) {
+                    localStorage.removeItem('customer_token');
+                    localStorage.removeItem('customer_user');
+                    window.location.href = '/app/login';
+                } else {
+                    const role = getCurrentRole();
+                    localStorage.removeItem(`auth_token_${role}`);
+                    localStorage.removeItem(`auth_user_${role}`);
+                    window.location.href = '/login';
+                }
+            }
         }
         return Promise.reject(error);
     }

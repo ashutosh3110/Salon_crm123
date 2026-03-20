@@ -98,7 +98,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             ]
         },
         {
-            label: 'Inquiries',
+            label: 'Enquiries',
             icon: ClipboardList,
             path: '/admin/inquiries',
             roles: ['admin', 'manager', 'receptionist']
@@ -110,12 +110,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             roles: ['admin', 'manager']
         },
         {
-            label: 'CRM',
+            label: 'Customers',
             icon: Users,
             path: '/admin/crm',
             roles: ['admin', 'manager'],
             subItems: [
-                { label: 'Customers', icon: Users, path: '/admin/crm/customers' },
+                { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
+                { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
                 { label: 'Segments', icon: Tag, path: '/admin/crm/segments' },
                 { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
                 { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },

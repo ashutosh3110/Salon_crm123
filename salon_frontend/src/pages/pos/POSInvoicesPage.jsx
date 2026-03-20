@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     Search, Calendar, Eye, X,
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2
 } from 'lucide-react';
-import { MOCK_INVOICES } from '../../data/posData';
+import api from '../../services/api';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
@@ -119,7 +119,8 @@ const InvoicePDF = ({ invoice }) => (
 );
 
 export default function POSInvoicesPage() {
-    const invoices = MOCK_INVOICES;
+    const [invoices, setInvoices] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState('');
     const [dateFilter, setDateFilter] = useState('all');
@@ -127,6 +128,23 @@ export default function POSInvoicesPage() {
     const [page, setPage] = useState(1);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const perPage = 10;
+
+    useEffect(() => {
+        const loadInvoices = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get('/invoices?limit=200');
+                const rows = response?.data?.results || response?.data || [];
+                setInvoices(Array.isArray(rows) ? rows : []);
+            } catch (error) {
+                console.error('[POSInvoices] Failed to load invoices:', error);
+                setInvoices([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadInvoices();
+    }, []);
 
     const handleDownloadPDF = async () => {
         if (!selectedInvoice) return;
@@ -188,10 +206,10 @@ export default function POSInvoicesPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Ledger Registry</h1>
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Invoices</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
-                        Authenticated Transaction Sequence
+                        View and manage invoice history
                     </p>
                 </div>
                 <div className="flex bg-surface p-1 border border-border shadow-sm">
@@ -199,13 +217,13 @@ export default function POSInvoicesPage() {
                         onClick={() => { setDateFilter('today'); setPage(1); }}
                         className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'today' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                     >
-                        <Calendar className="w-4 h-4" /> Loop_Today
+                        <Calendar className="w-4 h-4" /> Today
                     </button>
                     <button
                         onClick={() => { setDateFilter('all'); setPage(1); }}
                         className={`inline-flex items-center gap-3 px-6 py-2 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all ${dateFilter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-secondary hover:text-text hover:bg-surface-alt'}`}
                     >
-                        <FileText className="w-4 h-4" /> Recursive_All
+                        <FileText className="w-4 h-4" /> All
                     </button>
                 </div>
             </div>
@@ -217,36 +235,40 @@ export default function POSInvoicesPage() {
                     type="text"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="QUERY: INVOICE_ID, ENTITY_NAME, OR CONTACT_STR"
+                    placeholder="Search by invoice number, customer name, or phone"
                     className="w-full pl-12 pr-6 py-4 rounded-none border border-border bg-surface text-[11px] font-black uppercase tracking-widest placeholder:opacity-30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all shadow-sm"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-text-muted opacity-40 group-focus-within:opacity-100 uppercase tracking-widest">
-                    Scan_Active
+                    Search
                 </div>
             </div>
 
             {/* Table */}
             <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden min-h-[400px] flex flex-col">
-                {paginated.length === 0 ? (
+                {loading ? (
+                    <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Loading invoice ledger...</p>
+                    </div>
+                ) : paginated.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center py-24 text-center bg-background">
                         <div className="w-16 h-16 bg-surface border border-border flex items-center justify-center mb-4 opacity-50">
                             <Search className="w-8 h-8 text-text-muted" />
                         </div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No matching segments found in current registry</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No matching invoices found</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto bg-background flex-1">
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-surface-alt/80 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                    <th className="px-6 py-5">NODE_ID</th>
-                                    <th className="px-6 py-5 whitespace-nowrap">TIMESTAMP_UTC</th>
-                                    <th className="px-6 py-5">SOURCE_ENTITY</th>
-                                    <th className="px-6 py-5">LOC_ORIGIN</th>
-                                    <th className="px-6 py-5">TRANSFER_PRTCL</th>
-                                    <th className="px-6 py-5 text-right">VAL_CREDIT</th>
-                                    <th className="px-6 py-5">SIG_STATUS</th>
-                                    <th className="px-6 py-5 text-center">OPS</th>
+                                    <th className="px-6 py-5">Invoice</th>
+                                    <th className="px-6 py-5 whitespace-nowrap">Date & Time</th>
+                                    <th className="px-6 py-5">Customer</th>
+                                    <th className="px-6 py-5">Outlet</th>
+                                    <th className="px-6 py-5">Payment Method</th>
+                                    <th className="px-6 py-5 text-right">Amount</th>
+                                    <th className="px-6 py-5">Status</th>
+                                    <th className="px-6 py-5 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/30">
@@ -256,20 +278,20 @@ export default function POSInvoicesPage() {
                                         <td className="px-6 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
                                             <Clock className="w-3.5 h-3.5 opacity-40" /> {formatDate(inv.createdAt)}
                                         </td>
-                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'ANN_GUEST'}</td>
-                                        <td className="px-6 py-5 text-text-muted text-[10px] font-black uppercase tracking-widest">{inv.outletId?.name || '---'}</td>
+                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'Guest'}</td>
+                                        <td className="px-6 py-5 text-text-muted text-[10px] font-black uppercase tracking-widest">{inv.outletId?.name || '-'}</td>
                                         <td className="px-6 py-5">
                                             <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
                                                 <div className="p-1 bg-surface-alt border border-border group-hover:bg-background transition-colors">
                                                     {getMethodIcon(inv.paymentMethod)}
                                                 </div>
-                                                {inv.paymentMethod === 'online' ? 'UPI_INT' : `${inv.paymentMethod?.toUpperCase()}_HND`}
+                                                {inv.paymentMethod === 'online' ? 'UPI' : (inv.paymentMethod || 'Cash').toUpperCase()}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-5 text-right font-black text-text tracking-tighter text-base">₹{inv.total?.toLocaleString()}</td>
+                                        <td className="px-6 py-5 text-right font-black text-text tracking-tighter text-base">₹{Number(inv.total || inv.totalAmount || 0).toLocaleString()}</td>
                                         <td className="px-6 py-5">
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
-                                                {inv.paymentStatus === 'paid' ? 'SIG_VERIFIED' : 'PENDING_AUTH'}
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-none text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm ${(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 border-orange-500/20'}`}>
+                                                {(inv.paymentStatus || '').toLowerCase() === 'paid' ? 'Paid' : 'Pending'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-5 text-center">
@@ -287,7 +309,7 @@ export default function POSInvoicesPage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                     <div className="px-8 py-6 border-t border-border flex items-center justify-between bg-surface-alt/30">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Registry Range: {filtered.length} Segments Identified</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Total Invoices: {filtered.length}</p>
                         <div className="flex gap-2">
                             <button disabled={page <= 1} onClick={() => setPage(p => p - 1)} className="px-4 py-2 rounded-none border border-border bg-surface text-text-muted hover:text-primary hover:border-primary disabled:opacity-20 transition-all active:scale-95 shadow-sm uppercase font-black text-[9px] tracking-widest">
                                 <ChevronLeft className="w-4 h-4" />
@@ -310,10 +332,10 @@ export default function POSInvoicesPage() {
                         <div className="flex items-center justify-between p-8 bg-surface-alt border-b border-border relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-12 -mt-12 rotate-45 pointer-events-none" />
                             <div className="relative z-10">
-                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">Segment_Metadata</p>
+                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2">Invoice Details</p>
                                 <h2 className="text-3xl font-black text-text uppercase tracking-tighter">{selectedInvoice.invoiceNumber}</h2>
                                 <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60 flex items-center gap-2">
-                                    <Clock className="w-3.5 h-3.5" /> Commited At: {formatDate(selectedInvoice.createdAt)}
+                                    <Clock className="w-3.5 h-3.5" /> Created: {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
                             <button onClick={() => setSelectedInvoice(null)} className="p-3 bg-surface border border-border hover:bg-background transition-all group active:scale-90 relative z-10 shadow-sm">
@@ -324,23 +346,23 @@ export default function POSInvoicesPage() {
                         <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto scrollbar-thin bg-background">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Source_Entity</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.clientId?.name || 'ANN_GUEST'}</p>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.clientId?.name || 'Guest'}</p>
                                 </div>
                                 <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Origin_Node</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.outletId?.name || 'LOCAL_SRV'}</p>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Outlet</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.outletId?.name || 'Main Outlet'}</p>
                                 </div>
                                 <div className="bg-surface-alt/50 border border-border p-4">
-                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Ops_Executive</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.staffId?.name || 'SYS_AUTO'}</p>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Staff</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.staffId?.name || 'System'}</p>
                                 </div>
                             </div>
 
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
                                     <div className="h-px bg-border flex-1" />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Payload_Segments</p>
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Items</p>
                                     <div className="h-px bg-border flex-1" />
                                 </div>
                                 <div className="space-y-3">
@@ -348,7 +370,7 @@ export default function POSInvoicesPage() {
                                         <div key={i} className="flex justify-between items-center p-4 bg-surface border border-border/50 group hover:border-primary/30 transition-all cursor-default">
                                             <div>
                                                 <p className="font-black text-text uppercase text-xs tracking-tight group-hover:text-primary transition-colors">{item.name}</p>
-                                                <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.1em] mt-1 italic">Type: {item.type} • Units: {item.quantity}</p>
+                                                <p className="text-[10px] text-text-muted font-black uppercase tracking-[0.1em] mt-1 italic">Type: {item.type} • Qty: {item.quantity}</p>
                                             </div>
                                             <div className="text-right">
                                                 <span className="font-black text-text text-lg tracking-tighter">₹{item.total?.toLocaleString()}</span>
@@ -360,31 +382,31 @@ export default function POSInvoicesPage() {
 
                             <div className="bg-surface-alt/30 border border-border p-6 space-y-4">
                                 <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
-                                    <span>Sub_Total_Aggregate</span>
+                                    <span>Subtotal</span>
                                     <span>₹{selectedInvoice.subTotal?.toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between text-xs font-black text-text-muted uppercase tracking-widest">
-                                    <span>Tax_Surcharge (GST)</span>
+                                    <span>Tax (GST)</span>
                                     <span>+₹{selectedInvoice.tax?.toLocaleString()}</span>
                                 </div>
                                 {selectedInvoice.discount > 0 && (
                                     <div className="flex justify-between text-xs font-black text-emerald-600 uppercase tracking-widest">
-                                        <span>Incentive_Credit</span>
+                                        <span>Discount</span>
                                         <span>-₹{selectedInvoice.discount?.toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="border-t border-border pt-4 mt-2 flex justify-between items-end">
                                     <div>
-                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Total_Liability</p>
-                                        <p className="text-3xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Net_Credit: <span className="text-primary tracking-tighter">₹{selectedInvoice.total?.toLocaleString()}</span></p>
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.3em]">Grand Total</p>
+                                        <p className="text-3xl font-black text-text tracking-tighter uppercase whitespace-nowrap">Amount: <span className="text-primary tracking-tighter">₹{selectedInvoice.total?.toLocaleString()}</span></p>
                                     </div>
                                     <div className="flex items-center gap-4 bg-background border border-border p-4 shadow-sm group/sig">
                                         <div className={`p-2 border border-border group-hover/sig:border-primary/40 transition-colors ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500 bg-emerald-500/5' : 'text-orange-500 bg-orange-500/5'}`}>
                                             {getMethodIcon(selectedInvoice.paymentMethod)}
                                         </div>
                                         <div className="text-right">
-                                            <p className={`text-[9px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'SIG_OK' : 'SIG_REQ'}</p>
-                                            <p className="text-[11px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI_INT' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
+                                            <p className={`text-[9px] font-black uppercase tracking-widest ${selectedInvoice.paymentStatus === 'paid' ? 'text-emerald-500' : 'text-orange-500'}`}>{selectedInvoice.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</p>
+                                            <p className="text-[11px] font-black text-text uppercase tracking-tight">{selectedInvoice.paymentMethod === 'online' ? 'UPI' : selectedInvoice.paymentMethod?.toUpperCase()}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -398,10 +420,10 @@ export default function POSInvoicesPage() {
                                 className="flex-1 py-4 bg-primary text-white font-black text-[11px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all flex items-center justify-center gap-4 disabled:opacity-50 shadow-xl shadow-primary/20 active:scale-95"
                             >
                                 {isGeneratingPDF ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileText className="w-5 h-5" />}
-                                {isGeneratingPDF ? 'Compiling_Assets...' : 'Export_Registry_Blob (PDF)'}
+                                {isGeneratingPDF ? 'Generating PDF...' : 'Download Invoice PDF'}
                             </button>
                             <button onClick={() => setSelectedInvoice(null)} className="px-8 py-4 border border-border bg-surface text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:text-text hover:bg-surface-alt transition-all active:scale-95">
-                                Dismiss
+                                Close
                             </button>
                         </div>
                     </div>

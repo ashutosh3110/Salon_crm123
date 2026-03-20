@@ -55,6 +55,8 @@ export const updateTenant = {
             phone: Joi.string().allow('', null),
             city: Joi.string().allow('', null),
             address: Joi.string().allow('', null),
+            latitude: Joi.number().allow(null),
+            longitude: Joi.number().allow(null),
             gstNumber: Joi.string().allow('', null),
             owner: Joi.string().custom(objectId),
             status: Joi.string().valid('active', 'inactive', 'trial', 'expired', 'suspended'),

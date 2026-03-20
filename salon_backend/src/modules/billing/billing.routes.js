@@ -18,6 +18,10 @@ router
     .get(superadminOnly, billingController.getTransactions);
 
 router
+    .route('/my-transactions')
+    .get(auth, role(['admin', 'manager', 'accountant', 'superadmin']), billingController.getMyTransactions);
+
+router
     .route('/manual-invoice')
     .post(superadminOnly, billingController.createManualInvoice);
 

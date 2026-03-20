@@ -35,8 +35,22 @@ const getClient = async (req, res, next) => {
     }
 };
 
+const updateClient = async (req, res, next) => {
+    try {
+        // Customers can only update their own profile
+        if (req.user.role === 'customer' && req.params.clientId !== req.user._id.toString()) {
+            return res.status(httpStatus.FORBIDDEN).send({ message: 'You can only update your own profile' });
+        }
+        const client = await clientService.updateClientById(req.tenantId, req.params.clientId, req.body);
+        res.send(client);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createClient,
     getClients,
     getClient,
+    updateClient,
 };

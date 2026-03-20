@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     User,
     Lock,
@@ -8,23 +8,23 @@ import {
     AlertCircle,
     Eye,
     EyeOff,
-    Building2,
-    Percent,
-    Globe,
-    FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../../services/api';
 
 export default function POSSettingsPage() {
     const [activeTab, setActiveTab] = useState('profile');
     const [status, setStatus] = useState(null); // { type: 'success' | 'error', msg: string }
+    const [profileLoading, setProfileLoading] = useState(true);
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [savingPassword, setSavingPassword] = useState(false);
 
     // Profile State
     const [profile, setProfile] = useState({
-        fullName: 'ARJUN_S',
-        email: 'arjun.pos@salon_network.com',
-        phone: '9876543210',
-        terminalId: 'POS-TX-ALPHA-09'
+        fullName: '',
+        email: '',
+        phone: '',
+        terminalId: ''
     });
 
     // Password State
@@ -41,22 +41,75 @@ export default function POSSettingsPage() {
     });
 
 
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                setProfileLoading(true);
+                const response = await api.get('/users/me');
+                const user = response?.data || {};
+                setProfile({
+                    fullName: user?.name || '',
+                    email: user?.email || '',
+                    phone: user?.phone || '',
+                    terminalId: user?._id ? `POS-${String(user._id).slice(-6).toUpperCase()}` : 'POS-USER',
+                });
+            } catch (error) {
+                console.error('[POSSettings] Failed to load profile:', error);
+                setStatus({ type: 'error', msg: 'Unable to load profile details.' });
+            } finally {
+                setProfileLoading(false);
+            }
+        };
+        loadProfile();
+    }, []);
+
     const handleProfileSubmit = (e) => {
         e.preventDefault();
-        setStatus({ type: 'success', msg: 'Profile updated successfully.' });
-        setTimeout(() => setStatus(null), 3000);
+        const saveProfile = async () => {
+            try {
+                setSavingProfile(true);
+                await api.patch('/users/me', {
+                    name: String(profile.fullName || '').trim(),
+                    email: String(profile.email || '').trim(),
+                    phone: String(profile.phone || '').trim(),
+                });
+                setStatus({ type: 'success', msg: 'Profile updated successfully.' });
+                setTimeout(() => setStatus(null), 3000);
+            } catch (error) {
+                const message = error?.response?.data?.message || 'Failed to update profile.';
+                setStatus({ type: 'error', msg: message });
+            } finally {
+                setSavingProfile(false);
+            }
+        };
+        saveProfile();
     };
 
 
     const handlePasswordSubmit = (e) => {
         e.preventDefault();
-        if (passwords.new !== passwords.confirm) {
-            setStatus({ type: 'error', msg: 'Security breach: Password mismatch detected.' });
-            return;
-        }
-        setStatus({ type: 'success', msg: 'Access protocols re-encrypted successfully.' });
-        setPasswords({ current: '', new: '', confirm: '' });
-        setTimeout(() => setStatus(null), 3000);
+        const changePassword = async () => {
+            if (passwords.new !== passwords.confirm) {
+                setStatus({ type: 'error', msg: 'New password and confirm password do not match.' });
+                return;
+            }
+            try {
+                setSavingPassword(true);
+                await api.post('/users/change-password', {
+                    currentPassword: passwords.current,
+                    newPassword: passwords.new,
+                });
+                setStatus({ type: 'success', msg: 'Password updated successfully.' });
+                setPasswords({ current: '', new: '', confirm: '' });
+                setTimeout(() => setStatus(null), 3000);
+            } catch (error) {
+                const message = error?.response?.data?.message || 'Failed to update password.';
+                setStatus({ type: 'error', msg: message });
+            } finally {
+                setSavingPassword(false);
+            }
+        };
+        changePassword();
     };
 
     return (
@@ -126,7 +179,8 @@ export default function POSSettingsPage() {
                                         type="text"
                                         value={profile.fullName}
                                         onChange={e => setProfile({ ...profile, fullName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all"
+                                        disabled={profileLoading || savingProfile}
+                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all disabled:opacity-60"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -135,7 +189,8 @@ export default function POSSettingsPage() {
                                         type="email"
                                         value={profile.email}
                                         onChange={e => setProfile({ ...profile, email: e.target.value })}
-                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black focus:border-primary outline-none transition-all"
+                                        disabled={profileLoading || savingProfile}
+                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black focus:border-primary outline-none transition-all disabled:opacity-60"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -147,12 +202,13 @@ export default function POSSettingsPage() {
                                             const val = e.target.value.replace(/\D/g, '');
                                             if (val.length <= 10) setProfile({ ...profile, phone: val });
                                         }}
-                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all"
+                                        disabled={profileLoading || savingProfile}
+                                        className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all disabled:opacity-60"
                                     />
                                 </div>
                                 <div className="flex items-end">
-                                    <button type="submit" className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20">
-                                        <Save className="w-4 h-4" /> Commit Profile
+                                    <button disabled={profileLoading || savingProfile} type="submit" className="w-full py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary-dark transition-all flex items-center justify-center gap-3 shadow-xl shadow-primary/20 disabled:opacity-60">
+                                        <Save className="w-4 h-4" /> {savingProfile ? 'Saving...' : 'Commit Profile'}
                                     </button>
                                 </div>
                             </form>
@@ -174,6 +230,7 @@ export default function POSSettingsPage() {
                                             <input
                                                 type={showPass.current ? "text" : "password"}
                                                 required
+                                                disabled={savingPassword}
                                                 value={passwords.current}
                                                 onChange={e => setPasswords({ ...passwords, current: e.target.value })}
                                                 className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black focus:border-primary outline-none transition-all pr-12"
@@ -194,6 +251,7 @@ export default function POSSettingsPage() {
                                             <input
                                                 type={showPass.new ? "text" : "password"}
                                                 required
+                                                disabled={savingPassword}
                                                 value={passwords.new}
                                                 onChange={e => setPasswords({ ...passwords, new: e.target.value })}
                                                 className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black focus:border-primary outline-none transition-all pr-12"
@@ -214,6 +272,7 @@ export default function POSSettingsPage() {
                                             <input
                                                 type={showPass.confirm ? "text" : "password"}
                                                 required
+                                                disabled={savingPassword}
                                                 value={passwords.confirm}
                                                 onChange={e => setPasswords({ ...passwords, confirm: e.target.value })}
                                                 className="w-full bg-surface-alt border border-border px-6 py-4 text-xs font-black focus:border-primary outline-none transition-all pr-12"
@@ -229,8 +288,8 @@ export default function POSSettingsPage() {
                                     </div>
 
                                     <div className="pt-4">
-                                        <button type="submit" className="w-full py-5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-primary-dark transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-3">
-                                            <Lock className="w-4 h-4" /> Authorize & Encrypt
+                                        <button disabled={savingPassword} type="submit" className="w-full py-5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.4em] hover:bg-primary-dark transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-3 disabled:opacity-60">
+                                            <Lock className="w-4 h-4" /> {savingPassword ? 'Updating...' : 'Authorize & Encrypt'}
                                         </button>
                                     </div>
                                 </form>

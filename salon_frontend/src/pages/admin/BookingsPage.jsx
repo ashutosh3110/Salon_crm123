@@ -64,15 +64,14 @@ const MOCK_OUTLETS = [
     { id: 'mock-2', name: 'Bandra West' }
 ];
 
-import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
-
 export default function BookingsPage() {
     const { user } = useAuth();
-    const { bookings: registryBookings, updateBookingStatus: updateRegistryStatus } = useBookingRegistry();
     const {
         bookings: contextBookings,
         staff: contextStaff,
-        updateBookingStatus
+        updateBookingStatus,
+        bookingsLoading,
+        fetchBookings
     } = useBusiness();
 
     const [view, setView] = useState('list'); // 'list' or 'calendar'
@@ -87,22 +86,16 @@ export default function BookingsPage() {
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
 
-    // Merge logic
     const bookings = useMemo(() => {
-        const live = (registryBookings || []).map(b => ({
-            ...b,
-            _id: b.id,
-            appointmentDate: b.appointmentDate || b.date || b.timestamp,
-            client: { name: b.clientName || 'App User', phone: 'Mobile App' },
-            service: b.services?.[0] || { name: 'App Booking' },
-            staff: { _id: b.staffId, name: b.staffName || 'Unassigned' },
-            source: b.source || 'APP'
-        }));
-        return [...live, ...contextBookings];
-    }, [registryBookings, contextBookings]);
+        return Array.isArray(contextBookings) ? contextBookings : [];
+    }, [contextBookings]);
 
     const staff = contextStaff;
-    const loading = false;
+    const loading = bookingsLoading;
+
+    useEffect(() => {
+        fetchBookings?.();
+    }, []);
 
     const filteredBookings = useMemo(() => {
         if (!Array.isArray(bookings)) return [];
@@ -174,15 +167,20 @@ export default function BookingsPage() {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
             { label: "Total Bookings", value: safeBookings.length, icon: Calendar, color: 'text-primary' },
-            { label: 'Confirmed', value: safeBookings.filter(b => b.status === 'upcoming').length, icon: RotateCcw, color: 'text-blue-500' },
+            { label: 'Confirmed', value: safeBookings.filter(b => b.status === 'confirmed').length, icon: RotateCcw, color: 'text-blue-500' },
             { label: 'Completion Rate', value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, icon: TrendingUp, color: 'text-emerald-500' },
-            { label: 'No-Shows', value: safeBookings.filter(b => b.status === 'no-show').length, icon: AlertCircle, color: 'text-rose-500' },
+            { label: 'Cancelled', value: safeBookings.filter(b => b.status === 'cancelled').length, icon: AlertCircle, color: 'text-rose-500' },
         ];
     }, [bookings]);
 
     const handleUpdateStatus = async (id, status) => {
-        updateBookingStatus(id, status);
-        setSelectedBooking(null);
+        try {
+            const normalized = status === 'upcoming' ? 'confirmed' : (status === 'no-show' ? 'cancelled' : status);
+            await updateBookingStatus(id, normalized);
+            setSelectedBooking(null);
+        } catch (error) {
+            console.error('[BookingsPage] Failed to update status:', error);
+        }
     };
 
     return (
@@ -314,7 +312,7 @@ export default function BookingsPage() {
                     {[
                         { value: dateFilter, onChange: setDateFilter, options: [{ v: 'all', l: 'Every Date' }, { v: 'today', l: 'Today' }, { v: 'week', l: 'Week' }, { v: 'month', l: 'Month' }] },
                         { value: staffFilter, onChange: setStaffFilter, options: [{ v: 'all', l: 'Every Staff' }, ...staff.map(s => ({ v: s._id, l: s.name }))] },
-                        { value: statusFilter, onChange: setStatusFilter, options: [{ v: 'all', l: 'Every Status' }, { v: 'upcoming', l: 'Upcoming' }, { v: 'completed', l: 'Completed' }, { v: 'cancelled', l: 'Cancelled' }, { v: 'no-show', l: 'No-Show' }] }
+                        { value: statusFilter, onChange: setStatusFilter, options: [{ v: 'all', l: 'Every Status' }, { v: 'pending', l: 'Pending' }, { v: 'confirmed', l: 'Confirmed' }, { v: 'completed', l: 'Completed' }, { v: 'cancelled', l: 'Cancelled' }] }
                     ].map((sel, idx) => (
                         <select
                             key={idx}
@@ -329,7 +327,11 @@ export default function BookingsPage() {
             </div>
 
             {/* Content Area */}
-            {view === 'calendar' ? (
+            {loading ? (
+                <div className="bg-surface rounded-none border border-border shadow-sm p-20 text-center text-text-muted font-bold uppercase tracking-widest">
+                    Loading bookings...
+                </div>
+            ) : view === 'calendar' ? (
                 <div className="flex bg-surface-alt rounded-none border border-border overflow-hidden shadow-2xl h-[800px] animate-reveal">
                     {/* Calendar Sidebar */}
                     <div className="w-80 bg-surface flex flex-col border-r border-border">
@@ -470,8 +472,8 @@ export default function BookingsPage() {
                                                 <span className="px-3 py-1.5 rounded-none bg-background border border-border text-[9px] font-black uppercase tracking-[0.2em] text-text-muted">{b.source || 'SYS'}</span>
                                             </td>
                                             <td className="px-8 py-6 text-left">
-                                                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status] || 'bg-surface text-text'}`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-none ${b.status === 'upcoming' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                                    <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status] || 'bg-surface text-text'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-none ${b.status === 'confirmed' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : b.status === 'pending' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>

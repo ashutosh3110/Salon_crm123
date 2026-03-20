@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import tenantPlugin from '../../utils/tenant.plugin.js';
 
 const clientSchema = new mongoose.Schema(
@@ -29,6 +30,15 @@ const clientSchema = new mongoose.Schema(
         birthday: {
             type: Date,
         },
+        // Customer-specific password (for optional email/password registration)
+        password: {
+            type: String,
+            trim: true,
+            private: true,
+        },
+        anniversary: {
+            type: Date,
+        },
         loyaltyPoints: {
             type: Number,
             default: 0,
@@ -45,6 +55,17 @@ const clientSchema = new mongoose.Schema(
 clientSchema.plugin(tenantPlugin);
 
 clientSchema.index({ phone: 1, tenantId: 1 }, { unique: true });
+
+clientSchema.pre('save', async function () {
+    const client = this;
+    if (client.password && client.isModified('password')) {
+        client.password = await bcrypt.hash(client.password, 8);
+    }
+});
+
+clientSchema.methods.isPasswordMatch = async function (password) {
+    return bcrypt.compare(password, this.password);
+};
 
 const Client = mongoose.model('Client', clientSchema);
 

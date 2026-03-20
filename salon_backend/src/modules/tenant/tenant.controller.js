@@ -113,10 +113,53 @@ const getPublicTenants = async (req, res, next) => {
     }
 };
 
+const getNearbyTenants = async (req, res, next) => {
+    try {
+        const lat = parseFloat(req.query.lat);
+        const lng = parseFloat(req.query.lng);
+        const radiusKm = parseFloat(req.query.radius) || 3;
+        if (isNaN(lat) || isNaN(lng)) {
+            return res.status(400).send({ success: false, message: 'lat and lng are required' });
+        }
+        const salons = await tenantService.getNearbyTenants(lat, lng, radiusKm);
+        res.send({
+            success: true,
+            data: salons
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getTenantMe = async (req, res, next) => {
     try {
-        const tenantId = req.user.tenantId || req.user._id; // Supporting both staff (tenantId) and owner (_id if schema varies)
-        const tenant = await tenantService.getTenantById(tenantId);
+        let tenant = null;
+
+        if (req.user?.tenantId) {
+            try {
+                tenant = await tenantService.getTenantById(req.user.tenantId);
+            } catch (error) {
+                tenant = null;
+            }
+        }
+
+        if (!tenant && req.user?._id) {
+            const result = await tenantService.queryTenants({ owner: req.user._id }, { page: 1, limit: 1 });
+            tenant = result?.results?.[0] || null;
+        }
+
+        if (!tenant && req.user?.email) {
+            const result = await tenantService.queryTenants({ email: String(req.user.email).toLowerCase() }, { page: 1, limit: 1 });
+            tenant = result?.results?.[0] || null;
+        }
+
+        if (!tenant) {
+            return res.status(httpStatus.NOT_FOUND).send({
+                success: false,
+                message: 'Tenant not found for this user',
+            });
+        }
+
         res.send({
             success: true,
             data: tenant
@@ -148,6 +191,7 @@ export default {
     deleteTenant,
     getTenantStats,
     getPublicTenants,
+    getNearbyTenants,
     getTenantMe,
     updateTenantMe,
 };

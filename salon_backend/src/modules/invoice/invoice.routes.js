@@ -10,6 +10,8 @@ router.use(validateTenant);
 
 router.get('/', invoiceController.getInvoices);
 router.get('/stats', invoiceController.getDashboardStats);
+router.get('/refunds', invoiceController.getRefunds);
+router.patch('/:invoiceId/refund-action', invoiceController.processRefundAction);
 router.get('/:invoiceId', invoiceController.getInvoice);
 
 export default router;

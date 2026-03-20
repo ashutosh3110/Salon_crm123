@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     X,
     User,
@@ -13,11 +13,10 @@ import {
 import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function BookingModal({ isOpen, onClose }) {
-    const { services, staff, addBooking, outlets } = useBusiness();
+    const { services, staff, customers, addBooking, outlets, fetchServices } = useBusiness();
 
     const [formData, setFormData] = useState({
-        clientName: '',
-        clientPhone: '',
+        clientId: '',
         serviceId: '',
         staffId: '',
         date: new Date().toISOString().split('T')[0],
@@ -28,55 +27,58 @@ export default function BookingModal({ isOpen, onClose }) {
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchServices?.();
+        }
+    }, [isOpen, fetchServices]);
+
+    const activeServices = useMemo(() => {
+        return (services || []).filter((s) => (s?.status || 'active') === 'active');
+    }, [services]);
 
     if (!isOpen) return null;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+        try {
+            const selectedService = activeServices.find(s => (s._id || s.id) === formData.serviceId);
+            const payload = {
+                clientId: formData.clientId,
+                serviceId: formData.serviceId,
+                staffId: formData.staffId,
+                appointmentDate: new Date(`${formData.date}T${formData.time}`).toISOString(),
+                duration: Number(selectedService?.duration || 60),
+                status: 'pending',
+                price: Number(selectedService?.price || 0),
+                notes: formData.notes,
+            };
 
-        const selectedService = services.find(s => s.id === parseInt(formData.serviceId));
-        const selectedStaff = staff.find(s => s._id === formData.staffId);
-        const selectedOutlet = outlets.find(o => o._id === formData.outletId);
-
-        const newBooking = {
-            client: {
-                name: formData.clientName,
-                phone: formData.clientPhone
-            },
-            service: {
-                name: selectedService?.name || 'Unknown Service',
-                price: selectedService?.price || 0
-            },
-            staff: {
-                _id: selectedStaff?._id,
-                name: selectedStaff?.name || 'Unassigned'
-            },
-            appointmentDate: new Date(`${formData.date}T${formData.time}`).getTime(),
-            status: 'upcoming',
-            outletName: selectedOutlet?.name || 'Main Salon',
-            source: 'Admin',
-            notes: formData.notes
-        };
-
-        addBooking(newBooking);
-
-        setSuccess(true);
-        setTimeout(() => {
-            setSuccess(false);
-            onClose();
-            setFormData({
-                clientName: '',
-                clientPhone: '',
-                serviceId: '',
-                staffId: '',
-                date: new Date().toISOString().split('T')[0],
-                time: '10:00',
-                outletId: outlets[0]?._id || 'mock-1',
-                notes: ''
-            });
+            await addBooking(payload);
+            setSuccess(true);
+            setTimeout(() => {
+                setSuccess(false);
+                onClose();
+                setFormData({
+                    clientId: '',
+                    serviceId: '',
+                    staffId: '',
+                    date: new Date().toISOString().split('T')[0],
+                    time: '10:00',
+                    outletId: outlets[0]?._id || 'mock-1',
+                    notes: ''
+                });
+                setLoading(false);
+            }, 1200);
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Failed to create booking';
+            setError(msg);
             setLoading(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -108,33 +110,31 @@ export default function BookingModal({ isOpen, onClose }) {
                         <>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider ml-1">Customer Name</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider ml-1">Customer</label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <input
+                                        <select
                                             required
-                                            type="text"
-                                            value={formData.clientName}
-                                            onChange={e => setFormData({ ...formData, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                            placeholder="John Doe"
-                                        />
+                                            value={formData.clientId}
+                                            onChange={e => setFormData({ ...formData, clientId: e.target.value })}
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all"
+                                        >
+                                            <option value="">Select customer...</option>
+                                            {(customers || []).map(c => (
+                                                <option key={c._id} value={c._id}>{c.name} {c.phone ? `(${c.phone})` : ''}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider ml-1">Phone Number</label>
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider ml-1">Source</label>
                                     <div className="relative">
                                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                         <input
-                                            required
-                                            type="tel"
-                                            value={formData.clientPhone}
-                                            onChange={e => {
-                                                const val = e.target.value.replace(/\D/g, '');
-                                                if (val.length <= 10) setFormData({ ...formData, clientPhone: val });
-                                            }}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                            placeholder="+91 00000 00000"
+                                            disabled
+                                            type="text"
+                                            value="ADMIN PANEL"
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm opacity-70"
                                         />
                                     </div>
                                 </div>
@@ -151,11 +151,16 @@ export default function BookingModal({ isOpen, onClose }) {
                                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all"
                                     >
                                         <option value="">Choose a service...</option>
-                                        {services.map(s => (
-                                            <option key={s.id} value={s.id}>{s.name} - ₹{s.price}</option>
+                                        {activeServices.map(s => (
+                                            <option key={s._id || s.id} value={s._id || s.id}>{s.name} - ₹{s.price}</option>
                                         ))}
                                     </select>
                                 </div>
+                                {activeServices.length === 0 && (
+                                    <p className="text-[11px] text-amber-600 mt-1">
+                                        No active services found. Please create or activate a service first.
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-1.5">
@@ -214,6 +219,9 @@ export default function BookingModal({ isOpen, onClose }) {
                                     {loading ? 'Processing...' : 'Confirm Appointment'}
                                 </button>
                             </div>
+                            {error && (
+                                <div className="text-xs font-semibold text-rose-600 mt-2">{error}</div>
+                            )}
                         </>
                     )}
                 </form>

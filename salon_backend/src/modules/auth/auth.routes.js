@@ -11,5 +11,6 @@ router.post('/register', authLimiter, validate(authValidation.register), authCon
 router.post('/login', authLimiter, validate(authValidation.login), authController.login);
 router.post('/request-otp', authLimiter, validate(authValidation.requestOtp), authController.requestOtp);
 router.post('/login-otp', authLimiter, validate(authValidation.loginWithOtp), authController.loginWithOtp);
+router.post('/register-customer', authLimiter, validate(authValidation.registerCustomer), authController.registerCustomer);
 
 export default router;

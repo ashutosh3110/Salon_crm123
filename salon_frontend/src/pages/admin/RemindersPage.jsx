@@ -29,6 +29,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { createPortal } from 'react-dom';
+import api from '../../services/api';
 
 /* ─── Mock Data & Seeds ────────────────────────────────────────────────── */
 
@@ -66,6 +67,12 @@ const DEFAULT_REMINDER_RULES = [
     { id: 'rule-2', category: 'Facial', interval: 45, channel: 'Email', active: true, message: 'Hello {name}, keep that glow! You are due for your next Facial. Book here: {link}.' },
     { id: 'rule-3', category: 'Keratin', interval: 90, channel: 'WhatsApp', active: false, message: 'Hey {name}, your Keratin treatment might need a touch-up soon. See our slots: {link}.' }
 ];
+
+const DEFAULT_BOOKING_SETTINGS = {
+    salonSlug: 'premium-salon-bandra',
+    welcomeMsg: 'Welcome to our premium salon. Book your next visit below.',
+    showServices: true,
+};
 
 const MOCK_PENDING_CLIENTS = [
     { id: 'cl-1', name: 'Tanvi Shah', lastVisit: new Date(Date.now() - 35 * 86400000).toISOString(), service: 'Root Touchup', dueIn: -5 },
@@ -114,6 +121,7 @@ export default function RemindersPage() {
     // Modals
     const [showRuleModal, setShowRuleModal] = useState(false);
     const [showBridalModal, setShowBridalModal] = useState(false);
+    const [socialResultModal, setSocialResultModal] = useState({ open: false, title: '', message: '' });
 
     // Form States
     const [newRule, setNewRule] = useState({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
@@ -124,43 +132,42 @@ export default function RemindersPage() {
     const [reminderRules, setReminderRules] = useState([]);
     const [pendingClients, setPendingClients] = useState([]);
     const [bookingSettings, setBookingSettings] = useState({
-        salonSlug: 'premium-salon-bandra',
-        welcomeMsg: 'Welcome to our premium salon. Book your next visit below.',
-        showServices: true
+        ...DEFAULT_BOOKING_SETTINGS
     });
 
+    const loadPendingSignals = async () => {
+        try {
+            const res = await api.get('/reminders-links/service-signals/pending');
+            setPendingClients(res.data?.results || []);
+        } catch (e) {
+            console.error('[Reminders] Pending signals load failed:', e);
+            setPendingClients([]);
+        }
+    };
+
+    const loadState = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/reminders-links/state');
+            const data = res.data || {};
+            setBridalBookings(data.bridalBookings || []);
+            setReminderRules(data.reminderRules || []);
+            setBookingSettings(data.bookingSettings || DEFAULT_BOOKING_SETTINGS);
+            await loadPendingSignals();
+        } catch (e) {
+            console.error('[Reminders] Load failed:', e);
+            setBridalBookings(MOCK_BRIDAL_BOOKINGS);
+            setReminderRules(DEFAULT_REMINDER_RULES);
+            setBookingSettings(DEFAULT_BOOKING_SETTINGS);
+            setPendingClients([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        // Load from localStorage or initialize
-        const storedBridal = localStorage.getItem('bridal_reminders');
-        const storedRules = localStorage.getItem('reminder_rules');
-        const storedSettings = localStorage.getItem('booking_settings');
-
-        setBridalBookings(storedBridal ? JSON.parse(storedBridal) : MOCK_BRIDAL_BOOKINGS);
-        setReminderRules(storedRules ? JSON.parse(storedRules) : DEFAULT_REMINDER_RULES);
-        setBookingSettings(storedSettings ? JSON.parse(storedSettings) : {
-            salonSlug: 'premium-salon-bandra',
-            welcomeMsg: 'Welcome to our premium salon. Book your next visit below.',
-            showServices: true
-        });
-        setPendingClients(MOCK_PENDING_CLIENTS);
-
-        setLoading(false);
+        loadState();
     }, []);
-
-    const persistBridal = (data) => {
-        setBridalBookings(data);
-        localStorage.setItem('bridal_reminders', JSON.stringify(data));
-    };
-
-    const persistRules = (data) => {
-        setReminderRules(data);
-        localStorage.setItem('reminder_rules', JSON.stringify(data));
-    };
-
-    const persistSettings = (data) => {
-        setBookingSettings(data);
-        localStorage.setItem('booking_settings', JSON.stringify(data));
-    };
 
     const bookingURL = `${window.location.origin}/app/book?salon=${bookingSettings.salonSlug}`;
 
@@ -172,31 +179,38 @@ export default function RemindersPage() {
 
     const handleAddRule = (e) => {
         e.preventDefault();
-        const rule = {
-            id: `rule-${Date.now()}`,
-            ...newRule,
-            active: true
-        };
-        persistRules([...reminderRules, rule]);
-        setShowRuleModal(false);
-        setNewRule({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
+        (async () => {
+            try {
+                await api.post('/reminders-links/rules', { ...newRule, active: true });
+                await loadState();
+                setShowRuleModal(false);
+                setNewRule({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
+            } catch (err) {
+                console.error('[Reminders] Add rule failed:', err);
+            }
+        })();
     };
 
     const handleAddBridal = (e) => {
         e.preventDefault();
         if (!newBridal.clientName || !newBridal.clientPhone || !newBridal.eventDate) return;
-        const booking = {
-            id: `br-${Date.now()}`,
-            ...newBridal,
-            reminders: [
-                { id: `rem-30d-${Date.now()}`, label: '30 Days Before', daysBefore: 30, status: 'scheduled', active: true },
-                { id: `rem-7d-${Date.now()}`, label: '7 Days Before', daysBefore: 7, status: 'scheduled', active: true },
-                { id: `rem-1d-${Date.now()}`, label: '1 Day Before', daysBefore: 1, status: 'scheduled', active: true },
-            ]
-        };
-        persistBridal([booking, ...bridalBookings]);
-        setShowBridalModal(false);
-        setNewBridal({ clientName: '', clientPhone: '', eventName: '', eventDate: '', service: '' });
+        (async () => {
+            try {
+                await api.post('/reminders-links/bridal-bookings', {
+                    ...newBridal,
+                    reminders: [
+                        { id: `rem-30d-${Date.now()}`, label: '30 Days Before', daysBefore: 30, active: true, sentAt: null },
+                        { id: `rem-7d-${Date.now()}`, label: '7 Days Before', daysBefore: 7, active: true, sentAt: null },
+                        { id: `rem-1d-${Date.now()}`, label: '1 Day Before', daysBefore: 1, active: true, sentAt: null },
+                    ],
+                });
+                await loadState();
+                setShowBridalModal(false);
+                setNewBridal({ clientName: '', clientPhone: '', eventName: '', eventDate: '', service: '' });
+            } catch (err) {
+                console.error('[Reminders] Add bridal event failed:', err);
+            }
+        })();
     };
 
     const sendBridalReminder = (clientPhone, clientName, eventName, remLabel) => {
@@ -205,27 +219,92 @@ export default function RemindersPage() {
         window.open(`https://wa.me/${phoneParam}?text=${encodeURIComponent(text)}`, '_blank');
     };
 
-    const sendActionHubReminder = (clientName, service) => {
-        const text = `Hello ${clientName}, we noticed you might be due for your ${service}. We'd love to have you back! Shall we check available slots?`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const sendActionHubReminder = async (clientId, ruleId) => {
+        try {
+            const res = await api.post('/reminders-links/service-signals/send-whatsapp', { clientId, ruleId });
+            const waLink = res.data?.waLink;
+            if (waLink) window.open(waLink, '_blank');
+            await loadPendingSignals();
+        } catch (e) {
+            console.error('[Reminders] Send service reminder failed:', e);
+        }
     };
 
     const toggleReminder = (bookingId, remId) => {
-        const updated = bridalBookings.map(b => {
-            if (b.id === bookingId) {
-                return {
-                    ...b,
-                    reminders: b.reminders.map(r => r.id === remId ? { ...r, active: !r.active } : r)
-                };
+        (async () => {
+            try {
+                await api.patch(`/reminders-links/bridal-bookings/${bookingId}/reminders/${remId}/toggle`);
+                await loadState();
+            } catch (err) {
+                console.error('[Reminders] Toggle reminder failed:', err);
             }
-            return b;
-        });
-        persistBridal(updated);
+        })();
     };
 
     const toggleRule = (id) => {
-        const updated = reminderRules.map(r => r.id === id ? { ...r, active: !r.active } : r);
-        persistRules(updated);
+        const rule = reminderRules.find((r) => r.id === id);
+        if (!rule) return;
+        (async () => {
+            try {
+                await api.patch(`/reminders-links/rules/${id}`, { active: !rule.active });
+                await loadState();
+            } catch (err) {
+                console.error('[Reminders] Toggle rule failed:', err);
+            }
+        })();
+    };
+
+    const persistSettings = (data) => {
+        setBookingSettings(data);
+        (async () => {
+            try {
+                await api.patch('/reminders-links/settings', data);
+            } catch (err) {
+                console.error('[Reminders] Update settings failed:', err);
+            }
+        })();
+    };
+
+    const handleSocialShare = async (platform) => {
+        if (platform !== 'WhatsApp') return;
+        try {
+            const res = await api.post('/reminders-links/social-share/whatsapp', {
+                message: `Hi {name}, book your next appointment here: {link}\nQR: {qr}`,
+            });
+            const mode = res.data?.mode || 'manual_links';
+            const links = res.data?.links || [];
+            if (mode === 'auto_send') {
+                setSocialResultModal({
+                    open: true,
+                    title: 'WhatsApp Auto Send Completed',
+                    message: `Total customers: ${res.data?.totalCustomers || 0}\nSent: ${res.data?.sentCount || 0}\nFailed: ${res.data?.failedCount || 0}`,
+                });
+            } else if (links.length > 0) {
+                // Attempt to open all customer chats. Browser popup policy may block some.
+                const toOpen = links.slice(0, 100);
+                toOpen.forEach((item, idx) => {
+                    setTimeout(() => window.open(item.waLink, '_blank'), idx * 180);
+                });
+                setSocialResultModal({
+                    open: true,
+                    title: 'WhatsApp Broadcast Ready',
+                    message: `Total customers: ${links.length}\nLink + QR message prepared.\nPlease allow popups so all chats can open.`,
+                });
+            } else {
+                setSocialResultModal({
+                    open: true,
+                    title: 'No Valid Customers',
+                    message: 'No valid customer phone numbers were found for WhatsApp sharing.',
+                });
+            }
+        } catch (err) {
+            console.error('[Reminders] WhatsApp social share failed:', err);
+            setSocialResultModal({
+                open: true,
+                title: 'Share Failed',
+                message: err?.response?.data?.message || 'WhatsApp social sharing failed. Please try again.',
+            });
+        }
     };
 
     if (loading) return (
@@ -426,8 +505,20 @@ export default function RemindersPage() {
                                                                 {client.dueIn < 0 ? `${Math.abs(client.dueIn)}d Overdue` : `Due in ${client.dueIn}d`}
                                                             </span>
                                                             <div className="flex items-center">
-                                                                <button onClick={() => setPendingClients(pendingClients.filter(c => c.id !== client.id))} className="px-3 py-1 border border-border text-[9px] font-black uppercase hover:bg-primary/10 hover:text-primary transition-all rounded-none bg-surface-alt">Mark Replied</button>
-                                                                <button onClick={() => sendActionHubReminder(client.name, client.service)} className="px-3 py-1 border border-l-0 border-border bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all"><MessageSquare className="w-3.5 h-3.5" /></button>
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            await api.post('/reminders-links/service-signals/mark-replied', { clientId: client.clientId, ruleId: client.ruleId });
+                                                                            await loadPendingSignals();
+                                                                        } catch (e) {
+                                                                            console.error('[Reminders] Mark replied failed:', e);
+                                                                        }
+                                                                    }}
+                                                                    className="px-3 py-1 border border-border text-[9px] font-black uppercase hover:bg-primary/10 hover:text-primary transition-all rounded-none bg-surface-alt"
+                                                                >
+                                                                    Mark Replied
+                                                                </button>
+                                                                <button onClick={() => sendActionHubReminder(client.clientId, client.ruleId)} className="px-3 py-1 border border-l-0 border-border bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all"><MessageSquare className="w-3.5 h-3.5" /></button>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -531,7 +622,10 @@ export default function RemindersPage() {
                                         </div>
                                         <h3 className="text-lg font-black text-text uppercase tracking-tighter mb-2">{p.platform}</h3>
                                         <p className="text-[10px] text-text-muted uppercase tracking-[0.2em] mb-10 opacity-60 font-black">{p.desc}</p>
-                                        <button className={`w-full py-5 border ${p.color} ${p.bg} text-[10px] font-black uppercase tracking-[0.3em] hover:scale-[1.02] transition-all flex items-center justify-center gap-3`}>
+                                        <button
+                                            onClick={() => handleSocialShare(p.platform)}
+                                            className={`w-full py-5 border ${p.color} ${p.bg} text-[10px] font-black uppercase tracking-[0.3em] hover:scale-[1.02] transition-all flex items-center justify-center gap-3`}
+                                        >
                                             {p.action} <ArrowRight className="w-4 h-4" />
                                         </button>
                                     </div>
@@ -679,6 +773,33 @@ export default function RemindersPage() {
                                             <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">Commit Event</button>
                                         </div>
                                     </form>
+                                </div>
+                            </div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Social Share Result Modal */}
+                    <AnimatePresence>
+                        {socialResultModal.open && (
+                            <div
+                                className="fixed inset-0 bg-background/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4"
+                                onClick={() => setSocialResultModal({ open: false, title: '', message: '' })}
+                            >
+                                <div
+                                    className="bg-surface w-full max-w-md p-8 border border-border shadow-2xl"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <h3 className="text-lg font-black text-text uppercase tracking-tight mb-3 text-left">{socialResultModal.title}</h3>
+                                    <p className="text-[11px] text-text-muted leading-relaxed whitespace-pre-line text-left">{socialResultModal.message}</p>
+                                    <div className="pt-6 flex justify-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSocialResultModal({ open: false, title: '', message: '' })}
+                                            className="px-6 py-3 bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary-dark transition-all"
+                                        >
+                                            OK
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}

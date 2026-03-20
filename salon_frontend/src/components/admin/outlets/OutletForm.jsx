@@ -210,6 +210,7 @@ export default function OutletForm() {
                         <div className="space-y-4">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Full Address <span className="text-rose-500">*</span></label>
+                                <p className="text-[10px] text-text-muted">Used for nearby search — customers within 3 km will see this outlet</p>
                                 <textarea
                                     name="address"
                                     required

@@ -19,3 +19,12 @@ export const getClients = {
         limit: Joi.number().integer(),
     }),
 };
+
+export const updateClient = {
+    body: Joi.object().keys({
+        name: Joi.string(),
+        email: Joi.string().email().allow(''),
+        gender: Joi.string().valid('male', 'female', 'other'),
+        birthday: Joi.date().allow(null),
+    }).min(1),
+};

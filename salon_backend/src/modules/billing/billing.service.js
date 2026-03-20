@@ -31,6 +31,10 @@ const queryTransactions = async (filter, options) => {
     return billingRepository.find(filter, options);
 };
 
+const queryMyTransactions = async (tenantId, options) => {
+    return billingRepository.find({ tenantId }, options);
+};
+
 const createManualInvoice = async (invoiceData) => {
     const { tenantId, planId, amount, notes, dueDate } = invoiceData;
     
@@ -95,5 +99,6 @@ const createManualInvoice = async (invoiceData) => {
 export default {
     getBillingStats,
     queryTransactions,
+    queryMyTransactions,
     createManualInvoice
 };

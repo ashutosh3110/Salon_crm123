@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const CustomerAuthContext = createContext(null);
 
@@ -22,67 +23,49 @@ export function CustomerAuthProvider({ children }) {
         setLoading(false);
     }, []);
 
-    // Step 1: Request OTP — POST /auth/request-otp { phone }
-    const requestOtp = async (phone) => {
-        // TODO: Replace with api.post('/auth/request-otp', { phone })
-        console.log('[CustomerAuth] Mock OTP sent to:', phone);
+    // Step 1: Request OTP — POST /auth/request-otp { phone, tenantId }
+    const requestOtp = async (phone, tenantId) => {
+        if (!tenantId) throw new Error('Please select a salon first');
+        await api.post('/auth/request-otp', { phone, tenantId });
         return { success: true, message: 'OTP sent successfully' };
     };
 
-    // Step 2: Verify OTP — POST /auth/login-otp { phone, otp }
-    const verifyOtp = async (phone, otp) => {
-        // TODO: Replace with api.post('/auth/login-otp', { phone, otp })
-        if (otp !== '1234') {
-            throw new Error('Invalid OTP');
-        }
-
-        // Simulate backend checking for existing user by phone
-        const allUsers = JSON.parse(localStorage.getItem('all_registered_customers') || '{}');
-        const existingUser = allUsers[phone];
-
-        if (existingUser) {
-            return {
-                customer: { ...existingUser, isNewUser: false },
-                token: `customer-token-${Date.now()}`
-            };
-        }
-
-        const mockCustomer = {
-            _id: `cust-${Date.now()}`,
-            name: '',
-            phone,
-            email: '',
-            gender: '',
-            birthday: null,
-            loyaltyPoints: 320,
+    // Step 2: Verify OTP — POST /auth/login-otp { phone, tenantId, otp }
+    const verifyOtp = async (phone, otp, tenantId) => {
+        if (!tenantId) throw new Error('Please select a salon first');
+        const res = await api.post('/auth/login-otp', { phone, tenantId, otp });
+        const { accessToken, client } = res.data?.data || res.data;
+        const cust = {
+            _id: client._id,
+            name: client.name || '',
+            phone: client.phone,
+            email: client.email || '',
+            gender: client.gender || '',
+            birthday: client.birthday || null,
+            loyaltyPoints: client.loyaltyPoints || 0,
+            tenantId: client.tenantId,
             role: 'customer',
-            isNewUser: true, // When true, show name/gender form
+            isNewUser: client.isNewUser ?? true,
         };
-        const mockToken = `customer-token-${Date.now()}`;
-
-        return { customer: mockCustomer, token: mockToken };
+        return { customer: cust, token: accessToken };
     };
 
     // Step 3: Complete profile (for new users)
     const completeProfile = async (profileData) => {
-        // TODO: Replace with api.patch('/clients/:id', profileData)
         const updatedCustomer = { ...customer, ...profileData, isNewUser: false };
-
-        // Save to current user session
+        try {
+            await api.patch(`/clients/${customer._id}`, profileData);
+        } catch (e) {
+            console.warn('[CustomerAuth] Profile update failed, saving locally:', e);
+        }
         localStorage.setItem('customer_user', JSON.stringify(updatedCustomer));
         setCustomer(updatedCustomer);
-
-        // Simulate backend persistence
-        const allUsers = JSON.parse(localStorage.getItem('all_registered_customers') || '{}');
-        allUsers[updatedCustomer.phone] = updatedCustomer;
-        localStorage.setItem('all_registered_customers', JSON.stringify(allUsers));
-
         return updatedCustomer;
     };
 
     // Login: combines OTP verify + localStorage save
-    const customerLogin = async (phone, otp) => {
-        const { customer: cust, token } = await verifyOtp(phone, otp);
+    const customerLogin = async (phone, otp, tenantId) => {
+        const { customer: cust, token } = await verifyOtp(phone, otp, tenantId);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_user', JSON.stringify(cust));
         setCustomer(cust);
@@ -96,8 +79,20 @@ export function CustomerAuthProvider({ children }) {
         navigate('/app/login');
     };
 
-    const updateCustomer = (data) => {
+    const updateCustomer = async (data) => {
         const updated = { ...customer, ...data };
+        const payload = {};
+        if (data.name !== undefined) payload.name = data.name;
+        if (data.email !== undefined) payload.email = data.email || '';
+        if (data.gender !== undefined) payload.gender = data.gender || '';
+        if (data.birthday !== undefined) payload.birthday = data.birthday || null;
+        if (Object.keys(payload).length > 0) {
+            try {
+                await api.patch(`/clients/${customer._id}`, payload);
+            } catch (e) {
+                console.warn('[CustomerAuth] Profile update failed, saving locally:', e);
+            }
+        }
         localStorage.setItem('customer_user', JSON.stringify(updated));
         setCustomer(updated);
     };

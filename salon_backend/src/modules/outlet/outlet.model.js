@@ -12,6 +12,8 @@ const outletSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        latitude: { type: Number, default: null },
+        longitude: { type: Number, default: null },
         city: {
             type: String,
             required: true,

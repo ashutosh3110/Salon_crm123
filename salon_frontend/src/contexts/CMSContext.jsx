@@ -1,97 +1,259 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useBusiness } from './BusinessContext';
-import cmsMockData from '../data/cmsMockData.json';
+import api from '../services/api';
 
 const CMSContext = createContext(null);
 
+const ensureId = (item) => ({ ...item, id: item.id || item._id || Date.now() });
+
 export function CMSProvider({ children }) {
     const { staff, updateStaff } = useBusiness();
-    
-    const [banners, setBanners] = useState(() => {
-        const saved = localStorage.getItem('cms_banners');
-        return saved ? JSON.parse(saved) : cmsMockData.BANNERS;
-    });
+    const [banners, setBanners] = useState([]);
+    const [offers, setOffers] = useState([]);
+    const [lookbook, setLookbook] = useState([]);
+    const [experts, setExperts] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const [offers, setOffers] = useState(() => {
-        const saved = localStorage.getItem('cms_offers');
-        return saved ? JSON.parse(saved) : cmsMockData.OFFERS;
-    });
-
-    const [lookbook, setLookbook] = useState(() => {
-        const saved = localStorage.getItem('cms_lookbook');
-        return saved ? JSON.parse(saved) : cmsMockData.LOOKBOOK;
-    });
-
-    const [experts, setExperts] = useState(() => {
-        const saved = localStorage.getItem('cms_experts');
-        return saved ? JSON.parse(saved) : cmsMockData.EXPERTS;
-    });
-
-    // Sync to localStorage
-    useEffect(() => localStorage.setItem('cms_banners', JSON.stringify(banners)), [banners]);
-    useEffect(() => localStorage.setItem('cms_offers', JSON.stringify(offers)), [offers]);
-    useEffect(() => localStorage.setItem('cms_lookbook', JSON.stringify(lookbook)), [lookbook]);
-    useEffect(() => localStorage.setItem('cms_experts', JSON.stringify(experts)), [experts]);
-
-    const addLookbookItem = (item) => setLookbook(prev => [{ ...item, id: Date.now() }, ...prev]);
-    const updateLookbookItem = (id, data) => setLookbook(prev => prev.map(l => l.id === id ? { ...l, ...data } : l));
-    const deleteLookbookItem = (id) => setLookbook(prev => prev.filter(l => l.id !== id));
-    const toggleLookbookStatus = (id) => setLookbook(prev => prev.map(l => l.id === id ? { ...l, status: l.status === 'Active' ? 'Paused' : 'Active' } : l));
-
-    const addBanner = (banner) => setBanners(prev => [{ ...banner, id: Date.now() }, ...prev]);
-    const updateBanner = (id, data) => setBanners(prev => prev.map(b => b.id === id ? { ...b, ...data } : b));
-    const deleteBanner = (id) => setBanners(prev => prev.filter(b => b.id !== id));
-    const toggleBannerStatus = (id) => setBanners(prev => prev.map(b => b.id === id ? { ...b, status: b.status === 'Active' ? 'Paused' : 'Active' } : b));
-
-    const addOffer = (offer) => setOffers(prev => [{ ...offer, id: Date.now() }, ...prev]);
-    const updateOffer = (id, data) => setOffers(prev => prev.map(o => o.id === id ? { ...o, ...data } : o));
-    const deleteOffer = (id) => setOffers(prev => prev.filter(o => o.id !== id));
-    const toggleOfferStatus = (id) => setOffers(prev => prev.map(o => o.id === id ? { ...o, status: o.status === 'Live' ? 'Draft' : 'Live' } : o));
-
-    const updateExpertProfile = (userId, data) => setExperts(prev => {
-        const exists = prev.find(e => e.userId === userId);
-        if (exists) {
-            return prev.map(e => e.userId === userId ? { ...e, ...data, updatedAt: new Date().toISOString() } : e);
+    const fetchAppCMS = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/cms/app');
+            const d = res.data?.data || {};
+            setBanners((d.banners || []).map(ensureId));
+            setOffers((d.offers || []).map(ensureId));
+            setLookbook((d.lookbook || []).map(ensureId));
+            setExperts((d.experts || []).map(ensureId));
+        } catch (e) {
+            setBanners([]);
+            setOffers([]);
+            setLookbook([]);
+            setExperts([]);
+        } finally {
+            setLoading(false);
         }
-        return [...prev, { ...data, userId, id: Date.now(), status: 'Pending', createdAt: new Date().toISOString() }];
-    });
+    }, []);
 
-    const approveExpertProfile = (id) => {
-        const expert = experts.find(e => e.id === id);
-        if (expert) {
-            // Find corresponding staff member by userId or email
-            const staffMember = staff.find(s => s._id === expert.userId || s.email === expert.email);
-            if (staffMember) {
-                updateStaff(staffMember._id, {
-                    bio: expert.bio,
-                    specializations: expert.specializations,
-                    experience: expert.experience,
-                    profileStatus: 'Approved'
-                });
-            }
+    useEffect(() => {
+        fetchAppCMS();
+    }, [fetchAppCMS]);
+
+    const saveSection = async (section, content) => {
+        try {
+            await api.patch(`/cms/app/${section}`, { content: Array.isArray(content) ? content : [] });
+        } catch (e) {
+            console.error('[CMS] Save failed:', e);
+            throw e;
         }
-        setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Approved' } : e));
     };
 
-    const rejectExpertProfile = (id) => {
-        const expert = experts.find(e => e.id === id);
-        if (expert) {
-            const staffMember = staff.find(s => s._id === expert.userId || s.email === expert.email);
-            if (staffMember) {
-                updateStaff(staffMember._id, { profileStatus: 'Rejected' });
-            }
+    const addLookbookItem = async (item) => {
+        const newItem = { ...item, id: Date.now() };
+        const next = [newItem, ...lookbook];
+        setLookbook(next);
+        try {
+            await saveSection('lookbook', next);
+        } catch (e) {
+            setLookbook(lookbook);
+            throw e;
         }
-        setExperts(prev => prev.map(e => e.id === id ? { ...e, status: 'Rejected' } : e));
+    };
+    const updateLookbookItem = async (id, data) => {
+        const prev = lookbook;
+        const next = lookbook.map((l) => (String(l.id) === String(id) ? { ...l, ...data } : l));
+        setLookbook(next);
+        try {
+            await saveSection('lookbook', next);
+        } catch (e) {
+            setLookbook(prev);
+            throw e;
+        }
+    };
+    const deleteLookbookItem = async (id) => {
+        const prev = lookbook;
+        const next = lookbook.filter((l) => String(l.id) !== String(id));
+        setLookbook(next);
+        try {
+            await saveSection('lookbook', next);
+        } catch (e) {
+            setLookbook(prev);
+            throw e;
+        }
+    };
+    const toggleLookbookStatus = async (id) => {
+        const prev = lookbook;
+        const next = lookbook.map((l) =>
+            (String(l.id) === String(id) ? { ...l, status: l.status === 'Active' ? 'Paused' : 'Active' } : l)
+        );
+        setLookbook(next);
+        try {
+            await saveSection('lookbook', next);
+        } catch (e) {
+            setLookbook(prev);
+            throw e;
+        }
     };
 
-    const deleteExpertProfile = (id) => setExperts(prev => prev.filter(e => e.id !== id));
+    const addBanner = async (banner) => {
+        const newItem = { ...banner, id: Date.now() };
+        const next = [newItem, ...banners];
+        setBanners(next);
+        try {
+            await saveSection('banners', next);
+        } catch (e) {
+            setBanners(banners);
+            throw e;
+        }
+    };
+    const updateBanner = async (id, data) => {
+        const prev = banners;
+        const next = banners.map((b) => (String(b.id) === String(id) ? { ...b, ...data } : b));
+        setBanners(next);
+        try {
+            await saveSection('banners', next);
+        } catch (e) {
+            setBanners(prev);
+            throw e;
+        }
+    };
+    const deleteBanner = async (id) => {
+        const prev = banners;
+        const next = banners.filter((b) => String(b.id) !== String(id));
+        setBanners(next);
+        try {
+            await saveSection('banners', next);
+        } catch (e) {
+            setBanners(prev);
+            throw e;
+        }
+    };
+    const toggleBannerStatus = async (id) => {
+        const prev = banners;
+        const next = banners.map((b) =>
+            (String(b.id) === String(id) ? { ...b, status: b.status === 'Active' ? 'Paused' : 'Active' } : b)
+        );
+        setBanners(next);
+        try {
+            await saveSection('banners', next);
+        } catch (e) {
+            setBanners(prev);
+            throw e;
+        }
+    };
+
+    const addOffer = async (offer) => {
+        const newItem = { ...offer, id: Date.now() };
+        const next = [newItem, ...offers];
+        setOffers(next);
+        try {
+            await saveSection('offers', next);
+        } catch (e) {
+            setOffers(offers);
+            throw e;
+        }
+    };
+    const updateOffer = async (id, data) => {
+        const prev = offers;
+        const next = offers.map((o) => (String(o.id) === String(id) ? { ...o, ...data } : o));
+        setOffers(next);
+        try {
+            await saveSection('offers', next);
+        } catch (e) {
+            setOffers(prev);
+            throw e;
+        }
+    };
+    const deleteOffer = async (id) => {
+        const prev = offers;
+        const next = offers.filter((o) => String(o.id) !== String(id));
+        setOffers(next);
+        try {
+            await saveSection('offers', next);
+        } catch (e) {
+            setOffers(prev);
+            throw e;
+        }
+    };
+    const toggleOfferStatus = async (id) => {
+        const prev = offers;
+        const next = offers.map((o) =>
+            (String(o.id) === String(id) ? { ...o, status: o.status === 'Live' ? 'Draft' : 'Live' } : o)
+        );
+        setOffers(next);
+        try {
+            await saveSection('offers', next);
+        } catch (e) {
+            setOffers(prev);
+            throw e;
+        }
+    };
+
+    const updateExpertProfile = (userId, data) => {
+        setExperts((prev) => {
+            const exists = prev.find((e) => e.userId === userId || e._id === userId);
+            if (exists) {
+                return prev.map((e) =>
+                    e.userId === userId || e._id === userId ? { ...e, ...data } : e
+                );
+            }
+            return [...prev, { ...data, userId, id: Date.now(), status: 'Pending' }];
+        });
+    };
+
+    const approveExpertProfile = async (id) => {
+        const expert = experts.find((e) => String(e.id) === String(id) || String(e._id) === String(id));
+        if (expert && staff?.length) {
+            const staffMember = staff.find(
+                (s) => String(s._id) === String(expert.userId || expert._id) || s.email === expert.email
+            );
+            if (staffMember) {
+                try {
+                    await updateStaff(staffMember._id, {
+                        bio: expert.bio,
+                        specializations: expert.specializations,
+                        experience: expert.experience,
+                        profileStatus: 'Approved',
+                    });
+                } catch (_) {}
+            }
+        }
+        setExperts((prev) =>
+            prev.map((e) =>
+                String(e.id) === String(id) || String(e._id) === String(id) ? { ...e, status: 'Approved' } : e
+            )
+        );
+    };
+
+    const rejectExpertProfile = async (id) => {
+        const expert = experts.find((e) => String(e.id) === String(id) || String(e._id) === String(id));
+        if (expert && staff?.length) {
+            const staffMember = staff.find(
+                (s) => String(s._id) === String(expert.userId || expert._id) || s.email === expert.email
+            );
+            if (staffMember) {
+                try {
+                    await updateStaff(staffMember._id, { profileStatus: 'Rejected' });
+                } catch (_) {}
+            }
+        }
+        setExperts((prev) =>
+            prev.map((e) =>
+                String(e.id) === String(id) || String(e._id) === String(id) ? { ...e, status: 'Rejected' } : e
+            )
+        );
+    };
+
+    const deleteExpertProfile = (id) => {
+        setExperts((prev) => prev.filter((e) => String(e.id) !== String(id) && String(e._id) !== String(id)));
+    };
 
     const value = {
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
         lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
         experts, setExperts, updateExpertProfile, approveExpertProfile, rejectExpertProfile, deleteExpertProfile,
-        pendingExpertsCount: experts.filter(e => e.status === 'Pending').length
+        pendingExpertsCount: experts.filter((e) => e.status === 'Pending').length,
+        cmsLoading: loading,
+        fetchAppCMS,
     };
 
     return <CMSContext.Provider value={value}>{children}</CMSContext.Provider>;

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { password } from './custom.validation.js';
+import { password, objectId } from './custom.validation.js';
 
 export const register = {
     body: Joi.object().keys({
@@ -33,5 +33,17 @@ export const loginWithOtp = {
         phone: Joi.string().required(),
         tenantId: Joi.string().required(),
         otp: Joi.string().required().length(6),
+    }),
+};
+
+export const registerCustomer = {
+    body: Joi.object().keys({
+        tenantId: Joi.string().required().custom(objectId),
+        name: Joi.string().required().trim(),
+        email: Joi.string().required().email().trim().lowercase(),
+        phone: Joi.string().required().trim(),
+        password: Joi.string().required().custom(password),
+        dob: Joi.date().required(),
+        anniversary: Joi.date().optional().allow(null),
     }),
 };

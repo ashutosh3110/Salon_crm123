@@ -13,9 +13,25 @@ const createOutlet = async (req, res, next) => {
     }
 };
 
+const getNearbyOutletsPublic = async (req, res, next) => {
+    try {
+        const lat = req.query.lat != null ? parseFloat(req.query.lat) : null;
+        const lng = req.query.lng != null ? parseFloat(req.query.lng) : null;
+        const radius = req.query.radius != null ? parseFloat(req.query.radius) : 3;
+        const outlets = await outletService.getNearbyOutletsPublic(lat, lng, radius);
+        res.send(outlets);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getOutlets = async (req, res, next) => {
     try {
-        const outlets = await outletService.getOutlets(req.tenantId);
+        const lat = req.query.lat != null ? parseFloat(req.query.lat) : null;
+        const lng = req.query.lng != null ? parseFloat(req.query.lng) : null;
+        const radiusKm = req.query.radius != null ? parseFloat(req.query.radius) : null;
+        const options = (lat != null && lng != null && radiusKm != null) ? { lat, lng, radiusKm } : {};
+        const outlets = await outletService.getOutlets(req.tenantId, options);
         res.send(outlets);
     } catch (error) {
         next(error);
@@ -58,4 +74,5 @@ export default {
     getOutlet,
     updateOutlet,
     deleteOutlet,
+    getNearbyOutletsPublic,
 };

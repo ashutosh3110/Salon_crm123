@@ -18,7 +18,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 export default function SalonSelectionPage() {
-    const { outlets, setActiveOutletId } = useBusiness();
+    const { outlets, outletsLoading, fetchOutlets, setActiveOutletId } = useBusiness();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const navigate = useNavigate();
@@ -27,18 +27,69 @@ export default function SalonSelectionPage() {
     const [isLocating, setIsLocating] = useState(true);
     const [isFocused, setIsFocused] = useState(false);
     const [showLocationModal, setShowLocationModal] = useState(false);
-    const [displayLocation, setDisplayLocation] = useState('Gomti Nagar, Lucknow');
+    const [displayLocation, setDisplayLocation] = useState('Detecting...');
     const [customLocation, setCustomLocation] = useState('');
     const [isModalSearchFocused, setIsModalSearchFocused] = useState(false);
+    const [locationFetchError, setLocationFetchError] = useState('');
 
     const POPULAR_CITIES = [
         { name: 'Gomti Nagar, Lucknow', lat: 26.8467, lng: 80.9462 },
+        { name: 'Bhopal', lat: 23.2599, lng: 77.4126 },
+        { name: 'Indore', lat: 22.7196, lng: 75.8577 },
         { name: 'Connaught Place, Delhi', lat: 28.6315, lng: 77.2167 },
         { name: 'Bandra West, Mumbai', lat: 19.0596, lng: 72.8295 },
         { name: 'Koramangala, Bengaluru', lat: 12.9352, lng: 77.6245 },
         { name: 'Salt Lake, Kolkata', lat: 22.5697, lng: 88.4124 },
         { name: 'Anna Nagar, Chennai', lat: 13.0839, lng: 80.2101 },
     ];
+
+    const findCoordsForLocation = (locationText) => {
+        if (!locationText?.trim()) return null;
+        const text = locationText.trim().toLowerCase();
+        const match = POPULAR_CITIES.find(c => {
+            const cityName = c.name.toLowerCase();
+            const parts = cityName.split(',').map(p => p.trim());
+            return cityName.includes(text) || parts.some(p => text.includes(p) || p.includes(text));
+        });
+        return match ? { lat: match.lat, lng: match.lng } : null;
+    };
+
+    const applyCustomLocation = async () => {
+        const trimmed = customLocation?.trim();
+        setLocationFetchError('');
+        if (trimmed) {
+            setDisplayLocation(trimmed);
+            let coords = findCoordsForLocation(trimmed);
+            if (!coords) {
+                setIsLocating(true);
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed + ', India')}&limit=1`,
+                        { headers: { 'Accept-Language': 'en', 'User-Agent': 'WapixoSalonApp/1.0' } }
+                    );
+                    const data = await res.json();
+                    if (data?.[0]) {
+                        coords = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                    }
+                } catch (e) {
+                    console.warn('Geocoding failed:', e);
+                }
+                if (!coords) {
+                    setIsLocating(false);
+                    setLocationFetchError('Location not found. Try another spelling or pick a popular city.');
+                    return;
+                }
+                setUserLocation(coords);
+                setIsLocating(false);
+            } else {
+                setUserLocation(coords);
+            }
+            setCustomLocation('');
+            setShowLocationModal(false);
+            return;
+        }
+        setShowLocationModal(false);
+    };
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -49,24 +100,67 @@ export default function SalonSelectionPage() {
         accent: '#C8956C'
     };
 
+    const DEFAULT_RADIUS_KM = 3;
+    const RADIUS_OPTIONS = [3, 5, 10, 25];
+    const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
+
+    // Get user location (real GPS) and reverse-geocode for display
     useEffect(() => {
-        // Mocking user location (Lucknow center) for consistency
-        setTimeout(() => {
+        if (!navigator.geolocation) {
             setUserLocation({ lat: 26.8467, lng: 80.9462 });
+            setDisplayLocation('Gomti Nagar, Lucknow');
             setIsLocating(false);
-        }, 1500);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setUserLocation(coords);
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
+                        { headers: { 'User-Agent': 'WapixoSalonApp/1.0' } }
+                    );
+                    const data = await res.json();
+                    const addr = data?.address;
+                    const loc = addr ? [addr.suburb, addr.neighbourhood, addr.village, addr.city_district, addr.city, addr.state].filter(Boolean).slice(0, 2).join(', ') : `${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`;
+                    setDisplayLocation(loc || 'Current location');
+                } catch {
+                    setDisplayLocation(`${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`);
+                }
+                setIsLocating(false);
+            },
+            () => {
+                setUserLocation({ lat: 26.8467, lng: 80.9462 });
+                setDisplayLocation('Gomti Nagar, Lucknow');
+                setIsLocating(false);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     }, []);
+
+    useEffect(() => {
+        if (userLocation && localStorage.getItem('customer_token')) {
+            fetchOutlets({ lat: userLocation.lat, lng: userLocation.lng, radius: searchRadiusKm });
+        }
+    }, [userLocation?.lat, userLocation?.lng, searchRadiusKm]);
 
     const processedOutlets = useMemo(() => {
         if (!userLocation) return outlets;
-
-        return outlets.map(o => {
-            // Mock salon coordinates if not present
-            const lat = o.lat || 26.85 + (Math.random() - 0.5) * 0.1;
-            const lng = o.lng || 80.95 + (Math.random() - 0.5) * 0.1;
-            const distance = getDistance(userLocation.lat, userLocation.lng, lat, lng);
-            return { ...o, distance };
-        }).sort((a, b) => a.distance - b.distance);
+        const latU = userLocation.lat, lngU = userLocation.lng;
+        return outlets
+            .filter(o => {
+                const lat = o.latitude ?? o.lat;
+                const lng = o.longitude ?? o.lng;
+                return lat != null && lng != null;
+            })
+            .map(o => {
+                const lat = o.latitude ?? o.lat;
+                const lng = o.longitude ?? o.lng;
+                const distance = o.distanceKm ?? getDistance(latU, lngU, lat, lng);
+                return { ...o, distance };
+            })
+            .sort((a, b) => a.distance - b.distance);
     }, [outlets, userLocation]);
 
     const filteredOutlets = processedOutlets.filter(o =>
@@ -93,10 +187,10 @@ export default function SalonSelectionPage() {
                             <span className="text-[10px] font-black uppercase tracking-[0.3em]">Secure Selection</span>
                         </div>
                         <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text }}>
-                            Select Your <span style={{ color: colors.accent }}>Wapixo</span> Salon
+                            Choose your <span style={{ color: colors.accent }}>outlet</span>
                         </h1>
                         <p className="text-xs font-medium leading-relaxed opacity-70" style={{ color: colors.text }}>
-                            Experience premium grooming at an outlet near you.
+                            Outlets near your location (default {DEFAULT_RADIUS_KM} km — adjust radius if needed).
                         </p>
                     </div>
 
@@ -129,6 +223,27 @@ export default function SalonSelectionPage() {
                             onClick={() => setShowLocationModal(true)}
                             className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]"
                         >Change</motion.button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <p className="text-[9px] font-black uppercase tracking-widest opacity-60" style={{ color: colors.text }}>Search radius (optional)</p>
+                        <div className="flex flex-wrap gap-2">
+                            {RADIUS_OPTIONS.map((km) => (
+                                <button
+                                    key={km}
+                                    type="button"
+                                    onClick={() => setSearchRadiusKm(km)}
+                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full transition-all"
+                                    style={{
+                                        border: `1.5px solid ${searchRadiusKm === km ? '#C8956C' : colors.border}`,
+                                        background: searchRadiusKm === km ? 'rgba(200,149,108,0.15)' : colors.card,
+                                        color: searchRadiusKm === km ? '#C8956C' : colors.text,
+                                    }}
+                                >
+                                    {km} km
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Main Search Bar */}
@@ -240,7 +355,7 @@ export default function SalonSelectionPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={() => setShowLocationModal(false)}
+                            onClick={() => { setShowLocationModal(false); setLocationFetchError(''); }}
                             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         />
                         <motion.div
@@ -272,20 +387,20 @@ export default function SalonSelectionPage() {
                                     }}
                                 >
                                     <Search size={16} style={{ color: isModalSearchFocused ? '#C8956C' : (isLight ? '#999' : 'rgba(255,255,255,0.3)') }} />
+                                    {locationFetchError && (
+                                        <p className="text-xs text-red-500 font-medium">{locationFetchError}</p>
+                                    )}
                                     <input
                                         type="text"
                                         placeholder="Enter area, street or city..."
                                         value={customLocation}
-                                        onChange={(e) => setCustomLocation(e.target.value)}
+                                        onChange={(e) => { setCustomLocation(e.target.value); setLocationFetchError(''); }}
                                         onFocus={() => setIsModalSearchFocused(true)}
                                         onBlur={() => setIsModalSearchFocused(false)}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && customLocation) {
-                                                setIsLocating(true); setDisplayLocation(customLocation);
-                                                setTimeout(() => {
-                                                    setUserLocation(prev => ({ lat: prev.lat + 0.01, lng: prev.lng + 0.01 }));
-                                                    setIsLocating(false); setShowLocationModal(false);
-                                                }, 1000);
+                                            if (e.key === 'Enter' && customLocation?.trim()) {
+                                                e.preventDefault();
+                                                applyCustomLocation();
                                             }
                                         }}
                                         className="w-full bg-transparent border-none outline-none font-semibold text-[13px]"
@@ -321,7 +436,19 @@ export default function SalonSelectionPage() {
                                     </div>
                                 </div>
 
-                                <button onClick={() => setShowLocationModal(false)} className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest" style={{ background: colors.accent, color: '#fff' }}>Confirm Location</button>
+                                <button
+                                    onClick={() => {
+                                        if (customLocation?.trim()) {
+                                            applyCustomLocation();
+                                        } else {
+                                            setShowLocationModal(false);
+                                        }
+                                    }}
+                                    className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest"
+                                    style={{ background: colors.accent, color: '#fff' }}
+                                >
+                                    {customLocation?.trim() ? 'Apply & Close' : 'Close'}
+                                </button>
                             </div>
                         </motion.div>
                     </div>

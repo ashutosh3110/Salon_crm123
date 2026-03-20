@@ -6,6 +6,8 @@ import outletController from './outlet.controller.js';
 
 const router = express.Router();
 
+router.get('/nearby', outletController.getNearbyOutletsPublic);
+
 router.use(auth);
 router.use(validateTenant);
 

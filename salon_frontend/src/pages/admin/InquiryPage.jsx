@@ -2,18 +2,19 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Plus, Search, Phone, Edit, Trash2, TrendingUp,
     ClipboardList, Calendar, Clock, CheckCircle,
-    ChevronDown, ArrowRight, AlertTriangle, Sparkles, RefreshCw
+    ChevronDown
 } from 'lucide-react';
+import api from '../../services/api';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
 const SOURCES = ['Walk-in', 'Phone Call', 'Instagram', 'Facebook', 'WhatsApp', 'Website', 'Referral', 'Other'];
 const STATUSES = ['new', 'follow-up', 'converted', 'lost'];
 const FOLLOW_UP_OPTIONS = [
-    { label: 'None', value: 0 },
-    { label: '3D', value: 3 },
-    { label: '7D', value: 7 },
-    { label: '10D', value: 10 },
+    { label: 'No reminder', value: 0 },
+    { label: '3 days', value: 3 },
+    { label: '7 days', value: 7 },
+    { label: '10 days', value: 10 },
 ];
 
 const SOURCE_STYLES = {
@@ -29,19 +30,10 @@ const SOURCE_STYLES = {
 
 const STATUS_STYLES = {
     'new': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'New' },
-    'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow' },
-    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Won' },
-    'lost': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Lost' },
+    'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow-up' },
+    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Booked' },
+    'lost': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Not Interested' },
 };
-
-/* ─── Seed Data ───────────────────────────────────────────────────────── */
-
-const SEED_INQUIRIES = [
-    { id: 'inq-001', name: 'Ananya Mehta', phone: '9876543210', email: 'ananya@gmail.com', source: 'Walk-in', serviceInterest: 'Bridal Makeup Package', notes: 'Getting married in April.', status: 'new', followUpDate: new Date(Date.now() + 3 * 86400000).toISOString(), createdAt: new Date(Date.now() - 1 * 86400000).toISOString() },
-    { id: 'inq-002', name: 'Rohan Kapoor', phone: '9123456780', email: '', source: 'Instagram', serviceInterest: 'Hair Coloring', notes: 'Interested in ash grey.', status: 'follow-up', followUpDate: new Date(Date.now() - 1 * 86400000).toISOString(), createdAt: new Date(Date.now() - 5 * 86400000).toISOString() },
-    { id: 'inq-003', name: 'Priya Nair', phone: '9988776655', email: 'priya.nair@yahoo.com', source: 'WhatsApp', serviceInterest: 'Full Body Massage', notes: 'Referred by Kavita.', status: 'converted', followUpDate: null, createdAt: new Date(Date.now() - 10 * 86400000).toISOString() },
-    { id: 'inq-004', name: 'Vikram Singh', phone: '9001122334', email: '', source: 'Phone Call', serviceInterest: 'Beard Trim', notes: 'Budget conscious.', status: 'lost', followUpDate: null, createdAt: new Date(Date.now() - 14 * 86400000).toISOString() },
-];
 
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
 
@@ -50,9 +42,9 @@ function getFollowUpLabel(dateStr) {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const target = new Date(dateStr); target.setHours(0, 0, 0, 0);
     const diff = Math.round((target - today) / 86400000);
-    if (diff < 0) return { text: `${Math.abs(diff)}d Overdue`, color: 'text-rose-600', bg: 'bg-rose-50' };
-    if (diff === 0) return { text: 'Due Today', color: 'text-amber-600', bg: 'bg-amber-50' };
-    return { text: `In ${diff}d`, color: 'text-text-muted', bg: 'bg-surface' };
+    if (diff < 0) return { text: `${Math.abs(diff)} day${Math.abs(diff) !== 1 ? 's' : ''} overdue`, color: 'text-rose-600', bg: 'bg-rose-50' };
+    if (diff === 0) return { text: 'Due today', color: 'text-amber-600', bg: 'bg-amber-50' };
+    return { text: `In ${diff} day${diff !== 1 ? 's' : ''}`, color: 'text-text-muted', bg: 'bg-surface' };
 }
 
 function formatDate(dateStr) {
@@ -63,6 +55,7 @@ function formatDate(dateStr) {
 
 export default function InquiryPage() {
     const [inquiries, setInquiries] = useState([]);
+    const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [filterSource, setFilterSource] = useState('All');
@@ -72,25 +65,40 @@ export default function InquiryPage() {
     const [statusDropdown, setStatusDropdown] = useState(null);
     const [convertedId, setConvertedId] = useState(null);
     const [form, setForm] = useState({
+        customerId: '',
         name: '', phone: '', email: '', source: 'Walk-in',
         serviceInterest: '', notes: '', followUpDays: 0
     });
 
-    useEffect(() => {
-        const stored = localStorage.getItem('inquiry_tracker');
-        if (stored) {
-            setInquiries(JSON.parse(stored));
-        } else {
-            setInquiries(SEED_INQUIRIES);
-            localStorage.setItem('inquiry_tracker', JSON.stringify(SEED_INQUIRIES));
+    const fetchCustomers = async () => {
+        try {
+            const res = await api.get('/clients', { params: { page: 1, limit: 200 } });
+            const list = res.data?.results || res.data || [];
+            setCustomers(Array.isArray(list) ? list : []);
+        } catch (e) {
+            console.error('[Inquiry] Customer fetch failed:', e);
+            setCustomers([]);
         }
-        setLoading(false);
-    }, []);
-
-    const persist = (data) => {
-        setInquiries(data);
-        localStorage.setItem('inquiry_tracker', JSON.stringify(data));
     };
+
+    const fetchInquiries = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/inquiries', { params: { page: 1, limit: 200 } });
+            const list = res.data?.results || [];
+            setInquiries(list.map((i) => ({ ...i, id: i._id || i.id })));
+        } catch (e) {
+            console.error('[Inquiry] Fetch failed:', e);
+            setInquiries([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchInquiries();
+        fetchCustomers();
+    }, []);
 
     const stats = useMemo(() => {
         const total = inquiries.length;
@@ -98,10 +106,10 @@ export default function InquiryPage() {
         const converted = inquiries.filter(i => i.status === 'converted').length;
         const rate = total > 0 ? Math.round((converted / total) * 100) : 0;
         return [
-            { label: 'Total Inbound', value: total, icon: ClipboardList, trend: 'Network' },
-            { label: 'Actionable', value: pending, icon: Clock, trend: 'Priority' },
-            { label: 'Converted', value: converted, icon: CheckCircle, trend: 'Revenue' },
-            { label: 'Protocol Rate', value: `${rate}%`, icon: TrendingUp, trend: 'Signal' },
+            { label: 'Total Enquiries', value: total, icon: ClipboardList, trend: '' },
+            { label: 'Needs Follow-up', value: pending, icon: Clock, trend: '' },
+            { label: 'Booked', value: converted, icon: CheckCircle, trend: '' },
+            { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, trend: '' },
         ];
     }, [inquiries]);
 
@@ -117,44 +125,59 @@ export default function InquiryPage() {
         });
     }, [inquiries, search, filterSource, filterStatus]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const now = new Date().toISOString();
         let followUpDate = null;
         if (form.followUpDays > 0) {
             const futureMs = form.followUpDays * 86400000;
             followUpDate = new Date(new Date().getTime() + futureMs).toISOString();
         }
 
-        if (editingInquiry) {
-            const updated = inquiries.map(i => i.id === editingInquiry.id
-                ? { ...i, ...form, followUpDate, updatedAt: now }
-                : i);
-            persist(updated);
-        } else {
-            const newInquiry = {
-                id: `inq-${crypto.randomUUID().slice(0, 8)}`,
-                ...form,
-                followUpDate,
-                status: 'new',
-                createdAt: now,
-            };
-            persist([newInquiry, ...inquiries]);
+        const payload = {
+            name: form.name,
+            phone: form.phone,
+            email: form.email,
+            source: form.source,
+            serviceInterest: form.serviceInterest,
+            notes: form.notes,
+            followUpDate,
+            reminderChannel: followUpDate ? 'whatsapp' : 'none',
+        };
+
+        try {
+            if (editingInquiry) {
+                await api.patch(`/inquiries/${editingInquiry.id || editingInquiry._id}`, payload);
+            } else {
+                await api.post('/inquiries', payload);
+            }
+            await fetchInquiries();
+            closeModal();
+        } catch (error) {
+            console.error('[Inquiry] Save failed:', error);
         }
-        closeModal();
     };
 
-    const handleDelete = (id) => {
-        if (!confirm('Delete record?')) return;
-        persist(inquiries.filter(i => i.id !== id));
+    const handleDelete = async (id) => {
+        if (!confirm('Delete this enquiry?')) return;
+        try {
+            await api.delete(`/inquiries/${id}`);
+            await fetchInquiries();
+        } catch (error) {
+            console.error('[Inquiry] Delete failed:', error);
+        }
     };
 
-    const changeStatus = (id, newStatus) => {
+    const changeStatus = async (id, newStatus) => {
         if (newStatus === 'converted') {
             setConvertedId(id);
             setTimeout(() => setConvertedId(null), 1500);
         }
-        persist(inquiries.map(i => i.id === id ? { ...i, status: newStatus } : i));
+        try {
+            await api.patch(`/inquiries/${id}`, { status: newStatus });
+            await fetchInquiries();
+        } catch (error) {
+            console.error('[Inquiry] Status update failed:', error);
+        }
         setStatusDropdown(null);
     };
 
@@ -163,7 +186,9 @@ export default function InquiryPage() {
         const followUpDays = inq.followUpDate
             ? Math.max(0, Math.round((new Date(inq.followUpDate) - Date.now()) / 86400000))
             : 0;
+        const matched = customers.find((c) => c.phone === inq.phone);
         setForm({
+            customerId: matched?._id || '',
             name: inq.name, phone: inq.phone, email: inq.email || '',
             source: inq.source, serviceInterest: inq.serviceInterest || '',
             notes: inq.notes || '', followUpDays
@@ -174,11 +199,11 @@ export default function InquiryPage() {
     const closeModal = () => {
         setShowModal(false);
         setEditingInquiry(null);
-        setForm({ name: '', phone: '', email: '', source: 'Walk-in', serviceInterest: '', notes: '', followUpDays: 0 });
+        setForm({ customerId: '', name: '', phone: '', email: '', source: 'Walk-in', serviceInterest: '', notes: '', followUpDays: 0 });
     };
 
     if (loading) {
-        return <div className="p-20 text-center uppercase font-mono text-[10px] animate-pulse">Scanning Registry...</div>;
+        return <div className="p-20 text-center uppercase font-mono text-[10px] animate-pulse">Loading enquiries...</div>;
     }
 
     return (
@@ -186,14 +211,14 @@ export default function InquiryPage() {
             {/* Header - Compact */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
                 <div className="text-left font-mono">
-                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Inquiry Tracker</h1>
-                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">CRM :: Lead Pipe & Conversion Matrix</p>
+                    <h1 className="text-xl font-black text-text uppercase italic tracking-tight leading-none">Customer Enquiries</h1>
+                    <p className="text-[9px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">Track enquiries and convert them into bookings</p>
                 </div>
                 <button
                     onClick={() => { closeModal(); setShowModal(true); }}
                     className="flex items-center gap-2 bg-text text-background px-4 py-2 text-[9px] font-black uppercase tracking-[0.15em] shadow-lg hover:bg-primary hover:text-white transition-all font-mono"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Log Inquiry
+                    <Plus className="w-3.5 h-3.5" /> Add Enquiry
                 </button>
             </div>
 
@@ -206,7 +231,7 @@ export default function InquiryPage() {
                                 <stat.icon className="w-3.5 h-3.5 text-text-muted group-hover:text-primary transition-colors" />
                                 <p className="text-[8px] font-black text-text-muted uppercase tracking-widest font-mono">{stat.label}</p>
                             </div>
-                            <span className="text-[7px] font-black text-primary uppercase tracking-widest font-mono italic">{stat.trend}</span>
+                            {stat.trend && <span className="text-[7px] font-black text-primary uppercase tracking-widest font-mono italic">{stat.trend}</span>}
                         </div>
                         <h3 className="text-xl font-black text-text tracking-tighter uppercase font-mono italic leading-none">{stat.value}</h3>
                     </div>
@@ -221,7 +246,7 @@ export default function InquiryPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Scan name, phone, or service..."
+                        placeholder="Search by name, phone or service..."
                         className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all placeholder:text-[10px] uppercase font-mono"
                     />
                 </div>
@@ -251,12 +276,12 @@ export default function InquiryPage() {
                     <table className="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr className="bg-surface font-mono border-b border-border">
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Visitor Asset</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Customer</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Target Interest</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Service Interested In</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Follow-up</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Epoch</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Date</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
@@ -266,7 +291,7 @@ export default function InquiryPage() {
                                     <td colSpan="7" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center justify-center opacity-20">
                                             <ClipboardList className="w-12 h-12 text-text-muted mb-3" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest font-mono">Registry Empty.</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest font-mono">No enquiries yet. Add your first enquiry above.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -357,7 +382,7 @@ export default function InquiryPage() {
                 {/* Footer - Compact */}
                 <div className="bg-surface px-4 py-2 border-t border-border flex items-center justify-between">
                     <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
-                        Inquiry Audit: {filtered.length} Leads in Flux
+                        Showing {filtered.length} enquiry{filtered.length !== 1 ? 'ies' : ''}
                     </span>
                     <div className="flex gap-4">
                         <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20" disabled>Backward</button>
@@ -376,24 +401,54 @@ export default function InquiryPage() {
                             </div>
                             <div className="text-left">
                                 <h2 className="text-lg font-black text-text uppercase italic font-mono leading-none">
-                                    {editingInquiry ? 'Update Entry' : 'Log New Inquiry'}
+                                    {editingInquiry ? 'Edit Enquiry' : 'Add New Enquiry'}
                                 </h2>
-                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">Lead Capture Protocol</p>
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">Add customer details</p>
                             </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Visual Name</label>
-                                    <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\s]/g, '').toUpperCase() })} required className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text uppercase font-mono" placeholder="NAME" />
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Select Existing Customer (optional)</label>
+                                    <select
+                                        value={form.customerId}
+                                        onChange={(e) => {
+                                            const customerId = e.target.value;
+                                            if (!customerId) {
+                                                setForm({ ...form, customerId: '' });
+                                                return;
+                                            }
+                                            const selected = customers.find((c) => c._id === customerId);
+                                            if (!selected) return;
+                                            setForm({
+                                                ...form,
+                                                customerId: selected._id,
+                                                name: (selected.name || '').toUpperCase(),
+                                                phone: selected.phone || '',
+                                                email: selected.email || '',
+                                            });
+                                        }}
+                                        className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                    >
+                                        <option value="">-- Select customer --</option>
+                                        {customers.map((c) => (
+                                            <option key={c._id} value={c._id}>
+                                                {(c.name || 'Customer')} - {c.phone}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-1 col-span-2">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Customer Name</label>
+                                    <input type="text" value={form.name} onChange={(e) => setForm({ ...form, customerId: '', name: e.target.value.replace(/[^a-zA-Z\s]/g, '').toUpperCase() })} required className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text uppercase font-mono" placeholder="Enter name" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone</label>
                                     <input type="tel" value={form.phone} onChange={(e) => {
                                         const val = e.target.value.replace(/\D/g, '');
-                                        if (val.length <= 10) setForm({ ...form, phone: val });
-                                    }} required className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono" placeholder="NUM" />
+                                        if (val.length <= 10) setForm({ ...form, customerId: '', phone: val });
+                                    }} required className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono" placeholder="10-digit number" />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Source</label>
@@ -402,15 +457,15 @@ export default function InquiryPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Service Target</label>
-                                    <input type="text" value={form.serviceInterest} onChange={(e) => setForm({ ...form, serviceInterest: e.target.value.toUpperCase() })} className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono" placeholder="INTEREST" />
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Service Interested In</label>
+                                    <input type="text" value={form.serviceInterest} onChange={(e) => setForm({ ...form, serviceInterest: e.target.value.toUpperCase() })} className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono" placeholder="e.g. Haircut, Bridal Makeup" />
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Protocol Notes</label>
-                                    <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12" placeholder="ADDITIONAL INTEL" />
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Notes</label>
+                                    <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-12" placeholder="Add any notes about this enquiry..." />
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Follow-up Loop</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Remind me to follow up in</label>
                                     <div className="flex gap-2">
                                         {FOLLOW_UP_OPTIONS.map(opt => (
                                             <button
@@ -427,9 +482,9 @@ export default function InquiryPage() {
                             </div>
 
                             <div className="flex gap-3 pt-4 border-t border-border mt-4">
-                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono">Abort</button>
+                                <button type="button" onClick={closeModal} className="flex-1 py-3 text-[9px] font-black uppercase tracking-widest text-text-muted hover:bg-surface-alt transition-colors font-mono">Cancel</button>
                                 <button type="submit" className="flex-1 bg-text text-white py-3 shadow-lg flex items-center justify-center gap-2 hover:bg-primary transition-all active:scale-95">
-                                    <span className="text-[9px] font-black uppercase tracking-widest font-mono">{editingInquiry ? 'Commit' : 'Induct'}</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest font-mono">{editingInquiry ? 'Save Changes' : 'Add Enquiry'}</span>
                                 </button>
                             </div>
                         </form>

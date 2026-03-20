@@ -56,7 +56,19 @@ const invoiceSchema = new mongoose.Schema(
         promotionId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Promotion',
-        }
+        },
+        refund: {
+            requested: { type: Boolean, default: false },
+            status: {
+                type: String,
+                enum: ['none', 'pending', 'approved', 'rejected'],
+                default: 'none',
+            },
+            reason: { type: String, trim: true, default: '' },
+            remark: { type: String, trim: true, default: '' },
+            requestedAt: { type: Date, default: null },
+            processedAt: { type: Date, default: null },
+        },
     },
     {
         timestamps: true,

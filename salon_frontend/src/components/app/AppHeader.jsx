@@ -21,7 +21,7 @@ const SALON_THOUGHTS = [
 
 export default function AppHeader() {
     const { theme, toggleTheme } = useCustomerTheme();
-    const { customer, logout } = useCustomerAuth();
+    const { customer, customerLogout } = useCustomerAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const { balance } = useWallet();

@@ -25,11 +25,12 @@ import {
 } from 'lucide-react';
 
 export default function MarketingCMSPage() {
-    const { 
-        banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
-        offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
-        lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
-        experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile, pendingExpertsCount
+    const {
+        banners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
+        offers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
+        lookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
+        experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile, pendingExpertsCount,
+        cmsLoading, fetchAppCMS,
     } = useCMS();
     const { outlets } = useBusiness();
 
@@ -66,45 +67,41 @@ export default function MarketingCMSPage() {
         setEditingId(null);
     };
 
-    const handlePublish = (e) => {
+    const [saving, setSaving] = useState(false);
+
+    const handlePublish = async (e) => {
         e.preventDefault();
-        
-        if (editingId) {
-            if (modalType === 'banner') {
-                updateBanner(editingId, formData);
-            } else if (modalType === 'offer') {
-                updateOffer(editingId, formData);
+        setSaving(true);
+        try {
+            if (editingId) {
+                if (modalType === 'banner') await updateBanner(editingId, formData);
+                else if (modalType === 'offer') await updateOffer(editingId, formData);
+                else await updateLookbookItem(editingId, formData);
             } else {
-                updateLookbookItem(editingId, formData);
+                const newItem = { ...formData, status: modalType === 'offer' ? 'Live' : 'Active' };
+                if (modalType === 'banner') await addBanner(newItem);
+                else if (modalType === 'offer') await addOffer(newItem);
+                else await addLookbookItem(newItem);
             }
-        } else {
-            const newItem = {
-                ...formData,
-                status: modalType === 'offer' ? 'Live' : 'Active'
-            };
-
-            if (modalType === 'banner') {
-                addBanner(newItem);
-            } else if (modalType === 'offer') {
-                addOffer(newItem);
-            } else {
-                addLookbookItem(newItem);
-            }
+            setIsModalOpen(false);
+            resetForm();
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save. Please try again.');
+        } finally {
+            setSaving(false);
         }
-
-        setIsModalOpen(false);
-        resetForm();
     };
 
-    const handleDelete = (type, id) => {
-        if (window.confirm(`Are you sure you want to delete this ${type}?`)) {
-            if (type === 'banner') {
-                deleteBanner(id);
-            } else if (type === 'offer') {
-                deleteOffer(id);
-            } else {
-                deleteLookbookItem(id);
-            }
+    const handleDelete = async (type, id) => {
+        if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+        try {
+            if (type === 'banner') await deleteBanner(id);
+            else if (type === 'offer') await deleteOffer(id);
+            else await deleteLookbookItem(id);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to delete. Please try again.');
         }
     };
 
@@ -124,13 +121,14 @@ export default function MarketingCMSPage() {
         setIsModalOpen(true);
     };
 
-    const handleToggleStatus = (type, id) => {
-        if (type === 'banner') {
-            toggleBannerStatus(id);
-        } else if (type === 'offer') {
-            toggleOfferStatus(id);
-        } else {
-            toggleLookbookStatus(id);
+    const handleToggleStatus = async (type, id) => {
+        try {
+            if (type === 'banner') await toggleBannerStatus(id);
+            else if (type === 'offer') await toggleOfferStatus(id);
+            else await toggleLookbookStatus(id);
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update status. Please try again.');
         }
     };
 
@@ -241,8 +239,11 @@ export default function MarketingCMSPage() {
             </div>
 
             {/* Content Area */}
+            {cmsLoading && (
+                <div className="py-20 text-center text-text-muted font-bold uppercase tracking-widest">Loading...</div>
+            )}
             <AnimatePresence mode="wait">
-                {activeTab === 'banners' && (
+                {!cmsLoading && activeTab === 'banners' && (
                     <motion.div
                         key="banners"
                         initial={{ opacity: 0, y: 10 }}
@@ -328,7 +329,7 @@ export default function MarketingCMSPage() {
                     </motion.div>
                 )}
 
-                {activeTab === 'offers' && (
+                {!cmsLoading && activeTab === 'offers' && (
                     <motion.div
                         key="offers"
                         initial={{ opacity: 0, y: 10 }}
@@ -396,7 +397,7 @@ export default function MarketingCMSPage() {
                     </motion.div>
                 )}
 
-                {activeTab === 'lookbook' && (
+                {!cmsLoading && activeTab === 'lookbook' && (
                     <motion.div
                         key="lookbook"
                         initial={{ opacity: 0, y: 10 }}
@@ -466,7 +467,7 @@ export default function MarketingCMSPage() {
                     </motion.div>
                 )}
 
-                {activeTab === 'experts' && (
+                {!cmsLoading && activeTab === 'experts' && (
                     <motion.div
                         key="experts"
                         initial={{ opacity: 0, y: 10 }}
@@ -475,9 +476,9 @@ export default function MarketingCMSPage() {
                         className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
                     >
                         {experts.map((expert) => (
-                            <div key={expert.id} className="bg-surface border border-border/40 p-6 flex flex-col gap-4 text-left">
+                            <div key={expert.id || expert._id} className="bg-surface border border-border/40 p-6 flex flex-col gap-4 text-left">
                                 <div className="flex items-center gap-4">
-                                    <img src={expert.img} className="w-16 h-16 rounded-full border border-border" alt={expert.name} />
+                                    <img src={expert.img || 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80'} className="w-16 h-16 rounded-full border border-border object-cover" alt={expert.name} />
                                     <div>
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight">{expert.name}</h3>
                                         <div className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-none mt-1 inline-block ${
@@ -492,10 +493,10 @@ export default function MarketingCMSPage() {
                                         <span>Exp: {expert.experience}</span>
                                         <span>Clients: {expert.clients}</span>
                                     </div>
-                                    {expert.outletId && (
+                                    {(expert.outletId || expert.outletName) && (
                                         <div className="flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 border border-primary/10 w-fit">
                                             <MapPin className="w-2.5 h-2.5" />
-                                            {outlets.find(o => o._id === expert.outletId || o.id === expert.outletId)?.name || 'Unknown Outlet'}
+                                            {expert.outletName || outlets.find(o => o._id === expert.outletId || o.id === expert.outletId)?.name || 'Unknown Outlet'}
                                         </div>
                                     )}
                                     <p className="text-[10px] text-text-secondary leading-tight line-clamp-2">{expert.bio}</p>
@@ -509,13 +510,13 @@ export default function MarketingCMSPage() {
                                     {expert.status === 'Pending' && (
                                         <>
                                             <button 
-                                                onClick={() => approveExpertProfile(expert.id)}
+                                                onClick={() => approveExpertProfile(expert.id || expert._id)}
                                                 className="flex-1 py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all"
                                             >
                                                 Approve
                                             </button>
                                             <button 
-                                                onClick={() => rejectExpertProfile(expert.id)}
+                                                onClick={() => rejectExpertProfile(expert.id || expert._id)}
                                                 className="flex-1 py-2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest hover:bg-rose-600 transition-all"
                                             >
                                                 Reject
@@ -523,13 +524,13 @@ export default function MarketingCMSPage() {
                                         </>
                                     )}
                                     <button 
-                                        onClick={() => expert.status === 'Approved' ? rejectExpertProfile(expert.id) : approveExpertProfile(expert.id)}
+                                        onClick={() => expert.status === 'Approved' ? rejectExpertProfile(expert.id || expert._id) : approveExpertProfile(expert.id || expert._id)}
                                         className="p-2 border border-border text-text-muted hover:text-primary transition-all"
                                     >
                                         {expert.status === 'Approved' ? <XCircle className="w-4 h-4" /> : <Star className="w-4 h-4" />}
                                     </button>
                                     <button 
-                                        onClick={() => deleteExpertProfile(expert.id)}
+                                        onClick={() => deleteExpertProfile(expert.id || expert._id)}
                                         className="p-2 border border-border text-text-muted hover:text-rose-600 transition-all"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -789,9 +790,10 @@ export default function MarketingCMSPage() {
                                         </button>
                                         <button
                                             type="submit"
-                                            className="flex-[1.5] py-3 bg-[#1a1a1a] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all"
+                                            disabled={saving}
+                                            className="flex-[1.5] py-3 bg-[#1a1a1a] text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50"
                                         >
-                                            {editingId ? 'Update' : 'Confirm'}
+                                            {saving ? 'Saving...' : (editingId ? 'Update' : 'Confirm')}
                                         </button>
                                     </div>
                                 </form>

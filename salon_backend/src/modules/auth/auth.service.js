@@ -162,9 +162,45 @@ const loginWithOtp = async (phone, tenantId, otpCode) => {
     };
 };
 
+const registerCustomer = async (registrationData) => {
+    const { tenantId, name, email, phone, password, dob, anniversary } = registrationData;
+
+    if (!mongoose.Types.ObjectId.isValid(tenantId)) {
+        throw new Error('Invalid Salon Selection');
+    }
+
+    const birthday = dob ? new Date(dob) : null;
+    const ann = anniversary ? new Date(anniversary) : null;
+
+    // Create or update customer for this tenant by phone
+    let client = await Client.findOne({ phone, tenantId });
+    if (!client) {
+        client = new Client({
+            tenantId,
+            phone,
+            name,
+            email: email ? String(email).trim().toLowerCase() : undefined,
+            role: 'customer',
+            birthday: birthday || undefined,
+            anniversary: ann || undefined,
+            password,
+        });
+    } else {
+        client.name = name;
+        client.email = email ? String(email).trim().toLowerCase() : client.email;
+        client.birthday = birthday || client.birthday;
+        client.anniversary = ann || client.anniversary;
+        client.password = password; // optional re-register
+    }
+
+    await client.save();
+    return client;
+};
+
 export default {
     registerSalonOwner,
     loginUserWithEmailAndPassword,
     requestOtp,
     loginWithOtp,
+    registerCustomer,
 };
