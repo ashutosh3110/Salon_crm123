@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { onMessage } from 'firebase/messaging';
 import messaging, { registerToken } from '../services/firebase';
 import { toast } from 'react-hot-toast'; // Assume react-hot-toast is used or similar

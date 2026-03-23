@@ -7,7 +7,7 @@ import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
-import useFirebaseNotifications from './hooks/useFirebaseNotifications';
+import useFirebaseNotifications from './hooks/useFirebaseNotifications.jsx';
 import { useAuth } from './contexts/AuthContext';
 import { useCustomerAuth } from './contexts/CustomerAuthContext';
 
