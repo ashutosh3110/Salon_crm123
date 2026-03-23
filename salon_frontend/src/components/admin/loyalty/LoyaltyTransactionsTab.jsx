@@ -17,23 +17,54 @@ export default function LoyaltyTransactionsTab() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0, limit: 25 });
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
 
     useEffect(() => {
         const fetchTransactions = async () => {
             try {
-                const { data } = await api.get('/loyalty/transactions');
-                setTransactions(data.data || data || []);
+                const { data } = await api.get('/loyalty/transactions', {
+                    params: {
+                        page,
+                        limit: 25,
+                        type: filter,
+                        from: fromDate || undefined,
+                        to: toDate || undefined,
+                    },
+                });
+                setTransactions(data?.data || []);
+                setMeta(data?.meta || { page: 1, totalPages: 1, total: 0, limit: 25 });
             } catch (err) {
                 console.error('Fetch error:', err);
                 setTransactions([]);
+                setMeta({ page: 1, totalPages: 1, total: 0, limit: 25 });
             } finally {
                 setLoading(false);
             }
         };
         fetchTransactions();
-    }, []);
+    }, [filter, page, fromDate, toDate]);
 
-    const filteredTx = transactions.filter(tx => filter === 'ALL' || tx.type === filter);
+    const downloadCsv = () => {
+        const header = ['Date', 'Customer', 'Type', 'Points', 'Reference'];
+        const rows = transactions.map((tx) => [
+            new Date(tx.createdAt).toLocaleString('en-IN'),
+            tx.customerId?.name || 'Anonymous Customer',
+            tx.type || '',
+            String(Math.abs(Number(tx.points || 0))),
+            tx.invoiceId || 'SYSTEM_GEN',
+        ]);
+        const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `loyalty-transactions-page-${page}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="space-y-6">
@@ -42,7 +73,10 @@ export default function LoyaltyTransactionsTab() {
                     {['ALL', 'EARN', 'REDEEM', 'REVERSE'].map(f => (
                         <button
                             key={f}
-                            onClick={() => setFilter(f)}
+                            onClick={() => {
+                                setFilter(f);
+                                setPage(1);
+                            }}
                             className={`px-6 py-3 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
                                 : 'text-text-muted border-border/40 hover:bg-surface-alt'
@@ -52,7 +86,11 @@ export default function LoyaltyTransactionsTab() {
                         </button>
                     ))}
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 border border-border/40 text-[9px] font-black text-foreground hover:text-primary uppercase tracking-widest hover:bg-surface-alt transition-all">
+                <div className="flex items-center gap-2">
+                    <input type="date" value={fromDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} className="h-10 px-2 border border-border/40 bg-surface text-xs" />
+                    <input type="date" value={toDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} className="h-10 px-2 border border-border/40 bg-surface text-xs" />
+                </div>
+                <button onClick={downloadCsv} className="flex items-center gap-2 px-6 py-3 border border-border/40 text-[9px] font-black text-foreground hover:text-primary uppercase tracking-widest hover:bg-surface-alt transition-all">
                     <Download size={14} /> EXPORT LEDGER
                 </button>
             </div>
@@ -77,7 +115,7 @@ export default function LoyaltyTransactionsTab() {
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Accessing Ledger Data...</p>
                                     </td>
                                 </tr>
-                            ) : filteredTx.map((tx) => (
+                            ) : transactions.map((tx) => (
                                 <tr key={tx._id} className="hover:bg-surface-alt/30 transition-colors">
                                     <td className="px-6 py-5">
                                         <div className="text-[10px] font-bold text-foreground uppercase tracking-tighter opacity-80">{new Date(tx.createdAt).toLocaleString()}</div>
@@ -107,6 +145,13 @@ export default function LoyaltyTransactionsTab() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+            </div>
+            <div className="p-4 border border-border/30 flex items-center justify-between">
+                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Page {meta.page} of {meta.totalPages} / {meta.total} entries</p>
+                <div className="flex gap-2">
+                    <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-2 border border-border/40 text-xs disabled:opacity-40">Prev</button>
+                    <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page >= meta.totalPages} className="px-3 py-2 border border-border/40 text-xs disabled:opacity-40">Next</button>
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3 } from 'lucide-react';
-// import api from '../../services/api'; // Removed backend dependency
+import api from '../../services/api';
 import {
     BarChart,
     Bar,
@@ -12,7 +12,7 @@ import {
     Cell
 } from 'recharts';
 
-const typeLabels = { flat: 'Flat ₹ Off', percentage: '% Off', combo: 'Combo Deal' };
+const typeLabels = { flat: 'Fixed ₹ off bill', percentage: '% off bill', combo: 'Combo deal' };
 const typeColors = {
     flat: 'bg-green-50 dark:bg-emerald-900/20 text-green-600 dark:text-emerald-400',
     percentage: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
@@ -31,26 +31,54 @@ export default function PromotionsPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true });
+    const [form, setForm] = useState({
+        name: '',
+        type: 'percentage',
+        value: '',
+        startDate: '',
+        endDate: '',
+        usageLimit: '',
+        isActive: true,
+        activationMode: 'AUTO',
+        couponCode: '',
+    });
 
-    // Mock fetch logic
-    const fetchPromos = () => {
-        setLoading(true);
-        setTimeout(() => {
-            const saved = localStorage.getItem('mock_promos');
-            setPromos(saved ? JSON.parse(saved) : MOCK_PROMOS);
-            setLoading(false);
-        }, 800);
+    const normalizePromo = (p) => {
+        const t = String(p.type || '');
+        const uiType = t === 'FLAT' ? 'flat' : (t === 'PERCENTAGE' ? 'percentage' : (t === 'COMBO' ? 'combo' : t));
+        return {
+            _id: p._id,
+            name: p.name,
+            type: uiType,
+            value: p.value,
+            startDate: p.startDate,
+            endDate: p.endDate,
+            usageLimit: p.totalUsageLimit ?? '',
+            isActive: !!p.isActive,
+            activationMode: p.activationMode || 'AUTO',
+            couponCode: p.couponCode || '',
+            usageLimitPerCustomer: p.usageLimitPerCustomer ?? 1,
+        };
     };
 
-    useEffect(() => { fetchPromos(); }, []);
-
-    // Persist mock data to localStorage
-    useEffect(() => {
-        if (!loading) {
-            localStorage.setItem('mock_promos', JSON.stringify(promos));
+    const fetchPromos = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/promotions');
+            const raw = res?.data?.results || res?.data?.data?.results || res?.data?.data || res?.data || [];
+            const list = Array.isArray(raw) ? raw : [];
+            setPromos(list.map(normalizePromo));
+        } catch (e) {
+            setPromos([]);
+        } finally {
+            setLoading(false);
         }
-    }, [promos, loading]);
+    };
+
+    useEffect(() => {
+        fetchPromos();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const chartData = useMemo(() => {
         return promos.slice(0, 6).map((p, i) => ({
@@ -62,25 +90,77 @@ export default function PromotionsPage() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (editing) {
-            setPromos(prev => prev.map(p => p._id === editing._id ? { ...p, ...form } : p));
-        } else {
-            const newPromo = { ...form, _id: `p-${Date.now()}` };
-            setPromos(prev => [newPromo, ...prev]);
-        }
-        setShowModal(false);
-        setEditing(null);
-        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true });
+        const commit = async () => {
+            const payload = {
+                name: form.name,
+                description: '',
+                type: form.type === 'flat' ? 'FLAT' : (form.type === 'combo' ? 'COMBO' : 'PERCENTAGE'),
+                value: Number(form.value),
+                maxDiscountAmount: 0,
+                minBillAmount: 0,
+                applicableServices: [],
+                applicableProducts: [],
+                applicableOutlets: [],
+                startDate: new Date(form.startDate),
+                endDate: new Date(form.endDate),
+                isActive: !!form.isActive,
+                targetingType: 'ALL',
+                usageLimitPerCustomer: 1,
+                totalUsageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
+                activationMode: form.activationMode || 'AUTO',
+                couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
+                startTime: null,
+                endTime: null,
+            };
+
+            if (editing) {
+                await api.patch(`/promotions/${editing._id}`, payload);
+            } else {
+                await api.post('/promotions', payload);
+            }
+
+            setShowModal(false);
+            setEditing(null);
+            setForm({
+                name: '',
+                type: 'percentage',
+                value: '',
+                startDate: '',
+                endDate: '',
+                usageLimit: '',
+                isActive: true,
+                activationMode: 'AUTO',
+                couponCode: '',
+            });
+            fetchPromos();
+        };
+
+        commit().catch((err) => {
+            const msg = err?.response?.data?.message || err?.message || 'Could not save coupon. Please try again.';
+            // eslint-disable-next-line no-alert
+            alert(msg);
+            fetchPromos();
+        });
     };
 
     const handleDelete = (id) => {
-        if (!confirm('Delete this promotion?')) return;
-        setPromos(prev => prev.filter(p => p._id !== id));
+        if (!confirm('Delete this coupon? This cannot be undone.')) return;
+        api.delete(`/promotions/${id}`).then(() => fetchPromos());
     };
 
     const openEdit = (p) => {
         setEditing(p);
-        setForm({ name: p.name, type: p.type, value: p.value, startDate: p.startDate?.slice(0, 10) || '', endDate: p.endDate?.slice(0, 10) || '', usageLimit: p.usageLimit || '', isActive: p.isActive });
+        setForm({
+            name: p.name,
+            type: p.type,
+            value: p.value,
+            startDate: p.startDate?.slice(0, 10) || '',
+            endDate: p.endDate?.slice(0, 10) || '',
+            usageLimit: p.usageLimit || '',
+            isActive: p.isActive,
+            activationMode: p.activationMode || 'AUTO',
+            couponCode: p.couponCode || '',
+        });
         setShowModal(true);
     };
 
@@ -89,14 +169,28 @@ export default function PromotionsPage() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Campaign Matrix</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">{promos.length} ACTIVE PROTOCOLS DEPLOYED</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Coupons &amp; offers</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
                 </div>
                 <button
-                    onClick={() => { setEditing(null); setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true }); setShowModal(true); }}
+                    onClick={() => {
+                        setEditing(null);
+                        setForm({
+                            name: '',
+                            type: 'percentage',
+                            value: '',
+                            startDate: '',
+                            endDate: '',
+                            usageLimit: '',
+                            isActive: true,
+                            activationMode: 'AUTO',
+                            couponCode: '',
+                        });
+                        setShowModal(true);
+                    }}
                     className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
                 >
-                    <Plus className="w-4 h-4" /> Add Protocol
+                    <Plus className="w-4 h-4" /> Add coupon
                 </button>
             </div>
 
@@ -105,7 +199,7 @@ export default function PromotionsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 text-left font-black">
                     <div className="md:col-span-1 bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-8 text-left">
-                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Deployment Intensity</span>
+                            <span className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount amounts</span>
                             <BarChart3 className="w-5 h-5 text-primary" />
                         </div>
                         <div className="h-[150px] w-full text-left">
@@ -120,7 +214,7 @@ export default function PromotionsPage() {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                        <p className="mt-6 text-[8px] font-black text-text-muted uppercase tracking-[0.2em] text-center italic opacity-40">Vector Value Distribution</p>
+                        <p className="mt-6 text-[8px] font-black text-text-muted uppercase tracking-[0.2em] text-center italic opacity-40">Quick view of offer values</p>
                     </div>
 
                     <div className="md:col-span-1 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
@@ -148,13 +242,13 @@ export default function PromotionsPage() {
                 {loading ? (
                     <div className="col-span-full flex flex-col items-center justify-center py-32 text-left">
                         <div className="w-12 h-12 border border-primary/20 border-t-primary rounded-none animate-spin mb-4" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] animate-pulse">Syncing Matrix...</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] animate-pulse">Loading offers...</p>
                     </div>
                 ) : promos.length === 0 ? (
                     <div className="col-span-full text-center py-32 bg-surface rounded-none border border-border border-dashed text-left">
                         <Tag className="w-16 h-16 text-text-muted/20 mx-auto mb-8" />
-                        <h3 className="text-sm font-black text-text uppercase tracking-[0.3em]">No Operational Protocols</h3>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-3 opacity-60">Ready to broadcast new marketing mechanics.</p>
+                        <h3 className="text-sm font-black text-text uppercase tracking-[0.3em]">No coupons yet</h3>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-3 opacity-60">Create a coupon — customers will see it in the app when it is active.</p>
                     </div>
                 ) : (
                     promos.map((p) => (
@@ -172,19 +266,19 @@ export default function PromotionsPage() {
                             <div className="space-y-3 pt-6 border-t border-border/40 text-left font-black">
                                 <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
                                     <Calendar className="w-4 h-4 opacity-40" />
-                                    {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : 'NULL'} // {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : 'NULL'}
+                                    {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                                 </div>
                                 {p.usageLimit && (
                                     <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
                                         <TrendingUp className="w-4 h-4 opacity-40" />
-                                        Pulses: {p.usageLimit} LIMIT
+                                        Max uses: {p.usageLimit}
                                     </div>
                                 )}
                             </div>
 
                             <div className="absolute bottom-0 right-0 p-4 font-black">
                                 <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${p.isActive ? 'text-emerald-500' : 'text-text-muted opacity-40'}`}>
-                                    {p.isActive ? '::: STANDBY :::' : '::: ARCHIVED :::'}
+                                    {p.isActive ? 'Active' : 'Inactive'}
                                 </span>
                             </div>
                         </div>
@@ -199,46 +293,70 @@ export default function PromotionsPage() {
                             <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
                                 <Percent className="w-10 h-10" />
                             </div>
-                            <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">{editing ? 'Overwrite Protocol' : 'Sync New Matrix'}</h2>
-                            <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Module :: marketing_automation_v1.0</p>
+                            <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">{editing ? 'Edit coupon' : 'New coupon'}</h2>
+                            <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Set discount, dates, and how customers apply it</p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
                             <div className="space-y-3 text-left">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Protocol Identifier *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. ALPHA_FLASH_20" />
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Offer name *</label>
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. Weekend Spa 20" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Logic Variant *</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Discount type *</label>
                                     <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
-                                        <option value="percentage">Percentage</option>
-                                        <option value="flat">Flat Amount</option>
+                                        <option value="percentage">Percent off</option>
+                                        <option value="flat">Fixed ₹ off</option>
                                         <option value="combo">Combo</option>
                                     </select>
                                 </div>
                                 <div className="space-y-3 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Intensity Vector *</label>
-                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="00" />
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Discount value *</label>
+                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder={form.type === 'percentage' ? 'e.g. 20' : 'e.g. 500'} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left font-black">
                                 <div className="space-y-3 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Lock-In Pulse</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Valid from</label>
                                     <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
                                 </div>
                                 <div className="space-y-3 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">End Pulse</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Valid until</label>
                                     <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
                                 </div>
                             </div>
                             <div className="space-y-3 text-left font-black">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Max Signal Pulses</label>
-                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="Unlimited if null" />
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Max total uses (optional)</label>
+                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="Leave empty for unlimited" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-8 text-left font-black">
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">How it applies</label>
+                                    <select
+                                        value={form.activationMode || 'AUTO'}
+                                        onChange={(e) => setForm({ ...form, activationMode: e.target.value })}
+                                        className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer"
+                                    >
+                                        <option value="AUTO">Automatic (no code)</option>
+                                        <option value="COUPON">Customer enters a code</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-3 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Code (when &quot;customer enters a code&quot;)</label>
+                                    <input
+                                        type="text"
+                                        value={form.couponCode}
+                                        onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })}
+                                        className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all"
+                                        placeholder={form.activationMode === 'COUPON' ? 'e.g. SPAWEEKEND' : 'Not needed for automatic'}
+                                        disabled={form.activationMode !== 'COUPON'}
+                                    />
+                                </div>
                             </div>
                             <div className="flex gap-6 pt-10 font-black">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Abort</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editing ? 'Commit Override' : 'Deploy Protocol'}</button>
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editing ? 'Save changes' : 'Create offer'}</button>
                             </div>
                         </form>
                     </div>

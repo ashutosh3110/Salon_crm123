@@ -4,7 +4,11 @@ import cacheService from '../../utils/cache.service.js';
 
 class PromotionService {
     async createPromotion(tenantId, promotionData) {
-        const promotion = await promotionRepository.create({ ...promotionData, tenantId });
+        const normalized = { ...promotionData };
+        if (normalized.couponCode) {
+            normalized.couponCode = String(normalized.couponCode).toUpperCase();
+        }
+        const promotion = await promotionRepository.create({ ...normalized, tenantId });
         await cacheService.del(cacheService.generateKey(tenantId, 'promotions', 'active'));
         return promotion;
     }
@@ -14,7 +18,20 @@ class PromotionService {
         const cached = await cacheService.get(cacheKey);
         if (cached) return cached;
 
-        const promos = await promotionRepository.findActivePromotions(tenantId);
+        // Fetch by tenant + isActive first, then apply robust date-window filtering in JS.
+        // This avoids timezone edge cases from direct DB date comparisons.
+        const rows = await promotionRepository.find({ tenantId, isActive: true });
+        const source = Array.isArray(rows?.results) ? rows.results : (Array.isArray(rows) ? rows : []);
+        const now = new Date();
+        const promos = source.filter((p) => {
+            if (!p?.startDate || !p?.endDate) return true;
+            const start = new Date(p.startDate);
+            const end = new Date(p.endDate);
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            return now >= start && now <= end;
+        });
+
         await cacheService.set(cacheKey, promos, 1800); // 30 min cache
         return promos;
     }
@@ -25,7 +42,13 @@ class PromotionService {
 
         // Date Validation
         const now = new Date();
-        if (now < promotion.startDate || now > promotion.endDate) {
+        const start = new Date(promotion.startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(promotion.endDate);
+        // Include the full end date day (common issue when endDate is stored as "YYYY-MM-DD" -> midnight)
+        end.setHours(23, 59, 59, 999);
+
+        if (now < start || now > end) {
             throw new Error('Promotion is not within the valid date range');
         }
 

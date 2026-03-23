@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AuthProvider } from './contexts/AuthContext';
@@ -118,6 +118,7 @@ import AppPrivacyPolicyPage from './pages/app/AppPrivacyPolicyPage';
 import AppFavoritesPage from './pages/app/AppFavoritesPage';
 import SalonSelectionPage from './pages/app/SalonSelectionPage';
 import AppExpertsPage from './pages/app/AppExpertsPage';
+import NearbyOutletsPage from './pages/app/NearbyOutletsPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
 import CustomerAppWrapper from './layouts/CustomerAppWrapper';
@@ -244,6 +245,7 @@ function App() {
                             {/* Inventory Routes */}
                             <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
                             <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+                            <Route path="/admin/inventory/stock-overview" element={<InventoryPage tab="stock-overview" />} />
                             <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
                             <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
                             <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
@@ -257,6 +259,7 @@ function App() {
                             <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
                             <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
                             <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
+                            <Route path="/admin/finance/petty-cash" element={<FinancePage tab="petty-cash" />} />
                             <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
                             <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
                             <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
@@ -282,12 +285,8 @@ function App() {
                             <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
                             <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
                             <Route path="/admin/invoices" element={<InvoicesPage />} />
-                            <Route path="/admin/settings" element={<SettingsPage />}>
-                              <Route path="profile" element={<SettingsPage tab="profile" />} />
-                              <Route path="notifications" element={<SettingsPage tab="notifications" />} />
-                              <Route path="security" element={<SettingsPage tab="security" />} />
-                              <Route path="business" element={<SettingsPage tab="business" />} />
-                            </Route>
+                            <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
+                            <Route path="/admin/settings/:section" element={<SettingsPage />} />
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />
                           </Route>
                         </Route>
@@ -331,6 +330,7 @@ function App() {
                         <Route element={<ProtectedRoute allowedRoles={['stylist']} />}>
                           <Route element={<StylistLayout />}>
                             <Route path="/stylist" element={<StylistDashboard />} />
+                            <Route path="/stylist/schedule" element={<Navigate to="/stylist" replace />} />
                             <Route path="/stylist/clients" element={<StylistClientsPage />} />
                             <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />
                             <Route path="/stylist/timeoff" element={<StylistTimeOffPage />} />
@@ -413,6 +413,7 @@ function App() {
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
                           <Route path="/app/salon-selection" element={<SalonSelectionPage />} />
+                          <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />

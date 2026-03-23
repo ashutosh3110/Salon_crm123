@@ -24,6 +24,11 @@ const productSchema = new mongoose.Schema(
             enum: ['active', 'inactive'],
             default: 'active',
         },
+        /** Extra fields from Product Master UI (brand, supplier, GST, app shop, etc.) */
+        extended: {
+            type: mongoose.Schema.Types.Mixed,
+            default: {},
+        },
     },
     {
         timestamps: true,

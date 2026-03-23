@@ -8,11 +8,15 @@ class PromotionRepository extends BaseRepository {
 
     async findActivePromotions(tenantId) {
         const now = new Date();
+        // Treat dates as inclusive by comparing using "date-only" (00:00) boundary.
+        // This prevents "endDate today" promos from becoming inactive after midnight.
+        const nowDateOnly = new Date(now);
+        nowDateOnly.setHours(0, 0, 0, 0);
         return this.model.find({
             tenantId,
             isActive: true,
-            startDate: { $lte: now },
-            endDate: { $gte: now },
+            startDate: { $lte: nowDateOnly },
+            endDate: { $gte: nowDateOnly },
         });
     }
 }

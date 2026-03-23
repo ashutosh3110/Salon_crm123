@@ -15,6 +15,12 @@ router.get('/analytics', authorize(['admin', 'manager']), promotionController.ge
 router.post('/', authorize(['admin', 'manager']), validate(promotionValidation.createPromotion), promotionController.createPromotion);
 router.get('/', authorize(['admin', 'manager', 'customer']), promotionController.getPromotions);
 router.get('/active', authorize(['admin', 'manager', 'customer']), promotionController.getActivePromotions);
+router.post(
+    '/validate-coupon',
+    authorize(['admin', 'manager', 'customer']),
+    validate(promotionValidation.validateCoupon),
+    promotionController.validateCoupon
+);
 router.get('/:promotionId', authorize(['admin', 'manager']), promotionController.getPromotion);
 router.patch('/:promotionId', authorize(['admin', 'manager']), validate(promotionValidation.updatePromotion), promotionController.updatePromotion);
 router.delete('/:promotionId', authorize(['admin', 'manager']), promotionController.deletePromotion);

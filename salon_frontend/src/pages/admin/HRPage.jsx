@@ -74,6 +74,11 @@ export default function HRPage({ tab = 'staff' }) {
 
     const activeTab = HR_TABS.find(t => t.id === tab) || HR_TABS[0];
 
+    const tabHint =
+        tab === 'shifts'
+            ? 'Choose a shift name, times and salon — then assign your team.'
+            : 'Staff, attendance, shifts and payroll in one place.';
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Header section */}
@@ -84,7 +89,7 @@ export default function HRPage({ tab = 'staff' }) {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-text uppercase tracking-tight">{activeTab.label}</h1>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60">Manage staff, attendance, shifts and payroll.</p>
+                        <p className="text-[10px] font-black text-text-muted tracking-wide opacity-80 max-w-xl">{tabHint}</p>
                     </div>
                 </div>
 

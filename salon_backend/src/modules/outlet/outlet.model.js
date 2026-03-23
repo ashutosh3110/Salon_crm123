@@ -14,6 +14,13 @@ const outletSchema = new mongoose.Schema(
         },
         latitude: { type: Number, default: null },
         longitude: { type: Number, default: null },
+        /** Max distance (m) from outlet coords for stylist punch-in/out (WGS84). */
+        geofenceRadiusMeters: {
+            type: Number,
+            default: 200,
+            min: 30,
+            max: 5000,
+        },
         city: {
             type: String,
             required: true,

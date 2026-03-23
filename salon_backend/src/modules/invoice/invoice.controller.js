@@ -38,6 +38,15 @@ const getDashboardStats = async (req, res, next) => {
     }
 };
 
+const getFinanceDashboard = async (req, res, next) => {
+    try {
+        const data = await invoiceService.getFinanceDashboard(req.tenantId);
+        res.status(httpStatus.OK).send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getRefunds = async (req, res, next) => {
     try {
         const filters = {
@@ -65,6 +74,7 @@ export default {
     getInvoices,
     getInvoice,
     getDashboardStats,
+    getFinanceDashboard,
     getRefunds,
     processRefundAction,
 };

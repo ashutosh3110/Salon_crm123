@@ -64,8 +64,8 @@ const requestOtp = async (req, res, next) => {
 
 const loginWithOtp = async (req, res, next) => {
     try {
-        const { phone, tenantId, otp } = req.body;
-        const client = await authService.loginWithOtp(phone, tenantId, otp);
+        const { phone, tenantId, otp, referralCode } = req.body;
+        const client = await authService.loginWithOtp(phone, tenantId, otp, referralCode);
 
         // Use token service to generate tokens (ensure it works with client object)
         const tokens = await tokenService.generateAuthTokens(client);

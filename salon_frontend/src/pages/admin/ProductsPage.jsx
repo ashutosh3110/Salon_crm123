@@ -43,11 +43,28 @@ export default function ProductsPage() {
 
     useEffect(() => { fetchProducts(); }, []);
 
+    const toApiPayload = (f) => ({
+        name: f.name,
+        sku: f.sku,
+        price: Number(f.price) || 0,
+        category: f.category || '',
+        status: 'active',
+        extended: {
+            threshold: f.lowStockThreshold,
+            availability: f.availabilityType === 'selected' ? 'selected' : 'all',
+            outletIds: Array.isArray(f.outletIds) ? f.outletIds : [],
+        },
+    });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            if (editing) { await api.put(`/products/${editing._id}`, form); }
-            else { await api.post('/products', form); }
+            const payload = toApiPayload(form);
+            if (editing) {
+                await api.patch(`/products/${editing._id}`, payload);
+            } else {
+                await api.post('/products', payload);
+            }
             setShowModal(false); setEditing(null);
             setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] });
             fetchProducts();

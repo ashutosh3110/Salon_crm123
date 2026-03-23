@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,13 +12,15 @@ import {
     Zap
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import {
-    MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
-} from '../../data/appMockData';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import { useWallet } from '../../contexts/WalletContext';
+import api from '../../services/api';
 
 const AppLoyaltyPage = () => {
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
+    const { customer } = useCustomerAuth();
+    const { balance, transactions, initializeWallet, loading } = useWallet();
     const isLight = theme === 'light';
 
     const colors = {
@@ -37,38 +39,58 @@ const AppLoyaltyPage = () => {
         transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
     };
 
-    const [loyaltyStats, setLoyaltyStats] = React.useState({
-        currentPoints: MOCK_LOYALTY_WALLET.totalPoints,
-        nextTier: 5000,
-        currentTier: MOCK_LOYALTY_WALLET.totalPoints >= 5000 ? 'Platinum Member' : (MOCK_LOYALTY_WALLET.totalPoints >= 2000 ? 'Gold Member' : 'Silver Member'),
-        potentialSavings: `₹${(MOCK_LOYALTY_WALLET.totalPoints * MOCK_LOYALTY_RULES.redeemRate).toLocaleString()}`,
-        history: MOCK_LOYALTY_TRANSACTIONS,
-        rewards: [
-            { id: 1, title: 'Free Haircut', points: 1000, icon: <Star size={16} /> },
-            { id: 2, title: '20% Off Services', points: 500, icon: <Zap size={16} /> },
-            { id: 3, title: 'Luxury Spa Kit', points: 2500, icon: <Gift size={16} /> },
-        ]
-    });
-    const [loading, setLoading] = React.useState(false);
+    const rewards = React.useMemo(() => ([
+        { id: 1, title: 'Free Haircut', points: 1000, icon: <Star size={16} /> },
+        { id: 2, title: '20% Off Services', points: 500, icon: <Zap size={16} /> },
+        { id: 3, title: 'Luxury Spa Kit', points: 2500, icon: <Gift size={16} /> },
+    ]), []);
 
     React.useEffect(() => {
-        // Simulation of data sync from localStorage
-        const syncLoyalty = () => {
-            const savedWallet = localStorage.getItem('salon_loyalty_wallet');
-            if (savedWallet) {
-                const wallet = JSON.parse(savedWallet);
-                setLoyaltyStats(prev => ({
-                    ...prev,
-                    currentPoints: wallet.points,
-                    potentialSavings: `₹${(wallet.points * MOCK_LOYALTY_RULES.redeemRate).toLocaleString()}`,
-                    currentTier: wallet.points >= 5000 ? 'Platinum Member' : (wallet.points >= 2000 ? 'Gold Member' : 'Silver Member'),
-                }));
+        if (customer?._id) {
+            initializeWallet(customer._id).catch(() => {});
+        }
+    }, [customer?._id, initializeWallet]);
+
+    const [rule, setRule] = React.useState({
+        redeemRate: 1,
+        minRedeemPoints: 100,
+        expiryDays: 365,
+        isActive: true,
+    });
+
+    React.useEffect(() => {
+        let cancelled = false;
+        const loadRule = async () => {
+            try {
+                const res = await api.get('/loyalty/rules');
+                const data = res?.data?.data || res?.data || {};
+                if (!cancelled) {
+                    setRule((prev) => ({
+                        ...prev,
+                        ...data,
+                        redeemRate: Number(data?.redeemRate ?? prev.redeemRate ?? 1),
+                        minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
+                        expiryDays: Number(data?.expiryDays ?? prev.expiryDays ?? 365),
+                        isActive: data?.isActive ?? true,
+                    }));
+                }
+            } catch {
+                // keep defaults
             }
         };
-        syncLoyalty();
-    }, []);
+        if (customer?._id) loadRule();
+        return () => {
+            cancelled = true;
+        };
+    }, [customer?._id]);
 
-    const progressPercentage = (loyaltyStats.currentPoints / loyaltyStats.nextTier) * 100;
+    const currentPoints = Math.max(0, Number(balance || 0));
+    const nextTier = 5000;
+    const currentTier = currentPoints >= 5000 ? 'Platinum Member' : (currentPoints >= 2000 ? 'Gold Member' : 'Silver Member');
+    const redeemRate = Number(rule?.redeemRate || 1);
+    const potentialSavings = `₹${Math.floor(currentPoints * redeemRate).toLocaleString()}`;
+    const progressPercentage = Math.max(0, Math.min(100, (currentPoints / nextTier) * 100));
+    const history = Array.isArray(transactions) ? transactions : [];
 
     return (
         <div style={{
@@ -112,13 +134,13 @@ const AppLoyaltyPage = () => {
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                                     <Crown size={14} color="#C8956C" />
-                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#C8956C', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{loyaltyStats.currentTier}</p>
+                                    <p style={{ fontSize: '12px', fontWeight: 700, color: '#C8956C', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>{currentTier}</p>
                                 </div>
-                                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFF', margin: 0 }}>{loyaltyStats.currentPoints.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, opacity: 0.6 }}>pts</span></h2>
+                                <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#FFF', margin: 0 }}>{currentPoints.toLocaleString()} <span style={{ fontSize: '14px', fontWeight: 500, opacity: 0.6 }}>pts</span></h2>
                             </div>
                             <div style={{ background: 'rgba(200,149,108,0.15)', padding: '8px 12px', borderRadius: '12px', border: '1px solid rgba(200,149,108,0.2)' }}>
                                 <p style={{ fontSize: '10px', color: '#C8956C', margin: 0, fontWeight: 700 }}>Redeemable</p>
-                                <p style={{ fontSize: '14px', color: '#FFF', margin: 0, fontWeight: 900 }}>{loyaltyStats.potentialSavings}</p>
+                                <p style={{ fontSize: '14px', color: '#FFF', margin: 0, fontWeight: 900 }}>{potentialSavings}</p>
                             </div>
                         </div>
 
@@ -137,7 +159,11 @@ const AppLoyaltyPage = () => {
                                 />
                             </div>
                         </div>
-                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Earn {loyaltyStats.nextTier - loyaltyStats.currentPoints} more points for next tier</p>
+                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                            {rule?.isActive
+                                ? `Min redeem ${Number(rule?.minRedeemPoints || 0)} pts · Expires in ${Number(rule?.expiryDays || 0)} days`
+                                : 'Loyalty program is currently inactive'}
+                        </p>
                     </div>
                 </div>
             </motion.div>
@@ -153,7 +179,7 @@ const AppLoyaltyPage = () => {
                 </div>
 
                 <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px' }}>
-                    {loyaltyStats.rewards.map(reward => (
+                    {rewards.map(reward => (
                         <motion.div
                             key={reward.id}
                             whileTap={{ scale: 0.97 }}
@@ -194,33 +220,33 @@ const AppLoyaltyPage = () => {
                 </div>
 
                 <div style={{ background: colors.card, borderRadius: '24px', padding: '8px', border: `1px solid ${colors.border}` }}>
-                    {loyaltyStats.history.length > 0 ? loyaltyStats.history.map((item, idx) => (
+                    {history.length > 0 ? history.map((item, idx) => (
                         <div key={item.id || idx} style={{
                             display: 'flex', alignItems: 'center', gap: '12px', padding: '16px',
-                            borderBottom: idx === loyaltyStats.history.length - 1 ? 'none' : `1px solid ${colors.border}`
+                            borderBottom: idx === history.length - 1 ? 'none' : `1px solid ${colors.border}`
                         }}>
                             <div style={{
                                 width: 40, height: 40, borderRadius: '12px',
-                                background: item.type === 'earn' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                background: item.type === 'CREDIT' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: item.type === 'earn' ? '#22c55e' : '#ef4444'
+                                color: item.type === 'CREDIT' ? '#22c55e' : '#ef4444'
                             }}>
-                                {item.type === 'earn' ? <CheckCircle2 size={18} /> : <Zap size={18} />}
+                                {item.type === 'CREDIT' ? <CheckCircle2 size={18} /> : <Zap size={18} />}
                             </div>
                             <div style={{ flex: 1 }}>
-                                <p style={{ fontSize: '14px', fontWeight: 700, color: colors.text, margin: '0 0 2px' }}>{item.action || 'Transaction'}</p>
+                                <p style={{ fontSize: '14px', fontWeight: 700, color: colors.text, margin: '0 0 2px' }}>{item.description || 'Transaction'}</p>
                                 <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>{new Date(item.date || item.createdAt).toLocaleDateString()}</p>
                             </div>
                             <p style={{
                                 fontSize: '14px', fontWeight: 800,
-                                color: (item.points > 0 || item.type === 'earn') ? '#22c55e' : '#ef4444'
+                                color: item.type === 'CREDIT' ? '#22c55e' : '#ef4444'
                             }}>
-                                {item.points > 0 ? '+' : ''}{item.points}
+                                {item.type === 'CREDIT' ? '+' : '-'}{Number(item.amount || 0)}
                             </p>
                         </div>
                     )) : (
                         <div style={{ padding: '40px 20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px', fontWeight: 700 }}>
-                            <p>No transaction history discovered yet.</p>
+                            <p>{loading ? 'Loading loyalty history...' : 'No transaction history discovered yet.'}</p>
                             <p style={{ fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Transactions will materialize here after your first service.</p>
                         </div>
                     )}

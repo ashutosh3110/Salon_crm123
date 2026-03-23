@@ -1,24 +1,144 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Clock, MapPin, CheckCircle2, AlertTriangle, Shield,
-    Activity, Zap, Navigation, RefreshCw, Smartphone,
-    Check, X, Award, Info
+    Activity, Zap, Navigation, RefreshCw, Smartphone, Building2,
 } from 'lucide-react';
 
-import stylistData from '../../data/stylistMockData.json';
-import { useAttendance } from '../../contexts/AttendanceContext';
+import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { haversineMeters } from '../../utils/geo';
+
+function todayLocalYmd() {
+    return new Date().toLocaleDateString('en-CA');
+}
+
+function formatTime(iso) {
+    if (!iso) return '—';
+    try {
+        return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {
+        return '—';
+    }
+}
+
+function formatDisplayDate() {
+    return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+}
 
 export default function StylistAttendance() {
-    const { logs, addLog } = useAttendance();
+    const { user } = useAuth();
     const [accuracy, setAccuracy] = useState(0);
     const [status, setStatus] = useState('OFFLINE');
     const [location, setLocation] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [todayRecord, setTodayRecord] = useState(null);
+    const [fetching, setFetching] = useState(true);
+    const [actionMsg, setActionMsg] = useState(null);
+    const [worksite, setWorksite] = useState(null);
+    const [worksiteLoading, setWorksiteLoading] = useState(true);
 
-    const filteredLogs = logs.filter(log => {
+    const refreshWorksite = useCallback(async () => {
+        setWorksiteLoading(true);
+        try {
+            const res = await api.get('/attendance/worksite');
+            const data = res.data?.data ?? res.data;
+            setWorksite(data || null);
+        } catch {
+            setWorksite(null);
+        } finally {
+            setWorksiteLoading(false);
+        }
+    }, []);
+
+    const refreshToday = useCallback(async () => {
+        const date = todayLocalYmd();
+        setFetching(true);
+        try {
+            const res = await api.get('/attendance/me', { params: { date } });
+            const data = res.data?.data ?? res.data;
+            setTodayRecord(data || null);
+            if (data?.checkInAt && !data?.checkOutAt) setStatus('ACTIVE_RUN');
+            else setStatus('OFFLINE');
+        } catch {
+            setTodayRecord(null);
+            setStatus('OFFLINE');
+        } finally {
+            setFetching(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        refreshToday();
+        refreshWorksite();
+    }, [refreshToday, refreshWorksite]);
+
+    const radiusMeters = worksite?.outlet?.geofenceRadiusMeters ?? 200;
+
+    const distanceMeters = useMemo(() => {
+        if (!location || !worksite?.outlet) return null;
+        const olat = worksite.outlet.latitude;
+        const olng = worksite.outlet.longitude;
+        if (olat == null || olng == null) return null;
+        return haversineMeters(location.latitude, location.longitude, olat, olng);
+    }, [location, worksite]);
+
+    const withinGeofence =
+        worksite?.geofenceEnforced &&
+        worksite?.configured &&
+        location &&
+        distanceMeters != null &&
+        !Number.isNaN(distanceMeters) &&
+        distanceMeters <= radiusMeters;
+
+    const geofenceBlockedReason = useMemo(() => {
+        if (!worksite?.geofenceEnforced) return null;
+        if (worksiteLoading) return null;
+        if (!worksite.outlet) return worksite.message || 'No outlet assigned.';
+        if (!worksite.configured) return worksite.message || 'Outlet location not set.';
+        if (!location) return null;
+        if (distanceMeters == null || Number.isNaN(distanceMeters)) return null;
+        if (distanceMeters > radiusMeters) {
+            return `You are ~${Math.round(distanceMeters)}m from "${worksite.outlet.name}". Must be within ${radiusMeters}m to punch.`;
+        }
+        return null;
+    }, [worksite, worksiteLoading, location, distanceMeters, radiusMeters]);
+
+    const canPunch =
+        !worksiteLoading &&
+        !fetching &&
+        !loading &&
+        location &&
+        (!worksite?.geofenceEnforced || withinGeofence);
+
+    const logs = useMemo(() => {
+        const list = [];
+        const dateStr = formatDisplayDate();
+        if (todayRecord?.checkInAt) {
+            list.push({
+                id: 'in',
+                type: 'IN',
+                time: formatTime(todayRecord.checkInAt),
+                date: dateStr,
+                loc: todayRecord.location || `${location?.latitude?.toFixed(6) ?? '—'}, ${location?.longitude?.toFixed(6) ?? '—'}`,
+                status: 'VERIFIED',
+            });
+        }
+        if (todayRecord?.checkOutAt) {
+            list.push({
+                id: 'out',
+                type: 'OUT',
+                time: formatTime(todayRecord.checkOutAt),
+                date: dateStr,
+                loc: todayRecord.location || `${location?.latitude?.toFixed(6) ?? '—'}, ${location?.longitude?.toFixed(6) ?? '—'}`,
+                status: 'VERIFIED',
+            });
+        }
+        return list;
+    }, [todayRecord, location]);
+
+    const filteredLogs = logs.filter((log) => {
         if (statusFilter === 'ALL') return true;
         return log.type === statusFilter;
     });
@@ -36,42 +156,46 @@ export default function StylistAttendance() {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 setLocation({
-                    lat: position.coords.latitude.toFixed(6),
-                    lng: position.coords.longitude.toFixed(6)
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude,
                 });
                 setAccuracy(position.coords.accuracy.toFixed(1));
                 setLoading(false);
             },
             (err) => {
-                setError(`Failed to fetch location vector: ${err.message}`);
+                setError(`Failed to fetch location: ${err.message}`);
                 setLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
         );
     };
 
-    const handleAttendance = (type) => {
+    const handleAttendance = async (type) => {
         if (!location) {
-            setError('Location vector required for system initialization.');
+            setError('Turn on location to punch.');
+            return;
+        }
+        if (worksite?.geofenceEnforced && !withinGeofence) {
+            setError(geofenceBlockedReason || 'You must be at your assigned outlet to punch.');
             return;
         }
 
-        const now = new Date();
-        const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const date = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-
-        const newLog = {
-            id: Date.now(),
-            type,
-            time,
-            date,
-            loc: `${location.lat}, ${location.lng}`,
-            status: 'VERIFIED',
-            stylistName: 'Rahul Sharma' // Mock current user for now
-        };
-
-        addLog(newLog);
-        setStatus(type === 'IN' ? 'ACTIVE_RUN' : 'OFFLINE');
+        setActionMsg(null);
+        setError(null);
+        try {
+            const locStr = `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+            await api.post('/attendance/punch', {
+                type: type === 'IN' ? 'in' : 'out',
+                date: todayLocalYmd(),
+                location: locStr,
+                latitude: location.latitude,
+                longitude: location.longitude,
+            });
+            await refreshToday();
+            setActionMsg(type === 'IN' ? 'Checked in successfully' : 'Checked out successfully');
+        } catch (e) {
+            setError(e?.response?.data?.message || e?.message || 'Punch failed');
+        }
     };
 
     useEffect(() => {
@@ -80,8 +204,47 @@ export default function StylistAttendance() {
 
     return (
         <div className="space-y-6 font-black text-left">
+            {/* Assigned outlet + geofence protocol */}
+            <div className="bg-surface border border-border p-5 space-y-3">
+                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-text-muted">
+                    <Building2 className="w-4 h-4 text-primary" />
+                    Attendance protocol · outlet geofence
+                </div>
+                {worksiteLoading ? (
+                    <p className="text-[10px] text-text-muted uppercase tracking-widest">Loading worksite…</p>
+                ) : worksite?.geofenceEnforced ? (
+                    <div className="space-y-2">
+                        {worksite.outlet ? (
+                            <>
+                                <p className="text-sm font-black text-text">
+                                    {worksite.outlet.name}
+                                    {worksite.outlet.city ? ` · ${worksite.outlet.city}` : ''}
+                                </p>
+                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-wide leading-relaxed">
+                                    {worksite.outlet.address}
+                                </p>
+                                {worksite.configured ? (
+                                    <p className="text-[10px] text-emerald-600 uppercase tracking-widest">
+                                        Allowed radius: {radiusMeters}m from outlet coordinates
+                                    </p>
+                                ) : (
+                                    <p className="text-[10px] text-amber-600 uppercase tracking-widest leading-relaxed">
+                                        {worksite.message}
+                                    </p>
+                                )}
+                            </>
+                        ) : (
+                            <p className="text-[10px] text-amber-600 uppercase tracking-widest leading-relaxed">
+                                {worksite.message}
+                            </p>
+                        )}
+                    </div>
+                ) : (
+                    <p className="text-[10px] text-text-muted uppercase">Geofence not enforced for this account type.</p>
+                )}
+            </div>
+
             <div className="grid grid-cols-1 gap-6">
-                {/* Status Card */}
                 <div className="bg-background border border-border p-8 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Activity className="w-32 h-32 text-primary" />
@@ -96,76 +259,101 @@ export default function StylistAttendance() {
                             <Shield className="w-4 h-4 text-primary opacity-40" />
                         </div>
 
+                        <p className="text-[9px] text-text-muted uppercase mb-2">
+                            {user?.name ? `${user.name} · ` : ''}{todayLocalYmd()}
+                        </p>
+                        {actionMsg && (
+                            <p className="text-[10px] text-emerald-600 uppercase mb-4">{actionMsg}</p>
+                        )}
+                        {error && (
+                            <p className="text-[10px] text-rose-600 uppercase mb-4 leading-relaxed">{error}</p>
+                        )}
+                        {geofenceBlockedReason && (
+                            <p className="text-[10px] text-amber-700 uppercase mb-4 leading-relaxed border border-amber-500/30 bg-amber-500/5 p-3">
+                                {geofenceBlockedReason}
+                            </p>
+                        )}
+
                         <div className="grid md:grid-cols-2 gap-10">
                             <div className="space-y-6">
                                 <div>
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Detected Location</p>
+                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Your GPS position</p>
                                     {loading ? (
                                         <div className="flex items-center gap-2 text-primary">
                                             <RefreshCw className="w-4 h-4 animate-spin" />
-                                            <span className="text-xs uppercase tracking-widest">Scanning...</span>
+                                            <span className="text-xs uppercase tracking-widest">Scanning…</span>
                                         </div>
                                     ) : location ? (
                                         <div className="space-y-1">
                                             <p className="text-2xl font-black text-text tracking-tighter uppercase flex items-center gap-2">
-                                                <Navigation className="w-5 h-5 text-primary" /> {location.lat}, {location.lng}
+                                                <Navigation className="w-5 h-5 text-primary" />
+                                                {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                                             </p>
-                                            <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Signal Accuracy: {accuracy}m</p>
+                                            <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Accuracy ±{accuracy}m</p>
+                                            {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (
+                                                <p className={`text-[10px] uppercase tracking-widest mt-2 ${withinGeofence ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                    Distance from outlet: ~{Math.round(distanceMeters)}m / limit {radiusMeters}m
+                                                </p>
+                                            )}
                                         </div>
                                     ) : (
-                                        <p className="text-rose-500 text-[10px] font-black uppercase">{error || 'Vector Missing'}</p>
+                                        <p className="text-rose-500 text-[10px] font-black uppercase">{error || 'Location required'}</p>
                                     )}
                                 </div>
                                 <button
+                                    type="button"
                                     onClick={fetchLocation}
                                     className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-primary hover:text-white transition-colors"
                                 >
-                                    <RefreshCw className="w-3 h-3" /> Refresh Location
+                                    <RefreshCw className="w-3 h-3" /> Refresh location
                                 </button>
                             </div>
 
                             <div className="flex flex-col justify-end gap-3">
+                                <p className="text-[9px] text-text-muted uppercase tracking-widest mb-1">
+                                    Punch is only enabled when you are inside the outlet radius (verified on server).
+                                </p>
                                 <button
-                                    disabled={status === 'ACTIVE_RUN' || loading || !location}
+                                    type="button"
+                                    disabled={status === 'ACTIVE_RUN' || !canPunch}
                                     onClick={() => handleAttendance('IN')}
                                     className={`w-full py-4 border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3
-                                        ${status === 'ACTIVE_RUN' || loading || !location
+                                        ${status === 'ACTIVE_RUN' || !canPunch
                                             ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
                                             : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]'}`}
                                 >
-                                    <Zap className="w-4 h-4" /> Punch In
+                                    <Zap className="w-4 h-4" /> Punch in
                                 </button>
                                 <button
-                                    disabled={status === 'OFFLINE' || loading || !location}
+                                    type="button"
+                                    disabled={status === 'OFFLINE' || !canPunch}
                                     onClick={() => handleAttendance('OUT')}
                                     className={`w-full py-4 border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3
-                                        ${status === 'OFFLINE' || loading || !location
+                                        ${status === 'OFFLINE' || !canPunch
                                             ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
                                             : 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/20 hover:scale-[1.02]'}`}
                                 >
-                                    <Smartphone className="w-4 h-4" /> Punch Out
+                                    <Smartphone className="w-4 h-4" /> Punch out
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-
             </div>
 
-            {/* Attendance Logs */}
             <div className="bg-surface border border-border overflow-hidden">
                 <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Attendance History</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Today&apos;s punches</span>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5 p-1 bg-background border border-border">
-                            {['ALL', 'IN', 'OUT'].map(f => (
+                            {['ALL', 'IN', 'OUT'].map((f) => (
                                 <button
                                     key={f}
+                                    type="button"
                                     onClick={() => setStatusFilter(f)}
                                     className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
                                 >
@@ -173,7 +361,7 @@ export default function StylistAttendance() {
                                 </button>
                             ))}
                         </div>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Total Logs: {filteredLogs.length}</span>
+                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Total: {filteredLogs.length}</span>
                     </div>
                 </div>
 
@@ -199,7 +387,7 @@ export default function StylistAttendance() {
                                         <MapPin className="w-3 h-3 text-primary" />
                                         <span className="text-[9px] font-black text-text uppercase tracking-widest">{log.loc}</span>
                                     </div>
-                                    <p className="text-[7px] text-text-muted uppercase font-bold tracking-[0.2em] italic">Location Verified</p>
+                                    <p className="text-[7px] text-text-muted uppercase font-bold tracking-[0.2em] italic">Synced with server</p>
                                 </div>
                                 <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/10 rounded-none">
                                     <CheckCircle2 className="w-3 h-3 text-emerald-500" />
@@ -210,11 +398,14 @@ export default function StylistAttendance() {
                     ))}
                 </div>
 
-                {logs.length === 0 && (
+                {logs.length === 0 && !fetching && (
                     <div className="p-20 text-center space-y-4">
                         <AlertTriangle className="w-10 h-10 text-text-muted mx-auto opacity-20" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No attendance logs found.</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No punches today yet.</p>
                     </div>
+                )}
+                {fetching && (
+                    <div className="p-12 text-center text-[10px] text-text-muted uppercase">Loading…</div>
                 )}
             </div>
         </div>

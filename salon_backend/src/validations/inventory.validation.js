@@ -8,7 +8,18 @@ export const stockIn = {
         quantity: Joi.number().required().min(1),
         purchasePrice: Joi.number().min(0),
         supplierId: Joi.string().custom(objectId),
+        invoiceRef: Joi.string().allow(''),
+        supplierName: Joi.string().allow(''),
     }),
+};
+
+/** Query strings arrive as strings; keep validation loose — service coerces page/limit. */
+export const stockInHistoryQuery = {
+    query: Joi.object().unknown(true),
+};
+
+export const adjustHistoryQuery = {
+    query: Joi.object().unknown(true),
 };
 
 export const adjustStock = {

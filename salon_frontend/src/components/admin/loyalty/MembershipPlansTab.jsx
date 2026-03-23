@@ -14,6 +14,7 @@ import {
     Layout
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../../services/api';
 
 const DEFAULT_PLANS = [
     {
@@ -54,32 +55,82 @@ const DEFAULT_PLANS = [
 
 export default function MembershipPlansTab() {
     const [plans, setPlans] = useState([]);
+    const [serviceOptions, setServiceOptions] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const loadPlans = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/loyalty/membership-plans');
+            const list = res?.data?.data || res?.data || [];
+            if (Array.isArray(list) && list.length > 0) {
+                setPlans(list.map((p) => ({
+                    id: p._id || p.id,
+                    name: p.name,
+                    price: Number(p.price || 0),
+                    duration: Number(p.duration || 30),
+                    benefits: Array.isArray(p.benefits) ? p.benefits : [],
+                    includedServices: Array.isArray(p.includedServices) ? p.includedServices : [],
+                    color: p.color || '#A0A0A0',
+                    gradient: p.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
+                    isActive: p.isActive !== false,
+                    isPopular: !!p.isPopular,
+                    icon: p.icon || 'star',
+                })));
+            } else {
+                // Backend source of truth: show empty state when no plans exist.
+                setPlans([]);
+            }
+        } catch (e) {
+            setPlans([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const savedPlans = localStorage.getItem('salon_membership_plans');
-        if (savedPlans) {
-            setPlans(JSON.parse(savedPlans));
-        } else {
-            setPlans(DEFAULT_PLANS);
-            localStorage.setItem('salon_membership_plans', JSON.stringify(DEFAULT_PLANS));
-        }
+        loadPlans();
+        const loadServices = async () => {
+            try {
+                const res = await api.get('/services');
+                const rows = res?.data?.results || res?.data?.data || res?.data || [];
+                const list = Array.isArray(rows) ? rows : [];
+                setServiceOptions(
+                    list
+                        .filter((s) => (s?.status || '').toLowerCase() !== 'inactive')
+                        .map((s) => String(s?.name || '').trim())
+                        .filter(Boolean)
+                );
+            } catch {
+                setServiceOptions([]);
+            }
+        };
+        loadServices();
     }, []);
-
-    const savePlans = (newPlans) => {
-        setPlans(newPlans);
-        localStorage.setItem('salon_membership_plans', JSON.stringify(newPlans));
-    };
 
     const handleDelete = (id) => {
         if (confirm('Verify protocol termination? This plan will be archived.')) {
-            savePlans(plans.filter(p => p.id !== id));
+            api.delete(`/loyalty/membership-plans/${id}`).then(() => {
+                loadPlans();
+            }).catch((err) => {
+                alert(err?.response?.data?.message || 'Failed to delete plan');
+            });
         }
     };
 
     const handleToggleActive = (id) => {
-        savePlans(plans.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
+        const item = plans.find(p => p.id === id);
+        if (!item) return;
+        const nextActive = !item.isActive;
+        api.patch(`/loyalty/membership-plans/${id}`, { isActive: nextActive })
+            .then(() => {
+                loadPlans();
+            })
+            .catch((err) => {
+                alert(err?.response?.data?.message || 'Failed to update status');
+            });
     };
 
     return (
@@ -100,28 +151,51 @@ export default function MembershipPlansTab() {
                 </button>
             </div>
 
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
-                {plans.map((plan) => (
-                    <MembershipCard
-                        key={plan.id}
-                        plan={plan}
-                        onEdit={() => { setEditingPlan(plan); setShowModal(true); }}
-                        onDelete={() => handleDelete(plan.id)}
-                        onToggle={() => handleToggleActive(plan.id)}
-                    />
-                ))}
-            </div>
+            {loading ? (
+                <div className="py-10 text-center text-sm font-bold text-text-muted">Loading membership plans...</div>
+            ) : (
+                plans.length > 0 ? (
+                    <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {plans.map((plan) => (
+                            <MembershipCard
+                                key={plan.id}
+                                plan={plan}
+                                onEdit={() => { setEditingPlan(plan); setShowModal(true); }}
+                                onDelete={() => handleDelete(plan.id)}
+                                onToggle={() => handleToggleActive(plan.id)}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="py-10 text-center text-sm font-bold text-text-muted">
+                        No membership plans configured yet. Click `Initialize Plan` to add one.
+                    </div>
+                )
+            )}
 
             <AnimatePresence>
                 {showModal && (
                     <PlanModal
                         plan={editingPlan}
+                        serviceOptions={serviceOptions}
                         onClose={() => setShowModal(false)}
-                        onSave={(data) => {
+                        onSave={async (data) => {
                             if (editingPlan) {
-                                savePlans(plans.map(p => p.id === editingPlan.id ? { ...p, ...data } : p));
+                                try {
+                                    await api.patch(`/loyalty/membership-plans/${editingPlan.id}`, data);
+                                    await loadPlans();
+                                } catch (err) {
+                                    alert(err?.response?.data?.message || 'Failed to update membership plan');
+                                    return;
+                                }
                             } else {
-                                savePlans([...plans, { ...data, id: Date.now().toString(), isActive: true }]);
+                                try {
+                                    await api.post('/loyalty/membership-plans', { ...data, isActive: true });
+                                    await loadPlans();
+                                } catch (err) {
+                                    alert(err?.response?.data?.message || 'Failed to create membership plan');
+                                    return;
+                                }
                             }
                             setShowModal(false);
                         }}
@@ -172,6 +246,23 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                             {benefit}
                         </div>
                     ))}
+                    {Array.isArray(plan.includedServices) && plan.includedServices.length > 0 && (
+                        <div className="pt-2 border-t border-border/30">
+                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Included Services</p>
+                            <div className="flex flex-wrap gap-2">
+                                {plan.includedServices.slice(0, 6).map((s, i) => (
+                                    <span key={`${s}-${i}`} className="px-2 py-1 text-[10px] font-bold border border-border/50 bg-surface-alt text-foreground">
+                                        {s}
+                                    </span>
+                                ))}
+                                {plan.includedServices.length > 6 && (
+                                    <span className="px-2 py-1 text-[10px] font-bold border border-border/50 bg-surface-alt text-text-muted">
+                                        +{plan.includedServices.length - 6} more
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <button
@@ -194,12 +285,13 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
     );
 }
 
-function PlanModal({ plan, onClose, onSave }) {
+function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
     const [formData, setFormData] = useState(plan || {
         name: '',
         price: '',
         duration: 30,
         benefits: [''],
+        includedServices: [],
         icon: 'star',
         gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
         isPopular: false
@@ -295,6 +387,36 @@ function PlanModal({ plan, onClose, onSave }) {
                                     </button>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Included Services</label>
+                            <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">{formData.includedServices?.length || 0} selected</span>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-2 max-h-52 overflow-y-auto border border-border/40 p-3 bg-surface-alt">
+                            {(serviceOptions || []).length === 0 ? (
+                                <p className="text-xs font-bold text-text-muted">No services found. Add services in Services section first.</p>
+                            ) : serviceOptions.map((serviceName) => {
+                                const checked = (formData.includedServices || []).includes(serviceName);
+                                return (
+                                    <label key={serviceName} className="flex items-center gap-2 text-xs font-bold text-foreground cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={(e) => {
+                                                const prev = Array.isArray(formData.includedServices) ? formData.includedServices : [];
+                                                const next = e.target.checked
+                                                    ? [...prev, serviceName]
+                                                    : prev.filter((s) => s !== serviceName);
+                                                setFormData({ ...formData, includedServices: next });
+                                            }}
+                                        />
+                                        <span>{serviceName}</span>
+                                    </label>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

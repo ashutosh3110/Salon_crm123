@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Star,
     MessageCircle,
@@ -15,10 +15,18 @@ import {
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function FeedbackList() {
-    const { feedbacks, archiveFeedback } = useBusiness();
+    const { feedbacks, archiveFeedback, fetchFeedbacks } = useBusiness();
     const [ratingFilter, setRatingFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedFeedback, setSelectedFeedback] = useState(null);
+
+    // Ensure backend data is loaded immediately when admin opens the feedback tab.
+    useEffect(() => {
+        if (typeof fetchFeedbacks === 'function') {
+            fetchFeedbacks().catch(() => {});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const filteredFeedbacks = feedbacks
         .filter(f => f.status !== 'Archived')
@@ -37,6 +45,14 @@ export default function FeedbackList() {
                 (fb.comment?.toLowerCase() || '').includes(searchLower);
         });
 
+    const activeFeedbacks = feedbacks.filter(f => f.status !== 'Archived');
+    const avgRating = activeFeedbacks.length
+        ? (activeFeedbacks.reduce((sum, f) => sum + Number(f.rating || 0), 0) / activeFeedbacks.length).toFixed(1)
+        : '0.0';
+    const positivePct = activeFeedbacks.length
+        ? Math.round((activeFeedbacks.filter(f => Number(f.rating || 0) >= 4).length / activeFeedbacks.length) * 100)
+        : 0;
+
     return (
         <div className="p-4 space-y-4 slide-right animate-fadeIn">
             {/* Header / Stats Overlay */}
@@ -46,7 +62,7 @@ export default function FeedbackList() {
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
                     </div>
                     <div>
-                        <h4 className="text-xl font-bold text-text">4.7</h4>
+                        <h4 className="text-xl font-bold text-text">{avgRating}</h4>
                         <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Average Rating</p>
                     </div>
                 </div>
@@ -55,7 +71,7 @@ export default function FeedbackList() {
                         <MessageCircle className="w-4 h-4 text-green-500" />
                     </div>
                     <div>
-                        <h4 className="text-xl font-bold text-text">92%</h4>
+                        <h4 className="text-xl font-bold text-text">{positivePct}%</h4>
                         <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Positive Feedback</p>
                     </div>
                 </div>
@@ -105,7 +121,7 @@ export default function FeedbackList() {
                                 {/* Left: Customer & Rating */}
                                 <div className="flex gap-4">
                                     <div className="w-12 h-12 rounded-xl bg-surface flex items-center justify-center text-text-muted font-bold text-lg border border-border">
-                                        {fb.customerName.charAt(0)}
+                                        {(fb.customerName || 'U').charAt(0)}
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-3">
@@ -131,6 +147,19 @@ export default function FeedbackList() {
                                     </div>
                                 </div>
                             </div>
+
+                            {Array.isArray(fb.images) && fb.images.length > 0 && (
+                                <div className="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
+                                    {fb.images.slice(0, 5).map((imgUrl, idx) => (
+                                        <img
+                                            key={`${fb.id}-img-${idx}`}
+                                            src={imgUrl}
+                                            alt="Feedback"
+                                            className="w-14 h-14 rounded-lg object-cover border border-border flex-shrink-0"
+                                        />
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Quick Action Footer */}
                             <div className="mt-4 pt-3 border-t border-border flex justify-between items-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
@@ -196,6 +225,22 @@ export default function FeedbackList() {
                             <div className="p-8 bg-surface border-l-4 border-primary text-text font-bold text-lg leading-relaxed italic">
                                 "{selectedFeedback.comment}"
                             </div>
+
+                            {Array.isArray(selectedFeedback.images) && selectedFeedback.images.length > 0 && (
+                                <div>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Images</label>
+                                    <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        {selectedFeedback.images.map((imgUrl, idx) => (
+                                            <img
+                                                key={`modal-img-${idx}`}
+                                                src={imgUrl}
+                                                alt="Feedback"
+                                                className="w-full h-28 rounded-lg object-cover border border-border"
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-2 gap-8 py-6 border-y border-border">
                                 <div className="space-y-2">

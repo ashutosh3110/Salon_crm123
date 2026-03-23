@@ -1,7 +1,25 @@
+import mongoose from 'mongoose';
 import AppCMS from './appCms.model.js';
 import User from '../user/user.model.js';
 
-const resolveTenantId = async (user) => {
+/**
+ * Resolve which tenant's App CMS to read/write.
+ * @param {object} user - req.user from auth
+ * @param {string} [queryTenantId] - optional ?tenantId= from client (required for superadmin; must match user.tenantId for others)
+ */
+const resolveTenantId = async (user, queryTenantId) => {
+    const q = queryTenantId && mongoose.Types.ObjectId.isValid(String(queryTenantId))
+        ? String(queryTenantId)
+        : null;
+    if (q && user) {
+        if (user.role === 'superadmin') {
+            return queryTenantId;
+        }
+        if (user.tenantId && String(user.tenantId) === q) {
+            return queryTenantId;
+        }
+    }
+
     let tid = user?.tenantId || null;
     if (!tid && user?._id) {
         const tenantService = (await import('../tenant/tenant.service.js')).default;

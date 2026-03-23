@@ -30,6 +30,15 @@ const inventoryTransactionSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
+        /** Stock-in extras (admin purchase log) */
+        purchasePrice: { type: Number },
+        invoiceRef: { type: String },
+        supplierName: { type: String },
+        /** For type ADJUSTMENT: ADD = add qty, DEDUCT = remove (stock out) */
+        adjustmentDirection: {
+            type: String,
+            enum: ['ADD', 'DEDUCT'],
+        },
     },
     {
         timestamps: true,

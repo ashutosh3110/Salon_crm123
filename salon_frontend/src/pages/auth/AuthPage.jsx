@@ -344,6 +344,29 @@ export default function AuthPage() {
                                             {/* Role Switcher - REMOVED CUSTOMER OPTION */}
                                         </div>
 
+                                        {/* Manager — demo login details */}
+                                        <div className="p-4 rounded-2xl border border-primary/20 bg-primary/[0.06] space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <User className="w-4 h-4 text-primary shrink-0" />
+                                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">Manager login</span>
+                                            </div>
+                                            <p className="text-[11px] text-white/85 font-medium leading-relaxed">
+                                                <span className="text-white/45 font-bold text-[9px] uppercase tracking-wider block mb-0.5">Email</span>
+                                                manager@salon.com
+                                            </p>
+                                            <p className="text-[11px] text-white/85 font-medium leading-relaxed">
+                                                <span className="text-white/45 font-bold text-[9px] uppercase tracking-wider block mb-0.5">Password</span>
+                                                password
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSigninForm({ email: 'manager@salon.com', password: 'password' })}
+                                                className="mt-1 w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-white/70 hover:text-white transition-all"
+                                            >
+                                                Use manager credentials
+                                            </button>
+                                        </div>
+
                                         {error && (
                                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
                                                 <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />

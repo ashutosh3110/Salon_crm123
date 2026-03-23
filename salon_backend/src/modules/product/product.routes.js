@@ -19,6 +19,8 @@ router
 
 router
     .route('/:productId')
-    .get(authorize(['admin', 'manager', 'receptionist', 'customer']), productController.getProduct);
+    .get(authorize(['admin', 'manager', 'receptionist', 'customer']), validate(productValidation.getProduct), productController.getProduct)
+    .patch(authorize(['admin', 'manager']), validate(productValidation.updateProduct), productController.updateProduct)
+    .delete(authorize(['admin', 'manager']), validate(productValidation.deleteProduct), productController.deleteProduct);
 
 export default router;

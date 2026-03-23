@@ -1,6 +1,25 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
+/**
+ * Backend mounts all routes under `/v1` (NOT `/api/v1`).
+ * Wrong base → requests hit no route → 404 "Not found".
+ */
+const normalizeApiBaseUrl = (url) => {
+    const fallback = 'http://localhost:3000';
+    let raw = String(url || fallback).trim().replace(/\/+$/, '');
+    // Common mistake: VITE_API_URL=http://localhost:3000/api/v1 → server has no /api prefix
+    raw = raw.replace(/\/api\/v1$/i, '/v1');
+    // .../api → strip /api then we'll append /v1
+    if (/\/api$/i.test(raw)) {
+        raw = raw.replace(/\/api$/i, '');
+    }
+    if (!raw.endsWith('/v1')) {
+        raw = `${raw}/v1`;
+    }
+    return raw;
+};
+
+const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
     baseURL: API_BASE_URL,
@@ -17,7 +36,12 @@ const getCurrentRole = () => {
     if (path.startsWith('/receptionist')) return 'receptionist';
     if (path.startsWith('/stylist')) return 'stylist';
     if (path.startsWith('/inventory')) return 'inventory_manager';
-    if (path.startsWith('/accountant')) return 'accountant';
+    // Accountant panel: admin users share these routes (token stored as auth_token_admin)
+    if (path.startsWith('/accountant')) {
+        if (localStorage.getItem('auth_token_accountant')) return 'accountant';
+        if (localStorage.getItem('auth_token_admin')) return 'admin';
+        return 'accountant';
+    }
     return 'admin';
 };
 
@@ -39,6 +63,18 @@ api.interceptors.request.use(
             } else {
                 console.warn(`[API] No token found for role: ${role}`);
             }
+            // Superadmin (and similar) need tenant scope on the server; validateTenant reads this header.
+            try {
+                const userRaw = localStorage.getItem(`auth_user_${role}`);
+                if (userRaw) {
+                    const u = JSON.parse(userRaw);
+                    if (u?.tenantId) {
+                        config.headers['X-Tenant-Id'] = String(u.tenantId);
+                    }
+                }
+            } catch {
+                /* ignore */
+            }
         }
         return config;
     },
@@ -49,6 +85,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        // No response = connection refused, CORS blocked, wrong URL, or server down
+        if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) {
+            error.isNetworkError = true;
+            error.networkHint = `API unreachable (${API_BASE_URL}). Start the backend, set VITE_API_URL in .env.local, and ensure CORS allows this origin.`;
+        }
         if (error.response?.status === 401) {
             const path = window.location.pathname;
             const isPublicPage = path === '/' || ['/login', '/register', '/forgot-password', '/admin/login', '/superadmin/login', '/blog', '/contact', '/launchpad', '/app/login'].some(p => path === p || path.startsWith(p)) || path.startsWith('/c/');

@@ -51,23 +51,44 @@ export default function SalonProfilePage() {
     const [reviewImages, setReviewImages] = useState([]);
     const fileInputRef = useRef(null);
 
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files);
-        const newImages = files.map(file => URL.createObjectURL(file));
-        setReviewImages(prev => [...prev, ...newImages]);
+    const fileToDataUrl = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+
+    const handleFileChange = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        try {
+            // Store as base64 data URLs so backend can persist and admin can render images.
+            const newImages = await Promise.all(files.map(fileToDataUrl));
+            setReviewImages(prev => [...prev, ...newImages.filter(Boolean)]);
+        } catch {
+            // eslint-disable-next-line no-alert
+            alert('Could not read selected image(s). Please try another file.');
+        }
     };
 
-    const handleSubmitReview = () => {
+    const handleSubmitReview = async () => {
         if (reviewRating === 0 || reviewText.trim() === '') return;
-        
-        addFeedback({
+
+        const created = await addFeedback({
             customerName: reviewerName.trim() || user?.name || 'Anonymous User',
             rating: reviewRating,
             comment: reviewText.trim(),
             service: 'General Service', // Or dynamically set if booking found
             staffName: 'Unassigned',
-            images: reviewImages
+            images: reviewImages,
         });
+
+        if (!created) {
+            // eslint-disable-next-line no-alert
+            alert('Feedback submit failed. Please try again.');
+            return;
+        }
 
         setReviewRating(0);
         setReviewText('');

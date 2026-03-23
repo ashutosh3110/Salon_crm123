@@ -30,6 +30,20 @@ class ProductService {
         if (!product) throw new Error('Product not found');
         return product;
     }
+
+    async updateProductById(tenantId, productId, updateBody) {
+        const product = await productService.updateOne({ _id: productId, tenantId }, updateBody);
+        if (!product) throw new Error('Product not found');
+        await cacheService.del(cacheService.generateKey(tenantId, 'products', 'list'));
+        return product;
+    }
+
+    async deleteProductById(tenantId, productId) {
+        const product = await productService.deleteOne({ _id: productId, tenantId });
+        if (!product) throw new Error('Product not found');
+        await cacheService.del(cacheService.generateKey(tenantId, 'products', 'list'));
+        return product;
+    }
 }
 
 export default new ProductService();

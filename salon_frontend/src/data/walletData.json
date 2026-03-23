@@ -5,6 +5,7 @@
       { "id": 2, "title": "Standard Reward", "minAdd": 1000, "extra": 100, "isActive": true },
       { "id": 3, "title": "Mega Recharge", "minAdd": 2000, "extra": 300, "isActive": true }
     ],
+    "expiryDays": 365,
     "fraudRules": {
       "maxDailyDebit": 5000,
       "maxSingleRecharge": 50000,

@@ -6,7 +6,6 @@ import { createPortal } from 'react-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCart } from '../../contexts/CartContext';
 import { useInventory } from '../../contexts/InventoryContext';
-
 const CARD_GRADIENTS = [
     'linear-gradient(145deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%)',
     'linear-gradient(145deg, #2D1B69 0%, #4A1A6B 60%, #7B2D8B 100%)',

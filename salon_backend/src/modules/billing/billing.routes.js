@@ -30,6 +30,11 @@ router
     .route('/razorpay/create-order')
     .post(razorpayController.createSubscriptionOrder);
 
+// Razorpay order for wallet recharge (admin-triggered)
+router
+    .route('/razorpay/create-wallet-order')
+    .post(razorpayController.createWalletRechargeOrder);
+
 router
     .route('/razorpay/verify-payment')
     .post(razorpayController.verifySubscriptionPayment);

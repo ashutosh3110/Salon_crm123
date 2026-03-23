@@ -22,12 +22,13 @@ import {
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
+import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const { user } = useAuth();
     const { updateCustomer } = useBusiness();
-    const { getWallet, adminAdjustBalance, initializeWallet } = useWallet();
+    const { getWallet, adminAdjustBalance, initializeWallet, walletSettings } = useWallet();
     const [activeTab, setActiveTab] = useState('details');
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState(null);
@@ -37,6 +38,10 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     const [rechargeType, setRechargeType] = useState('CREDIT');
     const [rechargeNote, setRechargeNote] = useState('');
     const [isRecharging, setIsRecharging] = useState(false);
+
+    // Optional: WhatsApp message to send after successful CREDIT recharge
+    const [sendWhatsAppAfterRecharge, setSendWhatsAppAfterRecharge] = useState(false);
+    const [rechargeWhatsAppMessage, setRechargeWhatsAppMessage] = useState('');
 
     const walletData = getWallet(customer?._id);
 
@@ -71,17 +76,107 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
         e.preventDefault();
         if (!rechargeAmount || isNaN(rechargeAmount)) return;
         
+        const amountNum = parseFloat(rechargeAmount);
+        const description = rechargeNote || `${rechargeType === 'CREDIT' ? 'Manual Top-up' : 'Manual Adjustment'}`;
+
+        const expiryDays = walletSettings?.expiryDays ?? 365;
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + expiryDays);
+        const expiryDateText = expiryDate.toLocaleDateString();
+
+        const sendRechargeWhatsApp = () => {
+            if (!sendWhatsAppAfterRecharge) return;
+            const phone = (customer?.phone || '').replace(/[^0-9]/g, '');
+            if (!phone) return;
+
+            const baseText = rechargeWhatsAppMessage?.trim()
+                ? rechargeWhatsAppMessage.trim()
+                : `Wallet recharge successful for ${customer?.name || 'customer'}.`;
+
+            const text = `${baseText}\n\nWallet credited: ₹${amountNum} (Valid until ${expiryDateText})`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        };
+
+        const ensureRazorpayLoaded = async () => {
+            if (window.Razorpay) return;
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Razorpay SDK load failed'));
+                document.body.appendChild(script);
+            });
+        };
+
         setIsRecharging(true);
         try {
-            await adminAdjustBalance(
-                customer._id, 
-                parseFloat(rechargeAmount), 
-                rechargeType, 
-                rechargeNote || `${rechargeType === 'CREDIT' ? 'Manual Top-up' : 'Manual Adjustment'}`
-            );
-            setRechargeAmount('');
-            setRechargeNote('');
-            // Optional: toast success
+            // For DEBIT, keep existing local adjustment.
+            if (rechargeType !== 'CREDIT') {
+                await adminAdjustBalance(customer._id, amountNum, rechargeType, description);
+                sendRechargeWhatsApp();
+                setRechargeAmount('');
+                setRechargeNote('');
+                setSendWhatsAppAfterRecharge(false);
+                setRechargeWhatsAppMessage('');
+                return;
+            }
+
+            await ensureRazorpayLoaded();
+
+            const orderRes = await api.post('/billing/razorpay/create-wallet-order', { amount: amountNum });
+            if (!orderRes.data?.success) throw new Error(orderRes.data?.message || 'Failed to create Razorpay order');
+
+            const { orderId, amount, currency, keyId } = orderRes.data.data;
+
+            await new Promise((resolve, reject) => {
+                const options = {
+                    key: keyId,
+                    amount,
+                    currency,
+                    name: 'Wapixo Salon',
+                    description: `Wallet recharge: ${description}`,
+                    order_id: orderId,
+                    prefill: {
+                        contact: customer?.phone || '',
+                        name: customer?.name || ''
+                    },
+                    handler: async (response) => {
+                        try {
+                            const verifyRes = await api.post('/billing/razorpay/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            });
+
+                            if (verifyRes.data?.success) {
+                                await adminAdjustBalance(customer._id, amountNum, rechargeType, description);
+                                sendRechargeWhatsApp();
+
+                                setRechargeAmount('');
+                                setRechargeNote('');
+                                setSendWhatsAppAfterRecharge(false);
+                                setRechargeWhatsAppMessage('');
+                                resolve(true);
+                            } else {
+                                reject(new Error('Payment verification failed'));
+                            }
+                        } catch (err) {
+                            reject(err);
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => reject(new Error('Payment cancelled'))
+                    },
+                    theme: { color: '#C8956C' }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            });
+        } catch (err) {
+            // eslint-disable-next-line no-alert
+            alert(err?.message || 'Wallet recharge failed');
         } finally {
             setIsRecharging(false);
         }
@@ -165,8 +260,18 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
 
                 {/* Sub-KPIs Bar */}
                 <div className="grid grid-cols-4 divide-x divide-border border-b border-border bg-white">
-                    <ProfileMetric label="LIFETIME YIELD" value={`₹${customer.spend.toLocaleString()}`} icon={DollarSign} color="green" />
-                    <ProfileMetric label="WALLET BALANCE" value={`₹${walletData.balance.toLocaleString()}`} icon={Wallet} color="yellow" />
+                    <ProfileMetric
+                        label="LIFETIME YIELD"
+                        value={`₹${(customer?.spend ?? 0).toLocaleString()}`}
+                        icon={DollarSign}
+                        color="green"
+                    />
+                    <ProfileMetric
+                        label="WALLET BALANCE"
+                        value={`₹${(walletData?.balance ?? 0).toLocaleString()}`}
+                        icon={Wallet}
+                        color="yellow"
+                    />
                     <ProfileMetric label="TOTAL MATRIX VISITS" value={customer.totalVisits} icon={History} color="blue" />
                     <ProfileMetric label="CORE PREFERENCE" value={customer.preferred} icon={Tag} color="purple" />
                 </div>
@@ -235,6 +340,28 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                                 className="w-full bg-white border border-border px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-primary"
                                             />
                                         </div>
+
+                                        <div className="lg:col-span-2 col-span-2 space-y-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSendWhatsAppAfterRecharge(v => !v)}
+                                                className={`w-full py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                                    sendWhatsAppAfterRecharge ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
+                                                }`}
+                                            >
+                                                {sendWhatsAppAfterRecharge ? 'WhatsApp message: ON' : 'WhatsApp message: OFF'}
+                                            </button>
+                                            {sendWhatsAppAfterRecharge && (
+                                                <textarea
+                                                    value={rechargeWhatsAppMessage}
+                                                    onChange={(e) => setRechargeWhatsAppMessage(e.target.value)}
+                                                    placeholder="Type message to send after credit..."
+                                                    className="w-full bg-white border border-border px-4 py-3 text-[10px] font-black outline-none focus:border-primary uppercase"
+                                                    rows={3}
+                                                />
+                                            )}
+                                        </div>
+
                                         <div className="flex items-end">
                                             <button 
                                                 type="submit"

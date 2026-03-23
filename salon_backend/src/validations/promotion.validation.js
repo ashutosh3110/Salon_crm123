@@ -28,3 +28,40 @@ export const createPromotion = {
         endTime: Joi.string().regex(/^([0-9]{2}):([0-9]{2})$/).allow('', null),
     }),
 };
+
+export const updatePromotion = {
+    body: Joi.object().keys({
+        name: Joi.string().optional(),
+        description: Joi.string().allow('', null).optional(),
+        type: Joi.string().optional().valid('FLAT', 'PERCENTAGE', 'COMBO'),
+        value: Joi.number().optional().min(0),
+        maxDiscountAmount: Joi.number().min(0).optional(),
+        minBillAmount: Joi.number().min(0).optional(),
+        applicableServices: Joi.array().items(Joi.string().custom(objectId)).optional(),
+        applicableProducts: Joi.array().items(Joi.string().custom(objectId)).optional(),
+        applicableOutlets: Joi.array().items(Joi.string().custom(objectId)).optional(),
+        startDate: Joi.date().optional(),
+        endDate: Joi.date().optional(),
+        isActive: Joi.boolean().optional(),
+        targetingType: Joi.string().valid('ALL', 'NEW', 'REGULAR', 'INACTIVE').optional(),
+        usageLimitPerCustomer: Joi.number().integer().min(1).optional(),
+        totalUsageLimit: Joi.number().integer().min(1).optional(),
+        activationMode: Joi.string().valid('AUTO', 'COUPON').optional(),
+        couponCode: Joi.string().optional(),
+        startTime: Joi.string().regex(/^([0-9]{2}):([0-9]{2})$/).allow('', null).optional(),
+        endTime: Joi.string().regex(/^([0-9]{2}):([0-9]{2})$/).allow('', null).optional(),
+    }).custom((obj, helpers) => {
+        if (obj.activationMode === 'COUPON' && !obj.couponCode) {
+            return helpers.error('any.custom', { message: 'couponCode is required for COUPON activationMode' });
+        }
+        return obj;
+    }, 'couponCode validation')
+};
+
+export const validateCoupon = {
+    body: Joi.object().keys({
+        couponCode: Joi.string().trim().required(),
+        billAmount: Joi.number().min(0).required(),
+        customerId: Joi.string().optional().custom(objectId),
+    }),
+};

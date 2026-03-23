@@ -24,6 +24,38 @@ import {
     MapPin
 } from 'lucide-react';
 
+/** Shrink large uploads so base64 fits MongoDB document limits */
+async function compressImageFile(file, maxWidth = 1200, quality = 0.82) {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            try {
+                const canvas = document.createElement('canvas');
+                let w = img.naturalWidth || img.width;
+                let h = img.naturalHeight || img.height;
+                if (w > maxWidth) {
+                    h = Math.round((h * maxWidth) / w);
+                    w = maxWidth;
+                }
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            } catch (e) {
+                reject(e);
+            }
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Could not read image'));
+        };
+        img.src = url;
+    });
+}
+
 export default function MarketingCMSPage() {
     const {
         banners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
@@ -44,24 +76,28 @@ export default function MarketingCMSPage() {
     // Form states
     const [formData, setFormData] = useState({
         title: '',
-        link: '/app/home',
-        gender: 'men',
+        link: '/app/book',
+        gender: 'all',
         description: '',
         tag: '',
         code: '',
         expiry: '',
+        validityText: '',
+        btnText: 'Apply',
         image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
     });
 
     const resetForm = () => {
         setFormData({
             title: '',
-            link: '/app/home',
-            gender: 'men',
+            link: '/app/book',
+            gender: 'all',
             description: '',
             tag: '',
             code: '',
             expiry: '',
+            validityText: '',
+            btnText: 'Apply',
             image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
         });
         setEditingId(null);
@@ -87,7 +123,11 @@ export default function MarketingCMSPage() {
             resetForm();
         } catch (err) {
             console.error(err);
-            alert('Failed to save. Please try again.');
+            const msg =
+                err.response?.data?.message ||
+                err.message ||
+                'Failed to save. Please try again.';
+            alert(msg);
         } finally {
             setSaving(false);
         }
@@ -109,12 +149,14 @@ export default function MarketingCMSPage() {
         setModalType(type);
         setFormData({
             title: item.title,
-            link: item.link || '/app/home',
-            gender: item.gender || 'men',
+            link: item.link || '/app/book',
+            gender: item.gender || 'all',
             description: item.description || '',
             tag: item.tag || '',
             code: item.code || '',
             expiry: item.expiry || '',
+            validityText: item.validityText || '',
+            btnText: item.btnText || 'Apply',
             image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
         });
         setEditingId(item.id);
@@ -132,14 +174,17 @@ export default function MarketingCMSPage() {
         }
     };
 
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData({ ...formData, image: reader.result });
-            };
-            reader.readAsDataURL(file);
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            const dataUrl = await compressImageFile(file);
+            setFormData((prev) => ({ ...prev, image: dataUrl }));
+        } catch (err) {
+            console.error(err);
+            alert(err?.message || 'Could not process image.');
+        } finally {
+            e.target.value = '';
         }
     };
 
@@ -157,6 +202,7 @@ export default function MarketingCMSPage() {
                 <div className="flex flex-wrap gap-3">
                     <button 
                         onClick={() => {
+                            fetchAppCMS();
                             setShowPreviewInfo(true);
                             setTimeout(() => setShowPreviewInfo(false), 3000);
                         }}
@@ -290,7 +336,7 @@ export default function MarketingCMSPage() {
                                                 {banner.status}
                                             </button>
                                             <span className="text-[8px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest bg-white/10 text-white backdrop-blur-md border border-white/20">
-                                                {banner.gender === 'men' ? 'Men' : 'Women'}
+                                                {banner.gender === 'all' ? 'All' : banner.gender === 'men' ? 'Men' : 'Women'}
                                             </span>
                                         </div>
                                     </div>
@@ -305,8 +351,8 @@ export default function MarketingCMSPage() {
                                                 Edit Details <ArrowRight className="w-3 h-3" />
                                             </button>
                                             <div className="flex items-center gap-1 opacity-50">
-                                                {banner.gender === 'men' ? <User className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
-                                                <span className="text-[8px] font-bold uppercase">{banner.gender}</span>
+                                                {banner.gender === 'all' ? <Layout className="w-3 h-3" /> : banner.gender === 'men' ? <User className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
+                                                <span className="text-[8px] font-bold uppercase">{banner.gender === 'all' ? 'all' : banner.gender}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -587,36 +633,60 @@ export default function MarketingCMSPage() {
                                         <>
                                             <div className="grid gap-4">
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Headline</label>
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Main text (e.g. ₹200 OFF) *</label>
                                                     <input 
                                                         required 
                                                         type="text" 
                                                         value={formData.title}
                                                         onChange={(e) => setFormData({...formData, title: e.target.value})}
-                                                        placeholder="e.g. Summer Special Sale" 
+                                                        placeholder="e.g. ₹200 OFF" 
                                                         className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Gender Sector</label>
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Validity line (top of card)</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={formData.validityText}
+                                                        onChange={(e) => setFormData({...formData, validityText: e.target.value})}
+                                                        placeholder="e.g. VALID 20 MAR - 24 JUN" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Button label</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={formData.btnText}
+                                                        onChange={(e) => setFormData({...formData, btnText: e.target.value})}
+                                                        placeholder="Apply" 
+                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Show for</label>
                                                     <select 
                                                         value={formData.gender}
                                                         onChange={(e) => setFormData({...formData, gender: e.target.value})}
                                                         className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
                                                     >
-                                                        <option value="men">Men Only</option>
-                                                        <option value="women">Women Only</option>
+                                                        <option value="all">Everyone</option>
+                                                        <option value="men">Men only</option>
+                                                        <option value="women">Women only</option>
                                                     </select>
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Redirection (Route)</label>
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">When customer taps the banner</label>
                                                 <select 
                                                     value={formData.link}
                                                     onChange={(e) => setFormData({...formData, link: e.target.value})}
                                                     className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
                                                 >
-                                                    <option value="/app/home">Home Page</option>
+                                                    <option value="/app/book">Book appointment</option>
+                                                    <option value="/app/home">Home</option>
+                                                    <option value="/app/services">Services</option>
+                                                    <option value="/app/membership">Membership</option>
                                                 </select>
                                             </div>
                                             <div className="space-y-1.5">

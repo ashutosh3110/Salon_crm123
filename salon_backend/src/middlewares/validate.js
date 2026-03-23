@@ -2,6 +2,12 @@ import Joi from 'joi';
 import httpStatus from 'http-status-codes';
 
 const validate = (schema) => (req, res, next) => {
+    if (!schema || typeof schema !== 'object') {
+        const customError = new Error('Validation schema is missing or invalid');
+        customError.statusCode = httpStatus.INTERNAL_SERVER_ERROR;
+        return next(customError);
+    }
+
     const validSchema = {};
     const { params, query, body } = req;
 

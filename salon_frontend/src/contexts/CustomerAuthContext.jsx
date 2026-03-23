@@ -31,9 +31,9 @@ export function CustomerAuthProvider({ children }) {
     };
 
     // Step 2: Verify OTP — POST /auth/login-otp { phone, tenantId, otp }
-    const verifyOtp = async (phone, otp, tenantId) => {
+    const verifyOtp = async (phone, otp, tenantId, referralCode = '') => {
         if (!tenantId) throw new Error('Please select a salon first');
-        const res = await api.post('/auth/login-otp', { phone, tenantId, otp });
+        const res = await api.post('/auth/login-otp', { phone, tenantId, otp, referralCode });
         const { accessToken, client } = res.data?.data || res.data;
         const cust = {
             _id: client._id,
@@ -64,8 +64,8 @@ export function CustomerAuthProvider({ children }) {
     };
 
     // Login: combines OTP verify + localStorage save
-    const customerLogin = async (phone, otp, tenantId) => {
-        const { customer: cust, token } = await verifyOtp(phone, otp, tenantId);
+    const customerLogin = async (phone, otp, tenantId, referralCode = '') => {
+        const { customer: cust, token } = await verifyOtp(phone, otp, tenantId, referralCode);
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_user', JSON.stringify(cust));
         setCustomer(cust);

@@ -5,13 +5,16 @@ import { Heart, ChevronLeft, MapPin, Star, Plus } from 'lucide-react';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { MOCK_OUTLETS, MOCK_PRODUCTS } from '../../data/appMockData';
+import { useInventory } from '../../contexts/InventoryContext';
+import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
+import { MOCK_OUTLETS } from '../../data/appMockData';
 
 export default function AppFavoritesPage() {
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
     const { favoriteSalons, favoriteProducts, toggleSalonLike, toggleProductLike } = useFavorites();
     const { addToCart } = useCart();
+    const { products: inventoryProducts, shopCategories } = useInventory();
     const [activeTab, setActiveTab] = useState('Salons');
 
     const likedSalonsData = useMemo(() => {
@@ -19,8 +22,11 @@ export default function AppFavoritesPage() {
     }, [favoriteSalons]);
 
     const likedProductsData = useMemo(() => {
-        return MOCK_PRODUCTS.filter(product => favoriteProducts.includes(product._id));
-    }, [favoriteProducts]);
+        return inventoryProducts
+            .filter((p) => p.isShopProduct && favoriteProducts.includes(String(p.id ?? p._id)))
+            .map((p) => mapInventoryProductToShopProduct(p, shopCategories))
+            .filter(Boolean);
+    }, [favoriteProducts, inventoryProducts, shopCategories]);
 
     const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 

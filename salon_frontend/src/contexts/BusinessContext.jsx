@@ -45,7 +45,26 @@ export function BusinessProvider({ children }) {
         return localStorage.getItem('active_outlet_id') || null;
     });
 
-    const activeOutlet = outlets.find(o => o._id === activeOutletId) || null;
+    const activeOutlet =
+        outlets.find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null;
+
+    // Customer app: pick a default outlet so shop filters (outlet-specific stock) work
+    useEffect(() => {
+        if (typeof window === 'undefined' || !window.location.pathname.startsWith('/app')) return;
+        const hasCustomerSession = customer || localStorage.getItem('customer_token');
+        if (!hasCustomerSession) return;
+        if (!outlets?.length || activeOutletId) return;
+        const first = outlets[0];
+        const id = first?._id || first?.id;
+        if (!id) return;
+        const sid = String(id);
+        setActiveOutletId(sid);
+        try {
+            localStorage.setItem('active_outlet_id', sid);
+        } catch {
+            /* ignore */
+        }
+    }, [customer, outlets, activeOutletId]);
 
     // Fetch Initial Data on login (admin/staff)
     useEffect(() => {
@@ -58,6 +77,9 @@ export function BusinessProvider({ children }) {
             fetchCustomers();
             fetchBookings();
             fetchProducts();
+            fetchSegments();
+            fetchFeedbacks();
+            fetchSuppliers();
         }
     }, [isAuthenticated]);
 
@@ -115,6 +137,68 @@ export function BusinessProvider({ children }) {
         }
     };
 
+    const fetchSegments = async () => {
+        setSegmentsLoading(true);
+        try {
+            const response = await api.get('/segments');
+            const data = response?.data?.success ? response.data.data : response.data?.data || response.data;
+            setSegments(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch segments:', error);
+            setSegments([]);
+        } finally {
+            setSegmentsLoading(false);
+        }
+    };
+
+    const fetchFeedbacks = async () => {
+        setFeedbacksLoading(true);
+        try {
+            const response = await api.get('/feedbacks');
+            const list = response?.data?.success ? response.data.data : response?.data?.data || response?.data;
+            if (Array.isArray(list)) {
+                setFeedbacks(list.map((fb) => {
+                    const ratingNum = Number(fb.rating || 0);
+                    const sentiment = fb.sentiment || (ratingNum >= 4 ? 'Positive' : (ratingNum === 3 ? 'Neutral' : 'Negative'));
+                    return {
+                        ...fb,
+                        id: fb._id ? String(fb._id) : fb.id,
+                        sentiment,
+                        date: fb.createdAt || fb.date,
+                    };
+                }));
+            } else {
+                setFeedbacks([]);
+            }
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch feedbacks:', error);
+            setFeedbacks([]);
+        } finally {
+            setFeedbacksLoading(false);
+        }
+    };
+
+    // Auto-refresh feedback list only on feedback screens.
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        if (typeof window === 'undefined') return;
+        const path = window.location.pathname || '';
+        const isFeedbackScreen = path.includes('/crm/feedback') || path.includes('/manager/feedback');
+        if (!isFeedbackScreen) return;
+
+        const t = setInterval(() => {
+            fetchFeedbacks().catch(() => {});
+        }, 60000);
+
+        return () => clearInterval(t);
+    }, [isAuthenticated]);
+
+    const fetchSegmentCustomers = async (segmentId, { limit = 50 } = {}) => {
+        const response = await api.get(`/segments/${segmentId}/customers`, { params: { limit } });
+        const data = response?.data?.success ? response.data.data : response.data?.data || response.data;
+        return Array.isArray(data) ? data : [];
+    };
+
     const normalizeBooking = (b) => {
         if (!b) return b;
         return {
@@ -154,24 +238,29 @@ export function BusinessProvider({ children }) {
     const updateSalon = async (data) => {
         try {
             const response = await api.patch('/tenants/me', data);
-            if (response.data.success) {
+            if (response.data?.success && response.data.data) {
                 setSalon(response.data.data);
                 return response.data.data;
             }
+            const msg = response.data?.message || 'Update failed';
+            throw new Error(msg);
         } catch (error) {
             console.error('[BusinessContext] Update salon failed:', error);
-            throw error;
+            const msg = error.response?.data?.message || error.message;
+            throw new Error(msg);
         }
     };
 
     const fetchStaff = async () => {
         setStaffLoading(true);
         try {
-            const response = await api.get('/users');
-            const staffData = response.data.success ? response.data.data : response.data;
-            setStaff(staffData.filter(u => u.role !== 'superadmin'));
+            const response = await api.get('/users', { params: { limit: 200, page: 1 } });
+            const staffRaw = response?.data?.success ? response.data.data : response.data;
+            const staffList = Array.isArray(staffRaw) ? staffRaw : (staffRaw?.results || []);
+            setStaff(staffList.filter((u) => u.role !== 'superadmin'));
         } catch (error) {
             console.error('[BusinessContext] Failed to fetch staff:', error);
+            setStaff([]);
         } finally {
             setStaffLoading(false);
         }
@@ -375,27 +464,170 @@ export function BusinessProvider({ children }) {
     const updateCustomer = (id, data) => setCustomers(prev => prev.map(c => c._id === id ? { ...c, ...data } : c));
     const deleteCustomer = (id) => setCustomers(prev => prev.filter(c => c._id !== id));
 
-    const addSupplier = (supplier) => setSuppliers(prev => [{ ...supplier, id: `s-${Date.now()}`, due: 0, status: 'Active' }, ...prev]);
-    const updateSupplier = (id, data) => setSuppliers(prev => prev.map(s => s.id === id ? { ...s, ...data } : s));
-    const deleteSupplier = (id) => setSuppliers(prev => prev.filter(s => s.id !== id));
-
-    const addFeedback = (feedback) => {
-        const sentiment = feedback.rating >= 4 ? 'Positive' : (feedback.rating === 3 ? 'Neutral' : 'Negative');
-        setFeedbacks(prev => [{
-            ...feedback,
-            id: Date.now().toString(),
-            status: feedback.rating <= 2 ? 'Urgent' : 'Pending',
-            sentiment,
-            date: new Date().toISOString().split('T')[0],
-            response: ''
-        }, ...prev]);
+    const fetchSuppliers = async () => {
+        setSuppliersLoading(true);
+        try {
+            const response = await api.get('/suppliers');
+            const raw = response.data?.data ?? response.data ?? [];
+            const list = Array.isArray(raw) ? raw : [];
+            setSuppliers(
+                list.map((s) => ({
+                    ...s,
+                    id: s.id || s._id,
+                    due: typeof s.due === 'number' ? s.due : 0,
+                    status: s.status || 'Active',
+                }))
+            );
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch suppliers:', error);
+            setSuppliers([]);
+        } finally {
+            setSuppliersLoading(false);
+        }
     };
-    const updateFeedback = (id, data) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, ...data } : f));
-    const archiveFeedback = (id) => setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: 'Archived' } : f));
-    const deleteFeedback = (id) => setFeedbacks(prev => prev.filter(f => f.id !== id));
 
-    const addSegment = (segment) => setSegments(prev => [{ ...segment, id: Date.now().toString(), count: 0 }, ...prev]);
-    const deleteSegment = (id) => setSegments(prev => prev.filter(s => s.id !== id));
+    const addSupplier = async (supplier) => {
+        const payload = {
+            name: supplier?.name,
+            contact: supplier?.contact || '',
+            gstin: supplier?.gstin || '',
+            phone: supplier?.phone || '',
+            email: supplier?.email || '',
+            address: supplier?.address || '',
+        };
+        const response = await api.post('/suppliers', payload);
+        const created = response.data?.data;
+        if (created?._id || created?.id) {
+            setSuppliers((prev) => [
+                {
+                    ...created,
+                    id: created.id || created._id,
+                    due: typeof created.due === 'number' ? created.due : 0,
+                    status: created.status || 'Active',
+                },
+                ...prev,
+            ]);
+        } else {
+            await fetchSuppliers();
+        }
+        return created;
+    };
+
+    const updateSupplier = async (id, data) => {
+        const payload = {
+            name: data?.name,
+            contact: data?.contact,
+            gstin: data?.gstin,
+            phone: data?.phone,
+            email: data?.email,
+            address: data?.address,
+        };
+        const cleaned = Object.fromEntries(
+            Object.entries(payload).filter(([, v]) => v !== undefined)
+        );
+        const response = await api.patch(`/suppliers/${id}`, cleaned);
+        const updated = response.data?.data;
+        if (updated) {
+            setSuppliers((prev) =>
+                prev.map((s) => {
+                    const sid = s.id || s._id;
+                    if (String(sid) !== String(id)) return s;
+                    return {
+                        ...s,
+                        ...updated,
+                        id: updated.id || updated._id || id,
+                        due: typeof updated.due === 'number' ? updated.due : s.due,
+                        status: updated.status ?? s.status,
+                    };
+                })
+            );
+        } else {
+            await fetchSuppliers();
+        }
+        return updated;
+    };
+
+    const deleteSupplier = async (id) => {
+        await api.delete(`/suppliers/${id}`);
+        setSuppliers((prev) => prev.filter((s) => String(s.id || s._id) !== String(id)));
+    };
+
+    const addFeedback = async (feedback) => {
+        try {
+            const payload = {
+                customerName: feedback?.customerName,
+                rating: feedback?.rating,
+                comment: feedback?.comment,
+                service: feedback?.service,
+                staffName: feedback?.staffName,
+                images: feedback?.images,
+            };
+            const res = await api.post('/feedbacks', payload);
+            const created = res?.data?.data;
+
+            // Keep admin UI synced if feedback list is already loaded.
+            if (isAuthenticated && created?._id) {
+                setFeedbacks(prev => [{
+                    ...created,
+                    id: String(created._id),
+                    date: created.createdAt || created.date,
+                }, ...prev]);
+            }
+
+            return created;
+        } catch (error) {
+            console.error('[BusinessContext] Add feedback failed:', error);
+            return null;
+        }
+    };
+
+    const updateFeedback = async (id, data) => {
+        try {
+            await api.patch(`/feedbacks/${id}`, data);
+            await fetchFeedbacks();
+        } catch (error) {
+            console.error('[BusinessContext] Update feedback failed:', error);
+            return null;
+        }
+    };
+
+    const archiveFeedback = async (id) => {
+        try {
+            await api.patch(`/feedbacks/${id}/archive`);
+            await fetchFeedbacks();
+        } catch (error) {
+            console.error('[BusinessContext] Archive feedback failed:', error);
+            return null;
+        }
+    };
+
+    const deleteFeedback = async (id) => {
+        // Backend delete route isn't implemented in this build.
+        // Keep UI consistent by archiving instead.
+        return archiveFeedback(id);
+    };
+
+    const addSegment = async (segment) => {
+        const payload = {
+            name: segment?.name,
+            rule: segment?.rule,
+            iconName: segment?.iconName,
+            color: segment?.color,
+        };
+        const response = await api.post('/segments', payload);
+        if (response?.data?.success) {
+            await fetchSegments();
+            return response.data.data;
+        }
+        await fetchSegments();
+        return response?.data?.data || null;
+    };
+
+    const deleteSegment = async (id) => {
+        await api.delete(`/segments/${id}`);
+        await fetchSegments();
+        return true;
+    };
 
     const addBooking = async (booking) => {
         try {
@@ -427,14 +659,26 @@ export function BusinessProvider({ children }) {
         categories, categoriesLoading, addCategory, updateCategory, deleteCategory, toggleCategoryStatus, fetchCategories,
         outlets, outletsLoading, fetchOutlets, setOutlets, products, customers,
         addOutlet, updateOutlet, deleteOutlet, toggleOutletStatus,
-        addStaff, updateStaff, deleteStaff,
-        addService, updateService, deleteService, toggleServiceStatus,
-        addCategory, deleteCategory, toggleCategoryStatus, updateCategory,
         addProduct, deleteProduct, toggleProductStatus,
         addCustomer, updateCustomer, deleteCustomer,
-        feedbacks, addFeedback, updateFeedback, archiveFeedback, deleteFeedback,
-        suppliers, addSupplier, updateSupplier, deleteSupplier,
-        segments, addSegment, deleteSegment,
+        feedbacks,
+        addFeedback,
+        updateFeedback,
+        archiveFeedback,
+        deleteFeedback,
+        fetchFeedbacks,
+        suppliers,
+        suppliersLoading,
+        fetchSuppliers,
+        addSupplier,
+        updateSupplier,
+        deleteSupplier,
+        segments,
+        segmentsLoading,
+        fetchSegments,
+        fetchSegmentCustomers,
+        addSegment,
+        deleteSegment,
         bookings, addBooking, updateBookingStatus,
         activeOutletId, setActiveOutletId, activeOutlet
     };

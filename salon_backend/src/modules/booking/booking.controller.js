@@ -50,6 +50,14 @@ const getBooking = async (req, res, next) => {
 
 const updateBookingStatus = async (req, res, next) => {
     try {
+        if (req.user?.role === 'stylist') {
+            const existing = await bookingService.getBookingById(req.tenantId, req.params.bookingId);
+            const sid = req.user._id?.toString?.() || req.user.id?.toString?.();
+            const staff = existing?.staffId?._id?.toString?.() || existing?.staffId?.toString?.();
+            if (!existing || (staff && staff !== sid)) {
+                return res.status(httpStatus.FORBIDDEN).send({ message: 'You can only update your own bookings' });
+            }
+        }
         const booking = await bookingService.updateBookingStatus(
             req.tenantId,
             req.params.bookingId,

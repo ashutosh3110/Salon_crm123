@@ -27,13 +27,18 @@ export default function PettyCashPage() {
         transactions,
         currentBalance,
         categories,
-        addTransaction,
         denominations,
-        addClosingLog,
         closingLogs,
         openDay,
         isOpenedToday,
-        isClosedToday
+        isClosedToday,
+        businessDate,
+        loading,
+        error,
+        refresh,
+        addFund,
+        addExpense,
+        closeDay,
     } = usePettyCash();
     const { user } = useAuth();
 
@@ -55,14 +60,38 @@ export default function PettyCashPage() {
         .reduce((sum, t) => sum + t.amount, 0);
 
     const filteredTransactions = transactions.filter(t => {
-        const matchesSearch = t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            t.category.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = (t.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (t.category || '').toLowerCase().includes(searchQuery.toLowerCase());
         const matchesCategory = filterCategory === 'All' || t.category === filterCategory;
         return matchesSearch && matchesCategory;
     });
 
+    if (loading && !transactions.length && !closingLogs.length) {
+        return (
+            <div className="min-h-[400px] flex flex-col items-center justify-center gap-4 text-text-muted">
+                <div className="w-10 h-10 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Loading petty cash…</p>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
+            {error ? (
+                <div
+                    role="alert"
+                    className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+                >
+                    <p className="text-sm font-bold text-rose-800 dark:text-rose-200">{error}</p>
+                    <button
+                        type="button"
+                        onClick={() => refresh()}
+                        className="text-[10px] font-black uppercase tracking-widest text-primary underline"
+                    >
+                        Retry
+                    </button>
+                </div>
+            ) : null}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-text tracking-tight uppercase">Petty Cash Terminal</h1>
@@ -143,7 +172,9 @@ export default function PettyCashPage() {
                         <div className="grid grid-cols-2 gap-4 w-full max-w-md mb-10">
                             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl text-left">
                                 <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Closed At</p>
-                                <h4 className="text-xl font-black uppercase">{closingLogs[0]?.timestamp.split('T')[1].substring(0, 5)}</h4>
+                                <h4 className="text-xl font-black uppercase">
+                                    {closingLogs[0]?.timestamp?.slice(11, 16) || '—'}
+                                </h4>
                             </div>
                             <div className="bg-white/5 border border-white/10 p-6 rounded-3xl text-left">
                                 <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-1">Final Balance</p>
@@ -216,7 +247,7 @@ export default function PettyCashPage() {
                 <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden">
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4">Daily Outflow</p>
                     <h3 className="text-3xl font-black text-rose-500">
-                        ₹{transactions.filter(t => t.date === new Date().toISOString().split('T')[0] && t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                        ₹{transactions.filter(t => t.date === businessDate && t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
                     </h3>
                     <p className="text-[10px] text-text-muted font-bold mt-2 uppercase italic tracking-widest text-left">Total expenses logged today</p>
                 </div>
@@ -280,7 +311,7 @@ export default function PettyCashPage() {
                                     <tr key={txn.id} className="group hover:bg-primary/5 transition-colors">
                                         <td className="py-5">
                                             <p className="text-xs font-black text-text">{txn.id}</p>
-                                            <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic">{txn.timestamp.split('T')[0]}</p>
+                                                            <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic">{txn.timestamp?.split('T')[0] || txn.date}</p>
                                         </td>
                                         <td className="py-5">
                                             <div className="flex items-center gap-3">
@@ -348,7 +379,7 @@ export default function PettyCashPage() {
                                                             {log.discrepancy === 0 ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                                                         </div>
                                                         <div className="text-left">
-                                                            <p className="text-xs font-black text-text">{log.date} <span className="text-[9px] text-text-muted ml-2">{log.timestamp.split('T')[1].substring(0, 5)}</span></p>
+                                                            <p className="text-xs font-black text-text">{log.date} <span className="text-[9px] text-text-muted ml-2">{log.timestamp?.slice(11, 16) || '—'}</span></p>
                                                             <p className="text-[10px] text-text-muted font-black uppercase tracking-wider mt-1">
                                                                 Balance: ₹{log.closingBalance.toLocaleString()}
                                                                 {log.discrepancy !== 0 && (
@@ -465,8 +496,12 @@ export default function PettyCashPage() {
                 {showTopUp && (
                     <TopUpModal
                         onClose={() => setShowTopUp(false)}
-                        onSave={(data) => {
-                            addTransaction({ ...data, type: 'FUND_ADDED' });
+                        onSave={async (data) => {
+                            await addFund({
+                                amount: data.amount,
+                                description: data.description,
+                                source: data.staff,
+                            });
                             setShowTopUp(false);
                         }}
                     />
@@ -475,8 +510,14 @@ export default function PettyCashPage() {
                     <ExpenseModal
                         categories={categories}
                         onClose={() => setShowExpense(false)}
-                        onSave={(data) => {
-                            addTransaction({ ...data, type: 'EXPENSE' });
+                        onSave={async (data) => {
+                            await addExpense({
+                                amount: data.amount,
+                                category: data.category,
+                                description: data.description,
+                                staff: data.staff,
+                                attachment: data.attachment,
+                            });
                             setShowExpense(false);
                         }}
                     />
@@ -487,8 +528,8 @@ export default function PettyCashPage() {
                         currentBalance={currentBalance}
                         onClose={() => setShowClosing(false)}
                         user={user}
-                        onSave={(log) => {
-                            addClosingLog(log);
+                        onSave={async (log) => {
+                            await closeDay(log);
                             setShowClosing(false);
                         }}
                     />
@@ -535,7 +576,8 @@ function TopUpModal({ onClose, onSave }) {
 }
 
 function ExpenseModal({ categories, onClose, onSave }) {
-    const [form, setForm] = useState({ amount: '', category: categories[0], description: '', staff: 'Reception' });
+    const catOptions = categories?.length ? categories : ['Miscellaneous'];
+    const [form, setForm] = useState({ amount: '', category: catOptions[0], description: '', staff: 'Reception' });
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef(null);
@@ -567,7 +609,7 @@ function ExpenseModal({ categories, onClose, onSave }) {
                         <div className="space-y-1.5">
                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Category</label>
                             <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full px-4 py-3 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none focus:border-primary/50">
-                                {categories.map(c => <option key={c}>{c}</option>)}
+                                {catOptions.map(c => <option key={c}>{c}</option>)}
                             </select>
                         </div>
                         <div className="space-y-1.5">

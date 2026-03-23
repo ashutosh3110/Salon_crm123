@@ -4,7 +4,9 @@ import tenantPlugin from '../../utils/tenant.plugin.js';
 const loyaltyRuleSchema = new mongoose.Schema(
     {
         earnRate: { type: Number, required: true, default: 1 }, // points per 1 unit of currency
-        redeemRate: { type: Number, required: true, default: 0.1 }, // currency value per 1 point
+        // Treat loyalty points as currency value (rupees) by default
+        // so wallet credits/debits show in ₹ only.
+        redeemRate: { type: Number, required: true, default: 1 }, // currency value per 1 point
         minRedeemPoints: { type: Number, default: 100 },
         maxEarnPerInvoice: { type: Number, default: 500 },
         expiryDays: { type: Number, default: 365 },

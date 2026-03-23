@@ -27,7 +27,15 @@ export default function LoyaltyPage() {
     const handleSave = async () => {
         try {
             setSaving(true);
-            await api.put('/loyalty/rules', rules);
+            try {
+                await api.put('/loyalty/rules', rules);
+            } catch (err) {
+                if (err?.response?.status === 404) {
+                    await api.post('/loyalty/rules', rules);
+                } else {
+                    throw err;
+                }
+            }
             alert('Loyalty rules updated!');
         } catch (err) { alert(err.response?.data?.message || 'Error saving'); }
         finally { setSaving(false); }

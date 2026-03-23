@@ -9,6 +9,8 @@ import Billing from '../billing/billing.model.js';
 import Otp from './otp.model.js';
 import Client from '../client/client.model.js';
 import ApiError from '../../utils/ApiError.js';
+import logger from '../../utils/logger.js';
+import loyaltyService from '../loyalty/loyalty.service.js';
 
 const registerSalonOwner = async (registrationData) => {
     const { salonName, fullName, email, phone, password, subscriptionPlan = 'free', paymentId, orderId } = registrationData;
@@ -118,16 +120,18 @@ const requestOtp = async (phone, tenantId) => {
         { upsert: true, new: true }
     );
 
-    // LOG TO CONSOLE (since no SMS API)
-    console.log(`\n-----------------------------------------`);
-    console.log(`[AUTH] OTP for mobile login: ${otp}`);
-    console.log(`[AUTH] Phone: ${phone} | Tenant: ${tenantId}`);
-    console.log(`-----------------------------------------\n`);
+    // LOG TO CONSOLE + file (since no SMS API).
+    // Console output sometimes isn't captured in Cursor terminal snapshots.
+    console.error(`\n-----------------------------------------`);
+    console.error(`[AUTH] OTP for mobile login: ${otp}`);
+    console.error(`[AUTH] Phone: ${phone} | Tenant: ${tenantId}`);
+    console.error(`-----------------------------------------\n`);
+    logger.error('OTP_SENT_DEBUG', { otp, phone, tenantId });
 
-    return { message: 'OTP sent successfully' };
+    return { message: 'OTP sent successfully [AUTH_SERVICE_DEBUG]' };
 };
 
-const loginWithOtp = async (phone, tenantId, otpCode) => {
+const loginWithOtp = async (phone, tenantId, otpCode, referralCode = '') => {
     // 1. Verify OTP
     const otpRecord = await Otp.findOne({ phone, tenantId });
     if (!otpRecord || otpRecord.otp !== otpCode) {
@@ -154,6 +158,17 @@ const loginWithOtp = async (phone, tenantId, otpCode) => {
     // Delete OTP record after successful use
     await Otp.deleteOne({ _id: otpRecord._id });
 
+    // Link referral if code was provided
+    if (referralCode) {
+        try {
+            await loyaltyService.createReferralByCode(tenantId, referralCode, client._id);
+            await loyaltyService.handleReferralEvent(tenantId, client._id, 'REGISTRATION');
+        } catch (e) {
+            // Keep login flow non-blocking for referral failures
+            logger.warn(`Referral link skipped: ${e?.message || 'unknown error'}`);
+        }
+    }
+
     // 3. Generate Auth Tokens
     // Adding role to the object so tokenService can use it
     return {
@@ -163,7 +178,7 @@ const loginWithOtp = async (phone, tenantId, otpCode) => {
 };
 
 const registerCustomer = async (registrationData) => {
-    const { tenantId, name, email, phone, password, dob, anniversary } = registrationData;
+    const { tenantId, name, email, phone, password, dob, anniversary, referralCode } = registrationData;
 
     if (!mongoose.Types.ObjectId.isValid(tenantId)) {
         throw new Error('Invalid Salon Selection');
@@ -194,6 +209,16 @@ const registerCustomer = async (registrationData) => {
     }
 
     await client.save();
+
+    if (referralCode) {
+        try {
+            await loyaltyService.createReferralByCode(tenantId, referralCode, client._id);
+            await loyaltyService.handleReferralEvent(tenantId, client._id, 'REGISTRATION');
+        } catch (e) {
+            logger.warn(`Referral link skipped on register: ${e?.message || 'unknown error'}`);
+        }
+    }
+
     return client;
 };
 

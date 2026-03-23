@@ -10,3 +10,7 @@ export * as onboardingValidation from './onboarding.validation.js';
 export * as inventoryValidation from './inventory.validation.js';
 export * as inquiryValidation from './inquiry.validation.js';
 export * as reminderLinkValidation from './reminderLink.validation.js';
+export * as segmentValidation from './segment.validation.js';
+export * as feedbackValidation from './feedback.validation.js';
+export * as shopCategoryValidation from './shopCategory.validation.js';
+export * as stylistValidation from './stylist.validation.js';

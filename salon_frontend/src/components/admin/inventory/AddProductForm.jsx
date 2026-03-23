@@ -23,7 +23,8 @@ import {
     Save,
     X,
     ChevronRight,
-    RefreshCw
+    RefreshCw,
+    ArrowLeft
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -32,13 +33,13 @@ import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
-    const { productCategories, suppliers, shopCategories } = useInventory();
+    const { productCategories, suppliers, shopCategories, products } = useInventory();
     const { outlets } = useBusiness();
     const navigate = useNavigate();
     const defaultFormData = {
         name: '',
         brand: '',
-        category: productCategories[0] || 'Hair Care',
+        category: '',
         description: '',
         sellingPrice: '',
         gstPercent: '18',
@@ -99,8 +100,19 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
     };
 
     const supplierNames = suppliers.map(s => s.name);
+    const existingCategories = Array.from(
+        new Set([
+            ...(productCategories || []),
+            ...(products || []).map((p) => p.category).filter(Boolean),
+        ])
+    );
 
     const isFormValid = formData.name && formData.sellingPrice && formData.sku;
+
+    const handleBack = () => {
+        if (onCancel) onCancel();
+        navigate('/admin/inventory/products');
+    };
 
     const handleSave = () => {
         if (!isFormValid) {
@@ -120,28 +132,50 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
     return (
         <div className="max-w-4xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Back — visible entry point to Product Master list */}
+            <div className="mb-4">
+                <button
+                    type="button"
+                    onClick={handleBack}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-white text-sm font-bold text-text shadow-sm hover:bg-surface-alt hover:border-primary/30 hover:text-primary transition-all"
+                >
+                    <ArrowLeft className="w-4 h-4 shrink-0" />
+                    Back to Product Master
+                </button>
+            </div>
+
             {/* Header */}
-            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-4 min-w-0">
+                    <div className="p-3 rounded-2xl bg-primary/10 text-primary border border-primary/20 shrink-0">
                         <FileText className="w-6 h-6" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <h2 className="text-xl font-bold text-text">{initialData ? 'Update Asset' : 'Create New Product'}</h2>
                         <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">
                             {initialData ? `Editing: ${initialData.sku}` : 'Define master product details for POS & Inventory'}
                         </p>
                     </div>
                 </div>
-                <button
-                    onClick={() => {
-                        if (onCancel) onCancel();
-                        navigate('/admin/inventory/products');
-                    }}
-                    className="p-2 rounded-xl hover:bg-surface-alt text-text-muted transition-all"
-                >
-                    <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-text-muted hover:bg-surface-alt hover:text-text border border-transparent hover:border-border transition-all"
+                        title="Close and go back"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className="p-2 rounded-xl hover:bg-surface-alt text-text-muted transition-all border border-border sm:border-0"
+                        title="Close"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -174,12 +208,22 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                             />
                         </div>
-                        <CustomSelect
-                            label="Category"
-                            value={formData.category}
-                            onChange={(val) => setFormData({ ...formData, category: val })}
-                            options={productCategories}
-                        />
+                        <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category</label>
+                            <input
+                                list="product-categories-list"
+                                type="text"
+                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
+                                placeholder="Type category (e.g. Hair Care)"
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            />
+                            <datalist id="product-categories-list">
+                                {existingCategories.map((cat) => (
+                                    <option key={cat} value={cat} />
+                                ))}
+                            </datalist>
+                        </div>
                     </div>
 
                     <div className="space-y-1">
@@ -472,6 +516,13 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             </label>
                         </div>
 
+                        <p className="text-[9px] text-indigo-200/85 leading-relaxed max-w-3xl mb-4">
+                            <strong className="text-white">Customer app shop:</strong> keep this ON, set an app category below, then add stock from{' '}
+                            <strong>Inventory → Stock In</strong>. In <strong>section 7 (Outlet Availability)</strong>, &quot;All outlets&quot; lists the product for
+                            every salon; &quot;Selected outlets&quot; only for those you pick. The app shows the product only when stock &gt; 0 at the
+                            customer&apos;s selected outlet.
+                        </p>
+
                         {formData.isShopProduct ? (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in slide-in-from-bottom-8 duration-500">
                                 {/* App Preview Image */}
@@ -704,10 +755,8 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => {
-                            if (onCancel) onCancel();
-                            navigate('/admin/inventory/products');
-                        }}
+                        type="button"
+                        onClick={handleBack}
                         className="px-6 py-3 rounded-2xl text-sm font-bold text-text-secondary hover:bg-surface transition-all border border-transparent hover:border-border"
                     >
                         Cancel

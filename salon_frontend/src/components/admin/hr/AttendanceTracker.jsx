@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Calendar as CalendarIcon, Search, Filter, CheckCircle2, XCircle, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download, Laptop, Smartphone, Fingerprint, MapPin } from 'lucide-react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { Calendar as CalendarIcon, Search, CheckCircle2, Clock, Check, X, MessageSquare, ChevronLeft, ChevronRight, AlertCircle, Users, Download, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     PieChart,
@@ -9,6 +9,7 @@ import {
     Tooltip
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import api from '../../../services/api';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -18,38 +19,123 @@ const STATUS_META = {
     leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', color: '#8b5cf6' },
 };
 
-export default function AttendanceTracker() {
-    const { staff } = useBusiness();
-    const [records, setRecords] = useState([]);
+function outletLabel(u) {
+    if (!u) return '—';
+    return u.outletId?.name || '—';
+}
 
-    useEffect(() => {
-        if (staff && staff.length > 0) {
-            // Generate basic shell for today if records are empty
-            const shell = staff.map(s => ({
-                id: s._id || s.id,
-                staff: s.name,
-                role: s.role,
-                outlet: s.outlet,
-                checkIn: '-',
-                checkOut: '-',
-                hours: '0',
-                status: 'absent',
-                loc: 'Remote'
-            }));
-            setRecords(shell);
-        }
-    }, [staff]);
+function formatDisplayTime(iso) {
+    if (!iso) return '-';
+    try {
+        return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+    } catch {
+        return '-';
+    }
+}
+
+function toTimeInput(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function buildRow(user, entry) {
+    const id = String(user._id || user.id);
+    const outlet = outletLabel(user);
+    const name = user.name || '';
+    const role = user.role || '';
+    if (!entry) {
+        return {
+            id,
+            staff: name,
+            role,
+            outlet,
+            checkIn: '-',
+            checkOut: '-',
+            hours: '0',
+            status: 'absent',
+            loc: '—',
+            remark: '',
+            checkInAt: null,
+            checkOutAt: null,
+        };
+    }
+    const uid = entry.userId?._id || entry.userId;
+    return {
+        id: String(uid || id),
+        staff: entry.userId?.name || name,
+        role: entry.userId?.role || role,
+        outlet: entry.userId?.outletId?.name || outlet,
+        checkInAt: entry.checkInAt,
+        checkOutAt: entry.checkOutAt,
+        checkIn: formatDisplayTime(entry.checkInAt),
+        checkOut: formatDisplayTime(entry.checkOutAt),
+        hours: String(entry.hoursWorked ?? 0),
+        status: entry.status || 'absent',
+        loc: entry.location || 'Salon',
+        remark: entry.remark || '',
+        attendanceId: entry._id,
+    };
+}
+
+export default function AttendanceTracker() {
+    const { staff, fetchStaff } = useBusiness();
+    const [records, setRecords] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
     const [remarkModal, setRemarkModal] = useState(null);
     const [remark, setRemark] = useState('');
     const [changeStatusModal, setChangeStatusModal] = useState(null);
+    const [editCheckIn, setEditCheckIn] = useState('');
+    const [editCheckOut, setEditCheckOut] = useState('');
     const [bulkModal, setBulkModal] = useState(false);
     const [newStatus, setNewStatus] = useState('present');
     const [toast, setToast] = useState(null);
+    const toastTimerRef = useRef(null);
 
-    const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+    const showToast = useCallback((msg) => {
+        setToast(msg);
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = setTimeout(() => setToast(null), 3500);
+    }, []);
+
+    const loadDay = useCallback(async () => {
+        const list = Array.isArray(staff) ? staff : [];
+        if (!list.length) {
+            setRecords([]);
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await api.get('/attendance', { params: { date: selectedDate } });
+            const payload = res.data?.data ?? res.data;
+            const apiRecords = payload?.records ?? [];
+            const byUser = {};
+            apiRecords.forEach((row) => {
+                const uid = row.userId?._id || row.userId;
+                if (uid) byUser[String(uid)] = row;
+            });
+            const merged = list.map((u) => buildRow(u, byUser[String(u._id || u.id)]));
+            setRecords(merged);
+        } catch (e) {
+            const msg = e?.response?.data?.message || e?.networkHint || e?.message || 'Failed to load attendance';
+            showToast(msg);
+            const merged = list.map((u) => buildRow(u, null));
+            setRecords(merged);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedDate, staff, showToast]);
+
+    useEffect(() => {
+        loadDay();
+    }, [loadDay]);
+
+    useEffect(() => {
+        fetchStaff?.();
+    }, [fetchStaff]);
 
     // Date navigation
     const changeDate = (days) => {
@@ -85,31 +171,68 @@ export default function AttendanceTracker() {
         { name: 'On Leave', value: stats.leave, color: STATUS_META.leave.color },
     ].filter(d => d.value > 0), [stats]);
 
-    // Change status for single record
-    const applyStatusChange = (e) => {
+    const applyStatusChange = async (e) => {
         e.preventDefault();
-        setRecords(prev => prev.map(r => r.id === changeStatusModal.id ? { ...r, status: newStatus } : r));
-        showToast(`${changeStatusModal.staff} → ${STATUS_META[newStatus]?.label}`);
-        setChangeStatusModal(null);
+        if (!changeStatusModal) return;
+        try {
+            await api.post('/attendance', {
+                userId: changeStatusModal.id,
+                date: selectedDate,
+                status: newStatus,
+                checkIn: editCheckIn || undefined,
+                checkOut: editCheckOut || undefined,
+            });
+            showToast(`${changeStatusModal.staff} → ${STATUS_META[newStatus]?.label}`);
+            setChangeStatusModal(null);
+            await loadDay();
+        } catch (err) {
+            showToast(err?.response?.data?.message || 'Update failed');
+        }
     };
 
-    // Bulk mark all as present
-    const bulkMarkPresent = () => {
-        setRecords(prev => prev.map(r => ({ ...r, status: 'present', checkIn: '09:00 AM', checkOut: r.checkOut === '-' ? '-' : r.checkOut })));
-        setBulkModal(false);
-        showToast(`All ${records.length} staff marked present`);
-    };
-    const bulkMarkAbsent = () => {
-        setRecords(prev => prev.map(r => ({ ...r, status: 'absent', checkIn: '-', checkOut: '-' })));
-        setBulkModal(false);
-        showToast(`All ${records.length} staff marked absent`);
+    const bulkMarkPresent = async () => {
+        try {
+            await api.post('/attendance/bulk', {
+                date: selectedDate,
+                status: 'present',
+                defaultCheckIn: '09:00',
+            });
+            setBulkModal(false);
+            showToast(`All staff marked present for ${selectedDate}`);
+            await loadDay();
+        } catch (err) {
+            showToast(err?.response?.data?.message || 'Bulk update failed');
+        }
     };
 
-    // Save remark
-    const saveRemark = (e) => {
+    const bulkMarkAbsent = async () => {
+        try {
+            await api.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
+            setBulkModal(false);
+            showToast(`All staff marked absent for ${selectedDate}`);
+            await loadDay();
+        } catch (err) {
+            showToast(err?.response?.data?.message || 'Bulk update failed');
+        }
+    };
+
+    const saveRemark = async (e) => {
         e.preventDefault();
-        showToast(`Remark saved for ${remarkModal.staff}`);
-        setRemarkModal(null); setRemark('');
+        if (!remarkModal) return;
+        try {
+            await api.post('/attendance', {
+                userId: remarkModal.id,
+                date: selectedDate,
+                status: remarkModal.status,
+                remark,
+            });
+            showToast(`Remark saved for ${remarkModal.staff}`);
+            setRemarkModal(null);
+            setRemark('');
+            await loadDay();
+        } catch (err) {
+            showToast(err?.response?.data?.message || 'Save remark failed');
+        }
     };
 
     // Export CSV
@@ -221,7 +344,12 @@ export default function AttendanceTracker() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
+                {loading && (
+                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Loading attendance…</p>
+                    </div>
+                )}
                 <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
@@ -273,7 +401,12 @@ export default function AttendanceTracker() {
                                     </td>
                                     <td className="px-6 py-5 text-right font-black">
                                         <div className="flex items-center justify-end gap-2 transition-opacity font-black">
-                                            <button onClick={() => { setChangeStatusModal(record); setNewStatus(record.status); }}
+                                            <button onClick={() => {
+                                                setChangeStatusModal(record);
+                                                setNewStatus(record.status);
+                                                setEditCheckIn(toTimeInput(record.checkInAt));
+                                                setEditCheckOut(toTimeInput(record.checkOutAt));
+                                            }}
                                                 className="p-2 rounded-none text-emerald-500 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all">
                                                 <CheckCircle2 className="w-4 h-4" />
                                             </button>
@@ -320,11 +453,13 @@ export default function AttendanceTracker() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check In</label>
-                                        <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
+                                        <input type="time" value={editCheckIn} onChange={(e) => setEditCheckIn(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Check Out</label>
-                                        <input type="time" className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
+                                        <input type="time" value={editCheckOut} onChange={(e) => setEditCheckOut(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-none bg-background border border-border text-xs font-black focus:border-primary outline-none uppercase" />
                                     </div>
                                 </div>
                                 <button type="submit" className="w-full py-4 bg-primary text-white rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all">Update Status</button>

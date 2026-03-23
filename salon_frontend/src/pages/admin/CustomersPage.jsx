@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Users,
     UserPlus,
@@ -35,6 +35,7 @@ import ReEngagementTool from '../../components/admin/customers/ReEngagementTool'
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomersPage({ tab = 'directory' }) {
@@ -116,7 +117,13 @@ export default function CustomersPage({ tab = 'directory' }) {
                 {/* KPI Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <KPICard title="Total Customers" value={customers.length} icon={Users} color="blue" trend="" />
-                    <KPICard title="VIP Customers" value={customers.filter(c => c.tags.includes('VIP')).length} icon={Star} color="purple" trend="" />
+                    <KPICard
+                        title="VIP Customers"
+                        value={customers.filter(c => (c.tags || []).includes('VIP')).length}
+                        icon={Star}
+                        color="purple"
+                        trend=""
+                    />
                     <KPICard title="Total Revenue" value={`₹${customers.reduce((acc, c) => acc + c.spend, 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
                     <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="Needs attention" />
                 </div>
@@ -325,7 +332,18 @@ function WalletMonitor({ customers, onCustomerClick }) {
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkAmount, setBulkAmount] = useState('');
     const [bulkNote, setBulkNote] = useState('');
+    const [sendWhatsAppAfterBulk, setSendWhatsAppAfterBulk] = useState(true);
+    const [bulkWhatsAppMessage, setBulkWhatsAppMessage] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Ensure admin wallet data is loaded from backend for the currently visible customer list.
+    useEffect(() => {
+        if (!Array.isArray(customers) || customers.length === 0) return;
+        customers.forEach((c) => {
+            if (c?._id) initializeWallet(c._id);
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customers]);
 
 
     const toggleSelect = (id) => {
@@ -336,14 +354,95 @@ function WalletMonitor({ customers, onCustomerClick }) {
         e.preventDefault();
         if (!bulkAmount || selectedIds.length === 0) return;
         
+        const amountPerCustomer = Number(bulkAmount);
+        if (!Number.isFinite(amountPerCustomer) || amountPerCustomer <= 0) return;
+
+        const expiryDays = walletSettings?.expiryDays ?? 365;
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + expiryDays);
+        const expiryDateText = expiryDate.toLocaleDateString();
+
+        const ensureRazorpayLoaded = async () => {
+            if (window.Razorpay) return;
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Razorpay SDK load failed'));
+                document.body.appendChild(script);
+            });
+        };
+
+        const sendBulkWhatsApp = () => {
+            if (!sendWhatsAppAfterBulk) return;
+            const selectedCustomers = customers.filter(c => selectedIds.includes(c._id));
+            selectedCustomers.forEach((c) => {
+                const phone = (c.phone || '').replace(/[^0-9]/g, '');
+                if (!phone) return;
+
+                const baseText = bulkWhatsAppMessage?.trim()
+                    ? bulkWhatsAppMessage.trim()
+                    : `Wallet recharge successful for ${c.name || 'customer'}.`;
+
+                const text = `${baseText}\n\nWallet credited: ₹${amountPerCustomer} (Valid until ${expiryDateText})`;
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+            });
+        };
+
+        const totalAmount = amountPerCustomer * selectedIds.length;
         setIsProcessing(true);
         try {
-            await bulkRecharge(selectedIds, bulkAmount, bulkNote || 'Bulk Promotional Credit');
+            await ensureRazorpayLoaded();
+
+            // One Razorpay checkout for the total amount (amount per customer * count)
+            const orderRes = await api.post('/billing/razorpay/create-wallet-order', { amount: totalAmount });
+            if (!orderRes.data?.success) throw new Error(orderRes.data?.message || 'Failed to create Razorpay order');
+
+            const { orderId, amount, currency, keyId } = orderRes.data.data;
+
+            await new Promise((resolve, reject) => {
+                const options = {
+                    key: keyId,
+                    amount,
+                    currency,
+                    name: 'Wapixo Salon',
+                    description: `Bulk wallet recharge (${selectedIds.length} customers)`,
+                    order_id: orderId,
+                    handler: async (response) => {
+                        try {
+                            const verifyRes = await api.post('/billing/razorpay/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            });
+
+                            if (verifyRes.data?.success) {
+                                await bulkRecharge(selectedIds, amountPerCustomer, bulkNote || 'Bulk Promotional Credit');
+                                sendBulkWhatsApp();
+                                resolve(true);
+                            } else {
+                                reject(new Error('Payment verification failed'));
+                            }
+                        } catch (err) {
+                            reject(err);
+                        }
+                    },
+                    modal: {
+                        ondismiss: () => reject(new Error('Payment cancelled'))
+                    },
+                    theme: { color: '#C8956C' }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            });
+
             setBulkAmount('');
             setBulkNote('');
             setSelectedIds([]);
             setShowBulkModal(false);
-            alert(`Successfully recharged ${selectedIds.length} wallets!`);
+            alert(`Successfully recharged wallets!`);
         } finally {
             setIsProcessing(false);
         }
@@ -644,12 +743,36 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                     className="w-full bg-surface-alt border border-border px-4 py-3 text-sm font-black uppercase outline-none focus:border-primary"
                                 />
                             </div>
+
+                            <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between gap-4">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">WhatsApp Message (optional)</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSendWhatsAppAfterBulk(v => !v)}
+                                        className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest border transition-all ${
+                                            sendWhatsAppAfterBulk ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-text-muted border-border hover:border-primary hover:text-primary'
+                                        }`}
+                                    >
+                                        {sendWhatsAppAfterBulk ? 'ON' : 'OFF'}
+                                    </button>
+                                </div>
+                                {sendWhatsAppAfterBulk && (
+                                    <textarea
+                                        value={bulkWhatsAppMessage}
+                                        onChange={(e) => setBulkWhatsAppMessage(e.target.value)}
+                                        placeholder="Type message to send after recharge..."
+                                        className="w-full bg-white border border-border px-4 py-3 text-[10px] font-black outline-none focus:border-primary uppercase"
+                                        rows={3}
+                                    />
+                                )}
+                            </div>
                             
                             <div className="flex flex-col gap-4 pt-4">
                                 <div className="p-4 bg-emerald-50 border border-emerald-100 flex items-start gap-3">
                                     <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                                     <p className="text-[10px] font-bold text-emerald-800 uppercase leading-relaxed">
-                                        Executing this will trigger <span className="font-black underline">Automated WhatsApp Notifications</span> to all selected customers.
+                                        After recharge, WhatsApp message will be sent to all selected customers.
                                     </p>
                                 </div>
                                 <button 
@@ -874,18 +997,20 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                                 <td className="px-6 py-5">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold text-text uppercase">Last Visit</span>
-                                        <span className="text-xs font-bold text-text-secondary">{new Date(customer.lastVisit).toLocaleDateString()}</span>
+                                        <span className="text-xs font-bold text-text-secondary">
+                                            {customer.lastVisit ? new Date(customer.lastVisit).toLocaleDateString() : '-'}
+                                        </span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-bold text-emerald-600 uppercase">Total Spend</span>
-                                        <span className="text-sm font-bold text-text">₹{customer.spend.toLocaleString()}</span>
+                                        <span className="text-sm font-bold text-text">₹{(customer.spend ?? 0).toLocaleString()}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-5">
                                     <div className="flex flex-wrap gap-1.5">
-                                        {customer.tags.map((tag, i) => (
+                                        {(Array.isArray(customer.tags) ? customer.tags : []).map((tag, i) => (
                                             <span key={i} className={`px-2 py-0.5 rounded-none text-[9px] font-black uppercase tracking-widest border transition-colors ${tag === 'VIP' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-surface-alt text-text-muted border-border'}`}>
                                                 {tag}
                                             </span>

@@ -1,54 +1,17 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from 'framer-motion';
-import { Search, ShoppingBag, Star, Filter, ArrowRight, Heart, ChevronLeft, ChevronRight, ChevronDown, X, Plus, Minus, Share2, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
-import { MOCK_PRODUCTS as STATIC_MOCK_PRODUCTS, PRODUCT_CATEGORIES as STATIC_PRODUCT_CATEGORIES } from '../../data/appMockData';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { isVisibleInCustomerShop } from '../../utils/shopVisibility';
+import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 
-const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) => {
-    const [isOpen, setIsOpen] = useState(isInitialOpen);
-    return (
-        <div style={{ borderBottom: `1px solid ${colors.border}` }}>
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="w-full py-3.5 flex items-center justify-between text-left group"
-            >
-                <div className="flex-1 pr-4">
-                    <h4 className="text-[13px] font-bold uppercase tracking-tight" style={{ color: colors.text === '#1A1A1A' ? '#000' : colors.text }}>{title}</h4>
-                    {subtext && !isOpen && <p className="text-[10px] opacity-40 mt-0.5 font-medium italic">{subtext}</p>}
-                </div>
-                <motion.div
-                    animate={{ rotate: isOpen ? 180 : 0 }}
-                    transition={{ type: 'spring', damping: 20 }}
-                >
-                    <ChevronDown size={14} style={{ color: colors.text, opacity: 0.5 }} />
-                </motion.div>
-            </button>
-            <AnimatePresence initial={false}>
-                {isOpen && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
-                        className="overflow-hidden"
-                    >
-                        <div className="pb-4 text-[12px] leading-relaxed opacity-70" style={{ color: colors.text }}>
-                            {children}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-};
-
-const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight }) => {
+const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLight }) => {
     const { isProductLiked, toggleProductLike } = useFavorites();
     const isLiked = isProductLiked(product._id);
 
@@ -62,7 +25,7 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
         >
             <div className="relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5">
                 <img
-                    onClick={() => onQuickView(product)}
+                    onClick={() => onOpenProduct(product)}
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
@@ -81,7 +44,7 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
             <div className="p-3 flex flex-col flex-1">
                 <div className="flex justify-between items-start gap-2 mb-2">
                     <h3
-                        onClick={() => onQuickView(product)}
+                        onClick={() => onOpenProduct(product)}
                         style={{ color: colors.text }}
                         className="font-bold text-[13px] leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-2 cursor-pointer flex-1"
                     >
@@ -106,209 +69,6 @@ const ProductCard = ({ product, index, onQuickView, onAddToCart, colors, isLight
             </div>
         </motion.div>
     );
-};
-
-const QuickViewModal = ({ product, onClose, onAddToCart, colors, isLight }) => {
-    const { cart, updateQuantity } = useCart();
-    const { isProductLiked, toggleProductLike } = useFavorites();
-    const [isFull, setIsFull] = useState(false);
-    const containerRef = useRef(null);
-    const { scrollY } = useScroll({ container: containerRef });
-
-    const opacity = useTransform(scrollY, [0, 80], [1, 0]);
-    const imgScale = useTransform(scrollY, [0, 500], [1, 1.15]);
-
-    const inCart = cart.find(item => item._id === product?._id);
-    const isLiked = isProductLiked(product?._id);
-
-    useEffect(() => {
-        const unsubscribe = scrollY.onChange((v) => {
-            if (v > 40 && !isFull) setIsFull(true);
-        });
-        return () => unsubscribe();
-    }, [scrollY, isFull]);
-
-    const modalContent = (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className={`fixed inset-0 z-[5000] flex items-end justify-center ${isLight ? 'bg-white/20' : 'bg-black/30'} backdrop-blur-xl md:left-1/2 md:-ml-[215px] md:w-[430px]`}
-            onClick={onClose}
-        >
-            <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0, height: isFull ? '100.5%' : '75%' }}
-                exit={{ y: "100%" }}
-                transition={{ type: 'spring', damping: 30, stiffness: 300, mass: 0.8 }}
-                style={{
-                    background: colors.bg,
-                    borderTopLeftRadius: isFull ? '0' : '2.5rem',
-                    borderTopRightRadius: isFull ? '0' : '2.5rem',
-                }}
-                className="w-full relative flex flex-col overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Fixed Action Buttons */}
-                <button
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
-                    className="absolute top-6 left-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[100] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 pointer-events-auto"
-                >
-                    <ChevronLeft size={20} />
-                </button>
-
-                <button
-                    onClick={(e) => { e.stopPropagation(); onClose(); }}
-                    className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/40 text-white backdrop-blur-xl z-[100] flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 pointer-events-auto"
-                >
-                    <X size={20} />
-                </button>
-
-                {/* Drag Handle Indicator */}
-                {!isFull && (
-                    <motion.div
-                        style={{ opacity }}
-                        className="absolute top-0 left-0 right-0 h-10 flex items-center justify-center z-50 pointer-events-none"
-                    >
-                        <div className="w-12 h-1 bg-white/30 rounded-full mt-3" />
-                    </motion.div>
-                )}
-
-                <div
-                    ref={containerRef}
-                    className="flex-1 overflow-y-auto custom-scrollbar bg-inherit"
-                    style={{ overflowX: 'hidden' }}
-                >
-                    {/* Immersive Product Hero */}
-                    <div className="relative aspect-[3/4] overflow-hidden bg-black">
-                        <motion.img
-                            style={{ scale: imgScale }}
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover opacity-95"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-                        <div className="absolute bottom-10 left-8 right-8">
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="px-3 py-1 bg-[#C8956C] text-white text-[9px] font-black uppercase tracking-widest rounded-md">
-                                    {product.brand}
-                                </span>
-                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
-                                    <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                                    <span className="text-[10px] font-black">{product.rating}</span>
-                                </div>
-                            </div>
-                            <h2 className="text-3xl font-black text-white leading-[1.2] tracking-tighter italic" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
-                                {product.name}
-                            </h2>
-                        </div>
-                    </div>
-
-                    {/* Ritual Information */}
-                    <div className="p-8 space-y-8 bg-inherit">
-                        <div className="flex items-end justify-between">
-                            <div className="space-y-0.5">
-                                <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-30" style={{ color: colors.text }}>Order Value</p>
-                                <p className="text-3xl font-black text-[#C8956C] tracking-tighter italic">₹{product.price}</p>
-                            </div>
-                            <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-full p-1 border border-black/5 dark:border-white/5 h-10">
-                                <button
-                                    onClick={() => updateQuantity(product._id, -1)}
-                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors shrink-0"
-                                    disabled={!inCart}
-                                >
-                                    <Minus className="w-3.5 h-3.5" />
-                                </button>
-                                <span className="flex-1 text-center text-lg font-black tabular-nums leading-none min-w-[32px]" style={{ color: colors.text }}>
-                                    {inCart?.quantity || 1}
-                                </span>
-                                <button
-                                    onClick={() => onAddToCart(product)}
-                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 rounded-full transition-colors shrink-0"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Product Information Sections */}
-                        <div className="space-y-1">
-                            <h3 className="text-[15px] font-black tracking-tight mb-4" style={{ color: colors.text }}>Product information</h3>
-
-                            <Accordion
-                                title="Product details"
-                                subtext="Care instructions, Application, Scent profile"
-                                colors={colors}
-                            >
-                                <ul className="space-y-3">
-                                    <li className="flex gap-2"><span className="font-bold">Care:</span> Store in cool, dry place.</li>
-                                    <li className="flex gap-2"><span className="font-bold">Usage:</span> Best used within 12 months of opening.</li>
-                                    <li className="flex gap-2"><span className="font-bold">Origin:</span> Responsibly sourced globally.</li>
-                                </ul>
-                            </Accordion>
-
-                            <Accordion
-                                title="Know your product"
-                                isInitialOpen={true}
-                                colors={colors}
-                            >
-                                <p>{product.description}</p>
-                                <div className="mt-4 p-4 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 flex flex-col gap-3">
-                                    <div className="flex justify-between items-center text-[12px]">
-                                        <span className="font-bold opacity-60">Formula Type:</span>
-                                        <span className="font-bold">Premium Ritual</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[12px]">
-                                        <span className="font-bold opacity-60">Consistency:</span>
-                                        <span className="font-bold">Ultra-light / Non-greasy</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-[12px]">
-                                        <span className="font-bold opacity-60">Ritual Status:</span>
-                                        <span className="font-bold text-emerald-500">Fully Certified</span>
-                                    </div>
-                                </div>
-                            </Accordion>
-
-                            <Accordion
-                                title="Vendor details"
-                                subtext="Manufacturer details, Country of origin"
-                                colors={colors}
-                            >
-                                <p>Manufactured by Wapixo Luxury Private Limited. 100% Authentic product guarantee. Produced under strict quality standards.</p>
-                            </Accordion>
-
-                            <Accordion
-                                title="Return and exchange policy"
-                                subtext="Know more about return and exchange"
-                                isInitialOpen={true}
-                                colors={colors}
-                            >
-                                <p>Unopened products can be returned within 7 days of delivery. Due to the personal nature of our products, opened items are non-refundable unless defective.</p>
-                            </Accordion>
-
-
-                        </div>                        {/* Order Button (Integrated) */}
-                        <div className="pt-4 pb-12">
-                            <motion.button
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => onAddToCart(product)}
-                                className="w-full h-14 bg-[#C8956C] text-white rounded-2xl flex items-center justify-center gap-4 shadow-2xl shadow-[#C8956C]/30 active:scale-95 transition-all"
-                            >
-                                <ShoppingBag className="w-5 h-5" />
-                                <span className="text-[11px] font-black uppercase tracking-[0.3em]">
-                                    {inCart ? 'ADD TO RITUAL BAG' : 'PURCHASE RITUAL NOW'}
-                                </span>
-                            </motion.button>
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
-        </motion.div>
-    );
-
-    const portalRoot = document.getElementById('app-portal-root');
-    return portalRoot ? createPortal(modalContent, portalRoot) : null;
 };
 
 const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, onCheckout, colors, isLight }) => {
@@ -403,7 +163,7 @@ export default function AppShopPage() {
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
     const { products: inventoryProducts, shopCategories } = useInventory();
-    const { activeOutletId, activeOutlet } = useBusiness();
+    const { activeOutletId } = useBusiness();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -428,17 +188,22 @@ export default function AppShopPage() {
 
     const MOCK_PRODUCTS = useMemo(() => {
         return inventoryProducts
-            .filter(p => p.isShopProduct)
-            .map(p => ({
+            .filter((p) => p.isShopProduct)
+            .map((p) => ({
                 _id: String(p.id),
                 name: p.name,
                 brand: p.brand || 'Premium',
                 price: p.sellingPrice || 0,
                 image: p.appImage || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
                 rating: p.rating || '4.5',
-                category: shopCategories.find(c => c.id === p.appCategory)?.name || 'General',
+                category: shopCategories.find((c) => c.id === p.appCategory)?.name || 'General',
                 description: p.shopDescription || p.description || '',
-                outletIds: p.outletIds || []
+                outletIds: p.outletIds || [],
+                // Required for isVisibleInCustomerShop (map previously dropped these → empty shop)
+                isShopProduct: true,
+                availability: p.availability || 'all',
+                stock: p.stock,
+                stockByOutlet: p.stockByOutlet,
             }));
     }, [inventoryProducts, shopCategories]);
 
@@ -452,11 +217,6 @@ export default function AppShopPage() {
         localStorage.setItem('pending_pos_cart', JSON.stringify(orderData));
         alert('Selection sent to checkout!');
     };
-
-    const selectedProductId = searchParams.get('product');
-    const selectedProduct = useMemo(() =>
-        MOCK_PRODUCTS.find(p => p._id === selectedProductId),
-        [selectedProductId, MOCK_PRODUCTS]);
 
     // Sync state with URL params for external navigation
     useEffect(() => {
@@ -486,36 +246,27 @@ export default function AppShopPage() {
         setSearchParams(newParams);
     };
 
-    const handleQuickView = (product) => {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.set('product', product._id);
-        setSearchParams(newParams);
-    };
-
-    const handleCloseQuickView = () => {
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('product');
-        setSearchParams(newParams);
+    const handleOpenProduct = (product) => {
+        navigate(`/app/product/${encodeURIComponent(product._id)}`);
     };
 
     const filteredProducts = useMemo(() => {
-        let result = MOCK_PRODUCTS;
-
-        // Filter by Outlet
-        result = result.filter(p => {
-            if (!p.outletIds || p.outletIds.length === 0) return true; // Available in all salons
-            return p.outletIds.includes(activeOutletId);
-        });
+        let result = MOCK_PRODUCTS.filter((p) => isVisibleInCustomerShop(p, activeOutletId));
 
         if (activeCategory !== 'All') {
-            result = result.filter(p => p.category === activeCategory);
+            result = result.filter((p) => p.category === activeCategory);
         }
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            result = result.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+            result = result.filter(
+                (p) =>
+                    p.name.toLowerCase().includes(q) ||
+                    p.brand.toLowerCase().includes(q) ||
+                    p.category.toLowerCase().includes(q)
+            );
         }
         return result;
-    }, [activeCategory, searchQuery, activeOutletId]);
+    }, [activeCategory, searchQuery, activeOutletId, MOCK_PRODUCTS]);
 
     const handleAddToCart = (product, event) => {
         // Map back to the format addToCart expects if needed, or unify.
@@ -658,17 +409,13 @@ export default function AppShopPage() {
                 <div className="grid grid-cols-2 gap-6 px-1">
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, i) => (
-                            <ProductCard key={product._id} product={product} index={i} onQuickView={handleQuickView} onAddToCart={handleAddToCart} colors={colors} isLight={isLight} />
+                            <ProductCard key={product._id} product={product} index={i} onOpenProduct={handleOpenProduct} onAddToCart={handleAddToCart} colors={colors} isLight={isLight} />
                         ))}
                     </AnimatePresence>
                 </div>
             </div>
 
             <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} total={cartTotal} onUpdateQuantity={updateQuantity} onRemove={removeFromCart} onCheckout={() => { handleSendToPOS(); setIsCartOpen(false); }} colors={colors} isLight={isLight} />
-
-            <AnimatePresence>
-                {selectedProduct && <QuickViewModal product={selectedProduct} onClose={handleCloseQuickView} onAddToCart={handleAddToCart} colors={colors} isLight={isLight} />}
-            </AnimatePresence>
 
             <div className="fixed inset-0 pointer-events-none z-[10000]">
                 <AnimatePresence>

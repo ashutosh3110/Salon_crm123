@@ -14,7 +14,20 @@ const transactionSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            enum: ['sales', 'service', 'commission', 'salary', 'rent', 'inventory', 'other'],
+            enum: [
+                'sales',
+                'service',
+                'commission',
+                'salary',
+                'rent',
+                'inventory',
+                'utilities',
+                'maintenance',
+                'marketing',
+                'supplies',
+                'welfare',
+                'other',
+            ],
             required: true,
         },
         paymentMethod: {
@@ -29,6 +42,11 @@ const transactionSchema = new mongoose.Schema(
         referenceId: {
             type: mongoose.Schema.Types.ObjectId, // Can be Expense ID, Commission ID etc.
         },
+        /** Optional: which outlet this expense applies to (admin finance) */
+        outletId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Outlet',
+        },
         description: String,
         date: {
             type: Date,
@@ -41,6 +59,8 @@ const transactionSchema = new mongoose.Schema(
 );
 
 transactionSchema.plugin(tenantPlugin);
+
+transactionSchema.index({ tenantId: 1, type: 1, createdAt: -1 });
 
 const Transaction = mongoose.model('Transaction', transactionSchema);
 

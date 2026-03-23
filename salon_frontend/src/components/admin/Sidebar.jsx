@@ -141,8 +141,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             path: '/admin/inventory',
             subItems: [
                 { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
-                { label: 'Shop Modules', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
-                { label: 'Stock Overview', icon: LayoutDashboard, path: '/admin/inventory/overview' },
+                { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
+                { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
                 { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
                 { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
                 { label: 'Low Stock Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: { count: 3, color: 'bg-rose-400' } },
@@ -157,7 +157,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 { label: 'Suppliers', icon: Users, path: '/admin/finance/suppliers' },
                 { label: 'Supplier Invoices', icon: FileText, path: '/admin/finance/invoices' },
                 { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
-                { label: 'Petty Cash', icon: Wallet, path: '/accountant/petty-cash' },
+                { label: 'Petty Cash', icon: Wallet, path: '/admin/finance/petty-cash' },
                 { label: 'Cash & Bank', icon: Wallet, path: '/admin/finance/reconciliation' },
                 { label: 'GST / Tax Reports', icon: ClipboardList, path: '/admin/finance/tax' },
                 { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },
@@ -182,7 +182,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             subItems: [
                 { label: 'Profile', icon: User, path: '/admin/settings/profile' },
                 { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business' },
-                { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications', badge: { count: 12, color: 'bg-orange-400' } },
+                { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications' },
                 { label: 'Security', icon: Shield, path: '/admin/settings/security' },
             ]
         },

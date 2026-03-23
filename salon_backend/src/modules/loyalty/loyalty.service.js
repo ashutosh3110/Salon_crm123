@@ -3,6 +3,8 @@ import cacheService from '../../utils/cache.service.js';
 import logger from '../../utils/logger.js';
 import mongoose from 'mongoose';
 import { logAudit } from '../../utils/audit.logger.js';
+import ReferralSettings from './referralSettings.model.js';
+import Client from '../client/client.model.js';
 
 class LoyaltyService {
     /**
@@ -13,10 +15,17 @@ class LoyaltyService {
         const cachedRule = await cacheService.get(cacheKey);
         if (cachedRule) return cachedRule;
 
-        const rule = await loyaltyRepository.getRule(tenantId);
-        if (rule) {
-            await cacheService.set(cacheKey, rule, 3600); // 1 hour cache
+        let rule = await loyaltyRepository.getRule(tenantId);
+
+        // If no rule exists for this tenant, auto-create defaults so wallet top-ups work.
+        if (!rule) {
+            rule = await loyaltyRepository.RuleModel.create({
+                tenantId,
+                isActive: true,
+            });
         }
+
+        await cacheService.set(cacheKey, rule, 3600); // 1 hour cache
         return rule;
     }
 
@@ -25,10 +34,12 @@ class LoyaltyService {
      */
     async earnPoints(tenantId, customerId, invoiceId, amount) {
         const rule = await this.getLoyaltyRule(tenantId);
-        if (!rule || !rule.isActive) return;
+        if (!rule || !rule.isActive) return { points: 0, expiryDate: null };
 
         // Fraud check: Max points cap
-        let points = Math.floor(amount * rule.earnRate);
+        // Rupees-only mode: treat amounts as rupees and convert to points 1:1.
+        // Use round to avoid losing paise values silently.
+        let points = Math.round(amount * rule.earnRate);
         if (points > rule.maxEarnPerInvoice) {
             points = rule.maxEarnPerInvoice;
         }
@@ -70,6 +81,8 @@ class LoyaltyService {
 
         // Check referral completion
         await this.completeReferral(tenantId, customerId);
+
+        return { points, expiryDate };
     }
 
     /**
@@ -161,8 +174,11 @@ class LoyaltyService {
             throw new Error('Self-referral is not allowed');
         }
 
-        const rule = await this.getLoyaltyRule(tenantId);
-        const rewardPoints = 100; // Can be dynamic from rule
+        const settings = await ReferralSettings.findOne({ tenantId }).sort({ updatedAt: -1 }).lean();
+        if (settings && settings.enabled === false) {
+            throw new Error('Referral program is disabled');
+        }
+        const rewardPoints = Number(settings?.referrerReward ?? 100);
 
         return loyaltyRepository.ReferralModel.create({
             tenantId,
@@ -170,6 +186,28 @@ class LoyaltyService {
             referredCustomerId: referredId,
             rewardPoints,
         });
+    }
+
+    async createReferralByCode(tenantId, referralCode, referredId) {
+        const code = String(referralCode || '').trim().toUpperCase();
+        if (!code.startsWith('WAPIXO') || code.length < 8) return null;
+
+        const phoneSuffix = code.replace('WAPIXO', '');
+        const referrer = await Client.findOne({
+            tenantId,
+            phone: { $regex: `${phoneSuffix}$` },
+            _id: { $ne: referredId },
+        }).sort({ createdAt: -1 });
+
+        if (!referrer) return null;
+
+        const existing = await loyaltyRepository.ReferralModel.findOne({
+            tenantId,
+            referredCustomerId: referredId,
+        });
+        if (existing) return existing;
+
+        return this.createReferral(tenantId, referrer._id, referredId);
     }
 
     async completeReferral(tenantId, customerId) {
@@ -180,6 +218,9 @@ class LoyaltyService {
         });
 
         if (referral) {
+            const settings = await ReferralSettings.findOne({ tenantId }).sort({ updatedAt: -1 }).lean();
+            const referredReward = Number(settings?.referredReward ?? 0);
+
             referral.status = 'COMPLETED';
             referral.rewardedAt = new Date();
             await referral.save();
@@ -193,7 +234,27 @@ class LoyaltyService {
                 metadata: { referralId: referral._id, type: 'REFERRAL_REWARD' }
             });
             await loyaltyRepository.updateWallet(tenantId, referral.referrerCustomerId, referral.rewardPoints);
+
+            // Reward referred customer as per admin setting
+            if (referredReward > 0) {
+                await loyaltyRepository.createTransaction({
+                    tenantId,
+                    customerId,
+                    type: 'EARN',
+                    points: referredReward,
+                    metadata: { referralId: referral._id, type: 'REFERRED_REWARD' },
+                });
+                await loyaltyRepository.updateWallet(tenantId, customerId, referredReward);
+            }
         }
+    }
+
+    async handleReferralEvent(tenantId, customerId, eventKey) {
+        const settings = await ReferralSettings.findOne({ tenantId }).sort({ updatedAt: -1 }).lean();
+        if (settings && settings.enabled === false) return;
+        const threshold = settings?.threshold || 'FIRST_SERVICE';
+        if (threshold !== eventKey) return;
+        await this.completeReferral(tenantId, customerId);
     }
 }
 

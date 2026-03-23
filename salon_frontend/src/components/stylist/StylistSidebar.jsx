@@ -49,9 +49,8 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
     };
 
     const isActive = (path) => {
-        if (path === '/stylist' && location.pathname === '/stylist') return true;
-        if (path !== '/stylist' && (location.pathname === path || location.pathname.startsWith(path + '/'))) return true;
-        return false;
+        if (path === '/stylist') return location.pathname === '/stylist';
+        return location.pathname === path || location.pathname.startsWith(`${path}/`);
     };
 
     const sidebarContent = (
@@ -73,7 +72,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
                             src="/2-removebg-preview.png"
-                            alt="Logo"
+                            alt="Salon"
                             className="w-full h-full object-contain"
                         />
                     </div>
@@ -205,10 +204,10 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
                     className={`flex items-center justify-center gap-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group ${effectiveCollapsed ? 'justify-center' : 'text-text-secondary hover:bg-red-50 hover:text-red-600 border border-transparent hover:border-red-100'}`}
                 >
                     <LogOut className={`w-5 h-5 shrink-0 ${effectiveCollapsed ? 'text-text-muted' : 'text-text-muted group-hover:text-red-600'}`} />
-                    {!effectiveCollapsed && <span className="flex-1 text-left">Terminate Session</span>}
+                    {!effectiveCollapsed && <span className="flex-1 text-left">Log out</span>}
                     {effectiveCollapsed && (
                         <div className="absolute left-[70px] px-3 py-2 rounded-lg bg-red-600 text-white text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-2xl transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-                            Logout
+                            Log out
                         </div>
                     )}
                 </button>

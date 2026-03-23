@@ -61,7 +61,36 @@ const verifySubscriptionPayment = async (req, res, next) => {
     }
 };
 
+const createWalletRechargeOrder = async (req, res, next) => {
+    try {
+        const { amount, receipt } = req.body;
+        const numericAmount = Number(amount);
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+            return res.status(400).send({ success: false, message: 'Invalid amount' });
+        }
+
+        const order = await razorpayService.createOrder(
+            numericAmount,
+            'INR',
+            receipt || `wallet_recharge_${Date.now()}`
+        );
+
+        res.status(httpStatus.OK).send({
+            success: true,
+            data: {
+                orderId: order.id,
+                amount: order.amount,
+                currency: order.currency,
+                keyId: process.env.RAZORPAY_KEY_ID
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createSubscriptionOrder,
     verifySubscriptionPayment,
+    createWalletRechargeOrder,
 };

@@ -33,6 +33,7 @@ export const loginWithOtp = {
         phone: Joi.string().required(),
         tenantId: Joi.string().required(),
         otp: Joi.string().required().length(6),
+        referralCode: Joi.string().optional().allow(''),
     }),
 };
 
@@ -45,5 +46,6 @@ export const registerCustomer = {
         password: Joi.string().required().custom(password),
         dob: Joi.date().required(),
         anniversary: Joi.date().optional().allow(null),
+        referralCode: Joi.string().optional().allow(''),
     }),
 };

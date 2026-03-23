@@ -23,6 +23,18 @@ import marketingRoute from './modules/marketing/marketing.routes.js';
 import inquiryRoute from './modules/inquiry/inquiry.routes.js';
 import reminderLinkRoute from './modules/reminderLink/reminderLink.routes.js';
 import onboardingGuard from './middlewares/onboardingGuard.js';
+import geocodeRoute from './modules/geocode/geocode.routes.js';
+import segmentsRoute from './modules/segments/segment.routes.js';
+import feedbackRoutes from './modules/feedback/feedback.routes.js';
+import shopCategoryRoute from './modules/shopCategory/shopCategory.routes.js';
+import supplierRoute from './modules/supplier/supplier.routes.js';
+import financeRoute from './modules/finance/finance.routes.js';
+import attendanceRoute from './modules/attendance/attendance.routes.js';
+import shiftRoute from './modules/shift/shift.routes.js';
+import payrollRoute from './modules/payroll/payroll.routes.js';
+import hrPerformanceRoute from './modules/hrPerformance/hrPerformance.routes.js';
+import dashboardRoute from './modules/dashboard/dashboard.routes.js';
+import stylistRoute from './modules/stylist/stylist.routes.js';
 
 const router = express.Router();
 
@@ -30,6 +42,10 @@ const defaultRoutes = [
     {
         path: '/auth',
         route: authRoute,
+    },
+    {
+        path: '/geocode',
+        route: geocodeRoute,
     },
     {
         path: '/tenants',
@@ -62,6 +78,10 @@ const defaultRoutes = [
     {
         path: '/blogs',
         route: blogRoute,
+    },
+    {
+        path: '/shop-categories',
+        route: shopCategoryRoute,
     },
 ];
 
@@ -121,6 +141,46 @@ const protectedRoutes = [
     {
         path: '/reminders-links',
         route: reminderLinkRoute,
+    },
+    {
+        path: '/segments',
+        route: segmentsRoute,
+    },
+    {
+        path: '/feedbacks',
+        route: feedbackRoutes,
+    },
+    {
+        path: '/suppliers',
+        route: supplierRoute,
+    },
+    {
+        path: '/finance',
+        route: financeRoute,
+    },
+    {
+        path: '/attendance',
+        route: attendanceRoute,
+    },
+    {
+        path: '/shifts',
+        route: shiftRoute,
+    },
+    {
+        path: '/payroll',
+        route: payrollRoute,
+    },
+    {
+        path: '/hr-performance',
+        route: hrPerformanceRoute,
+    },
+    {
+        path: '/dashboard',
+        route: dashboardRoute,
+    },
+    {
+        path: '/stylist',
+        route: stylistRoute,
     },
 ];
 

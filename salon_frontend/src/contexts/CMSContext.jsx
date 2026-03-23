@@ -1,13 +1,35 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
+import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
+
+/** Admin CMS reads/writes need tenant scope; superadmin has no tenantId on user — pass salon id from /tenants/me */
+function adminCmsQuery(salonId) {
+    if (!salonId) return '';
+    const id = typeof salonId === 'object' && salonId?._id ? salonId._id : salonId;
+    return id ? `?tenantId=${encodeURIComponent(String(id))}` : '';
+}
 
 const CMSContext = createContext(null);
 
 const ensureId = (item) => ({ ...item, id: item.id || item._id || Date.now() });
 
+function readStoredCustomerTenantId() {
+    try {
+        const raw = localStorage.getItem('customer_user');
+        if (!raw) return null;
+        const u = JSON.parse(raw);
+        return u?.tenantId || null;
+    } catch {
+        return null;
+    }
+}
+
 export function CMSProvider({ children }) {
-    const { staff, updateStaff } = useBusiness();
+    const location = useLocation();
+    const { customer } = useCustomerAuth();
+    const { staff, updateStaff, salon } = useBusiness();
     const [banners, setBanners] = useState([]);
     const [offers, setOffers] = useState([]);
     const [lookbook, setLookbook] = useState([]);
@@ -16,8 +38,29 @@ export function CMSProvider({ children }) {
 
     const fetchAppCMS = useCallback(async () => {
         setLoading(true);
+        const path = location.pathname || '';
+        const isCustomerApp = path.startsWith('/app');
+        let tenantId = customer?.tenantId || null;
+        if (!tenantId && isCustomerApp) {
+            tenantId = readStoredCustomerTenantId();
+        }
+
         try {
-            const res = await api.get('/cms/app');
+            let res;
+            if (isCustomerApp) {
+                if (!tenantId) {
+                    setBanners([]);
+                    setOffers([]);
+                    setLookbook([]);
+                    setExperts([]);
+                    setLoading(false);
+                    return;
+                }
+                res = await api.get(`/cms/app/tenant/${tenantId}`);
+            } else {
+                const qs = adminCmsQuery(salon?._id);
+                res = await api.get(`/cms/app${qs}`);
+            }
             const d = res.data?.data || {};
             setBanners((d.banners || []).map(ensureId));
             setOffers((d.offers || []).map(ensureId));
@@ -31,7 +74,7 @@ export function CMSProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [location.pathname, customer?.tenantId, salon?._id]);
 
     useEffect(() => {
         fetchAppCMS();
@@ -39,7 +82,10 @@ export function CMSProvider({ children }) {
 
     const saveSection = async (section, content) => {
         try {
-            await api.patch(`/cms/app/${section}`, { content: Array.isArray(content) ? content : [] });
+            const path = location.pathname || '';
+            const isCustomerApp = path.startsWith('/app');
+            const qs = !isCustomerApp ? adminCmsQuery(salon?._id) : '';
+            await api.patch(`/cms/app/${section}${qs}`, { content: Array.isArray(content) ? content : [] });
         } catch (e) {
             console.error('[CMS] Save failed:', e);
             throw e;

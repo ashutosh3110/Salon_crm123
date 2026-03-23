@@ -5,6 +5,22 @@ import logger from './logger.js';
  * Cache utility for read-heavy operations
  */
 class CacheService {
+    constructor() {
+        this.lastWarnAt = {
+            get: 0,
+            set: 0,
+            del: 0,
+        };
+        this.warnCooldownMs = 60000;
+    }
+
+    logCacheWarning(kind, error) {
+        const now = Date.now();
+        if (now - (this.lastWarnAt[kind] || 0) < this.warnCooldownMs) return;
+        this.lastWarnAt[kind] = now;
+        logger.warn(`Cache ${kind.toUpperCase()} issue: ${error?.message || 'unknown error'}`);
+    }
+
     /**
      * Get data from cache
      * @param {string} key 
@@ -14,7 +30,7 @@ class CacheService {
             const data = await redis.get(key);
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            logger.error('Cache Get Error:', error);
+            this.logCacheWarning('get', error);
             return null;
         }
     }
@@ -29,7 +45,7 @@ class CacheService {
         try {
             await redis.set(key, JSON.stringify(value), 'EX', ttl);
         } catch (error) {
-            logger.error('Cache Set Error:', error);
+            this.logCacheWarning('set', error);
         }
     }
 
@@ -41,7 +57,7 @@ class CacheService {
         try {
             await redis.del(key);
         } catch (error) {
-            logger.error('Cache Del Error:', error);
+            this.logCacheWarning('del', error);
         }
     }
 

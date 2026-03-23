@@ -12,6 +12,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import api from '../../services/api';
 
 const AppMembershipPage = () => {
     const navigate = useNavigate();
@@ -28,19 +29,36 @@ const AppMembershipPage = () => {
     };
 
     const [membershipPlans, setMembershipPlans] = React.useState([]);
+    const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        const savedPlans = localStorage.getItem('salon_membership_plans');
-        if (savedPlans) {
-            setMembershipPlans(JSON.parse(savedPlans).filter(p => p.isActive));
-        } else {
-            const DEFAULT_PLANS = [
-                { id: 'silver', name: 'Silver Lounge', price: 999, benefits: ['5% Off on all services', '1 Free Hair Wash monthly', 'Priority Booking'], icon: 'star', gradient: 'linear-gradient(135deg, #B0B0B0 0%, #707070 100%)' },
-                { id: 'gold', name: 'Gold Elite', price: 1999, benefits: ['15% Off on all services', '2 Free Stylings monthly', '1 Free Facial monthly', 'Birthday Special Gift'], icon: 'crown', gradient: 'linear-gradient(135deg, #FFD700 0%, #B8860B 100%)', popular: true },
-                { id: 'platinum', name: 'Royal Platinum', price: 4499, benefits: ['30% Off on all services', 'Unlimited Hair Wash', 'Home Service Available', 'Personal Style Consultant'], icon: 'gem', gradient: 'linear-gradient(135deg, #2C2C2C 0%, #000000 100%)' }
-            ];
-            setMembershipPlans(DEFAULT_PLANS);
-        }
+        const loadPlans = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/loyalty/membership-plans');
+                const list = res?.data?.data || res?.data || [];
+                const rows = Array.isArray(list) ? list : [];
+                const mapped = rows
+                    .filter((p) => p?.isActive !== false)
+                    .map((p) => ({
+                        id: p._id || p.id,
+                        name: p.name,
+                        price: Number(p.price || 0),
+                        duration: Number(p.duration || 30),
+                        benefits: Array.isArray(p.benefits) ? p.benefits : [],
+                        includedServices: Array.isArray(p.includedServices) ? p.includedServices : [],
+                        icon: p.icon || 'star',
+                        gradient: p.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
+                        popular: !!p.isPopular,
+                    }));
+                setMembershipPlans(mapped);
+            } catch {
+                setMembershipPlans([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadPlans();
     }, []);
 
     const getIcon = (iconName) => {
@@ -102,7 +120,11 @@ const AppMembershipPage = () => {
 
             {/* ── PLANS LIST ── */}
             <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                {membershipPlans.map((plan, index) => (
+                {loading ? (
+                    <div style={{ textAlign: 'center', color: colors.textMuted, fontSize: '13px', fontWeight: 700 }}>Loading membership plans...</div>
+                ) : membershipPlans.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: colors.textMuted, fontSize: '13px', fontWeight: 700 }}>No membership plans available right now.</div>
+                ) : membershipPlans.map((plan, index) => (
                     <motion.div
                         key={plan.id}
                         initial={{ opacity: 0, x: -20 }}
@@ -167,6 +189,30 @@ const AppMembershipPage = () => {
                                 </div>
                             ))}
                         </div>
+
+                        {plan.includedServices.length > 0 && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <p style={{ fontSize: '10px', fontWeight: 900, opacity: 0.8, margin: '0 0 8px', textTransform: 'uppercase' }}>
+                                    Included Services
+                                </p>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                    {plan.includedServices.slice(0, 8).map((svc, idx) => (
+                                        <span
+                                            key={`${svc}-${idx}`}
+                                            style={{
+                                                fontSize: '10px',
+                                                padding: '4px 8px',
+                                                borderRadius: '999px',
+                                                border: '1px solid rgba(255,255,255,0.25)',
+                                                background: 'rgba(255,255,255,0.08)',
+                                            }}
+                                        >
+                                            {svc}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <motion.button
                             whileTap={{ scale: 0.95 }}

@@ -1,6 +1,9 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import inventoryData from '../data/inventoryData.json';
 import { useFinance } from './FinanceContext';
+import { useBusiness } from './BusinessContext';
+import { useCustomerAuth } from './CustomerAuthContext';
+import api from '../services/api';
 
 const InventoryContext = createContext();
 
@@ -50,10 +53,101 @@ const INITIAL_PURCHASES = inventoryData.purchases || [];
 const INITIAL_TRANSFERS = inventoryData.transfers || [];
 const MONTHLY_HISTORY_GLOBAL = inventoryData.monthlyHistory || [];
 
-// Enrich: add computed `stock` (total) to every product
+// Enrich: add computed `stock` (total) and `stockStatus` (inventory level).
+// Keep `status` as API listing flag: active | inactive (do not mix with stock labels).
 const enrichProduct = (p) => {
     const stock = totalStock(p.stockByOutlet);
-    return { ...p, stock, status: computeStatus(stock, p.minStock, p.expiryDate) };
+    const stockStatus = computeStatus(stock, p.minStock, p.expiryDate);
+    const raw = String(p.status ?? '').toLowerCase();
+    const listingStatus = raw === 'inactive' ? 'inactive' : 'active';
+    return { ...p, stock, stockStatus, status: listingStatus };
+};
+
+const EXTENDED_KEYS = [
+    'brand',
+    'description',
+    'gstPercent',
+    'hsnCode',
+    'barcode',
+    'threshold',
+    'supplier',
+    'availability',
+    'outletIds',
+    'mfgDate',
+    'expiryDate',
+    'isShopProduct',
+    'appCategory',
+    'appImage',
+    'shopDescription',
+    'rating',
+    'appCare',
+    'appUsage',
+    'appOrigin',
+    'appKnowMore',
+    'appFormulaType',
+    'appConsistency',
+    'appRitualStatus',
+    'appVendorDetails',
+    'appReturnPolicy',
+];
+
+const buildExtended = (product) => {
+    const ext = {};
+    for (const k of EXTENDED_KEYS) {
+        const v = product[k];
+        if (v !== undefined && v !== null) ext[k] = v;
+    }
+    return ext;
+};
+
+const toProductPayload = (product) => {
+    const price = Number(product.sellingPrice ?? product.price ?? 0);
+    const ext = buildExtended(product);
+    return {
+        name: String(product.name ?? '').trim(),
+        sku: String(product.sku ?? '').trim(),
+        price: Number.isFinite(price) ? price : 0,
+        category: product.category != null ? String(product.category) : '',
+        status: product.status === 'inactive' ? 'inactive' : 'active',
+        extended: ext && typeof ext === 'object' ? ext : {},
+    };
+};
+
+const normalizeProduct = (p) => {
+    const id = p?._id || p?.id;
+    const ext = p?.extended && typeof p.extended === 'object' ? p.extended : {};
+    const minStock = Number(p?.minStock ?? ext.threshold ?? p?.threshold ?? 5);
+    const stockByOutlet = p?.stockByOutlet || { main: Number(p?.stock || 0) };
+    const { extended: _dropExtended, ...base } = p || {};
+    return enrichProduct({
+        ...base,
+        ...ext,
+        id,
+        _id: id,
+        sellingPrice: Number(p?.sellingPrice ?? p?.price ?? ext.sellingPrice ?? 0),
+        price: Number(p?.price ?? p?.sellingPrice ?? ext.price ?? 0),
+        threshold: ext.threshold != null ? ext.threshold : minStock,
+        minStock,
+        stockByOutlet,
+        outletIds: (
+            Array.isArray(p?.outletIds) ? p.outletIds : Array.isArray(ext.outletIds) ? ext.outletIds : []
+        ).map((x) => String(x)),
+    });
+};
+
+const normalizeShopCat = (c) => {
+    const id = String(c?._id ?? c?.id ?? '');
+    return {
+        ...c,
+        id,
+        _id: id,
+        name: c?.name ?? '',
+        image:
+            c?.image ||
+            'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
+        sortOrder: Number(c?.sortOrder ?? 0),
+        count: 0,
+    };
 };
 
 // Initial constants removed to use JSON
@@ -61,7 +155,10 @@ const INITIAL_SALE_RECORDS = inventoryData.saleRecords || [];
 
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
-    const [products, setProducts] = useState(() => getInitialState('inv_products', INITIAL_PRODUCTS).map(enrichProduct));
+    const { outlets: tenantOutlets, suppliers: businessSuppliers } = useBusiness();
+    const { customer } = useCustomerAuth();
+    const tenantOutletLenRef = useRef(0);
+    const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
     const [transfers, setTransfers] = useState(() => getInitialState('inv_transfers', INITIAL_TRANSFERS));
@@ -71,9 +168,139 @@ export const InventoryProvider = ({ children }) => {
     const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', INITIAL_SALE_RECORDS));
     const [stockInHistory, setStockInHistory] = useState(() => getInitialState('inv_stock_in', inventoryData.stockInHistory || []));
     const [adjustmentLog, setAdjustmentLog] = useState(() => getInitialState('inv_adjustments', inventoryData.adjustmentLog || []));
-    const [productCategories] = useState(inventoryData.productCategories || []);
-    const [suppliers] = useState(inventoryData.suppliers || []);
-    const [shopCategories, setShopCategories] = useState(() => getInitialState('inv_shop_categories', inventoryData.shopCategories || []));
+    // Do not use static/mock product categories.
+    const [productCategories] = useState([]);
+    /** Supplier names from Finance → Suppliers API (BusinessContext) */
+    const suppliers = useMemo(
+        () =>
+            (businessSuppliers || []).map((s) => ({
+                ...s,
+                id: s.id || s._id,
+                name: s.name || '',
+            })),
+        [businessSuppliers]
+    );
+    const [shopCategoriesRaw, setShopCategoriesRaw] = useState([]);
+
+    /** Merge per-outlet quantities from Inventory collection so product list shows real stock (not always 0). */
+    const mergeInventoryStock = useCallback(async (productRows) => {
+        const list = Array.isArray(productRows) ? productRows : [];
+        if (!tenantOutlets?.length) return list;
+        const byPid = {};
+        for (const o of tenantOutlets) {
+            const oid = o._id || o.id;
+            if (!oid) continue;
+            try {
+                const res = await api.get(`/inventory/outlet/${oid}`);
+                const raw = res?.data;
+                const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.results) ? raw.results : [];
+                for (const row of rows) {
+                    const pid = String(row.productId?._id || row.productId || '');
+                    if (!pid) continue;
+                    if (!byPid[pid]) byPid[pid] = {};
+                    byPid[pid][String(oid)] = Number(row.quantity) || 0;
+                }
+            } catch (_) {
+                /* outlet may have no rows yet */
+            }
+        }
+        return list.map((p) => {
+            const pid = String(p._id || p.id);
+            const extra = byPid[pid];
+            if (!extra) return p;
+            const stockByOutlet = { ...(p.stockByOutlet || {}), ...extra };
+            return enrichProduct({ ...p, stockByOutlet });
+        });
+    }, [tenantOutlets]);
+
+    const fetchProducts = useCallback(async () => {
+        try {
+            const res = await api.get('/products', { params: { page: 1, limit: 500 } });
+            const rows = res?.data?.results || res?.data?.data?.results || [];
+            let list = Array.isArray(rows) ? rows.map(normalizeProduct) : [];
+            list = await mergeInventoryStock(list);
+            setProducts(list);
+        } catch (error) {
+            setProducts([]);
+        }
+    }, [mergeInventoryStock]);
+
+    const fetchShopCategories = useCallback(async () => {
+        const path = typeof window !== 'undefined' ? window.location.pathname || '' : '';
+        const isCustomerPath = path.startsWith('/app');
+        const roleToken =
+            localStorage.getItem('auth_token_admin') ||
+            localStorage.getItem('auth_token_manager') ||
+            localStorage.getItem('auth_token_receptionist') ||
+            localStorage.getItem('auth_token_inventory_manager') ||
+            localStorage.getItem('auth_token_superadmin');
+        const customerToken = localStorage.getItem('customer_token');
+
+        let tenantIdForPublic = null;
+        try {
+            const raw = localStorage.getItem('customer_user');
+            if (raw) tenantIdForPublic = JSON.parse(raw)?.tenantId;
+        } catch {
+            /* ignore */
+        }
+
+        const canAuthList =
+            (isCustomerPath && customerToken) || (!isCustomerPath && roleToken);
+
+        try {
+            if (canAuthList) {
+                const res = await api.get('/shop-categories', { params: { page: 1, limit: 200 } });
+                const rows = res?.data?.results || [];
+                setShopCategoriesRaw(Array.isArray(rows) ? rows.map(normalizeShopCat) : []);
+                return;
+            }
+            if (isCustomerPath && tenantIdForPublic) {
+                const res = await api.get(`/shop-categories/tenant/${tenantIdForPublic}`);
+                const rows = res?.data?.data || [];
+                setShopCategoriesRaw(Array.isArray(rows) ? rows.map(normalizeShopCat) : []);
+                return;
+            }
+            setShopCategoriesRaw([]);
+        } catch {
+            setShopCategoriesRaw([]);
+        }
+    }, []);
+
+    const shopCategories = useMemo(
+        () =>
+            shopCategoriesRaw.map((cat) => ({
+                ...cat,
+                count: products.filter((p) => String(p.appCategory) === String(cat.id)).length,
+            })),
+        [shopCategoriesRaw, products]
+    );
+
+    useEffect(() => {
+        const path = window.location.pathname || '';
+        const isCustomerPath = path.startsWith('/app');
+        const roleToken =
+            localStorage.getItem('auth_token_admin') ||
+            localStorage.getItem('auth_token_manager') ||
+            localStorage.getItem('auth_token_receptionist') ||
+            localStorage.getItem('auth_token_inventory_manager') ||
+            localStorage.getItem('auth_token_superadmin');
+        const customerToken = localStorage.getItem('customer_token');
+        if ((isCustomerPath && customerToken) || (!isCustomerPath && roleToken)) {
+            fetchProducts();
+            fetchShopCategories();
+        }
+    }, [fetchProducts, fetchShopCategories, customer]);
+
+    // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
+    useEffect(() => {
+        const len = tenantOutlets?.length || 0;
+        const prev = tenantOutletLenRef.current;
+        tenantOutletLenRef.current = len;
+        if (prev !== 0 || len === 0) return;
+        if (typeof window === 'undefined' || !window.location.pathname.startsWith('/app')) return;
+        if (!localStorage.getItem('customer_token')) return;
+        fetchProducts();
+    }, [tenantOutlets?.length, fetchProducts]);
 
     // Persistence Effect
     useEffect(() => {
@@ -85,8 +312,7 @@ export const InventoryProvider = ({ children }) => {
         localStorage.setItem('inv_sale_records', JSON.stringify(saleRecords));
         localStorage.setItem('inv_stock_in', JSON.stringify(stockInHistory));
         localStorage.setItem('inv_adjustments', JSON.stringify(adjustmentLog));
-        localStorage.setItem('inv_shop_categories', JSON.stringify(shopCategories));
-    }, [products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, adjustmentLog, shopCategories]);
+    }, [products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, adjustmentLog]);
 
     // ── Monthly History — 6 months of consumption per product ──
     const MONTHLY_HISTORY = inventoryData.monthlyHistory || [];
@@ -117,47 +343,57 @@ export const InventoryProvider = ({ children }) => {
         });
 
     // ── Add new product ───────────────────────────────────────
-    const addProduct = (product) => {
+    const addProduct = async (product) => {
         const barcode = product.barcode || generateEAN13();
-        // If legacy `stock` number provided, put all in main
-        const stockByOutlet = product.stockByOutlet || {
-            'main': Number(product.stock) || 0,
-            'outlet-1': 0,
-            'outlet-2': 0,
-        };
-        const outletIds = product.outletIds || [];
-        const raw = { ...product, id: Date.now(), barcode, stockByOutlet, outletIds };
-        setProducts(prev => [enrichProduct(raw), ...prev]);
-    };
-
-    // ── Update single product fields ──────────────────────────
-    const updateProduct = (id, updates) => {
-        setProducts(prev => prev.map(p => {
-            if (p.id !== id) return p;
-            const merged = { ...p, ...updates };
-            return enrichProduct(merged);
-        }));
-    };
-
-    const deleteProduct = (id) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            setProducts(prev => prev.filter(p => p.id !== id));
+        const payload = toProductPayload({ ...product, barcode });
+        try {
+            const res = await api.post('/products', payload);
+            const created = normalizeProduct(res?.data || {});
+            setProducts((prev) => [created, ...prev]);
+        } catch (error) {
+            alert(error?.response?.data?.message || 'Failed to create product.');
         }
     };
 
-    const duplicateProduct = (id) => {
-        const product = products.find(p => p.id === id);
+    // ── Update single product fields ──────────────────────────
+    const updateProduct = async (id, updates) => {
+        const pid = String(id);
+        const existing = products.find((p) => String(p.id) === pid || String(p._id) === pid);
+        if (!existing) return;
+        const payload = toProductPayload({ ...existing, ...updates });
+        try {
+            const res = await api.patch(`/products/${pid}`, payload);
+            const updated = normalizeProduct(res?.data || { ...existing, ...updates });
+            setProducts((prev) => prev.map((p) => (String(p.id) === pid || String(p._id) === pid ? updated : p)));
+        } catch (error) {
+            alert(error?.response?.data?.message || 'Failed to update product.');
+        }
+    };
+
+    const deleteProduct = async (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            const pid = String(id);
+            try {
+                await api.delete(`/products/${pid}`);
+                setProducts((prev) => prev.filter((p) => String(p.id) !== pid && String(p._id) !== pid));
+            } catch (error) {
+                alert(error?.response?.data?.message || 'Failed to delete product.');
+            }
+        }
+    };
+
+    const duplicateProduct = async (id) => {
+        const product = products.find((p) => String(p.id) === String(id) || String(p._id) === String(id));
         if (product) {
             const newProduct = {
                 ...product,
-                id: Date.now(),
                 name: `${product.name} (Copy)`,
                 sku: `${product.sku}-COPY`,
                 barcode: generateEAN13(),
                 stock: 0,
-                stockByOutlet: { 'main': 0 }
+                stockByOutlet: { main: 0 },
             };
-            setProducts(prev => [enrichProduct(newProduct), ...prev]);
+            await addProduct(newProduct);
         }
     };
 
@@ -257,23 +493,52 @@ export const InventoryProvider = ({ children }) => {
         setOutlets(prev => prev.map(o => o.id === id ? { ...o, ...updates } : o));
     };
 
-    // ── Shop Categories Management ──────────────────────────────
-    const addShopCategory = (category) => {
-        const newCat = {
-            id: category.id || `cat-${Date.now()}`,
-            name: category.name,
-            image: category.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
-            count: 0
-        };
-        setShopCategories(prev => [...prev, newCat]);
+    // ── Shop Categories (Shop Modules) — API per tenant ───────
+    const addShopCategory = async (category) => {
+        try {
+            const res = await api.post('/shop-categories', {
+                name: category.name,
+                image: category.image || '',
+                sortOrder: category.sortOrder ?? 0,
+            });
+            const newCat = normalizeShopCat(res?.data || {});
+            setShopCategoriesRaw((prev) => [...prev, newCat]);
+        } catch (error) {
+            const status = error?.response?.status;
+            const serverMsg = error?.response?.data?.message;
+            const hint =
+                status === 404
+                    ? '\n\n(404: API URL check — VITE_API_URL should end with /v1, e.g. http://localhost:3000/v1. Restart frontend after .env change.)'
+                    : '';
+            alert(serverMsg || `Failed to add shop section.${hint}`);
+        }
     };
 
-    const updateShopCategory = (id, updates) => {
-        setShopCategories(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    const updateShopCategory = async (id, updates) => {
+        const cid = String(id);
+        try {
+            const body = {};
+            if (updates.name != null) body.name = updates.name;
+            if (updates.image != null) body.image = updates.image;
+            if (updates.sortOrder != null) body.sortOrder = updates.sortOrder;
+            const res = await api.patch(`/shop-categories/${cid}`, body);
+            const updated = normalizeShopCat(res?.data || {});
+            setShopCategoriesRaw((prev) =>
+                prev.map((c) => (String(c.id) === cid ? updated : c))
+            );
+        } catch (error) {
+            alert(error?.response?.data?.message || 'Failed to update shop category.');
+        }
     };
 
-    const deleteShopCategory = (id) => {
-        setShopCategories(prev => prev.filter(c => c.id !== id));
+    const deleteShopCategory = async (id) => {
+        const cid = String(id);
+        try {
+            await api.delete(`/shop-categories/${cid}`);
+            setShopCategoriesRaw((prev) => prev.filter((c) => String(c.id) !== cid));
+        } catch (error) {
+            alert(error?.response?.data?.message || 'Failed to delete shop category.');
+        }
     };
 
     // ── Add purchase order ────────────────────────────────────
@@ -447,7 +712,9 @@ export const InventoryProvider = ({ children }) => {
         shopCategories,
         addShopCategory,
         updateShopCategory,
-        deleteShopCategory
+        deleteShopCategory,
+        fetchProducts,
+        fetchShopCategories,
     };
 
     return (

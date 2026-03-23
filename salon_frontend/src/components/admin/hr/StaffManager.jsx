@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Users, Search, Filter, Plus, MoreVertical, Mail, Phone, Calendar, Shield, CheckCircle2, Clock, Edit2, Eye, Trash2, UserPlus, Building2, X, ChevronLeft, ChevronRight, PieChart as PieChartIcon, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -10,20 +10,85 @@ import {
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
-const DEFAULT_ROLES = ['Stylist', 'Receptionist', 'Manager', 'Assistant', 'Therapist', 'Helper'];
+/** Backend User.role → UI label */
+const ROLE_LABELS = {
+    stylist: 'Stylist',
+    receptionist: 'Receptionist',
+    manager: 'Manager',
+    accountant: 'Accountant',
+    inventory_manager: 'Inventory',
+    admin: 'Admin',
+};
+
+const ROLE_KEYS = Object.keys(ROLE_LABELS);
+
 const PAGE_SIZE = 5;
 const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#f43f5e'];
 
-export default function StaffManager() {
-    const { staff, addStaff, updateStaff, deleteStaff, outlets } = useBusiness();
-    
-    const ROLES = DEFAULT_ROLES;
-    const OUTLETS = useMemo(() => outlets.length > 0 ? outlets.map(o => o.name) : ['All Salons'], [outlets]);
-    
-    const EMPTY_FORM = {
-        name: '', role: ROLES[0], outlet: OUTLETS[0], email: '', phone: '', joined: new Date().toISOString().split('T')[0], salary: '', status: 'active',
-        dob: '', pan: '', address: '', bankName: '', accountNo: '', ifsc: ''
+function normalizeStaffUser(u, outletsList) {
+    const oid = u.outletId?._id || u.outletId;
+    const outletDoc = outletsList.find((o) => String(o._id || o.id) === String(oid || ''));
+    const outletName = u.outletId?.name || outletDoc?.name || '—';
+    const jd = u.joinedDate;
+    let joinedStr = '';
+    if (jd) {
+        joinedStr = typeof jd === 'string' ? jd.split('T')[0] : new Date(jd).toISOString().split('T')[0];
+    }
+    return {
+        _id: u._id,
+        id: u._id,
+        name: u.name || '',
+        email: u.email || '',
+        phone: u.phone || '',
+        role: ROLE_LABELS[u.role] || u.role,
+        roleKey: u.role,
+        outlet: outletName,
+        outletId: oid ? String(oid) : '',
+        joined: joinedStr,
+        salary: u.salary ?? 0,
+        status: u.status || 'active',
+        dob: u.dob || '',
+        pan: u.pan || '',
+        address: u.address || '',
+        bankName: u.bankName || '',
+        accountNo: u.bankAccountNo || '',
+        ifsc: u.ifsc || '',
+        specialist: u.specialist || '',
     };
+}
+
+export default function StaffManager() {
+    const { staff, staffLoading, addStaff, updateStaff, deleteStaff, outlets, fetchStaff } = useBusiness();
+
+    const staffRows = useMemo(() => {
+        const list = Array.isArray(staff) ? staff : [];
+        return list.map((u) => normalizeStaffUser(u, outlets));
+    }, [staff, outlets]);
+
+    const OUTLET_NAMES = useMemo(() => (outlets.length > 0 ? outlets.map((o) => o.name) : []), [outlets]);
+
+    const emptyForm = useCallback(() => {
+        const firstOid = outlets[0]?._id || outlets[0]?.id || '';
+        return {
+            name: '',
+            roleKey: 'stylist',
+            outletId: firstOid ? String(firstOid) : '',
+            email: '',
+            phone: '',
+            password: '',
+            joined: new Date().toISOString().split('T')[0],
+            salary: '',
+            status: 'active',
+            dob: '',
+            pan: '',
+            address: '',
+            bankName: '',
+            accountNo: '',
+            ifsc: '',
+        };
+    }, [outlets]);
+
+    const [form, setForm] = useState(() => emptyForm());
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterRole, setFilterRole] = useState('All');
@@ -33,7 +98,6 @@ export default function StaffManager() {
 
     const [modal, setModal] = useState(false);
     const [editTarget, setEditTarget] = useState(null);
-    const [form, setForm] = useState(EMPTY_FORM);
 
     const [viewModal, setViewModal] = useState(null);
     const [menuOpen, setMenuOpen] = useState(null);
@@ -44,66 +108,130 @@ export default function StaffManager() {
 
     const roleData = useMemo(() => {
         const counts = {};
-        staff.forEach(s => {
-            counts[s.role] = (counts[s.role] || 0) + 1;
+        staffRows.forEach((s) => {
+            const k = s.roleKey || s.role;
+            const label = ROLE_LABELS[k] || s.role;
+            counts[label] = (counts[label] || 0) + 1;
         });
         return Object.keys(counts).map((role, i) => ({
             name: role,
             value: counts[role],
-            color: COLORS[i % COLORS.length]
+            color: COLORS[i % COLORS.length],
         }));
-    }, [staff]);
+    }, [staffRows]);
 
-    const filtered = useMemo(() => staff.filter(s => {
-        const q = searchTerm.toLowerCase();
-        const matchSearch = s.name.toLowerCase().includes(q) || s.role.toLowerCase().includes(q) || s.email.toLowerCase().includes(q);
-        const matchRole = filterRole === 'All' || s.role === filterRole;
-        const matchOutlet = filterOutlet === 'All' || s.outlet === filterOutlet;
-        return matchSearch && matchRole && matchOutlet;
-    }), [staff, searchTerm, filterRole, filterOutlet]);
+    const filtered = useMemo(
+        () =>
+            staffRows.filter((s) => {
+                const q = searchTerm.toLowerCase();
+                const matchSearch =
+                    s.name.toLowerCase().includes(q) ||
+                    s.role.toLowerCase().includes(q) ||
+                    (s.email || '').toLowerCase().includes(q);
+                const matchRole = filterRole === 'All' || s.roleKey === filterRole;
+                const matchOutlet = filterOutlet === 'All' || s.outlet === filterOutlet;
+                return matchSearch && matchRole && matchOutlet;
+            }),
+        [staffRows, searchTerm, filterRole, filterOutlet]
+    );
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-    const openAdd = () => { setEditTarget(null); setForm(EMPTY_FORM); setModal(true); };
-    const openEdit = (s) => { setEditTarget(s); setForm({ ...s }); setModal(true); setMenuOpen(null); };
+    const openAdd = () => {
+        setEditTarget(null);
+        setForm(emptyForm());
+        setModal(true);
+    };
+    const openEdit = (s) => {
+        setEditTarget(s);
+        setForm({
+            name: s.name,
+            roleKey: s.roleKey || 'stylist',
+            outletId: s.outletId || '',
+            email: s.email,
+            phone: s.phone,
+            password: '',
+            joined: s.joined || new Date().toISOString().split('T')[0],
+            salary: s.salary != null ? String(s.salary) : '',
+            status: s.status || 'active',
+            dob: s.dob || '',
+            pan: s.pan || '',
+            address: s.address || '',
+            bankName: s.bankName || '',
+            accountNo: s.accountNo || '',
+            ifsc: s.ifsc || '',
+        });
+        setModal(true);
+        setMenuOpen(null);
+    };
+
+    const buildPayload = () => {
+        const payload = {
+            name: form.name.trim(),
+            email: form.email.trim().toLowerCase(),
+            role: form.roleKey,
+            phone: form.phone,
+            status: form.status,
+            joinedDate: form.joined,
+            salary: Number(form.salary) || 0,
+            dob: form.dob || '',
+            pan: form.pan || '',
+            address: form.address || '',
+            bankName: form.bankName || '',
+            bankAccountNo: form.accountNo || '',
+            ifsc: form.ifsc || '',
+        };
+        if (form.outletId) payload.outletId = form.outletId;
+        return payload;
+    };
 
     const saveStaff = async (e) => {
         e.preventDefault();
         try {
+            if (!editTarget && (!form.password || form.password.length < 8)) {
+                showToast('Password kam se kam 8 characters (naya staff)');
+                return;
+            }
             if (editTarget) {
-                await updateStaff(editTarget._id || editTarget.id, form);
+                const payload = buildPayload();
+                if (form.password && form.password.length >= 8) payload.password = form.password;
+                await updateStaff(editTarget._id || editTarget.id, payload);
                 showToast(`${form.name} updated successfully`);
             } else {
-                await addStaff(form);
+                await addStaff({ ...buildPayload(), password: form.password });
                 showToast(`${form.name} added to staff`);
             }
+            await fetchStaff();
             setModal(false);
         } catch (error) {
-            showToast("Failed to save staff member");
+            showToast(error?.response?.data?.message || 'Failed to save staff member');
         }
     };
 
     const handleDelete = async (id) => {
         try {
             await deleteStaff(id);
-            setMenuOpen(null); setDeleteConfirm(null);
+            await fetchStaff();
+            setMenuOpen(null);
+            setDeleteConfirm(null);
             showToast(`Staff member removed`);
         } catch (error) {
-            showToast("Failed to delete staff member");
+            showToast(error?.response?.data?.message || 'Failed to delete staff member');
         }
     };
 
     const toggleStatus = async (id) => {
-        const member = staff.find(s => s._id === id || s.id === id);
+        const member = staffRows.find((s) => s._id === id || s.id === id);
         if (member) {
             const newStatus = member.status === 'active' ? 'inactive' : 'active';
             await updateStaff(id, { status: newStatus });
+            await fetchStaff();
         }
         setMenuOpen(null);
     };
 
-    const activeCount = staff.filter(s => s.status === 'active').length;
+    const activeCount = staffRows.filter((s) => s.status === 'active').length;
 
     return (
         <div className="space-y-6 font-black text-left">
@@ -111,10 +239,10 @@ export default function StaffManager() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left font-black">
                 <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     {[
-                        { label: 'Total Team Members', value: staff.length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+                        { label: 'Total Team Members', value: staffRows.length, icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
                         { label: 'Active Members', value: activeCount, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                        { label: 'Inactive Members', value: staff.length - activeCount, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-                        { label: 'Recently Joined', value: staff.filter(s => new Date(s.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+                        { label: 'Inactive Members', value: staffRows.length - activeCount, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+                        { label: 'Recently Joined', value: staffRows.filter((s) => s.joined && new Date(s.joined) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length, icon: UserPlus, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                     ].map((stat, i) => (
                         <motion.div key={stat.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
                             className="p-6 rounded-none bg-surface border border-border shadow-sm flex items-center gap-6 hover:shadow-xl transition-all group text-left font-black">
@@ -188,7 +316,9 @@ export default function StaffManager() {
                                         <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1); }}>
                                             <option value="All">All Roles</option>
-                                            {ROLES.map(r => <option key={r}>{r}</option>)}
+                                            {ROLE_KEYS.map((k) => (
+                                                <option key={k} value={k}>{ROLE_LABELS[k]}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div className="space-y-2 text-left">
@@ -196,7 +326,9 @@ export default function StaffManager() {
                                         <select className="w-full px-4 py-3 rounded-none bg-background border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary appearance-none"
                                             value={filterOutlet} onChange={e => { setFilterOutlet(e.target.value); setPage(1); }}>
                                             <option value="All">All Salons</option>
-                                            {OUTLETS.map(o => <option key={o}>{o}</option>)}
+                                            {OUTLET_NAMES.map((o) => (
+                                                <option key={o} value={o}>{o}</option>
+                                            ))}
                                         </select>
                                     </div>
                                     <button onClick={() => { setFilterRole('All'); setFilterOutlet('All'); }} className="w-full py-3 text-[9px] font-black text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded-none transition-all uppercase tracking-widest">Reset Filters</button>
@@ -212,7 +344,12 @@ export default function StaffManager() {
             </div>
 
             {/* Table */}
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive">
+            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden text-left font-black table-responsive relative">
+                {staffLoading && (
+                    <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[2px] flex items-center justify-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Loading team…</p>
+                    </div>
+                )}
                 <div className="text-left font-black">
                     <table className="w-full text-left font-black">
                         <thead>
@@ -237,7 +374,7 @@ export default function StaffManager() {
                                             </div>
                                             <div className="text-left">
                                                 <p className="text-xs font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors text-left">{s.name}</p>
-                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">Started on: {new Date(s.joined).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-widest text-left">Started on: {s.joined ? new Date(s.joined).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—'}</p>
                                             </div>
                                         </div>
                                     </td>
@@ -326,22 +463,35 @@ export default function StaffManager() {
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role *</label>
                                             <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
-                                                value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
-                                                {ROLES.map(r => <option key={r}>{r}</option>)}
+                                                value={form.roleKey} onChange={(e) => setForm((f) => ({ ...f, roleKey: e.target.value }))}>
+                                                {ROLE_KEYS.map((k) => (
+                                                    <option key={k} value={k}>{ROLE_LABELS[k]}</option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon *</label>
                                             <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
-                                                value={form.outlet} onChange={e => setForm(f => ({ ...f, outlet: e.target.value }))}>
-                                                {OUTLETS.map(o => <option key={o}>{o}</option>)}
+                                                value={form.outletId} onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}>
+                                                {outlets.map((o) => {
+                                                    const oid = String(o._id || o.id);
+                                                    return (
+                                                        <option key={oid} value={oid}>{o.name}</option>
+                                                    );
+                                                })}
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px) font-black text-text-muted uppercase tracking-[0.2em]">Email Address *</label>
-                                            <input required type="email" placeholder="e.g. john@example.com"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Email Address *</label>
+                                            <input required type="email" placeholder="e.g. john@example.com" readOnly={!!editTarget}
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none read-only:opacity-80"
                                                 value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional, min 8)' : 'Password * (min 8)'}</label>
+                                            <input type="password" autoComplete="new-password" placeholder={editTarget ? 'Leave blank to keep current' : 'Min 8 characters'}
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>
@@ -526,7 +676,7 @@ export default function StaffManager() {
                             <h3 className="text-sm font-black text-text uppercase tracking-widest">Remove Member from Team?</h3>
                             <p className="text-[10px] text-text-muted mt-3 mb-8 uppercase font-bold tracking-widest leading-relaxed italic">Warning: This will permanently delete the member record.</p>
                             <div className="flex flex-col gap-3 font-black">
-                                <button onClick={() => handleDelete(deleteConfirm._id || deleteConfirm.id)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">Delete</button>
+                                <button onClick={() => handleDelete(deleteConfirm)} className="w-full py-4 bg-rose-500 text-white rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-rose-500/10 hover:bg-rose-600 transition-all">Delete</button>
                                 <button onClick={() => setDeleteConfirm(null)} className="w-full py-4 bg-background border border-border rounded-none text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">Cancel</button>
                             </div>
                         </motion.div>

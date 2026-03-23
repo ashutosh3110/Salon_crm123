@@ -75,6 +75,28 @@ class TenantService {
         return tenant;
     }
 
+    /** Resolve the salon (tenant) document for a logged-in staff/owner user. */
+    async resolveTenantForUser(user) {
+        if (!user) return null;
+        let tenant = null;
+        if (user.tenantId) {
+            try {
+                tenant = await this.getTenantById(user.tenantId);
+            } catch {
+                tenant = null;
+            }
+        }
+        if (!tenant && user._id) {
+            const result = await this.queryTenants({ owner: user._id }, { page: 1, limit: 1 });
+            tenant = result?.results?.[0] || null;
+        }
+        if (!tenant && user.email) {
+            const result = await this.queryTenants({ email: String(user.email).toLowerCase() }, { page: 1, limit: 1 });
+            tenant = result?.results?.[0] || null;
+        }
+        return tenant;
+    }
+
     async queryTenants(filter, options) {
         return tenantRepository.find(filter, options);
     }
@@ -133,7 +155,19 @@ class TenantService {
             updateBody.limits = { ...tenant.limits.toObject(), ...updateBody.limits };
         }
         if (updateBody.settings) {
-            updateBody.settings = { ...tenant.settings.toObject(), ...updateBody.settings };
+            const curSettings =
+                tenant.settings && typeof tenant.settings.toObject === 'function'
+                    ? tenant.settings.toObject()
+                    : { ...(tenant.settings || {}) };
+            const incoming = { ...updateBody.settings };
+            if (incoming.notifications && curSettings.notifications) {
+                const curN =
+                    curSettings.notifications && typeof curSettings.notifications.toObject === 'function'
+                        ? curSettings.notifications.toObject()
+                        : { ...(curSettings.notifications || {}) };
+                incoming.notifications = { ...curN, ...incoming.notifications };
+            }
+            updateBody.settings = { ...curSettings, ...incoming };
         }
 
         // Duplicate checks for update

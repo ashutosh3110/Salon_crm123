@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Users, Plus, Search, Filter, Mail, Phone, MapPin, MoreHorizontal, FileText, ChevronRight, DollarSign, Download } from 'lucide-react';
+import { Users, Plus, Search, Filter, Mail, Phone, MapPin, MoreHorizontal, FileText, Trash2 } from 'lucide-react';
 
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function SupplierManager() {
-    const { suppliers, addSupplier, updateSupplier, deleteSupplier } = useBusiness();
+    const { suppliers, suppliersLoading, addSupplier, updateSupplier, deleteSupplier } = useBusiness();
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingSupplier, setEditingSupplier] = useState(null);
+    const [saving, setSaving] = useState(false);
 
     const handleEdit = (supplier) => {
         setEditingSupplier(supplier);
@@ -48,21 +49,51 @@ export default function SupplierManager() {
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto no-scrollbar bg-white">
                 {view === 'list' ? (
-                    <SupplierTable
-                        suppliers={suppliers}
-                        onEdit={handleEdit}
-                        onDelete={deleteSupplier}
-                    />
+                    suppliersLoading ? (
+                        <div className="flex items-center justify-center py-24 text-sm font-bold text-text-muted">
+                            Loading suppliers…
+                        </div>
+                    ) : (
+                        <SupplierTable
+                            suppliers={suppliers}
+                            onEdit={handleEdit}
+                            onDelete={async (id) => {
+                                if (!window.confirm('Remove this supplier?')) return;
+                                try {
+                                    await deleteSupplier(id);
+                                } catch (e) {
+                                    console.error(e);
+                                    window.alert(e?.response?.data?.message || 'Could not delete supplier');
+                                }
+                            }}
+                        />
+                    )
                 ) : (
                     <SupplierForm
                         supplier={editingSupplier}
-                        onSave={(data) => {
-                            if (editingSupplier) {
-                                updateSupplier(editingSupplier.id, data);
-                            } else {
-                                addSupplier(data);
+                        saving={saving}
+                        onSave={async (data) => {
+                            const id = editingSupplier?.id || editingSupplier?._id;
+                            setSaving(true);
+                            try {
+                                if (editingSupplier && id) {
+                                    await updateSupplier(id, data);
+                                } else {
+                                    await addSupplier(data);
+                                }
+                                setView('list');
+                            } catch (e) {
+                                console.error(e);
+                                window.alert(
+                                    e?.response?.data?.message ||
+                                        (Array.isArray(e?.response?.data?.errors)
+                                            ? e.response.data.errors.map((x) => x?.message || x).join(', ')
+                                            : null) ||
+                                        'Could not save supplier'
+                                );
+                            } finally {
+                                setSaving(false);
                             }
-                            setView('list');
                         }}
                         onCancel={() => setView('list')}
                     />
@@ -87,8 +118,17 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                    {suppliers.map((supplier) => (
-                        <tr key={supplier.id} className="hover:bg-surface/30 transition-colors group cursor-default">
+                    {suppliers.length === 0 && (
+                        <tr>
+                            <td colSpan={6} className="px-8 py-16 text-center text-sm font-medium text-text-muted">
+                                No suppliers yet. Click &quot;Add New Supplier&quot; to create one.
+                            </td>
+                        </tr>
+                    )}
+                    {suppliers.map((supplier) => {
+                        const rowId = supplier.id || supplier._id;
+                        return (
+                        <tr key={rowId} className="hover:bg-surface/30 transition-colors group cursor-default">
                             <td className="px-8 py-5">
                                 <div className="flex flex-col">
                                     <span className="font-bold text-text text-sm group-hover:text-primary transition-colors">{supplier.name}</span>
@@ -130,10 +170,12 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                         <FileText className="w-4 h-4" />
                                     </button>
                                     <button
-                                        onClick={() => onDelete(supplier.id)}
+                                        type="button"
+                                        title="Delete"
+                                        onClick={() => onDelete(rowId)}
                                         className="p-2 rounded-lg text-text-muted hover:text-rose-500 hover:bg-rose-50 transition-all"
                                     >
-                                        <Users className="w-4 h-4" />
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                     <button className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary/5 transition-all">
                                         <MoreHorizontal className="w-4 h-4" />
@@ -141,14 +183,15 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                                 </div>
                             </td>
                         </tr>
-                    ))}
+                    );
+                    })}
                 </tbody>
             </table>
         </div>
     );
 }
 
-function SupplierForm({ supplier, onSave, onCancel }) {
+function SupplierForm({ supplier, saving, onSave, onCancel }) {
     const [formData, setFormData] = useState({
         name: supplier?.name || '',
         contact: supplier?.contact || '',
@@ -163,9 +206,9 @@ function SupplierForm({ supplier, onSave, onCancel }) {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSave(formData);
+        await onSave(formData);
     };
 
     return (
@@ -270,9 +313,10 @@ function SupplierForm({ supplier, onSave, onCancel }) {
                     </button>
                     <button
                         type="submit"
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active"
+                        disabled={saving}
+                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-primary text-white text-sm font-bold hover:shadow-lg hover:shadow-primary/30 transition-all scale-active disabled:opacity-60"
                     >
-                        {supplier ? 'Update Supplier' : 'Save Supplier Profile'}
+                        {saving ? 'Saving…' : supplier ? 'Update Supplier' : 'Save Supplier Profile'}
                     </button>
                 </div>
             </div>

@@ -21,13 +21,21 @@ const RADIUS_OPTIONS = [3, 5, 10, 25];
 export default function AppLoginPage() {
     const [searchParams] = useSearchParams();
     const tenantIdFromUrl = searchParams.get('tenantId');
+    const referralCodeFromUrl = searchParams.get('ref') || '';
+    const storedSelectedOutlet = (() => {
+        try {
+            const raw = localStorage.getItem('wapixo_selected_outlet');
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    })();
     const [step, setStep] = useState(0);
     const [direction, setDir] = useState(1);
     const [userCoords, setUserCoords] = useState(null);
-    const [nearbyOutlets, setNearbyOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
-    const [tenantId, setTenantId] = useState(tenantIdFromUrl || '');
-    const [locationLoading, setLocationLoading] = useState(true);
+    const [tenantId, setTenantId] = useState(tenantIdFromUrl || storedSelectedOutlet?.tenantId || '');
+    const [locationLoading, setLocationLoading] = useState(!(tenantIdFromUrl || storedSelectedOutlet?.tenantId));
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -37,7 +45,6 @@ export default function AppLoginPage() {
     const [error, setError] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [countdown, setCd] = useState(0);
-    const [customLocation, setCustomLocation] = useState('');
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const [registerForm, setRegisterForm] = useState({
@@ -63,16 +70,6 @@ export default function AppLoginPage() {
         }
     }, [countdown]);
 
-    const fetchNearbyOutlets = async (lat, lng, radius = searchRadiusKm) => {
-        try {
-            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`);
-            return Array.isArray(res.data) ? res.data : [];
-        } catch (e) {
-            console.warn('Fetch nearby outlets failed:', e);
-            return [];
-        }
-    };
-
     const fetchLocationAndNearby = () => {
         setLocationLoading(true);
         setError('');
@@ -88,7 +85,14 @@ export default function AppLoginPage() {
         }
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                setUserCoords(coords);
+                try {
+                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                } catch {
+                    // ignore
+                }
+                setLocationLoading(false);
             },
             (err) => {
                 const msg = err.code === 1 ? 'Location permission denied.' : 'Could not get location.';
@@ -100,62 +104,17 @@ export default function AppLoginPage() {
     };
 
     useEffect(() => {
-        if (step !== 0 || tenantIdFromUrl || !userCoords) return;
-        let cancelled = false;
-        (async () => {
-            setLocationLoading(true);
-            const list = await fetchNearbyOutlets(userCoords.lat, userCoords.lng, searchRadiusKm);
-            if (!cancelled) {
-                setNearbyOutlets(list);
-                setLocationLoading(false);
-            }
-        })();
-        return () => { cancelled = true; };
-    }, [userCoords?.lat, userCoords?.lng, searchRadiusKm, step, tenantIdFromUrl]);
-
-    const handleChangeLocation = async () => {
-        const trimmed = customLocation?.trim();
-        if (!trimmed) {
-            setError('Enter a location to search.');
-            return;
-        }
-        setError('');
-        setLocationLoading(true);
-        try {
-            const res = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(trimmed + ', India')}&limit=1`,
-                { headers: { 'User-Agent': 'WapixoSalonApp/1.0' } }
-            );
-            const data = await res.json();
-            if (data?.[0]) {
-                setUserCoords({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
-            } else {
-                setError('Location not found. Try a different address.');
-                setLocationLoading(false);
-            }
-        } catch (e) {
-            setError('Could not find location.');
+        // If tenantId is already known (from URL or localStorage), we should be on phone/OTP step.
+        if (tenantIdFromUrl || storedSelectedOutlet?.tenantId) {
+            if (storedSelectedOutlet?.tenantId && !selectedOutlet) setSelectedOutlet(storedSelectedOutlet);
+            setTenantId(tenantIdFromUrl || storedSelectedOutlet?.tenantId || '');
+            setStep(1);
             setLocationLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (tenantIdFromUrl) {
-            setLocationLoading(true);
-            api.get('/tenants/public-list')
-                .then(res => {
-                    const list = res.data?.data || res.data || [];
-                    const match = list.find(s => (s.id || s._id) === tenantIdFromUrl);
-                    if (match) {
-                        setTenantId(tenantIdFromUrl);
-                        setStep(1);
-                    }
-                })
-                .finally(() => setLocationLoading(false));
             return;
         }
+
         fetchLocationAndNearby();
-    }, [tenantIdFromUrl]);
+    }, [tenantIdFromUrl, storedSelectedOutlet?.tenantId]);
 
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
@@ -206,6 +165,7 @@ export default function AppLoginPage() {
             password: registerForm.password,
             dob: registerForm.dob,
             anniversary: registerForm.anniversary || null,
+            referralCode: referralCodeFromUrl,
         };
 
         if (!payload.name) return setRegisterError('Enter your name');
@@ -248,7 +208,7 @@ export default function AppLoginPage() {
         if (code.length !== 6) { setError('Enter the 6-digit OTP'); return; }
         setLoading(true); setError('');
         try {
-            const c = await customerLogin(phone, code, tenantId);
+            const c = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
             if (selectedOutlet) {
                 setActiveOutletId(selectedOutlet._id);
                 localStorage.setItem('active_outlet_id', selectedOutlet._id);
@@ -303,78 +263,44 @@ export default function AppLoginPage() {
                     <motion.div key="outlets" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         style={{ width: '100%', maxWidth: '360px', textAlign: 'center' }}
                     >
-                        <div className="mx-auto mb-6">
-                            <img src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'} alt="Salon Logo" className="h-20 w-auto mx-auto object-contain" />
+                        {/* Custom header for login selection */}
+                        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
+                            <div style={{ width: 70, display: 'flex', justifyContent: 'flex-start' }}>
+                                <img
+                                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                                    alt="Wapixo Logo"
+                                    style={{ width: 52, height: 40, objectFit: 'contain' }}
+                                />
+                            </div>
+                            <div style={{ flex: 1, textAlign: 'center' }}>
+                                <div style={{ fontSize: 12, fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                    Nearby outlets
+                                </div>
+                            </div>
+                            <div style={{ width: 70 }} />
                         </div>
+
                         {locationLoading ? (
                             <>
                                 <Loader2 size={32} className="animate-spin mx-auto mb-4" style={{ color: '#C8956C' }} />
                                 <p style={{ fontSize: '15px', fontWeight: 600, color: colors.text, marginBottom: '8px' }}>Detecting your location…</p>
-                                <p style={{ fontSize: '13px', color: colors.textMuted }}><MapPin size={14} style={{ display: 'inline', verticalAlign: -2 }} /> Finding outlets within {searchRadiusKm} km</p>
-                            </>
-                        ) : nearbyOutlets.length > 0 ? (
-                            <>
-                                <p style={{ fontSize: '15px', fontWeight: 600, color: colors.text, marginBottom: '4px' }}>Nearby outlets ({nearbyOutlets.length})</p>
-                                <p style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '12px' }}>Select an outlet to continue</p>
-                                <div style={{ marginBottom: '14px' }}>
-                                    <p style={{ fontSize: '10px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Search radius (optional)</p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                                        {RADIUS_OPTIONS.map((km) => (
-                                            <button
-                                                key={km}
-                                                type="button"
-                                                onClick={() => setSearchRadiusKm(km)}
-                                                style={{
-                                                    padding: '8px 14px',
-                                                    borderRadius: '999px',
-                                                    border: `1.5px solid ${searchRadiusKm === km ? '#C8956C' : colors.border}`,
-                                                    background: searchRadiusKm === km ? 'rgba(200,149,108,0.15)' : colors.card,
-                                                    color: searchRadiusKm === km ? '#C8956C' : colors.text,
-                                                    fontSize: '12px',
-                                                    fontWeight: 700,
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                {km} km
-                                            </button>
-                                        ))}
-                                    </div>
-                                    <p style={{ fontSize: '10px', color: colors.textMuted, marginTop: '6px' }}>Default is {DEFAULT_RADIUS_KM} km — increase if you don’t see your outlet.</p>
-                                </div>
-                                <div style={{ maxHeight: '240px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '12px', textAlign: 'left' }}>
-                                    {nearbyOutlets.map(o => (
-                                        <motion.div
-                                            key={o._id}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={() => handleSelectOutlet(o)}
-                                            style={{
-                                                background: colors.card,
-                                                border: `1px solid ${colors.border}`,
-                                                borderRadius: '14px',
-                                                padding: '14px 16px',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                            }}
-                                        >
-                                            <p style={{ fontSize: '15px', fontWeight: 700, color: colors.text, marginBottom: '4px' }}>{o.name}</p>
-                                            <p style={{ fontSize: '12px', color: colors.textMuted, marginBottom: '4px' }}>{o.address}{o.city ? `, ${o.city}` : ''}</p>
-                                            {o.distanceKm != null && <p style={{ fontSize: '11px', color: '#C8956C', fontWeight: 600 }}>{o.distanceKm} km away</p>}
-                                        </motion.div>
-                                    ))}
-                                </div>
+                                <p style={{ fontSize: '13px', color: colors.textMuted }}><MapPin size={14} style={{ display: 'inline', verticalAlign: -2 }} /> Get GPS coordinates</p>
                             </>
                         ) : (
                             <>
-                                <p style={{ fontSize: '15px', fontWeight: 600, color: colors.text, marginBottom: '8px' }}>No outlets in this area</p>
-                                <p style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '14px' }}>Try a larger radius (optional) or search another location.</p>
-                                <div style={{ marginBottom: '14px' }}>
-                                    <p style={{ fontSize: '10px', fontWeight: 800, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Search radius (optional)</p>
+                                <div style={{ marginBottom: 8 }}>
+                                    <p style={{ fontSize: '10px', fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                                        Select distance
+                                    </p>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
                                         {RADIUS_OPTIONS.map((km) => (
                                             <button
                                                 key={km}
                                                 type="button"
-                                                onClick={() => setSearchRadiusKm(km)}
+                                                onClick={() => {
+                                                    setSearchRadiusKm(km);
+                                                    navigate(`/app/nearby-outlets?radius=${km}`);
+                                                }}
                                                 style={{
                                                     padding: '8px 14px',
                                                     borderRadius: '999px',
@@ -382,7 +308,7 @@ export default function AppLoginPage() {
                                                     background: searchRadiusKm === km ? 'rgba(200,149,108,0.15)' : colors.card,
                                                     color: searchRadiusKm === km ? '#C8956C' : colors.text,
                                                     fontSize: '12px',
-                                                    fontWeight: 700,
+                                                    fontWeight: 800,
                                                     cursor: 'pointer',
                                                 }}
                                             >
@@ -390,24 +316,17 @@ export default function AppLoginPage() {
                                             </button>
                                         ))}
                                     </div>
+                                    <p style={{ fontSize: '10px', color: colors.textMuted, marginTop: '10px' }}>
+                                        Next page will show outlets within your selected distance.
+                                    </p>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                        <input
-                                            type="text"
-                                            value={customLocation}
-                                            onChange={e => { setCustomLocation(e.target.value); setError(''); }}
-                                            placeholder="Enter city or area"
-                                            style={{ ...S.input, flex: 1, minWidth: '140px', padding: '10px 14px' }}
-                                        />
-                                        <button onClick={handleChangeLocation} style={{ ...S.btn, maxWidth: '120px', padding: '10px 16px' }}>Search</button>
-                                    </div>
-                                    <button onClick={() => fetchLocationAndNearby()} style={{ ...S.ghost, margin: '0 auto', color: '#C8956C' }}>
-                                        <MapPinned size={16} /> Use current location
-                                    </button>
-                                </div>
+
+                                <button onClick={() => fetchLocationAndNearby()} style={{ ...S.ghost, margin: '18px auto 0', color: '#C8956C' }}>
+                                    <MapPinned size={16} /> Use current location
+                                </button>
                             </>
                         )}
+
                         {error && <p style={{ fontSize: '13px', color: '#ff4757', marginTop: '16px' }}>{error}</p>}
                     </motion.div>
                 )}

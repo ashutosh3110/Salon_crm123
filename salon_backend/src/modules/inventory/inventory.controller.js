@@ -34,8 +34,48 @@ const getOutletStock = async (req, res, next) => {
     }
 };
 
+const getStockOverview = async (req, res, next) => {
+    try {
+        const data = await inventoryService.getStockOverview(req.tenantId);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getStockInHistory = async (req, res, next) => {
+    try {
+        const data = await inventoryService.listStockInHistory(req.tenantId, req.query);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getAdjustmentHistory = async (req, res, next) => {
+    try {
+        const data = await inventoryService.listAdjustmentHistory(req.tenantId, req.query);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getLowStockAlerts = async (req, res, next) => {
+    try {
+        const data = await inventoryService.getLowStockAlerts(req.tenantId);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     stockIn,
     adjustStock,
     getOutletStock,
+    getStockOverview,
+    getStockInHistory,
+    getAdjustmentHistory,
+    getLowStockAlerts,
 };

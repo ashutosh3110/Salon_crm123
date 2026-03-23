@@ -104,7 +104,8 @@ export default function SalonSelectionPage() {
     const RADIUS_OPTIONS = [3, 5, 10, 25];
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
 
-    // Get user location (real GPS) and reverse-geocode for display
+    // Get user location (real GPS). Distance filtering outlets depend only on coords,
+    // so loader should not be blocked by reverse-geocoding.
     useEffect(() => {
         if (!navigator.geolocation) {
             setUserLocation({ lat: 26.8467, lng: 80.9462 });
@@ -112,23 +113,31 @@ export default function SalonSelectionPage() {
             setIsLocating(false);
             return;
         }
+
         navigator.geolocation.getCurrentPosition(
-            async (pos) => {
+            (pos) => {
                 const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 setUserLocation(coords);
-                try {
-                    const res = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
-                        { headers: { 'User-Agent': 'WapixoSalonApp/1.0' } }
-                    );
-                    const data = await res.json();
-                    const addr = data?.address;
-                    const loc = addr ? [addr.suburb, addr.neighbourhood, addr.village, addr.city_district, addr.city, addr.state].filter(Boolean).slice(0, 2).join(', ') : `${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`;
-                    setDisplayLocation(loc || 'Current location');
-                } catch {
-                    setDisplayLocation(`${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`);
-                }
+                setDisplayLocation('Detecting location...');
                 setIsLocating(false);
+
+                // Update display text asynchronously (do not block UI).
+                (async () => {
+                    try {
+                        const res = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
+                            { headers: { 'User-Agent': 'WapixoSalonApp/1.0' } }
+                        );
+                        const data = await res.json();
+                        const addr = data?.address;
+                        const loc = addr
+                            ? [addr.suburb, addr.neighbourhood, addr.village, addr.city_district, addr.city, addr.state].filter(Boolean).slice(0, 2).join(', ')
+                            : `${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`;
+                        setDisplayLocation(loc || 'Current location');
+                    } catch {
+                        setDisplayLocation(`${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`);
+                    }
+                })();
             },
             () => {
                 setUserLocation({ lat: 26.8467, lng: 80.9462 });

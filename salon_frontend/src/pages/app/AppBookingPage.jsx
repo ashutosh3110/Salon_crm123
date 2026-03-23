@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
@@ -8,6 +8,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import api from '../../services/api';
 
 const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -21,6 +22,7 @@ export default function AppBookingPage() {
     const { addBooking } = useBookingRegistry();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -54,6 +56,8 @@ export default function AppBookingPage() {
     const [couponCode, setCouponCode] = useState('');
     const [isPromoApplied, setIsPromoApplied] = useState(false);
     const [promoDiscount, setPromoDiscount] = useState(0);
+    const [availableCoupons, setAvailableCoupons] = useState([]);
+    const { customer } = useCustomerAuth();
 
     // Initial load for membership
     useEffect(() => {
@@ -66,6 +70,47 @@ export default function AppBookingPage() {
             }
         }
     }, []);
+
+    // Load active coupon codes for quick selection (Customer view)
+    useEffect(() => {
+        let cancelled = false;
+        const loadCoupons = async () => {
+            try {
+                const res = await api.get('/promotions/active', {
+                    params: { _t: Date.now() },
+                });
+                const list = Array.isArray(res?.data)
+                    ? res.data
+                    : Array.isArray(res?.data?.data)
+                        ? res.data.data
+                        : [];
+                const codes = list
+                    .filter((p) => {
+                        const mode = String(p?.activationMode ?? '').toUpperCase();
+                        const couponRaw = p?.couponCode ?? p?.coupon_code ?? p?.code;
+                        return Boolean(couponRaw) || mode === 'COUPON';
+                    })
+                    .map((p) => String(p.couponCode ?? p.coupon_code ?? p.code ?? p.name ?? 'OFFER').trim().toUpperCase().replace(/\s+/g, ''));
+                if (!cancelled) setAvailableCoupons(codes.slice(0, 8));
+            } catch (e) {
+                if (!cancelled) setAvailableCoupons([]);
+            }
+        };
+        if (customer?._id) loadCoupons();
+        else setAvailableCoupons([]);
+        return () => {
+            cancelled = true;
+        };
+    }, [customer?._id]);
+
+    // If user came from AppHomePage with a promo code, prefill it.
+    useEffect(() => {
+        const promoFromState = location?.state?.promoCode;
+        if (!promoFromState) return;
+        setCouponCode(String(promoFromState).toUpperCase());
+        setIsPromoApplied(false);
+        setPromoDiscount(0);
+    }, [location?.state?.promoCode]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -125,21 +170,32 @@ export default function AppBookingPage() {
 
     const finalPrice = Math.max(0, totalPrice - membershipDiscount - promoDiscount);
 
-    const applyPromo = () => {
-        if (!couponCode.trim()) return;
-        // Mock promo logic
-        const code = couponCode.toUpperCase();
-        if (code === 'SAVE20') {
-            setPromoDiscount(Math.floor(totalPrice * 0.2));
-            setIsPromoApplied(true);
-        } else if (code === 'WELCOMESALON') {
-            setPromoDiscount(200);
-            setIsPromoApplied(true);
-        } else if (code === 'REFER500') {
-            setPromoDiscount(500);
-            setIsPromoApplied(true);
-        } else {
-            alert("Invalid or expired promo code");
+    const applyPromo = async (codeOverride) => {
+        const raw = codeOverride ?? couponCode;
+        const code = String(raw || '').trim().toUpperCase();
+        if (!code) return;
+
+        try {
+            const customerId = customer?._id;
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: code,
+                billAmount: totalPrice,
+                customerId: customerId ? String(customerId) : undefined,
+            });
+
+            const discount = Number(res?.data?.data?.discount || 0);
+            if (discount > 0) {
+                setPromoDiscount(discount);
+                setIsPromoApplied(true);
+                setCouponCode(code);
+            } else {
+                setPromoDiscount(0);
+                setIsPromoApplied(false);
+                alert('Promo applied, but discount is ₹0');
+            }
+        } catch (e) {
+            const msg = e?.response?.data?.message || e?.message || 'Invalid or expired promo code';
+            alert(msg);
             setPromoDiscount(0);
             setIsPromoApplied(false);
         }
@@ -239,12 +295,28 @@ export default function AppBookingPage() {
     }, [services, serviceSearch]);
 
     // Submit booking
-    const { customer } = useCustomerAuth();
 
     const handleSubmit = async () => {
         setSubmitting(true);
         try {
-            await new Promise(r => setTimeout(r, 1500)); // Simulate API
+            await new Promise(r => setTimeout(r, 600));
+
+            // Persist booking in backend so referral first-booking rewards can trigger.
+            const primaryService = selectedServices?.[0];
+            const customerId = customer?._id;
+            const staffId = selectedStaff?.id || selectedStaff?._id;
+            if (primaryService?._id && customerId && staffId && selectedDate?.date) {
+                await api.post('/bookings', {
+                    clientId: customerId,
+                    serviceId: primaryService._id,
+                    staffId,
+                    appointmentDate: selectedDate.date.toISOString(),
+                    duration: Number(totalDuration || primaryService.duration || 30),
+                    price: Number(totalPrice || primaryService.price || 0),
+                    status: 'pending',
+                    notes: `Booked via customer app${selectedTime ? ` at ${selectedTime}` : ''}`,
+                });
+            }
 
             // --- Persist Booking to Global Registry ---
             const newBooking = {
@@ -830,7 +902,7 @@ export default function AppBookingPage() {
                                         style={{ color: colors.text }}
                                     />
                                     <button
-                                        onClick={isPromoApplied ? () => { setIsPromoApplied(false); setPromoDiscount(0); setCouponCode(''); } : applyPromo}
+                                        onClick={isPromoApplied ? () => { setIsPromoApplied(false); setPromoDiscount(0); setCouponCode(''); } : () => applyPromo()}
                                         className={`px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isPromoApplied ? 'bg-red-500/10 text-red-500' : 'bg-[#C8956C] text-white'}`}
                                     >
                                         {isPromoApplied ? 'Remove' : 'Apply'}
@@ -840,6 +912,25 @@ export default function AppBookingPage() {
                                     <p className="text-[10px] font-bold text-green-500 mt-2 flex items-center gap-1">
                                         <Sparkles size={10} /> Promo code applied successfully!
                                     </p>
+                                )}
+
+                                {!isPromoApplied && availableCoupons.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {availableCoupons.map(code => (
+                                            <button
+                                                key={code}
+                                                type="button"
+                                                onClick={() => {
+                                                    setCouponCode(code);
+                                                    applyPromo(code);
+                                                }}
+                                                className="px-3 py-1 rounded-xl bg-black/5 dark:bg-white/5 border border-transparent hover:border-[#C8956C]/30 text-[10px] font-black uppercase tracking-widest"
+                                                style={{ color: colors.text }}
+                                            >
+                                                {code}
+                                            </button>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
 

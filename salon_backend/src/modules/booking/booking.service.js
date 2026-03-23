@@ -1,5 +1,6 @@
 import bookingRepository from './booking.repository.js';
 import Booking from './booking.model.js';
+import loyaltyService from '../loyalty/loyalty.service.js';
 
 class BookingService {
     /**
@@ -34,6 +35,12 @@ class BookingService {
         }
 
         const booking = await bookingRepository.create({ ...bookingData, tenantId });
+
+        // If referral threshold is FIRST_SERVICE, reward on first successful booking creation.
+        if (booking?.clientId) {
+            await loyaltyService.handleReferralEvent(tenantId, booking.clientId, 'FIRST_SERVICE');
+        }
+
         return booking;
     }
 

@@ -13,7 +13,9 @@ class LoyaltyRepository extends BaseRepository {
     }
 
     async getRule(tenantId) {
-        return this.RuleModel.findOne({ tenantId, isActive: true });
+        // Return latest configured rule for tenant (active or inactive).
+        // UI should still see saved config even when program is toggled offline.
+        return this.RuleModel.findOne({ tenantId }).sort({ updatedAt: -1 });
     }
 
     async getWallet(tenantId, customerId) {

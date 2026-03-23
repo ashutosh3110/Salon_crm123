@@ -1,18 +1,60 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Share2, Gift, Check, UserPlus } from 'lucide-react';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import { MOCK_REFERRALS } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import api from '../../services/api';
 
 export default function AppReferralPage() {
     const { customer } = useCustomerAuth();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const [copied, setCopied] = useState(false);
+    const [referrals, setReferrals] = useState([]);
+    const [settings, setSettings] = useState({
+        enabled: true,
+        referrerReward: 200,
+        referredReward: 100,
+        threshold: 'FIRST_SERVICE',
+        expiryDays: 90,
+    });
 
-    // TODO: Replace with api.get('/loyalty/referrals/:customerId')  
-    const referrals = MOCK_REFERRALS;
+    useEffect(() => {
+        let cancelled = false;
+        const loadReferralData = async () => {
+            try {
+                const [settingsRes, refsRes] = await Promise.all([
+                    api.get('/loyalty/referral-settings'),
+                    api.get('/loyalty/referrals/me'),
+                ]);
+                if (cancelled) return;
+                const s = settingsRes?.data?.data || {};
+                const list = refsRes?.data?.data || [];
+                setSettings({
+                    enabled: s.enabled ?? true,
+                    referrerReward: Number(s.referrerReward ?? 200),
+                    referredReward: Number(s.referredReward ?? 100),
+                    threshold: s.threshold || 'FIRST_SERVICE',
+                    expiryDays: Number(s.expiryDays ?? 90),
+                });
+                setReferrals(Array.isArray(list) ? list : []);
+            } catch {
+                if (!cancelled) {
+                    setReferrals([]);
+                }
+            }
+        };
+        loadReferralData();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const triggerLabel = useMemo(() => {
+        if (settings.threshold === 'REGISTRATION') return 'after signup';
+        if (settings.threshold === 'FIRST_INVOICE_MIN_1000') return 'after first bill above Rs. 1000';
+        return 'after first service';
+    }, [settings.threshold]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -87,9 +129,12 @@ export default function AppReferralPage() {
                 <div className="relative z-10">
                     <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 4px', fontWeight: 500 }}>Premium Rewards</p>
                     <h3 className="text-lg font-black mb-4" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif", lineHeight: 1.3 }}>
-                        Earn 50 Points<br />
-                        <span style={{ color: colors.accent }}>per success</span>
+                        Earn {settings.referrerReward} Points<br />
+                        <span style={{ color: colors.accent }}>per successful referral</span>
                     </h3>
+                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 10px', fontWeight: 600 }}>
+                        Friend gets {settings.referredReward} points {triggerLabel}. Reward valid for {settings.expiryDays} days.
+                    </p>
 
                     <div className="flex items-center justify-between">
                         <div style={{ background: isLight ? '#F5F5F7' : 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '8px', fontSize: '9px', fontWeight: 800, color: colors.accent, letterSpacing: '0.02em' }}>
@@ -134,9 +179,10 @@ export default function AppReferralPage() {
                 <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={handleShare}
+                    disabled={!settings.enabled}
                     className="w-full py-3 rounded-xl bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.15em] flex items-center justify-center gap-2 shadow-xl shadow-[#C8956C]/10 active:scale-95 transition-all"
                 >
-                    <Share2 className="w-3.5 h-3.5" /> Invite Your Inner Circle
+                    <Share2 className="w-3.5 h-3.5" /> {settings.enabled ? 'Invite Your Inner Circle' : 'Referral Program Disabled'}
                 </motion.button>
             </motion.div>
 

@@ -6,6 +6,9 @@ import role from '../../middlewares/role.js';
 
 const router = express.Router();
 
+// Customer app & public preview: read CMS by salon tenant (no auth)
+router.get('/app/tenant/:tenantId', appCmsController.getAppCMSByTenant);
+
 const appAuth = [auth, role(['admin', 'owner', 'manager', 'superadmin'])];
 router.get('/app', ...appAuth, appCmsController.getAppCMS);
 router.patch('/app/:section', ...appAuth, appCmsController.updateAppCMSSection);

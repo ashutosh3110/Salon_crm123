@@ -8,7 +8,8 @@ import {
     ArrowDownRight,
     Package,
     PieChart as PieIcon,
-    Smartphone
+    Smartphone,
+    ClipboardList,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -88,7 +89,7 @@ export default function InventoryPage({ tab = 'products' }) {
                 {[
                     { id: 'overview', label: 'Scan', icon: TrendingUp },
                     { id: 'products', label: 'Master', icon: Package },
-                    { id: 'shop-categories', label: 'Modules', icon: Smartphone },
+                    { id: 'shop-categories', label: 'App shop', icon: Smartphone },
                     { id: 'stock-in', label: 'Inbound', icon: Download },
                     { id: 'adjustment', label: 'Adjust', icon: ArrowDownRight },
                     { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
@@ -203,7 +204,7 @@ export default function InventoryPage({ tab = 'products' }) {
                         onCancel={() => setEditingProduct(null)}
                     />
                 )}
-                {activeTab === 'overview' && <StockOverview />}
+                {activeTab === 'stock-overview' && <StockOverview />}
                 {activeTab === 'stock-in' && <StockIn />}
                 {activeTab === 'adjustment' && <StockAdjustment />}
                 {activeTab === 'alerts' && <LowStockAlerts />}

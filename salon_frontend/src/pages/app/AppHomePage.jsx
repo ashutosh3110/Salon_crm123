@@ -12,16 +12,16 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useWallet } from '../../contexts/WalletContext';
-import { MOCK_OUTLETS, PRODUCT_CATEGORIES, MOCK_SERVICES } from '../../data/appMockData';
 import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
+import api from '../../services/api';
 import logoLightMode from '/2-removebg-preview.png';
 import logoDarkMode from '/1-removebg-preview.png';
 import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
 import SalonMapView from '../../components/app/SalonMapView';
 
-const { MEMBERSHIP_PLANS, RUNNING_OFFERS, GENDER_DATA, LOOKBOOK, REVIEWS, PLACEHOLDERS } = homeData;
+const { PLACEHOLDERS } = homeData;
 
 function HeartBtn({ size = 20 }) {
     const [liked, setLiked] = useState(false);
@@ -92,17 +92,18 @@ export default function AppHomePage() {
     const { bookings } = useBookingRegistry();
     const { shopCategories } = useInventory();
     const { balance, initializeWallet } = useWallet();
-    const { banners, lookbook: cmsLookbook, offers: cmsOffers, experts } = useCMS();
+    const { banners, lookbook: cmsLookbook, experts } = useCMS();
+
+    const [couponOffers, setCouponOffers] = useState([]);
+    const [membershipPlans, setMembershipPlans] = useState([]);
 
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
-    const d = GENDER_DATA[g];
 
     // Only show approved experts for this outlet
     const approvedExperts = experts.filter(e => e.status === 'Approved' && (e.outletId === activeOutletId || !e.outletId));
 
-    // Merge with defaults if no experts approved yet
-    const displayExperts = approvedExperts.length > 0 ? approvedExperts : (d?.experts || []);
+    const displayExperts = approvedExperts;
 
     const lastBooking = bookings.length > 0 ? bookings[0] : null;
 
@@ -115,6 +116,11 @@ export default function AppHomePage() {
 
     const [isMapView, setIsMapView] = useState(false);
 
+    // Loyalty card is backend-driven via WalletContext balance.
+    const nextRewardPoints = 3000;
+    const currentPoints = Math.max(0, Number(balance || 0));
+    const rewardProgressPct = Math.max(0, Math.min(100, Math.round((currentPoints / nextRewardPoints) * 100)));
+
 
 
     useEffect(() => {
@@ -123,6 +129,70 @@ export default function AppHomePage() {
         }, 2000);
         return () => clearInterval(timer);
     }, []);
+
+    // Exclusive offers (Promo Codes) should come from backend (activationMode=COUPON)
+    useEffect(() => {
+        let cancelled = false;
+        const loadOffers = async () => {
+            if (!customer?._id) {
+                setCouponOffers([]);
+                return;
+            }
+            try {
+                const res = await api.get('/promotions/active', {
+                    params: { _t: Date.now() },
+                });
+                const list = Array.isArray(res?.data)
+                    ? res.data
+                    : Array.isArray(res?.data?.data)
+                        ? res.data.data
+                        : Array.isArray(res?.data?.results)
+                            ? res.data.results
+                            : [];
+
+                const coupons = list
+                    .slice(0, 6)
+                    .map((p) => {
+                        const couponRaw = p.couponCode ?? p.coupon_code ?? p.code;
+                        const hasCouponCode = Boolean(couponRaw);
+                        const code = hasCouponCode
+                            ? String(couponRaw).trim().toUpperCase().replace(/\s+/g, '')
+                            : 'AUTO';
+                        let discount = p.name || code;
+                        const promoType = String(p.type ?? '').toUpperCase();
+                        if (promoType === 'PERCENTAGE') discount = `Flat ${p.value}% OFF`;
+                        else if (promoType === 'FLAT') discount = `₹${p.value} OFF`;
+                        else if (promoType === 'COMBO') discount = 'Combo Deal';
+
+                        let subtitle = 'Limited time offer';
+                        if (p.startTime && p.endTime) {
+                            subtitle = `${p.startTime} - ${p.endTime}`;
+                        } else if (p.startDate && p.endDate) {
+                            const s = new Date(p.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                            const e = new Date(p.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                            subtitle = `Valid ${s} - ${e}`;
+                        }
+
+                        return {
+                            id: String(p._id || code),
+                            subtitle,
+                            discount,
+                            code,
+                            hasCouponCode,
+                        };
+                    });
+
+                if (!cancelled) setCouponOffers(coupons);
+            } catch {
+                if (!cancelled) setCouponOffers([]);
+            }
+        };
+
+        loadOffers();
+        return () => {
+            cancelled = true;
+        };
+    }, [customer?._id]);
 
     useEffect(() => {
         if (showWelcome) {
@@ -136,6 +206,37 @@ export default function AppHomePage() {
             initializeWallet(customer._id);
         }
     }, [customer?._id]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadMembershipPlans = async () => {
+            try {
+                const res = await api.get('/loyalty/membership-plans');
+                const list = res?.data?.data || res?.data || [];
+                const rows = Array.isArray(list) ? list : [];
+                const mapped = rows
+                    .filter((p) => p?.isActive !== false)
+                    .map((p) => ({
+                        id: p._id || p.id,
+                        name: p.name || 'Membership',
+                        price: Number(p.price || 0),
+                        duration: Number(p.duration || 30),
+                        benefits: Array.isArray(p.benefits) ? p.benefits : [],
+                        gradient: p.gradient || '',
+                        icon: p.icon || 'star',
+                        isPopular: !!p.isPopular,
+                    }));
+                if (!cancelled) setMembershipPlans(mapped);
+            } catch {
+                if (!cancelled) setMembershipPlans([]);
+            }
+        };
+
+        loadMembershipPlans();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
 
 
@@ -155,44 +256,28 @@ export default function AppHomePage() {
     }, [activeOutletId, services, g, businessCategories]);
 
     const filteredMembershipPlans = useMemo(() => {
-        return MEMBERSHIP_PLANS.filter(p => !p.outletId || p.outletId === activeOutletId);
-    }, [activeOutletId]);
+        return membershipPlans;
+    }, [membershipPlans]);
 
-    const filteredRunningOffers = useMemo(() => {
-        return cmsOffers.filter(o => (o.gender === 'all' || o.gender === g) && o.status === 'Live');
-    }, [activeOutletId, cmsOffers, g]);
-
+    /** Hero carousel = App CMS **Banners** tab only (no POS/coupon promos, no lookbook — those have their own UI below). */
     const filteredPromos = useMemo(() => {
-        const promos = banners
-            .filter(p => p.status === 'Active' && (p.gender === 'all' || p.gender === g))
-            .map(p => ({
-                id: `banner-${p.id}`,
-                title: p.title,
-                subtitle: 'Featured Service',
-                img: p.image,
-                btnText: 'Book Now',
-                link: p.link
-            }));
-
-        // Take latest 3 lookbook items and convert to promo format
-        const lookbookPromos = cmsLookbook
-            .filter(l => l.status === 'Active' && (l.gender === 'all' || l.gender === g))
-            .slice(0, 3)
-            .map((item, idx) => ({
-                id: `lookbook-${item.id}`,
-                title: item.title,
-                subtitle: item.tag,
-                img: item.image,
-                btnText: 'View Look',
-                isLookbook: true
-            }));
-
-        return [...lookbookPromos, ...promos];
-    }, [activeOutletId, banners, cmsLookbook, g]);
-
-    const filteredOffers = useMemo(() => {
-        return d.offers.filter(o => !o.outletId || o.outletId === activeOutletId);
-    }, [activeOutletId, d.offers]);
+        return banners
+            .filter((p) => p.status === 'Active' && (p.gender === 'all' || p.gender === g))
+            .map((p) => {
+                const validity = (p.validityText && String(p.validityText).trim())
+                    || (p.tag && String(p.tag).trim())
+                    || (p.description && String(p.description).trim());
+                return {
+                    id: `banner-${p.id}`,
+                    title: p.title,
+                    subtitle: validity ? validity.toUpperCase() : 'EXCLUSIVE OFFER',
+                    img: p.image,
+                    btnText: (p.btnText && String(p.btnText).trim()) || 'Apply',
+                    link: p.link || '/app/book',
+                    isCmsBanner: true,
+                };
+            });
+    }, [banners, g]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -570,38 +655,45 @@ export default function AppHomePage() {
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.5, ease: "easeOut" }}
                                     onClick={() => {
-                                        if (filteredPromos[currentPromoIndex]?.isLookbook) {
+                                        const current = filteredPromos[currentPromoIndex];
+                                        if (current?.isLookbook) {
                                             navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook' } });
+                                        } else if (current?.couponCode) {
+                                            navigate('/app/book', { state: { promoCode: current.couponCode } });
                                         } else {
-                                            navigate('/app/book');
+                                            navigate(current?.link || '/app/book');
                                         }
                                     }}
                                     style={{
                                         position: 'absolute', inset: 0, cursor: 'pointer',
-                                        background: 'linear-gradient(135deg, #2A1F15 0%, #3D2A18 50%, #1a1008 100%)',
+                                        background: 'linear-gradient(135deg, #1a120c 0%, #2d2118 50%, #0d0805 100%)',
                                         display: 'flex', alignItems: 'flex-end',
                                     }}
                                 >
-                                    <img
-                                        src={filteredPromos[currentPromoIndex]?.img}
-                                        alt="Promo"
-                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.45, borderRadius: '24px' }}
-                                    />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(20,10,0,0.9) 45%, rgba(0,0,0,0.1) 100%)', borderRadius: '24px' }} />
+                                    {filteredPromos[currentPromoIndex]?.img ? (
+                                        <img
+                                            src={filteredPromos[currentPromoIndex].img}
+                                            alt="Promo"
+                                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
+                                        />
+                                    ) : null}
+                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
                                     <div style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%' }}>
-                                        <p style={{ fontSize: '11px', color: colors.accent, margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 800 }}>
+                                        <p style={{ fontSize: '10px', color: '#C8956C', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
                                             {filteredPromos[currentPromoIndex]?.subtitle}
                                         </p>
-                                        <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#fff', margin: '0 0 12px', lineHeight: 1.2 }}>
+                                        <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
                                             {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
                                         </h3>
-                                        <button style={{
-                                            background: colors.accent, border: 'none', borderRadius: '24px 6px 24px 6px',
-                                            padding: '10px 24px', color: '#fff', fontSize: '12px', fontWeight: 700,
-                                            cursor: 'pointer', boxShadow: '0 8px 20px rgba(200,149,108,0.4)'
+                                        <span style={{
+                                            display: 'inline-block',
+                                            background: colors.accent, border: 'none', borderRadius: '22px 5px 22px 5px',
+                                            padding: '10px 26px', color: '#fff', fontSize: '12px', fontWeight: 800,
+                                            cursor: 'pointer', boxShadow: '0 8px 24px rgba(200,149,108,0.35)',
+                                            textTransform: 'uppercase', letterSpacing: '0.06em',
                                         }}>
                                             {filteredPromos[currentPromoIndex]?.btnText}
-                                        </button>
+                                        </span>
                                     </div>
                                 </motion.div>
                             ) : (
@@ -789,8 +881,8 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-                {/* ── STYLIST LOOKBOOK (NEW PANELS) ── */}
-                {!isMapView && (
+                {/* ── STYLIST LOOKBOOK (CMS only, no mock) ── */}
+                {!isMapView && cmsLookbook.filter((l) => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '32px 16px 0' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -806,7 +898,7 @@ export default function AppHomePage() {
                             </div>
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {cmsLookbook.filter(l => l.gender === g && l.status === 'Active').map((item) => (
+                            {cmsLookbook.filter((l) => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).map((item) => (
                                 <motion.div
                                     key={item.id}
                                     whileTap={{ scale: 0.97 }}
@@ -828,7 +920,7 @@ export default function AppHomePage() {
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         alt={item.title}
                                         onError={(e) => {
-                                            e.target.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400&q=80';
+                                            e.target.style.visibility = 'hidden';
                                         }}
                                     />
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.8))' }} />
@@ -885,14 +977,15 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-                {/* ── CATEGORIES (ORIGINAL) ── */}
+                {/* ── CATEGORIES (live inventory categories only) ── */}
+                {shopCategories.length > 0 && (
                 <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Categories</span>
                         <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => navigate('/app/categories')}>See All</button>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '15px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {(shopCategories.length > 0 ? shopCategories : d.categories).map((cat) => (
+                        {shopCategories.map((cat) => (
                             <motion.div
                                 key={cat.id}
                                 whileTap={{ scale: 0.95 }}
@@ -929,11 +1022,13 @@ export default function AppHomePage() {
                         ))}
                     </div>
                 </motion.div>
+                )}
 
 
 
 
-                {/* ── EXCLUSIVE OFFERS (COMPACT DASHED STYLE) ── */}
+                {/* ── EXCLUSIVE OFFERS (live promotions only — no JSON mock) ── */}
+                {couponOffers.length > 0 && (
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -942,7 +1037,7 @@ export default function AppHomePage() {
                         </div>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {RUNNING_OFFERS.map(offer => (
+                        {couponOffers.map(offer => (
                             <motion.div
                                 key={offer.id}
                                 whileTap={{ scale: 0.97 }}
@@ -958,6 +1053,14 @@ export default function AppHomePage() {
                                     gap: '6px',
                                     position: 'relative',
                                     justifyContent: 'center'
+                                }}
+                                onClick={() => {
+                                    // Send user to booking page with prefilled promo code.
+                                    if (offer.hasCouponCode) {
+                                        navigate('/app/book', { state: { promoCode: offer.code } });
+                                    } else {
+                                        navigate('/app/book');
+                                    }
                                 }}
                             >
                                 <p style={{ fontSize: '11px', color: isLight ? '#777' : colors.textMuted, margin: 0, fontWeight: 500 }}>
@@ -990,6 +1093,7 @@ export default function AppHomePage() {
                         ))}
                     </div>
                 </motion.div>
+                )}
 
                 {/* ── LOYALTY POINTS SUMMARY CARD (NEW) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
@@ -1012,18 +1116,20 @@ export default function AppHomePage() {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                                 <div>
                                     <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '0 0 4px' }}>Gold Loyalty Member</p>
-                                    <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: 800, margin: 0 }}>2,450 <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>Points</span></h2>
+                                    <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: 800, margin: 0 }}>
+                                        {currentPoints.toLocaleString()} <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>Points</span>
+                                    </h2>
                                 </div>
                             </div>
                             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Next reward at 3000 pts</span>
-                                    <span style={{ color: colors.accent, fontSize: '12px', fontWeight: 700 }}>82%</span>
+                                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Next reward at {nextRewardPoints} pts</span>
+                                    <span style={{ color: colors.accent, fontSize: '12px', fontWeight: 700 }}>{rewardProgressPct}%</span>
                                 </div>
                                 <div style={{ height: '6px', width: '100%', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: '82%' }}
+                                        animate={{ width: `${rewardProgressPct}%` }}
                                         transition={{ duration: 1.5, ease: 'easeOut' }}
                                         style={{ height: '100%', background: colors.accent, borderRadius: '3px' }}
                                     />
@@ -1151,6 +1257,7 @@ export default function AppHomePage() {
                             const isPlatinum = plan.name.toLowerCase().includes('platinum');
                             const isGold = plan.name.toLowerCase().includes('gold');
                             const isSilver = plan.name.toLowerCase().includes('silver');
+                            const badgeIcon = plan.icon === 'crown' ? '👑' : (plan.icon === 'gem' ? '💎' : '⭐');
 
                             const planGradient = isPlatinum
                                 ? 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)'
@@ -1168,9 +1275,9 @@ export default function AppHomePage() {
                                     onClick={() => navigate('/app/membership')}
                                     style={{
                                         cursor: 'pointer',
-                                        flexShrink: 0, width: '185px',
-                                        background: planGradient,
-                                        borderRadius: '18px', padding: '15px 16px',
+                                        flexShrink: 0, width: '210px',
+                                        background: plan.gradient || planGradient,
+                                        borderRadius: '20px', padding: '14px 14px 12px',
                                         boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.1)' : '0 10px 20px rgba(0,0,0,0.4)',
                                         border: '1px solid rgba(255,255,255,0.1)',
                                         position: 'relative',
@@ -1185,15 +1292,42 @@ export default function AppHomePage() {
                                         filter: 'blur(25px)', borderRadius: '50%'
                                     }} />
 
-                                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: textColor, margin: '0 0 3px', fontFamily: "'Playfair Display', serif" }}>{plan.name}</h3>
-                                    <div style={{ color: isPlatinum ? colors.accent : (isGold ? '#6B4F00' : '#444'), fontWeight: 900, fontSize: '18px', marginBottom: '8px' }}>{plan.price}</div>
+                                    {plan.isPopular && (
+                                        <span style={{
+                                            position: 'absolute',
+                                            top: '10px',
+                                            right: '10px',
+                                            background: 'rgba(0,0,0,0.7)',
+                                            color: '#FFD700',
+                                            fontSize: '9px',
+                                            padding: '3px 7px',
+                                            borderRadius: '999px',
+                                            fontWeight: 800,
+                                            textTransform: 'uppercase',
+                                        }}>
+                                            Popular
+                                        </span>
+                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
+                                        <span style={{ fontSize: '14px' }}>{badgeIcon}</span>
+                                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: textColor, margin: 0, fontFamily: "'Playfair Display', serif" }}>{plan.name}</h3>
+                                    </div>
+                                    <div style={{ color: isPlatinum ? colors.accent : (isGold ? '#6B4F00' : '#444'), fontWeight: 900, fontSize: '18px', marginBottom: '8px' }}>
+                                        ₹{Number(plan.price || 0).toLocaleString('en-IN')}
+                                    </div>
+                                    <p style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, margin: '0 0 8px' }}>
+                                        Valid for {plan.duration || 30} days
+                                    </p>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        {plan.benefits.map((b, i) => (
+                                        {plan.benefits.slice(0, 3).map((b, i) => (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                                 <div style={{ width: '3.5px', height: '3.5px', borderRadius: '50%', background: textColor }} />
                                                 <p style={{ fontSize: '10px', color: mutedColor, margin: 0, fontWeight: 500 }}>{b}</p>
                                             </div>
                                         ))}
+                                        {plan.benefits.length === 0 && (
+                                            <p style={{ fontSize: '10px', color: mutedColor, margin: 0, fontWeight: 500 }}>Premium member benefits included</p>
+                                        )}
                                     </div>
                                 </motion.div>
                             );
@@ -1205,7 +1339,8 @@ export default function AppHomePage() {
                     </div>
                 </motion.div>
 
-                {/* ── POPULAR EXPERTS (ORIGINAL) ── */}
+                {/* ── POPULAR EXPERTS (CMS / staff only, no mock) ── */}
+                {displayExperts.length > 0 && (
                 <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Popular Experts</span>
@@ -1278,6 +1413,7 @@ export default function AppHomePage() {
                         ))}
                     </div>
                 </motion.div>
+                )}
 
                 {/* ── LOYALTY + REFERRAL (ORIGINAL BOTTOM STYLE) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '20px 16px 32px' }}>

@@ -133,25 +133,7 @@ const getNearbyTenants = async (req, res, next) => {
 
 const getTenantMe = async (req, res, next) => {
     try {
-        let tenant = null;
-
-        if (req.user?.tenantId) {
-            try {
-                tenant = await tenantService.getTenantById(req.user.tenantId);
-            } catch (error) {
-                tenant = null;
-            }
-        }
-
-        if (!tenant && req.user?._id) {
-            const result = await tenantService.queryTenants({ owner: req.user._id }, { page: 1, limit: 1 });
-            tenant = result?.results?.[0] || null;
-        }
-
-        if (!tenant && req.user?.email) {
-            const result = await tenantService.queryTenants({ email: String(req.user.email).toLowerCase() }, { page: 1, limit: 1 });
-            tenant = result?.results?.[0] || null;
-        }
+        const tenant = await tenantService.resolveTenantForUser(req.user);
 
         if (!tenant) {
             return res.status(httpStatus.NOT_FOUND).send({
@@ -171,8 +153,14 @@ const getTenantMe = async (req, res, next) => {
 
 const updateTenantMe = async (req, res, next) => {
     try {
-        const tenantId = req.user.tenantId || req.user._id;
-        const tenant = await tenantService.updateTenantById(tenantId, req.body);
+        const existing = await tenantService.resolveTenantForUser(req.user);
+        if (!existing) {
+            return res.status(httpStatus.NOT_FOUND).send({
+                success: false,
+                message: 'Tenant not found for this user',
+            });
+        }
+        const tenant = await tenantService.updateTenantById(existing._id, req.body);
         res.send({
             success: true,
             message: 'Settings updated successfully',

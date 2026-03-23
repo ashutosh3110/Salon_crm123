@@ -32,6 +32,18 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
         return matchesSearch && matchesCategory;
     });
 
+    const salonAvailabilityLabel = (product) => {
+        const ids = product.outletIds;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) return '—';
+        const names = ids
+            .map((oid) => outlets.find((o) => String(o._id) === String(oid) || o._id === oid)?.name)
+            .filter(Boolean);
+        if (names.length) return names.slice(0, 2).join(', ') + (names.length > 2 ? ` +${names.length - 2}` : '');
+        return `${ids.length} outlet(s)`;
+    };
+
+    const isActive = (p) => String(p.status || '').toLowerCase() === 'active';
+
     return (
         <div className="space-y-6">
             {/* Toolbar - Compact */}
@@ -81,7 +93,7 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                         <tbody className="divide-y divide-border">
                             {filteredProducts.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center text-text-muted bg-surface-alt/20">
+                                    <td colSpan="7" className="px-6 py-20 text-center text-text-muted bg-surface-alt/20">
                                         No products found.
                                     </td>
                                 </tr>
@@ -118,26 +130,34 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                         </td>
                                         <td className="px-4 py-2 text-center">
                                             <div className="flex flex-col items-center">
-                                                <span className={`text-[11px] font-black font-mono ${product.stock < (product.threshold || 10) ? 'text-rose-500' : 'text-text'}`}>
-                                                    {product.stock}
+                                                <span className={`text-[11px] font-black font-mono ${product.stock < (product.threshold || product.minStock || 10) ? 'text-rose-500' : 'text-text'}`}>
+                                                    {product.stock ?? 0}
                                                 </span>
-                                                {product.stock < (product.threshold || 10) && (
+                                                {(product.stockStatus === 'Critical' || product.stockStatus === 'Low Stock' || product.stock < (product.threshold || product.minStock || 10)) && (
                                                     <span className="text-[7px] font-black text-rose-500 uppercase tracking-tighter flex items-center gap-0.5 font-mono">
                                                         <AlertTriangle className="w-2 h-2" />
-                                                        LOW
+                                                        {product.stockStatus === 'Critical' ? 'CRITICAL' : product.stockStatus === 'Low Stock' ? 'LOW' : 'LOW'}
                                                     </span>
                                                 )}
                                             </div>
                                         </td>
+                                        <td className="px-4 py-2 text-center max-w-[140px]">
+                                            <span className="text-[9px] font-bold text-text-muted uppercase font-mono leading-tight line-clamp-2" title={salonAvailabilityLabel(product)}>
+                                                {salonAvailabilityLabel(product)}
+                                            </span>
+                                        </td>
                                         <td className="px-4 py-2 text-center">
                                             <button
-                                                onClick={() => onToggleStatus?.(product.id)}
-                                                className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black uppercase tracking-widest border transition-all font-mono ${product.status === 'active'
-                                                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                                                    : 'bg-surface text-text-muted border-border'
-                                                    }`}>
-                                                <div className={`w-1 h-1 ${product.status === 'active' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                                                {product.status}
+                                                type="button"
+                                                onClick={() => onToggleStatus?.(product.id || product._id)}
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-black uppercase tracking-widest border rounded-md transition-all font-mono ${isActive(product)
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                    : 'bg-slate-50 text-slate-600 border-slate-200'
+                                                    }`}
+                                                title="Click to toggle Active / Inactive"
+                                            >
+                                                <span className={`inline-block w-1.5 h-1.5 rounded-full ${isActive(product) ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                                                {isActive(product) ? 'Active' : 'Inactive'}
                                             </button>
                                         </td>
                                         <td className="px-4 py-2 text-right">

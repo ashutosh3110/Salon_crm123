@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 
@@ -40,8 +40,17 @@ export function AuthProvider({ children }) {
         return null; // Don't default to admin
     };
 
+    /** Accountant routes allow admin; storage stays under auth_*_admin */
+    const resolveAccountantSessionRole = (panelRole) => {
+        if (panelRole !== 'accountant') return panelRole;
+        if (localStorage.getItem('auth_token_accountant')) return 'accountant';
+        if (localStorage.getItem('auth_token_admin')) return 'admin';
+        return 'accountant';
+    };
+
     useEffect(() => {
         let role = getCurrentPanel(window.location.pathname);
+        role = resolveAccountantSessionRole(role);
 
         // For shared pages like POS, prioritize the explicitly active role
         if (!role || window.location.pathname.startsWith('/pos')) {
@@ -162,31 +171,48 @@ export function AuthProvider({ children }) {
     const updateProfile = async (data) => {
         try {
             const response = await api.patch('/users/me', data);
-            if (response.data.success) {
-                const updatedUser = response.data.data;
-                const role = updatedUser.role || 'admin';
-                localStorage.setItem(`auth_user_${role}`, JSON.stringify(updatedUser));
-                setUser(updatedUser);
-                return updatedUser;
-            } else {
+            const updatedUser = response.data?.data ?? response.data;
+            if (response.data?.success === false) {
                 throw new Error(response.data.message || 'Profile update failed');
             }
+            if (!updatedUser || typeof updatedUser !== 'object' || !updatedUser.email) {
+                throw new Error(response.data?.message || 'Profile update failed');
+            }
+            const role = updatedUser.role || 'admin';
+            localStorage.setItem(`auth_user_${role}`, JSON.stringify(updatedUser));
+            setUser(updatedUser);
+            return updatedUser;
         } catch (error) {
             console.error('[AuthContext] Profile update failed:', error);
-            throw error;
+            const msg = error.response?.data?.message || error.message;
+            throw new Error(msg);
         }
     };
+
+    /** Fresh user from server (includes fields not stored at login). */
+    const refreshUser = useCallback(async () => {
+        const response = await api.get('/users/me');
+        const u = response.data;
+        if (!u || typeof u !== 'object' || !u.email) {
+            throw new Error('Could not load profile');
+        }
+        const role = u.role || 'admin';
+        localStorage.setItem(`auth_user_${role}`, JSON.stringify(u));
+        setUser(u);
+        return u;
+    }, []);
 
     const changePassword = async (currentPassword, newPassword) => {
         try {
             const response = await api.post('/users/change-password', { currentPassword, newPassword });
-            if (!response.data.success) {
-                throw new Error(response.data.message || 'Password change failed');
+            if (response.status === 204 || response.data?.success) {
+                return response.data;
             }
-            return response.data;
+            throw new Error(response.data?.message || 'Password change failed');
         } catch (error) {
             console.error('[AuthContext] Password change failed:', error);
-            throw error;
+            const msg = error.response?.data?.message || error.message;
+            throw new Error(msg);
         }
     };
 
@@ -198,6 +224,7 @@ export function AuthProvider({ children }) {
         logout,
         updateSubscription,
         updateProfile,
+        refreshUser,
         changePassword,
         isAuthenticated: !!user,
         getRedirectPath: () => getRedirectPath(user),

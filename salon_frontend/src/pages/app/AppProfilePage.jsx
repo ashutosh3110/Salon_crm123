@@ -14,10 +14,11 @@ import {
     MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
 } from '../../data/appMockData';
 import { useWallet } from '../../contexts/WalletContext';
+import api from '../../services/api';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout } = useCustomerAuth();
-    const { balance } = useWallet();
+    const { balance, transactions, initializeWallet } = useWallet();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -67,10 +68,42 @@ export default function AppProfilePage() {
         input: isLight ? '#F1F3F5' : '#141414',
     };
 
-    // Loyalty Data
-    const wallet = MOCK_LOYALTY_WALLET;
-    const rules = MOCK_LOYALTY_RULES;
-    const transactions = MOCK_LOYALTY_TRANSACTIONS;
+    const [rules, setRules] = useState({
+        earnRate: 1,
+        redeemRate: 1,
+        minRedeemPoints: 100,
+    });
+
+    useEffect(() => {
+        if (customer?._id) {
+            initializeWallet(customer._id).catch(() => {});
+        }
+    }, [customer?._id, initializeWallet]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadRules = async () => {
+            try {
+                const res = await api.get('/loyalty/rules');
+                const data = res?.data?.data || res?.data || {};
+                if (!cancelled) {
+                    setRules((prev) => ({
+                        ...prev,
+                        ...data,
+                        earnRate: Number(data?.earnRate ?? prev.earnRate ?? 1),
+                        redeemRate: Number(data?.redeemRate ?? prev.redeemRate ?? 1),
+                        minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
+                    }));
+                }
+            } catch {
+                // keep defaults
+            }
+        };
+        if (customer?._id) loadRules();
+        return () => {
+            cancelled = true;
+        };
+    }, [customer?._id]);
 
     const formatDate = (dateStr) => {
         return new Date(dateStr).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -315,7 +348,7 @@ export default function AppProfilePage() {
                     <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Loyalty Rewards</h3>
                 </div>
 
-                <LoyaltyCard points={wallet.totalPoints} redeemRate={rules.redeemRate} />
+                <LoyaltyCard points={Number(balance || 0)} redeemRate={rules.redeemRate} />
 
                 <div className="grid grid-cols-2 gap-2.5">
                     <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
@@ -359,17 +392,17 @@ export default function AppProfilePage() {
                 {/* Recent Activity */}
                 <div className="space-y-3">
                     <p className="text-[10px] font-black uppercase tracking-widest px-1" style={{ color: colors.textMuted }}>Recent Activity</p>
-                    {transactions.slice(0, 3).map((tx) => (
-                        <div key={tx._id} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'EARN' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#C8956C]/10 border border-[#C8956C]/20'}`}>
-                                {tx.type === 'EARN' ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : <TrendingDown className="w-5 h-5 text-[#C8956C]" />}
+                    {(transactions || []).slice(0, 3).map((tx) => (
+                        <div key={tx.id || tx._id} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 flex items-center gap-4 shadow-sm">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'CREDIT' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#C8956C]/10 border border-[#C8956C]/20'}`}>
+                                {tx.type === 'CREDIT' ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : <TrendingDown className="w-5 h-5 text-[#C8956C]" />}
                             </div>
                             <div className="flex-1">
-                                <p className="text-[12px] font-bold truncate" style={{ color: colors.text }}>{tx.metadata?.serviceName || tx.type}</p>
-                                <p className="text-[10px]" style={{ color: colors.textMuted }}>{formatDate(tx.createdAt)}</p>
+                                <p className="text-[12px] font-bold truncate" style={{ color: colors.text }}>{tx.description || tx.type}</p>
+                                <p className="text-[10px]" style={{ color: colors.textMuted }}>{formatDate(tx.date || tx.createdAt)}</p>
                             </div>
-                            <span className={`text-sm font-black tracking-tighter ${tx.points > 0 ? 'text-emerald-500' : 'text-[#C8956C]'}`}>
-                                {tx.points > 0 ? '+' : ''}{tx.points}
+                            <span className={`text-sm font-black tracking-tighter ${tx.type === 'CREDIT' ? 'text-emerald-500' : 'text-[#C8956C]'}`}>
+                                {tx.type === 'CREDIT' ? '+' : '-'}{Number(tx.amount || 0)}
                             </span>
                         </div>
                     ))}

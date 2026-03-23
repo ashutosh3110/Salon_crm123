@@ -124,6 +124,13 @@ const tenantSchema = new mongoose.Schema(
             serviceGst: { type: Number, default: 18 },
             productGst: { type: Number, default: 12 },
             inclusiveTax: { type: Boolean, default: true },
+            notifications: {
+                bookingConfirmations: { type: Boolean, default: true },
+                paymentAlerts: { type: Boolean, default: true },
+                lowStockWarnings: { type: Boolean, default: true },
+                dailySummary: { type: Boolean, default: false },
+                marketingUpdates: { type: Boolean, default: false },
+            },
         },
     },
     {

@@ -1,20 +1,11 @@
 [
     {
-        "label": "Dashboard",
+        "label": "Overview",
         "iconName": "LayoutDashboard",
         "path": "/stylist"
     },
     {
-        "label": "Schedule Matrix",
-        "iconName": "Calendar",
-        "path": "/stylist",
-        "badge": {
-            "count": 12,
-            "color": "bg-primary text-white"
-        }
-    },
-    {
-        "label": "Attendance Protocol",
+        "label": "Attendance",
         "iconName": "UserCheck",
         "path": "/stylist/attendance",
         "badge": {
@@ -23,42 +14,42 @@
         }
     },
     {
-        "label": "Personnel Matrix",
+        "label": "My clients",
         "iconName": "Users",
         "path": "/stylist/clients"
     },
     {
-        "label": "Credit Stream",
+        "label": "Earnings",
         "iconName": "DollarSign",
         "path": "/stylist/commissions"
     },
     {
-        "label": "Protocol Pause",
+        "label": "Time off",
         "iconName": "Clock",
         "path": "/stylist/timeoff"
     },
     {
-        "label": "System Prefs",
+        "label": "Settings",
         "iconName": "Settings",
         "path": "/stylist/settings",
         "subItems": [
             {
-                "label": "Bio Profile",
+                "label": "My profile",
                 "iconName": "User",
                 "path": "/stylist/settings/profile"
             },
             {
-                "label": "Skill Vectors",
+                "label": "Services & skills",
                 "iconName": "Scissors",
                 "path": "/stylist/settings/skills"
             },
             {
-                "label": "Uptime Setup",
+                "label": "Availability",
                 "iconName": "Bell",
                 "path": "/stylist/settings/availability"
             },
             {
-                "label": "Access Keys",
+                "label": "Security",
                 "iconName": "Shield",
                 "path": "/stylist/settings/security"
             }

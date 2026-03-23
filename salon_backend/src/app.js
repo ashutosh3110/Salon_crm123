@@ -21,12 +21,41 @@ if (config.env !== 'test') {
     app.use(morgan('dev'));
 }
 
-// enable cors
+// CORS: `credentials: true` requires a concrete Access-Control-Allow-Origin (not *).
+// Many dev setups use 127.0.0.1 vs localhost — both must be allowed or browser blocks login.
+const LOCAL_DEV_ORIGIN_RE = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?$/i;
+
+function resolveCorsOrigin(requestOrigin) {
+    const allowed = config.cors.origins || [];
+    if (!requestOrigin) return true; // curl / server-side — cors lets these through
+    if (allowed.includes('*')) return requestOrigin;
+    if (allowed.includes(requestOrigin)) return requestOrigin;
+    if (config.env !== 'production' && LOCAL_DEV_ORIGIN_RE.test(requestOrigin)) {
+        return requestOrigin;
+    }
+    return false;
+}
+
+// enable cors (must list custom headers — otherwise browser preflight fails → axios "Network Error")
 app.use(cors({
-    origin: config.cors.origin,
+    origin: (origin, callback) => {
+        const resolved = resolveCorsOrigin(origin);
+        if (resolved === false) {
+            callback(null, false);
+            return;
+        }
+        callback(null, resolved === true ? true : resolved);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+        'X-Requested-With',
+        'Accept',
+        'X-Tenant-Id',
+        'x-tenant-id',
+    ],
 }));
 
 // set security HTTP headers

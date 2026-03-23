@@ -57,10 +57,72 @@ const userSchema = new mongoose.Schema(
             type: Date,
             default: Date.now,
         },
+        /** HR / payroll (optional) */
+        salary: {
+            type: Number,
+            default: 0,
+        },
+        dob: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        pan: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        address: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        bankName: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        bankAccountNo: {
+            type: String,
+            trim: true,
+            default: '',
+        },
+        ifsc: {
+            type: String,
+            trim: true,
+            default: '',
+        },
         onboardingStatus: {
             type: String,
             enum: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'],
             default: 'NOT_STARTED',
+        },
+        /** HR performance tab: revenue target (₹). Unset = server default (see hrPerformance service). */
+        performanceGoal: {
+            type: Number,
+            min: 0,
+        },
+        /** Public / app profile image URL or small data URL */
+        avatar: {
+            type: String,
+            trim: true,
+            default: '',
+            maxlength: 500000,
+        },
+        stylistBio: { type: String, trim: true, default: '', maxlength: 5000 },
+        stylistExperience: { type: String, trim: true, default: '', maxlength: 200 },
+        stylistClientsLabel: { type: String, trim: true, default: '', maxlength: 200 },
+        stylistSpecializations: [{ type: String, trim: true, maxlength: 120 }],
+        stylistSkills: [
+            {
+                name: { type: String, trim: true, maxlength: 120 },
+                level: { type: String, enum: ['expert', 'intermediate'], default: 'intermediate' },
+                icon: { type: String, trim: true, default: '', maxlength: 32 },
+            },
+        ],
+        stylistWeeklyAvailability: {
+            type: mongoose.Schema.Types.Mixed,
+            default: {},
         },
     },
     {

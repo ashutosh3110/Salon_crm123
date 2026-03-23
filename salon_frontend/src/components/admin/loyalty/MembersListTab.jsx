@@ -17,22 +17,67 @@ import { maskPhone } from '../../../utils/phoneUtils';
 import { motion } from 'framer-motion';
 
 import { useBusiness } from '../../../contexts/BusinessContext';
+import api from '../../../services/api';
 
 export default function MembersListTab() {
     const { customers } = useBusiness();
     const { user } = useAuth();
+    const [members, setMembers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0, limit: 20 });
 
-    const filteredMembers = (customers || []).filter(m => {
-        const name = m.name || '';
-        const phone = m.phone || '';
-        const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, ''));
-        const status = m.loyaltyStatus || 'active'; // Fallback
-        if (filter === 'all') return matchesSearch;
-        return matchesSearch && status === filter;
-    });
+    useEffect(() => {
+        const loadMembers = async () => {
+            setLoading(true);
+            try {
+                const res = await api.get('/loyalty/members', {
+                    params: {
+                        page,
+                        limit: 20,
+                        search: searchTerm || undefined,
+                        status: filter,
+                    },
+                });
+                const rows = res?.data?.data || res?.data || [];
+                if (Array.isArray(rows)) setMembers(rows);
+                else setMembers([]);
+                setMeta(res?.data?.meta || { page: 1, totalPages: 1, total: 0, limit: 20 });
+            } catch {
+                // fallback to customers context if endpoint fails temporarily
+                setMembers(Array.isArray(customers) ? customers : []);
+                setMeta({ page: 1, totalPages: 1, total: Array.isArray(customers) ? customers.length : 0, limit: 20 });
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadMembers();
+    }, [customers, page, searchTerm, filter]);
+
+    const filteredMembers = members || [];
+
+    const downloadCsv = () => {
+        const header = ['Name', 'Phone', 'Plan', 'Status', 'Joined', 'Expiry', 'Points'];
+        const rows = filteredMembers.map((m) => [
+            m.name || 'Unknown',
+            m.phone || '',
+            m.loyaltyPlan || 'Standard',
+            m.loyaltyStatus || 'active',
+            m.createdAt ? new Date(m.createdAt).toLocaleDateString('en-IN') : '',
+            m.loyaltyExpiry ? new Date(m.loyaltyExpiry).toLocaleDateString('en-IN') : '',
+            Number(m.totalPoints || 0),
+        ]);
+        const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `active-members-page-${page}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="space-y-6">
@@ -44,7 +89,7 @@ export default function MembersListTab() {
                         type="text"
                         placeholder="Search Members / Phone / Plan..."
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={e => { setPage(1); setSearchTerm(e.target.value); }}
                         className="w-full h-14 bg-surface border border-border/60 pl-12 pr-4 text-sm font-bold text-foreground focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all placeholder:text-text-muted shadow-sm"
                     />
                 </div>
@@ -53,7 +98,10 @@ export default function MembersListTab() {
                     {['all', 'active', 'expired', 'cancelled'].map((f) => (
                         <button
                             key={f}
-                            onClick={() => setFilter(f)}
+                            onClick={() => {
+                                setFilter(f);
+                                setPage(1);
+                            }}
                             className={`px-6 py-3 border font-black text-[9px] uppercase tracking-[0.2em] transition-all whitespace-nowrap ${filter === f
                                 ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
                                 : 'text-text-muted border-border/40 hover:bg-surface-alt'
@@ -62,7 +110,7 @@ export default function MembersListTab() {
                             {f} Members
                         </button>
                     ))}
-                    <button className="p-3.5 border border-border/40 text-text-muted hover:text-white hover:bg-surface-alt transition-all">
+                    <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-white hover:bg-surface-alt transition-all">
                         <Download size={18} />
                     </button>
                 </div>
@@ -83,6 +131,12 @@ export default function MembersListTab() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-text-muted">Loading active members...</td>
+                                </tr>
+                            ) : (
+                                <>
                             {filteredMembers.map((member) => (
                                 <tr key={member._id || member.id} className="hover:bg-surface-alt/30 transition-colors group">
                                     <td className="px-6 py-5">
@@ -126,6 +180,8 @@ export default function MembersListTab() {
                                     </td>
                                 </tr>
                             ))}
+                                </>
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -142,10 +198,10 @@ export default function MembersListTab() {
 
                 {/* Pagination */}
                 <div className="p-6 border-t border-border/40 flex items-center justify-between bg-surface-alt/30">
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Showing 1 to {filteredMembers.length} of {filteredMembers.length} Identities</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Page {meta.page} of {meta.totalPages} / {meta.total} identities</p>
                     <div className="flex gap-2">
-                        <button disabled className="p-2 border border-border/40 text-text-muted opacity-30"><ChevronLeft size={16} /></button>
-                        <button disabled className="p-2 border border-border/40 text-text-muted opacity-30"><ChevronRight size={16} /></button>
+                        <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1} className="p-2 border border-border/40 text-text-muted disabled:opacity-30"><ChevronLeft size={16} /></button>
+                        <button onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))} disabled={page >= meta.totalPages} className="p-2 border border-border/40 text-text-muted disabled:opacity-30"><ChevronRight size={16} /></button>
                     </div>
                 </div>
             </div>
