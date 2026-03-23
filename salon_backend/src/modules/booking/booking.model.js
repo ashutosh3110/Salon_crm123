@@ -28,8 +28,8 @@ const bookingSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['pending', 'confirmed', 'completed', 'cancelled'],
-            default: 'pending',
+            enum: ['pending', 'confirmed', 'arrived', 'in-progress', 'completed', 'cancelled'],
+            default: 'confirmed',
         },
         notes: {
             type: String,
@@ -37,6 +37,11 @@ const bookingSchema = new mongoose.Schema(
         },
         price: {
             type: Number,
+            required: true,
+        },
+        outletId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Outlet',
             required: true,
         },
     },

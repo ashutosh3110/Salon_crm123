@@ -69,7 +69,7 @@ export default function SubscriptionPage() {
     ];
 
     return (
-        <div className="space-y-4 pb-6 relative font-sans max-w-7xl mx-auto">
+        <div className="space-y-4 pb-6 relative font-sans">
             {/* Success Overlay - Compact */}
             <AnimatePresence>
                 {showSuccess && (
@@ -95,8 +95,8 @@ export default function SubscriptionPage() {
                         <Crown className="w-4 h-4 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-text tracking-tight">Subscription</h1>
-                        <p className="text-xs text-text-muted font-medium mt-0.5">Plan & Lifecycle Management</p>
+                        <h1 className="text-3xl font-bold text-text tracking-tight">Subscription</h1>
+                        <p className="text-sm text-text-muted font-medium mt-0.5">Plan & Lifecycle Management</p>
                     </div>
                 </div>
 
@@ -139,8 +139,8 @@ export default function SubscriptionPage() {
                             <p className="text-xl font-bold text-text tracking-tight">{currentPlan.limits.staffLimit === 999 ? '∞' : currentPlan.limits.staffLimit} <span className="text-[10px] font-semibold text-text-secondary">PROFILES</span></p>
                         </div>
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Next Billing</p>
-                            <p className="text-lg font-bold text-text tracking-tight">₹{(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}</p>
+                            <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Next Billing</p>
+                            <p className="text-xl font-bold text-text tracking-tight">₹{(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}</p>
                         </div>
                     </div>
                 </div>
@@ -164,16 +164,16 @@ export default function SubscriptionPage() {
                                 <div className="p-3 flex-1 space-y-3">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isCurrent ? 'text-primary' : 'text-text-muted'}`}>{plan.tag}</p>
-                                            <h4 className="text-lg font-bold text-text tracking-tight">{plan.name}</h4>
+                                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${isCurrent ? 'text-primary' : 'text-text-muted'}`}>{plan.tag}</p>
+                                            <h4 className="text-2xl font-bold text-text tracking-tight">{plan.name}</h4>
                                         </div>
-                                        {isCurrent && <CheckCircle className="w-5 h-5 text-primary" />}
+                                        {isCurrent && <CheckCircle className="w-6 h-6 text-primary" />}
                                     </div>
 
-                                    <div className="py-3 border-y border-border/40">
-                                        <div className="text-2xl font-bold text-text">
+                                    <div className="py-4 border-y border-border/40">
+                                        <div className="text-4xl font-bold text-text tracking-tighter">
                                             ₹{(billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice).toLocaleString()}
-                                            <span className="text-xs font-semibold text-text-muted ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                            <span className="text-sm font-semibold text-text-muted ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                         </div>
                                     </div>
 
@@ -187,7 +187,7 @@ export default function SubscriptionPage() {
                                                             ? <CheckCircle className="w-2.5 h-2.5 text-primary shrink-0" />
                                                             : <XCircle className="w-2.5 h-2.5 shrink-0 opacity-40" />
                                                         }
-                                                        <span className="text-[9px] font-bold font-sans tracking-tight truncate">{feat.label}</span>
+                                                        <span className="text-[11px] font-bold font-sans tracking-tight truncate">{feat.label}</span>
                                                     </li>
                                                 );
                                             })}
@@ -203,9 +203,9 @@ export default function SubscriptionPage() {
                                         <button 
                                             onClick={() => handleUpgrade(plan)}
                                             disabled={upgrading !== null}
-                                            className="w-full py-2 bg-text text-white text-[8px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 font-mono"
+                                            className="w-full py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 font-mono"
                                         >
-                                            {upgrading === plan.id ? 'Syncing...' : 'Upgrade'}
+                                            {upgrading === plan.id ? 'Syncing...' : 'Upgrade Now'}
                                         </button>
                                     )}
                                 </div>
@@ -224,34 +224,34 @@ export default function SubscriptionPage() {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-surface">
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">Protocol Attributes</th>
+                                <th className="p-4 border border-border text-left text-xs font-bold uppercase tracking-wider">Protocol Attributes</th>
                                 {subscriptionData.INITIAL_PLANS.map(plan => (
-                                    <th key={plan.id} className={`p-3 border border-border text-center ${plan.id === currentPlanId ? 'text-primary' : 'text-text'}`}>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">{plan.name}</span>
+                                    <th key={plan.id} className={`p-4 border border-border text-center ${plan.id === currentPlanId ? 'text-primary' : 'text-text'}`}>
+                                        <span className="text-xs font-bold uppercase tracking-wider">{plan.name}</span>
                                     </th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="text-[11px] font-medium">
                             <tr>
-                                <td className="p-3 border border-border text-text-secondary font-semibold uppercase tracking-tight">Outlets allowed</td>
+                                <td className="p-4 border border-border text-text-secondary font-bold uppercase tracking-tight text-xs">Outlets allowed</td>
                                 {subscriptionData.INITIAL_PLANS.map(p => (
-                                    <td key={p.id} className="p-3 border border-border text-center text-text font-bold">
+                                    <td key={p.id} className="p-4 border border-border text-center text-text font-black text-sm">
                                         {p.limits.outletLimit === 999 ? '∞' : p.limits.outletLimit}
                                     </td>
                                 ))}
                             </tr>
                             <tr>
-                                <td className="p-3 border border-border text-text-secondary font-semibold uppercase tracking-tight">Staff Profiles</td>
+                                <td className="p-4 border border-border text-text-secondary font-bold uppercase tracking-tight text-xs">Staff Profiles</td>
                                 {subscriptionData.INITIAL_PLANS.map(p => (
-                                    <td key={p.id} className="p-3 border border-border text-center text-text font-bold">
+                                    <td key={p.id} className="p-4 border border-border text-center text-text font-black text-sm">
                                         {p.limits.staffLimit === 999 ? '∞' : p.limits.staffLimit}
                                     </td>
                                 ))}
                             </tr>
                             {subscriptionData.ALL_FEATURES.map(feat => (
                                 <tr key={feat.key}>
-                                    <td className="p-2 border border-border text-text-secondary uppercase font-sans tracking-tight">{feat.label}</td>
+                                    <td className="p-3 border border-border text-text-secondary uppercase font-bold text-[10px] tracking-tight">{feat.label}</td>
                                     {subscriptionData.INITIAL_PLANS.map(p => (
                                         <td key={p.id} className="p-2 border border-border text-center">
                                             {p.features[feat.key] 
@@ -276,14 +276,14 @@ export default function SubscriptionPage() {
                     <table className="w-full border-collapse">
                         <thead>
                             <tr className="bg-surface">
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">ID</th>
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">Date</th>
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">Amount</th>
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">Status</th>
-                                <th className="p-3 border border-border text-left text-[10px] font-bold uppercase tracking-wider">Action</th>
+                                <th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">ID</th>
+                                <th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Date</th>
+                                <th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Amount</th>
+                                <th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Status</th>
+                                <th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="text-[9px] font-bold font-sans">
+                        <tbody className="text-[11px] font-bold font-sans">
                             {billingHistory.map((item) => (
                                 <tr key={item.id} className="hover:bg-surface/50">
                                     <td className="p-3 border border-border text-text font-medium truncate">{item.id}</td>

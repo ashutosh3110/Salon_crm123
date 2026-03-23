@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Save, Image as ImageIcon, RefreshCw,
     Facebook, Twitter, Linkedin, Instagram, Youtube,
     Type, Palette, AlignLeft, Eye, EyeOff, Layout, Plus, Trash2, ChevronRight, ChevronDown, Send, Edit3, DollarSign, Download
 } from 'lucide-react';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import PremiumLanding from '../../components/catalogue/PremiumLanding';
 import PremiumIndex from '../../components/catalogue/PremiumIndex';
 import PremiumLookbook from '../../components/catalogue/PremiumLookbook';
 import PremiumGrid from '../../components/catalogue/PremiumGrid';
 import initialCatalogueData from '../../data/digitalCatalogueData.json';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function CatalogueEditorPage() {
+    const { catalogue, catalogueLoading, updateCatalogue } = useBusiness();
+    
     const [premiumConfig, setPremiumConfig] = useState(initialCatalogueData.premiumLanding);
     const [pages, setPages] = useState(initialCatalogueData.pages);
     const [showPreview, setShowPreview] = useState(true);
@@ -22,6 +25,14 @@ export default function CatalogueEditorPage() {
     const [expandedPage, setExpandedPage] = useState(0);
     const [previewMode, setPreviewMode] = useState('landing'); // landing or page index
     const [isDownloading, setIsDownloading] = useState(false);
+
+    // Sync state with backend data when loaded
+    useEffect(() => {
+        if (catalogue) {
+            if (catalogue.premiumLanding) setPremiumConfig(catalogue.premiumLanding);
+            if (catalogue.pages) setPages(catalogue.pages);
+        }
+    }, [catalogue]);
 
     const handleLandingUpdate = (field, value) => {
         setPremiumConfig(prev => ({ ...prev, [field]: value }));
@@ -48,25 +59,28 @@ export default function CatalogueEditorPage() {
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfW = pdf.internal.pageSize.getWidth();
             const pdfH = pdf.internal.pageSize.getHeight();
-            const modes = ['landing', ...pages.map((_, i) => i).filter(i => pages[i]?.type?.startsWith('NEW_'))];
+            const modes = ['landing', ...pages.map((_, i) => i)];
 
             for (let i = 0; i < modes.length; i++) {
                 const mode = modes[i];
-                if (log) log.innerText = `READYING ${i + 1}/${modes.length}`;
+                if (log) log.innerText = `RENDERING PAGE ${i + 1} OF ${modes.length}...`;
                 setPreviewMode(mode);
-                await new Promise(r => setTimeout(r, 4500));
+                await new Promise(r => setTimeout(r, 3000)); // Increased timeout for heavy assets
 
                 const target = document.getElementById('preview-capture-area');
                 if (!target) continue;
 
-                const canvas = await html2canvas(target, {
-                    scale: 1,
-                    useCORS: true,
+                // Bulletproof toJpeg options
+                const imgData = await toJpeg(target, {
+                    quality: 0.8,
+                    pixelRatio: 1,
                     backgroundColor: mode === 'landing' ? '#000000' : '#ffffff',
+                    cacheBust: true,
+                    skipFontFace: true,
+                    imagePlaceholder: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
                 });
 
-                if (canvas.width > 0) {
-                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                if (imgData) {
                     if (i > 0) pdf.addPage();
                     pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
                 }
@@ -75,8 +89,10 @@ export default function CatalogueEditorPage() {
             pdf.save(`Catalogue_${Date.now()}.pdf`);
             alert("Digital Export Successful!");
         } catch (err) {
-            console.error("Shield Error:", err);
-            alert("Export Error. Please try refreshing the page.");
+            console.error("PDF Export Error:", err);
+            // More descriptive error reporting for better debugging
+            if (log) log.innerText = `ERROR: ${err.message || String(err)}`;
+            alert(`Export Error: ${err.message || String(err) || "Unknown Error"}`);
         } finally {
             if (document.body.contains(overlay)) {
                 overlay.remove();
@@ -103,15 +119,24 @@ export default function CatalogueEditorPage() {
         setPages(newPages);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setIsSaving(true);
-        const fullData = { premiumLanding: premiumConfig, pages: pages, theme: initialCatalogueData.theme };
-        localStorage.setItem('digital_catalogue_full', JSON.stringify(fullData));
-
-        setTimeout(() => {
+        const fullData = { 
+            premiumLanding: premiumConfig, 
+            pages: pages, 
+            theme: initialCatalogueData.theme,
+            title: premiumConfig.titleText?.split('\n')[0] || 'My Catalogue'
+        };
+        
+        try {
+            await updateCatalogue(fullData);
+            alert('Catalogue Published Successfully!');
+        } catch (err) {
+            console.error('Failed to save catalogue:', err);
+            alert('Selection Error: Check connection.');
+        } finally {
             setIsSaving(false);
-            alert('Settings saved to local storage! View at /c/preview');
-        }, 1200);
+        }
     };
 
     return (
@@ -332,7 +357,6 @@ export default function CatalogueEditorPage() {
                         Landing
                     </button>
                     {pages.map((p, idx) => (
-                        (p.type && p.type.startsWith('NEW_')) &&
                         <button
                             key={idx}
                             onClick={() => setPreviewMode(idx)}
@@ -358,11 +382,11 @@ export default function CatalogueEditorPage() {
                         <PremiumLanding data={premiumConfig} />
                     ) : (
                         pages[previewMode].type === 'NEW_INDEX' ? (
-                            <PremiumIndex data={pages[previewMode].config} />
+                            <PremiumIndex data={pages[previewMode].config || pages[previewMode].content} />
                         ) : pages[previewMode].type === 'NEW_LOOKBOOK' ? (
-                            <PremiumLookbook data={pages[previewMode].config} accentColor={premiumConfig.accentColor} />
+                            <PremiumLookbook data={pages[previewMode].config || pages[previewMode].content} accentColor={premiumConfig.accentColor} />
                         ) : (
-                            <PremiumGrid data={pages[previewMode].config} />
+                            <PremiumGrid data={pages[previewMode].config || pages[previewMode].content} />
                         )
                     )}
                 </div>

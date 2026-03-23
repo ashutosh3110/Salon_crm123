@@ -670,7 +670,7 @@ export const InventoryProvider = ({ children }) => {
         return remainingDays <= 60; // Alert for items expiring within 2 months
     });
 
-    const value = {
+    const value = useMemo(() => ({
         products,
         movements,
         purchases,
@@ -715,7 +715,7 @@ export const InventoryProvider = ({ children }) => {
         deleteShopCategory,
         fetchProducts,
         fetchShopCategories,
-    };
+    }), [products, movements, purchases, transfers, saleRecords, reconciliationData, projectionSummary, outlets, lowStockItems, expiryAlerts, stockInHistory, adjustmentLog, productCategories, suppliers, shopCategories, fetchProducts, fetchShopCategories]);
 
     return (
         <InventoryContext.Provider value={value}>

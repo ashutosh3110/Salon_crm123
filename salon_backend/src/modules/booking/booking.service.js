@@ -1,5 +1,6 @@
 import bookingRepository from './booking.repository.js';
 import Booking from './booking.model.js';
+import User from '../user/user.model.js';
 import loyaltyService from '../loyalty/loyalty.service.js';
 
 class BookingService {
@@ -7,7 +8,7 @@ class BookingService {
      * Create a new booking
      */
     async createBooking(tenantId, bookingData) {
-        const { staffId, appointmentDate, duration } = bookingData;
+        const { staffId, appointmentDate, duration, outletId } = bookingData;
 
         // 1. Check for overlapping bookings for the same staff
         const start = new Date(appointmentDate);
@@ -34,7 +35,17 @@ class BookingService {
             throw new Error('Stylist is already booked for this time slot');
         }
 
-        const booking = await bookingRepository.create({ ...bookingData, tenantId });
+        let finalOutletId = outletId;
+        if (!finalOutletId && staffId) {
+            const staff = await User.findById(staffId).select('outletId').lean();
+            finalOutletId = staff?.outletId;
+        }
+
+        if (!finalOutletId) {
+            throw new Error('Outlet ID is required for booking');
+        }
+
+        const booking = await bookingRepository.create({ ...bookingData, tenantId, outletId: finalOutletId });
 
         // If referral threshold is FIRST_SERVICE, reward on first successful booking creation.
         if (booking?.clientId) {

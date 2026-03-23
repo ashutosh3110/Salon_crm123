@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
@@ -292,7 +292,7 @@ export function CMSProvider({ children }) {
         setExperts((prev) => prev.filter((e) => String(e.id) !== String(id) && String(e._id) !== String(id)));
     };
 
-    const value = {
+    const value = useMemo(() => ({
         banners, setBanners, addBanner, updateBanner, deleteBanner, toggleBannerStatus,
         offers, setOffers, addOffer, updateOffer, deleteOffer, toggleOfferStatus,
         lookbook, setLookbook, addLookbookItem, updateLookbookItem, deleteLookbookItem, toggleLookbookStatus,
@@ -300,7 +300,7 @@ export function CMSProvider({ children }) {
         pendingExpertsCount: experts.filter((e) => e.status === 'Pending').length,
         cmsLoading: loading,
         fetchAppCMS,
-    };
+    }), [banners, offers, lookbook, experts, loading, fetchAppCMS]);
 
     return <CMSContext.Provider value={value}>{children}</CMSContext.Provider>;
 }

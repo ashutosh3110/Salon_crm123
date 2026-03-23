@@ -22,14 +22,63 @@ import {
     Loader2
 } from 'lucide-react';
 
-import { recentPayments } from '../../data/receptionistData';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function PaymentsPage() {
-    const [paymentFeed, setPaymentFeed] = useState(recentPayments);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const [paymentFeed, setPaymentFeed] = useState([]);
+    const [services, setServices] = useState([]);
+    const [stylists, setStylists] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedMethod, setSelectedMethod] = useState('UPI');
     const [processing, setProcessing] = useState(false);
     const [isQuickBillOpen, setIsQuickBillOpen] = useState(false);
+
+    // Fetch live data
+    const fetchData = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const [invoiceRes, serviceRes, staffRes] = await Promise.all([
+                api.get(`/invoice?date=today&outletId=${user?.outletId}`),
+                api.get('/services?limit=100'),
+                api.get(`/users?role=stylist&outletId=${user?.outletId}`)
+            ]);
+
+            if (invoiceRes.data.results) {
+                setPaymentFeed(invoiceRes.data.results.map(inv => ({
+                    id: inv.invoiceNumber || inv._id.slice(-8).toUpperCase(),
+                    client: inv.clientId?.name || 'Walk-in Guest',
+                    amount: `₹${inv.total}`,
+                    time: new Date(inv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    method: inv.paymentMethod || 'Cash',
+                    status: inv.paymentStatus === 'paid' ? 'Success' : 'Pending'
+                })));
+            }
+
+            if (serviceRes.data.results) {
+                setServices(serviceRes.data.results);
+            }
+
+            if (staffRes.data.results) {
+                setStylists(staffRes.data.results.filter(s => s.role === 'stylist'));
+            }
+        } catch (err) {
+            console.error('Terminal Data Fetch Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     const filteredPayments = paymentFeed.filter(p =>
         p.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,35 +99,57 @@ export default function PaymentsPage() {
         alert('Invoice protocol PAUSED. Record moved to temporary storage hub.');
     };
 
-    const handleSettlement = () => {
+
+    const handleQuickBill = async (data) => {
         setProcessing(true);
-        setTimeout(() => {
-            const newTxn = {
-                id: `TXN-${Math.floor(Math.random() * 9000) + 1000}`,
-                client: 'Walk-in Guest',
-                amount: '₹3,894',
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                method: selectedMethod,
-                status: 'Success'
+        try {
+            // 1. Ensure Client exists
+            let clientId;
+            const clientRes = await api.get(`/client?phone=${data.phone}`);
+            if (clientRes.data.results && clientRes.data.results.length > 0) {
+                clientId = clientRes.data.results[0]._id;
+            } else {
+                const newClient = await api.post('/client', {
+                    name: data.name || 'Quick Guest',
+                    phone: data.phone,
+                    tenantId: user?.tenantId
+                });
+                clientId = newClient.data._id;
+            }
+
+            // 2. Process Checkout
+            const checkoutData = {
+                clientId,
+                outletId: user?.outletId,
+                paymentMethod: 'cash',
+                items: [{
+                    type: 'service',
+                    itemId: data.serviceId,
+                    name: services.find(s => s._id === data.serviceId)?.name || 'General Service',
+                    price: parseFloat(data.amount),
+                    quantity: 1,
+                    stylistId: data.stylistId
+                }],
+                tax: 0,
+                discount: 0,
+                performedBy: user?._id
             };
-            setPaymentFeed(prev => [newTxn, ...prev]);
-            alert('Financial Settlement Successful. Transaction hash: #RE-90210. Redirecting to receipt generation...');
+
+            await api.post('/pos/checkout', checkoutData);
+            
+            setIsQuickBillOpen(false);
+            alert('Quick bill finalized and invoice generated.');
+            fetchData();
+        } catch (err) {
+            console.error('Quick Bill Error:', err);
+            alert('Error processing quick bill. Please check client data and amount.');
+        } finally {
             setProcessing(false);
-        }, 1200);
+        }
     };
 
-    const handleQuickBill = (data) => {
-        const newTxn = {
-            id: `TXN-${Math.floor(Math.random() * 9000) + 1000}`,
-            client: data.name || 'Quick Bill',
-            amount: `₹${data.amount || '0'}`,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            method: 'Cash',
-            status: 'Success'
-        };
-        setPaymentFeed(prev => [newTxn, ...prev]);
-        setIsQuickBillOpen(false);
-        alert('Quick bill protocol finalized. Receipt issued.');
+    const handleSettlement = async () => {
+        alert('Terminal is in Quick Bill mode. For specific appointment settlement, please use the Checkout icon in the Dashboard feed.');
     };
 
     return (
@@ -252,31 +323,62 @@ export default function PaymentsPage() {
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
-                        <div className="p-8 space-y-5 text-left">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name (Optional)</label>
-                                <div className="relative group">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                    <input type="text" id="qbName" autoFocus placeholder="WALK-IN GUEST" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                        <div className="p-8 space-y-4 text-left">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                                    <div className="relative group">
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                        <input type="text" id="qbName" autoFocus placeholder="GUEST NAME" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
+                                    <div className="relative group">
+                                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                        <input type="tel" id="qbPhone" placeholder="REQUIRED" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                    </div>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Amount to Charge</label>
-                                <div className="relative group">
-                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                    <input type="number" id="qbAmount" placeholder="0.00" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20 font-mono" />
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
+                                    <select id="qbService" className="w-full px-4 py-2.5 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20">
+                                        {services.map(s => <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Amount</label>
+                                    <div className="relative group">
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <input type="number" id="qbAmount" placeholder="0.00" className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border text-xs font-black tracking-tight outline-none focus:ring-1 focus:ring-primary/20 font-mono" />
+                                    </div>
                                 </div>
                             </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assigned Stylist</label>
+                                <select id="qbStylist" className="w-full px-4 py-2.5 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20">
+                                    <option value="">SELECT STYLIST</option>
+                                    {stylists.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                </select>
+                            </div>
+
                             <div className="pt-4 border-t border-border flex gap-4">
                                 <button onClick={() => setIsQuickBillOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">CANCEL</button>
                                 <button
                                     onClick={() => handleQuickBill({
                                         name: document.getElementById('qbName').value,
+                                        phone: document.getElementById('qbPhone').value,
+                                        serviceId: document.getElementById('qbService').value,
+                                        stylistId: document.getElementById('qbStylist').value,
                                         amount: document.getElementById('qbAmount').value
                                     })}
-                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                    disabled={processing}
+                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >
-                                    LEGALIZE BILL
+                                    {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />} LEGALIZE BILL
                                 </button>
                             </div>
                         </div>

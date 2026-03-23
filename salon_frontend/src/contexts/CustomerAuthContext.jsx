@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -97,7 +97,7 @@ export function CustomerAuthProvider({ children }) {
         setCustomer(updated);
     };
 
-    const value = {
+    const value = useMemo(() => ({
         customer,
         loading,
         requestOtp,
@@ -106,7 +106,7 @@ export function CustomerAuthProvider({ children }) {
         completeProfile,
         updateCustomer,
         isCustomerAuthenticated: !!customer,
-    };
+    }), [customer, loading]);
 
     return (
         <CustomerAuthContext.Provider value={value}>

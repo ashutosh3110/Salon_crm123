@@ -16,6 +16,12 @@ const getBookings = async (req, res, next) => {
         if (req.query.status) filter.status = req.query.status;
         if (req.query.staffId) filter.staffId = req.query.staffId;
         if (req.query.clientId) filter.clientId = req.query.clientId;
+        if (req.query.outletId) filter.outletId = req.query.outletId;
+
+        // Enforcement for receptionists
+        if (req.user?.role === 'receptionist' && req.user.outletId) {
+            filter.outletId = req.user.outletId;
+        }
 
         // Date filtering
         if (req.query.date) {

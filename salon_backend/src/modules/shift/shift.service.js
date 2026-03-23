@@ -73,6 +73,9 @@ const createShift = async (tenantId, body) => {
         outletId: body.outletId,
         colorHex: body.colorHex || '#10b981',
         colorClass: body.colorClass || 'bg-emerald-500',
+        dayOfWeek: body.dayOfWeek,
+        date: body.date,
+        status: body.status || 'Active',
         assignedUserIds: body.assignedUserIds?.length ? body.assignedUserIds : [],
     });
     return getShiftById(tenantId, doc._id);
@@ -90,6 +93,9 @@ const updateShift = async (tenantId, shiftId, body) => {
     if (body.outletId !== undefined) patch.outletId = body.outletId;
     if (body.colorHex !== undefined) patch.colorHex = body.colorHex;
     if (body.colorClass !== undefined) patch.colorClass = body.colorClass;
+    if (body.dayOfWeek !== undefined) patch.dayOfWeek = body.dayOfWeek;
+    if (body.date !== undefined) patch.date = body.date;
+    if (body.status !== undefined) patch.status = body.status;
     if (body.assignedUserIds !== undefined) {
         await assertUsersInTenant(tenantId, body.assignedUserIds);
         patch.assignedUserIds = body.assignedUserIds;

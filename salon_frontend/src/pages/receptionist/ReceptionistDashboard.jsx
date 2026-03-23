@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     Users,
     Calendar,
@@ -24,42 +24,23 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-import { dashboardStats as rawStats, appointments as staticAppointments } from '../../data/receptionistData';
+import api from '../../services/api';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
-import { MOCK_SERVICES, MOCK_STAFF } from '../../data/appMockData';
 
 export default function ReceptionistDashboard() {
     const { user } = useAuth();
-    const { bookings: registryBookings, addBooking, updateBookingStatus } = useBookingRegistry();
+    const { bookings: registryBookings, addBooking, updateBookingStatus: registryUpdate } = useBookingRegistry();
 
-    // Map icons back to stats since JSON can't store components
-    const stats = rawStats.map(stat => {
-        const iconMap = {
-            "Today's Appointments": Calendar,
-            "Pending Check-ins": Clock,
-            "Completed Today": CheckCircle2,
-            "New Registrations": UserPlus
-        };
-        return { ...stat, icon: iconMap[stat.label] };
-    });
-
-    // Combine static and registry bookings for the live feed
-    const liveFeed = useMemo(() => {
-        const mappedRegistry = registryBookings.map(b => ({
-            id: b.id,
-            client: b.clientName,
-            service: Array.isArray(b.services) ? b.services[0].name : b.service,
-            time: b.time,
-            professional: b.staffName || 'Unassigned',
-            status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-            source: b.source || 'APP',
-            isRegistry: true
-        }));
-        return [...mappedRegistry, ...staticAppointments].slice(0, 5); // Show latest 5
-    }, [registryBookings]);
-
+    // Live States
+    const [stats, setStats] = useState([]);
+    const [performance, setPerformance] = useState({ revenue: 0, avgTicket: 0 });
+    const [liveFeed, setLiveFeed] = useState([]);
+    const [services, setServices] = useState([]);
+    const [staff, setStaff] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
     const [isBookingOpen, setIsBookingOpen] = useState(false);
+    const [isWalkinOpen, setIsWalkinOpen] = useState(false);
     const [reporting, setReporting] = useState(false);
 
     // Manual Booking Form State
@@ -72,9 +53,75 @@ export default function ReceptionistDashboard() {
         date: new Date().toISOString().split('T')[0]
     });
 
+    // Client Registration State
+    const [newClient, setNewClient] = useState({
+        name: '',
+        phone: '',
+        email: '',
+        gender: 'other'
+    });
+
+    // Load Data
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const [statsRes, feedRes, servicesRes, staffRes] = await Promise.all([
+                    api.get('/dashboard/receptionist'),
+                    api.get(`/bookings?date=${today}&limit=5`),
+                    api.get('/services?limit=100'),
+                    api.get('/users?role=stylist')
+                ]);
+
+                if (statsRes.data.success) {
+                    const iconMap = {
+                        "Today's Appointments": Calendar,
+                        "Pending Check-ins": Clock,
+                        "Completed Today": CheckCircle2,
+                        "New Registrations": UserPlus
+                    };
+                    setStats(statsRes.data.data.stats.map(s => ({
+                        ...s,
+                        icon: iconMap[s.label] || AlertCircle
+                    })));
+                    if (statsRes.data.data.performance) {
+                        setPerformance(statsRes.data.data.performance);
+                    }
+                }
+
+                if (feedRes.data.results) {
+                    setLiveFeed(feedRes.data.results.map(b => ({
+                        id: b.id || b._id,
+                        client: b.clientId?.name || 'Walk-in',
+                        service: b.serviceId?.name || 'Unknown',
+                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                        professional: b.staffId?.name || 'Unassigned',
+                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                        source: b.source || 'APP',
+                        isRegistry: false
+                    })));
+                }
+
+                if (servicesRes.data.success) setServices(servicesRes.data.data.results);
+                if (staffRes.data.success) setStaff(staffRes.data.data.results);
+
+            } catch (err) {
+                console.error('Front Desk Matrix Sync Error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 60000); // 1 min sync
+        return () => clearInterval(interval);
+    }, []);
+
     const handleAction = (protocol) => {
         if (protocol === 'Client Registration') setIsRegistrationOpen(true);
         if (protocol === 'Booking') setIsBookingOpen(true);
+        if (protocol === 'Walk-in') setIsWalkinOpen(true);
         if (protocol === 'Day End') {
             setReporting(true);
             setTimeout(() => {
@@ -84,52 +131,120 @@ export default function ReceptionistDashboard() {
         }
     };
 
-    const handleCheckIn = (id, isRegistry) => {
-        if (isRegistry) {
-            updateBookingStatus(id, 'arrived');
+    const handleCheckIn = async (id) => {
+        try {
+            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            // Refresh feed
+            const today = new Date().toISOString().split('T')[0];
+            const feedRes = await api.get(`/bookings?date=${today}&limit=5`);
+            if (feedRes.data.results) {
+                setLiveFeed(feedRes.data.results.map(b => ({
+                    id: b.id || b._id,
+                    client: b.clientId?.name || 'Walk-in',
+                    service: b.serviceId?.name || 'Unknown',
+                    time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                    professional: b.staffId?.name || 'Unassigned',
+                    status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                    source: b.source || 'APP'
+                })));
+            }
+            alert(`Check-in Successful: Guest marked as arrived.`);
+        } catch (err) {
+            alert('Check-in Failed: Unable to process guest status.');
         }
-        alert(`Protocol Clearance: Guest token checked-in.`);
     };
 
-    const handleManualBookingSubmit = (e) => {
+    const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
-        const service = MOCK_SERVICES.find(s => s._id === newBooking.serviceId);
-        const staff = MOCK_STAFF.find(s => s._id === newBooking.staffId);
+        try {
+            await api.post('/users', {
+                ...newClient,
+                role: 'client',
+                tenantId: user?.tenantId
+            });
+            setIsRegistrationOpen(false);
+            setNewClient({ name: '', phone: '', email: '', gender: 'other' });
+            alert('Registration Successful: Guest added to database.');
+            
+            // Refresh stats
+            const statsRes = await api.get('/dashboard/receptionist');
+            if (statsRes.data.success) {
+                const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};
+                setStats(statsRes.data.data.stats.map(s => ({ ...s, icon: iconMap[s.label] || AlertCircle })));
+            }
+        } catch (err) {
+            alert('Registration Failed: ' + (err.response?.data?.message || 'Server error'));
+        }
+    };
 
-        if (!service || !staff || !newBooking.clientName || !newBooking.phone) {
+    const handleManualBookingSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (!newBooking.serviceId || !newBooking.staffId || !newBooking.clientName || !newBooking.phone) {
             alert('Missing Required Protocols: Please complete all fields.');
             return;
         }
 
-        const bookingObj = {
-            id: `RECP-${Date.now()}`,
-            clientId: `walkin-${Date.now()}`,
-            clientName: newBooking.clientName,
-            phone: newBooking.phone,
-            services: [{ name: service.name, price: service.price, duration: service.duration }],
-            totalPrice: service.price,
-            totalDuration: service.duration,
-            date: new Date(newBooking.date).toISOString(),
-            appointmentDate: new Date(newBooking.date).toISOString(),
-            time: newBooking.time,
-            staffId: staff._id,
-            staffName: staff.name,
-            status: 'upcoming',
-            timestamp: new Date().toISOString(),
-            source: 'RECEPTION'
-        };
+        try {
+            const bookingData = {
+                clientName: newBooking.clientName,
+                phone: newBooking.phone,
+                serviceId: newBooking.serviceId,
+                staffId: newBooking.staffId,
+                outletId: user?.outletId, // Explicitly pass the receptionist's outlet
+                appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
+                time: newBooking.time,
+                status: 'upcoming',
+                source: 'RECEPTION'
+            };
 
-        addBooking(bookingObj);
-        setIsBookingOpen(false);
-        setNewBooking({
-            clientName: '',
-            phone: '',
-            serviceId: '',
-            staffId: '',
-            time: '12:00 PM',
-            date: new Date().toISOString().split('T')[0]
-        });
-        alert('Internal Protocol: Manual booking successfully registered in vault.');
+            await api.post('/bookings', bookingData);
+            
+            // Refresh feed and stats
+            const today = new Date().toISOString().split('T')[0];
+            const [statsRes, feedRes] = await Promise.all([
+                api.get('/dashboard/receptionist'),
+                api.get(`/bookings?date=${today}&limit=5`)
+            ]);
+
+            if (statsRes.data.success) {
+                 const iconMap = {
+                    "Today's Appointments": Calendar,
+                    "Pending Check-ins": Clock,
+                    "Completed Today": CheckCircle2,
+                    "New Registrations": UserPlus
+                };
+                setStats(statsRes.data.data.stats.map(s => ({
+                    ...s,
+                    icon: iconMap[s.label] || AlertCircle
+                })));
+            }
+
+            if (feedRes.data.results) {
+                setLiveFeed(feedRes.data.results.map(b => ({
+                    id: b.id || b._id,
+                    client: b.clientId?.name || 'Walk-in',
+                    service: b.serviceId?.name || 'Unknown',
+                    time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                    professional: b.staffId?.name || 'Unassigned',
+                    status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                    source: b.source || 'APP'
+                })));
+            }
+
+            setIsBookingOpen(false);
+            setNewBooking({
+                clientName: '',
+                phone: '',
+                serviceId: '',
+                staffId: '',
+                time: '12:00 PM',
+                date: new Date().toISOString().split('T')[0]
+            });
+            alert('Booking Successful: Appointment has been created.');
+        } catch (err) {
+            alert('Error: Failed to save the booking.');
+        }
     };
 
     return (
@@ -137,8 +252,8 @@ export default function ReceptionistDashboard() {
             {/* Command Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Front Desk Command</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Live Salon Operations Matrix</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Dashboard</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Live Salon Overview</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -146,6 +261,12 @@ export default function ReceptionistDashboard() {
                         className="px-5 py-2.5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all flex items-center gap-2"
                     >
                         <UserPlus className="w-4 h-4" /> New Registration
+                    </button>
+                    <button
+                        onClick={() => handleAction('Walk-in')}
+                        className="px-5 py-2.5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all flex items-center gap-2"
+                    >
+                        <UserCheck className="w-4 h-4" /> New Walk-in
                     </button>
                     <button
                         onClick={() => handleAction('Booking')}
@@ -196,7 +317,7 @@ export default function ReceptionistDashboard() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className="w-1.5 h-6 bg-primary" />
-                            <h2 className="text-sm font-black text-text uppercase tracking-widest">Temporal Feed (Apt Ledger)</h2>
+                            <h2 className="text-sm font-black text-text uppercase tracking-widest">Today's Appointments</h2>
                         </div>
                         <button onClick={() => navigate('/receptionist/appointments')} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
                             Full Database <ArrowRight className="w-3 h-3" />
@@ -259,20 +380,20 @@ export default function ReceptionistDashboard() {
                             <div>
                                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
                                     <span>Target Fulfillment</span>
-                                    <span className="text-primary">84%</span>
+                                    <span className="text-primary">{performance.targetFulfillment || 0}%</span>
                                 </div>
                                 <div className="h-1 bg-surface-alt border border-border">
-                                    <div className="h-full bg-primary" style={{ width: '84%' }} />
+                                    <div className="h-full bg-primary" style={{ width: `${performance.targetFulfillment || 0}%` }} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4 pt-2">
                                 <div className="p-3 bg-surface-alt border border-border">
                                     <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Revenue</p>
-                                    <p className="text-sm font-black text-text">₹12,450</p>
+                                    <p className="text-sm font-black text-text">₹{performance.revenue.toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="p-3 bg-surface-alt border border-border">
                                     <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Avg Ticket</p>
-                                    <p className="text-sm font-black text-text">₹1,150</p>
+                                    <p className="text-sm font-black text-text">₹{performance.avgTicket.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
                         </div>
@@ -305,7 +426,7 @@ export default function ReceptionistDashboard() {
                     <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
                         <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT PROTOCOL
+                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT
                             </h3>
                             <button onClick={() => setIsBookingOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
@@ -337,7 +458,7 @@ export default function ReceptionistDashboard() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Protocol (Service)</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
                                 <select
                                     required
                                     value={newBooking.serviceId}
@@ -345,13 +466,13 @@ export default function ReceptionistDashboard() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- SELECT SERVICE --</option>
-                                    {MOCK_SERVICES.map(s => (
+                                    {services.map(s => (
                                         <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assign Specialist</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Stylist</label>
                                 <select
                                     required
                                     value={newBooking.staffId}
@@ -359,8 +480,8 @@ export default function ReceptionistDashboard() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                    {MOCK_STAFF.map(s => (
-                                        <option key={s._id} value={s._id}>{s.name} - {s.specialization}</option>
+                                    {staff.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
                                     ))}
                                 </select>
                             </div>
@@ -392,7 +513,173 @@ export default function ReceptionistDashboard() {
                                 </div>
                             </div>
                             <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                INITIALIZE BOOKING
+                                Confirm Booking
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Registration Modal */}
+            {isRegistrationOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
+                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
+                                <UserPlus className="w-4 h-4 text-primary" /> NEW CLIENT REGISTRATION
+                            </h3>
+                            <button onClick={() => setIsRegistrationOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                                <X className="w-5 h-5 text-text-muted" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleRegistrationSubmit} className="p-8 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Full Name</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newClient.name}
+                                        onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="CLIENT NAME"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={newClient.phone}
+                                        onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="+91 XXXXX XXXXX"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    value={newClient.email}
+                                    onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                    placeholder="CLIENT@EMAIL.COM"
+                                />
+                            </div>
+                            <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                                Register Client
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Walk-in Modal */}
+            {isWalkinOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
+                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
+                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
+                                <UserCheck className="w-4 h-4 text-primary" /> NEW WALK-IN (DIRECT ENTRY)
+                            </h3>
+                            <button onClick={() => setIsWalkinOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                                <X className="w-5 h-5 text-text-muted" />
+                            </button>
+                        </div>
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            try {
+                                const now = new Date();
+                                const bookingData = {
+                                    clientName: newBooking.clientName,
+                                    phone: newBooking.phone,
+                                    serviceId: newBooking.serviceId,
+                                    staffId: newBooking.staffId,
+                                    outletId: user?.outletId,
+                                    appointmentDate: now.toISOString(),
+                                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                    status: 'arrived',
+                                    source: 'WALKIN'
+                                };
+                                await api.post('/bookings', bookingData);
+                                setIsWalkinOpen(false);
+                                alert('Walk-in Successful: Guest registered and checked-in.');
+                                
+                                // Proper refresh
+                                const today = new Date().toISOString().split('T')[0];
+                                const [sR, fR] = await Promise.all([
+                                    api.get('/dashboard/receptionist'),
+                                    api.get(`/bookings?date=${today}&limit=5`)
+                                ]);
+                                if (sR.data.success) {
+                                    const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};
+                                    setStats(sR.data.data.stats.map(s => ({ ...s, icon: iconMap[s.label] || AlertCircle })));
+                                }
+                                if (fR.data.results) {
+                                    setLiveFeed(fR.data.results.map(b => ({
+                                        id: b.id || b._id,
+                                        client: b.clientId?.name || 'Walk-in',
+                                        service: b.serviceId?.name || 'Unknown',
+                                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                                        professional: b.staffId?.name || 'Unassigned',
+                                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                                        source: b.source || 'APP'
+                                    })));
+                                }
+                            } catch (err) {
+                                alert('Walk-in Failed: Could not process entry.');
+                            }
+                        }} className="p-8 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newBooking.clientName}
+                                        onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="GUEST NAME"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone</label>
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={newBooking.phone}
+                                        onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        placeholder="CONTACT"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service</label>
+                                <select
+                                    required
+                                    value={newBooking.serviceId}
+                                    onChange={(e) => setNewBooking({...newBooking, serviceId: e.target.value})}
+                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                >
+                                    <option value="">-- SELECT SERVICE --</option>
+                                    {services.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Stylist</label>
+                                <select
+                                    required
+                                    value={newBooking.staffId}
+                                    onChange={(e) => setNewBooking({...newBooking, staffId: e.target.value})}
+                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                >
+                                    <option value="">-- SELECT STYLIST --</option>
+                                    {staff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                </select>
+                            </div>
+                            <button type="submit" className="w-full py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20">
+                                ENTER SALON (CHECK-IN)
                             </button>
                         </form>
                     </div>

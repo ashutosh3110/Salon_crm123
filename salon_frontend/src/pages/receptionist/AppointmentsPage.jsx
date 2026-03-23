@@ -26,33 +26,19 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
-import { appointments as staticAppointments } from '../../data/receptionistData';
+import api from '../../services/api';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
-import { MOCK_SERVICES, MOCK_STAFF } from '../../data/appMockData';
 
 export default function AppointmentsPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const { bookings: registryBookings, addBooking, updateBookingStatus, cancelBooking } = useBookingRegistry();
+    const { bookings: registryBookings, addBooking, updateStatus: registryUpdate } = useBookingRegistry();
 
-    // Combine static mock data with live registry data
-    const appointmentData = useMemo(() => {
-        const mappedRegistry = registryBookings.map(b => ({
-            id: b.id,
-            client: b.clientName,
-            service: Array.isArray(b.services) ? b.services.map(s => s.name).join(', ') : b.service,
-            time: b.time,
-            professional: b.staffName || 'Unassigned',
-            status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-            price: typeof b.totalPrice === 'number' ? `₹${b.totalPrice.toLocaleString()}` : (b.price || '₹0'),
-            phone: b.phone || '',
-            source: b.source || 'APP',
-            isRegistry: true
-        }));
-
-        return [...mappedRegistry, ...staticAppointments];
-    }, [registryBookings]);
-
+    // Live States
+    const [appointments, setAppointments] = useState([]);
+    const [services, setServices] = useState([]);
+    const [staff, setStaff] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [view, setView] = useState('list'); // 'list' or 'calendar'
     const [searchQuery, setSearchQuery] = useState('');
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -70,7 +56,47 @@ export default function AppointmentsPage() {
         date: new Date().toISOString().split('T')[0]
     });
 
-    const filteredAppointments = appointmentData.filter(apt =>
+    // Load Data
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const [bookingsRes, servicesRes, staffRes] = await Promise.all([
+                    api.get(`/bookings?date=${dateStr}&limit=100`),
+                    api.get('/services?limit=100'),
+                    api.get('/users?role=stylist')
+                ]);
+
+                if (bookingsRes.data.results) {
+                    setAppointments(bookingsRes.data.results.map(b => ({
+                        id: b.id || b._id,
+                        client: b.clientId?.name || 'Walk-in',
+                        service: b.serviceId?.name || 'Unknown',
+                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                        professional: b.staffId?.name || 'Unassigned',
+                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                        price: `₹${b.price || 0}`,
+                        phone: b.clientId?.phone || b.phone || '',
+                        source: b.source || 'APP',
+                        isRegistry: false
+                    })));
+                }
+
+                if (servicesRes.data.success) setServices(servicesRes.data.data.results);
+                if (staffRes.data.success) setStaff(staffRes.data.data.results);
+
+            } catch (err) {
+                console.error('Ledger Sync Error:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [currentDate]);
+
+    const filteredAppointments = appointments.filter(apt =>
         apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
         apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -90,69 +116,89 @@ export default function AppointmentsPage() {
         });
     };
 
-    const handleCheckIn = (id, isRegistry) => {
-        if (isRegistry) {
-            updateBookingStatus(id, 'arrived');
-        } else {
+    const handleCheckIn = async (id) => {
+        try {
+            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            // Update local state
+            setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Arrived' } : a));
             alert(`Protocol Clearance: Appointment ${id} marked as ARRIVED.`);
+        } catch (err) {
+            alert('Status Sync Error: Could not update booking.');
         }
     };
 
     const handleViewDetails = (id) => {
-        const apt = appointmentData.find(a => a.id === id);
+        const apt = appointments.find(a => a.id === id);
         setSelectedAppointment(apt);
         setIsDetailsOpen(true);
     };
 
-    const handleCancelAppointment = (id, isRegistry) => {
+    const handleCancelAppointment = async (id) => {
         if (confirm(`Authorize cancellation of ${id}? This action is permanent.`)) {
-            if (isRegistry) {
-                cancelBooking(id);
+            try {
+                await api.patch(`/bookings/${id}`, { status: 'cancelled' });
+                setAppointments(prev => prev.filter(a => a.id !== id));
+                setIsDetailsOpen(false);
+                alert('Security Clearance: Appointment protocol terminated.');
+            } catch (err) {
+                alert('Cancellation Failed: Server rejected the command.');
             }
-            setIsDetailsOpen(false);
-            alert('Security Clearance: Appointment protocol terminated.');
         }
     };
 
-    const handleManualBookingSubmit = (e) => {
+    const handleManualBookingSubmit = async (e) => {
         e.preventDefault();
-        const service = MOCK_SERVICES.find(s => s._id === newBooking.serviceId);
-        const staff = MOCK_STAFF.find(s => s._id === newBooking.staffId);
-
-        if (!service || !staff || !newBooking.clientName || !newBooking.phone) {
+        
+        if (!newBooking.serviceId || !newBooking.staffId || !newBooking.clientName || !newBooking.phone) {
             alert('Missing Required Protocols: Please complete all fields.');
             return;
         }
 
-        const bookingObj = {
-            id: `RECP-${Date.now()}`,
-            clientId: `walkin-${Date.now()}`,
-            clientName: newBooking.clientName,
-            phone: newBooking.phone,
-            services: [{ name: service.name, price: service.price, duration: service.duration }],
-            totalPrice: service.price,
-            totalDuration: service.duration,
-            date: new Date(newBooking.date).toISOString(),
-            appointmentDate: new Date(newBooking.date).toISOString(),
-            time: newBooking.time,
-            staffId: staff._id,
-            staffName: staff.name,
-            status: 'upcoming',
-            timestamp: new Date().toISOString(),
-            source: 'RECEPTION'
-        };
+        try {
+            const bookingData = {
+                clientName: newBooking.clientName,
+                phone: newBooking.phone,
+                serviceId: newBooking.serviceId,
+                staffId: newBooking.staffId,
+                outletId: user?.outletId,
+                appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
+                time: newBooking.time,
+                status: 'upcoming',
+                source: 'RECEPTION'
+            };
 
-        addBooking(bookingObj);
-        setIsBookingOpen(false);
-        setNewBooking({
-            clientName: '',
-            phone: '',
-            serviceId: '',
-            staffId: '',
-            time: '10:00 AM',
-            date: new Date().toISOString().split('T')[0]
-        });
-        alert('Internal Protocol: Manual booking successfully registered in vault.');
+            await api.post('/bookings', bookingData);
+            
+            // Refresh
+            const dateStr = currentDate.toISOString().split('T')[0];
+            const bookingsRes = await api.get(`/bookings?date=${dateStr}&limit=100`);
+            if (bookingsRes.data.results) {
+                setAppointments(bookingsRes.data.results.map(b => ({
+                    id: b.id || b._id,
+                    client: b.clientId?.name || 'Walk-in',
+                    service: b.serviceId?.name || 'Unknown',
+                    time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                    professional: b.staffId?.name || 'Unassigned',
+                    status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                    price: `₹${b.price || 0}`,
+                    phone: b.clientId?.phone || b.phone || '',
+                    source: b.source || 'APP'
+                })));
+            }
+
+            setIsBookingOpen(false);
+            setNewBooking({
+                clientName: '',
+                phone: '',
+                serviceId: '',
+                staffId: '',
+                time: '10:00 AM',
+                date: new Date().toISOString().split('T')[0]
+            });
+            alert('Internal Protocol: Manual booking successfully registered.');
+        } catch (err) {
+            alert('Registry Write Error: Failed to save booking.');
+        }
     };
 
     const formatDate = (date) => {
@@ -182,10 +228,10 @@ export default function AppointmentsPage() {
                         TIME
                     </div>
                     <div className="flex flex-1 overflow-x-auto scrollbar-hide">
-                        {MOCK_STAFF.map(staff => (
-                            <div key={staff._id} className="min-w-[150px] flex-1 border-r border-border last:border-r-0 p-4 text-center">
-                                <p className="text-[10px] font-black text-text uppercase tracking-widest">{staff.name}</p>
-                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5">{staff.specialization}</p>
+                        {staff.map(member => (
+                            <div key={member._id} className="min-w-[150px] flex-1 border-r border-border last:border-r-0 p-4 text-center">
+                                <p className="text-[10px] font-black text-text uppercase tracking-widest">{member.name}</p>
+                                <p className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-0.5">{member.role}</p>
                             </div>
                         ))}
                     </div>
@@ -202,11 +248,11 @@ export default function AppointmentsPage() {
 
                             {/* Staff Columns */}
                             <div className="flex flex-1 overflow-x-auto scrollbar-hide">
-                                {MOCK_STAFF.map(staff => {
+                                {staff.map(member => {
                                     // Find appointments for this time slot and this professional
-                                    const slotApts = appointmentData.filter(apt =>
+                                    const slotApts = appointments.filter(apt =>
                                         apt.time === time &&
-                                        (apt.professional === staff.name || (apt.professional === 'Unassigned' && staff.name === 'Anita Verma'))
+                                        (apt.professional === member.name || (apt.professional === 'Unassigned' && member.name === 'Anita Verma'))
                                     );
 
                                     return (
@@ -254,8 +300,8 @@ export default function AppointmentsPage() {
             {/* Header Area */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Appointment Ledger</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Manage bookings & stylist schedules</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Appointments</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">View and manage all salon bookings</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-surface border border-border p-1">
@@ -314,11 +360,11 @@ export default function AppointmentsPage() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">ID / Source</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Booking ID</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Client</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Protocol</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Timeline</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Professional</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Service</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Time</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Stylist</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Status</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">Actions</th>
                                 </tr>
@@ -427,7 +473,7 @@ export default function AppointmentsPage() {
                     <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
                         <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT PROTOCOL
+                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT
                             </h3>
                             <button onClick={() => setIsBookingOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
@@ -459,7 +505,7 @@ export default function AppointmentsPage() {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Protocol (Service)</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
                                 <select
                                     required
                                     value={newBooking.serviceId}
@@ -467,13 +513,13 @@ export default function AppointmentsPage() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- SELECT SERVICE --</option>
-                                    {MOCK_SERVICES.map(s => (
+                                    {services.map(s => (
                                         <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>
                                     ))}
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Assign Specialist</label>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Stylist</label>
                                 <select
                                     required
                                     value={newBooking.staffId}
@@ -481,8 +527,8 @@ export default function AppointmentsPage() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                    {MOCK_STAFF.map(s => (
-                                        <option key={s._id} value={s._id}>{s.name} - {s.specialization}</option>
+                                    {staff.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
                                     ))}
                                 </select>
                             </div>
@@ -515,7 +561,7 @@ export default function AppointmentsPage() {
                                 </div>
                             </div>
                             <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                INITIALIZE BOOKING
+                                Book Appointment
                             </button>
                         </form>
                     </div>
@@ -575,7 +621,7 @@ export default function AppointmentsPage() {
                                     onClick={() => handleCancelAppointment(selectedAppointment.id, selectedAppointment.isRegistry)}
                                     className="flex-1 py-3 border border-border text-rose-500 text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
                                 >
-                                    CANCEL PROTOCOL
+                                    CANCEL APPOINTMENT
                                 </button>
                             </div>
                         </div>

@@ -479,8 +479,113 @@ async function getManagerDashboard(tenantId) {
     };
 }
 
+/**
+ * Receptionist Dashboard: today's focus.
+ */
+async function getReceptionistDashboard(tenantId, outletId) {
+    const tid = toTenantObjectId(tenantId);
+    const oid = outletId ? toTenantObjectId(outletId) : null;
+    const now = new Date();
+    const startOfDay = new Date(now);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const baseFilter = {
+        tenantId: tid,
+    };
+    if (oid) {
+        baseFilter.outletId = oid;
+    }
+
+    const [
+        todayAppointments,
+        pendingCheckins,
+        completedToday,
+        newClients,
+        revenueAgg,
+    ] = await Promise.all([
+        Booking.countDocuments({
+            ...baseFilter,
+            appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+            status: { $ne: 'cancelled' },
+        }),
+        Booking.countDocuments({
+            ...baseFilter,
+            appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+            status: { $in: ['confirmed', 'pending', 'arrived'] },
+        }),
+        Booking.countDocuments({
+            ...baseFilter,
+            appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+            status: 'completed',
+        }),
+        Client.countDocuments({
+            tenantId: tid, // Clients are usually tenant-wide, but could be outlet-specific
+            createdAt: { $gte: startOfDay, $lte: endOfDay },
+        }),
+        Invoice.aggregate([
+            {
+                $match: {
+                    ...baseFilter,
+                    paymentStatus: 'paid',
+                    createdAt: { $gte: startOfDay, $lte: endOfDay },
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: '$total' },
+                    count: { $sum: 1 },
+                },
+            },
+        ]),
+    ]);
+
+    const todayRevenue = revenueAgg[0]?.total || 0;
+    const invoiceCount = revenueAgg[0]?.count || 0;
+    const avgTicket = invoiceCount > 0 ? Math.round(todayRevenue / invoiceCount) : 0;
+    const targetFulfillment = todayAppointments > 0 ? Math.round((completedToday / todayAppointments) * 100) : 0;
+
+    return {
+        stats: [
+            {
+                label: "Today's Appointments",
+                value: todayAppointments,
+                trend: "Live",
+                positive: true,
+            },
+            {
+                label: "Pending Check-ins",
+                value: pendingCheckins,
+                trend: "To Process",
+                positive: false,
+            },
+            {
+                label: "Completed Today",
+                value: completedToday,
+                trend: "Done",
+                positive: true,
+            },
+            {
+                label: "New Registrations",
+                value: newClients,
+                trend: "New",
+                positive: true,
+            },
+        ],
+        performance: {
+            revenue: todayRevenue,
+            avgTicket,
+            targetFulfillment,
+        },
+        generatedAt: now.toISOString(),
+    };
+}
+
 export default {
     getSalonDashboard,
     getManagerDashboard,
     getManagerTeam,
+    getReceptionistDashboard,
 };

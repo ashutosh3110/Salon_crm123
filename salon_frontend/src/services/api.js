@@ -28,21 +28,26 @@ const api = axios.create({
     },
 });
 
-// Helper to get role from current path
+// Helper to get role from session/path
 const getCurrentRole = () => {
+    // 1. Check for explicitly set active role (most reliable)
+    const activeRole = localStorage.getItem('active_auth_role');
+    if (activeRole && localStorage.getItem(`auth_token_${activeRole}`)) {
+        return activeRole;
+    }
+
+    // 2. Fallback to path detection
     const path = window.location.pathname;
     if (path.startsWith('/superadmin')) return 'superadmin';
     if (path.startsWith('/manager')) return 'manager';
     if (path.startsWith('/receptionist')) return 'receptionist';
     if (path.startsWith('/stylist')) return 'stylist';
     if (path.startsWith('/inventory')) return 'inventory_manager';
-    // Accountant panel: admin users share these routes (token stored as auth_token_admin)
-    if (path.startsWith('/accountant')) {
-        if (localStorage.getItem('auth_token_accountant')) return 'accountant';
-        if (localStorage.getItem('auth_token_admin')) return 'admin';
-        return 'accountant';
-    }
-    return 'admin';
+    
+    // 3. Last resort: Find ANY available token
+    const roles = ['admin', 'manager', 'receptionist', 'stylist', 'superadmin', 'accountant', 'inventory_manager'];
+    const found = roles.find(r => localStorage.getItem(`auth_token_${r}`));
+    return found || 'admin';
 };
 
 // Request interceptor — attach JWT token

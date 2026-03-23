@@ -1,5 +1,6 @@
 import httpStatus from 'http-status-codes';
 import attendanceService from './attendance.service.js';
+import stylistTimeOffService from '../stylist/stylistTimeOff.service.js';
 
 const requireTenant = (req, res) => {
     if (!req.tenantId) {
@@ -74,6 +75,29 @@ const punch = async (req, res, next) => {
     }
 };
 
+const getLeaveRequests = async (req, res, next) => {
+    try {
+        if (!requireTenant(req, res)) return;
+        const list = await stylistTimeOffService.listAllTenantRequests(req.tenantId, req.query);
+        res.status(httpStatus.OK).send({ success: true, data: list });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const updateLeaveStatus = async (req, res, next) => {
+    try {
+        if (!requireTenant(req, res)) return;
+        const { id } = req.params;
+        const { status, note } = req.body;
+        const reviewerId = req.user._id;
+        const doc = await stylistTimeOffService.updateRequestStatus(req.tenantId, id, status, reviewerId, note);
+        res.status(httpStatus.OK).send({ success: true, data: doc });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     listByDate,
     getMine,
@@ -81,4 +105,6 @@ export default {
     upsert,
     bulk,
     punch,
+    getLeaveRequests,
+    updateLeaveStatus,
 };

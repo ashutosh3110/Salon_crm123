@@ -25,8 +25,20 @@ async function getUsers(req, res, next) {
     try {
         const limit = Math.min(500, Math.max(1, parseInt(req.query.limit, 10) || 100));
         const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+        
+        const filter = { tenantId: req.tenantId };
+        if (req.query.role) filter.role = req.query.role;
+        if (req.query.outletId) filter.outletId = req.query.outletId;
+
+        // Enforcement for receptionists
+        if (req.user?.role === 'receptionist' && req.user.outletId) {
+            filter.outletId = req.user.outletId;
+        }
+
+        console.log('[DEBUG] getUsers Filter:', JSON.stringify(filter));
+
         const data = await userService.queryUsers(
-            { tenantId: req.tenantId },
+            filter,
             { limit, page, populate: { path: 'outletId', select: 'name' } }
         );
         const results = (data.results || []).map((u) => {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
@@ -41,6 +41,11 @@ export function BusinessProvider({ children }) {
     const [segments, setSegments] = useState([]);
     const [segmentsLoading, setSegmentsLoading] = useState(false);
 
+    const [shifts, setShifts] = useState([]);
+    const [shiftsLoading, setShiftsLoading] = useState(false);
+    const [catalogue, setCatalogue] = useState(null);
+    const [catalogueLoading, setCatalogueLoading] = useState(false);
+
     const [activeOutletId, setActiveOutletId] = useState(() => {
         return localStorage.getItem('active_outlet_id') || null;
     });
@@ -80,6 +85,8 @@ export function BusinessProvider({ children }) {
             fetchSegments();
             fetchFeedbacks();
             fetchSuppliers();
+            fetchShifts();
+            fetchCatalogue();
         }
     }, [isAuthenticated]);
 
@@ -251,7 +258,7 @@ export function BusinessProvider({ children }) {
         }
     };
 
-    const fetchStaff = async () => {
+    const fetchStaff = useCallback(async () => {
         setStaffLoading(true);
         try {
             const response = await api.get('/users', { params: { limit: 200, page: 1 } });
@@ -264,7 +271,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setStaffLoading(false);
         }
-    };
+    }, []);
 
     const fetchServices = async () => {
         setServicesLoading(true);
@@ -652,7 +659,81 @@ export function BusinessProvider({ children }) {
         }
     };
 
-    const value = {
+    const fetchShifts = async () => {
+        setShiftsLoading(true);
+        try {
+            const response = await api.get('/shifts');
+            const data = response.data?.success ? response.data.data : response.data;
+            setShifts(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error('[BusinessContext] Failed to fetch shifts:', error);
+        } finally {
+            setShiftsLoading(false);
+        }
+    };
+
+    const addShift = async (shiftData) => {
+        try {
+            const response = await api.post('/shifts', shiftData);
+            const newShift = response.data?.success ? response.data.data : response.data;
+            setShifts(prev => [newShift, ...prev]);
+            return newShift;
+        } catch (error) {
+            console.error('[BusinessContext] Add shift failed:', error);
+            throw error;
+        }
+    };
+
+    const updateShift = async (id, data) => {
+        try {
+            const response = await api.patch(`/shifts/${id}`, data);
+            const updated = response.data?.success ? response.data.data : response.data;
+            setShifts(prev => prev.map(s => (s._id === id || s.id === id) ? updated : s));
+            return updated;
+        } catch (error) {
+            console.error('[BusinessContext] Update shift failed:', error);
+            throw error;
+        }
+    };
+
+    const deleteShift = async (id) => {
+        try {
+            await api.delete(`/shifts/${id}`);
+            setShifts(prev => prev.filter(s => (s._id !== id && s.id !== id)));
+        } catch (error) {
+            console.error('[BusinessContext] Delete shift failed:', error);
+            throw error;
+        }
+    };
+
+    const fetchCatalogue = async () => {
+        setCatalogueLoading(true);
+        try {
+            const response = await api.get('/catalogue');
+            setCatalogue(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Error fetching catalogue:', error);
+        } finally {
+            setCatalogueLoading(false);
+        }
+    };
+
+    const updateCatalogue = async (catalogueData) => {
+        setCatalogueLoading(true);
+        try {
+            const response = await api.post('/catalogue', catalogueData);
+            setCatalogue(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] Error updating catalogue:', error);
+            throw error;
+        } finally {
+            setCatalogueLoading(false);
+        }
+    };
+
+    const value = useMemo(() => ({
         salon, salonLoading, updateSalon, fetchSalon,
         staff, staffLoading, addStaff, updateStaff, deleteStaff, fetchStaff,
         services, servicesLoading, addService, updateService, deleteService, toggleServiceStatus, fetchServices,
@@ -679,9 +760,25 @@ export function BusinessProvider({ children }) {
         fetchSegmentCustomers,
         addSegment,
         deleteSegment,
+        shifts,
+        shiftsLoading,
+        fetchShifts,
+        addShift,
+        updateShift,
+        deleteShift,
+        catalogue,
+        catalogueLoading,
+        fetchCatalogue,
+        updateCatalogue,
         bookings, addBooking, updateBookingStatus,
         activeOutletId, setActiveOutletId, activeOutlet
-    };
+    }), [
+        salon, salonLoading, staff, staffLoading, services, servicesLoading, 
+        categories, categoriesLoading, outlets, outletsLoading, products, customers,
+        feedbacks, feedbacksLoading, suppliers, suppliersLoading, segments, segmentsLoading,
+        shifts, shiftsLoading, catalogue, catalogueLoading, bookings, bookingsLoading,
+        activeOutletId, activeOutlet
+    ]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

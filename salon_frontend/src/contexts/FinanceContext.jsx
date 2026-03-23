@@ -68,7 +68,7 @@ export const FinanceProvider = ({ children }) => {
         });
     }, [payroll, getStylistAttendanceStats]);
 
-    const value = {
+    const value = useMemo(() => ({
         revenue,
         expenses,
         payroll: enrichedPayroll,
@@ -80,7 +80,7 @@ export const FinanceProvider = ({ children }) => {
         addRevenue,
         addExpense,
         updatePayrollStatus
-    };
+    }), [revenue, expenses, enrichedPayroll, payroll, taxFilings, totalRevenue, totalExpenses, netProfit]);
 
     return (
         <FinanceContext.Provider value={value}>

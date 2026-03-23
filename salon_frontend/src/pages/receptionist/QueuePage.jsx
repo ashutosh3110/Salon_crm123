@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Users,
     Search,
@@ -16,55 +16,121 @@ import {
     Scissors,
     Shield,
     RefreshCw,
-    Loader2
+    Loader2,
+    Phone,
+    CheckCircle2
 } from 'lucide-react';
-
-import { waitingList, stylists } from '../../data/receptionistData';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function QueuePage() {
-    const [queueData, setQueueData] = useState(waitingList);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    
+    // Live States
+    const [queueData, setQueueData] = useState([]);
+    const [stylists, setStylists] = useState([]);
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [allocating, setAllocating] = useState(null);
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
-    const [rotatingStylist, setRotatingStylist] = useState(null);
     const [isResetting, setIsResetting] = useState(false);
+
+    // Load Data
+    const fetchData = async () => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const [queueRes, staffRes, servicesRes] = await Promise.all([
+                api.get(`/bookings?status=arrived&date=${today}&outletId=${user?.outletId}`),
+                api.get(`/users?role=stylist&outletId=${user?.outletId}`),
+                api.get('/services?limit=100')
+            ]);
+
+            if (queueRes.data.results) {
+                setQueueData(queueRes.data.results.map(b => ({
+                    id: b.id || b._id,
+                    name: b.clientId?.name || 'GUEST',
+                    service: b.serviceId?.name || 'SERVICE',
+                    wait: b.appointmentDate ? (Math.round((new Date() - new Date(b.appointmentDate)) / 60000)) + ' MINS' : '0 MINS',
+                    priority: b.source === 'WALKIN'
+                })));
+            }
+
+            if (staffRes.data.results) {
+                // Filter specifically for stylists to ensure no roles leak through
+                setStylists(staffRes.data.results
+                    .filter(s => s.role === 'stylist')
+                    .map(s => ({
+                        id: s.id || s._id,
+                        name: s.name,
+                        specialty: s.role,
+                        status: 'Available',
+                        current: 'Ready'
+                    }))
+                );
+            }
+
+            if (servicesRes.data.success) {
+                setServices(servicesRes.data.data.results);
+            }
+        } catch (err) {
+            console.error('Queue Fetch Error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+        const interval = setInterval(fetchData, 60000);
+        return () => clearInterval(interval);
+    }, []);
 
     const filteredQueue = queueData.filter(guest =>
         guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         guest.service.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleAllocate = (guestId) => {
+    const handleAllocate = async (guestId) => {
         setAllocating(guestId);
-        setTimeout(() => {
-            setQueueData(prev => prev.filter(g => g.id !== guestId));
-            alert(`Protocol Clearance: Guest ${guestId} is now in service.`);
+        try {
+            await api.patch(`/bookings/${guestId}`, { status: 'in-progress' });
+            alert(`Allocation Successful: Guest is now in service.`);
+            fetchData();
+        } catch (err) {
+            alert('Allocation Failed: Could not update guest status.');
+        } finally {
             setAllocating(null);
-        }, 1200);
+        }
     };
 
-    const handleFloorRotation = (name) => {
-        setRotatingStylist(name);
-        setTimeout(() => {
-            setRotatingStylist(null);
-            alert(`Signal ACK: Professional ${name} has acknowledged floor rotation sequence.`);
-        }, 1500);
-    };
-
-    const handleResetQueue = () => {
+    const handleResetQueue = async () => {
         setIsResetting(true);
-        setTimeout(() => {
-            setQueueData(waitingList);
-            setIsResetting(false);
-            alert('Queue sequence successfully reset to baseline protocols.');
-        }, 1200);
+        await fetchData();
+        setIsResetting(false);
+        alert('Queue Refreshed: Synchronized with live database.');
     };
 
-    const handleAddGuest = (guest) => {
-        setQueueData(prev => [...prev, { ...guest, id: `Q-00${prev.length + 1}`, wait: '0 mins' }]);
-        setIsAddGuestOpen(false);
-        alert('Guest successfully synchronized with the live queue sequence.');
+    const handleAddGuest = async (guest) => {
+        try {
+            const now = new Date();
+            await api.post('/bookings', {
+                ...guest,
+                outletId: user?.outletId,
+                appointmentDate: now.toISOString(),
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'arrived',
+                source: 'WALKIN'
+            });
+            setIsAddGuestOpen(false);
+            alert('Guest Added: Successfully joined the waiting list.');
+            fetchData();
+        } catch (err) {
+            alert('Error: Could not add guest to queue.');
+        }
     };
 
     return (
@@ -165,10 +231,10 @@ export default function QueuePage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 divide-x divide-border">
                             {stylists.map((st) => (
-                                <div key={st.name} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all">
+                                <div key={st.id} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all">
                                     <div className="flex items-center gap-3">
                                         <div className="relative">
-                                            <div className="w-10 h-10 bg-surface-alt border border-border flex items-center justify-center font-black text-text-muted">
+                                            <div className="w-10 h-10 bg-surface-alt border border-border flex items-center justify-center font-black text-text-muted text-[12px]">
                                                 {st.name[0]}
                                             </div>
                                             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-surface ${st.status === 'Available' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
@@ -178,16 +244,12 @@ export default function QueuePage() {
                                             <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">{st.specialty}</p>
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={() => handleFloorRotation(st.name)}
-                                        disabled={rotatingStylist === st.name}
-                                        className={`px-3 py-1.5 text-[8px] font-black uppercase border tracking-widest transition-all ${st.status === 'Available'
-                                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 hover:bg-emerald-500/20'
-                                            : 'bg-rose-500/10 border-rose-500/20 text-rose-500 cursor-not-allowed opacity-50'
-                                            }`}
-                                    >
-                                        {rotatingStylist === st.name ? <Loader2 className="w-3 h-3 animate-spin inline-block mr-1" /> : null} {st.status}
-                                    </button>
+                                    <div className={`px-3 py-1.5 text-[8px] font-black uppercase border tracking-widest transition-all ${st.status === 'Available'
+                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
+                                        : 'bg-rose-500/10 border-rose-500/20 text-rose-500 opacity-50'
+                                        }`}>
+                                        {st.status}
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -198,15 +260,11 @@ export default function QueuePage() {
                 <div className="space-y-6">
                     <div className="bg-surface border border-border overflow-hidden">
                         <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Floor Status</h3>
-                            <button className="p-1 hover:rotate-90 transition-transform duration-500"><Plus className="w-3.5 h-3.5 text-text-muted" /></button>
+                            <h3 className="text-[11px] font-black text-text uppercase tracking-widest">Stylist Status</h3>
                         </div>
                         <div className="p-4 space-y-3">
                             {stylists.map((stylist) => (
-                                <div key={stylist.name} className="p-4 bg-surface-alt border border-border hover:border-primary/20 hover:bg-surface transition-all flex items-center justify-between group relative overflow-hidden">
-                                    {/* Subtle Glow */}
-                                    <div className="absolute -right-2 -top-2 w-12 h-12 bg-primary/5 rounded-none blur-xl group-hover:bg-primary/10 transition-colors" />
-
+                                <div key={stylist.id} className="p-4 bg-surface-alt border border-border hover:border-primary/20 hover:bg-surface transition-all flex items-center justify-between group relative overflow-hidden">
                                     <div className="flex items-center gap-4 relative z-10">
                                         <div className="w-10 h-10 rounded-none border border-border bg-surface flex items-center justify-center font-black text-[12px] text-text-muted group-hover:text-primary transition-all">
                                             {stylist.name[0]}
@@ -218,16 +276,11 @@ export default function QueuePage() {
                                     </div>
                                     <div className="text-right relative z-10">
                                         <div className={`flex items-center justify-end gap-2 mb-1`}>
-                                            <div className={`w-1.5 h-1.5 rounded-none rotate-45 ${stylist.status === 'Available' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' :
-                                                stylist.status === 'Busy' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]' : 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
-                                                }`} />
-                                            <span className={`text-[9px] font-black uppercase tracking-widest ${stylist.status === 'Available' ? 'text-emerald-500' :
-                                                stylist.status === 'Busy' ? 'text-rose-500' : 'text-amber-500'
-                                                }`}>
+                                            <div className={`w-1.5 h-1.5 rounded-none rotate-45 ${stylist.status === 'Available' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                            <span className={`text-[9px] font-black uppercase tracking-widest ${stylist.status === 'Available' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                 {stylist.status}
                                             </span>
                                         </div>
-                                        <p className="text-[10px] font-black text-primary uppercase">{stylist.current}</p>
                                     </div>
                                 </div>
                             ))}
@@ -295,7 +348,7 @@ export default function QueuePage() {
                             </div>
                             <div className="p-8 space-y-5 text-left">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Guest Name</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
                                     <div className="relative group">
                                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                         <input type="text" id="guestName" autoFocus placeholder="ENTER GUEST NAME" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
@@ -303,38 +356,43 @@ export default function QueuePage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Matrix</label>
-                                        <div className="relative">
-                                            <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                            <select id="guestService" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                                <option>Men's Cut</option>
-                                                <option>Hair Blow</option>
-                                                <option>Manicure</option>
-                                            </select>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Phone</label>
+                                        <div className="relative group">
+                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                            <input type="tel" id="guestPhone" placeholder="CONTACT NUMBER" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Priority Key</label>
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
                                         <div className="relative">
-                                            <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                            <select id="guestPriority" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                                <option value="false">Standard</option>
-                                                <option value="true">High Priority</option>
+                                            <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                            <select id="guestService" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
+                                                {services.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                                             </select>
                                         </div>
                                     </div>
                                 </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Stylist</label>
+                                    <div className="relative">
+                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <select id="guestStaff" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
+                                            {stylists.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
                                 <div className="pt-4 border-t border-border flex gap-4">
-                                    <button onClick={() => setIsAddGuestOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">ABORT</button>
+                                    <button onClick={() => setIsAddGuestOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">CANCEL</button>
                                     <button
                                         onClick={() => handleAddGuest({
-                                            name: document.getElementById('guestName').value || 'New Guest',
-                                            service: document.getElementById('guestService').value,
-                                            priority: document.getElementById('guestPriority').value === 'true'
+                                            clientName: document.getElementById('guestName').value || 'New Guest',
+                                            phone: document.getElementById('guestPhone').value || '0000000000',
+                                            serviceId: document.getElementById('guestService').value,
+                                            staffId: document.getElementById('guestStaff').value
                                         })}
                                         className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
                                     >
-                                        SYNCHRONIZE
+                                        ADD TO QUEUE
                                     </button>
                                 </div>
                             </div>

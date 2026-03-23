@@ -101,7 +101,12 @@ export default function AppHomePage() {
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
 
     // Only show approved experts for this outlet
-    const approvedExperts = experts.filter(e => e.status === 'Approved' && (e.outletId === activeOutletId || !e.outletId));
+    // Only show approved STYLISTS for this particular outlet
+    const approvedExperts = experts.filter(e => 
+        e.status === 'Approved' && 
+        (e.role === 'stylist' || !e.role || e.role === 'Hair Stylist') && // Filter out admin/manager etc.
+        e.outletId === activeOutletId
+    );
 
     const displayExperts = approvedExperts;
 

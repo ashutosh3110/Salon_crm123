@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 
 const DEFAULT_CATEGORIES = [
@@ -143,7 +143,7 @@ export const PettyCashProvider = ({ children }) => {
     const isClosedToday = summary?.isClosedToday ?? false;
     const businessDate = summary?.businessDate || new Date().toISOString().split('T')[0];
 
-    const value = {
+    const value = useMemo(() => ({
         transactions,
         closingLogs,
         categories,
@@ -160,7 +160,7 @@ export const PettyCashProvider = ({ children }) => {
         addFund,
         addExpense,
         closeDay,
-    };
+    }), [transactions, closingLogs, categories, denominations, currentBalance, isOpenedToday, isClosedToday, businessDate, summary, loading, error, refresh]);
 
     return <PettyCashContext.Provider value={value}>{children}</PettyCashContext.Provider>;
 };

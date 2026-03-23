@@ -43,10 +43,12 @@ router.post(
 
 router.post(
     '/bulk',
-    authorize(adminRoles),
-    validate(attendanceValidation.bulk),
+    authorize(['admin', 'manager']),
     attendanceController.bulk
 );
+
+router.get('/leaves', authorize(['admin', 'manager']), attendanceController.getLeaveRequests);
+router.patch('/leaves/:id', authorize(['admin', 'manager']), attendanceController.updateLeaveStatus);
 
 router.post(
     '/punch',

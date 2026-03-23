@@ -15,7 +15,7 @@ export default function PremiumLanding({ data }) {
     } = data;
 
     // Split title by \n or use default
-    const titleLines = titleText.split('\n');
+    const titleLines = (titleText || "").split('\n');
 
     return (
         <div className="relative h-screen w-full overflow-hidden bg-black font-serif select-none">

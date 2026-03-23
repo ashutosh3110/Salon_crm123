@@ -3,6 +3,9 @@ import {
     ArrowUpRight, ArrowDownRight, Award,
     Calendar, ChevronRight, Target
 } from 'lucide-react';
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import { useState } from 'react';
@@ -85,95 +88,71 @@ export default function PerformancePage() {
                     />
                 </div>
 
-                <div className="w-full">
-                    {(() => {
-                        const datasets = {
-                            '7d': { points: [32000, 48000, 41000, 67000, 53000, 71000, 62000], labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
-                            '30d': { points: [28000, 35000, 42000, 38000, 55000, 61000, 58000, 70000, 65000, 74000, 80000, 76000, 83000, 78000, 90000, 85000, 88000, 92000, 87000, 95000, 91000, 98000, 94000, 100000, 97000, 103000, 99000, 108000, 104000, 112000], labels: (() => { const d = []; for (let i = 1; i <= 30; i++) d.push(i % 5 === 0 ? `Day ${i}` : ''); return d; })() },
-                            'month': { points: [40000, 55000, 48000, 72000, 65000, 80000, 75000, 90000, 85000, 95000, 88000, 102000], labels: ['Jan 1', 'Jan 5', 'Jan 9', 'Jan 13', 'Jan 17', 'Jan 21', 'Jan 25', 'Feb 1', 'Feb 5', 'Feb 9', 'Feb 13', 'Feb 17'] },
-                            'quarter': { points: [120000, 145000, 138000, 162000, 175000, 190000, 185000, 210000, 225000, 215000, 240000, 255000], labels: ['Oct', 'Oct', 'Nov', 'Nov', 'Nov', 'Dec', 'Dec', 'Dec', 'Jan', 'Jan', 'Feb', 'Feb'] },
-                        };
-                        const data = datasets[timeRange] || datasets['7d'];
-                        const pts = data.points;
-                        const labels = data.labels;
-                        const W = 600, H = 240, PAD_L = 50, PAD_R = 10, PAD_T = 20, PAD_B = 40;
-                        const chartW = W - PAD_L - PAD_R;
-                        const chartH = H - PAD_T - PAD_B;
-                        const minV = Math.min(...pts) * 0.9;
-                        const maxV = Math.max(...pts) * 1.1;
-                        const range = maxV - minV || 1;
-                        const toX = (i) => PAD_L + (i / (pts.length - 1)) * chartW;
-                        const toY = (v) => PAD_T + chartH - ((v - minV) / range) * chartH;
+        <div className="w-full h-[300px] mt-4">
+            {(() => {
+                const datasets = {
+                    '7d': { points: [32000, 48000, 41000, 67000, 53000, 71000, 62000], labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
+                    '30d': { points: [28000, 35000, 42000, 38000, 55000, 61000, 58000, 70000, 65000, 74000, 80000, 76000, 83000, 78000, 90000, 85000, 88000, 92000, 87000, 95000, 91000, 98000, 94000, 100000, 97000, 103000, 99000, 108000, 104000, 112000], labels: Array.from({ length: 30 }, (_, i) => (i + 1) % 5 === 0 ? `Day ${i + 1}` : '') },
+                    'month': { points: [40000, 55000, 48000, 72000, 65000, 80000, 75000, 90000, 85000, 95000, 88000, 102000], labels: ['Jan 1', 'Jan 5', 'Jan 9', 'Jan 13', 'Jan 17', 'Jan 21', 'Jan 25', 'Feb 1', 'Feb 5', 'Feb 9', 'Feb 13', 'Feb 17'] },
+                    'quarter': { points: [120000, 145000, 138000, 162000, 175000, 190000, 185000, 210000, 225000, 215000, 240000, 255000], labels: ['Oct', 'Oct', 'Nov', 'Nov', 'Nov', 'Dec', 'Dec', 'Dec', 'Jan', 'Jan', 'Feb', 'Feb'] },
+                };
+                const raw = datasets[timeRange] || datasets['7d'];
+                const data = raw.points.map((v, i) => ({ value: v, label: raw.labels[i] }));
+                const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${(v / 1000).toFixed(0)}K` : `₹${v}`;
 
-                        const linePath = pts.map((v, i) => {
-                            if (i === 0) return `M ${toX(i)} ${toY(v)}`;
-                            const px = toX(i - 1), py = toY(pts[i - 1]);
-                            const cx = toX(i), cy = toY(v);
-                            const cpx = (px + cx) / 2;
-                            return `C ${cpx} ${py}, ${cpx} ${cy}, ${cx} ${cy}`;
-                        }).join(' ');
-
-                        const areaPath = linePath + ` L ${toX(pts.length - 1)} ${PAD_T + chartH} L ${PAD_L} ${PAD_T + chartH} Z`;
-                        const gridValues = [minV, minV + range * 0.33, minV + range * 0.66, maxV];
-                        const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${(v / 1000).toFixed(0)}K` : `₹${v}`;
-
-                        return (
-                            <div className="relative w-full overflow-hidden">
-                                <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-                                    <defs>
-                                        <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.15" />
-                                            <stop offset="100%" stopColor="var(--color-primary)" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-
-                                    {gridValues.map((v, i) => {
-                                        const y = toY(v);
-                                        return (
-                                            <g key={i}>
-                                                <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="var(--border)" strokeWidth="0.5" strokeDasharray="4 4" opacity="0.4" />
-                                                <text x={PAD_L - 8} y={y + 3} textAnchor="end" fontSize="9" fill="var(--text-muted)" fontWeight="800" fontFamily="inherit">
-                                                    {fmt(v)}
-                                                </text>
-                                            </g>
-                                        );
-                                    })}
-
-                                    <path d={areaPath} fill="url(#revGrad)" />
-                                    <path d={linePath} fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-                                    {pts.map((v, i) => (
-                                        <g key={i} className="group" style={{ cursor: 'pointer' }}>
-                                            <circle cx={toX(i)} cy={toY(v)} r="8" fill="transparent" />
-                                            <circle cx={toX(i)} cy={toY(v)} r="3.5" fill="var(--surface)" stroke="var(--color-primary)" strokeWidth="2" />
-                                            <g opacity="0" className="chart-tooltip" style={{ pointerEvents: 'none' }}>
-                                                <rect x={toX(i) - 30} y={toY(v) - 32} width="60" height="20" fill="var(--text)" />
-                                                <text x={toX(i)} y={toY(v) - 18} textAnchor="middle" fontSize="9" fill="var(--surface)" fontWeight="900" textTransform="uppercase">
-                                                    {fmt(v)}
-                                                </text>
-                                            </g>
-                                        </g>
-                                    ))}
-
-                                    {labels.map((lbl, i) => {
-                                        const step = Math.max(1, Math.floor(labels.length / 8));
-                                        if (i % step !== 0 && i !== labels.length - 1) return null;
-                                        if (!lbl) return null;
-                                        return (
-                                            <text key={i} x={toX(i)} y={H - 10} textAnchor="middle" fontSize="9" fill="var(--text-muted)" fontWeight="800" fontFamily="inherit" textTransform="uppercase">
-                                                {lbl}
-                                            </text>
-                                        );
-                                    })}
-                                </svg>
-                                <style>{`
-                                    svg g.group:hover .chart-tooltip { opacity: 1; }
-                                    svg g.group:hover circle[r="3.5"] { r: 5; fill: var(--color-primary); }
-                                `}</style>
-                            </div>
-                        );
-                    })()}
-                </div>
+                return (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                            <defs>
+                                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
+                                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
+                            <XAxis
+                                dataKey="label"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
+                                minTickGap={20}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
+                                tickFormatter={fmt}
+                                width={45}
+                            />
+                            <Tooltip
+                                contentStyle={{
+                                    backgroundColor: 'var(--text)',
+                                    border: 'none',
+                                    borderRadius: '0px',
+                                    fontSize: '10px',
+                                    fontWeight: '900',
+                                    color: 'var(--surface)'
+                                }}
+                                itemStyle={{ color: 'var(--primary)' }}
+                                formatter={(v) => [fmt(v), 'REVENUE']}
+                                labelStyle={{ display: 'none' }}
+                                cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }}
+                            />
+                            <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke="var(--primary)"
+                                strokeWidth={3}
+                                fillOpacity={1}
+                                fill="url(#colorRev)"
+                                animationDuration={1500}
+                                activeDot={{ r: 6, stroke: 'var(--surface)', strokeWidth: 2 }}
+                            />
+                        </AreaChart>
+                    </ResponsiveContainer>
+                );
+            })()}
+        </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">

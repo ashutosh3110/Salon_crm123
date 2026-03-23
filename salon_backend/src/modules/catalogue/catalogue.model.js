@@ -25,54 +25,22 @@ const catalogueSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        pages: [
-            {
-                title: { type: String, required: true },
-                slug: { type: String, required: true },
-                icon: { type: String },
-                sections: [
-                    {
-                        title: { type: String, required: true },
-                        items: [
-                            {
-                                type: { type: String, enum: ['service', 'product'], required: true },
-                                refId: { type: mongoose.Schema.Types.ObjectId, required: true },
-                                displayName: { type: String, required: true },
-                                price: { type: Number },
-                                imageUrl: { type: String },
-                                highlight: { type: Boolean, default: false },
-                            }
-                        ]
-                    }
-                ]
-            }
-        ],
-        // Deprecated: Moving to pages structure
-        sections: [
-            {
-                title: { type: String, required: true },
-                items: [
-                    {
-                        type: { type: String, enum: ['service', 'product'], required: true },
-                        refId: { type: mongoose.Schema.Types.ObjectId, required: true },
-                        displayName: { type: String, required: true },
-                        price: { type: Number },
-                        imageUrl: { type: String },
-                        highlight: { type: Boolean, default: false },
-                    }
-                ]
-            }
-        ],
+        // Support for "Catalogue Pro" full state
+        premiumLanding: {
+            type: mongoose.Schema.Types.Mixed,
+        },
+        pages: {
+            type: mongoose.Schema.Types.Mixed,
+        },
+        theme: {
+            type: mongoose.Schema.Types.Mixed,
+        },
+        // Keeping legacy socialLinks for backward compatibility if needed
         socialLinks: {
             instagram: { type: String },
             facebook: { type: String },
             whatsapp: { type: String },
             website: { type: String },
-        },
-        theme: {
-            primaryColor: { type: String, default: '#AD0B2A' },
-            fontStyle: { type: String, default: 'Inter' },
-            layout: { type: String, enum: ['grid', 'list'], default: 'grid' },
         },
         viewCount: {
             type: Number,

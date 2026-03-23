@@ -155,7 +155,63 @@ async function createRequest(tenantId, userId, body) {
     return mapDocToRow(doc.toObject());
 }
 
+async function listAllTenantRequests(tenantId, filters = {}) {
+    const tid = new mongoose.Types.ObjectId(tenantId);
+    const query = { tenantId: tid };
+
+    if (filters.status) {
+        query.status = filters.status;
+    }
+
+    const docs = await LeaveRequest.find(query)
+        .populate('userId', 'name role')
+        .sort({ createdAt: -1 })
+        .lean();
+
+    return docs.map((doc) => ({
+        ...mapDocToRow(doc),
+        userName: doc.userId?.name || 'Unknown',
+        userRole: doc.userId?.role || 'Staff',
+    }));
+}
+
+async function updateRequestStatus(tenantId, requestId, status, reviewerId, note = '') {
+    const tid = new mongoose.Types.ObjectId(tenantId);
+    const rid = new mongoose.Types.ObjectId(requestId);
+
+    if (!['APPROVED', 'REJECTED'].includes(status)) {
+        const err = new Error('Invalid status');
+        err.statusCode = 400;
+        throw err;
+    }
+
+    const doc = await LeaveRequest.findOneAndUpdate(
+        { _id: rid, tenantId: tid },
+        {
+            status,
+            reviewedBy: new mongoose.Types.ObjectId(reviewerId),
+            reviewedAt: new Date(),
+            reviewNote: note,
+        },
+        { new: true }
+    ).populate('userId', 'name role');
+
+    if (!doc) {
+        const err = new Error('Leave request not found');
+        err.statusCode = 404;
+        throw err;
+    }
+
+    return {
+        ...mapDocToRow(doc),
+        userName: doc.userId?.name || 'Unknown',
+        userRole: doc.userId?.role || 'Staff',
+    };
+}
+
 export default {
     getDashboard,
     createRequest,
+    listAllTenantRequests,
+    updateRequestStatus,
 };

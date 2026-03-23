@@ -15,4 +15,6 @@ router.get('/manager', authorize(['admin', 'manager']), dashboardController.getM
 
 router.get('/team', authorize(['admin', 'manager']), dashboardController.getManagerTeam);
 
+router.get('/receptionist', authorize(['admin', 'manager', 'receptionist']), dashboardController.getReceptionistDashboard);
+
 export default router;

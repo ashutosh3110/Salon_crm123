@@ -289,24 +289,26 @@ export function WalletProvider({ children }) {
 
     const totalLiability = Object.values(allWallets).reduce((acc, w) => acc + (Number(w?.balance || 0)), 0);
 
+    const value = useMemo(() => ({
+        balance: activeWallet.balance,
+        transactions: activeWallet.transactions,
+        addMoney,
+        payWithWallet,
+        loading,
+        spentThisMonth,
+        totalLiability,
+        // Admin exports
+        allWallets,
+        walletSettings,
+        setWalletSettings,
+        adminAdjustBalance,
+        bulkRecharge,
+        getWallet,
+        initializeWallet,
+    }), [activeWallet, loading, spentThisMonth, totalLiability, allWallets, walletSettings]);
+
     return (
-        <WalletContext.Provider value={{
-            balance: activeWallet.balance,
-            transactions: activeWallet.transactions,
-            addMoney,
-            payWithWallet,
-            loading,
-            spentThisMonth,
-            totalLiability,
-            // Admin exports
-            allWallets,
-            walletSettings,
-            setWalletSettings,
-            adminAdjustBalance,
-            bulkRecharge,
-            getWallet,
-            initializeWallet,
-        }}>
+        <WalletContext.Provider value={value}>
             {children}
         </WalletContext.Provider>
     );

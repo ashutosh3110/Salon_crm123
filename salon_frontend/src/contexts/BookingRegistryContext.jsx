@@ -5,7 +5,7 @@
  * Persists to localStorage under key WAPIXO_BOOKING_REGISTRY.
  * Any panel (Admin, Stylist, App) that reads this context gets live data.
  */
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 const STORAGE_KEY = 'WAPIXO_BOOKING_REGISTRY';
 
@@ -72,14 +72,16 @@ export function BookingRegistryProvider({ children }) {
         setBookings([]);
     }, []);
 
+    const value = useMemo(() => ({
+        bookings,
+        addBooking,
+        updateBookingStatus,
+        cancelBooking,
+        clearAll,
+    }), [bookings, addBooking, updateBookingStatus, cancelBooking, clearAll]);
+
     return (
-        <BookingRegistryContext.Provider value={{
-            bookings,
-            addBooking,
-            updateBookingStatus,
-            cancelBooking,
-            clearAll,
-        }}>
+        <BookingRegistryContext.Provider value={value}>
             {children}
         </BookingRegistryContext.Provider>
     );

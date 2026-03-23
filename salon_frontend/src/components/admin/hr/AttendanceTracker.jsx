@@ -135,7 +135,7 @@ export default function AttendanceTracker() {
 
     useEffect(() => {
         fetchStaff?.();
-    }, [fetchStaff]);
+    }, []);
 
     // Date navigation
     const changeDate = (days) => {

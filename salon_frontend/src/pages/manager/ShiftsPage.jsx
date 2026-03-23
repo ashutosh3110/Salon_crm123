@@ -1,26 +1,45 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     Clock, Calendar, Users, Plus,
     ArrowLeft, ArrowRight, Target,
     MoreVertical, UserPlus, Filter,
-    CheckCircle2, AlertCircle, Info, ChevronDown
+    CheckCircle2, AlertCircle, Info, ChevronDown, 
+    Loader2
 } from 'lucide-react';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
-
-const INITIAL_HIRES = [
-    { id: 1, name: 'Ananya Sharma', shift: '09:00 AM - 05:00 PM', status: 'In Progress' },
-    { id: 2, name: 'Rahul Verma', shift: '10:00 AM - 06:00 PM', status: 'Starting Soon' },
-    { id: 3, name: 'Vikas Singh', shift: '12:00 PM - 08:00 PM', status: 'Active' },
-];
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function ShiftsPage() {
-    const [hires, setHires] = useState(INITIAL_HIRES);
+    const { 
+        shifts, shiftsLoading, fetchShifts, addShift, updateShift,
+        staff, staffLoading, fetchStaff, activeOutlet
+    } = useBusiness();
+
     const [isRosterModalOpen, setIsRosterModalOpen] = useState(false);
     const [targetWeek, setTargetWeek] = useState('01 Mar');
-    const [swaps, setSwaps] = useState([
-        { id: 1, staff: 'Priya Das', with: 'Vikas Singh', day: 'Tuesday', reason: 'Personal work', status: 'Pending' }
-    ]);
+    const [isGenerating, setIsGenerating] = useState(false);
+
+    useEffect(() => {
+        fetchShifts();
+        fetchStaff();
+    }, []);
+
+    // Helper to get staff display name
+    const getStaffName = (userId) => {
+        const u = staff.find(s => (s._id || s.id) === userId);
+        return u ? u.name : 'Unknown Staff';
+    };
+
+    // Derived active shifts
+    const activeShifts = useMemo(() => {
+        return shifts.filter(s => s.status === 'Active' || s.status === 'Pending');
+    }, [shifts]);
+
+    // Derived swaps/requests
+    const pendingSwaps = useMemo(() => {
+        return shifts.filter(s => s.status === 'SwapRequested');
+    }, [shifts]);
 
     const weekOptions = [
         { label: '01 Mar - 07 Mar', value: '01 Mar' },
@@ -28,8 +47,40 @@ export default function ShiftsPage() {
         { label: '15 Mar - 21 Mar', value: '15 Mar' },
     ];
 
-    const handleApproveSwap = (id) => {
-        setSwaps(swaps.map(s => s.id === id ? { ...s, status: 'Approved' } : s));
+    const handleApproveSwap = async (id) => {
+        try {
+            await updateShift(id, { status: 'Active' });
+        } catch (err) {
+            console.error('Swap approval failed:', err);
+        }
+    };
+
+    const handleGenerateRoster = async () => {
+        if (!activeOutlet) {
+            alert('Please select an outlet first.');
+            return;
+        }
+        setIsGenerating(true);
+        try {
+            // "AI Planner" logic: Create a default 9-5 shift for each staff member for the week
+            const promises = staff.slice(0, 5).map(s => {
+                return addShift({
+                    name: 'General Shift',
+                    startTime: '09:00',
+                    endTime: '17:00',
+                    outletId: activeOutlet._id || activeOutlet.id,
+                    assignedUserIds: [s._id || s.id],
+                    dayOfWeek: Math.floor(Math.random() * 7), // Random day for demo
+                    status: 'Active'
+                });
+            });
+            await Promise.all(promises);
+            setIsRosterModalOpen(false);
+        } catch (err) {
+            console.error('Roster generation failed:', err);
+        } finally {
+            setIsGenerating(false);
+        }
     };
     return (
         <div className="space-y-6">
@@ -73,30 +124,50 @@ export default function ShiftsPage() {
                         ))}
                     </div>
                     <div className="min-w-[800px] divide-y divide-border/40">
-                        {['Ananya S.', 'Rahul V.', 'Priya D.', 'Vikas S.'].map((staff, idx) => (
-                            <div key={staff} className="flex group hover:bg-surface-alt/30 transition-colors">
-                                <div className="w-40 px-4 py-5 shrink-0 flex items-center gap-2">
-                                    <div className="w-8 h-8 rounded-none bg-white flex items-center justify-center text-[10px] font-bold text-text-secondary border border-border/20">
-                                        {staff.charAt(0)}
+                        {staff.slice(0, 5).map((member, idx) => (
+                            <div key={member._id || member.id} className="flex group hover:bg-surface-alt/30 transition-colors">
+                                <div className="w-40 px-4 py-5 shrink-0 flex items-center gap-2 border-r border-border/40">
+                                    <div className="w-8 h-8 rounded-none bg-white flex items-center justify-center text-[10px] font-bold text-text-secondary border border-border/20 uppercase">
+                                        {member.name.charAt(0)}
                                     </div>
-                                    <span className="text-xs font-bold text-text transition-colors group-hover:text-primary">{staff}</span>
+                                    <span className="text-xs font-bold text-text transition-colors group-hover:text-primary truncate">{member.name}</span>
                                 </div>
-                                {[...Array(7)].map((_, i) => (
-                                    <div key={i} className="flex-1 min-h-[60px] p-2 border-l border-border/40">
-                                        {idx % 3 === i % 2 ? (
-                                            <div className="h-full bg-primary/10 border-l-2 border-primary p-2 rounded-r-none group/shift cursor-pointer hover:bg-primary/20 transition-all">
-                                                <p className="text-[9px] font-black text-primary uppercase leading-tight">09 AM - 05 PM</p>
-                                                <p className="text-[8px] font-medium text-primary mt-0.5 opacity-60">General Shift</p>
-                                            </div>
-                                        ) : i === 6 ? (
-                                            <div className="h-full bg-rose-500/5 flex items-center justify-center rounded-none border border-dashed border-rose-500/10">
-                                                <span className="text-[9px] font-black text-rose-500/40 uppercase">Day Off</span>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                ))}
+                                {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
+                                    const dayShifts = shifts.filter(s => 
+                                        s.dayOfWeek === dayIdx && 
+                                        s.assignedUserIds?.some(uid => (uid._id || uid.id || uid) === (member._id || member.id))
+                                    );
+                                    
+                                    return (
+                                        <div key={dayIdx} className="flex-1 min-h-[70px] p-2 border-l border-border/40 bg-surface/30">
+                                            {dayShifts.length > 0 ? (
+                                                dayShifts.map(s => (
+                                                    <div key={s._id || s.id} className={`h-full border-l-2 p-2 rounded-r-none group/shift cursor-pointer transition-all hover:brightness-105 ${s.colorClass || 'bg-primary/10 border-primary'}`}>
+                                                        <p className={`text-[9px] font-black uppercase leading-tight ${s.colorClass?.includes('primary') ? 'text-primary' : 'text-text'}`}>
+                                                            {s.startTime} - {s.endTime}
+                                                        </p>
+                                                        <p className="text-[8px] font-medium mt-0.5 opacity-60 truncate">{s.name}</p>
+                                                    </div>
+                                                ))
+                                            ) : dayIdx === 6 ? (
+                                                <div className="h-full bg-rose-500/5 flex items-center justify-center rounded-none border border-dashed border-rose-500/10">
+                                                    <span className="text-[9px] font-black text-rose-500/40 uppercase tracking-tighter">Off</span>
+                                                </div>
+                                            ) : (
+                                                <div className="h-full border border-dashed border-border/20 flex items-center justify-center group-hover:border-primary/20 transition-all">
+                                                    <Plus className="w-3 h-3 text-border group-hover:text-primary/40" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ))}
+                        {staff.length === 0 && !staffLoading && (
+                            <div className="py-20 text-center text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">
+                                No Staff Members Detected
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -112,22 +183,31 @@ export default function ShiftsPage() {
                         <span className="bg-emerald-500/10 text-emerald-500 text-[8px] sm:text-[10px] font-black px-2 py-0.5 rounded-none border border-emerald-500/20 uppercase tracking-widest animate-pulse">Live</span>
                     </div>
                     <div className="space-y-3 sm:space-y-4">
-                        {hires.map((item, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 sm:p-4 bg-white border border-border/60 rounded-none group hover:border-primary/20 transition-all cursor-pointer">
+                        {shiftsLoading ? (
+                            <div className="py-10 flex flex-col items-center gap-3">
+                                <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                                <span className="text-[9px] font-black text-text-muted uppercase tracking-widest">Scanning Grid...</span>
+                            </div>
+                        ) : activeShifts.length > 0 ? activeShifts.slice(0, 5).map((item, i) => (
+                            <div key={item._id || item.id} className="flex items-center justify-between p-3 sm:p-4 bg-white border border-border/60 rounded-none group hover:border-primary/20 transition-all cursor-pointer">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-none bg-white flex items-center justify-center border border-border/20 text-[10px] sm:text-xs font-bold text-text-muted">
-                                        {item.name.split(' ').map(n => n[0]).join('')}
+                                        {getStaffName(item.assignedUserIds?.[0]).split(' ').map(n => n[0]).join('')}
                                     </div>
                                     <div className="text-left">
-                                        <p className="text-xs sm:text-sm font-bold text-text group-hover:text-primary transition-colors">{item.name}</p>
-                                        <p className="text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-[0.1em] mt-0.5">{item.shift}</p>
+                                        <p className="text-xs sm:text-sm font-bold text-text group-hover:text-primary transition-colors">{getStaffName(item.assignedUserIds?.[0])}</p>
+                                        <p className="text-[9px] sm:text-[10px] font-black text-text-muted uppercase tracking-[0.1em] mt-0.5">{item.startTime} - {item.endTime} :: {item.name}</p>
                                     </div>
                                 </div>
-                                <button className="p-2 hover:bg-surface-alt rounded-lg transition-colors opacity-0 group-hover:opacity-100 hidden sm:block">
-                                    <MoreVertical className="w-4 h-4 text-text-muted" />
-                                </button>
+                                <div className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-none border ${item.status === 'Pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
+                                    {item.status}
+                                </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="py-10 text-center border border-dashed border-border/40">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">No Active Shifts Found</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -151,25 +231,30 @@ export default function ShiftsPage() {
                             </div>
                         </div>
 
-                        {swaps.filter(s => s.status === 'Pending').map((swap) => (
-                            <div key={swap.id} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-primary/5 border-l-2 border-primary rounded-r-none">
+                        {pendingSwaps.map((swap) => (
+                            <div key={swap._id || swap.id} className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 bg-primary/5 border-l-2 border-primary rounded-r-none">
                                 <div className="shrink-0">
                                     <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                                 </div>
                                 <div className="flex-1">
                                     <p className="text-xs sm:text-sm font-bold text-text uppercase tracking-tight">Shift Transfer Request</p>
                                     <p className="text-[10px] sm:text-[11px] text-text-secondary mt-1 leading-relaxed">
-                                        {swap.staff} ↔️ {swap.with} ({swap.day})
+                                        Staff ID: {swap.assignedUserIds?.[0]?.name || getStaffName(swap.assignedUserIds?.[0])} :: Requested Approval
                                     </p>
                                     <button
-                                        onClick={() => handleApproveSwap(swap.id)}
+                                        onClick={() => handleApproveSwap(swap._id || swap.id)}
                                         className="mt-3 text-[9px] sm:text-[10px] font-black text-primary uppercase tracking-widest flex items-center gap-1.5 hover:gap-2 transition-all"
                                     >
-                                        Approve Swap <CheckCircle2 className="w-3 h-3" />
+                                        Approve Shift <CheckCircle2 className="w-3 h-3" />
                                     </button>
                                 </div>
                             </div>
                         ))}
+                        {pendingSwaps.length === 0 && (
+                            <div className="p-10 text-center bg-surface/30 border border-dashed border-border/40">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">No Pending Approvals</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -201,28 +286,36 @@ export default function ShiftsPage() {
                         ))}
 
                         {/* Staff Rows */}
-                        {['Ananya S.', 'Rahul V.', 'Priya D.', 'Vikas S.'].map((staff, staffIdx) => (
-                            <div key={staff} className="contents group hover:bg-surface-alt/30 transition-colors">
+                        {staff.slice(0, 5).map((member, staffIdx) => (
+                            <div key={member._id || member.id} className="contents group hover:bg-surface-alt/30 transition-colors">
                                 <div className="col-span-1 px-4 py-4 shrink-0 flex items-center gap-2 border-b border-border/40">
                                     <div className="w-8 h-8 rounded-none bg-white flex items-center justify-center text-[10px] font-bold text-text-secondary border border-border/20">
-                                        {staff.charAt(0)}
+                                        {member.name.charAt(0)}
                                     </div>
-                                    <span className="text-xs font-bold text-text transition-colors group-hover:text-primary">{staff}</span>
+                                    <span className="text-xs font-bold text-text transition-colors group-hover:text-primary">{member.name}</span>
                                 </div>
-                                {[...Array(7)].map((_, dayIdx) => (
-                                    <div key={`${staff}-${dayIdx}`} className="col-span-1 min-h-[60px] p-2 border-l border-b border-border/40">
-                                        {staffIdx % 3 === dayIdx % 2 ? (
-                                            <div className="h-full bg-primary/10 border-l-2 border-primary p-2 rounded-r-none group/shift cursor-pointer hover:bg-primary/20 transition-all">
-                                                <p className="text-[9px] font-black text-primary uppercase leading-tight">09 AM - 05 PM</p>
-                                                <p className="text-[8px] font-medium text-primary mt-0.5 opacity-60">General Shift</p>
-                                            </div>
-                                        ) : dayIdx === 6 ? (
-                                            <div className="h-full bg-rose-500/5 flex items-center justify-center rounded-none border border-dashed border-rose-500/10">
-                                                <span className="text-[9px] font-black text-rose-500/40 uppercase">Day Off</span>
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                ))}
+                                {[0, 1, 2, 3, 4, 5, 6].map((dayIdx) => {
+                                    const dayShifts = shifts.filter(s => 
+                                        s.dayOfWeek === dayIdx && 
+                                        s.assignedUserIds?.some(uid => (uid._id || uid.id || uid) === (member._id || member.id))
+                                    );
+
+                                    return (
+                                        <div key={dayIdx} className="col-span-1 min-h-[60px] p-2 border-l border-b border-border/40">
+                                            {dayShifts.map(s => (
+                                                <div key={s._id || s.id} className={`h-full border-l-2 p-2 rounded-r-none group/shift cursor-pointer hover:brightness-105 transition-all mb-1 ${s.colorClass || 'bg-primary/10 border-primary'}`}>
+                                                    <p className="text-[9px] font-black text-primary uppercase leading-tight">{s.startTime} - {s.endTime}</p>
+                                                    <p className="text-[8px] font-medium text-primary mt-0.5 opacity-60">{s.name}</p>
+                                                </div>
+                                            ))}
+                                            {dayShifts.length === 0 && dayIdx === 6 && (
+                                                <div className="h-full bg-rose-500/5 flex items-center justify-center rounded-none border border-dashed border-rose-500/10">
+                                                    <span className="text-[9px] font-black text-rose-500/40 uppercase">Day Off</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         ))}
                     </div>
@@ -254,18 +347,24 @@ export default function ShiftsPage() {
                             <div className="pt-4 flex gap-3">
                                 <button
                                     onClick={() => setIsRosterModalOpen(false)}
-                                    className="flex-1 py-3 bg-white border border-border/60 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all"
+                                    disabled={isGenerating}
+                                    className="flex-1 py-3 bg-white border border-border/60 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        alert('Roster generated and staff notified via SMS.');
-                                        setIsRosterModalOpen(false);
-                                    }}
-                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    onClick={handleGenerateRoster}
+                                    disabled={isGenerating}
+                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    Launch AI Planner
+                                    {isGenerating ? (
+                                        <>
+                                            <Loader2 className="w-3 h-3 animate-spin" />
+                                            Architecting...
+                                        </>
+                                    ) : (
+                                        'Launch AI Planner'
+                                    )}
                                 </button>
                             </div>
                         </div>

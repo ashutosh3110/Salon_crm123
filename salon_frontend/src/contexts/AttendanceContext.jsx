@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import stylistData from '../data/stylistMockData.json';
 
 const AttendanceContext = createContext();
@@ -27,8 +27,10 @@ export const AttendanceProvider = ({ children }) => {
         };
     };
 
+    const value = useMemo(() => ({ logs, addLog, getStylistAttendanceStats }), [logs]);
+
     return (
-        <AttendanceContext.Provider value={{ logs, addLog, getStylistAttendanceStats }}>
+        <AttendanceContext.Provider value={value}>
             {children}
         </AttendanceContext.Provider>
     );

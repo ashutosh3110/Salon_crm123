@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 
@@ -22,47 +22,34 @@ export const getRedirectPath = (user) => {
 };
 
 
+// Determine current user role
+const resolveRole = () => {
+    const activeRole = localStorage.getItem('active_auth_role');
+    if (activeRole && localStorage.getItem(`auth_token_${activeRole}`)) {
+        return activeRole;
+    }
+
+    const path = window.location.pathname;
+    if (path.startsWith('/superadmin')) return 'superadmin';
+    if (path.startsWith('/manager')) return 'manager';
+    if (path.startsWith('/receptionist')) return 'receptionist';
+    if (path.startsWith('/stylist')) return 'stylist';
+    if (path.startsWith('/inventory')) return 'inventory_manager';
+    if (path.startsWith('/accountant')) return localStorage.getItem('auth_token_accountant') ? 'accountant' : 'admin';
+    if (path.startsWith('/admin')) return 'admin';
+
+    const roles = ['admin', 'manager', 'receptionist', 'stylist', 'superadmin', 'accountant', 'inventory_manager'];
+    return roles.find(r => localStorage.getItem(`auth_token_${r}`)) || null;
+};
+
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
-    // Determine current panel role from URL
-    const getCurrentPanel = (path) => {
-        if (path.startsWith('/superadmin')) return 'superadmin';
-        if (path.startsWith('/manager')) return 'manager';
-        if (path.startsWith('/receptionist')) return 'receptionist';
-        if (path.startsWith('/stylist')) return 'stylist';
-        if (path.startsWith('/inventory')) return 'inventory_manager';
-        if (path.startsWith('/accountant')) return 'accountant';
-        if (path.startsWith('/admin')) return 'admin';
-        return null; // Don't default to admin
-    };
-
-    /** Accountant routes allow admin; storage stays under auth_*_admin */
-    const resolveAccountantSessionRole = (panelRole) => {
-        if (panelRole !== 'accountant') return panelRole;
-        if (localStorage.getItem('auth_token_accountant')) return 'accountant';
-        if (localStorage.getItem('auth_token_admin')) return 'admin';
-        return 'accountant';
-    };
-
     useEffect(() => {
-        let role = getCurrentPanel(window.location.pathname);
-        role = resolveAccountantSessionRole(role);
-
-        // For shared pages like POS, prioritize the explicitly active role
-        if (!role || window.location.pathname.startsWith('/pos')) {
-            const activeRole = localStorage.getItem('active_auth_role');
-            if (activeRole && localStorage.getItem(`auth_token_${activeRole}`)) {
-                role = activeRole;
-            } else {
-                // Fallback: search for any logged-in role
-                const possibleRoles = ['admin', 'manager', 'receptionist', 'stylist', 'inventory_manager', 'accountant', 'superadmin'];
-                role = possibleRoles.find(r => localStorage.getItem(`auth_token_${r}`));
-            }
-        }
+        const role = resolveRole();
 
         if (!role) {
             setLoading(false);
@@ -216,7 +203,7 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const value = {
+    const value = useMemo(() => ({
         user,
         loading,
         login,
@@ -229,7 +216,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!user,
         getRedirectPath: () => getRedirectPath(user),
         getExitPath,
-    };
+    }), [user, loading, login, register, logout, refreshUser, getExitPath]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
