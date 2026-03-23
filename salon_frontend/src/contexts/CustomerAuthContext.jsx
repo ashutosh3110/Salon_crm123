@@ -72,12 +72,22 @@ export function CustomerAuthProvider({ children }) {
         return cust;
     };
 
-    const customerLogout = () => {
+ const customerLogout = async () => {
+        const fcmToken = localStorage.getItem('fcm_token');
+        if (fcmToken) {
+            try {
+                await api.post('/notifications/remove-token', { fcmToken });
+                localStorage.removeItem('fcm_token');
+            } catch (err) {
+                console.warn('[CustomerAuth] Failed to remove FCM token:', err.message);
+            }
+        }
         localStorage.removeItem('customer_token');
         localStorage.removeItem('customer_user');
         setCustomer(null);
         navigate('/app/login');
     };
+
 
     const updateCustomer = async (data) => {
         const updated = { ...customer, ...data };

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import httpStatus from 'http-status-codes';
 import Attendance, { STATUS_VALUES } from './attendance.model.js';
 import User from '../user/user.model.js';
+import notificationService from '../notification/notification.service.js';
 import { haversineMeters } from '../../utils/geo.js';
 
 function combineDateTime(dateStr, timeStr) {
@@ -326,6 +327,23 @@ const punch = async (tenantId, userId, { type, date, location, latitude, longitu
         const err = new Error('type must be in or out');
         err.statusCode = httpStatus.BAD_REQUEST;
         throw err;
+    }
+
+    // --- Notification for Admin ---
+    try {
+        const staffName = doc.userId?.name || user.name || 'Staff';
+        const action = type === 'in' ? 'Clocked In' : 'Clocked Out';
+        const time = new Date().toLocaleTimeString();
+        
+        await notificationService.sendToRole(tenantId, 'admin', {
+            type: 'attendance_alert',
+            title: `Attendance: ${staffName} ${action}`,
+            body: `${staffName} ${action} at ${time} from ${location || 'Salon'}.`,
+            actionUrl: '/admin/attendance',
+            data: { userId: userId.toString(), type }
+        });
+    } catch (err) {
+        console.warn('[Attendance] Notification failed:', err.message);
     }
 
     return Attendance.findById(doc._id)

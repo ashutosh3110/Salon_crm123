@@ -124,6 +124,11 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.Mixed,
             default: {},
         },
+        /** Firebase Cloud Messaging tokens for push notifications (multi-device) */
+        fcmTokens: {
+            type: [String],
+            default: [],
+        },
     },
     {
         timestamps: true,

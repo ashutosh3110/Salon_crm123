@@ -1,8 +1,31 @@
 import Inquiry from './inquiry.model.js';
+import notificationService from '../notification/notification.service.js';
+import User from '../user/user.model.js';
 
 class InquiryService {
     async createInquiry(tenantId, payload) {
-        return Inquiry.create({ ...payload, tenantId });
+        const inquiry = await Inquiry.create({ ...payload, tenantId });
+        
+        // --- Notification ---
+        try {
+            // Find Super Admins
+            const superAdmins = await User.find({ role: 'superadmin', status: 'active' }).select('_id');
+            const saIds = superAdmins.map(sa => sa._id);
+            
+            if (saIds.length > 0) {
+                await notificationService.sendToMany(saIds, {
+                    type: 'inquiry_new',
+                    title: 'New Website Inquiry',
+                    body: `${payload.name || 'Someone'} sent a message: "${payload.message?.substring(0, 50)}..."`,
+                    actionUrl: '/superadmin/inquiries',
+                    data: { inquiryId: inquiry._id.toString() }
+                });
+            }
+        } catch (err) {
+            console.warn('[Inquiry] Notification failed:', err.message);
+        }
+        
+        return inquiry;
     }
 
     async queryInquiries(tenantId, filter = {}, options = {}) {

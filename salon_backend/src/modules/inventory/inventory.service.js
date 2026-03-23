@@ -3,6 +3,7 @@ import InventoryTransaction from './inventoryTransaction.model.js';
 import Inventory from './inventory.model.js';
 import Product from '../product/product.model.js';
 import Outlet from '../outlet/outlet.model.js';
+import notificationService from '../notification/notification.service.js';
 
 class InventoryService {
     /**
@@ -105,6 +106,26 @@ class InventoryService {
             performedBy
         }], { session });
 
+        // --- Notifications for Low Stock ---
+        try {
+            const threshold = inventory.lowStockThreshold || 5;
+            if (inventory.quantity <= threshold) {
+                const product = await Product.findById(productId).select('name');
+                const outlet = await Outlet.findById(outletId).select('name');
+                const status = inventory.quantity <= threshold * 0.5 ? 'Critical' : 'Low Stock';
+                
+                await notificationService.sendToRole(tenantId, 'admin', {
+                    type: 'inventory_low',
+                    title: `Stock Alert: ${status}`,
+                    body: `${product?.name || 'Product'} is at ${inventory.quantity} units in ${outlet?.name || 'outlet'}. threshold: ${threshold}`,
+                    actionUrl: '/admin/inventory/alerts',
+                    data: { productId: productId.toString(), outletId: outletId.toString() }
+                });
+            }
+        } catch (err) {
+            console.warn('[Inventory] Notification failed:', err.message);
+        }
+
         return inventory;
     }
 
@@ -151,6 +172,26 @@ class InventoryService {
             performedBy,
             adjustmentDirection: type,
         });
+
+        // --- Notifications for Low Stock ---
+        try {
+            const threshold = inventory.lowStockThreshold || 5;
+            if (inventory.quantity <= threshold) {
+                const product = await Product.findById(productId).select('name');
+                const outlet = await Outlet.findById(outletId).select('name');
+                const status = inventory.quantity <= threshold * 0.5 ? 'Critical' : 'Low Stock';
+                
+                await notificationService.sendToRole(tenantId, 'admin', {
+                    type: 'inventory_low',
+                    title: `Stock Alert: ${status}`,
+                    body: `${product?.name || 'Product'} is at ${inventory.quantity} units in ${outlet?.name || 'outlet'}. threshold: ${threshold}`,
+                    actionUrl: '/admin/inventory/alerts',
+                    data: { productId: productId.toString(), outletId: outletId.toString() }
+                });
+            }
+        } catch (err) {
+            console.warn('[Inventory] Notification failed:', err.message);
+        }
 
         return inventory;
     }

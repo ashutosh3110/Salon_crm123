@@ -6,6 +6,10 @@ import { BusinessProvider } from './contexts/BusinessContext';
 import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 import { WalletProvider } from './contexts/WalletContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from 'react-hot-toast';
+import useFirebaseNotifications from './hooks/useFirebaseNotifications';
+import { useAuth } from './contexts/AuthContext';
+import { useCustomerAuth } from './contexts/CustomerAuthContext';
 
 // Public pages
 import LandingPage from './pages/landing/LandingPage';
@@ -36,6 +40,20 @@ function ScrollToHash() {
   }, [hash, pathname, state]);
 
   return null;
+}
+
+/**
+ * Sub-component used inside AuthProvider to access auth state
+ * and initialize push notifications via custom hook.
+ */
+function NotificationHandler() {
+  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: isCustomerAuthenticated } = useCustomerAuth();
+  
+  // Initialize notifications for both dashboard users and customer app users
+  useFirebaseNotifications(isAuthenticated || isCustomerAuthenticated);
+  
+  return <Toaster />;
 }
 
 // Admin layout & pages
@@ -186,6 +204,7 @@ function App() {
       <AuthProvider>
         <CustomerAuthProvider>
           <BusinessProvider>
+            <NotificationHandler />
             <WalletProvider>
               <CMSProvider>
                 <BookingRegistryProvider>

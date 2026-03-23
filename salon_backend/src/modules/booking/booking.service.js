@@ -1,14 +1,14 @@
-import bookingRepository from './booking.repository.js';
 import Booking from './booking.model.js';
-import User from '../user/user.model.js';
 import loyaltyService from '../loyalty/loyalty.service.js';
+import notificationService from '../notification/notification.service.js';
+import User from '../user/user.model.js';
 
 class BookingService {
     /**
      * Create a new booking
      */
     async createBooking(tenantId, bookingData) {
-        const { staffId, appointmentDate, duration, outletId } = bookingData;
+        const { staffId, appointmentDate, duration } = bookingData;
 
         // 1. Check for overlapping bookings for the same staff
         const start = new Date(appointmentDate);
@@ -35,21 +35,42 @@ class BookingService {
             throw new Error('Stylist is already booked for this time slot');
         }
 
-        let finalOutletId = outletId;
-        if (!finalOutletId && staffId) {
-            const staff = await User.findById(staffId).select('outletId').lean();
-            finalOutletId = staff?.outletId;
-        }
+        const booking = await bookingRepository.create({ ...bookingData, tenantId });
 
-        if (!finalOutletId) {
-            throw new Error('Outlet ID is required for booking');
-        }
-
-        const booking = await bookingRepository.create({ ...bookingData, tenantId, outletId: finalOutletId });
-
-        // If referral threshold is FIRST_SERVICE, reward on first successful booking creation.
         if (booking?.clientId) {
             await loyaltyService.handleReferralEvent(tenantId, booking.clientId, 'FIRST_SERVICE');
+        }
+
+        // --- Notifications ---
+        try {
+            // Populate necessary fields for notification message
+            const populated = await booking.populate(['clientId', 'staffId', 'serviceId']);
+            const clientName = populated.clientId?.name || 'A client';
+            const serviceName = populated.serviceId?.name || 'service';
+            
+            // 1. Notify Assigned Stylist
+            if (populated.staffId) {
+                await notificationService.sendNotification({
+                    recipientId: populated.staffId._id,
+                    tenantId,
+                    type: 'booking_new',
+                    title: 'New Appointment!',
+                    body: `${clientName} booked ${serviceName} for ${new Date(populated.appointmentDate).toLocaleString()}`,
+                    actionUrl: '/stylist/bookings',
+                    data: { bookingId: booking._id.toString() }
+                });
+            }
+
+            // 2. Notify Admin/Manager of the salon
+            await notificationService.sendToRole(tenantId, 'admin', {
+                type: 'booking_new',
+                title: 'New Booking Received',
+                body: `${clientName} booked with ${populated.staffId?.name || 'Unassigned'}`,
+                actionUrl: '/admin/bookings',
+                data: { bookingId: booking._id.toString() }
+            });
+        } catch (error) {
+            console.warn('[BookingService] Notification failed:', error.message);
         }
 
         return booking;
@@ -73,6 +94,51 @@ class BookingService {
 
         booking.status = status;
         await booking.save();
+
+        // --- Notifications ---
+        try {
+            const populated = await booking.populate(['clientId', 'staffId']);
+            const clientName = populated.clientId?.name || 'Client';
+
+            if (status === 'confirmed') {
+                // Notify Client
+                if (populated.clientId) {
+                    await notificationService.sendNotification({
+                        recipientId: populated.clientId._id,
+                        recipientType: 'client',
+                        tenantId,
+                        type: 'booking_confirmed',
+                        title: 'Appointment Confirmed',
+                        body: `Your booking for ${new Date(populated.appointmentDate).toLocaleDateString()} is confirmed!`,
+                        actionUrl: '/app/bookings'
+                    });
+                }
+            } else if (status === 'cancelled') {
+                // Notify Staff and Admin
+                const msg = {
+                    type: 'booking_cancelled',
+                    title: 'Appointment Cancelled',
+                    body: `The booking for ${clientName} has been cancelled.`,
+                    actionUrl: '/admin/bookings'
+                };
+                
+                if (populated.staffId) {
+                    await notificationService.sendNotification({
+                        recipientId: populated.staffId._id,
+                        tenantId,
+                        type: 'booking_cancelled',
+                        title: 'Booking Cancelled',
+                        body: `Your appointment with ${clientName} was cancelled.`,
+                        actionUrl: '/stylist/bookings'
+                    });
+                }
+                
+                await notificationService.sendToRole(tenantId, 'admin', msg);
+            }
+        } catch (error) {
+            console.warn('[BookingService] Status notification failed:', error.message);
+        }
+
         return booking;
     }
 
