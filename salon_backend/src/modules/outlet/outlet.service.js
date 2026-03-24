@@ -1,4 +1,5 @@
 import Outlet from './outlet.model.js';
+import Tenant from '../tenant/tenant.model.js';
 import { geocodeAddress } from '../../utils/geocode.js';
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -23,7 +24,14 @@ class OutletService {
 
     async createOutlet(outletBody) {
         const withGeo = await this._geocodeOutlet({ ...outletBody });
-        return Outlet.create(withGeo);
+        const outlet = await Outlet.create(withGeo);
+        
+        // Update Tenant outletsCount
+        if (outlet.tenantId) {
+            await Tenant.updateOne({ _id: outlet.tenantId }, { $inc: { outletsCount: 1 } });
+        }
+        
+        return outlet;
     }
 
     async getOutlets(tenantId, options = {}) {
@@ -92,7 +100,11 @@ class OutletService {
     async deleteOutletById(id, tenantId) {
         const outlet = await this.getOutletById(id, tenantId);
         if (!outlet) throw new Error('Outlet not found');
-        await outlet.remove();
+        await Outlet.deleteOne({ _id: id });
+        
+        // Update Tenant outletsCount
+        await Tenant.updateOne({ _id: tenantId }, { $inc: { outletsCount: -1 } });
+        
         return outlet;
     }
 }

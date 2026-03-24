@@ -1,11 +1,23 @@
 import httpStatus from 'http-status-codes';
+import mongoose from 'mongoose';
 import razorpayService from './razorpay.service.js';
 import subscriptionService from '../subscription/subscription.service.js';
+import Subscription from '../subscription/subscription.model.js';
 
 const createSubscriptionOrder = async (req, res, next) => {
     try {
         const { planId, billingCycle } = req.body;
-        const plan = await subscriptionService.getSubscriptionById(planId);
+        let plan;
+        if (mongoose.Types.ObjectId.isValid(planId)) {
+            plan = await subscriptionService.getSubscriptionById(planId);
+        } else {
+            plan = await Subscription.findOne({ 
+                $or: [
+                    { name: new RegExp(`^${planId}$`, 'i') },
+                    { tag: new RegExp(`^${planId}$`, 'i') }
+                ]
+            });
+        }
         
         if (!plan) {
             return res.status(404).send({ success: false, message: 'Plan not found' });
@@ -37,7 +49,8 @@ const createSubscriptionOrder = async (req, res, next) => {
 
 const verifySubscriptionPayment = async (req, res, next) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, billingCycle } = req.body;
+        const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
         
         const isValid = razorpayService.verifyPayment(
             razorpay_order_id,
@@ -46,15 +59,24 @@ const verifySubscriptionPayment = async (req, res, next) => {
         );
 
         if (!isValid) {
+            console.error('[RAZORPAY] Invalid signature for order:', razorpay_order_id);
             return res.status(httpStatus.BAD_REQUEST).send({
                 success: false,
                 message: 'Invalid payment signature'
             });
         }
 
+        console.log(`[RAZORPAY] Payment verified: order=${razorpay_order_id}, tenant=${tenantId}`);
+
+        // Finalize the upgrade in DB ONLY if tenant context exists (Admin Upgrade flow)
+        if (tenantId && planId) {
+            await subscriptionService.finalizeUpgrade(tenantId, planId, billingCycle, razorpay_payment_id);
+            console.log(`[SUBSCRIPTION] Finalized upgrade for tenant: ${tenantId}, plan: ${planId}`);
+        }
+
         res.status(httpStatus.OK).send({
             success: true,
-            message: 'Payment verified successfully'
+            message: req.user?.tenantId ? 'Payment verified and Subscription upgraded successfully' : 'Payment verified successfully'
         });
     } catch (error) {
         next(error);

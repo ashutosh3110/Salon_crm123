@@ -25,18 +25,20 @@ router
     .route('/manual-invoice')
     .post(superadminOnly, billingController.createManualInvoice);
 
-// Razorpay routes - Public for registration
+import optionalAuth from '../../middlewares/optionalAuth.js';
+
+// Razorpay routes - Public for registration, Optionally authenticated for upgrade
 router
     .route('/razorpay/create-order')
-    .post(razorpayController.createSubscriptionOrder);
+    .post(optionalAuth, razorpayController.createSubscriptionOrder);
 
 // Razorpay order for wallet recharge (admin-triggered)
 router
     .route('/razorpay/create-wallet-order')
-    .post(razorpayController.createWalletRechargeOrder);
+    .post(auth, razorpayController.createWalletRechargeOrder);
 
 router
     .route('/razorpay/verify-payment')
-    .post(razorpayController.verifySubscriptionPayment);
+    .post(optionalAuth, razorpayController.verifySubscriptionPayment);
 
 export default router;

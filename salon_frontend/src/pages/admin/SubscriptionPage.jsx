@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
     CheckCircle, 
     XCircle, 
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
 const ICON_MAP = {
@@ -35,15 +36,69 @@ const PLAN_COLORS = {
     amber: 'from-amber-500 to-orange-600'
 };
 
+const PLAN_RANK = {
+    'free': 0,
+    'basic': 1,
+    'pro': 2,
+    'enterprise': 3
+};
+
 export default function SubscriptionPage() {
     const { user, updateSubscription } = useAuth();
     const [billingCycle, setBillingCycle] = useState('monthly');
     const [downloadingInvoice, setDownloadingInvoice] = useState(false);
     const [upgrading, setUpgrading] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [plans, setPlans] = useState([]);
+    const [billingLogs, setBillingLogs] = useState([]);
+    const [loadingPlans, setLoadingPlans] = useState(true);
+
+    const { refreshUser } = useAuth();
+
+    const fetchPlans = useCallback(async () => {
+        setLoadingPlans(true);
+        try {
+            const res = await api.get('/subscriptions?active=true');
+            if (res.data?.success) {
+                setPlans(res.data.data.results || []);
+            }
+        } catch (e) {
+            console.error('Failed to fetch plans:', e);
+        } finally {
+            setLoadingPlans(false);
+        }
+    }, []);
+
+    const fetchBillingHistory = useCallback(async () => {
+        try {
+            const res = await api.get('/billing/my-transactions?limit=20');
+            if (res.data?.success) {
+                setBillingLogs(res.data.data.results || []);
+            }
+        } catch (e) {
+            console.error('Failed to fetch billing history:', e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchPlans();
+        fetchBillingHistory();
+    }, [fetchPlans, fetchBillingHistory]);
+
+    const ensureRazorpayLoaded = async () => {
+        if (window.Razorpay) return true;
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
     
-    const currentPlanId = user?.subscriptionPlan || 'p1';
-    const currentPlan = subscriptionData.INITIAL_PLANS.find(p => p.id === currentPlanId) || subscriptionData.INITIAL_PLANS[0];
+    const currentPlanName = user?.subscriptionPlan || 'free';
+    const displayPlans = (plans && plans.length > 0) ? plans : subscriptionData.INITIAL_PLANS;
+    const currentPlan = displayPlans.find(p => p.name?.toLowerCase() === currentPlanName.toLowerCase()) || displayPlans[0] || subscriptionData.INITIAL_PLANS[0];
 
     const handleDownloadInvoice = async () => {
         setDownloadingInvoice(true);
@@ -54,19 +109,77 @@ export default function SubscriptionPage() {
     };
 
     const handleUpgrade = async (plan) => {
-        setUpgrading(plan.id);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        updateSubscription(plan.id);
-        setUpgrading(null);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 5000);
+        setUpgrading(plan._id || plan.id);
+        try {
+            const isLoaded = await ensureRazorpayLoaded();
+            if (!isLoaded) throw new Error('Razorpay SDK failed to load');
+
+            // 1. Create Order
+            const orderRes = await api.post('/billing/razorpay/create-order', {
+                planId: plan._id || plan.id,
+                billingCycle: billingCycle
+            });
+
+            if (!orderRes.data.success) throw new Error(orderRes.data.message || 'Order creation failed');
+            const { orderId, amount, currency, keyId } = orderRes.data.data;
+
+            // 2. Open Razorpay Modal
+            const options = {
+                key: keyId,
+                amount: amount,
+                currency: currency,
+                name: 'Wapixo Salon CMS',
+                description: `Upgrade to ${plan.name} (${billingCycle})`,
+                order_id: orderId,
+                handler: async (response) => {
+                    try {
+                        // 3. Verify Payment & Finalize Upgrade
+                        const verifyRes = await api.post('/billing/razorpay/verify-payment', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            planId: plan._id || plan.id,
+                            billingCycle: billingCycle
+                        });
+
+                        if (verifyRes.data.success) {
+                            setShowSuccess(true);
+                            await refreshUser();
+                            await fetchBillingHistory();
+                            setTimeout(() => setShowSuccess(false), 5000);
+                        }
+                    } catch (err) {
+                        alert('Payment verification failed. If amount was deducted, please contact support.');
+                    } finally {
+                        setUpgrading(null);
+                    }
+                },
+                modal: { ondismiss: () => setUpgrading(null) },
+                prefill: {
+                    name: user?.name,
+                    email: user?.email,
+                    contact: user?.phone
+                },
+                theme: { color: '#8B1A2D' }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+
+        } catch (error) {
+            console.error('Upgrade flow failed:', error);
+            alert(error.message || 'Upgrade failed to initiate');
+            setUpgrading(null);
+        }
     };
 
-    const billingHistory = [
-        { id: 'INV-2026-001', date: '2026-03-12', amount: '₹49,990', status: 'Paid', method: '•••• 4242' },
-        { id: 'INV-2025-012', date: '2025-03-12', amount: '₹49,990', status: 'Paid', method: '•••• 4242' },
-        { id: 'INV-2024-001', date: '2024-03-12', amount: '₹19,990', status: 'Paid', method: 'Bank Transfer' },
-    ];
+    const displayBillingHistory = billingLogs.map(b => ({
+        id: b.invoiceNumber,
+        date: new Date(b.createdAt).toLocaleDateString(),
+        amount: `₹${b.totalAmount.toLocaleString()}`,
+        status: (b.status || 'paid').toUpperCase(),
+        method: b.paymentMethod || 'Manual'
+    }));
 
     return (
         <div className="space-y-4 pb-6 relative font-sans">
@@ -154,17 +267,21 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    {subscriptionData.INITIAL_PLANS.map((plan) => {
-                        const isCurrent = plan.id === currentPlanId;
+                    {displayPlans.map((plan) => {
+                        const isCurrent = plan.name?.toLowerCase() === currentPlanName.toLowerCase();
+                        const currentRank = PLAN_RANK[currentPlanName.toLowerCase()] || 0;
+                        const targetRank = PLAN_RANK[plan.name?.toLowerCase()] || 0;
+                        const isDowngrade = targetRank < currentRank;
+                        
                         const c = PLAN_COLORS[plan.color] || PLAN_COLORS.blue;
                         
                         return (
-                            <div key={plan.id} className={`bg-white border flex flex-col transition-all duration-300 rounded-2xl overflow-hidden ${isCurrent ? 'border-primary ring-4 ring-primary/5 bg-primary/[0.01]' : 'border-border hover:border-text hover:shadow-xl hover:-translate-y-1'}`}>
+                            <div key={plan.id} className={`bg-white border flex flex-col transition-all duration-300 rounded-2xl overflow-hidden ${isCurrent ? 'border-primary ring-4 ring-primary/5 bg-primary/[0.01]' : isDowngrade ? 'border-border opacity-70 grayscale-[0.5]' : 'border-border hover:border-text hover:shadow-xl hover:-translate-y-1'}`}>
                                 <div className={`h-1 bg-gradient-to-r ${c}`} />
                                 <div className="p-3 flex-1 space-y-3">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${isCurrent ? 'text-primary' : 'text-text-muted'}`}>{plan.tag}</p>
+                                            <p className={`text-xs font-bold uppercase tracking-wider mb-1 ${isCurrent ? 'text-primary' : 'text-text-muted'}`}>{plan.tag || 'SUBSCRIPTION'}</p>
                                             <h4 className="text-2xl font-bold text-text tracking-tight">{plan.name}</h4>
                                         </div>
                                         {isCurrent && <CheckCircle className="w-6 h-6 text-primary" />}
@@ -179,7 +296,7 @@ export default function SubscriptionPage() {
 
                                     <div className="space-y-2">
                                         <ul className="space-y-1.5">
-                                            {subscriptionData.ALL_FEATURES.slice(0, 6).map(feat => {
+                                            {subscriptionData.ALL_FEATURES.slice(0, 12).map(feat => {
                                                 const hasAccess = plan.features[feat.key];
                                                 return (
                                                     <li key={feat.key} className={`flex items-center gap-2 ${hasAccess ? 'text-text-secondary' : 'text-text-muted/30 line-through'}`}>
@@ -199,13 +316,17 @@ export default function SubscriptionPage() {
                                         <div className="w-full py-2 bg-surface text-text-muted text-[8px] font-black uppercase tracking-widest text-center border border-border italic font-mono">
                                             Active
                                         </div>
+                                    ) : isDowngrade ? (
+                                        <div className="w-full py-2 bg-surface text-text-muted text-[8px] font-black uppercase tracking-widest text-center border border-border opacity-50">
+                                            Restricted
+                                        </div>
                                     ) : (
                                         <button 
                                             onClick={() => handleUpgrade(plan)}
                                             disabled={upgrading !== null}
                                             className="w-full py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 font-mono"
                                         >
-                                            {upgrading === plan.id ? 'Syncing...' : 'Upgrade Now'}
+                                            {upgrading === (plan._id || plan.id) ? 'Processing...' : 'Upgrade Now'}
                                         </button>
                                     )}
                                 </div>
@@ -225,8 +346,8 @@ export default function SubscriptionPage() {
                         <thead>
                             <tr className="bg-surface">
                                 <th className="p-4 border border-border text-left text-xs font-bold uppercase tracking-wider">Protocol Attributes</th>
-                                {subscriptionData.INITIAL_PLANS.map(plan => (
-                                    <th key={plan.id} className={`p-4 border border-border text-center ${plan.id === currentPlanId ? 'text-primary' : 'text-text'}`}>
+                                {displayPlans.map(plan => (
+                                    <th key={plan._id || plan.id} className={`p-4 border border-border text-center ${plan.name.toLowerCase() === currentPlanName.toLowerCase() ? 'text-primary' : 'text-text'}`}>
                                         <span className="text-xs font-bold uppercase tracking-wider">{plan.name}</span>
                                     </th>
                                 ))}
@@ -235,16 +356,16 @@ export default function SubscriptionPage() {
                         <tbody className="text-[11px] font-medium">
                             <tr>
                                 <td className="p-4 border border-border text-text-secondary font-bold uppercase tracking-tight text-xs">Outlets allowed</td>
-                                {subscriptionData.INITIAL_PLANS.map(p => (
-                                    <td key={p.id} className="p-4 border border-border text-center text-text font-black text-sm">
+                                {displayPlans.map(p => (
+                                    <td key={p._id || p.id} className="p-4 border border-border text-center text-text font-black text-sm">
                                         {p.limits.outletLimit === 999 ? '∞' : p.limits.outletLimit}
                                     </td>
                                 ))}
                             </tr>
                             <tr>
                                 <td className="p-4 border border-border text-text-secondary font-bold uppercase tracking-tight text-xs">Staff Profiles</td>
-                                {subscriptionData.INITIAL_PLANS.map(p => (
-                                    <td key={p.id} className="p-4 border border-border text-center text-text font-black text-sm">
+                                {displayPlans.map(p => (
+                                    <td key={p._id || p.id} className="p-4 border border-border text-center text-text font-black text-sm">
                                         {p.limits.staffLimit === 999 ? '∞' : p.limits.staffLimit}
                                     </td>
                                 ))}
@@ -252,9 +373,9 @@ export default function SubscriptionPage() {
                             {subscriptionData.ALL_FEATURES.map(feat => (
                                 <tr key={feat.key}>
                                     <td className="p-3 border border-border text-text-secondary uppercase font-bold text-[10px] tracking-tight">{feat.label}</td>
-                                    {subscriptionData.INITIAL_PLANS.map(p => (
-                                        <td key={p.id} className="p-2 border border-border text-center">
-                                            {p.features[feat.key] 
+                                    {displayPlans.map(p => (
+                                        <td key={p._id || p.id} className="p-2 border border-border text-center">
+                                            {p.features?.[feat.key] 
                                                 ? <CheckCircle className="w-3 h-3 text-emerald-500 mx-auto" />
                                                 : <XCircle className="w-3 h-3 text-rose-300 mx-auto opacity-20" />
                                             }
@@ -284,24 +405,41 @@ export default function SubscriptionPage() {
                             </tr>
                         </thead>
                         <tbody className="text-[11px] font-bold font-sans">
-                            {billingHistory.map((item) => (
-                                <tr key={item.id} className="hover:bg-surface/50">
-                                    <td className="p-3 border border-border text-text font-medium truncate">{item.id}</td>
-                                    <td className="p-3 border border-border text-text-muted font-medium">{item.date}</td>
-                                    <td className="p-3 border border-border text-text font-semibold">{item.amount}</td>
-                                    <td className="p-3 border border-border">
-                                        <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold rounded-full">PAID</span>
-                                    </td>
-                                    <td className="p-3 border border-border">
-                                        <button 
-                                            onClick={handleDownloadInvoice}
-                                            className="text-primary hover:text-primary-dark font-bold text-xs flex items-center gap-1 transition-colors"
-                                        >
-                                            Inbound
-                                        </button>
+                            {displayBillingHistory.length > 0 ? (
+                                displayBillingHistory.map((item) => (
+                                    <tr key={item.id} className="hover:bg-surface/50">
+                                        <td className="p-3 border border-border text-text font-medium truncate">{item.id}</td>
+                                        <td className="p-3 border border-border text-text-muted font-medium">{item.date}</td>
+                                        <td className="p-3 border border-border text-text font-semibold">{item.amount}</td>
+                                        <td className="p-3 border border-border">
+                                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                                item.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 
+                                                item.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 
+                                                'bg-rose-100 text-rose-700'
+                                            }`}>
+                                                {item.status}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 border border-border">
+                                            <button 
+                                                onClick={handleDownloadInvoice}
+                                                className="text-primary hover:text-primary-dark font-bold text-xs flex items-center gap-1 transition-colors"
+                                            >
+                                                Inbound
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="5" className="p-12 text-center border border-border">
+                                        <div className="flex flex-col items-center gap-2 opacity-40">
+                                            <Activity className="w-8 h-8" />
+                                            <p className="text-[10px] font-black uppercase tracking-[0.2em]">Zero Activity Recorded</p>
+                                        </div>
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>

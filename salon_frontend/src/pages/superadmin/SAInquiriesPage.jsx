@@ -3,42 +3,64 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     MessageSquare, Search, Filter, Calendar,
     MoreVertical, User, Mail, Phone, Building2,
-    CheckCircle2, Clock, Trash2, ArrowUpRight
+    CheckCircle2, Clock, Trash2, ArrowUpRight, Loader2
 } from 'lucide-react';
+import api from '../../services/api';
 
 export default function SAInquiriesPage() {
+    const [loading, setLoading] = useState(true);
     const [inquiries, setInquiries] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
 
-    useEffect(() => {
-        const stored = JSON.parse(localStorage.getItem('wapixo_inquiries') || '[]');
-        setInquiries(stored);
-    }, []);
-
-    const filteredInquiries = inquiries.filter(item => {
-        const matchesSearch =
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.salonName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.email.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
-
-        return matchesSearch && matchesStatus;
-    });
-
-    const updateStatus = (id, newStatus) => {
-        const updated = inquiries.map(item =>
-            item.id === id ? { ...item, status: newStatus } : item
-        );
-        setInquiries(updated);
-        localStorage.setItem('wapixo_inquiries', JSON.stringify(updated));
+    const fetchInquiries = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                status: filterStatus !== 'all' ? filterStatus : undefined,
+                search: searchQuery || undefined
+            };
+            const response = await api.get('/leads', { params });
+            setInquiries(response.data.data.results || []);
+        } catch (error) {
+            console.error('Error fetching leads:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const deleteInquiry = (id) => {
-        const updated = inquiries.filter(item => item.id !== id);
-        setInquiries(updated);
-        localStorage.setItem('wapixo_inquiries', JSON.stringify(updated));
+    useEffect(() => {
+        fetchInquiries();
+    }, [filterStatus]);
+
+    // Handle search with a small delay or on enter
+    const handleSearch = (e) => {
+        if (e.key === 'Enter') {
+            fetchInquiries();
+        }
+    };
+
+    const filteredInquiries = inquiries; // Filtering is handled by backend now
+
+    const updateStatus = async (id, newStatus) => {
+        try {
+            await api.patch(`/leads/${id}`, { status: newStatus });
+            setInquiries(inquiries.map(item =>
+                item._id === id ? { ...item, status: newStatus } : item
+            ));
+        } catch (error) {
+            console.error('Error updating status:', error);
+        }
+    };
+
+    const deleteInquiry = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this inquiry?')) return;
+        try {
+            await api.delete(`/leads/${id}`);
+            setInquiries(inquiries.filter(item => item._id !== id));
+        } catch (error) {
+            console.error('Error deleting inquiry:', error);
+        }
     };
 
     return (
@@ -46,7 +68,7 @@ export default function SAInquiriesPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text italic">Inquiries</h1>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Inquiries</h1>
                     <p className="text-text-muted text-sm font-medium">Manage incoming salon leads and partnership requests.</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -67,9 +89,15 @@ export default function SAInquiriesPage() {
                         type="text"
                         placeholder="Search by name, salon or email..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={handleSearch}
                         className="w-full pl-10 pr-4 py-2.5 bg-surface text-sm font-medium border-none focus:ring-1 focus:ring-primary/20"
                     />
+                    <button 
+                        onClick={fetchInquiries}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary text-white text-[10px] font-bold px-2 py-1"
+                    >
+                        GO
+                    </button>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex items-center bg-surface border border-border px-4 py-2 gap-3 min-w-[160px]">
@@ -103,11 +131,20 @@ export default function SAInquiriesPage() {
                     </thead>
                     <tbody>
                         <AnimatePresence mode="popLayout">
-                            {filteredInquiries.length > 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="6" className="px-6 py-20 text-center">
+                                        <div className="flex flex-col items-center">
+                                            <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
+                                            <p className="text-sm text-text-muted font-medium italic">Fetching latest inquiries...</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredInquiries.length > 0 ? (
                                 filteredInquiries.map((item) => (
                                     <motion.tr
                                         layout
-                                        key={item.id}
+                                        key={item._id}
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         exit={{ opacity: 0 }}
@@ -122,7 +159,7 @@ export default function SAInquiriesPage() {
                                                     <div className="text-sm font-bold text-text truncate max-w-[180px]">{item.name}</div>
                                                     <div className="flex items-center gap-1.5 text-[11px] text-text-muted font-medium mt-0.5">
                                                         <Building2 className="w-3 h-3 text-text-muted/60" />
-                                                        {item.salonName}
+                                                        {item.salonName || 'Platform Lead'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -145,7 +182,7 @@ export default function SAInquiriesPage() {
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-2 text-xs font-bold text-text-secondary">
                                                 <Calendar className="w-3.5 h-3.5 text-text-muted" />
-                                                {new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                                                {new Date(item.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                                             </div>
                                         </td>
                                         <td className="px-6 py-5">
@@ -153,8 +190,6 @@ export default function SAInquiriesPage() {
                                                 ${item.status === 'new' ? 'bg-amber-100 text-amber-700' :
                                                     item.status === 'contacted' ? 'bg-emerald-100 text-emerald-700' :
                                                         'bg-gray-100 text-gray-700'}`}>
-                                                {item.status === 'new' && <Clock className="w-3 h-3" />}
-                                                {item.status === 'contacted' && <CheckCircle2 className="w-3 h-3" />}
                                                 {item.status}
                                             </div>
                                         </td>
@@ -162,7 +197,7 @@ export default function SAInquiriesPage() {
                                             <div className="flex items-center justify-end gap-1 opacity-100 group-hover:opacity-100 transition-opacity">
                                                 {item.status === 'new' && (
                                                     <button
-                                                        onClick={() => updateStatus(item.id, 'contacted')}
+                                                        onClick={() => updateStatus(item._id, 'contacted')}
                                                         className="p-2 hover:bg-emerald-50 text-emerald-600 transition-colors"
                                                         title="Mark as Contacted"
                                                     >
@@ -170,7 +205,7 @@ export default function SAInquiriesPage() {
                                                     </button>
                                                 )}
                                                 <button
-                                                    onClick={() => deleteInquiry(item.id)}
+                                                    onClick={() => deleteInquiry(item._id)}
                                                     className="p-2 hover:bg-red-50 text-red-600 transition-colors"
                                                     title="Delete Inquiry"
                                                 >
@@ -187,7 +222,7 @@ export default function SAInquiriesPage() {
                                             <div className="w-16 h-16 bg-surface flex items-center justify-center mb-4">
                                                 <MessageSquare className="w-8 h-8 text-text-muted/30" strokeWidth={1} />
                                             </div>
-                                            <h3 className="text-lg font-black text-text italic">Zero Leads found</h3>
+                                            <h3 className="text-lg font-black text-text">Zero Leads found</h3>
                                             <p className="text-sm text-text-muted max-w-[280px] mt-1 font-medium italic">
                                                 Try adjusting your filters or search terms.
                                             </p>

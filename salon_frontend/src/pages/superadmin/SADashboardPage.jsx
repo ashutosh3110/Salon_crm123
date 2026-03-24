@@ -106,6 +106,7 @@ function SectionHeader({ title, subtitle, action }) {
 /* ══════════════════════════════════════════════════════════════════════════ */
 export default function SADashboardPage() {
     const [stats, setStats] = useState(null);
+    const [analytics, setAnalytics] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [recentTenants, setRecentTenants] = useState([]);
@@ -114,10 +115,17 @@ export default function SADashboardPage() {
     const fetchStats = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         try {
-            const response = await api.get('/tenants/stats');
-            const data = response.data.data;
-            setStats(data);
-            setRecentTenants(data.recentTenants || []);
+            const [tenantRes, analyticsRes] = await Promise.all([
+                api.get('/tenants/stats'),
+                api.get('/analytics/stats')
+            ]);
+            
+            const tenantData = tenantRes.data.data;
+            const analyticsData = analyticsRes.data;
+            
+            setStats(tenantData);
+            setAnalytics(analyticsData);
+            setRecentTenants(tenantData.recentTenants || []);
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
         } finally {
@@ -128,15 +136,15 @@ export default function SADashboardPage() {
 
     useEffect(() => { fetchStats(); }, []);
 
-    /* ── KPI values: Pure mock ── */
+    /* ── KPI values: Live ── */
     const kpi = {
         totalSalons: stats?.totalSalons || 0,
         activeSubs: stats?.activeSalons || 0,
         trialSalons: stats?.countsByStatus?.find(v => v._id === 'trial')?.count || 0,
-        revenueToday: stats?.currentMonthlyRevenue ? Math.round(stats.currentMonthlyRevenue / 30) : 0, // mock daily revenue
-        revenueMonth: stats?.currentMonthlyRevenue || 0,
+        revenueToday: analytics?.kpis?.mrr ? Math.round(analytics.kpis.mrr / 30) : 0,
+        revenueMonth: analytics?.kpis?.mrr || 0,
         expiredPlans: stats?.countsByStatus?.find(v => v._id === 'expired')?.count || 0,
-        totalUsers: (stats?.activeSalons || 0) * 5 + 10, // heuristic mock users
+        totalUsers: analytics?.kpis?.totalSalons ? analytics.kpis.totalSalons * 4 : 0, // Estimating 4 users per salon
     };
 
     const planDataMapping = [
@@ -205,15 +213,11 @@ export default function SADashboardPage() {
                         }
                     />
                     <ResponsiveContainer width="100%" height={220}>
-                        <AreaChart data={MOCK_MONTHLY_REVENUE} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+                        <AreaChart data={analytics?.mrrTrend || []} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#B85C5C" stopOpacity={0.25} />
                                     <stop offset="95%" stopColor="#B85C5C" stopOpacity={0} />
-                                </linearGradient>
-                                <linearGradient id="prevGrad" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#94a3b8" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#94a3b8" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -222,8 +226,7 @@ export default function SADashboardPage() {
                                 tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTooltip prefix="₹" />} />
                             <Legend wrapperStyle={{ fontSize: 11 }} />
-                            <Area type="monotone" dataKey="prev" name="Prev Period" stroke="#94a3b8" strokeWidth={1.5} fill="url(#prevGrad)" dot={false} strokeDasharray="4 2" />
-                            <Area type="monotone" dataKey="revenue" name="This Period" stroke="#B85C5C" strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                            <Area type="monotone" dataKey="mrr" name="This Period" stroke="#B85C5C" strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 6 }} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
@@ -270,7 +273,7 @@ export default function SADashboardPage() {
                         }
                     />
                     <ResponsiveContainer width="100%" height={200}>
-                        <BarChart data={MOCK_REGISTRATIONS} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={28}>
+                        <BarChart data={analytics?.salonGrowth || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={28}>
                             <defs>
                                 <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="#B85C5C" />
@@ -298,7 +301,7 @@ export default function SADashboardPage() {
                         }
                     />
                     <ResponsiveContainer width="100%" height={200}>
-                        <LineChart data={MOCK_CHURN} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <LineChart data={analytics?.churnTrend || []} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="churnGrad" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2} />

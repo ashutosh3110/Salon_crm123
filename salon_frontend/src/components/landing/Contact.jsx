@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react';
+import api from '../../services/api';
 
 export default function Contact() {
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -14,10 +16,18 @@ export default function Contact() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert('Thank you! We will get back to you within 24 hours.');
-        setFormData({ name: '', email: '', phone: '', message: '' });
+        setLoading(true);
+        try {
+            await api.post('/leads', formData);
+            alert('Thank you! We will get back to you within 24 hours.');
+            setFormData({ name: '', email: '', phone: '', message: '' });
+        } catch (err) {
+            alert('Something went wrong. Please try again or call us.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -111,8 +121,8 @@ export default function Contact() {
                                     type="submit"
                                     className="bg-primary text-white font-black text-xs uppercase tracking-[0.2em] px-12 py-4 rounded-full shadow-lg shadow-primary/20 transition-all inline-flex items-center gap-2"
                                 >
-                                    <Send className="w-3 h-3" />
-                                    Send
+                                    {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                                    {loading ? 'Sending...' : 'Send'}
                                 </motion.button>
                             </form>
                         </motion.div>

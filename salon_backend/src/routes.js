@@ -35,6 +35,7 @@ import payrollRoute from './modules/payroll/payroll.routes.js';
 import hrPerformanceRoute from './modules/hrPerformance/hrPerformance.routes.js';
 import dashboardRoute from './modules/dashboard/dashboard.routes.js';
 import stylistRoute from './modules/stylist/stylist.routes.js';
+import leadRoute from './modules/lead/lead.routes.js';
 
 const router = express.Router();
 
@@ -181,6 +182,10 @@ const protectedRoutes = [
     {
         path: '/stylist',
         route: stylistRoute,
+    },
+    {
+        path: '/leads',
+        route: leadRoute,
     },
 ];
 

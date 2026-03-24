@@ -1,5 +1,6 @@
 import httpStatus from 'http-status-codes';
 import userService from './user.service.js';
+import Tenant from '../tenant/tenant.model.js';
 
 async function createUser(req, res, next) {
     try {
@@ -120,6 +121,16 @@ async function getMe(req, res, next) {
         await fresh.populate({ path: 'outletId', select: 'name address' });
         const userObj = fresh.toObject();
         delete userObj.password;
+
+        // Merge Tenant Subscription Info
+        if (fresh.tenantId) {
+            const tenant = await Tenant.findById(fresh.tenantId).select('subscriptionPlan status');
+            if (tenant) {
+                userObj.subscriptionPlan = tenant.subscriptionPlan;
+                userObj.subscriptionStatus = tenant.status;
+            }
+        }
+
         res.send(userObj);
     } catch (error) {
         next(error);

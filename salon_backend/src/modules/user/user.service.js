@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import userRepository from './user.repository.js';
 import User from './user.model.js';
 import Outlet from '../outlet/outlet.model.js';
+import Tenant from '../tenant/tenant.model.js';
 
 class UserService {
     async createUser(userBody) {
@@ -15,7 +16,14 @@ class UserService {
             body.password = `Salon@${Math.random().toString(36).slice(2, 10)}${Math.floor(Math.random() * 90 + 10)}`;
         }
         if (body.salary != null) body.salary = Number(body.salary) || 0;
-        return userRepository.create(body);
+        const user = await userRepository.create(body);
+        
+        // Update Tenant staffCount
+        if (user.tenantId && user.role !== 'superadmin') {
+            await Tenant.updateOne({ _id: user.tenantId }, { $inc: { staffCount: 1 } });
+        }
+        
+        return user;
     }
 
     async getUserById(id) {
@@ -88,6 +96,11 @@ class UserService {
             throw err;
         }
         await userRepository.deleteOne({ _id: id });
+
+        // Update Tenant staffCount
+        if (user.tenantId && user.role !== 'superadmin') {
+            await Tenant.updateOne({ _id: user.tenantId }, { $inc: { staffCount: -1 } });
+        }
     }
 }
 
