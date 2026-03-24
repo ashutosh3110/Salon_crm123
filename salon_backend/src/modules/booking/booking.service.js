@@ -1,4 +1,5 @@
 import Booking from './booking.model.js';
+import bookingRepository from './booking.repository.js';
 import loyaltyService from '../loyalty/loyalty.service.js';
 import notificationService from '../notification/notification.service.js';
 import User from '../user/user.model.js';

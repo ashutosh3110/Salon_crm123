@@ -3,6 +3,7 @@ import userRepository from './user.repository.js';
 import User from './user.model.js';
 import Outlet from '../outlet/outlet.model.js';
 import Tenant from '../tenant/tenant.model.js';
+import emailService from '../notification/email.service.js';
 
 class UserService {
     async createUser(userBody) {
@@ -21,6 +22,14 @@ class UserService {
         // Update Tenant staffCount
         if (user.tenantId && user.role !== 'superadmin') {
             await Tenant.updateOne({ _id: user.tenantId }, { $inc: { staffCount: 1 } });
+            
+            // Send Onboarding Email with Credentials
+            const tenant = await Tenant.findById(user.tenantId);
+            const salonName = tenant ? tenant.name : 'Your Salon';
+            const plainPassword = body.password; // This is the generated (or provided) plain password
+            
+            // Trigger email (no await to avoid slowing down API response)
+            emailService.sendStaffCredentialsEmail(user.email, user.name, user.role, salonName, plainPassword);
         }
         
         return user;

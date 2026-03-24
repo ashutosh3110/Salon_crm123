@@ -6,6 +6,7 @@ import loyaltyService from '../loyalty/loyalty.service.js';
 import promotionService from '../promotion/promotion.service.js';
 import Commission from '../hr/commission.model.js';
 import Transaction from '../finance/transaction.model.js';
+import Service from '../service/service.model.js';
 import logger from '../../utils/logger.js';
 
 const generateInvoiceNumber = () => `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -58,22 +59,38 @@ class PosService {
                 } else if (item.type === 'service') {
                     const total = item.price * item.quantity;
                     subTotal += total;
+
+                    // Fetch service commission settings from DB
+                    const serviceDoc = await Service.findOne({ _id: item.itemId, tenantId }).session(session);
+                    
                     processedItems.push({
                         ...item,
                         total,
-                        stylistId: item.stylistId || null
+                        stylistId: item.stylistId || (item.staffIds && item.staffIds[0]) || null,
+                        staffIds: item.staffIds || (item.stylistId ? [item.stylistId] : [])
                     });
 
-                    // Commission Calculation (Default 10% for now)
-                    if (item.stylistId) {
-                        const commissionAmount = total * 0.10; // 10% commission
-                        commissions.push({
-                            staffId: item.stylistId,
-                            serviceId: item.itemId,
-                            amount: commissionAmount,
-                            baseAmount: total,
-                            percentage: 10,
-                            tenantId
+                    // Commission Calculation
+                    const staffIds = item.staffIds || (item.stylistId ? [item.stylistId] : []);
+                    if (staffIds.length > 0 && serviceDoc && serviceDoc.commissionApplicable) {
+                        let totalCommissionAmount = 0;
+                        if (serviceDoc.commissionType === 'percent') {
+                            totalCommissionAmount = total * (serviceDoc.commissionValue / 100);
+                        } else {
+                            totalCommissionAmount = serviceDoc.commissionValue * item.quantity;
+                        }
+
+                        // Split commission among all assigned stylists
+                        const splitAmount = totalCommissionAmount / staffIds.length;
+                        staffIds.forEach(sid => {
+                            commissions.push({
+                                staffId: sid,
+                                serviceId: item.itemId,
+                                amount: splitAmount,
+                                baseAmount: total / staffIds.length,
+                                percentage: serviceDoc.commissionType === 'percent' ? serviceDoc.commissionValue : null,
+                                tenantId
+                            });
                         });
                     }
                 }

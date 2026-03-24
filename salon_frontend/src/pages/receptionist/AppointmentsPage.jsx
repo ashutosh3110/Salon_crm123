@@ -69,22 +69,36 @@ export default function AppointmentsPage() {
                 ]);
 
                 if (bookingsRes.data.results) {
-                    setAppointments(bookingsRes.data.results.map(b => ({
+                    const allBookings = bookingsRes.data.results;
+                    setAppointments(allBookings.map(b => ({
                         id: b.id || b._id,
                         client: b.clientId?.name || 'Walk-in',
                         service: b.serviceId?.name || 'Unknown',
                         time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
                         professional: b.staffId?.name || 'Unassigned',
+                        staffId: b.staffId?._id || b.staffId?.id || null,
                         status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
                         price: `₹${b.price || 0}`,
                         phone: b.clientId?.phone || b.phone || '',
                         source: b.source || 'APP',
                         isRegistry: false
                     })));
+
+                    // Determine busy staff (arrived or in-progress)
+                    const busyStaffIds = allBookings
+                        .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
+                        .map(b => b.staffId?._id || b.staffId?.id)
+                        .filter(Boolean);
+
+                    if (staffRes.data.success) {
+                        setStaff(staffRes.data.data.results.map(s => ({
+                            ...s,
+                            isAvailable: !busyStaffIds.includes(s._id || s.id)
+                        })));
+                    }
                 }
 
                 if (servicesRes.data.success) setServices(servicesRes.data.data.results);
-                if (staffRes.data.success) setStaff(staffRes.data.data.results);
 
             } catch (err) {
                 console.error('Ledger Sync Error:', err);
@@ -111,6 +125,7 @@ export default function AppointmentsPage() {
                     phone: apt.phone
                 },
                 preSelectService: apt.service,
+                preSelectStaffId: apt.staffId || null,
                 appointmentId: apt.id
             }
         });
@@ -527,7 +542,7 @@ export default function AppointmentsPage() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                    {staff.map(s => (
+                                    {staff.filter(s => s.isAvailable !== false).map(s => (
                                         <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
                                     ))}
                                 </select>

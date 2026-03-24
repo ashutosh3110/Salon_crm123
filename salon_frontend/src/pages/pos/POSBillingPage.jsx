@@ -7,8 +7,9 @@ import {
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
 } from 'lucide-react';
+import api from '../../services/api';
 import {
-    MOCK_STAFF, MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS, MOCK_COMPANY_INFO
+    MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS, MOCK_COMPANY_INFO
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -150,7 +151,9 @@ export default function POSBillingPage() {
         services, 
         customers: businessCustomers, 
         addCustomer: addBusinessCustomer,
-        activeOutlet 
+        activeOutlet,
+        staff: businessStaff,
+        bookings: businessBookings
     } = useBusiness();
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
@@ -240,13 +243,13 @@ export default function POSBillingPage() {
                 // Handle different possible ways services are listed
                 const serviceObj = services.find(s => s.name.toLowerCase().includes(serviceName.toLowerCase()));
                 if (serviceObj) {
+                    const preSelectStaffId = location.state.preSelectStaffId;
                     setCart([{
                         ...serviceObj,
                         itemId: serviceObj.id || serviceObj._id,
                         quantity: 1,
                         type: 'service',
-                        staffId: 'u1',
-                        staffName: 'Ravi Sharma'
+                        staffIds: preSelectStaffId ? [preSelectStaffId] : []
                     }]);
                 }
             }
@@ -519,6 +522,13 @@ export default function POSBillingPage() {
         );
     }, [searchClient, businessCustomers]);
 
+    // ─── Staff Filtering & Availability ───
+    const availableStaff = useMemo(() => {
+        // The user said "quick bill me to sare stylist aane chahiye" (all stylists should appear).
+        // So we revert the filtering and show all staff of the tenant.
+        return businessStaff.filter(s => s.status !== 'inactive' && s.role !== 'admin');
+    }, [businessStaff]);
+
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {
         const type = forcedType || (activeTab === 'services' ? 'service' : 'product');
@@ -634,90 +644,78 @@ export default function POSBillingPage() {
 
         setCheckingOut(true);
         setTimeout(async () => {
-            // Process Wallet Payment if any
-            if (redeemWallet > 0) {
-                try {
-                    if (clientWalletBalance < redeemWallet) throw new Error('Insufficient wallet balance');
-                    await adminAdjustBalance(selectedClient._id, redeemWallet, 'DEBIT', `POS Billing Payment - #${Date.now().toString().slice(-4)}`);
-                } catch (err) {
-                    alert(err.message);
-                    setCheckingOut(false);
-                    return;
+            try {
+                // Prepare Backend Request Body
+                const checkoutPayload = {
+                    clientId: selectedClient._id,
+                    outletId: activeOutlet?._id,
+                    items: cart.map(item => ({
+                        type: item.type,
+                        itemId: item.id || item._id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        staffIds: (item.staffIds || []).filter(Boolean)
+                    })),
+                    tax: totals.tax,
+                    paymentMethod: payments[0]?.method || 'cash',
+                    useLoyaltyPoints: redeemPoints,
+                    promotionId: appliedPromotion?._id || null
+                };
+
+                // REAL BACKEND CALL
+                const response = await api.post('/pos/checkout', checkoutPayload);
+                const dbInvoice = response.data;
+
+                const invoiceData = {
+                    number: dbInvoice.invoiceNumber || `INV-${Date.now().toString().slice(-4)}`,
+                    date: new Date().toLocaleString('en-IN', {
+                        day: '2-digit', month: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', hour12: true
+                    }),
+                    outlet: activeOutlet?.name || MOCK_COMPANY_INFO.outlet,
+                    cashier: user?.name || MOCK_COMPANY_INFO.cashier,
+                    client: selectedClient,
+                    items: cart.map(item => ({
+                        ...item,
+                        staffName: (item.staffIds || []).filter(Boolean).map(id => businessStaff.find(s => s._id === id)?.name).filter(Boolean).join(', ') || 'Unassigned'
+                    })),
+                    totals: { ...totals, paidAmount, balanceDue },
+                    payments: payments,
+                    loyaltyEarned: Math.floor(totals.currentBillTotal / 100),
+                    discounts: {
+                        manual: manualDiscount,
+                        promotion: appliedPromotion,
+                        voucher: appliedVoucher,
+                        points: redeemPoints,
+                        wallet: redeemWallet
+                    },
+                    paymentDate: paymentDate
+                };
+
+                setSuccessInvoice(invoiceData);
+
+                // WhatsApp Auto-Send logic
+                if (autoSendWhatsApp) {
+                    sendWhatsAppBill(invoiceData);
                 }
+
+                // ── Update local contexts if needed ──
+                addRevenue({
+                    date: paymentDate,
+                    source: `POS Sale: ${invoiceData.number} (${selectedClient?.name || 'Walk-in'})`,
+                    type: cart.some(item => item.type === 'service') ? 'Service Sales' : 'Product Sales',
+                    amount: totals.currentBillTotal,
+                    tax: totals.tax,
+                    method: payments[0]?.method || 'cash'
+                });
+            } catch (err) {
+                console.error('[POS] Checkout failed:', err);
+                alert('Checkout failed: ' + (err.response?.data?.message || err.message));
+            } finally {
+                setCheckingOut(false);
             }
-
-            const invoiceData = {
-                number: `INV-${Date.now().toString().slice(-4)}`,
-                date: new Date(paymentDate).toLocaleString('en-IN', {
-                    day: '2-digit', month: '2-digit', year: 'numeric',
-                    hour: '2-digit', minute: '2-digit', hour12: true
-                }),
-                outlet: MOCK_COMPANY_INFO.outlet,
-                cashier: MOCK_COMPANY_INFO.cashier,
-                client: selectedClient,
-                items: cart.map(item => ({
-                    ...item,
-                    staffName: (item.staffIds || []).filter(Boolean).map(id => MOCK_STAFF.find(s => s._id === id)?.name).filter(Boolean).join(', ') || 'Unassigned'
-                })),
-                totals: { ...totals, paidAmount, balanceDue },
-                payments: payments,
-                loyaltyEarned: Math.floor(totals.currentBillTotal / 100),
-                discounts: {
-                    manual: manualDiscount,
-                    promotion: appliedPromotion,
-                    voucher: appliedVoucher,
-                    points: redeemPoints,
-                    wallet: redeemWallet
-                },
-                paymentDate: paymentDate
-            };
-
-            setSuccessInvoice(invoiceData);
-
-            // WhatsApp Auto-Send logic
-            if (autoSendWhatsApp) {
-                sendWhatsAppBill(invoiceData);
-            }
-
-            // ── Phase 3: Record each item into Inventory Reconciliation log ──
-            const invoiceNum = invoiceData.number;
-            const saleEntries = cart
-                .filter(item => !item.isPackageRedemption)
-                .map(item => {
-                    const isProduct = item.type === 'product';
-                    const posProduct = products.find(p => (p.id || p._id) === item.itemId || p.sku === item.sku);
-                    if (!posProduct) return null;
-                    return {
-                        invoiceId: invoiceNum,
-                        productName: item.name,
-                        sku: posProduct.sku,
-                        subType: isProduct ? 'retail_sale' : 'service_usage',
-                        qty: item.quantity,
-                        unitPrice: item.price,
-                        total: item.price * item.quantity,
-                        staffId: item.staffId,
-                        outletId: 'outlet-1',
-                    };
-                })
-                .filter(Boolean);
-
-            if (saleEntries.length > 0) {
-                addSaleRecord(saleEntries);
-            }
-
-            // ── Phase 4: Record Revenue into Accountant Finance Module ──
-            addRevenue({
-                date: paymentDate, // Machine readable date
-                source: `POS Sale: ${invoiceData.number} (${selectedClient?.name || 'Walk-in'})`,
-                type: cart.some(item => item.type === 'service') ? 'Service Sales' : 'Product Sales',
-                amount: totals.currentBillTotal,
-                tax: totals.tax,
-                method: payments[0]?.method?.toUpperCase() || 'CASH',
-                status: 'Completed'
-            });
-
-            setCheckingOut(false);
-        }, 1200);
+        }, 500);
     };
 
     const sendWhatsAppBill = (invoice) => {
@@ -1358,7 +1356,7 @@ export default function POSBillingPage() {
                                                     onChange={(e) => updateStaff(idx, sIdx, e.target.value)}
                                                 >
                                                     <option value="">Select Stylist</option>
-                                                    {MOCK_STAFF.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                                    {availableStaff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
                                                 </select>
                                                 {(item.staffIds || []).length > 1 && (
                                                     <button

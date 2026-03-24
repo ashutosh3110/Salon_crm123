@@ -43,8 +43,9 @@ export default function QueuePage() {
     const fetchData = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const [queueRes, staffRes, servicesRes] = await Promise.all([
+            const [queueRes, bookingsRes, staffRes, servicesRes] = await Promise.all([
                 api.get(`/bookings?status=arrived&date=${today}&outletId=${user?.outletId}`),
+                api.get(`/bookings?date=${today}&limit=100&outletId=${user?.outletId}`),
                 api.get(`/users?role=stylist&outletId=${user?.outletId}`),
                 api.get('/services?limit=100')
             ]);
@@ -60,15 +61,23 @@ export default function QueuePage() {
             }
 
             if (staffRes.data.results) {
-                // Filter specifically for stylists to ensure no roles leak through
+                // Determine busy staff (arrived or in-progress)
+                const allBookings = bookingsRes.data.results || [];
+                const busyStaffIds = allBookings
+                    .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
+                    .map(b => b.staffId?._id || b.staffId?.id)
+                    .filter(Boolean);
+
+                // Filter specifically for stylists and mark availability
                 setStylists(staffRes.data.results
                     .filter(s => s.role === 'stylist')
                     .map(s => ({
                         id: s.id || s._id,
                         name: s.name,
                         specialty: s.role,
-                        status: 'Available',
-                        current: 'Ready'
+                        status: busyStaffIds.includes(s.id || s._id) ? 'Busy' : 'Available',
+                        isAvailable: !busyStaffIds.includes(s.id || s._id),
+                        current: busyStaffIds.includes(s.id || s._id) ? 'In Service' : 'Ready'
                     }))
                 );
             }
@@ -377,7 +386,7 @@ export default function QueuePage() {
                                     <div className="relative">
                                         <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                         <select id="guestStaff" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            {stylists.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            {stylists.filter(s => s.isAvailable).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                         </select>
                                     </div>
                                 </div>

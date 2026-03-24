@@ -76,6 +76,67 @@ class EmailService {
             // Don't throw error to avoid breaking the tenant creation flow, just log it
         }
     }
+
+    /**
+     * Send Login Credentials to New Staff Member
+     * @param {string} to - Staff email
+     * @param {string} name - Staff name
+     * @param {string} role - Staff role
+     * @param {string} salonName - Salon name
+     * @param {string} password - Plain text password
+     */
+    async sendStaffCredentialsEmail(to, name, role, salonName, password) {
+        const subject = `Login Credentials for ${salonName}`;
+        const html = `
+            <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                <div style="background-color: #0A0A0A; color: #fff; padding: 25px; text-align: center; border-bottom: 3px solid #8B1A2D;">
+                    <h1 style="margin: 0; text-transform: uppercase; letter-spacing: 2px;">Wapixo Salon CMS</h1>
+                    <p style="margin: 5px 0 0; font-size: 14px; opacity: 0.8;">Premium Staff Onboarding</p>
+                </div>
+                <div style="padding: 30px; background-color: #fff;">
+                    <p style="font-size: 16px;">Hello <strong>${name}</strong>,</p>
+                    <p>You have been added as a <strong>${role.replace('_', ' ')}</strong> at <strong>${salonName}</strong>.</p>
+                    <p>Welcome to the team! You can now access the Salon Management System using the following credentials:</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef; margin: 25px 0;">
+                        <table style="width: 100%;">
+                            <tr>
+                                <td style="color: #6c757d; font-size: 12px; text-transform: uppercase; font-weight: bold; width: 100px;">Username</td>
+                                <td style="font-weight: bold; font-family: monospace; color: #333;">${to}</td>
+                            </tr>
+                            <tr>
+                                <td style="color: #6c757d; font-size: 12px; text-transform: uppercase; font-weight: bold; padding-top: 10px;">Password</td>
+                                <td style="font-weight: bold; font-family: monospace; color: #8B1A2D; padding-top: 10px;">${password}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <p style="font-size: 14px; color: #666; font-style: italic;">Note: For security reasons, please do not share these credentials. You can change your password anytime from your profile settings.</p>
+                    
+                    <div style="text-align: center; margin: 35px 0;">
+                        <a href="https://salon-crm123.vercel.app/login" style="background-color: #8B1A2D; color: #fff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(139, 26, 45, 0.2);">Login to Dashboard</a>
+                    </div>
+
+                    <p style="border-top: 1px solid #eee; padding-top: 20px; font-size: 14px; color: #888;">Best Regards,<br/><strong>Team Wapixo</strong></p>
+                </div>
+                <div style="background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee;">
+                    &copy; 2026 Wapixo Premium Salon Management. All rights reserved.
+                </div>
+            </div>
+        `;
+
+        try {
+            await this.transporter.sendMail({
+                from: `"${config.email.fromName}" <${config.email.fromEmail}>`,
+                to,
+                subject,
+                html,
+            });
+            logger.info(`[EmailService] Staff credentials email sent to ${to}`);
+        } catch (error) {
+            logger.error(`[EmailService] Failed to send staff email to ${to}:`, error.message);
+        }
+    }
 }
 
 export default new EmailService();

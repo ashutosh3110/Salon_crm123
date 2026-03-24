@@ -31,6 +31,12 @@ async function getUsers(req, res, next) {
         if (req.query.role) filter.role = req.query.role;
         if (req.query.outletId) filter.outletId = req.query.outletId;
 
+        // Exclude current user from their own staff list
+        const myId = req.user?._id || req.user?.id;
+        if (myId) {
+            filter._id = { $ne: myId };
+        }
+
         // Enforcement for receptionists
         if (req.user?.role === 'receptionist' && req.user.outletId) {
             filter.outletId = req.user.outletId;

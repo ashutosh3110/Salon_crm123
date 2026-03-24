@@ -67,9 +67,9 @@ export default function ReceptionistDashboard() {
             setLoading(true);
             try {
                 const today = new Date().toISOString().split('T')[0];
-                const [statsRes, feedRes, servicesRes, staffRes] = await Promise.all([
+                const [statsRes, bookingsRes, servicesRes, staffRes] = await Promise.all([
                     api.get('/dashboard/receptionist'),
-                    api.get(`/bookings?date=${today}&limit=5`),
+                    api.get(`/bookings?date=${today}&limit=100`),
                     api.get('/services?limit=100'),
                     api.get('/users?role=stylist')
                 ]);
@@ -90,8 +90,9 @@ export default function ReceptionistDashboard() {
                     }
                 }
 
-                if (feedRes.data.results) {
-                    setLiveFeed(feedRes.data.results.map(b => ({
+                if (bookingsRes.data.results) {
+                    const allBookings = bookingsRes.data.results;
+                    setLiveFeed(allBookings.slice(0, 5).map(b => ({
                         id: b.id || b._id,
                         client: b.clientId?.name || 'Walk-in',
                         service: b.serviceId?.name || 'Unknown',
@@ -101,10 +102,22 @@ export default function ReceptionistDashboard() {
                         source: b.source || 'APP',
                         isRegistry: false
                     })));
+
+                    // Determine busy staff (arrived or in-progress)
+                    const busyStaffIds = allBookings
+                        .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
+                        .map(b => b.staffId?._id || b.staffId?.id)
+                        .filter(Boolean);
+                    
+                    if (staffRes.data.success) {
+                        setStaff(staffRes.data.data.results.map(s => ({
+                            ...s,
+                            isAvailable: !busyStaffIds.includes(s._id || s.id)
+                        })));
+                    }
                 }
 
                 if (servicesRes.data.success) setServices(servicesRes.data.data.results);
-                if (staffRes.data.success) setStaff(staffRes.data.data.results);
 
             } catch (err) {
                 console.error('Front Desk Matrix Sync Error:', err);
@@ -480,7 +493,7 @@ export default function ReceptionistDashboard() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
                                 >
                                     <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                    {staff.map(s => (
+                                    {staff.filter(s => s.isAvailable).map(s => (
                                         <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
                                     ))}
                                 </select>
@@ -675,7 +688,9 @@ export default function ReceptionistDashboard() {
                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
                                 >
                                     <option value="">-- SELECT STYLIST --</option>
-                                    {staff.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
+                                    {staff.filter(s => s.isAvailable).map(s => (
+                                        <option key={s._id} value={s._id}>{s.name}</option>
+                                    ))}
                                 </select>
                             </div>
                             <button type="submit" className="w-full py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20">
