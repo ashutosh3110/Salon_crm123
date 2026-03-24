@@ -10,7 +10,12 @@ import { globalLimiter } from './middlewares/rateLimiter.js';
 
 import fs from 'fs';
 
+import { initFirebase } from './config/firebase.js';
+
 const app = express();
+
+// Initialize Firebase Admin
+initFirebase();
 
 
 if (!fs.existsSync('uploads')) {

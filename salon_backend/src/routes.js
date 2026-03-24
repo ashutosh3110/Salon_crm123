@@ -36,6 +36,7 @@ import hrPerformanceRoute from './modules/hrPerformance/hrPerformance.routes.js'
 import dashboardRoute from './modules/dashboard/dashboard.routes.js';
 import stylistRoute from './modules/stylist/stylist.routes.js';
 import leadRoute from './modules/lead/lead.routes.js';
+import notificationRoute from './modules/notification/notification.routes.js';
 
 const router = express.Router();
 
@@ -186,6 +187,8 @@ const protectedRoutes = [
     {
         path: '/leads',
         route: leadRoute,
+        path: '/notifications',
+        route: notificationRoute,
     },
 ];
 

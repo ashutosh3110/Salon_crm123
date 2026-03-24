@@ -138,8 +138,17 @@ export function AuthProvider({ children }) {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
         const role = user?.role || 'admin';
+        const fcmToken = localStorage.getItem('fcm_token');
+        if (fcmToken) {
+            try {
+                await api.post('/notifications/remove-token', { fcmToken });
+                localStorage.removeItem('fcm_token');
+            } catch (err) {
+                console.warn('[AuthContext] Failed to remove FCM token:', err.message);
+            }
+        }
         localStorage.removeItem(`auth_token_${role}`);
         localStorage.removeItem(`auth_user_${role}`);
         localStorage.removeItem('active_auth_role');
