@@ -69,22 +69,42 @@ class TenantService {
         // Automate Owner Creation
         try {
             const ownerPassword = '123456';
-            const owner = await userService.createUser({
-                name: tenant.ownerName,
-                email: tenant.email,
-                password: ownerPassword,
-                role: 'admin',
-                tenantId: tenant._id,
-            });
+            let owner = await User.findOne({ email: tenant.email.toLowerCase() });
+            
+            if (!owner) {
+                // If user doesn't exist, create them
+                owner = await userService.createUser({
+                    name: tenant.ownerName,
+                    email: tenant.email,
+                    password: ownerPassword,
+                    role: 'admin',
+                    tenantId: tenant._id,
+                });
+            } else {
+                // If user exists, just update their tenantId and role if it's not set
+                // or if it matches the current registration
+                console.log(`[TenantService] Reusing existing user for owner: ${owner.email}`);
+                if (!owner.tenantId) {
+                    owner.tenantId = tenant._id;
+                    owner.role = 'admin';
+                    owner.password = ownerPassword; // Reset to 123456 for convenience
+                    await owner.save();
+                } else if (String(owner.tenantId) !== String(tenant._id)) {
+                    // Conflict if person is already an owner elsewhere
+                    console.warn(`[TenantService] User ${owner.email} is already linked to another salon (${owner.tenantId})`);
+                }
+            }
 
             // Link owner to tenant
-            tenant.owner = owner._id;
-            await tenant.save();
+            if (owner && !tenant.owner) {
+                tenant.owner = owner._id;
+                await tenant.save();
+            }
 
             // Send Welcome Email
             await emailService.sendWelcomeEmail(tenant.email, tenant.ownerName, tenant.name, ownerPassword);
         } catch (error) {
-            console.error('[TenantService] Failed to automate owner/email:', error.message);
+            console.error('[TenantService] ❌ Failed to automate owner/email (CRITICAL):', error.message);
         }
 
         return tenant;
@@ -238,23 +258,15 @@ class TenantService {
             }
         }
 
-        // 2. Custom cleanup for Users: Delete all non-admin users or non-owners
-        // We keep the owner User but mark them as deleted for the login message
-        await User.deleteMany({
-            tenantId: id,
-            _id: { $ne: tenant.owner }
-        });
+        // 2. Custom cleanup for Users: Delete all users linked to this tenant
+        console.log(`[TenantService] Cleaning up all Users for tenant ${id}`);
+        await User.deleteMany({ tenantId: id });
 
-        if (tenant.owner) {
-            await User.updateOne({ _id: tenant.owner }, { status: 'deleted' });
-        }
+        // 3. Permanently delete the Tenant
+        await tenant.deleteOne();
 
-        // 3. Mark Tenant as deleted instead of soft-delete 'suspended'
-        tenant.status = 'deleted';
-        await tenant.save();
-
-        console.log(`[TenantService] Salon ${tenant.name} (${id}) has been permanently deleted/archived.`);
-        return tenant;
+        console.log(`[TenantService] Salon ${tenant.name} (${id}) has been permanently deleted from the database.`);
+        return { id, name: tenant.name, status: 'deleted_permanently' };
     }
 
     async getTenantStats() {
@@ -293,6 +305,35 @@ class TenantService {
             countsByPlan: facet.planCounts,
             recentTenants,
         };
+    }
+
+    async resendCredentials(tenantId) {
+        const tenant = await this.getTenantById(tenantId);
+        
+        // Find owner user
+        let owner = null;
+        if (tenant.owner) {
+            owner = await User.findById(tenant.owner);
+        }
+        
+        if (!owner) {
+            owner = await User.findOne({ email: tenant.email, tenantId: tenant._id });
+        }
+
+        if (!owner) throw new Error('Owner user not found for this salon.');
+
+        // Update link if missing
+        if (!tenant.owner) {
+            tenant.owner = owner._id;
+            await tenant.save();
+        }
+
+        const newPassword = '123456';
+        owner.password = newPassword;
+        await owner.save();
+
+        await emailService.sendWelcomeEmail(tenant.email, tenant.ownerName, tenant.name, newPassword);
+        return { success: true, email: tenant.email };
     }
 }
 

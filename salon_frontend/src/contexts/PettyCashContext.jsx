@@ -26,6 +26,13 @@ export const PettyCashProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     const refresh = useCallback(async () => {
+        // Skip for public pages to avoid 401 noise
+        const publicPaths = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'];
+        if (publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/' || window.location.pathname.startsWith('/app')) {
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {

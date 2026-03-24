@@ -58,6 +58,11 @@ export function CMSProvider({ children }) {
                 }
                 res = await api.get(`/cms/app/tenant/${tenantId}`);
             } else {
+                // If not in customer app, only fetch if salon ID is present (implies we're in a dashboard)
+                if (!salon?._id) {
+                    setLoading(false);
+                    return;
+                }
                 const qs = adminCmsQuery(salon?._id);
                 res = await api.get(`/cms/app${qs}`);
             }

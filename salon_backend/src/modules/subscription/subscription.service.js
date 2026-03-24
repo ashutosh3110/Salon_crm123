@@ -4,7 +4,26 @@ import Tenant from '../tenant/tenant.model.js';
 import billingRepository from '../billing/billing.repository.js';
 
 const createSubscription = async (subscriptionBody) => {
-    return subscriptionRepository.create(subscriptionBody);
+    // 1. Create locally first
+    const sub = await subscriptionRepository.create(subscriptionBody);
+
+    // 2. Try to sync with Razorpay (non-blocking for now, or you can await)
+    try {
+        const razorpayService = (await import('../billing/razorpay.service.js')).default;
+        if (sub.monthlyPrice > 0) {
+            const rzpMonthly = await razorpayService.createPlan(sub.name, sub.monthlyPrice, 'monthly');
+            sub.razorpayMonthlyPlanId = rzpMonthly.id;
+        }
+        if (sub.yearlyPrice > 0) {
+            const rzpYearly = await razorpayService.createPlan(sub.name, sub.yearlyPrice, 'yearly');
+            sub.razorpayYearlyPlanId = rzpYearly.id;
+        }
+        await sub.save();
+    } catch (e) {
+        console.warn(`[SUBSCRIPTION SERVICE] Razorpay Sync Failed:`, e.message);
+    }
+    
+    return sub;
 };
 
 const querySubscriptions = async (filter, options) => {
@@ -16,11 +35,36 @@ const getSubscriptionById = async (id) => {
 };
 
 const updateSubscriptionById = async (subscriptionId, updateBody) => {
+    const existing = await getSubscriptionById(subscriptionId);
+    if (!existing) throw new Error('Subscription not found');
+
     const { _id, id, createdAt, updatedAt, ...cleanUpdate } = updateBody;
+    
+    // Check if price changed to update Razorpay
+    const monthlyPriceChanged = cleanUpdate.monthlyPrice != null && cleanUpdate.monthlyPrice !== existing.monthlyPrice;
+    const yearlyPriceChanged = cleanUpdate.yearlyPrice != null && cleanUpdate.yearlyPrice !== existing.yearlyPrice;
+
     const subscription = await subscriptionRepository.updateOne({ _id: subscriptionId }, cleanUpdate);
-    if (!subscription) {
-        throw new Error('Subscription not found');
+    
+    if (monthlyPriceChanged || yearlyPriceChanged) {
+        try {
+            const razorpayService = (await import('../billing/razorpay.service.js')).default;
+            const updated = await getSubscriptionById(subscriptionId); // Get fresh data
+            
+            if (monthlyPriceChanged && updated.monthlyPrice > 0) {
+                const rzpMonthly = await razorpayService.createPlan(updated.name, updated.monthlyPrice, 'monthly');
+                updated.razorpayMonthlyPlanId = rzpMonthly.id;
+            }
+            if (yearlyPriceChanged && updated.yearlyPrice > 0) {
+                const rzpYearly = await razorpayService.createPlan(updated.name, updated.yearlyPrice, 'yearly');
+                updated.razorpayYearlyPlanId = rzpYearly.id;
+            }
+            await updated.save();
+        } catch (e) {
+            console.warn(`[SUBSCRIPTION SERVICE] Razorpay Update Sync Failed:`, e.message);
+        }
     }
+
     return subscription;
 };
 

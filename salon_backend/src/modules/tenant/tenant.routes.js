@@ -20,6 +20,8 @@ router
     .post(auth, authorize(['superadmin']), validate(tenantValidation.createTenant), tenantController.createTenant)
     .get(auth, authorize(['superadmin']), tenantController.getTenants);
 
+router.post('/:tenantId/resend-credentials', auth, authorize(['superadmin']), tenantController.resendCredentials);
+
 router
     .route('/:tenantId')
     .get(auth, authorize(['superadmin', 'admin']), tenantController.getTenant)

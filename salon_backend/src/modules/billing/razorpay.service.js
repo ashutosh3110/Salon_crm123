@@ -32,7 +32,29 @@ const verifyPayment = (orderId, paymentId, signature) => {
     return generated_signature === signature;
 };
 
+const createPlan = async (name, amount, period = 'monthly', description = '') => {
+    const options = {
+        period: period === 'yearly' ? 'yearly' : 'monthly',
+        interval: 1, // 1 month or 1 year
+        item: {
+            name: `${name} (${period})`,
+            amount: Math.round(amount * 100), // in paise
+            currency: 'INR',
+            description: description || `Plan for ${name} ${period} subscription`,
+        },
+    };
+
+    try {
+        const plan = await razorpay.plans.create(options);
+        return plan;
+    } catch (error) {
+        console.error(`[RAZORPAY] Create Plan Error:`, error);
+        throw new Error(`Razorpay Plan Error: ${error.message}`);
+    }
+};
+
 export default {
     createOrder,
     verifyPayment,
+    createPlan,
 };

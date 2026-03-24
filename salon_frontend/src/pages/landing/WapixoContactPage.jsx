@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, MessageSquare, Sparkles, Building2 } from 'lucide-react';
+import api from '../../services/api';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
@@ -28,21 +29,16 @@ export default function WapixoContactPage() {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Mocking inquiry storage
-        const inquiries = JSON.parse(localStorage.getItem('wapixo_inquiries') || '[]');
-        const newInquiry = {
-            ...formState,
-            id: Date.now(),
-            date: new Date().toISOString(),
-            status: 'new',
-        };
-        localStorage.setItem('wapixo_inquiries', JSON.stringify([newInquiry, ...inquiries]));
-
-        // Artificial delay
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setIsSubmitting(false);
-        setSubmitted(true);
+        try {
+            await api.post('/leads', formState);
+            setSubmitted(true);
+            setFormState({ name: '', email: '', salonName: '', phone: '', message: '' });
+        } catch (error) {
+            console.error('Error submitting inquiry:', error);
+            alert('Something went wrong. Please try again or reach out to us directly.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e) => {

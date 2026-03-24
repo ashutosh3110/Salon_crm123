@@ -66,7 +66,13 @@ api.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             } else {
-                console.warn(`[API] No token found for role: ${role}`);
+                // Silence warning for known public routes or if we are on a public-facing page
+                const isPublicApi = ['/subscriptions'].some(p => config.url?.startsWith(p));
+                const isPublicPage = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'].some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
+                
+                if (!isPublicApi && !isPublicPage) {
+                    console.warn(`[API] No token found for role: ${role}`);
+                }
             }
             // Superadmin (and similar) need tenant scope on the server; validateTenant reads this header.
             try {
