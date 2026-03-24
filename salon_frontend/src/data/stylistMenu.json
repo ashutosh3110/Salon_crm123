@@ -54,5 +54,10 @@
                 "path": "/stylist/settings/security"
             }
         ]
+    },
+    {
+        "label": "Support",
+        "iconName": "LifeBuoy",
+        "path": "/stylist/support"
     }
 ]

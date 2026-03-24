@@ -100,6 +100,20 @@ const loginUserWithEmailAndPassword = async (email, password) => {
     if (!user || !(await user.isPasswordMatch(password))) {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
     }
+
+    // Check if user or their tenant is deleted
+    if (user.status === 'deleted') {
+        throw new ApiError(httpStatus.FORBIDDEN, 'Aapka salon account permanent delete/stop kar diya gaya h. Kripya SuperAdmin se sampark karein.');
+    }
+
+    // Check tenant status too if applicable
+    if (user.tenantId) {
+        const tenant = await Tenant.findById(user.tenantId);
+        if (tenant && tenant.status === 'deleted') {
+            throw new ApiError(httpStatus.FORBIDDEN, 'Aapka salon account (Salon) band/delete ho chuka h. Kripya SuperAdmin se sampark karein.');
+        }
+    }
+
     return user;
 };
 

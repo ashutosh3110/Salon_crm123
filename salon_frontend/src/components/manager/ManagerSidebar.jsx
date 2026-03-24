@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard, Users, BarChart3, CalendarCheck, Star,
-    Clock, Target, Settings, LogOut, ChevronLeft, ChevronRight, X, Briefcase, Globe
+    Clock, Target, Settings, LogOut, ChevronLeft, ChevronRight, X, Briefcase, Globe, LifeBuoy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,8 +15,9 @@ const menuItems = [
     { label: 'Targets', icon: Target, path: '/manager/targets' },
     { label: 'Feedback', icon: Star, path: '/manager/feedback' },
     { label: 'Shift Planning', icon: Clock, path: '/manager/shifts' },
-    { label: 'Digital Catalogue', icon: Globe, path: '/manager/catalogue' },
+    { label: 'Digital Catalogue', icon: Briefcase, path: '/manager/catalogue' },
     { label: 'Settings', icon: Settings, path: '/manager/settings' },
+    { label: 'Support', icon: LifeBuoy, path: '/manager/support' },
 ];
 
 export default function ManagerSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {

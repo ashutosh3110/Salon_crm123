@@ -58,7 +58,7 @@ const tenantSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'inactive', 'trial', 'expired', 'suspended'],
+            enum: ['active', 'inactive', 'trial', 'expired', 'suspended', 'deleted'],
             default: 'trial',
         },
         trialDays: {

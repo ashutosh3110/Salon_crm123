@@ -44,7 +44,8 @@ import {
     MoreVertical,
     Ban,
     Trash2,
-    ArrowRight
+    ArrowRight,
+    LifeBuoy
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';
@@ -185,6 +186,12 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications' },
                 { label: 'Security', icon: Shield, path: '/admin/settings/security' },
             ]
+        },
+        {
+            label: 'Support',
+            icon: LifeBuoy,
+            path: '/admin/support',
+            roles: ['admin', 'manager']
         },
     ];
     const [expandedItem, setExpandedItem] = useState(null);

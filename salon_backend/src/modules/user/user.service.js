@@ -12,7 +12,7 @@ class UserService {
             throw err;
         }
         const body = { ...userBody };
-        if (!body.password || String(body.password).length < 8) {
+        if (!body.password || String(body.password).length < 6) {
             body.password = `Salon@${Math.random().toString(36).slice(2, 10)}${Math.floor(Math.random() * 90 + 10)}`;
         }
         if (body.salary != null) body.salary = Number(body.salary) || 0;

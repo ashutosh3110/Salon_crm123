@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
-            minlength: 8,
+            minlength: 6,
             private: true, // used by the toJSON plugin
         },
         role: {
@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ['active', 'inactive'],
+            enum: ['active', 'inactive', 'deleted'],
             default: 'active',
         },
         phone: {

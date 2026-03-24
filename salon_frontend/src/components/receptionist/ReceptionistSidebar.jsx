@@ -3,7 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     LayoutDashboard, Calendar, Users, CreditCard, ClipboardList,
-    UserCheck, Settings, LogOut, ChevronLeft, ChevronRight, X, Zap, Globe
+    UserCheck, Settings, LogOut, ChevronLeft, ChevronRight, X, Zap, Globe, LifeBuoy
 } from 'lucide-react';
 
 const menuItems = [
@@ -16,6 +16,7 @@ const menuItems = [
     { label: 'Payments', icon: CreditCard, path: '/receptionist/payments' },
     { label: 'Petty Cash', icon: ClipboardList, path: '/receptionist/petty-cash' },
     { label: 'Settings', icon: Settings, path: '/receptionist/settings' },
+    { label: 'Support', icon: LifeBuoy, path: '/receptionist/support' },
 ];
 
 export default function ReceptionistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {

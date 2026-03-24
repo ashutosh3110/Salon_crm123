@@ -82,6 +82,7 @@ import InquiryPage from './pages/admin/InquiryPage';
 import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
 import SubscriptionPage from './pages/admin/SubscriptionPage';
+import SupportPage from './pages/admin/SupportPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -307,6 +308,7 @@ function App() {
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
                             <Route path="/admin/settings/:section" element={<SettingsPage />} />
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />
+                            <Route path="/admin/support" element={<SupportPage />} />
                           </Route>
                         </Route>
 
@@ -324,6 +326,7 @@ function App() {
                             <Route path="/manager/shifts" element={<ShiftsPage />} />
                             <Route path="/manager/catalogue" element={<CatalogueEditorPage />} />
                             <Route path="/manager/settings" element={<ManagerSettingsPage />} />
+                            <Route path="/manager/support" element={<SupportPage />} />
                           </Route>
                         </Route>
 
@@ -340,6 +343,7 @@ function App() {
                             <Route path="/receptionist/payments" element={<PaymentsPage />} />
                             <Route path="/receptionist/petty-cash" element={<PettyCashPage />} />
                             <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
+                            <Route path="/receptionist/support" element={<SupportPage />} />
                           </Route>
                         </Route>
 
@@ -356,6 +360,7 @@ function App() {
                             <Route path="/stylist/attendance" element={<StylistAttendance />} />
                             <Route path="/stylist/settings" element={<StylistSettingsPage />} />
                             <Route path="/stylist/settings/:section" element={<StylistSettingsPage />} />
+                            <Route path="/stylist/support" element={<SupportPage />} />
                           </Route>
                         </Route>
 

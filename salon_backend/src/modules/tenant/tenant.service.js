@@ -1,5 +1,9 @@
+import mongoose from 'mongoose';
 import tenantRepository from './tenant.repository.js';
 import Tenant from './tenant.model.js';
+import User from '../user/user.model.js';
+import userService from '../user/user.service.js';
+import emailService from '../notification/email.service.js';
 
 const PLAN_DEFAULTS = {
     free: {
@@ -60,7 +64,30 @@ class TenantService {
             if (existingGst) throw new Error('GST Number already registered for another salon');
         }
 
-        return tenantRepository.create(tenantData);
+        const tenant = await tenantRepository.create(tenantData);
+
+        // Automate Owner Creation
+        try {
+            const ownerPassword = '123456';
+            const owner = await userService.createUser({
+                name: tenant.ownerName,
+                email: tenant.email,
+                password: ownerPassword,
+                role: 'admin',
+                tenantId: tenant._id,
+            });
+
+            // Link owner to tenant
+            tenant.owner = owner._id;
+            await tenant.save();
+
+            // Send Welcome Email
+            await emailService.sendWelcomeEmail(tenant.email, tenant.ownerName, tenant.name, ownerPassword);
+        } catch (error) {
+            console.error('[TenantService] Failed to automate owner/email:', error.message);
+        }
+
+        return tenant;
     }
 
     async getTenantById(id) {
@@ -98,7 +125,8 @@ class TenantService {
     }
 
     async queryTenants(filter, options) {
-        return tenantRepository.find(filter, options);
+        const finalFilter = { status: { $ne: 'deleted' }, ...filter };
+        return tenantRepository.find(finalFilter, options);
     }
 
     /**
@@ -188,14 +216,51 @@ class TenantService {
 
     async deleteTenantById(id) {
         const tenant = await this.getTenantById(id);
-        tenant.status = 'suspended';
+        if (!tenant) {
+            const err = new Error('Salon not found');
+            err.statusCode = 404;
+            throw err;
+        }
+
+        // 1. Delete all related data in other collections
+        // We iterate through all known models and delete records with this tenantId
+        const models = mongoose.models;
+        for (const modelName in models) {
+            const Model = models[modelName];
+            
+            // Skip Tenant itself and User (we'll handle User specifically)
+            if (modelName === 'Tenant' || modelName === 'User') continue;
+
+            // Check if model has tenantId field
+            if (Model.schema.path('tenantId')) {
+                console.log(`[TenantService] Cleaning up ${modelName} for tenant ${id}`);
+                await Model.deleteMany({ tenantId: id });
+            }
+        }
+
+        // 2. Custom cleanup for Users: Delete all non-admin users or non-owners
+        // We keep the owner User but mark them as deleted for the login message
+        await User.deleteMany({
+            tenantId: id,
+            _id: { $ne: tenant.owner }
+        });
+
+        if (tenant.owner) {
+            await User.updateOne({ _id: tenant.owner }, { status: 'deleted' });
+        }
+
+        // 3. Mark Tenant as deleted instead of soft-delete 'suspended'
+        tenant.status = 'deleted';
         await tenant.save();
+
+        console.log(`[TenantService] Salon ${tenant.name} (${id}) has been permanently deleted/archived.`);
         return tenant;
     }
 
     async getTenantStats() {
         // Aggregating for dashboard KPIs
         const stats = await Tenant.aggregate([
+            { $match: { status: { $ne: 'deleted' } } },
             {
                 $facet: {
                     statusCounts: [{ $group: { _id: '$status', count: { $sum: 1 } } }],
@@ -213,7 +278,7 @@ class TenantService {
         const byPlan = {};
         facet.planCounts.forEach(p => { byPlan[p._id] = p.count; });
 
-        const recentTenants = await Tenant.find()
+        const recentTenants = await Tenant.find({ status: { $ne: 'deleted' } })
             .sort({ createdAt: -1 })
             .limit(5)
             .select('name slug status subscriptionPlan createdAt ownerName email')

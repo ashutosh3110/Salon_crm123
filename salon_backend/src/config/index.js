@@ -24,6 +24,12 @@ const envVarsSchema = Joi.object()
     FIREBASE_PRIVATE_KEY: Joi.string().allow('').default('').description('Firebase private key (with \\n for newlines)'),
     FIREBASE_CLIENT_EMAIL: Joi.string().allow('').default('').description('Firebase client email'),
     FIREBASE_CLIENT_ID: Joi.string().allow('').default('').description('Firebase client ID'),
+    SMTP_HOST: Joi.string().description('server that will send the emails'),
+    SMTP_PORT: Joi.number().description('port to connect to the email server'),
+    SMTP_USERNAME: Joi.string().description('username for email server'),
+    SMTP_PASSWORD: Joi.string().description('password for email server'),
+    EMAIL_FROM_EMAIL: Joi.string().description('the from field in the emails sent by the app'),
+    EMAIL_FROM_NAME: Joi.string().default('Wapixo').description('the from name in the emails sent by the app'),
   })
   .unknown();
 
@@ -75,5 +81,13 @@ export const config = {
     privateKey: envVars.FIREBASE_PRIVATE_KEY ? envVars.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : '',
     clientEmail: envVars.FIREBASE_CLIENT_EMAIL,
     clientId: envVars.FIREBASE_CLIENT_ID,
+  },
+  email: {
+    host: envVars.SMTP_HOST,
+    port: envVars.SMTP_PORT,
+    user: envVars.SMTP_USERNAME,
+    pass: envVars.SMTP_PASSWORD,
+    fromEmail: envVars.EMAIL_FROM_EMAIL,
+    fromName: envVars.EMAIL_FROM_NAME,
   },
 };
