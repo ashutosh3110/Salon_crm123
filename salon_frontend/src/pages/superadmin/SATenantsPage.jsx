@@ -84,7 +84,7 @@ const FILTER_TABS = [
 ];
 
 /* ─── Row action dropdown ─────────────────────────────────────────────────── */
-function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
+function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -106,6 +106,14 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete }) {
             hover: tenant.status === 'suspended' ? 'hover:bg-emerald-50' : 'hover:bg-orange-50'
         },
         { label: 'Delete Account', icon: Trash2, onClick: () => { onDelete(tenant); setOpen(false); }, color: 'text-red-500', hover: 'hover:bg-red-50' },
+        { divider: true },
+        { 
+            label: 'Resend Credentials', 
+            icon: RefreshCw, 
+            onClick: () => { onResendCredentials(tenant); setOpen(false); }, 
+            color: 'text-indigo-600', 
+            hover: 'hover:bg-indigo-50' 
+        },
     ];
 
     return (
@@ -266,6 +274,8 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         email: tenant?.email || '',
         phone: tenant?.phone || '',
         city: tenant?.city || '',
+        address: tenant?.address || '',
+        description: tenant?.description || '',
         subscriptionPlan: tenant?.subscriptionPlan || 'basic',
         status: tenant?.status || 'trial',
         trialDays: tenant?.trialDays ?? 14,
@@ -297,66 +307,119 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                 </div>
 
                 {/* Scrollable body */}
-                <div className="overflow-y-auto p-6 space-y-4 flex-1">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-2">
-                            <label className={labelCls}>Salon Name *</label>
-                            <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Glam Studio" required />
+                <div className="overflow-y-auto p-6 space-y-6 flex-1 bg-surface-alt/30">
+                    {/* Basic Info Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-1.5 h-4 bg-primary rounded-full" />
+                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">Business Identity</h4>
                         </div>
-                        <div>
-                            <label className={labelCls}>Owner Name *</label>
-                            <input className={inputCls} value={form.ownerName} onChange={e => set('ownerName', e.target.value)} placeholder="Full name" required />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Email *</label>
-                            <input type="email" className={inputCls} value={form.email} onChange={e => set('email', e.target.value)} placeholder="owner@salon.com" required />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Phone</label>
-                            <input type="tel" className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="10-digit number" />
-                        </div>
-                        <div>
-                            <label className={labelCls}>GST Number</label>
-                            <input className={inputCls} value={form.gstNumber} onChange={e => set('gstNumber', e.target.value)} placeholder="15-digit GSTIN" />
-                        </div>
-                        <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
-                        <div>
-                            <label className={labelCls}>Plan</label>
-                            <CustomDropdown
-                                variant="form"
-                                value={form.subscriptionPlan}
-                                onChange={v => set('subscriptionPlan', v)}
-                                options={[
-                                    { value: 'free', label: 'Free' },
-                                    { value: 'basic', label: 'Basic' },
-                                    { value: 'pro', label: 'Pro' },
-                                    { value: 'enterprise', label: 'Enterprise' },
-                                ]}
-                            />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Status</label>
-                            <CustomDropdown
-                                variant="form"
-                                value={form.status}
-                                onChange={v => set('status', v)}
-                                options={[
-                                    { value: 'trial', label: 'Trial', icon: Clock },
-                                    { value: 'active', label: 'Active', icon: CheckCircle },
-                                    { value: 'expired', label: 'Expired', icon: AlertTriangle },
-                                    { value: 'suspended', label: 'Suspended', icon: XCircle },
-                                ]}
-                            />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Trial Days</label>
-                            <input type="number" min={0} max={90} className={inputCls} value={form.trialDays} onChange={e => set('trialDays', +e.target.value)} />
-                        </div>
-                        <div>
-                            <label className={labelCls}>Outlet Count</label>
-                            <input type="number" min={1} max={100} className={inputCls} value={form.outletsCount} onChange={e => set('outletsCount', +e.target.value)} />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
+                                <label className={labelCls}>Salon Name *</label>
+                                <div className="relative">
+                                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                    <input className={`${inputCls} pl-10`} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Glam Studio" required />
+                                </div>
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelCls}>Brief Description</label>
+                                <textarea 
+                                    className={`${inputCls} min-h-[80px] py-3 resize-none`} 
+                                    value={form.description} 
+                                    onChange={e => set('description', e.target.value)} 
+                                    placeholder="Enter a brief summary of the salon's specialties..."
+                                />
+                            </div>
                         </div>
                     </div>
+
+                    {/* Contact & Location Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-1.5 h-4 bg-primary rounded-full" />
+                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">Contact & Location</h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelCls}>Owner Name *</label>
+                                <input className={inputCls} value={form.ownerName} onChange={e => set('ownerName', e.target.value)} placeholder="Full name" required />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Email *</label>
+                                <input type="email" className={inputCls} value={form.email} onChange={e => set('email', e.target.value)} placeholder="owner@salon.com" required />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Phone</label>
+                                <input type="tel" className={inputCls} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+91 00000 00000" />
+                            </div>
+                            <div>
+                                <label className={labelCls}>GST Number</label>
+                                <input className={inputCls} value={form.gstNumber} onChange={e => set('gstNumber', e.target.value)} placeholder="15-digit GSTIN" />
+                            </div>
+                            <div className="col-span-2">
+                                <label className={labelCls}>Street Address</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-text-muted" />
+                                    <textarea 
+                                        className={`${inputCls} pl-10 min-h-[70px] py-2.5 resize-none`} 
+                                        value={form.address} 
+                                        onChange={e => set('address', e.target.value)} 
+                                        placeholder="Full shop address, street, landmark..."
+                                    />
+                                </div>
+                            </div>
+                            <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
+                            <div>
+                                <label className={labelCls}>Plan</label>
+                                <CustomDropdown
+                                    variant="form"
+                                    value={form.subscriptionPlan}
+                                    onChange={v => set('subscriptionPlan', v)}
+                                    options={[
+                                        { value: 'free', label: 'Free' },
+                                        { value: 'basic', label: 'Basic' },
+                                        { value: 'pro', label: 'Pro' },
+                                        { value: 'enterprise', label: 'Enterprise' },
+                                    ]}
+                                />
+                            </div>
+                            <div>
+                                <label className={labelCls}>Allowed Outlets</label>
+                                <input type="number" min={1} max={100} className={inputCls} value={form.outletsCount} onChange={e => set('outletsCount', +e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Advanced Settings (Edit Only) */}
+                    {mode === 'edit' && (
+                        <div className="space-y-4 pb-2">
+                            <div className="flex items-center gap-2 mb-1">
+                                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                                <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider text-indigo-500">Subscription Control</h4>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100">
+                                <div className="col-span-1">
+                                    <label className={labelCls}>Status</label>
+                                    <CustomDropdown
+                                        variant="form"
+                                        value={form.status}
+                                        onChange={v => set('status', v)}
+                                        options={[
+                                            { value: 'trial', label: 'Trial', icon: Clock },
+                                            { value: 'active', label: 'Active', icon: CheckCircle },
+                                            { value: 'expired', label: 'Expired', icon: AlertTriangle },
+                                            { value: 'suspended', label: 'Suspended', icon: XCircle },
+                                        ]}
+                                    />
+                                </div>
+                                <div className="col-span-1">
+                                    <label className={labelCls}>Trial Days</label>
+                                    <input type="number" min={0} max={90} className={inputCls} value={form.trialDays} onChange={e => set('trialDays', +e.target.value)} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
@@ -633,6 +696,18 @@ export default function SATenantsPage() {
         }
     };
 
+    const handleResendCredentials = async (tenant) => {
+        if (!confirm(`This will reset the password of "${tenant.name}" owner to "123456" and send them an email. Continue?`)) return;
+        
+        try {
+            const res = await api.post(`/tenants/${tenant._id}/resend-credentials`);
+            showToast(res.data.message);
+        } catch (error) {
+            console.error('Error resending credentials:', error);
+            showToast(error.response?.data?.message || 'Failed to resend credentials.', 'error');
+        }
+    };
+
     const handleImpersonate = (tenant) => {
         showToast(`Impersonating "${tenant.name}" — feature logs audit trail.`, 'info');
     };
@@ -808,7 +883,7 @@ export default function SATenantsPage() {
                                                     onEdit={(ten, type) => setModal({ mode: type === 'plan' ? 'plan' : 'edit', tenant: ten })}
                                                     onSuspend={handleSuspend}
                                                     onDelete={handleDelete}
-                                                    onImpersonate={handleImpersonate}
+                                                    onResendCredentials={handleResendCredentials}
                                                 />
                                             </td>
                                         </tr>

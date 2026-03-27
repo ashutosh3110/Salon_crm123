@@ -10,6 +10,7 @@ export const createTenant = {
         phone: Joi.string().allow('', null),
         city: Joi.string().allow('', null),
         address: Joi.string().allow('', null),
+        description: Joi.string().allow('', null),
         gstNumber: Joi.string()
             .regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/)
             .messages({
@@ -55,6 +56,7 @@ export const updateTenant = {
             phone: Joi.string().allow('', null),
             city: Joi.string().allow('', null),
             address: Joi.string().allow('', null),
+            description: Joi.string().allow('', null),
             latitude: Joi.number().allow(null),
             longitude: Joi.number().allow(null),
             gstNumber: Joi.string().allow('', null),

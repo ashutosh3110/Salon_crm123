@@ -171,6 +171,19 @@ const updateTenantMe = async (req, res, next) => {
     }
 };
 
+const resendCredentials = async (req, res, next) => {
+    try {
+        const result = await tenantService.resendCredentials(req.params.tenantId);
+        res.send({
+            success: true,
+            message: `Credentials (Password: 123456) sent to ${result.email}`,
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createTenant,
     getTenants,
@@ -182,4 +195,5 @@ export default {
     getNearbyTenants,
     getTenantMe,
     updateTenantMe,
+    resendCredentials,
 };

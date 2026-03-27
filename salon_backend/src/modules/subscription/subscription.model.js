@@ -75,6 +75,14 @@ const subscriptionSchema = new mongoose.Schema({
     salonsCount: {
         type: Number,
         default: 0
+    },
+    razorpayMonthlyPlanId: {
+        type: String,
+        trim: true
+    },
+    razorpayYearlyPlanId: {
+        type: String,
+        trim: true
     }
 }, {
     timestamps: true

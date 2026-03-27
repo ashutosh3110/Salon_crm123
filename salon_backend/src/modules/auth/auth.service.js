@@ -86,6 +86,15 @@ const registerSalonOwner = async (registrationData) => {
         }
 
         await session.commitTransaction();
+
+        // Send Welcome Email (non-blocking)
+        try {
+            const emailService = (await import('../notification/email.service.js')).default;
+            emailService.sendWelcomeEmail(email, fullName, salonName, password);
+        } catch (e) {
+            console.error('[AuthService] Welcome email failed:', e.message);
+        }
+
         return { user, tenant };
     } catch (error) {
         await session.abortTransaction();

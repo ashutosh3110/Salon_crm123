@@ -4,6 +4,8 @@ import logger from '../../utils/logger.js';
 
 class EmailService {
     constructor() {
+        console.log(`[EmailService] Initializing with HOST: ${config.email.host}, PORT: ${config.email.port}, USER: ${config.email.user}`);
+        
         this.transporter = nodemailer.createTransport({
             host: config.email.host,
             port: config.email.port,
@@ -17,8 +19,10 @@ class EmailService {
         // Verify connection configuration
         this.transporter.verify((error) => {
             if (error) {
+                console.error('[EmailService] ❌ Connection failed (verify):', error.message);
                 logger.error('[EmailService] Connection failed:', error.message);
             } else {
+                console.log('[EmailService] ✅ SMTP Server is ready to send emails');
                 logger.info('[EmailService] SMTP Server is ready');
             }
         });
@@ -64,14 +68,17 @@ class EmailService {
         `;
 
         try {
-            await this.transporter.sendMail({
+            console.log(`[EmailService] Attempting to send welcome email to: ${to}`);
+            const info = await this.transporter.sendMail({
                 from: `"${config.email.fromName}" <${config.email.fromEmail}>`,
                 to,
                 subject,
                 html,
             });
+            console.log(`[EmailService] ✅ Welcome email sent! Response: ${info.response}`);
             logger.info(`[EmailService] Welcome email sent to ${to}`);
         } catch (error) {
+            console.error(`[EmailService] ❌ Failed to send welcome email to ${to}:`, error);
             logger.error(`[EmailService] Failed to send email to ${to}:`, error.message);
             // Don't throw error to avoid breaking the tenant creation flow, just log it
         }
@@ -126,14 +133,17 @@ class EmailService {
         `;
 
         try {
-            await this.transporter.sendMail({
+            console.log(`[EmailService] Attempting to send staff credentials email to: ${to}`);
+            const info = await this.transporter.sendMail({
                 from: `"${config.email.fromName}" <${config.email.fromEmail}>`,
                 to,
                 subject,
                 html,
             });
+            console.log(`[EmailService] ✅ Staff credentials email sent! Response: ${info.response}`);
             logger.info(`[EmailService] Staff credentials email sent to ${to}`);
         } catch (error) {
+            console.error(`[EmailService] ❌ Failed to send staff email to ${to}:`, error);
             logger.error(`[EmailService] Failed to send staff email to ${to}:`, error.message);
         }
     }
