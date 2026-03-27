@@ -14,6 +14,8 @@ router
     .post(bookingController.createBooking)
     .get(bookingController.getBookings);
 
+router.get('/availability', bookingController.getAvailability);
+
 router
     .route('/:bookingId')
     .get(bookingController.getBooking)

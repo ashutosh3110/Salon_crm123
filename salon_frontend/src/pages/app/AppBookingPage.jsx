@@ -125,8 +125,8 @@ export default function AppBookingPage() {
     // Pre-select service from query
     useEffect(() => {
         if (preSelectedServiceId) {
-            const svc = businessServices.find(s => String(s.id) === String(preSelectedServiceId));
-            if (svc && !selectedServices.find(s => String(s.id) === String(preSelectedServiceId))) {
+            const svc = businessServices.find(s => String(s._id || s.id) === String(preSelectedServiceId));
+            if (svc && !selectedServices.find(s => String(s._id || s.id) === String(preSelectedServiceId))) {
                 setSelectedServices([svc]);
                 // If we also have an outlet selected, move to date/time
                 if (outletId) {
@@ -139,9 +139,10 @@ export default function AppBookingPage() {
     }, [preSelectedServiceId, outletId, outlets, businessServices]);
 
     const toggleService = (svc) => {
+        const svcId = svc._id || svc.id;
         setSelectedServices(prev => {
-            const exists = prev.find(s => s.id === svc.id);
-            if (exists) return prev.filter(s => s.id !== svc.id);
+            const exists = prev.find(s => (s._id || s.id) === svcId);
+            if (exists) return prev.filter(s => (s._id || s.id) !== svcId);
             return [...prev, svc];
         });
     };
@@ -214,7 +215,10 @@ export default function AppBookingPage() {
     const services = businessServices.filter(s => s.status === 'active');
     const staff = businessStaff.filter(s => {
         if (!currentOutlet) return true;
-        return s.outletId === currentOutlet.id || s.outletId === currentOutlet._id;
+        const targetOutletId = String(currentOutlet._id || currentOutlet.id);
+        const staffOutletId = String(s.outletId?._id || s.outletId || '');
+        // Match if stylist is assigned to this outlet OR if they have NO outlet assigned (Global staff)
+        return staffOutletId === targetOutletId || staffOutletId === '';
     });
 
     const goTo = (newStep) => {
@@ -305,10 +309,12 @@ export default function AppBookingPage() {
             const primaryService = selectedServices?.[0];
             const customerId = customer?._id;
             const staffId = selectedStaff?.id || selectedStaff?._id;
-            if (primaryService?._id && customerId && staffId && selectedDate?.date) {
+            const serviceId = primaryService?._id || primaryService?.id;
+
+            if (serviceId && customerId && staffId && selectedDate?.date) {
                 await api.post('/bookings', {
                     clientId: customerId,
-                    serviceId: primaryService._id,
+                    serviceId: serviceId,
                     staffId,
                     appointmentDate: selectedDate.date.toISOString(),
                     duration: Number(totalDuration || primaryService.duration || 30),
@@ -530,10 +536,11 @@ export default function AppBookingPage() {
 
                         <div className="space-y-2.5 max-h-[55vh] overflow-y-auto custom-scrollbar pr-1">
                             {filteredServices.map((svc) => {
-                                const isSelected = selectedServices.some(s => s.id === svc.id);
+                                const svcId = svc._id || svc.id;
+                                const isSelected = selectedServices.some(s => (s._id || s.id) === svcId);
                                 return (
                                     <motion.button
-                                        key={svc.id}
+                                        key={svcId}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => toggleService(svc)}
                                         style={{

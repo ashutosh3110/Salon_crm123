@@ -19,7 +19,8 @@ import {
     Shield,
     Loader2,
     Scissors,
-    Smartphone
+    Smartphone,
+    ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -74,50 +75,57 @@ export default function ReceptionistDashboard() {
                     api.get('/users?role=stylist')
                 ]);
 
-                if (statsRes.data.success) {
+                if (statsRes.data?.success) {
                     const iconMap = {
                         "Today's Appointments": Calendar,
                         "Pending Check-ins": Clock,
                         "Completed Today": CheckCircle2,
                         "New Registrations": UserPlus
                     };
-                    setStats(statsRes.data.data.stats.map(s => ({
+                    setStats((statsRes.data.data?.stats || []).map(s => ({
                         ...s,
                         icon: iconMap[s.label] || AlertCircle
                     })));
-                    if (statsRes.data.data.performance) {
+                    if (statsRes.data.data?.performance) {
                         setPerformance(statsRes.data.data.performance);
                     }
                 }
 
-                if (bookingsRes.data.results) {
-                    const allBookings = bookingsRes.data.results;
-                    setLiveFeed(allBookings.slice(0, 5).map(b => ({
-                        id: b.id || b._id,
-                        client: b.clientId?.name || 'Walk-in',
-                        service: b.serviceId?.name || 'Unknown',
-                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
-                        professional: b.staffId?.name || 'Unassigned',
-                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-                        source: b.source || 'APP',
-                        isRegistry: false
-                    })));
+                // Get all today's bookings for availability check
+                const allBookings = bookingsRes.data?.results || [];
+                setLiveFeed(allBookings.slice(0, 5).map(b => ({
+                    id: b.id || b._id,
+                    client: b.clientId?.name || 'Walk-in',
+                    service: b.serviceId?.name || 'Unknown',
+                    time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                    professional: b.staffId?.name || 'Unassigned',
+                    status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                    source: b.source || 'APP',
+                    isRegistry: false
+                })));
 
-                    // Determine busy staff (arrived or in-progress)
-                    const busyStaffIds = allBookings
-                        .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
-                        .map(b => b.staffId?._id || b.staffId?.id)
-                        .filter(Boolean);
-                    
-                    if (staffRes.data.success) {
-                        setStaff(staffRes.data.data.results.map(s => ({
-                            ...s,
-                            isAvailable: !busyStaffIds.includes(s._id || s.id)
-                        })));
-                    }
-                }
+                // Determine busy staff (arrived or in-progress)
+                const busyStaffIds = allBookings
+                    .filter(b => ['arrived', 'in-progress'].includes(b.status?.toLowerCase()))
+                    .map(b => {
+                        const sId = b.staffId?._id || b.staffId?.id || b.staffId;
+                        return sId ? String(sId) : null;
+                    })
+                    .filter(Boolean);
+                
+                // Populate Services
+                const serviceList = servicesRes.data?.data?.results || servicesRes.data?.results || [];
+                setServices(serviceList);
 
-                if (servicesRes.data.success) setServices(servicesRes.data.data.results);
+                // Populate Staff with availability
+                const staffList = staffRes.data?.data?.results || staffRes.data?.results || [];
+                setStaff(staffList.map(s => {
+                    const sId = String(s._id || s.id);
+                    return {
+                        ...s,
+                        isAvailable: !busyStaffIds.includes(sId)
+                    };
+                }));
 
             } catch (err) {
                 console.error('Front Desk Matrix Sync Error:', err);
@@ -435,167 +443,204 @@ export default function ReceptionistDashboard() {
 
             {/* Manual Booking Modal */}
             {isBookingOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Plus className="w-4 h-4 text-primary" /> NEW APPOINTMENT
-                            </h3>
-                            <button onClick={() => setIsBookingOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
+                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <Plus className="w-3.5 h-3.5" /> APPOINTMENT
+                                </h3>
+                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">MANUAL BOOKING PROTOCOL</p>
+                            </div>
+                            <button onClick={() => setIsBookingOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
                         <form onSubmit={handleManualBookingSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Identity</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="text"
                                         value={newBooking.clientName}
-                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
                                         placeholder="CLIENT FULL NAME"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Number</label>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Contact Protocol</label>
+                                <div className="relative group">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="tel"
                                         value={newBooking.phone}
                                         onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="+91 XXXXX XXXXX"
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        placeholder="MOBILE NUMBER"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
-                                <select
-                                    required
-                                    value={newBooking.serviceId}
-                                    onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
-                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
-                                >
-                                    <option value="">-- SELECT SERVICE --</option>
-                                    {services.map(s => (
-                                        <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Stylist</label>
-                                <select
-                                    required
-                                    value={newBooking.staffId}
-                                    onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
-                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
-                                >
-                                    <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                    {staff.filter(s => s.isAvailable).map(s => (
-                                        <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
-                                    ))}
-                                </select>
-                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Date</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Date</label>
                                     <input
                                         type="date"
                                         value={newBooking.date}
                                         onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[10px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                        className="w-full px-4 py-4 bg-surface-alt/50 border border-border text-[11px] font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Time Slot</label>
-                                    <select
-                                        value={newBooking.time}
-                                        onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
-                                    >
-                                        <option>10:00 AM</option>
-                                        <option>11:00 AM</option>
-                                        <option>12:00 PM</option>
-                                        <option>01:00 PM</option>
-                                        <option>02:00 PM</option>
-                                        <option>03:00 PM</option>
-                                        <option>04:00 PM</option>
-                                    </select>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Time Slot</label>
+                                    <div className="relative group">
+                                        <select
+                                            value={newBooking.time}
+                                            onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
+                                            className="w-full px-4 py-4 bg-surface-alt/50 border border-border text-[11px] font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                        >
+                                            <option>10:00 AM</option>
+                                            <option>11:00 AM</option>
+                                            <option>12:00 PM</option>
+                                            <option>01:00 PM</option>
+                                            <option>02:00 PM</option>
+                                            <option>03:00 PM</option>
+                                            <option>04:00 PM</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                Confirm Booking
-                            </button>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Service Selection</label>
+                                <div className="relative group">
+                                    <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                    <select
+                                        required
+                                        value={newBooking.serviceId}
+                                        onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
+                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">-- SELECT SERVICE --</option>
+                                        {services.map(s => (
+                                            <option key={s.id || s._id} value={s.id || s._id}>{s.name} - ₹{s.price}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Staff Assignment</label>
+                                <div className="relative group">
+                                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                    <select
+                                        required
+                                        value={newBooking.staffId}
+                                        onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
+                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">-- AUTO-ASSIGN / SELECT --</option>
+                                        {staff.filter(s => s.isAvailable).map(s => (
+                                            <option key={s.id || s._id} value={s.id || s._id}>{s.name} - {s.role}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className="pt-6 border-t border-border flex flex-col gap-3">
+                                <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+                                    <Calendar className="w-4 h-4" /> CONFIRM APPOINTMENT
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
             {/* Registration Modal */}
             {isRegistrationOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <UserPlus className="w-4 h-4 text-primary" /> NEW CLIENT REGISTRATION
-                            </h3>
-                            <button onClick={() => setIsRegistrationOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
+                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <UserPlus className="w-3.5 h-3.5" /> REGISTRATION
+                                </h3>
+                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">CLIENT ONBOARDING</p>
+                            </div>
+                            <button onClick={() => setIsRegistrationOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
-                        <form onSubmit={handleRegistrationSubmit} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Full Name</label>
+                        <form onSubmit={handleRegistrationSubmit} className="p-8 space-y-7">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Full Name</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="text"
                                         value={newClient.name}
                                         onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="CLIENT NAME"
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        placeholder="CLIENT FULL NAME"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</label>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Mobile Protocol</label>
+                                <div className="relative group">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="tel"
                                         value={newClient.phone}
                                         onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
                                         placeholder="+91 XXXXX XXXXX"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Email (Optional)</label>
-                                <input
-                                    type="email"
-                                    value={newClient.email}
-                                    onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                    placeholder="CLIENT@EMAIL.COM"
-                                />
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Email Archive (Optional)</label>
+                                <div className="relative group">
+                                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                    <input
+                                        type="email"
+                                        value={newClient.email}
+                                        onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        placeholder="CLIENT@EMAIL.COM"
+                                    />
+                                </div>
                             </div>
-                            <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
-                                Register Client
-                            </button>
+                            <div className="pt-6 border-t border-border flex flex-col gap-3">
+                                <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
+                                    <UserCheck className="w-5 h-5" /> REGISTER IDENTITY
+                                </button>
+                                <button onClick={() => setIsRegistrationOpen(false)} className="w-full py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                                    ABORT OPERATION
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
             )}
-
-            {/* Walk-in Modal */}
+                 {/* Walk-in Modal */}
             {isWalkinOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300 shadow-2xl">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <UserCheck className="w-4 h-4 text-primary" /> NEW WALK-IN (DIRECT ENTRY)
-                            </h3>
-                            <button onClick={() => setIsWalkinOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
+                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                    <Zap className="w-3.5 h-3.5" /> FAST ENTRY
+                                </h3>
+                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">WALK-IN REGISTRATION</p>
+                            </div>
+                            <button onClick={() => setIsWalkinOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
                                 <X className="w-5 h-5 text-text-muted" />
                             </button>
                         </div>
@@ -642,60 +687,77 @@ export default function ReceptionistDashboard() {
                             } catch (err) {
                                 alert('Walk-in Failed: Could not process entry.');
                             }
-                        }} className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                        }} className="p-8 space-y-7">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Identity</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="text"
                                         value={newBooking.clientName}
                                         onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="GUEST NAME"
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        placeholder="GUEST FULL NAME"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Phone</label>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Contact Protocol</label>
+                                <div className="relative group">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
                                     <input
                                         required
                                         type="tel"
                                         value={newBooking.phone}
                                         onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                        placeholder="CONTACT"
+                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        placeholder="MOBILE NUMBER"
                                     />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service</label>
-                                <select
-                                    required
-                                    value={newBooking.serviceId}
-                                    onChange={(e) => setNewBooking({...newBooking, serviceId: e.target.value})}
-                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
-                                >
-                                    <option value="">-- SELECT SERVICE --</option>
-                                    {services.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                </select>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Service Required</label>
+                                <div className="relative group">
+                                    <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                    <select
+                                        required
+                                        value={newBooking.serviceId}
+                                        onChange={(e) => setNewBooking({...newBooking, serviceId: e.target.value})}
+                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">-- SELECT SERVICE --</option>
+                                        {services.map(s => <option key={s.id || s._id} value={s.id || s._id}>{s.name}</option>)}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Stylist</label>
-                                <select
-                                    required
-                                    value={newBooking.staffId}
-                                    onChange={(e) => setNewBooking({...newBooking, staffId: e.target.value})}
-                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
-                                >
-                                    <option value="">-- SELECT STYLIST --</option>
-                                    {staff.filter(s => s.isAvailable).map(s => (
-                                        <option key={s._id} value={s._id}>{s.name}</option>
-                                    ))}
-                                </select>
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Assign Stylist</label>
+                                <div className="relative group">
+                                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                    <select
+                                        required
+                                        value={newBooking.staffId}
+                                        onChange={(e) => setNewBooking({...newBooking, staffId: e.target.value})}
+                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">-- AUTO-ASSIGN / SELECT --</option>
+                                        {staff.filter(s => s.isAvailable).map(s => (
+                                            <option key={s.id || s._id} value={s.id || s._id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                </div>
                             </div>
-                            <button type="submit" className="w-full py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20">
-                                ENTER SALON (CHECK-IN)
-                            </button>
+                            <div className="pt-6 border-t border-border flex flex-col gap-3">
+                                <button type="submit" className="w-full py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+                                    <Zap className="w-4 h-4" /> INITIATE CHECK-IN
+                                </button>
+                                <button onClick={() => setIsWalkinOpen(false)} className="w-full py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                                    CANCEL OPERATION
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

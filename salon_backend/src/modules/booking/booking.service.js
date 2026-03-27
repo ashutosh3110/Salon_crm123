@@ -1,8 +1,10 @@
+import mongoose from 'mongoose';
 import Booking from './booking.model.js';
 import bookingRepository from './booking.repository.js';
 import loyaltyService from '../loyalty/loyalty.service.js';
 import notificationService from '../notification/notification.service.js';
 import User from '../user/user.model.js';
+import Outlet from '../outlet/outlet.model.js';
 
 class BookingService {
     /**
@@ -36,6 +38,31 @@ class BookingService {
             throw new Error('Stylist is already booked for this time slot');
         }
 
+        // 2. Check for overlapping bookings for the same chair
+        if (bookingData.chairId) {
+            const chairOverlapping = await Booking.findOne({
+                tenantId,
+                outletId: bookingData.outletId,
+                chairId: bookingData.chairId,
+                status: { $in: ['pending', 'confirmed', 'arrived', 'in-progress'] },
+                $or: [
+                    {
+                        appointmentDate: { $lt: end },
+                        $expr: {
+                            $gt: [
+                                { $add: ["$appointmentDate", { $multiply: ["$duration", 60000] }] },
+                                start
+                            ]
+                        }
+                    }
+                ]
+            });
+
+            if (chairOverlapping) {
+                throw new Error('This chair is already occupied or reserved for this time slot');
+            }
+        }
+
         const booking = await bookingRepository.create({ ...bookingData, tenantId });
 
         if (booking?.clientId) {
@@ -50,9 +77,9 @@ class BookingService {
             const serviceName = populated.serviceId?.name || 'service';
             
             // 1. Notify Assigned Stylist
-            if (populated.staffId) {
+            if (populated.staffId && (populated.staffId._id || populated.staffId.id)) {
                 await notificationService.sendNotification({
-                    recipientId: populated.staffId._id,
+                    recipientId: populated.staffId._id || populated.staffId.id,
                     tenantId,
                     type: 'booking_new',
                     title: 'New Appointment!',
@@ -156,6 +183,44 @@ class BookingService {
             throw new Error('Booking not found');
         }
         return booking;
+    }
+
+    /**
+     * Get availability for an outlet on a specific date
+     */
+    async getOutletAvailability(tenantId, outletId, date, duration = 30) {
+        const startDay = new Date(date);
+        startDay.setHours(0, 0, 0, 0);
+        const endDay = new Date(date);
+        endDay.setHours(23, 59, 59, 999);
+
+        // 1. Get all staff for this outlet
+        const staff = await User.find({ tenantId, outletId, role: 'stylist', status: 'active' }).select('name').lean();
+        
+        // 2. Get the outlet to see its chairs
+        const outlet = await Outlet.findOne({ _id: outletId, tenantId }).select('chairs').lean();
+        const chairs = outlet?.chairs || [];
+
+        // 3. Get all bookings for this day
+        const bookings = await Booking.find({
+            tenantId,
+            outletId,
+            appointmentDate: { $gte: startDay, $lte: endDay },
+            status: { $in: ['pending', 'confirmed', 'arrived', 'in-progress'] }
+        }).lean();
+
+        return {
+            date,
+            staff,
+            chairs,
+            bookings: bookings.map(b => ({
+                id: b._id,
+                staffId: b.staffId,
+                chairId: b.chairId,
+                start: b.appointmentDate,
+                end: new Date(new Date(b.appointmentDate).getTime() + b.duration * 60000)
+            }))
+        };
     }
 }
 

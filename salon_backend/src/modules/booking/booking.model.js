@@ -44,6 +44,9 @@ const bookingSchema = new mongoose.Schema(
             ref: 'Outlet',
             required: true,
         },
+        chairId: {
+            type: Number,
+        },
     },
     {
         timestamps: true,

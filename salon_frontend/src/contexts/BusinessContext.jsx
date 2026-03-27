@@ -90,10 +90,14 @@ export function BusinessProvider({ children }) {
         }
     }, [isAuthenticated]);
 
-    // Fetch outlets when customer logs in (for /app)
+    // Fetch outlets, services, categories, and staff when customer logs in (for /app)
     useEffect(() => {
         if (customer && typeof window !== 'undefined' && window.location.pathname.startsWith('/app')) {
+            console.log('[DEBUG] Customer Login Triggered Fetching...', customer._id, customer.tenantId);
             fetchOutlets();
+            fetchServices();
+            fetchCategories();
+            fetchStaff();
         }
     }, [customer]);
 
@@ -261,9 +265,11 @@ export function BusinessProvider({ children }) {
     const fetchStaff = useCallback(async () => {
         setStaffLoading(true);
         try {
+            console.log('[DEBUG] Fetching Staff...');
             const response = await api.get('/users', { params: { limit: 200, page: 1 } });
             const staffRaw = response?.data?.success ? response.data.data : response.data;
             const staffList = Array.isArray(staffRaw) ? staffRaw : (staffRaw?.results || []);
+            console.log('[DEBUG] Staff Received:', staffList.length);
             setStaff(staffList.filter((u) => u.role !== 'superadmin'));
         } catch (error) {
             console.error('[BusinessContext] Failed to fetch staff:', error);
@@ -276,7 +282,7 @@ export function BusinessProvider({ children }) {
     const fetchServices = async () => {
         setServicesLoading(true);
         try {
-            const response = await api.get('/services');
+            const response = await api.get('/services', { params: { limit: 1000 } });
             setServices(response.data.results || response.data || []);
         } catch (error) {
             console.error('[BusinessContext] Failed to fetch services:', error);

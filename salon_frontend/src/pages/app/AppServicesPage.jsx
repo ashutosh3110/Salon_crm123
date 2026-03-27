@@ -55,7 +55,7 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
 
                     <motion.button
                         whileTap={{ scale: 0.9 }}
-                        onClick={() => onBook(service.id)}
+                        onClick={() => onBook(service._id || service.id)}
                         style={{
                             background: '#C8956C',
                             borderRadius: '12px 4px 12px 4px',
@@ -121,14 +121,19 @@ export default function AppServicesPage() {
 
         // Filter by Outlet if outletIds or outletId is present on service
         result = result.filter(s => {
-            // New logic: Check outletIds array first
-            if (s.outletIds && s.outletIds.length > 0) {
-                return s.outletIds.includes(activeOutletId);
+            // Priority: Check the outletIds array (modern multi-outlet assignment)
+            if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
+                // Use .map(String) to ensure we're comparing string IDs (handles ObjectId objects)
+                return s.outletIds.map(id => String(id)).includes(String(activeOutletId));
             }
-            // Backward compatibility: If it was marked as All Outlets or had no specific outlet assignment
-            if (!s.outletId || s.outlet === 'All Outlets') return true; 
-            // Old logic legacy support
-            return s.outletId === activeOutletId;
+
+            // Fallback 1: Check the singular outletId (legacy single-outlet assignment)
+            if (s.outletId && s.outletId !== 'all') {
+                return String(s.outletId) === String(activeOutletId);
+            }
+
+            // Fallback 2: Check the "All Outlets" marker or absence of specific assignment
+            return !s.outletId || s.outlet === 'All Outlets' || (Array.isArray(s.outletIds) && s.outletIds.length === 0);
         });
 
         // Filter by Gender (via Category)
@@ -261,7 +266,7 @@ export default function AppServicesPage() {
 
                         <div className="app-scroll no-scrollbar flex gap-3 overflow-x-auto -mx-4 px-4 pb-2">
                             {groupedServices[categoryName].map((service) => (
-                                <div key={service.id} className="w-[210px] shrink-0">
+                                <div key={service._id || service.id} className="w-[210px] shrink-0">
                                     <ServiceCard
                                         service={service}
                                         onBook={handleBook}

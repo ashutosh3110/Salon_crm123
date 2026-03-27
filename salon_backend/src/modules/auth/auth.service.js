@@ -149,11 +149,11 @@ const loginWithOtp = async (phone, tenantId, otpCode, referralCode = '') => {
     // 1. Verify OTP
     const otpRecord = await Otp.findOne({ phone, tenantId });
     if (!otpRecord || otpRecord.otp !== otpCode) {
-        throw new Error('Invalid OTP');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid OTP');
     }
 
     if (new Date() > otpRecord.expiresAt) {
-        throw new Error('OTP expired');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired');
     }
 
     // 2. Find or Create Client

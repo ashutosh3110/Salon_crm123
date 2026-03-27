@@ -18,7 +18,8 @@ import {
     RefreshCw,
     Loader2,
     Phone,
-    CheckCircle2
+    CheckCircle2,
+    ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
@@ -39,6 +40,14 @@ export default function QueuePage() {
     const [isAddGuestOpen, setIsAddGuestOpen] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
 
+    // Form State for Adding Guest
+    const [newBooking, setNewBooking] = useState({
+        clientName: '',
+        phone: '',
+        serviceId: '',
+        staffId: ''
+    });
+
     // Load Data
     const fetchData = async () => {
         try {
@@ -50,41 +59,42 @@ export default function QueuePage() {
                 api.get('/services?limit=100')
             ]);
 
-            if (queueRes.data.results) {
-                setQueueData(queueRes.data.results.map(b => ({
-                    id: b.id || b._id,
-                    name: b.clientId?.name || 'GUEST',
-                    service: b.serviceId?.name || 'SERVICE',
-                    wait: b.appointmentDate ? (Math.round((new Date() - new Date(b.appointmentDate)) / 60000)) + ' MINS' : '0 MINS',
-                    priority: b.source === 'WALKIN'
-                })));
-            }
+            // Robustly handle queue data
+            const queueList = queueRes.data?.results || [];
+            setQueueData(queueList.map(b => ({
+                id: b.id || b._id,
+                name: b.clientId?.name || 'GUEST',
+                service: b.serviceId?.name || 'SERVICE',
+                wait: b.appointmentDate ? (Math.round((new Date() - new Date(b.appointmentDate)) / 60000)) + ' MINS' : '0 MINS',
+                priority: b.source === 'WALKIN'
+            })));
 
-            if (staffRes.data.results) {
-                // Determine busy staff (arrived or in-progress)
-                const allBookings = bookingsRes.data.results || [];
-                const busyStaffIds = allBookings
-                    .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
-                    .map(b => b.staffId?._id || b.staffId?.id)
-                    .filter(Boolean);
+            // Robustly handle staff/stylist data
+            const staffList = staffRes.data?.data?.results || staffRes.data?.results || [];
+            const busyStaffIds = allBookings
+                .filter(b => ['arrived', 'in-progress'].includes(b.status?.toLowerCase()))
+                .map(b => {
+                    const sId = b.staffId?._id || b.staffId?.id || b.staffId;
+                    return sId ? String(sId) : null;
+                })
+                .filter(Boolean);
 
-                // Filter specifically for stylists and mark availability
-                setStylists(staffRes.data.results
-                    .filter(s => s.role === 'stylist')
-                    .map(s => ({
-                        id: s.id || s._id,
-                        name: s.name,
-                        specialty: s.role,
-                        status: busyStaffIds.includes(s.id || s._id) ? 'Busy' : 'Available',
-                        isAvailable: !busyStaffIds.includes(s.id || s._id),
-                        current: busyStaffIds.includes(s.id || s._id) ? 'In Service' : 'Ready'
-                    }))
-                );
-            }
+            setStylists(staffList.map(s => {
+                const sId = String(s._id || s.id);
+                const isBusy = busyStaffIds.includes(sId);
+                return {
+                    id: sId,
+                    name: s.name,
+                    specialty: s.role,
+                    status: isBusy ? 'Busy' : 'Available',
+                    isAvailable: !isBusy,
+                    current: isBusy ? 'In Service' : 'Ready'
+                };
+            }));
 
-            if (servicesRes.data.success) {
-                setServices(servicesRes.data.data.results);
-            }
+            // Robustly handle services list
+            const serviceList = servicesRes.data?.data?.results || servicesRes.data?.results || [];
+            setServices(serviceList);
         } catch (err) {
             console.error('Queue Fetch Error:', err);
         } finally {
@@ -345,63 +355,96 @@ export default function QueuePage() {
 
             {
                 isAddGuestOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                        <div className="bg-surface border border-border w-full max-w-lg relative animate-in zoom-in-95 duration-300">
-                            <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
-                                <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                    <UserPlus className="w-4 h-4 text-primary" /> WALK-IN REGISTRATION
-                                </h3>
-                                <button onClick={() => setIsAddGuestOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                        <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
+                            <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
+                                        <UserPlus className="w-3.5 h-3.5" /> GUEST ENTRY
+                                    </h3>
+                                    <p className="text-[14px] font-bold text-text uppercase tracking-tight">WALK-IN REGISTRATION</p>
+                                </div>
+                                <button onClick={() => setIsAddGuestOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
                                     <X className="w-5 h-5 text-text-muted" />
                                 </button>
                             </div>
-                            <div className="p-8 space-y-5 text-left">
+                            <div className="p-8 space-y-7">
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Identity</label>
                                     <div className="relative group">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                        <input type="text" id="guestName" autoFocus placeholder="ENTER GUEST NAME" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
+                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                        <input
+                                            type="text"
+                                            value={newBooking.clientName}
+                                            onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
+                                            autoFocus
+                                            placeholder="FULL NAME"
+                                            className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Phone</label>
-                                        <div className="relative group">
-                                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
-                                            <input type="tel" id="guestPhone" placeholder="CONTACT NUMBER" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20" />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
-                                        <div className="relative">
-                                            <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                            <select id="guestService" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                                {services.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Stylist</label>
-                                    <div className="relative">
-                                        <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                                        <select id="guestStaff" className="w-full pl-10 pr-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer">
-                                            {stylists.filter(s => s.isAvailable).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                        </select>
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Contact Protocol</label>
+                                    <div className="relative group">
+                                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                        <input
+                                            type="tel"
+                                            value={newBooking.phone}
+                                            onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
+                                            placeholder="MOBILE NUMBER"
+                                            className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        />
                                     </div>
                                 </div>
-                                <div className="pt-4 border-t border-border flex gap-4">
-                                    <button onClick={() => setIsAddGuestOpen(false)} className="flex-1 py-3 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all">CANCEL</button>
+
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Service Required</label>
+                                        <div className="relative group">
+                                            <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                            <select
+                                                required
+                                                value={newBooking.serviceId}
+                                                onChange={(e) => setNewBooking({...newBooking, serviceId: e.target.value})}
+                                                className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                            >
+                                                <option value="">-- SELECT SERVICE --</option>
+                                                {services.map(s => <option key={s.id || s._id} value={s.id || s._id}>{s.name} - ₹{s.price || '??'}</option>)}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Assign Stylist</label>
+                                        <div className="relative group">
+                                            <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                                            <select
+                                                required
+                                                value={newBooking.staffId}
+                                                onChange={(e) => setNewBooking({...newBooking, staffId: e.target.value})}
+                                                className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                            >
+                                                <option value="">-- AUTO-ASSIGN / SELECT --</option>
+                                                {stylists.filter(s => s.isAvailable).map(s => (
+                                                    <option key={s.id || s._id} value={s.id || s._id}>{s.name} - {s.specialty}</option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 border-t border-border flex flex-col gap-3">
                                     <button
-                                        onClick={() => handleAddGuest({
-                                            clientName: document.getElementById('guestName').value || 'New Guest',
-                                            phone: document.getElementById('guestPhone').value || '0000000000',
-                                            serviceId: document.getElementById('guestService').value,
-                                            staffId: document.getElementById('guestStaff').value
-                                        })}
-                                        className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                        onClick={() => handleAddGuest(newBooking)}
+                                        className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
                                     >
-                                        ADD TO QUEUE
+                                        <UserPlus className="w-4 h-4" /> ADD TO QUEUE
+                                    </button>
+                                    <button onClick={() => setIsAddGuestOpen(false)} className="w-full py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                                        CANCEL OPERATION
                                     </button>
                                 </div>
                             </div>

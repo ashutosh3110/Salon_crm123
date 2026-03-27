@@ -65,7 +65,7 @@ async function getStaffPerformance(tenantId, startDate, endDate) {
 
     const users = await User.find({
         tenantId: tid,
-        role: { $nin: ['superadmin'] },
+        role: { $nin: ['superadmin', 'admin', 'manager'] },
         status: 'active',
     })
         .select('name role performanceGoal')

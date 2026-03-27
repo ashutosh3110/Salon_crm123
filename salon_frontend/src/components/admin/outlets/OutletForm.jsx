@@ -10,7 +10,8 @@ import {
     Clock,
     Calendar,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Users
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
@@ -55,6 +56,7 @@ export default function OutletForm() {
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         openingTime: '09:00 AM',
         closingTime: '09:00 PM',
+        chairs: []
     });
 
     useEffect(() => {
@@ -63,7 +65,8 @@ export default function OutletForm() {
             if (found) {
                 setForm({
                     ...form,
-                    ...found
+                    ...found,
+                    chairs: found.chairs || []
                 });
             }
         }
@@ -80,6 +83,28 @@ export default function OutletForm() {
             workingDays: prev.workingDays.includes(day)
                 ? prev.workingDays.filter(d => d !== day)
                 : [...prev.workingDays, day]
+        }));
+    };
+    
+    const handleAddChair = () => {
+        const nextId = form.chairs.length > 0 ? Math.max(...form.chairs.map(c => c.id)) + 1 : 1;
+        setForm(prev => ({
+            ...prev,
+            chairs: [...prev.chairs, { id: nextId, name: `Chair ${nextId}` }]
+        }));
+    };
+
+    const handleRemoveChair = (chairId) => {
+        setForm(prev => ({
+            ...prev,
+            chairs: prev.chairs.filter(c => c.id !== chairId)
+        }));
+    };
+
+    const handleChairNameChange = (chairId, newName) => {
+        setForm(prev => ({
+            ...prev,
+            chairs: prev.chairs.map(c => c.id === chairId ? { ...c, name: newName } : c)
         }));
     };
 
@@ -253,6 +278,53 @@ export default function OutletForm() {
                                     * These details will be printed on all invoices.
                                 </p>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Chair Management */}
+                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6 md:col-span-2">
+                        <div className="flex items-center justify-between pb-3 border-b border-border/50">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-xl bg-purple-50 text-purple-500">
+                                    <Users className="w-4 h-4" />
+                                </div>
+                                <h2 className="text-xs font-bold text-text uppercase tracking-widest">Chair / Station Management</h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleAddChair}
+                                className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all"
+                            >
+                                + Add Station
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {form.chairs.map((chair) => (
+                                <div key={chair.id} className="p-4 bg-slate-50 rounded-2xl border border-border flex items-center gap-4 group">
+                                    <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-[10px] font-black text-text-muted">
+                                        {chair.id}
+                                    </div>
+                                    <input
+                                        value={chair.name}
+                                        onChange={(e) => handleChairNameChange(chair.id, e.target.value)}
+                                        placeholder="Station Name"
+                                        className="flex-1 bg-transparent border-none text-sm font-bold focus:ring-0 p-0 outline-none"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveChair(chair.id)}
+                                        className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                    >
+                                        <AlertCircle className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                            {form.chairs.length === 0 && (
+                                <div className="col-span-full py-10 text-center bg-slate-50/50 rounded-2xl border border-dashed border-border">
+                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">No stations configured for this outlet</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 

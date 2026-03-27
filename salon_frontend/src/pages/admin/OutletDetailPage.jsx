@@ -18,7 +18,8 @@ import {
     Calendar,
     User,
     ArrowUpRight,
-    Star
+    Star,
+    Layout
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useInventory } from '../../contexts/InventoryContext';
@@ -114,8 +115,8 @@ export default function OutletDetailPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-2 p-1.5 bg-surface-alt border border-border rounded-none w-fit">
-                {['overview', 'staff', 'hours', 'services', 'products'].map(tab => (
+            <div className="flex gap-2 p-1.5 bg-surface-alt border border-border rounded-none w-fit overflow-x-auto max-w-full">
+                {['overview', 'staff', 'chairs', 'hours', 'services', 'products'].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -125,6 +126,7 @@ export default function OutletDetailPage() {
                             }`}
                     >
                         {tab === 'staff' ? 'Staff Details' : 
+                         tab === 'chairs' ? 'Stations / Chairs' :
                          tab === 'hours' ? 'Opening Hours' :
                          tab === 'services' ? 'Services' :
                          tab === 'products' ? 'Products' : 'Overview'} 
@@ -222,6 +224,41 @@ export default function OutletDetailPage() {
                                 <div className="p-6 text-center border-t border-border bg-surface-alt/20">
                                     <button className="text-[10px] font-black text-primary uppercase tracking-[0.2em] hover:underline">Sync Staff List</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'chairs' && (
+                        <div className="bg-surface rounded-none border border-border shadow-sm">
+                            <div className="px-8 py-5 border-b border-border flex items-center justify-between bg-surface-alt/50">
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">Salon Stations (Chairs)</h3>
+                                <span className="text-[10px] font-black text-primary px-3 py-1 bg-primary/10 border border-primary/20">
+                                    {(outlet.chairs || []).length} STATIONS
+                                </span>
+                            </div>
+                            <div className="divide-y divide-border">
+                                {(outlet.chairs || []).map((chair) => (
+                                    <div key={chair.id} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt transition-all group">
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-11 h-11 rounded-none bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-500 group-hover:scale-105 transition-transform">
+                                                <Layout className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{chair.name}</p>
+                                                <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest">Station ID: {chair.id}</p>
+                                            </div>
+                                        </div>
+                                        <div className="px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-black uppercase tracking-widest">
+                                            Available
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!outlet.chairs || outlet.chairs.length === 0) && (
+                                    <div className="px-8 py-20 text-center opacity-40">
+                                        <Layout className="w-8 h-8 mx-auto mb-3" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No stations configured for this unit</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

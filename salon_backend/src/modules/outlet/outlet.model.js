@@ -60,6 +60,13 @@ const outletSchema = new mongoose.Schema(
             enum: ['active', 'inactive'],
             default: 'active',
         },
+        chairs: [
+            {
+                id: { type: Number, required: true },
+                name: { type: String },
+                status: { type: String, enum: ['active', 'inactive'], default: 'active' }
+            }
+        ],
     },
     {
         timestamps: true,

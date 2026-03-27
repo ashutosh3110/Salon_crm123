@@ -283,7 +283,7 @@ async function getManagerTeam(tenantId) {
     const tid = toTenantObjectId(tenantId);
     const todayYmd = ymdLocal(new Date());
 
-    const users = await User.find({ tenantId: tid, role: { $ne: 'superadmin' } })
+    const users = await User.find({ tenantId: tid, role: { $nin: ['superadmin', 'admin', 'manager'] } })
         .select('name email phone role status specialist joinedDate createdAt')
         .populate('outletId', 'name')
         .sort({ name: 1 })
@@ -385,7 +385,7 @@ async function getManagerDashboard(tenantId) {
 
     const [hrData, activeStaff, presentToday, ratingAgg, recentFb] = await Promise.all([
         hrPerformanceService.getStaffPerformance(tenantId, startYmd, endYmd),
-        User.countDocuments({ tenantId: tid, status: 'active', role: { $nin: ['superadmin'] } }),
+        User.countDocuments({ tenantId: tid, status: 'active', role: { $nin: ['superadmin', 'admin', 'manager'] } }),
         Attendance.countDocuments({
             tenantId: tid,
             date: endYmd,

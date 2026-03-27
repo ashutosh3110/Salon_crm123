@@ -249,8 +249,13 @@ export default function AppHomePage() {
 
     const filteredPopularServices = useMemo(() => {
         return (services || []).filter(s => {
-            // Filter by outlet
-            if (s.outletId && s.outletId !== 'all' && s.outletId !== activeOutletId) return false;
+            // Filter by outlet (Multi-outlet support)
+            if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
+                if (!s.outletIds.map(id => String(id)).includes(String(activeOutletId))) return false;
+            } else if (s.outletId && s.outletId !== 'all' && String(s.outletId) !== String(activeOutletId)) {
+                // Legacy support for singular outletId
+                return false;
+            }
 
             // Filter by gender
             const cat = businessCategories.find(c => c.name === s.category);

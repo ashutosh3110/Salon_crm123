@@ -75,9 +75,23 @@ const updateBookingStatus = async (req, res, next) => {
     }
 };
 
+const getAvailability = async (req, res, next) => {
+    try {
+        const { outletId, date } = req.query;
+        if (!outletId || !date) {
+            return res.status(httpStatus.BAD_REQUEST).send({ message: 'outletId and date are required' });
+        }
+        const data = await bookingService.getOutletAvailability(req.tenantId, outletId, date);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createBooking,
     getBookings,
     getBooking,
     updateBookingStatus,
+    getAvailability,
 };
