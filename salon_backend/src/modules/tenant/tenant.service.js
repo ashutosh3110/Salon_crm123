@@ -4,6 +4,7 @@ import Tenant from './tenant.model.js';
 import User from '../user/user.model.js';
 import userService from '../user/user.service.js';
 import emailService from '../notification/email.service.js';
+import Subscription from '../subscription/subscription.model.js';
 
 const PLAN_DEFAULTS = {
     free: {
@@ -44,12 +45,20 @@ class TenantService {
         }
 
         // Apply plan defaults if plan is provided
-        const plan = tenantData.subscriptionPlan || 'free';
-        if (PLAN_DEFAULTS[plan]) {
-            tenantData.features = { ...PLAN_DEFAULTS[plan].features, ...(tenantData.features || {}) };
-            tenantData.limits = { ...PLAN_DEFAULTS[plan].limits, ...(tenantData.limits || {}) };
-            tenantData.mrr = PLAN_DEFAULTS[plan].mrr;
-            tenantData.trialDays = PLAN_DEFAULTS[plan].trialDays;
+        const planTag = tenantData.subscriptionPlan || 'free';
+        const subscription = await Subscription.findOne({ tag: planTag });
+        
+        if (subscription) {
+            tenantData.features = { ...subscription.features.toObject(), ...(tenantData.features || {}) };
+            tenantData.limits = { ...subscription.limits.toObject(), ...(tenantData.limits || {}) };
+            tenantData.mrr = subscription.monthlyPrice;
+            tenantData.trialDays = subscription.trialDays;
+        } else if (PLAN_DEFAULTS[planTag]) {
+            // Fallback to hardcoded defaults if DB record missing
+            tenantData.features = { ...PLAN_DEFAULTS[planTag].features, ...(tenantData.features || {}) };
+            tenantData.limits = { ...PLAN_DEFAULTS[planTag].limits, ...(tenantData.limits || {}) };
+            tenantData.mrr = PLAN_DEFAULTS[planTag].mrr;
+            tenantData.trialDays = PLAN_DEFAULTS[planTag].trialDays;
         }
 
         // Check for duplicate email
@@ -195,12 +204,22 @@ class TenantService {
     async updateTenantById(id, updateBody) {
         const tenant = await this.getTenantById(id);
         
+        // Special handling for subscription plan changes
+        if (updateBody.subscriptionPlan && updateBody.subscriptionPlan !== tenant.subscriptionPlan) {
+            const subscription = await Subscription.findOne({ tag: updateBody.subscriptionPlan });
+            if (subscription) {
+                updateBody.features = { ...subscription.features.toObject(), ...(updateBody.features || {}) };
+                updateBody.limits = { ...subscription.limits.toObject(), ...(updateBody.limits || {}) };
+                updateBody.mrr = subscription.monthlyPrice;
+            }
+        }
+
         // Handle deep update for features and limits if they exist
         if (updateBody.features) {
-            updateBody.features = { ...tenant.features.toObject(), ...updateBody.features };
+            updateBody.features = { ...(tenant.features?.toObject() || {}), ...updateBody.features };
         }
         if (updateBody.limits) {
-            updateBody.limits = { ...tenant.limits.toObject(), ...updateBody.limits };
+            updateBody.limits = { ...(tenant.limits?.toObject() || {}), ...updateBody.limits };
         }
         if (updateBody.settings) {
             const curSettings =

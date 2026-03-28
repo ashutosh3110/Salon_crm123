@@ -23,6 +23,14 @@ class OutletService {
     }
 
     async createOutlet(outletBody) {
+        if (outletBody.tenantId) {
+            const tenant = await Tenant.findById(outletBody.tenantId);
+            if (tenant && tenant.outletsCount >= (tenant.limits?.outletLimit || 1)) {
+                const err = new Error(`Outlet limit reached (${tenant.limits?.outletLimit || 1}). Please upgrade your plan.`);
+                err.statusCode = httpStatus.FORBIDDEN;
+                throw err;
+            }
+        }
         const withGeo = await this._geocodeOutlet({ ...outletBody });
         const outlet = await Outlet.create(withGeo);
         

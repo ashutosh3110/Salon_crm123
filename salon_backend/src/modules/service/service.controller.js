@@ -90,6 +90,18 @@ const deleteCategory = async (req, res, next) => {
     }
 };
 
+const bulkImport = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(httpStatus.BAD_REQUEST).send({ message: 'No file uploaded' });
+        }
+        const result = await serviceService.bulkImportServices(req.tenantId, req.file.path);
+        res.send(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createService,
     getServices,
@@ -100,4 +112,5 @@ export default {
     createCategory,
     updateCategory,
     deleteCategory,
+    bulkImport,
 };

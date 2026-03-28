@@ -126,10 +126,43 @@ const registerCustomer = async (req, res, next) => {
     }
 };
 
+const forgotPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const result = await authService.forgotPassword(email);
+        res.send(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const verifyResetOtp = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+        const result = await authService.verifyResetOtp(email, otp);
+        res.send(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const resetPassword = async (req, res, next) => {
+    try {
+        const { email, otp, password } = req.body;
+        const result = await authService.resetPassword(email, otp, password);
+        res.send(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     register,
     login,
     requestOtp,
     loginWithOtp,
     registerCustomer,
+    forgotPassword,
+    verifyResetOtp,
+    resetPassword,
 };

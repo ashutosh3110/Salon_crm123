@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { MapPin } from 'lucide-react';
+import PasswordField from '../../components/common/PasswordField';
 
 const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business'];
 
@@ -25,7 +26,7 @@ const NOTIFICATION_ITEMS = [
 export default function SettingsPage() {
     const { section } = useParams();
     const navigate = useNavigate();
-    const { user, updateProfile, changePassword } = useAuth();
+    const { user, updateProfile, changePassword, refreshUser } = useAuth();
     const { salon, salonLoading, updateSalon, fetchSalon } = useBusiness();
     const [isSaving, setIsSaving] = useState(false);
 
@@ -42,6 +43,10 @@ export default function SettingsPage() {
         email: '',
         phone: '',
     });
+
+    useEffect(() => {
+        refreshUser?.().catch(console.error);
+    }, [refreshUser]);
 
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
@@ -399,13 +404,13 @@ export default function SettingsPage() {
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                         Current Password
                                     </label>
-                                    <input
-                                        type="password"
+                                    <PasswordField
                                         value={passwordForm.currentPassword}
                                         onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
                                         placeholder="••••••••"
                                         required
-                                        className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                        buttonClassName="text-text-muted hover:text-primary"
                                     />
                                 </div>
                                 <div className="grid sm:grid-cols-2 gap-6">
@@ -413,27 +418,27 @@ export default function SettingsPage() {
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             New Password
                                         </label>
-                                        <input
-                                            type="password"
+                                        <PasswordField
                                             value={passwordForm.newPassword}
                                             onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
                                             placeholder="••••••••"
                                             required
                                             minLength={8}
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            buttonClassName="text-text-muted hover:text-primary"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
                                             Confirm Password
                                         </label>
-                                        <input
-                                            type="password"
+                                        <PasswordField
                                             value={passwordForm.confirmPassword}
                                             onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                             placeholder="••••••••"
                                             required
-                                            className="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            inputClassName="w-full px-5 py-3.5 rounded-none border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface-alt/50"
+                                            buttonClassName="text-text-muted hover:text-primary"
                                         />
                                     </div>
                                 </div>

@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 
-const CustomSelect = ({ value, onChange, options, placeholder = "Select...", label = "", className = "", dark = false }) => {
+const CustomSelect = ({ value, onChange, options, placeholder = "Select...", label = "", className = "", dark = false, position = "bottom" }) => {
     const [isOpen, setIsOpen] = useState(false);
+
+    const isTop = position === "top";
 
     return (
         <div className={`relative ${className}`}>
@@ -30,14 +32,14 @@ const CustomSelect = ({ value, onChange, options, placeholder = "Select...", lab
                     <>
                         <div className="fixed inset-0 z-[60]" onClick={() => setIsOpen(false)} />
                         <motion.div
-                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            initial={{ opacity: 0, y: isTop ? -10 : 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className={`absolute top-full left-0 mt-2 w-full border rounded-2xl shadow-2xl p-2 z-[70] overflow-hidden ${
+                            exit={{ opacity: 0, y: isTop ? -10 : 10, scale: 0.95 }}
+                            className={`absolute ${isTop ? 'bottom-full mb-2' : 'top-full mt-2'} left-0 w-full border rounded-2xl shadow-2xl p-2 z-[70] overflow-hidden ${
                                 dark ? 'bg-indigo-950 border-white/10 shadow-black' : 'bg-surface border-border shadow-2xl'
                             }`}
                         >
-                            <div className="max-h-[240px] overflow-y-auto custom-scrollbar">
+                            <div className="max-h-[240px] overflow-y-auto custom-scrollbar text-left font-sans">
                                 {options.length > 0 ? (
                                     options.map((opt) => (
                                         <button

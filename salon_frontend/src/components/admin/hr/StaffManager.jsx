@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Users, Search, Filter, Plus, MoreVertical, Mail, Phone, Calendar, Shield, CheckCircle2, Clock, Edit2, Eye, Trash2, UserPlus, Building2, X, ChevronLeft, ChevronRight, PieChart as PieChartIcon, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PasswordField from '../../common/PasswordField';
 import {
     PieChart,
     Pie,
@@ -489,9 +490,13 @@ export default function StaffManager() {
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional, min 8)' : 'Password * (min 8)'}</label>
-                                            <input type="password" autoComplete="new-password" placeholder={editTarget ? 'Leave blank to keep current' : 'Min 8 characters'}
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} />
+                                            <PasswordField
+                                                autoComplete="new-password"
+                                                placeholder={editTarget ? 'Leave blank to keep current' : 'Min 8 characters'}
+                                                inputClassName="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.password}
+                                                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                                            />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>

@@ -147,6 +147,57 @@ class EmailService {
             logger.error(`[EmailService] Failed to send staff email to ${to}:`, error.message);
         }
     }
+
+    /**
+     * Send Password Reset OTP
+     * @param {string} to - User email
+     * @param {string} otp - 6-digit OTP
+     */
+    async sendPasswordResetEmail(to, otp) {
+        const subject = 'Password Recovery - Action Required';
+        const html = `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 500px; margin: 0 auto; border: 1px solid #e1e1e1; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="background-color: #000000; color: #ffffff; padding: 30px; text-align: center; border-bottom: 4px solid #8B1A2D;">
+                    <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px;">WAPIXO</h1>
+                    <p style="margin: 5px 0 0; font-size: 12px; opacity: 0.7; letter-spacing: 1px;">SECURE ACCESS PROTOCOL</p>
+                </div>
+                <div style="padding: 40px 30px; background-color: #ffffff;">
+                    <p style="font-size: 16px; margin-bottom: 25px;">Hello,</p>
+                    <p style="font-size: 15px; color: #444; margin-bottom: 30px;">A request has been initiated to reclaim access to your Wapixo workspace. Use the high-entropy sequence below to authorize this reset:</p>
+                    
+                    <div style="background-color: #f8f9fa; padding: 25px; text-align: center; border-radius: 16px; border: 1px dashed #ced4da; margin: 30px 0;">
+                        <span style="font-size: 32px; font-weight: 900; letter-spacing: 12px; color: #8B1A2D; font-family: monospace;">${otp}</span>
+                    </div>
+
+                    <p style="font-size: 13px; color: #888; text-align: center; margin-bottom: 30px;">This sequence will expire in 15 minutes for security reasons.</p>
+                    
+                    <div style="border-top: 1px solid #eee; padding-top: 25px; font-size: 14px; color: #666;">
+                        <p style="margin-bottom: 5px;">If you did not request this, please ignore this email or contact security support.</p>
+                        <p>Best Regards,<br/><strong>Wapixo Security Team</strong></p>
+                    </div>
+                </div>
+                <div style="background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee;">
+                    &copy; 2026 Wapixo Premium Salon Management. All rights reserved.
+                </div>
+            </div>
+        `;
+
+        try {
+            console.log(`[EmailService] Sending recovery OTP to: ${to}`);
+            const info = await this.transporter.sendMail({
+                from: `"${config.email.fromName}" <${config.email.fromEmail}>`,
+                to,
+                subject,
+                html,
+            });
+            console.log(`[EmailService] ✅ Recovery OTP sent! Response: ${info.response}`);
+            logger.info(`[EmailService] Password reset OTP sent to ${to}`);
+        } catch (error) {
+            console.error(`[EmailService] ❌ Failed to send recovery OTP to ${to}:`, error);
+            logger.error(`[EmailService] Failed to send recovery email to ${to}:`, error.message);
+            throw new Error('Failed to deliver security sequence. Please contact support.');
+        }
+    }
 }
 
 export default new EmailService();

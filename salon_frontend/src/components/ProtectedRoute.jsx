@@ -1,8 +1,10 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth, getRedirectPath } from '../contexts/AuthContext';
+import { useBusiness } from '../contexts/BusinessContext';
 
-export default function ProtectedRoute({ allowedRoles }) {
+export default function ProtectedRoute({ allowedRoles, feature }) {
     const { user, loading, isAuthenticated } = useAuth();
+    const { salon } = useBusiness();
 
     if (loading) {
         return (
@@ -20,6 +22,11 @@ export default function ProtectedRoute({ allowedRoles }) {
         // Redirect to the user's own panel instead of a generic 403
         const correctPath = getRedirectPath(user);
         return <Navigate to={correctPath} replace />;
+    }
+
+    // Feature gating
+    if (feature && salon && !salon.features?.[feature]) {
+        return <Navigate to="/admin/feature-locked" replace />;
     }
 
     return <Outlet />;

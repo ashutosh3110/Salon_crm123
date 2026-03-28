@@ -18,28 +18,28 @@
             "id": "p1", "name": "Free", "tag": "Starter", "color": "slate", "active": true, "popular": false,
             "monthlyPrice": 0, "yearlyPrice": 0, "trialDays": 14,
             "features": { "pos": true, "appointments": true, "inventory": false, "marketing": false, "payroll": false, "crm": false, "mobileApp": false, "reports": false, "whatsapp": false, "loyalty": false, "finance": false, "feedback": false },
-            "limits": { "staffLimit": 3, "outletLimit": 1, "smsCredits": 0, "storageGB": 1, "apiCalls": 1000 },
+            "limits": { "staffLimit": 3, "outletLimit": 1, "smsCredits": 0, "storageGB": 1, "apiCalls": 1000, "whatsappLimit": 50 },
             "salonsCount": 38
         },
         {
             "id": "p2", "name": "Basic", "tag": "Growth", "color": "blue", "active": true, "popular": false,
             "monthlyPrice": 1999, "yearlyPrice": 19990, "trialDays": 14,
             "features": { "pos": true, "appointments": true, "inventory": true, "marketing": false, "payroll": false, "crm": true, "mobileApp": false, "reports": true, "whatsapp": false, "loyalty": false, "finance": true, "feedback": false },
-            "limits": { "staffLimit": 10, "outletLimit": 2, "smsCredits": 200, "storageGB": 5, "apiCalls": 10000 },
+            "limits": { "staffLimit": 10, "outletLimit": 2, "smsCredits": 200, "storageGB": 5, "apiCalls": 10000, "whatsappLimit": 500 },
             "salonsCount": 27
         },
         {
             "id": "p3", "name": "Pro", "tag": "Popular", "color": "primary", "active": true, "popular": true,
             "monthlyPrice": 4999, "yearlyPrice": 49990, "trialDays": 7,
             "features": { "pos": true, "appointments": true, "inventory": true, "marketing": true, "payroll": true, "crm": true, "mobileApp": true, "reports": true, "whatsapp": false, "loyalty": true, "finance": true, "feedback": true },
-            "limits": { "staffLimit": 25, "outletLimit": 5, "smsCredits": 1000, "storageGB": 20, "apiCalls": 100000 },
+            "limits": { "staffLimit": 25, "outletLimit": 5, "smsCredits": 1000, "storageGB": 20, "apiCalls": 100000, "whatsappLimit": 2000 },
             "salonsCount": 22
         },
         {
             "id": "p4", "name": "Enterprise", "tag": "Unlimited", "color": "amber", "active": true, "popular": false,
             "monthlyPrice": 12999, "yearlyPrice": 129990, "trialDays": 0,
             "features": { "pos": true, "appointments": true, "inventory": true, "marketing": true, "payroll": true, "crm": true, "mobileApp": true, "reports": true, "whatsapp": true, "loyalty": true, "finance": true, "feedback": true },
-            "limits": { "staffLimit": 999, "outletLimit": 999, "smsCredits": 10000, "storageGB": 100, "apiCalls": 999999 },
+            "limits": { "staffLimit": 999, "outletLimit": 999, "smsCredits": 10000, "storageGB": 100, "apiCalls": 999999, "whatsappLimit": 100000 },
             "salonsCount": 13
         }
     ]

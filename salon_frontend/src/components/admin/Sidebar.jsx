@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import {
     LayoutDashboard,
     Layout,
@@ -49,10 +50,14 @@ import {
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
+    const { salon } = useBusiness();
     const { pendingExpertsCount } = useCMS();
+    const { stats } = useInventory();
+    const lowStockCount = stats?.lowStockCount || 0;
     const location = useLocation();
 
     const menuItems = [
@@ -73,6 +78,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             label: 'Operations',
             icon: ScissorsIcon,
             path: '/pos',
+            feature: 'pos',
             subItems: [
                 { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
                 { label: 'Invoices', icon: FileText, path: '/pos/invoices', badge: { count: 5, color: 'bg-emerald-400' } },
@@ -85,13 +91,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             label: 'Bookings',
             icon: Calendar,
             path: '/admin/bookings',
-            roles: ['admin', 'manager', 'staff']
+            roles: ['admin', 'manager', 'staff'],
+            feature: 'appointments'
         },
         {
             label: 'Marketing',
             icon: Megaphone,
             path: '/admin/marketing',
             roles: ['admin', 'manager'],
+            feature: 'marketing',
             subItems: [
                 { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
                 { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms', badge: pendingExpertsCount > 0 ? { count: pendingExpertsCount, color: 'bg-rose-500 animate-pulse' } : null },
@@ -115,6 +123,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             icon: Users,
             path: '/admin/crm',
             roles: ['admin', 'manager'],
+            feature: 'crm',
             subItems: [
                 { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
                 { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
@@ -128,6 +137,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             icon: Crown,
             path: '/admin/loyalty',
             roles: ['admin'],
+            feature: 'loyalty',
             subItems: [
                 { label: 'Loyalty Rules', icon: Gift, path: '/admin/loyalty/rules' },
                 { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
@@ -140,19 +150,21 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             label: 'Inventory',
             icon: Package,
             path: '/admin/inventory',
+            feature: 'inventory',
             subItems: [
                 { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
                 { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
                 { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
                 { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
                 { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
-                { label: 'Low Stock Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: { count: 3, color: 'bg-rose-400' } },
+                { label: lowStockCount > 0 ? 'Low Stock Alerts' : 'Inventory Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: lowStockCount > 0 ? { count: lowStockCount, color: 'bg-rose-400' } : null },
             ]
         },
         {
             label: 'Finance',
             icon: TrendingUp,
             path: '/admin/finance',
+            feature: 'finance',
             subItems: [
                 { label: 'Finance Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
                 { label: 'Suppliers', icon: Users, path: '/admin/finance/suppliers' },
@@ -165,9 +177,10 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             ]
         },
         {
-            label: 'HR',
+            label: 'HR / Payroll',
             icon: Briefcase,
             path: '/admin/hr',
+            feature: 'payroll',
             subItems: [
                 { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
                 { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
@@ -263,6 +276,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             {/* Nav Links */}
             <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
+                    // Feature check
+                    if (item.feature && salon && !salon.features?.[item.feature]) return null;
+                    
                     if (item.roles && !item.roles.includes(user?.role)) return null;
 
                     const hasSubItems = item.subItems && item.subItems.length > 0;

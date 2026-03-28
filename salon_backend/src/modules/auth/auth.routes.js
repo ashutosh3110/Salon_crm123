@@ -13,4 +13,9 @@ router.post('/request-otp', authLimiter, validate(authValidation.requestOtp), au
 router.post('/login-otp', authLimiter, validate(authValidation.loginWithOtp), authController.loginWithOtp);
 router.post('/register-customer', authLimiter, validate(authValidation.registerCustomer), authController.registerCustomer);
 
+// Password Recovery
+router.post('/forgot-password', authLimiter, authController.forgotPassword);
+router.post('/verify-reset-otp', authLimiter, authController.verifyResetOtp);
+router.post('/reset-password', authLimiter, authController.resetPassword);
+
 export default router;

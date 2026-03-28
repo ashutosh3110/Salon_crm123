@@ -46,6 +46,20 @@ const updateSubscriptionById = async (subscriptionId, updateBody) => {
 
     const subscription = await subscriptionRepository.updateOne({ _id: subscriptionId }, cleanUpdate);
     
+    // Cascade update to all tenants using this plan
+    if (cleanUpdate.features || cleanUpdate.limits || cleanUpdate.name) {
+        console.log(`[SUBSCRIPTION SERVICE] Cascading updates for plan: ${existing.tag || existing.name}`);
+        const updateFields = {};
+        if (cleanUpdate.features) updateFields.features = subscription.features;
+        if (cleanUpdate.limits) updateFields.limits = subscription.limits;
+        if (cleanUpdate.name) updateFields.subscriptionPlan = subscription.name.toLowerCase();
+
+        const filter = existing.tag ? { subscriptionPlan: existing.tag } : { subscriptionPlan: existing.name.toLowerCase() };
+        
+        const updateResult = await Tenant.updateMany(filter, updateFields);
+        console.log(`[SUBSCRIPTION SERVICE] Updated ${updateResult.modifiedCount} tenants.`);
+    }
+    
     if (monthlyPriceChanged || yearlyPriceChanged) {
         try {
             const razorpayService = (await import('../billing/razorpay.service.js')).default;

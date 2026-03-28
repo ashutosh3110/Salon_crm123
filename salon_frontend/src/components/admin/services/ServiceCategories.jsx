@@ -13,10 +13,13 @@ import {
     CheckCircle2,
     Users,
     User,
-    UserCircle
+    UserCircle,
+    ArrowUpRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function ServiceCategories({ categories = [], onAdd, onUpdate, onDelete, onToggleStatus }) {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [modalState, setModalState] = useState({ isOpen: false, type: 'add', data: null });
     const [name, setName] = useState('');
@@ -113,10 +116,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             </div>
                         </div>
 
-                        <div className="relative z-10">
+                        <div 
+                            className="relative z-10 cursor-pointer group/content"
+                            onClick={() => navigate('/admin/services/list', { state: { category: cat.name } })}
+                        >
                             <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-text leading-tight uppercase tracking-tight">{cat.name}</h3>
+                                <h3 className="text-lg font-bold text-text leading-tight uppercase tracking-tight group-hover/content:text-primary transition-colors">{cat.name}</h3>
                                 <span className={`w-2 h-2 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`} />
+                                <ArrowUpRight className="w-4 h-4 opacity-0 group-hover/content:opacity-100 group-hover/content:translate-x-1 group-hover/content:-translate-y-1 transition-all text-primary" />
                             </div>
                             <div className="flex items-center flex-wrap gap-2 mt-2">
                                 <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-surface-alt text-text-secondary text-[9px] font-black uppercase tracking-widest border border-border/50">

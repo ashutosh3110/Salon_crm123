@@ -14,6 +14,7 @@ import { initFirebase } from './config/firebase.js';
 
 const app = express();
 
+
 // Initialize Firebase Admin
 initFirebase();
 
@@ -86,6 +87,7 @@ app.use('/uploads', express.static('uploads'));
 
 // Apply global rate limiter
 app.use('/v1', globalLimiter);
+
 
 // api routes
 app.use('/v1', routes);

@@ -2,15 +2,16 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowLeft, MapPin, Star, Filter, Compass, Clock, ChevronRight, LayoutGrid, List, Heart } from 'lucide-react';
-import { MOCK_OUTLETS, MOCK_SERVICES } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function AppDiscoveryPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { colors, isLight } = useCustomerTheme();
     const { isSalonLiked, toggleSalonLike } = useFavorites();
+    const { outlets: businessOutlets, services: businessServices } = useBusiness();
 
     const categoryParam = searchParams.get('category');
     const serviceIdParam = searchParams.get('serviceId');
@@ -21,11 +22,11 @@ export default function AppDiscoveryPage() {
     // Find service name if serviceId is provided
     const targetService = useMemo(() => {
         if (!serviceIdParam) return null;
-        return MOCK_SERVICES.find(s => s._id === serviceIdParam);
-    }, [serviceIdParam]);
+        return businessServices.find(s => s._id === serviceIdParam || s.id === serviceIdParam);
+    }, [serviceIdParam, businessServices]);
 
     const filteredSalons = useMemo(() => {
-        let salons = MOCK_OUTLETS;
+        let salons = businessOutlets;
 
         // Filter by category
         if (categoryParam) {

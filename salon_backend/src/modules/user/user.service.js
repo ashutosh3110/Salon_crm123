@@ -12,6 +12,16 @@ class UserService {
             err.statusCode = 400;
             throw err;
         }
+
+        if (userBody.tenantId && userBody.role !== 'superadmin') {
+            const tenant = await Tenant.findById(userBody.tenantId);
+            if (tenant && tenant.staffCount >= (tenant.limits?.staffLimit || 5)) {
+                const err = new Error(`Staff limit reached (${tenant.limits?.staffLimit || 5}). Please upgrade your plan.`);
+                err.statusCode = 403;
+                throw err;
+            }
+        }
+
         const body = { ...userBody };
         if (!body.password || String(body.password).length < 6) {
             body.password = `Salon@${Math.random().toString(36).slice(2, 10)}${Math.floor(Math.random() * 90 + 10)}`;

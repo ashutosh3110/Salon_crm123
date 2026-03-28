@@ -56,6 +56,7 @@ const subscriptionSchema = new mongoose.Schema({
         staffLimit: { type: Number, default: 10 },
         outletLimit: { type: Number, default: 1 },
         smsCredits: { type: Number, default: 100 },
+        whatsappLimit: { type: Number, default: 0 },
         storageGB: { type: Number, default: 5 },
         apiCalls: { type: Number, default: 10000 }
     },

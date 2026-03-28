@@ -1,6 +1,7 @@
 import ReminderLink from './reminderLink.model.js';
 import Client from '../client/client.model.js';
 import Invoice from '../invoice/invoice.model.js';
+import Tenant from '../tenant/tenant.model.js';
 import mongoose from 'mongoose';
 
 const DEFAULT_RULES = [
@@ -292,6 +293,16 @@ class ReminderLinkService {
     }
 
     async sendServiceReminderWhatsApp(tenantId, clientId, ruleId) {
+        const tenant = await Tenant.findById(tenantId);
+        if (!tenant) throw new Error('Tenant not found');
+
+        const whatsappLimit = tenant.limits?.whatsappLimit || 0;
+        const whatsappUsed = tenant.whatsappUsed || 0;
+
+        if (whatsappUsed + 1 > whatsappLimit) {
+            throw new Error(`WhatsApp quota exceeded. You have ${whatsappLimit - whatsappUsed} messages remaining.`);
+        }
+
         const doc = await this._getOrCreate(tenantId);
         const client = await Client.findOne({ _id: clientId, tenantId }).select('name phone').lean();
         if (!client) return null;
@@ -316,10 +327,17 @@ class ReminderLinkService {
         }
         await doc.save();
 
+        // Increment usage
+        tenant.whatsappUsed = (tenant.whatsappUsed || 0) + 1;
+        await tenant.save();
+
         return { clientId, ruleId, name: client.name, phone, waLink };
     }
 
     async broadcastBookingLinkWhatsApp(tenantId, message) {
+        const tenant = await Tenant.findById(tenantId);
+        if (!tenant) throw new Error('Tenant not found');
+
         const doc = await this._getOrCreate(tenantId);
         const clients = await Client.find({ tenantId }).select('name phone').lean();
         const bookingPath = this._buildBookingUrl(doc.bookingSettings?.salonSlug);
@@ -344,6 +362,14 @@ class ReminderLinkService {
             })
             .filter(Boolean);
 
+        const targetCount = links.length;
+        const whatsappLimit = tenant.limits?.whatsappLimit || 0;
+        const whatsappUsed = tenant.whatsappUsed || 0;
+
+        if (whatsappUsed + targetCount > whatsappLimit) {
+            throw new Error(`WhatsApp quota exceeded. You have ${whatsappLimit - whatsappUsed} messages remaining but you are trying to send ${targetCount}.`);
+        }
+
         if (!autoMode) {
             return { mode: 'manual_links', totalCustomers: clients.length, totalLinks: links.length, bookingPath, qrUrl, links };
         }
@@ -361,6 +387,10 @@ class ReminderLinkService {
                 failures.push({ phone: item.phone, reason: e.message });
             }
         }
+        // Increment usage
+        tenant.whatsappUsed = (tenant.whatsappUsed || 0) + targetCount;
+        await tenant.save();
+
         return {
             mode: 'auto_send',
             totalCustomers: clients.length,

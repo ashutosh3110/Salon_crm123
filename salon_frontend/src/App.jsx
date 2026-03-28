@@ -83,6 +83,7 @@ import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
 import SubscriptionPage from './pages/admin/SubscriptionPage';
 import SupportPage from './pages/admin/SupportPage';
+import FeatureLockedPage from './pages/admin/FeatureLockedPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -242,15 +243,20 @@ function App() {
                             <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
                             <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
                             <Route path="/admin/staff" element={<StaffPage />} />
-                            <Route path="/admin/bookings" element={<BookingsPage />} />
+                            
+                            <Route element={<ProtectedRoute feature="appointments" />}>
+                                <Route path="/admin/bookings" element={<BookingsPage />} />
+                            </Route>
 
                             {/* CRM Routes */}
-                            <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
-                            <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
-                            <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
-                            <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
-                            <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
-                            <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
+                            <Route element={<ProtectedRoute feature="crm" />}>
+                                <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
+                                <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
+                                <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
+                                <Route path="/admin/crm/feedback" element={<CustomersPage tab="feedback" />} />
+                                <Route path="/admin/crm/reengage" element={<CustomersPage tab="reengage" />} />
+                                <Route path="/admin/crm" element={<CustomersPage tab="directory" />} />
+                            </Route>
                             <Route path="/admin/clients" element={<ClientsPage />} />
 
                             {/* Services Routes */}
@@ -260,55 +266,67 @@ function App() {
                             <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
                             <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
 
-                            <Route path="/admin/products" element={<ProductsPage />} />
-
-                            {/* Inventory Routes */}
-                            <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
-                            <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
-                            <Route path="/admin/inventory/stock-overview" element={<InventoryPage tab="stock-overview" />} />
-                            <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
-                            <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
-                            <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
-                            <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
-                            <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
-                            <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
+                            <Route element={<ProtectedRoute feature="inventory" />}>
+                                <Route path="/admin/products" element={<ProductsPage />} />
+                                <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
+                                <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
+                                <Route path="/admin/inventory/stock-overview" element={<InventoryPage tab="stock-overview" />} />
+                                <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
+                                <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
+                                <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
+                                <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
+                                <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
+                                <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
+                            </Route>
 
                             {/* Finance Routes */}
-                            <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
-                            <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
-                            <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
-                            <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
-                            <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
-                            <Route path="/admin/finance/petty-cash" element={<FinancePage tab="petty-cash" />} />
-                            <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
-                            <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
-                            <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+                            <Route element={<ProtectedRoute feature="finance" />}>
+                                <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
+                                <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
+                                <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
+                                <Route path="/admin/finance/invoices" element={<FinancePage tab="invoices" />} />
+                                <Route path="/admin/finance/expenses" element={<FinancePage tab="expenses" />} />
+                                <Route path="/admin/finance/petty-cash" element={<FinancePage tab="petty-cash" />} />
+                                <Route path="/admin/finance/reconciliation" element={<FinancePage tab="reconciliation" />} />
+                                <Route path="/admin/finance/tax" element={<FinancePage tab="tax" />} />
+                                <Route path="/admin/finance/eod" element={<FinancePage tab="eod" />} />
+                            </Route>
 
                             {/* HR Routes */}
-                            <Route path="/admin/hr" element={<HRPage tab="staff" />} />
-                            <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
-                            <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
-                            <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
-                            <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
-                            <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
-                            <Route path="/admin/hr/leaves" element={<HRPage tab="leaves" />} />
+                            <Route element={<ProtectedRoute feature="payroll" />}>
+                                <Route path="/admin/hr" element={<HRPage tab="staff" />} />
+                                <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
+                                <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
+                                <Route path="/admin/hr/shifts" element={<HRPage tab="shifts" />} />
+                                <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
+                                <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
+                                <Route path="/admin/hr/leaves" element={<HRPage tab="leaves" />} />
+                            </Route>
 
                             <Route path="/admin/promotions" element={<PromotionsPage />} />
-                            <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                            
+                            <Route element={<ProtectedRoute feature="marketing" />}>
+                                <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                                <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
+                            </Route>
+
                             <Route path="/admin/inquiries" element={<InquiryPage />} />
                             <Route path="/admin/reminders" element={<RemindersPage />} />
-                            <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
-                            <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
-                            <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
-                            <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
-                            <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
-                            <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
-                            <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
+                            
+                            <Route element={<ProtectedRoute feature="loyalty" />}>
+                                <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
+                                <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
+                                <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
+                                <Route path="/admin/loyalty/members" element={<LoyaltyMembershipPage tab="members" />} />
+                                <Route path="/admin/loyalty/transactions" element={<LoyaltyMembershipPage tab="transactions" />} />
+                                <Route path="/admin/loyalty/referral" element={<LoyaltyMembershipPage tab="referral" />} />
+                            </Route>
                             <Route path="/admin/invoices" element={<InvoicesPage />} />
                             <Route path="/admin/settings" element={<Navigate to="/admin/settings/profile" replace />} />
                             <Route path="/admin/settings/:section" element={<SettingsPage />} />
                             <Route path="/admin/subscription" element={<SubscriptionPage />} />
                             <Route path="/admin/support" element={<SupportPage />} />
+                            <Route path="/admin/feature-locked" element={<FeatureLockedPage />} />
                           </Route>
                         </Route>
 
@@ -419,7 +437,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  POS — Point of Sale (shared by admin, manager, receptionist)
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} />}>
+                        <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} feature="pos" />}>
                           <Route element={<POSLayout />}>
                             <Route path="/pos" element={<POSDashboardPage />} />
                             <Route path="/pos/billing" element={<POSBillingPage />} />

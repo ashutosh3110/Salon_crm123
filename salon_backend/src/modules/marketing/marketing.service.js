@@ -2,6 +2,7 @@ import campaignRepository from './campaign.repository.js';
 import AutomationFlow from './automationFlow.model.js';
 import Client from '../client/client.model.js';
 import Invoice from '../invoice/invoice.model.js';
+import Tenant from '../tenant/tenant.model.js';
 import mongoose from 'mongoose';
 
 const FLOW_DEFINITIONS = {
@@ -17,6 +18,17 @@ const parseSort = (sortBy = 'createdAt:desc') => {
 };
 
 const createCampaign = async (tenantId, payload, userId) => {
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) throw new Error('Tenant not found');
+
+    const targetCount = payload.targetCount || 0;
+    const whatsappLimit = tenant.limits?.whatsappLimit || 0;
+    const whatsappUsed = tenant.whatsappUsed || 0;
+
+    if (whatsappUsed + targetCount > whatsappLimit) {
+        throw new Error(`WhatsApp quota exceeded. You have ${whatsappLimit - whatsappUsed} messages remaining but you are trying to send ${targetCount}.`);
+    }
+
     const body = {
         tenantId,
         name: payload.name,
@@ -25,12 +37,17 @@ const createCampaign = async (tenantId, payload, userId) => {
         message: payload.message || '',
         channel: payload.channel || 'whatsapp',
         status: 'completed',
-        sentCount: 0,
+        sentCount: targetCount, // Simulating actual sending for now
         readCount: 0,
-        targetCount: payload.targetCount || 0,
+        targetCount: targetCount,
         sentAt: new Date(),
         createdBy: userId,
     };
+
+    // Increment usage
+    tenant.whatsappUsed = (tenant.whatsappUsed || 0) + targetCount;
+    await tenant.save();
+
     return campaignRepository.create(body);
 };
 

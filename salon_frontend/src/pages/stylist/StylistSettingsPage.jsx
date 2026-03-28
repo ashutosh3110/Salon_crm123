@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus, ShieldAlert, Activity, Zap, Clock, X } from 'lucide-react';
+import PasswordField from '../../components/common/PasswordField';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -656,32 +657,32 @@ export default function StylistSettingsPage() {
                         <div className="space-y-6 max-w-xl">
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Current password</label>
-                                <input
-                                    type="password"
+                                <PasswordField
                                     autoComplete="current-password"
                                     value={pwd.current}
                                     onChange={(e) => setPwd({ ...pwd, current: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">New password (min 8)</label>
-                                <input
-                                    type="password"
+                                <PasswordField
                                     autoComplete="new-password"
                                     value={pwd.next}
                                     onChange={(e) => setPwd({ ...pwd, next: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Confirm new password</label>
-                                <input
-                                    type="password"
+                                <PasswordField
                                     autoComplete="new-password"
                                     value={pwd.confirm}
                                     onChange={(e) => setPwd({ ...pwd, confirm: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
 

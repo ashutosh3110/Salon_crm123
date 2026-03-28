@@ -6,7 +6,7 @@ import {
     Clock, ShieldCheck, Heart, Share2, Crown,
     Award, Camera, MessageSquare, Info, ArrowRight
 } from 'lucide-react';
-import { MOCK_OUTLETS, MOCK_SERVICES } from '../../data/appMockData';
+import { SERVICE_CATEGORIES } from '../../data/appMockData';
 import homeData from '../../data/appHomeData.json';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
@@ -24,7 +24,13 @@ export default function SalonProfilePage() {
     const { isSalonLiked, toggleSalonLike } = useFavorites();
     const { lookbook } = useCMS();
     const { gender } = useGender();
-    const { feedbacks, addFeedback } = useBusiness();
+    const { 
+        feedbacks, 
+        addFeedback, 
+        services: businessServices, 
+        outlets: businessOutlets, 
+        categories: businessCategories 
+    } = useBusiness();
     const { user } = useAuth();
 
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
@@ -39,8 +45,8 @@ export default function SalonProfilePage() {
         }
     }, [location.state?.activeTab]);
 
-    // Find outlet from mock data
-    const outlet = MOCK_OUTLETS.find(o => o._id === id) || MOCK_OUTLETS[0];
+    // Find outlet from live data
+    const outlet = businessOutlets.find(o => o._id === id) || businessOutlets[0] || { name: 'Loading...', image: '' };
 
     const serviceIdFromQuery = searchParams.get('serviceId');
 
@@ -348,7 +354,15 @@ export default function SalonProfilePage() {
                                 <Crown size={20} color="#C8956C" />
                                 <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Most Popular Services</h3>
                             </div>
-                            {MOCK_SERVICES.slice(0, 5).map(service => (
+                            {businessServices
+                                .filter(s => {
+                                    const isMatch = (s.outletIds || []).map(oid => String(oid)).includes(String(id)) || String(s.outletId) === String(id) || s.outlet === 'All Outlets';
+                                    const category = businessCategories.find(c => c.name === s.category);
+                                    const genderMatch = !category || category.gender === 'both' || category.gender === g;
+                                    return isMatch && genderMatch && s.status === 'active';
+                                })
+                                .slice(0, 10)
+                                .map(service => (
                                 <div key={service._id} style={{
                                     background: colors.card,
                                     padding: '16px',

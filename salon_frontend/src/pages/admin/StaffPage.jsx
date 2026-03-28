@@ -25,6 +25,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useCMS } from '../../contexts/CMSContext';
 import CustomSelect from '../../components/admin/common/CustomSelect';
 import { useNavigate } from 'react-router-dom';
+import PasswordField from '../../components/common/PasswordField';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -439,12 +440,11 @@ export default function StaffPage() {
                                 {!editing && (
                                     <div className="space-y-1 col-span-2">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Create Password</label>
-                                        <input
-                                            type="password"
+                                        <PasswordField
                                             required
                                             value={form.password}
                                             onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                            className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                            inputClassName="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
                                             placeholder="PASSWORD"
                                         />
                                     </div>

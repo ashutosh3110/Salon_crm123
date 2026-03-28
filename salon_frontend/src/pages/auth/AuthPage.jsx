@@ -6,6 +6,7 @@ import { useAuth, getRedirectPath } from '../../contexts/AuthContext';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import axios from 'axios';
 import api from '../../services/api';
+import PasswordField from '../../components/common/PasswordField';
 
 export default function AuthPage() {
     const location = useLocation();
@@ -390,16 +391,20 @@ export default function AuthPage() {
                                                 <div className="group space-y-1">
                                                     <div className="flex justify-between items-center ml-1">
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Password</label>
-                                                        <Link to="/forgot-password" size="sm" className="text-[9px] font-black text-primary/80 uppercase tracking-widest hover:text-primary transition-colors">Recover</Link>
+                                                        <Link to="/forgot-password" size="sm" className="text-[9px] font-black text-white/60 uppercase tracking-widest hover:text-white transition-colors">Recover</Link>
                                                     </div>
-                                                    <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
+                                                    <PasswordField 
+                                                        name="password" 
+                                                        value={signinForm.password} 
+                                                        onChange={handleSigninChange} 
+                                                        required
+                                                        placeholder="••••••••"
+                                                        containerClassName="border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300"
+                                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                        buttonClassName="text-white/30 hover:text-primary"
+                                                    >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input
-                                                            type={showPassword ? 'text' : 'password'} name="password" value={signinForm.password} onChange={handleSigninChange} required
-                                                            className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
-                                                            placeholder="••••••••"
-                                                        />
-                                                    </div>
+                                                    </PasswordField>
                                                 </div>
                                             </div>
                                             <button type="submit" disabled={loading} className="w-full h-14 bg-primary text-white font-black uppercase tracking-[0.2em] text-[11px] rounded-none hover:bg-white hover:text-black transition-all duration-500 shadow-xl shadow-primary/10 active:scale-95 disabled:opacity-50">
@@ -518,17 +523,33 @@ export default function AuthPage() {
                                                 </div>
                                                 <div className="group space-y-1">
                                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Password</label>
-                                                    <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
+                                                    <PasswordField 
+                                                        name="password" 
+                                                        value={signupForm.password} 
+                                                        onChange={handleSignupChange} 
+                                                        required
+                                                        placeholder="Create Password"
+                                                        containerClassName="border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300"
+                                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                        buttonClassName="text-white/30 hover:text-primary"
+                                                    >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="password" name="password" value={signupForm.password} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Create Password" />
-                                                    </div>
+                                                    </PasswordField>
                                                 </div>
                                                 <div className="group space-y-1">
                                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60 ml-1">Confirm Password</label>
-                                                    <div className="relative border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300">
+                                                    <PasswordField 
+                                                        name="confirmPassword" 
+                                                        value={signupForm.confirmPassword} 
+                                                        onChange={handleSignupChange} 
+                                                        required
+                                                        placeholder="Repeat Password"
+                                                        containerClassName="border-b-2 border-white/10 group-focus-within:border-primary transition-all duration-300"
+                                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                        buttonClassName="text-white/30 hover:text-primary"
+                                                    >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                                                        <input type="password" name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium" placeholder="Repeat Password" />
-                                                    </div>
+                                                    </PasswordField>
                                                 </div>
                                             </div>
                                             <div className="pt-4 space-y-6">

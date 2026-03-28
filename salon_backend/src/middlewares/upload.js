@@ -19,14 +19,19 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|webp/;
+    const allowedTypes = /jpeg|jpg|png|webp|xlsx|xls|csv/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    // Mime types for Excel/CSV:
+    // .xlsx: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    // .xls: application/vnd.ms-excel
+    // .csv: text/csv, application/csv
+    const isExcelOrCsv = /spreadsheetml|excel|csv/.test(file.mimetype);
+    const mimetype = isExcelOrCsv || /image/.test(file.mimetype);
 
     if (extname && mimetype) {
         return cb(null, true);
     }
-    cb(new Error('Only images (jpeg, jpg, png, webp) are allowed!'));
+    cb(new Error('Only images (jpeg, jpg, png, webp) and data files (xlsx, xls, csv) are allowed!'));
 };
 
 const upload = multer({

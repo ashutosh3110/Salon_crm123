@@ -6,6 +6,8 @@ import {
     Eye, EyeOff, CheckCircle, KeyRound, RefreshCw, Sparkles
 } from 'lucide-react';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
+import api from '../../services/api';
+import PasswordField from '../../components/common/PasswordField';
 
 /* ─── Step constants ──────────────────────────────────────────────────────── */
 const S_EMAIL = 1;   // Enter email
@@ -53,15 +55,10 @@ export default function ForgotPasswordPage() {
     const [otp, setOtp] = useState(Array(6).fill(''));
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
-    const [showP, setShowP] = useState(false);
-    const [showC, setShowC] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { sec, start } = useCountdown();
     const boxRefs = useRef([]);
-
-    /* ── Mock delay ── */
-    const mockApi = (ms = 700) => new Promise(r => setTimeout(r, ms));
 
     /* ── Step 1: Send OTP ── */
     const handleSendOtp = async (e) => {
@@ -69,11 +66,13 @@ export default function ForgotPasswordPage() {
         setError('');
         setLoading(true);
         try {
-            await mockApi();
-            setStep(S_OTP);
-            start(60);
-        } catch {
-            setError('System timeout. Try again.');
+            const res = await api.post('/auth/forgot-password', { email });
+            if (res.data.success) {
+                setStep(S_OTP);
+                start(60);
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'System timeout. Try again.');
         } finally { setLoading(false); }
     };
 
@@ -85,10 +84,12 @@ export default function ForgotPasswordPage() {
         setError('');
         setLoading(true);
         try {
-            await mockApi();
-            setStep(S_RESET);
+            const res = await api.post('/auth/verify-reset-otp', { email, otp: code });
+            if (res.data.success) {
+                setStep(S_RESET);
+            }
         } catch (err) {
-            setError(err?.response?.data?.message || 'Invalid sequence pulse.');
+            setError(err.response?.data?.message || 'Invalid sequence pulse.');
         } finally { setLoading(false); }
     };
 
@@ -99,10 +100,16 @@ export default function ForgotPasswordPage() {
         setError('');
         setLoading(true);
         try {
-            await mockApi();
-            setStep(S_DONE);
+            const res = await api.post('/auth/reset-password', { 
+                email, 
+                otp: otp.join(''), 
+                password 
+            });
+            if (res.data.success) {
+                setStep(S_DONE);
+            }
         } catch (err) {
-            setError(err?.response?.data?.message || 'Update failed.');
+            setError(err.response?.data?.message || 'Update failed.');
         } finally { setLoading(false); }
     };
 
@@ -110,7 +117,7 @@ export default function ForgotPasswordPage() {
         setOtp(Array(6).fill(''));
         setError('');
         try {
-            await mockApi(400);
+            await api.post('/auth/forgot-password', { email });
             start(60);
         } catch { setError('Resend failed.'); }
     };
@@ -281,17 +288,16 @@ export default function ForgotPasswordPage() {
                                             <div className="space-y-6">
                                                 <div className="group space-y-2">
                                                     <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">New Credential</label>
-                                                    <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
+                                                    <PasswordField 
+                                                        value={password} 
+                                                        onChange={e => setPassword(e.target.value)} 
+                                                        placeholder="••••••••"
+                                                        autoFocus
+                                                        inputClassName="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                        buttonClassName="text-white/10 hover:text-white transition-colors"
+                                                    >
                                                         <KeyRound className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                                                        <input
-                                                            type={showP ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required autoFocus
-                                                            className="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
-                                                            placeholder="••••••••"
-                                                        />
-                                                        <button type="button" onClick={() => setShowP(!showP)} className="absolute right-0 top-1/2 -translate-y-1/2 text-white/10 hover:text-white transition-colors">
-                                                            {showP ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                        </button>
-                                                    </div>
+                                                    </PasswordField>
                                                 </div>
 
                                                 {password.length > 0 && (
@@ -307,17 +313,15 @@ export default function ForgotPasswordPage() {
 
                                                 <div className="group space-y-2">
                                                     <label className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30 ml-1">Confirm Identity</label>
-                                                    <div className="relative border-b-2 border-white/5 group-focus-within:border-primary transition-all duration-300">
+                                                    <PasswordField 
+                                                        value={confirm} 
+                                                        onChange={e => setConfirm(e.target.value)} 
+                                                        placeholder="••••••••"
+                                                        inputClassName="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
+                                                        buttonClassName="text-white/10 hover:text-white transition-colors"
+                                                    >
                                                         <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                                                        <input
-                                                            type={showC ? 'text' : 'password'} value={confirm} onChange={e => setConfirm(e.target.value)} required
-                                                            className="w-full pl-7 py-3 bg-transparent text-sm focus:outline-none placeholder:text-white/10 font-medium"
-                                                            placeholder="••••••••"
-                                                        />
-                                                        <button type="button" onClick={() => setShowC(!showC)} className="absolute right-0 top-1/2 -translate-y-1/2 text-white/10 hover:text-white transition-colors">
-                                                            {showC ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                        </button>
-                                                    </div>
+                                                    </PasswordField>
                                                 </div>
                                             </div>
 

@@ -7,6 +7,7 @@ import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, User, MapPin, MapPinned } from 'lucide-react';
 import api from '../../services/api';
+import PasswordField from '../../components/common/PasswordField';
 
 const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 240 : -240, opacity: 0 }),
@@ -478,12 +479,12 @@ export default function AppLoginPage() {
                             />
 
                             <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Password</label>
-                            <input
-                                type="password"
+                            <PasswordField 
                                 value={registerForm.password}
                                 onChange={(e) => setRegisterForm(prev => ({ ...prev, password: e.target.value }))}
                                 placeholder="Minimum 8 chars"
-                                style={{ ...S.input, width: '100%' }}
+                                inputClassName="w-full bg-surface border border-border rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-primary transition-all pr-12"
+                                buttonClassName="text-text-muted hover:text-primary mr-2"
                                 disabled={loading}
                             />
 

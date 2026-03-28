@@ -6,6 +6,7 @@ import {
     ArrowLeft, Save, CheckCircle2, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PasswordField from '../../components/common/PasswordField';
 
 const settingsSections = [
     {
@@ -85,15 +86,24 @@ export default function ManagerSettingsPage() {
                         <div className="space-y-4">
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Current Password</label>
-                                <input type="password" placeholder="••••••••" className="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" />
+                                <PasswordField 
+                                    placeholder="••••••••" 
+                                    inputClassName="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" 
+                                />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">New Password</label>
-                                <input type="password" placeholder="Min. 12 characters" className="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" />
+                                <PasswordField 
+                                    placeholder="Min. 12 characters" 
+                                    inputClassName="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" 
+                                />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest px-1">Confirm New Password</label>
-                                <input type="password" placeholder="Repeat password" className="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" />
+                                <PasswordField 
+                                    placeholder="Repeat password" 
+                                    inputClassName="w-full bg-surface border border-border/60 p-3 sm:p-4 text-sm font-bold text-text focus:border-primary focus:ring-1 focus:ring-primary/20 outline-none transition-all" 
+                                />
                             </div>
                         </div>
                         <div className="pt-4 border-t border-border/40">

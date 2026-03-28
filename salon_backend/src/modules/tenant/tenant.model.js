@@ -100,6 +100,7 @@ const tenantSchema = new mongoose.Schema(
             staffLimit: { type: Number, default: 5 },
             outletLimit: { type: Number, default: 1 },
             smsCredits: { type: Number, default: 100 },
+            whatsappLimit: { type: Number, default: 0 },
             storageGB: { type: Number, default: 2 },
         },
         outletsCount: {
@@ -107,6 +108,10 @@ const tenantSchema = new mongoose.Schema(
             default: 0,
         },
         staffCount: {
+            type: Number,
+            default: 0,
+        },
+        whatsappUsed: {
             type: Number,
             default: 0,
         },

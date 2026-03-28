@@ -34,7 +34,7 @@ const EMPTY_PLAN = {
     id: '', name: '', tag: '', color: 'blue', active: true, popular: false,
     monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
     features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
-    limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000 },
+    limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000, whatsappLimit: 0 },
     gstStatus: true,
     gstType: 'exclusive',
     gstRate: 18,
@@ -118,10 +118,10 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                 ))}
             </div>
 
-            {/* Limits strip */}
-            <div className="px-4 pb-3 grid grid-cols-1 gap-1.5">
+            <div className="px-4 pb-3 grid grid-cols-2 gap-1.5">
                 {[
                     { label: 'Outlets', value: plan.limits.outletLimit > 100 ? 'Unlimited' : plan.limits.outletLimit },
+                    { label: 'WhatsApp', value: plan.limits.whatsappLimit?.toLocaleString() || 0 },
                 ].map(l => (
                     <div key={l.label} className="bg-surface rounded-lg px-2 py-1.5">
                         <div className="text-[10px] text-text-muted font-medium">{l.label}</div>
@@ -347,10 +347,11 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         <h4 className="text-xs font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
                             <Activity className="w-3.5 h-3.5" /> Usage Limits
                         </h4>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                             {[
                                 { key: 'staffLimit', label: 'Max Staff Members', hint: '999 = unlimited' },
                                 { key: 'outletLimit', label: 'Max Salon Branches', hint: '999 = unlimited' },
+                                { key: 'whatsappLimit', label: 'WhatsApp Msg Quota', hint: '0 = none' },
                             ].map(l => (
                                 <div key={l.key}>
                                     <label className={labelCls}>{l.label} <span className="normal-case font-normal opacity-60">({l.hint})</span></label>
