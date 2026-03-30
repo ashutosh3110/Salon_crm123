@@ -14,11 +14,13 @@ export const checkout = {
                 price: Joi.number().required().min(0),
                 name: Joi.string(),
                 stylistId: Joi.string().custom(objectId),
+                staffIds: Joi.array().items(Joi.string().custom(objectId)),
             })
         ).min(1).required(),
         discount: Joi.number().min(0).default(0),
         tax: Joi.number().min(0).default(0),
         useLoyaltyPoints: Joi.number().integer().min(0).default(0),
-        promotionId: Joi.string().custom(objectId),
+        promotionId: Joi.string().custom(objectId).allow(null, ''),
+        performedBy: Joi.string().custom(objectId).allow(null, ''),
     }),
 };

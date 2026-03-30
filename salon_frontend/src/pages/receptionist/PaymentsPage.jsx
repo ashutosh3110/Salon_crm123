@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CreditCard,
     Smartphone,
@@ -38,25 +38,30 @@ export default function PaymentsPage() {
     const [selectedMethod, setSelectedMethod] = useState('UPI');
     const [processing, setProcessing] = useState(false);
     const [isQuickBillOpen, setIsQuickBillOpen] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState(null);
 
     // Fetch live data
     const fetchData = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
             const [invoiceRes, serviceRes, staffRes] = await Promise.all([
-                api.get(`/invoice?date=today&outletId=${user?.outletId}`),
+                api.get(`/invoices?date=today&outletId=${user?.outletId || ''}`),
                 api.get('/services?limit=100'),
                 api.get(`/users?role=stylist&outletId=${user?.outletId}`)
             ]);
 
+            console.log('[TERMINAL] Raw Results:', invoiceRes.data.results);
             if (invoiceRes.data.results) {
                 setPaymentFeed(invoiceRes.data.results.map(inv => ({
                     id: inv.invoiceNumber || inv._id.slice(-8).toUpperCase(),
                     client: inv.clientId?.name || 'Walk-in Guest',
-                    amount: `₹${inv.total}`,
+                    amount: `₹${Math.round(inv.total)}`,
                     time: new Date(inv.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     method: inv.paymentMethod || 'Cash',
-                    status: inv.paymentStatus === 'paid' ? 'Success' : 'Pending'
+                    status: inv.paymentStatus === 'paid' ? 'Success' : 'Pending',
+                    total: inv.total,
+                    _id: inv._id,
+                    _originalId: inv._id
                 })));
             }
 
@@ -75,10 +80,13 @@ export default function PaymentsPage() {
     };
 
     useEffect(() => {
-        fetchData();
-        const interval = setInterval(fetchData, 60000);
-        return () => clearInterval(interval);
-    }, []);
+        if (user) {
+            console.log('[TERMINAL] User Context:', user);
+            fetchData();
+            const interval = setInterval(fetchData, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
 
     const filteredPayments = paymentFeed.filter(p =>
         p.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -149,7 +157,34 @@ export default function PaymentsPage() {
     };
 
     const handleSettlement = async () => {
-        alert('Terminal is in Quick Bill mode. For specific appointment settlement, please use the Checkout icon in the Dashboard feed.');
+        if (!selectedInvoice) {
+            alert('Selection Required: Please select an invoice from the Active Feed first.');
+            return;
+        }
+
+        setProcessing(true);
+        try {
+            const methodMap = {
+                'UPI': 'online',
+                'Card': 'card',
+                'Cash': 'cash',
+                'Ref': 'refund'
+            };
+
+            await api.patch(`/invoices/${selectedInvoice._id}/settle`, {
+                paymentMethod: methodMap[selectedMethod] || 'cash'
+            });
+
+            alert(`Settlement Protocol Complete. Invoice #${selectedInvoice.invoiceNumber || selectedInvoice.id} marked as PAID via ${selectedMethod}.`);
+            setSelectedInvoice(null);
+            fetchData();
+        } catch (err) {
+            console.error('Settlement Error:', err);
+            const msg = err.response?.data?.message || err.message;
+            alert(`Error: ${msg}`);
+        } finally {
+            setProcessing(false);
+        }
     };
 
     return (
@@ -218,12 +253,16 @@ export default function PaymentsPage() {
                         </div>
                         <div className="divide-y divide-border">
                             {filteredPayments.map((payment) => (
-                                <div key={payment.id} className="px-6 py-4 flex items-center justify-between hover:bg-surface-alt/30 transition-all group">
+                                <button 
+                                    key={payment.id} 
+                                    onClick={() => setSelectedInvoice(paymentFeed.find(p => p.id === payment.id && p._originalId))}
+                                    className={`w-full px-6 py-4 flex items-center justify-between hover:bg-surface-alt/30 transition-all group ${selectedInvoice?._id === (paymentFeed.find(p => p.id === payment.id)?._originalId) ? 'bg-primary/5 border-l-2 border-l-primary' : ''}`}
+                                >
                                     <div className="flex items-center gap-4">
                                         <div className="w-9 h-9 border border-border bg-surface-alt flex items-center justify-center">
                                             <Receipt className="w-4 h-4 text-text-muted" />
                                         </div>
-                                        <div>
+                                        <div className="text-left">
                                             <p className="text-sm font-black text-text uppercase tracking-tight">{payment.client}</p>
                                             <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{payment.time} • Transaction {payment.id}</p>
                                         </div>
@@ -238,7 +277,7 @@ export default function PaymentsPage() {
                                             {payment.status}
                                         </span>
                                     </div>
-                                </div>
+                                </button>
                             ))}
                         </div>
                     </div>
@@ -256,30 +295,27 @@ export default function PaymentsPage() {
 
                         <div className="space-y-4 relative z-10">
                             <div className="flex justify-between text-[11px] font-black text-text-muted uppercase tracking-widest">
-                                <span>Service Total</span>
-                                <span className="text-text">₹2,450</span>
-                            </div>
-                            <div className="flex justify-between text-[11px] font-black text-text-muted uppercase tracking-widest">
-                                <span>Retail Goods</span>
-                                <span className="text-text">₹850</span>
+                                <span>Subtotal</span>
+                                <span className="text-text">₹{selectedInvoice ? Math.round(selectedInvoice.total / 1.18) : '0'}</span>
                             </div>
                             <div className="flex justify-between text-[11px] font-black text-text-muted uppercase tracking-widest">
                                 <span>Tax (GST 18%)</span>
-                                <span className="text-text">₹594</span>
+                                <span className="text-text">₹{selectedInvoice ? Math.round(selectedInvoice.total - (selectedInvoice.total / 1.18)) : '0'}</span>
                             </div>
                             <div className="pt-6 border-t border-border flex justify-between items-center group-hover:border-primary/20 transition-colors">
                                 <span className="text-[12px] font-black text-text uppercase tracking-widest">Net Payable</span>
-                                <span className="text-2xl font-black text-primary">₹3,894</span>
+                                <span className="text-2xl font-black text-primary">₹{selectedInvoice ? Math.round(selectedInvoice.total) : '0'}</span>
                             </div>
                         </div>
 
                         <div className="space-y-3 pt-4 relative z-10">
                             <button
                                 onClick={handleSettlement}
-                                disabled={processing}
+                                disabled={processing || !selectedInvoice || selectedInvoice.status === 'Success'}
                                 className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] hover:opacity-90 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-lg shadow-primary/20"
                             >
-                                <CheckCircle className="w-5 h-5" /> {processing ? 'AUTHORIZING...' : 'FINAL SETTLEMENT'}
+                                <CheckCircle className="w-5 h-5" /> 
+                                {processing ? 'AUTHORIZING...' : (selectedInvoice?.status === 'Success' ? 'ALREADY SETTLED' : 'FINAL SETTLEMENT')}
                             </button>
                             <button
                                 onClick={handleHoldInvoice}

@@ -20,37 +20,47 @@ import {
     Legend
 } from 'recharts';
 
-const cashFlowData = [
-    { name: 'Jan', income: 4000, expenses: 2400 },
-    { name: 'Feb', income: 3000, expenses: 1398 },
-    { name: 'Mar', income: 2000, expenses: 9800 },
-    { name: 'Apr', income: 2780, expenses: 3908 },
-    { name: 'May', income: 1890, expenses: 4800 },
-    { name: 'Jun', income: 2390, expenses: 3800 },
-    { name: 'Jul', income: 3490, expenses: 4300 },
-];
 
-const expenseSplitData = [
-    { name: 'Inventory', value: 45, color: '#3b82f6' },
-    { name: 'Rent & Utilities', value: 25, color: '#ef4444' },
-    { name: 'Staff Payouts', value: 20, color: '#f59e0b' },
-    { name: 'Marketing', value: 10, color: '#6366f1' },
-];
 
 export default function AccountantDashboard() {
-    const { totalRevenue, totalExpenses, netProfit, revenue, expenses } = useFinance();
+    const { totalRevenue, totalExpenses, netProfit, revenue, expenses, trendData, expenseSplits, loading } = useFinance();
 
     const stats = [
-        { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+12.5%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-        { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+2.4%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-        { label: 'Account Payables', value: '₹1,12,000', change: '-5.2%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+18.1%', isPositive: true, icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
+        { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+0%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+        { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+0%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { label: 'Account Payables', value: '₹0', change: '0%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+0%', isPositive: true, icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
     ];
 
     const recentTransactions = [
-        ...revenue.map(r => ({ id: `REV-${r.id}`, desc: r.source, type: 'Credit', amount: `₹${r.amount.toLocaleString()}`, date: r.date, status: r.status })),
-        ...expenses.map(e => ({ id: `EXP-${e.id}`, desc: e.vendor, type: 'Debit', amount: `₹${e.amount.toLocaleString()}`, date: e.date, status: e.status }))
-    ].sort((a, b) => b.id.localeCompare(a.id)).slice(0, 5);
+        ...revenue.map(r => ({ 
+            id: r.invoiceNumber || `INV-${String(r._id).slice(-6).toUpperCase()}`, 
+            desc: r.clientId?.name || 'Walk-in Guest', 
+            type: 'Credit', 
+            amount: `₹${Math.round(r.total).toLocaleString()}`, 
+            date: new Date(r.createdAt).toLocaleDateString(), 
+            status: r.paymentStatus === 'paid' ? 'Completed' : 'Pending' 
+        })),
+        ...expenses.map(e => ({ 
+            id: `EXP-${String(e._id).slice(-6).toUpperCase()}`, 
+            desc: e.description || e.category || 'Expense', 
+            type: 'Debit', 
+            amount: `₹${Math.round(e.amount).toLocaleString()}`, 
+            date: new Date(e.date || e.createdAt).toLocaleDateString(), 
+            status: 'Completed' 
+        }))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Loading Live Ledger...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 text-left font-black">
@@ -122,7 +132,7 @@ export default function AccountantDashboard() {
 
                     <div className="h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={cashFlowData}>
+                            <BarChart data={trendData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(var(--border), 0.1)" />
                                 <XAxis
                                     dataKey="name"
@@ -155,7 +165,7 @@ export default function AccountantDashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={expenseSplitData}
+                                    data={expenseSplits}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={70}
@@ -164,7 +174,7 @@ export default function AccountantDashboard() {
                                     dataKey="value"
                                     stroke="transparent"
                                 >
-                                    {expenseSplitData.map((entry, index) => (
+                                    {expenseSplits.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
@@ -186,8 +196,8 @@ export default function AccountantDashboard() {
                         </div>
                     </div>
                     <div className="space-y-3 mt-8">
-                        {expenseSplitData.map(item => (
-                            <div key={item.label} className="flex items-center justify-between">
+                        {expenseSplits.map(item => (
+                            <div key={item.name} className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-none" style={{ backgroundColor: item.color }} />
                                     <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">{item.name}</span>

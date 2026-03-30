@@ -1,12 +1,47 @@
-import { useState } from 'react';
-import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useFinance } from '../../contexts/FinanceContext';
 
 export default function PayrollPage() {
-    const { payroll } = useFinance();
+    const { payroll, fetchPayroll, generatePayroll, processPayouts, payrollPeriod } = useFinance();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const now = new Date();
+    const [selectedPeriod, setSelectedPeriod] = useState({ year: now.getFullYear(), month: now.getMonth() + 1 });
+
+    useEffect(() => {
+        fetchPayroll(selectedPeriod.year, selectedPeriod.month);
+    }, [fetchPayroll, selectedPeriod]);
+
+    const handleGenerate = async () => {
+        setIsProcessing(true);
+        try {
+            await generatePayroll(selectedPeriod.year, selectedPeriod.month);
+            alert('Payroll entries generated for ' + selectedPeriod.month + '/' + selectedPeriod.year);
+        } catch (error) {
+            alert('Failed to generate payroll. Ensure staff is added and active.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleProcessPayouts = async () => {
+        if (payroll.length === 0) return;
+        if (!window.confirm('Do you want to mark all entries as PAID for this period?')) return;
+        
+        setIsProcessing(true);
+        try {
+            await processPayouts(selectedPeriod.year, selectedPeriod.month);
+            alert('All payouts processed successfully!');
+        } catch (error) {
+            alert('Processing failed. Please try again.');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
 
     const totalSalarySum = payroll.reduce((acc, curr) => acc + (typeof curr.salary === 'number' ? curr.salary : 0), 0);
     const totalCommissionSum = payroll.reduce((acc, curr) => acc + (typeof curr.commission === 'number' ? curr.commission : 0), 0);
@@ -31,14 +66,47 @@ export default function PayrollPage() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+                <div className="flex flex-col gap-1">
                     <h1 className="text-2xl font-black text-text tracking-tight uppercase">Payroll & Commissions</h1>
-                    <p className="text-sm text-text-muted font-medium">Manage staff salaries, incentives, and monthly payouts</p>
+                    <div className="flex items-center gap-3">
+                        <select 
+                            value={selectedPeriod.month}
+                            onChange={(e) => setSelectedPeriod(p => ({ ...p, month: parseInt(e.target.value) }))}
+                            className="bg-transparent text-[10px] font-black uppercase tracking-widest border-b-2 border-primary outline-none py-1"
+                        >
+                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
+                                <option key={m} value={i + 1}>{m}</option>
+                            ))}
+                        </select>
+                        <select 
+                            value={selectedPeriod.year}
+                            onChange={(e) => setSelectedPeriod(p => ({ ...p, year: parseInt(e.target.value) }))}
+                            className="bg-transparent text-[10px] font-black uppercase tracking-widest border-b-2 border-primary outline-none py-1"
+                        >
+                            {[2024, 2025, 2026].map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all">
-                        <Wallet className="w-4 h-4" /> Process Payouts
-                    </button>
+                    {payroll.length === 0 ? (
+                        <button 
+                            onClick={handleGenerate}
+                            disabled={isProcessing}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-rose-500/25 hover:bg-rose-600 transition-all"
+                        >
+                            <Zap className="w-4 h-4" /> Generate {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][selectedPeriod.month - 1]} Payroll
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={handleProcessPayouts}
+                            disabled={isProcessing || payroll.every(p => p.status === 'paid')}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all disabled:opacity-50"
+                        >
+                            <Wallet className="w-4 h-4" /> {isProcessing ? 'Processing...' : 'Process All Payouts'}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -64,17 +132,19 @@ export default function PayrollPage() {
                 <div className="px-6 py-5 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50">
                     <div className="flex items-center gap-4">
                         <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Staff Salary Register</h2>
-                        <span className="text-[9px] font-black px-2 py-0.5 rounded-none bg-primary/10 text-primary uppercase tracking-widest">Feb 2024</span>
+                        <span className="text-[9px] font-black px-2 py-0.5 rounded-none bg-primary/10 text-primary uppercase tracking-widest">
+                            {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][selectedPeriod.month - 1]} {selectedPeriod.year}
+                        </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto mt-2 md:mt-0">
                         <div className="flex bg-background border border-border p-1 rounded-none">
-                            {['All', 'Paid', 'Processing', 'Pending'].map(status => (
+                            {['All', 'paid', 'processing', 'draft'].map(status => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
                                     className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest transition-all ${statusFilter === status ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
                                 >
-                                    {status}
+                                    {status === 'draft' ? 'Pending' : status}
                                 </button>
                             ))}
                         </div>
@@ -134,14 +204,14 @@ export default function PayrollPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${staff.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' :
-                                            staff.status === 'Processing' ? 'bg-amber-500/10 text-amber-500' :
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${staff.status === 'paid' ? 'bg-emerald-500/10 text-emerald-500' :
+                                            staff.status === 'processing' ? 'bg-amber-500/10 text-amber-500' :
                                                 'bg-rose-500/10 text-rose-500'
                                             }`}>
-                                            {staff.status}
+                                            {staff.status === 'draft' ? 'Pending' : staff.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">₹{(staff.salary + staff.commission - staff.totalDeductions).toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{staff.netPay.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="p-2 hover:bg-background rounded-none text-text-muted hover:text-text transition-all">
                                             <MoreHorizontal className="w-4 h-4" />

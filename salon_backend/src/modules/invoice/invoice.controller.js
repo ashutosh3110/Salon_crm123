@@ -70,6 +70,15 @@ const processRefundAction = async (req, res, next) => {
     }
 };
 
+const settleInvoice = async (req, res, next) => {
+    try {
+        const invoice = await invoiceService.settleInvoice(req.tenantId, req.params.invoiceId, req.body);
+        res.status(httpStatus.OK).send(invoice);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getInvoices,
     getInvoice,
@@ -77,4 +86,5 @@ export default {
     getFinanceDashboard,
     getRefunds,
     processRefundAction,
+    settleInvoice
 };

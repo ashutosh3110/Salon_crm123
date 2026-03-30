@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     UserCheck,
     Search,
@@ -11,43 +11,91 @@ import {
     AlertCircle,
     User,
     X,
-    Loader2
+    Loader2,
+    RefreshCw
 } from 'lucide-react';
-
-import { pendingCheckins, checkoutRequested } from '../../data/receptionistData';
+import api from '../../services/api';
 
 export default function CheckInPage() {
-    const [checkinList, setCheckinList] = useState(pendingCheckins);
-    const [checkoutList, setCheckoutList] = useState(checkoutRequested);
+    const [checkinList, setCheckinList] = useState([]);
+    const [checkoutList, setCheckoutList] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
-    const handleCheckIn = (id) => {
-        const item = checkinList.find(i => i.id === id);
-        if (item) {
-            setCheckinList(prev => prev.filter(i => i.id !== id));
-            setCheckoutList(prev => [...prev, { ...item, amount: '₹1,500' }]);
-            alert(`Access Protocol Authorized: ${item.name} is now checked in and active.`);
+    const fetchData = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
+        else setRefreshing(true);
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 1. Fetch Incoming Clearances (Confirmed for today)
+            const incomingRes = await api.get(`/bookings?status=confirmed&date=${today}`);
+            setCheckinList(incomingRes.data.results || []);
+
+            // 2. Fetch Outgoing Protocols (Completed but Unpaid)
+            const outgoingRes = await api.get(`/bookings?status=completed&paymentStatus=unpaid&date=${today}`);
+            setCheckoutList(outgoingRes.data.results || []);
+        } catch (error) {
+            console.error('[PROTOCOL] Data synchronization failed:', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchData();
+        // Polling for updates every 30 seconds for live feel
+        const interval = setInterval(() => fetchData(true), 30000);
+        return () => clearInterval(interval);
+    }, [fetchData]);
+
+    const handleCheckIn = async (id) => {
+        try {
+            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            // Optimistic update
+            setCheckinList(prev => prev.filter(i => i._id !== id));
+            alert('ACCESS PROTOCOL AUTHORIZED: Identity verified and check-in logged.');
+        } catch (error) {
+            alert('PROTOCOL ERROR: Check-in authorization failed.');
         }
     };
 
-    const handleSettle = (id) => {
-        setCheckoutList(prev => prev.filter(i => i.id !== id));
-        alert('Settlement protocol complete. Invoice cleared.');
+    const handleSettle = async (id) => {
+        try {
+            await api.patch(`/bookings/${id}`, { paymentStatus: 'paid' });
+            // Optimistic update
+            setCheckoutList(prev => prev.filter(i => i._id !== id));
+            alert('SETTLEMENT PROTOCOL COMPLETE: Invoice cleared and transaction finalized.');
+        } catch (error) {
+            alert('SETTLEMENT ERROR: Payment processing failed.');
+        }
     };
 
     const handleScan = () => {
         setIsScanning(true);
         setTimeout(() => {
             setIsScanning(false);
-            alert('Secure token verified. Access granted.');
+            alert('SECURE TOKEN VERIFIED: Remote synchronization successful.');
         }, 1500);
     };
 
     const filteredCheckins = checkinList.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchQuery.toLowerCase())
+        (item.clientId?.name || 'Walk-in').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item._id.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    if (loading) {
+        return (
+            <div className="h-96 flex flex-col items-center justify-center space-y-4">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Synching with central node...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 animate-reveal">
@@ -58,6 +106,14 @@ export default function CheckInPage() {
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Client arrival & departure clearance</p>
                 </div>
                 <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => fetchData()}
+                        disabled={refreshing}
+                        className="p-2.5 bg-surface border border-border text-text-muted hover:text-primary transition-all active:rotate-180"
+                        title="Force Synchronization"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    </button>
                     <button
                         onClick={handleScan}
                         disabled={isScanning}
@@ -90,15 +146,15 @@ export default function CheckInPage() {
                         </div>
                         <div className="divide-y divide-border">
                             {filteredCheckins.length > 0 ? filteredCheckins.map((item) => (
-                                <div key={item.id} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all group">
+                                <div key={item._id} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all group">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 bg-surface-alt border border-border flex items-center justify-center">
                                             <User className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-text uppercase tracking-tight">{item.name}</p>
+                                            <p className="text-sm font-black text-text uppercase tracking-tight">{item.clientId?.name || 'Walk-in'}</p>
                                             <div className="flex items-center gap-3 mt-1">
-                                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{item.service}</span>
+                                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{item.serviceId?.name || 'Standard Service'}</span>
                                                 <div className="flex items-center gap-1 font-black">
                                                     <Clock className="w-3 h-3 text-primary" />
                                                     <span className="text-[9px] text-text-secondary uppercase tracking-widest">{item.time}</span>
@@ -109,10 +165,10 @@ export default function CheckInPage() {
                                     <div className="flex items-center gap-4">
                                         <div className="text-right">
                                             <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Payment</p>
-                                            <p className={`text-[9px] font-black tracking-widest uppercase ${item.payment === 'Unpaid' ? 'text-amber-500' : 'text-emerald-500'}`}>{item.payment}</p>
+                                            <p className={`text-[9px] font-black tracking-widest uppercase ${item.paymentStatus === 'unpaid' ? 'text-amber-500' : 'text-emerald-500'}`}>{item.paymentStatus}</p>
                                         </div>
                                         <button
-                                            onClick={() => handleCheckIn(item.id)}
+                                            onClick={() => handleCheckIn(item._id)}
                                             className="px-4 py-2 bg-primary text-white text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
                                         >
                                             In-Check <ArrowRight className="w-3 h-3" />
@@ -136,31 +192,37 @@ export default function CheckInPage() {
                             <span className="text-[9px] font-black text-rose-600/60 uppercase tracking-widest">Waiting for Settlement</span>
                         </div>
                         <div className="divide-y divide-border">
-                            {checkoutRequested.map((item) => (
-                                <div key={item.id} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all group">
+                            {checkoutList.length > 0 ? checkoutList.map((item) => (
+                                <div key={item._id} className="px-6 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-all group">
                                     <div className="flex items-center gap-4">
                                         <div className="w-10 h-10 bg-surface-alt border border-border flex items-center justify-center">
                                             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-text uppercase tracking-tight">{item.name}</p>
-                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">{item.service} · {item.professional}</p>
+                                            <p className="text-sm font-black text-text uppercase tracking-tight">{item.clientId?.name || 'Walk-in'}</p>
+                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-0.5">
+                                                {item.serviceId?.name} · {item.staffId?.name || 'Professional'}
+                                            </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="text-right">
                                             <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Total Bill</p>
-                                            <p className="text-sm font-black text-primary uppercase">{item.amount}</p>
+                                            <p className="text-sm font-black text-primary uppercase">₹{item.price}</p>
                                         </div>
                                         <button
-                                            onClick={() => handleSettle(item.id)}
+                                            onClick={() => handleSettle(item._id)}
                                             className="px-4 py-2 bg-black text-white text-[9px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
                                         >
                                             Settle Bill
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="px-6 py-12 text-center opacity-30">
+                                    <p className="text-[10px] font-black uppercase tracking-widest">No pending settlements</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -190,7 +252,7 @@ export default function CheckInPage() {
                                     <p className="text-[10px] uppercase tracking-widest">Member Alert</p>
                                 </div>
                                 <p className="text-[11px] text-emerald-700 font-extrabold uppercase tracking-widest leading-relaxed">
-                                    Ananya Iyer is a Platinum Member. Apply membership lounge access protocol.
+                                    VIP clients and platinum members should be processed through priority lane.
                                 </p>
                             </div>
                         </div>
@@ -206,7 +268,7 @@ export default function CheckInPage() {
                         <div className="relative z-10">
                             <p className="text-[10px] font-black text-amber-600 uppercase tracking-[0.2em] mb-2">Delay Protocol</p>
                             <p className="text-[11px] text-amber-800 font-bold uppercase tracking-widest leading-relaxed">
-                                Vikram Malhotra is +5 mins late. Initiate contact if delay exceeds 15 mins.
+                                Monitor service durations. If service exceeds +15 mins of scheduled exit, notify receptionist node.
                             </p>
                         </div>
                     </div>

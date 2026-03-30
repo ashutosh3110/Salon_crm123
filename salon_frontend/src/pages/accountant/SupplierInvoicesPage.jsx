@@ -1,20 +1,90 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { FileText, Search, Filter, Download, Plus, Clock, CheckCircle2, AlertCircle, Eye, MoreHorizontal, ArrowDownCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useInventory } from '../../contexts/InventoryContext';
 
 export default function SupplierInvoicesPage() {
-    const [invoices, setInvoices] = useState([
-        { id: 'INV-SUP-892', supplier: 'Beauty Hub Ltd', date: 'Feb 23, 2024', dueDate: 'Mar 10, 2024', amount: '₹12,450', status: 'Approved', type: 'Credit' },
-        { id: 'INV-SUP-891', supplier: 'Lotus Cosmetics', date: 'Feb 22, 2024', dueDate: 'Feb 28, 2024', amount: '₹8,900', status: 'Pending', type: 'COD' },
-        { id: 'INV-SUP-890', supplier: 'Matrix Distribution', date: 'Feb 20, 2024', dueDate: 'Mar 05, 2024', amount: '₹22,000', status: 'Paid', type: 'Credit' },
-        { id: 'INV-SUP-889', supplier: 'Salon Solutions', date: 'Feb 18, 2024', dueDate: 'Feb 18, 2024', amount: '₹3,500', status: 'Paid', type: 'Advance' },
-        { id: 'INV-SUP-888', supplier: 'Beauty Hub Ltd', date: 'Feb 15, 2024', dueDate: 'Mar 01, 2024', amount: '₹15,200', status: 'Overdue', type: 'Credit' },
-    ]);
-
+    const { stockInHistory, addStockIn, suppliers } = useInventory();
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [newVoucher, setNewVoucher] = useState({ supplier: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [newVoucher, setNewVoucher] = useState({ supplier: '', invoiceRef: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
     const fileInputRef = useRef(null);
+
+    const invoices = useMemo(() => {
+        const groups = {};
+        // Only process STOCK_IN transactions (Actual Purchases)
+        const activeStockIn = stockInHistory.filter(item => item.type === 'STOCK_IN');
+
+        activeStockIn.forEach(item => {
+            const ref = item.invoiceRef || `UNLINKED-${(item._id || item.id || 'NEW').slice(-4)}`;
+            if (!groups[ref]) {
+                groups[ref] = {
+                    id: ref,
+                    supplier: item.supplierName || 'Manual Entry',
+                    date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
+                    dueDate: item.createdAt ? new Date(new Date(item.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString() : 'N/A',
+                    amountRaw: 0,
+                    status: 'Approved',
+                    type: 'Purchase',
+                    items: []
+                };
+            }
+            groups[ref].amountRaw += (item.purchasePrice || 0) * (item.quantity || 1);
+            groups[ref].items.push(item);
+        });
+        
+        return Object.values(groups).map(g => ({
+            ...g,
+            amount: `₹${g.amountRaw.toLocaleString()}`
+        })).filter(inv => 
+            inv.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            inv.supplier.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [stockInHistory, searchQuery]);
+
+    const stats = useMemo(() => {
+        const total = invoices.reduce((acc, curr) => acc + curr.amountRaw, 0);
+        return {
+            pending: invoices.filter(i => i.status === 'Pending').length,
+            pendingValue: invoices.filter(i => i.status === 'Pending').reduce((a, b) => a + b.amountRaw, 0),
+            totalPaid: invoices.filter(i => i.status === 'Paid').reduce((a, b) => a + b.amountRaw, 0),
+            count: invoices.length
+        };
+    }, [invoices]);
+
+    const handleExport = () => {
+        const doc = new jsPDF();
+        const timestamp = new Date().toLocaleString();
+
+        doc.setFontSize(22);
+        doc.setTextColor(40);
+        doc.setFont("helvetica", "bold");
+        doc.text("SUPPLIER INVOICE LEDGER", 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${timestamp}`, 14, 30);
+
+        autoTable(doc, {
+            startY: 45,
+            head: [['Invoice ID', 'Supplier', 'Billing Date', 'Status', 'Total Amount']],
+            body: invoices.map(inv => [
+                inv.id,
+                inv.supplier,
+                inv.date,
+                inv.status,
+                inv.amount
+            ]),
+            styles: { fontSize: 8, font: "helvetica" },
+            headStyles: { fillColor: [60, 60, 60] },
+            alternateRowStyles: { fillColor: [248, 248, 248] },
+        });
+
+        doc.save("Supplier_Invoices_Report.pdf");
+    };
 
     const handleImportClick = () => {
         if (fileInputRef.current) {
@@ -58,16 +128,27 @@ export default function SupplierInvoicesPage() {
         e.target.value = null;
     };
 
-    const handleAddVoucherSubmit = (e) => {
+    const handleAddVoucherSubmit = async (e) => {
         e.preventDefault();
-        const voucher = {
-            id: `INV-NEW-${Math.floor(Math.random() * 1000)}`,
-            ...newVoucher,
-            amount: newVoucher.amount.startsWith('₹') ? newVoucher.amount : `₹${newVoucher.amount}`
-        };
-        setInvoices([voucher, ...invoices]);
-        setIsAddModalOpen(false);
-        setNewVoucher({ supplier: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
+        setIsSubmitting(true);
+        try {
+            await addStockIn({
+                supplierName: newVoucher.supplier,
+                invoiceRef: newVoucher.invoiceRef,
+                amount: newVoucher.amount,
+                type: newVoucher.type,
+                quantity: 1, // Manual voucher represents 1 bulk entry
+                date: newVoucher.date
+            });
+            setIsAddModalOpen(false);
+            setNewVoucher({ supplier: '', invoiceRef: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
+            alert('Voucher added successfully and synced with expenses!');
+        } catch (error) {
+            console.error('Error adding voucher:', error);
+            alert('Failed to save voucher. Please check database connection.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -86,8 +167,8 @@ export default function SupplierInvoicesPage() {
                         accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                         className="hidden"
                     />
-                    <button onClick={handleImportClick} className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all">
-                        <ArrowDownCircle className="w-4 h-4" /> Import Bulk
+                    <button onClick={handleExport} className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-border/20 text-text-secondary rounded-xl text-sm font-bold hover:bg-surface-alt transition-all">
+                        <Download className="w-4 h-4" /> Export Report
                     </button>
                     <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all text-left">
                         <Plus className="w-4 h-4" /> Add Voucher
@@ -101,22 +182,22 @@ export default function SupplierInvoicesPage() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -mr-8 -mt-8" />
                     <Clock className="w-8 h-8 text-primary mb-4" />
                     <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Awaiting Approval</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">₹45,600</h3>
-                    <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase tracking-tight">8 Pending Invoices</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">₹{stats.pendingValue.toLocaleString()}</h3>
+                    <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase tracking-tight">{stats.pending} Pending Invoices</p>
                 </div>
                 <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-bl-[100px] -mr-8 -mt-8" />
                     <AlertCircle className="w-8 h-8 text-rose-500 mb-4" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Overdue</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">₹15,200</h3>
-                    <p className="text-[10px] text-rose-500 font-bold mt-2 uppercase tracking-tight">2 Invoices Critical</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Invoices</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">{stats.count}</h3>
+                    <p className="text-[10px] text-rose-500 font-bold mt-2 uppercase tracking-tight">Inbound Records</p>
                 </div>
                 <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-[100px] -mr-8 -mt-8" />
                     <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-4" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Paid this Month</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">₹2,84,000</h3>
-                    <p className="text-[10px] text-emerald-500 font-bold mt-2 uppercase tracking-tight">+14% vs Last Month</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Value</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">₹{invoices.reduce((a,b) => a + b.amountRaw, 0).toLocaleString()}</h3>
+                    <p className="text-[10px] text-emerald-500 font-bold mt-2 uppercase tracking-tight">Live Ledger Sum</p>
                 </div>
             </div>
 
@@ -127,7 +208,13 @@ export default function SupplierInvoicesPage() {
                     <div className="flex gap-2">
                         <div className="relative md:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                            <input type="text" placeholder="Search invoices..." className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none" />
+                            <input 
+                                type="text" 
+                                placeholder="Search invoices..." 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none" 
+                            />
                         </div>
                     </div>
                 </div>
@@ -208,15 +295,30 @@ export default function SupplierInvoicesPage() {
 
                             <form onSubmit={handleAddVoucherSubmit} className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Supplier Name</label>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Invoice Reference</label>
                                     <input
                                         required
                                         type="text"
+                                        value={newVoucher.invoiceRef}
+                                        onChange={(e) => setNewVoucher({ ...newVoucher, invoiceRef: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
+                                        placeholder="e.g. BILL-2024-001"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Choose Supplier</label>
+                                    <select
+                                        required
                                         value={newVoucher.supplier}
                                         onChange={(e) => setNewVoucher({ ...newVoucher, supplier: e.target.value })}
                                         className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                        placeholder="e.g. L'Oreal Distribution"
-                                    />
+                                    >
+                                        <option value="">Select a supplier</option>
+                                        {suppliers.map(s => (
+                                            <option key={s.id} value={s.name}>{s.name}</option>
+                                        ))}
+                                        <option value="Misc Supplier">Miscellaneous Supplier</option>
+                                    </select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -266,8 +368,12 @@ export default function SupplierInvoicesPage() {
                                     </div>
                                 </div>
 
-                                <button type="submit" className="w-full py-3 mt-4 bg-primary text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">
-                                    Create Voucher
+                                <button 
+                                    type="submit" 
+                                    disabled={isSubmitting}
+                                    className={`w-full py-3 mt-4 bg-primary text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    {isSubmitting ? 'Saving...' : 'Create Voucher'}
                                 </button>
                             </form>
                         </motion.div>

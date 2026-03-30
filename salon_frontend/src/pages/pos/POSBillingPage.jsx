@@ -5,7 +5,7 @@ import {
     Scissors, Package, Check, Loader2, Scan,
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
-    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar
+    ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -152,6 +152,9 @@ export default function POSBillingPage() {
         customers: businessCustomers, 
         addCustomer: addBusinessCustomer,
         activeOutlet,
+        activeOutletId,
+        setActiveOutletId,
+        outlets,
         staff: businessStaff,
         bookings: businessBookings
     } = useBusiness();
@@ -213,6 +216,7 @@ export default function POSBillingPage() {
     const [voucherCodeInput, setVoucherCodeInput] = useState('');
     const [redeemPoints, setRedeemPoints] = useState(0);
     const [redeemWallet, setRedeemWallet] = useState(0);
+    const [appointmentId, setAppointmentId] = useState(null);
 
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '' });
 
@@ -252,6 +256,10 @@ export default function POSBillingPage() {
                         staffIds: preSelectStaffId ? [preSelectStaffId] : []
                     }]);
                 }
+            }
+            // If an appointmentId was passed, store it for status updates
+            if (location.state.appointmentId) {
+                setAppointmentId(location.state.appointmentId);
             }
         }
     }, [location.state]);
@@ -645,23 +653,39 @@ export default function POSBillingPage() {
         setCheckingOut(true);
         setTimeout(async () => {
             try {
-                // Prepare Backend Request Body
+                // Robust Outlet ID determination
+                const finalOutletId = activeOutlet?._id || activeOutletId || (outlets.length > 0 ? outlets[0]._id : user?.outletId);
+
+                if (!finalOutletId) {
+                    alert('CRITICAL: Outlet ID not detected. Please select an outlet.');
+                    setCheckingOut(false);
+                    return;
+                }
+
+                // Prepare Backend Request Body - Only include valid keys
                 const checkoutPayload = {
                     clientId: selectedClient._id,
-                    outletId: activeOutlet?._id,
-                    items: cart.map(item => ({
-                        type: item.type,
-                        itemId: item.id || item._id,
-                        name: item.name,
-                        price: item.price,
-                        quantity: item.quantity,
-                        staffIds: (item.staffIds || []).filter(Boolean)
-                    })),
+                    outletId: String(finalOutletId),
+                    items: cart.map(item => {
+                        const baseItem = {
+                            type: item.type,
+                            itemId: item.id || item._id,
+                            name: item.name,
+                            price: item.price,
+                            quantity: item.quantity
+                        };
+                        const sId = (item.staffIds || [])[0];
+                        if (sId) baseItem.stylistId = sId;
+                        return baseItem;
+                    }),
                     tax: totals.tax,
                     paymentMethod: payments[0]?.method || 'cash',
-                    useLoyaltyPoints: redeemPoints,
-                    promotionId: appliedPromotion?._id || null
+                    useLoyaltyPoints: redeemPoints
                 };
+
+                if (appliedPromotion?._id) {
+                    checkoutPayload.promotionId = String(appliedPromotion._id);
+                }
 
                 // REAL BACKEND CALL
                 const response = await api.post('/pos/checkout', checkoutPayload);
@@ -709,6 +733,19 @@ export default function POSBillingPage() {
                     tax: totals.tax,
                     method: payments[0]?.method || 'cash'
                 });
+
+                // ── Sync Appointment Status ──
+                if (appointmentId) {
+                    try {
+                        await api.patch(`/bookings/${appointmentId}`, {
+                            status: 'completed',
+                            paymentStatus: 'paid',
+                            paymentMethod: payments[0]?.method || 'salon'
+                        });
+                    } catch (syncErr) {
+                        console.error('[POS] Protocol Sync Error:', syncErr);
+                    }
+                }
             } catch (err) {
                 console.error('[POS] Checkout failed:', err);
                 alert('Checkout failed: ' + (err.response?.data?.message || err.message));
@@ -1224,21 +1261,38 @@ export default function POSBillingPage() {
                         )}
 
                         {selectedClient && (
-                            <div className="flex items-center gap-2 mt-2 px-1">
-                                <Globe className="w-3 h-3 text-text-muted" />
-                                <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Billing State / Location:</span>
-                                <select 
-                                    value={customerState}
-                                    onChange={(e) => setCustomerState(e.target.value)}
-                                    className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
-                                >
-                                    {fiscal.state && <option value={fiscal.state}>{fiscal.state} (INTRA)</option>}
-                                    <option value="Delhi">Delhi (INTER)</option>
-                                    <option value="Maharashtra">Maharashtra (INTER)</option>
-                                    <option value="Karnataka">Karnataka (INTER)</option>
-                                    <option value="Gujarat">Gujarat (INTER)</option>
-                                    <option value="Haryana">Haryana (INTER)</option>
-                                </select>
+                            <div className="mt-2 space-y-2 px-1">
+                                <div className="flex items-center gap-2">
+                                    <Building2 className="w-3 h-3 text-text-muted" />
+                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Selected Outlet:</span>
+                                    <select 
+                                        value={activeOutletId || ''}
+                                        onChange={(e) => setActiveOutletId(e.target.value)}
+                                        className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
+                                    >
+                                        <option value="" disabled>-- Select Outlet --</option>
+                                        {outlets.map(o => (
+                                            <option key={o._id} value={o._id}>{o.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Globe className="w-3 h-3 text-text-muted" />
+                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none">Billing State / Location:</span>
+                                    <select 
+                                        value={customerState}
+                                        onChange={(e) => setCustomerState(e.target.value)}
+                                        className="bg-transparent text-[10px] font-black uppercase text-primary border-none outline-none cursor-pointer hover:underline"
+                                    >
+                                        {fiscal.state && <option value={fiscal.state}>{fiscal.state} (INTRA)</option>}
+                                        <option value="Delhi">Delhi (INTER)</option>
+                                        <option value="Maharashtra">Maharashtra (INTER)</option>
+                                        <option value="Karnataka">Karnataka (INTER)</option>
+                                        <option value="Gujarat">Gujarat (INTER)</option>
+                                        <option value="Haryana">Haryana (INTER)</option>
+                                    </select>
+                                </div>
                             </div>
                         )}
 

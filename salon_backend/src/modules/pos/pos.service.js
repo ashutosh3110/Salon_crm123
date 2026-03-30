@@ -25,6 +25,8 @@ class PosService {
             performedBy = null
         } = billingData;
 
+        console.log(`[POS_SERVICE] createBilling for tenant: ${tenantId}, performedBy: ${performedBy}`);
+
         const session = await mongoose.startSession();
         session.startTransaction();
 

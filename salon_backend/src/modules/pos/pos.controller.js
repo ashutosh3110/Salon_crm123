@@ -4,7 +4,20 @@ import notificationService from '../notification/notification.service.js';
 
 const checkout = async (req, res, next) => {
     try {
-        const invoice = await posService.createBilling(req.tenantId, req.body);
+        const identityId = req.user?._id || req.user?.id;
+        console.log('[POS_DEBUG] req.user structure:', JSON.stringify({
+            exists: !!req.user,
+            id: req.user?.id,
+            _id: req.user?._id,
+            role: req.user?.role,
+            name: req.user?.name
+        }));
+        console.log(`[POS] Checkout initiated by: ${req.user?.name} (ID: ${identityId})`);
+
+        const invoice = await posService.createBilling(req.tenantId, {
+            ...req.body,
+            performedBy: identityId
+        });
         
         // --- Notification ---
         try {

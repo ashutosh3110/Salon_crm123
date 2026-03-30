@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { DollarSign, Plus, Search, Filter, Download, Calendar, ArrowUpRight, ArrowDownRight, MoreHorizontal, PieChart, ShoppingBag, Receipt, Zap } from 'lucide-react';
+import { DollarSign, Plus, Search, Filter, Download, Calendar, ArrowUpRight, ArrowDownRight, MoreHorizontal, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../contexts/FinanceContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function ExpensesPage() {
     const { expenses, addExpense } = useFinance();
@@ -10,40 +12,100 @@ export default function ExpensesPage() {
     const [filterCategory, setFilterCategory] = useState('All Categories');
 
     const [formState, setFormState] = useState({
-        category: 'Inventory',
+        category: 'inventory',
         amount: '',
         vendor: '',
         date: new Date().toISOString().split('T')[0],
-        desc: ''
+        description: ''
     });
 
     const categories = [
-        { name: 'Inventory', amount: `₹${expenses.filter(e => e.category === 'Inventory').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-primary' },
-        { name: 'Utilities', amount: `₹${expenses.filter(e => e.category === 'Utilities').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-amber-500' },
-        { name: 'Rent', amount: `₹${expenses.filter(e => e.category === 'Rent').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-indigo-500' },
-        { name: 'Staff Welfare', amount: `₹${expenses.filter(e => e.category === 'Staff Welfare').reduce((a, b) => a + (typeof b.amount === 'number' ? b.amount : 0), 0).toLocaleString()}`, color: 'bg-emerald-500' },
-    ];
+        { name: 'Inventory', key: 'inventory', color: 'bg-primary' },
+        { name: 'Utilities', key: 'utilities', color: 'bg-amber-500' },
+        { name: 'Rent', key: 'rent', color: 'bg-indigo-500' },
+        { name: 'Staff Welfare', key: 'welfare', color: 'bg-emerald-500' },
+    ].map(cat => ({
+        ...cat,
+        amount: `₹${expenses
+            .filter(e => e.category?.toLowerCase() === cat.key)
+            .reduce((a, b) => a + (b.amount || 0), 0)
+            .toLocaleString()}`
+    }));
 
     const filteredExpenses = expenses.filter(exp => {
         const vendor = exp.vendor || '';
         const category = exp.category || '';
-        const desc = exp.desc || '';
+        const desc = exp.description || '';
         const matchesSearch = vendor.toLowerCase().includes(searchQuery.toLowerCase()) ||
             category.toLowerCase().includes(searchQuery.toLowerCase()) ||
             desc.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = filterCategory === 'All Categories' || exp.category === filterCategory;
+        const matchesCategory = filterCategory === 'All Categories' || exp.category?.toLowerCase() === filterCategory.toLowerCase();
         return matchesSearch && matchesCategory;
     });
+
+    const handleExport = () => {
+        const doc = new jsPDF();
+        const timestamp = new Date().toLocaleString();
+
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(40);
+        doc.setFont("helvetica", "bold");
+        doc.text("EXPENSE MANAGEMENT REPORT", 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${timestamp}`, 14, 30);
+        doc.text(`Category: ${filterCategory}`, 14, 35);
+
+        // Stats Summary Box
+        const totalExp = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
+        doc.setDrawColor(230);
+        doc.setFillColor(248, 249, 250);
+        doc.rect(14, 45, 182, 25, 'F');
+        
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text("TOTAL EXPENSES", 20, 52);
+        doc.text("NO. OF ENTRIES", 85, 52);
+        doc.text("EXPORTED TYPE", 150, 52);
+
+        doc.setFontSize(12);
+        doc.setTextColor(40);
+        doc.text(`Rs. ${totalExp.toFixed(2).toLocaleString()}`, 20, 62);
+        doc.text(`${filteredExpenses.length}`, 85, 62);
+        doc.text(`${filterCategory.toUpperCase()}`, 150, 62);
+
+        // Table
+        autoTable(doc, {
+            startY: 80,
+            head: [['Date', 'Category', 'Vendor / Description', 'Status', 'Amount']],
+            body: filteredExpenses.map(exp => [
+                new Date(exp.createdAt).toLocaleDateString(),
+                (exp.category || 'OTHER').toUpperCase(),
+                `${exp.vendor || 'N/A'}\n${exp.description || ''}`,
+                (exp.paymentMethod || 'PAID').toUpperCase(),
+                `Rs. ${(exp.amount || 0).toFixed(2)}`
+            ]),
+            styles: { fontSize: 8, font: "helvetica" },
+            headStyles: { fillColor: [40, 40, 40] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            margin: { top: 80 }
+        });
+
+        doc.save(`Expense_Report_${filterCategory.replace(' ', '_')}.pdf`);
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         addExpense({
             ...formState,
+            type: 'expense',
             amount: parseFloat(formState.amount),
-            status: 'Paid'
+            paymentMethod: 'cash' // Default for manual entry
         });
         setIsAddModalOpen(false);
-        setFormState({ category: 'Inventory', amount: '', vendor: '', date: new Date().toISOString().split('T')[0], desc: '' });
+        setFormState({ category: 'inventory', amount: '', vendor: '', date: new Date().toISOString().split('T')[0], description: '' });
     };
 
     return (
@@ -55,6 +117,12 @@ export default function ExpensesPage() {
                     <p className="text-sm text-text-muted font-medium">Track operational costs and operational spending</p>
                 </div>
                 <div className="flex gap-2">
+                    <button 
+                        onClick={handleExport}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border/40 rounded-none text-[10px] font-extrabold uppercase tracking-widest text-text-secondary hover:bg-surface-alt transition-all"
+                    >
+                        <Download className="w-3.5 h-3.5" /> Export Report
+                    </button>
                     <button className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/25 hover:bg-primary-dark transition-all" onClick={() => setIsAddModalOpen(true)}>
                         <Plus className="w-4 h-4" /> New Expense
                     </button>
@@ -125,23 +193,25 @@ export default function ExpensesPage() {
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
                             {filteredExpenses.map((exp) => (
-                                <tr key={exp.id} className="hover:bg-surface-alt/50 transition-colors group">
-                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">{exp.date}</td>
+                                <tr key={exp._id} className="hover:bg-surface-alt/50 transition-colors group">
+                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">
+                                        {new Date(exp.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </td>
                                     <td className="px-6 py-4">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest border border-border/10 ${exp.category === 'Inventory' ? 'bg-primary/5 text-primary' : 'bg-background text-text-muted'}`}>
-                                            {exp.category}
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest border border-border/10 ${exp.category?.toLowerCase() === 'inventory' ? 'bg-primary/5 text-primary' : 'bg-background text-text-muted'}`}>
+                                            {exp.category || 'OTHER'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{exp.vendor}</p>
-                                        <p className="text-[10px] text-text-muted font-medium">{exp.desc}</p>
+                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{exp.vendor || 'N/A'}</p>
+                                        <p className="text-[10px] text-text-muted font-medium">{exp.description}</p>
                                     </td>
                                     <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${exp.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                            {exp.status}
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${exp.paymentMethod === 'cash' || exp.paymentMethod === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-emerald-500'}`}>
+                                            {(exp.paymentMethod || 'PAID').toUpperCase()}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">₹{exp.amount.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{(exp.amount || 0).toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="p-2 hover:bg-background rounded-none text-text-muted hover:text-text transition-all">
                                             <MoreHorizontal className="w-4 h-4" />
@@ -225,8 +295,8 @@ export default function ExpensesPage() {
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Description</label>
                                         <textarea
                                             placeholder="Purpose of this expense..."
-                                            value={formState.desc}
-                                            onChange={(e) => setFormState({ ...formState, desc: e.target.value })}
+                                            value={formState.description}
+                                            onChange={(e) => setFormState({ ...formState, description: e.target.value })}
                                             className="w-full px-5 py-3.5 rounded-none bg-background border border-border text-sm font-bold focus:border-primary outline-none h-24 resize-none"
                                         />
                                     </div>

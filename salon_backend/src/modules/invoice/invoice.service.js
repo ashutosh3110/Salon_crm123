@@ -4,18 +4,21 @@ import Transaction from '../finance/transaction.model.js';
 import InventoryTransaction from '../inventory/inventoryTransaction.model.js';
 
 function toTenantObjectId(tenantId) {
-    if (!tenantId) return tenantId;
+    if (!tenantId) return null;
     if (tenantId instanceof mongoose.Types.ObjectId) return tenantId;
     try {
-        return new mongoose.Types.ObjectId(String(tenantId));
+        const tid = String(tenantId).trim();
+        return mongoose.Types.ObjectId.isValid(tid) ? new mongoose.Types.ObjectId(tid) : null;
     } catch {
-        return tenantId;
+        return null;
     }
 }
 
 class InvoiceService {
     async queryInvoices(tenantId, filters = {}) {
-        const query = { tenantId };
+        const tid = toTenantObjectId(tenantId);
+        if (!tid) return { results: [], page: 1, limit: 50, totalPages: 0, totalResults: 0 };
+        const query = { tenantId: tid };
 
         // Date filter
         if (filters.date === 'today') {
@@ -44,6 +47,18 @@ class InvoiceService {
         // Payment status filter
         if (filters.paymentStatus) {
             query.paymentStatus = filters.paymentStatus;
+        }
+
+        // Search filter
+        if (filters.search) {
+            const searchRegex = new RegExp(filters.search, 'i');
+            // Note: Since clientId is a ref, we'll need to handle this carefully.
+            // For simplicity in this step, we'll search by invoiceNumber if it exists.
+            // A more robust way would be to aggregate or search clientIds first.
+            query.$or = [
+                { invoiceNumber: searchRegex },
+                { paymentStatus: searchRegex }
+            ];
         }
 
         let invoiceQuery = Invoice.find(query)
@@ -86,45 +101,80 @@ class InvoiceService {
         return invoice;
     }
 
+    async settleInvoice(tenantId, invoiceId, paymentData) {
+        const tid = toTenantObjectId(tenantId);
+        const invoice = await Invoice.findOne({ _id: invoiceId, tenantId: tid });
+
+        if (!invoice) {
+            throw new Error('Invoice not found');
+        }
+
+        if (invoice.paymentStatus === 'paid') {
+            throw new Error('Invoice is already settled');
+        }
+
+        invoice.paymentStatus = 'paid';
+        invoice.paymentMethod = paymentData.paymentMethod || 'cash';
+        
+        await invoice.save();
+        return invoice;
+    }
+
     async getDashboardStats(tenantId) {
+        const tid = toTenantObjectId(tenantId);
+        if (!tid) return this._emptyStats();
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
 
-        const stats = await Invoice.aggregate([
-            {
-                $match: {
-                    tenantId: { $toString: tenantId },
-                    createdAt: { $gte: today, $lt: tomorrow },
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalRevenue: { $sum: '$total' },
-                    invoiceCount: { $sum: 1 },
-                    avgBillValue: { $avg: '$total' },
-                    cashTotal: {
-                        $sum: { $cond: [{ $eq: ['$paymentMethod', 'cash'] }, '$total', 0] },
-                    },
-                    cardTotal: {
-                        $sum: { $cond: [{ $eq: ['$paymentMethod', 'card'] }, '$total', 0] },
-                    },
-                    onlineTotal: {
-                        $sum: { $cond: [{ $eq: ['$paymentMethod', 'online'] }, '$total', 0] },
+        const [invoiceStats, expenseStats] = await Promise.all([
+            Invoice.aggregate([
+                { $match: { tenantId: tid, createdAt: { $gte: today, $lt: tomorrow }, paymentStatus: { $ne: 'cancelled' } } },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: '$total' },
+                        invoiceCount: { $sum: 1 },
+                        avgBillValue: { $avg: '$total' },
+                        cashTotal: { $sum: { $cond: [{ $eq: ['$paymentMethod', 'cash'] }, '$total', 0] } },
+                        cardTotal: { $sum: { $cond: [{ $eq: ['$paymentMethod', 'card'] }, '$total', 0] } },
+                        onlineTotal: { $sum: { $cond: [{ $eq: ['$paymentMethod', 'online'] }, '$total', 0] } },
                     },
                 },
-            },
+            ]),
+            Transaction.aggregate([
+                { $match: { tenantId: tid, type: 'expense', createdAt: { $gte: today, $lt: tomorrow } } },
+                { $group: { _id: null, totalExpenses: { $sum: '$amount' } } },
+            ]),
         ]);
 
-        return stats[0] || {
+        const i = invoiceStats[0] || {};
+        const e = expenseStats[0] || {};
+
+        return {
+            totalRevenue: i.totalRevenue || 0,
+            totalExpenses: e.totalExpenses || 0,
+            invoiceCount: i.invoiceCount || 0,
+            avgBillValue: i.avgBillValue || 0,
+            cashTotal: i.cashTotal || 0,
+            cardTotal: i.cardTotal || 0,
+            onlineTotal: i.onlineTotal || 0,
+            netProfit: (i.totalRevenue || 0) - (e.totalExpenses || 0),
+        };
+    }
+
+    _emptyStats() {
+        return {
             totalRevenue: 0,
+            totalExpenses: 0,
             invoiceCount: 0,
             avgBillValue: 0,
             cashTotal: 0,
             cardTotal: 0,
             onlineTotal: 0,
+            netProfit: 0,
         };
     }
 

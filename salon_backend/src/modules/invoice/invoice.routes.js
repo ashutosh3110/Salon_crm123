@@ -13,6 +13,7 @@ router.get('/stats', invoiceController.getDashboardStats);
 router.get('/refunds', invoiceController.getRefunds);
 router.get('/finance-dashboard', invoiceController.getFinanceDashboard);
 router.patch('/:invoiceId/refund-action', invoiceController.processRefundAction);
+router.patch('/:invoiceId/settle', invoiceController.settleInvoice);
 router.get('/:invoiceId', invoiceController.getInvoice);
 
 export default router;

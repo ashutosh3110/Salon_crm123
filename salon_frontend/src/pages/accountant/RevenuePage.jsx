@@ -1,46 +1,97 @@
 import { useState, useMemo } from 'react';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign, Calendar, Filter, Download, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import * as XLSX from 'xlsx';
 import { useFinance } from '../../contexts/FinanceContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function RevenuePage() {
     const { revenue } = useFinance();
     const [activeFilter, setActiveFilter] = useState('All Revenue');
 
-    const totalRevenueSum = revenue.reduce((acc, curr) => acc + curr.amount, 0);
-    const totalTaxSum = revenue.reduce((acc, curr) => acc + curr.tax, 0);
-    const avgTrans = revenue.length > 0 ? (totalRevenueSum / revenue.length).toFixed(0) : 0;
+    const totalRevenueSum = revenue.reduce((acc, curr) => acc + (curr.total || 0), 0);
+    const totalTaxSum = revenue.reduce((acc, curr) => acc + (curr.tax || 0), 0);
+    const avgTrans = revenue.length > 0 ? (totalRevenueSum / revenue.length) : 0;
 
     const stats = [
-        { label: 'Total Revenue', value: `₹${totalRevenueSum.toLocaleString()}`, change: '+12.5%', isPositive: true },
-        { label: 'Avg. Transaction', value: `₹${avgTrans.toLocaleString()}`, change: '+3.2%', isPositive: true },
-        { label: 'Tax Collected', value: `₹${totalTaxSum.toLocaleString()}`, change: '+10.8%', isPositive: true },
-        { label: 'Refunds', value: '₹12,400', change: '-5.4%', isPositive: false },
+        { label: 'Total Revenue', value: `₹${totalRevenueSum.toLocaleString()}`, change: '+0%', isPositive: true },
+        { label: 'Avg. Transaction', value: `₹${avgTrans.toFixed(0).toLocaleString()}`, change: '+0%', isPositive: true },
+        { label: 'Tax Collected', value: `₹${totalTaxSum.toLocaleString()}`, change: '+0%', isPositive: true },
+        { label: 'Online Sales', value: `₹${revenue.filter(r => r.paymentMethod === 'online').reduce((s, c) => s + (c.total || 0), 0).toLocaleString()}`, change: '+0%', isPositive: true },
     ];
-
-    const handleExport = () => {
-        const ws = XLSX.utils.json_to_sheet(revenue.map(item => ({
-            "Invoice ID": `INV-2024-00${item.id}`,
-            "Date": item.date,
-            "Description": item.source,
-            "Category": item.type,
-            "Amount": item.amount,
-            "Tax (GST)": item.tax,
-            "Payment Method": item.method,
-            "Status": item.status
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Revenue_Report");
-        XLSX.writeFile(wb, "Revenue_Report.xlsx");
-    };
 
     const filteredData = useMemo(() => {
         return revenue.filter(item => {
             if (activeFilter === 'All Revenue') return true;
-            return item.type === activeFilter;
+            
+            const itemTypes = item.items?.map(i => i.type.toLowerCase()) || [];
+            
+            if (activeFilter === 'Service Sales') {
+                return itemTypes.includes('service');
+            }
+            if (activeFilter === 'Product Sales') {
+                return itemTypes.includes('product');
+            }
+            if (activeFilter === 'Memberships') {
+                return item.items?.some(i => i.name?.toLowerCase().includes('membership'));
+            }
+            return true; 
         });
     }, [revenue, activeFilter]);
+
+    const handleExport = () => {
+        const doc = new jsPDF();
+        const timestamp = new Date().toLocaleString();
+
+        // Header
+        doc.setFontSize(22);
+        doc.setTextColor(40);
+        doc.setFont("helvetica", "bold");
+        doc.text("SALON REVENUE REPORT", 14, 22);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${timestamp}`, 14, 30);
+        doc.text(`Filter Applied: ${activeFilter}`, 14, 35);
+
+        // Stats Summary Box
+        doc.setDrawColor(230);
+        doc.setFillColor(248, 249, 250);
+        doc.rect(14, 45, 182, 25, 'F');
+        
+        doc.setFontSize(9);
+        doc.setTextColor(100);
+        doc.text("TOTAL REVENUE", 20, 52);
+        doc.text("TAX COLLECTED", 85, 52);
+        doc.text("TRANSACTIONS", 150, 52);
+
+        doc.setFontSize(11);
+        doc.setTextColor(40);
+        doc.text(`Rs. ${totalRevenueSum.toFixed(2).toLocaleString()}`, 20, 62);
+        doc.text(`Rs. ${totalTaxSum.toFixed(2).toLocaleString()}`, 85, 62);
+        doc.text(`${filteredData.length}`, 150, 62);
+
+        // Table
+        autoTable(doc, {
+            startY: 80,
+            head: [['Date', 'Description / Client', 'Invoice ID', 'Type', 'Tax', 'Method', 'Total']],
+            body: filteredData.map(item => [
+                new Date(item.createdAt).toLocaleDateString(),
+                item.clientId?.name || 'Walk-in Guest',
+                item.invoiceNumber,
+                item.items?.[0]?.type?.toUpperCase() || 'SERVICE',
+                `Rs. ${(item.tax || 0).toFixed(2)}`,
+                (item.paymentMethod || 'CASH').toUpperCase(),
+                `Rs. ${(item.total || 0).toFixed(2)}`
+            ]),
+            styles: { fontSize: 8, font: "helvetica" },
+            headStyles: { fillColor: [40, 40, 40] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            margin: { top: 80 }
+        });
+
+        doc.save(`Revenue_Report_${activeFilter.replace(' ', '_')}.pdf`);
+    };
 
     return (
         <div className="space-y-6">
@@ -115,25 +166,39 @@ export default function RevenuePage() {
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
                             {filteredData.map((item) => (
-                                <tr key={item.id} className="hover:bg-surface-alt/50 transition-colors group">
-                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">{item.date}</td>
+                                <tr key={item._id} className="hover:bg-surface-alt/50 transition-colors group">
+                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">
+                                        {new Date(item.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </td>
                                     <td className="px-6 py-4">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{item.source}</p>
+                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">
+                                            {item.clientId?.name || 'Walk-in Guest'}
+                                        </p>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <p className="text-[10px] text-text-muted font-medium">INV-2024-00{item.id}</p>
-                                            <span className="text-[8px] font-bold px-1.5 py-0.5 bg-surface-alt border border-border/20 text-text-muted uppercase tracking-widest rounded">{item.type}</span>
+                                            <p className="text-[10px] text-text-muted font-medium">{item.invoiceNumber}</p>
+                                            <span className="text-[8px] font-bold px-1.5 py-0.5 bg-surface-alt border border-border/20 text-text-muted uppercase tracking-widest rounded">
+                                                {(() => {
+                                                    const types = Array.from(new Set(item.items?.map(i => i.type.toLowerCase()) || []));
+                                                    const isMembership = item.items?.some(i => i.name?.toLowerCase().includes('membership'));
+                                                    if (isMembership) return 'MEMBERSHIP';
+                                                    if (types.length > 1) return 'MIXED';
+                                                    return (types[0] || 'SERVICE').toUpperCase();
+                                                })()}
+                                            </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">₹{item.tax}</td>
+                                    <td className="px-6 py-4 text-sm font-bold text-emerald-500">₹{(item.tax || 0).toLocaleString()}</td>
                                     <td className="px-6 py-4">
-                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-none bg-background border border-border/10 text-text-secondary">{item.method}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${item.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                            {item.status}
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-none bg-background border border-border/10 text-text-secondary uppercase tracking-widest">
+                                            {item.paymentMethod || 'CASH'}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">₹{item.amount.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-left">
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-none uppercase tracking-tighter ${item.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
+                                            {item.paymentStatus || 'PENDING'}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{(item.total || 0).toLocaleString()}</td>
                                 </tr>
                             ))}
                             {filteredData.length === 0 && (

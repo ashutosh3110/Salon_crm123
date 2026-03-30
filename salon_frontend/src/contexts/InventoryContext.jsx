@@ -270,6 +270,16 @@ export const InventoryProvider = ({ children }) => {
         [shopCategoriesRaw, products]
     );
 
+    const fetchStockInHistory = useCallback(async () => {
+        try {
+            const res = await api.get('/inventory/stock-in/history', { params: { page: 1, limit: 500 } });
+            const rows = res?.data?.results || res?.data?.data || [];
+            setStockInHistory(rows);
+        } catch (error) {
+            console.warn('[InventoryContext] Fetch stock-in history failed:', error);
+        }
+    }, []);
+
     useEffect(() => {
         const path = window.location.pathname || '';
         const isCustomerPath = path.startsWith('/app');
@@ -283,8 +293,9 @@ export const InventoryProvider = ({ children }) => {
         if ((isCustomerPath && customerToken) || (!isCustomerPath && roleToken)) {
             fetchProducts();
             fetchShopCategories();
+            fetchStockInHistory();
         }
-    }, [fetchProducts, fetchShopCategories, customer]);
+    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer]);
 
     // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
     useEffect(() => {
@@ -702,6 +713,44 @@ export const InventoryProvider = ({ children }) => {
         },
         stockInHistory,
         adjustmentLog,
+        addStockIn: async (data) => {
+            try {
+                // If no productId is provided, use the first available product
+                const productId = data.productId || products[0]?.id || products[0]?._id;
+                if (!productId) throw new Error('No product available to link stock-in.');
+
+                const payload = {
+                    productId,
+                    outletId: data.outletId || 'main', // Default to main
+                    type: 'STOCK_IN',
+                    quantity: Number(data.quantity) || 1,
+                    purchasePrice: Number(data.amount) || 0,
+                    invoiceRef: data.invoiceRef,
+                    supplierName: data.supplierName,
+                    reason: 'Accountant Voucher Entry'
+                };
+
+                const res = await api.post('/inventory/stock-in', payload);
+                
+                // Add to Finance Expenses as well
+                addExpense({
+                    date: new Date().toISOString().split('T')[0],
+                    vendor: data.supplierName || 'Inventory Supplier',
+                    category: 'inventory',
+                    desc: `Voucher: ${data.invoiceRef || 'Manual Purchase'}`,
+                    amount: Number(data.amount) || 0,
+                    status: 'Paid',
+                    paymentMethod: data.type === 'Credit' ? 'unpaid' : 'cash'
+                });
+
+                // Refresh history
+                await fetchStockInHistory();
+                return { success: true, data: res.data };
+            } catch (error) {
+                console.error('[InventoryContext] Add stock-in failed:', error);
+                throw error;
+            }
+        },
         productCategories,
         suppliers,
         shopCategories,
@@ -710,7 +759,8 @@ export const InventoryProvider = ({ children }) => {
         deleteShopCategory,
         fetchProducts,
         fetchShopCategories,
-    }), [products, movements, purchases, transfers, saleRecords, reconciliationData, projectionSummary, outlets, lowStockItems, expiryAlerts, stockInHistory, adjustmentLog, productCategories, suppliers, shopCategories, fetchProducts, fetchShopCategories]);
+        fetchStockInHistory,
+    }), [products, movements, purchases, transfers, saleRecords, reconciliationData, projectionSummary, outlets, lowStockItems, expiryAlerts, stockInHistory, adjustmentLog, productCategories, suppliers, shopCategories, fetchProducts, fetchShopCategories, fetchStockInHistory]);
 
     return (
         <InventoryContext.Provider value={value}>
