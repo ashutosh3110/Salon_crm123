@@ -94,54 +94,56 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
     return (
         <div className="space-y-6">
             {/* Toolbar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
-                <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-surface p-4 rounded-2xl border border-border shadow-sm">
+                <div className="relative flex-1 max-w-full lg:max-w-md">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
                         placeholder="Search services by name..."
-                        className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-surface-alt text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-surface-alt text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <CustomSelect 
                         value={filterCategory} 
                         onChange={setFilterCategory} 
                         options={categories}
-                        className="min-w-[150px]"
+                        className="flex-1 lg:flex-none min-w-[120px] lg:min-w-[150px]"
                     />
 
                     <CustomSelect 
                         value={filterOutlet} 
                         onChange={setFilterOutlet} 
                         options={outletOptions}
-                        className="min-w-[180px]"
+                        className="flex-1 lg:flex-none min-w-[140px] lg:min-w-[180px]"
                     />
 
-                    <button
-                        onClick={handleRefresh}
-                        className="p-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95"
-                        title="Refresh List"
-                    >
-                        <RefreshCcw className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <button
+                            onClick={handleRefresh}
+                            className="flex-1 sm:flex-none p-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95 flex justify-center items-center"
+                            title="Refresh List"
+                        >
+                            <RefreshCcw className="w-4 h-4" />
+                        </button>
 
-                    <button
-                        onClick={() => setIsImportModalOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-surface border border-border text-text text-sm font-bold shadow-sm hover:bg-surface-alt transition-all scale-active font-black"
-                    >
-                        <Upload className="w-4 h-4" /> Import
-                    </button>
+                        <button
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-[11px] font-black uppercase tracking-tight shadow-sm hover:bg-surface-alt transition-all scale-active"
+                        >
+                            <Upload className="w-3.5 h-3.5" /> Import
+                        </button>
 
-                    <button
-                        onClick={() => navigate('/admin/services/new')}
-                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all scale-active font-black"
-                    >
-                        <Plus className="w-4 h-4" /> Add Service
-                    </button>
+                        <button
+                            onClick={() => navigate('/admin/services/new')}
+                            className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all scale-active"
+                        >
+                            <Plus className="w-4 h-4" /> Add Service
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -154,67 +156,77 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
 
             {/* Bulk Actions Toolbar */}
             {selectedServiceIds.length > 0 && (
-                <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[90] animate-in slide-in-from-bottom-10 fade-in duration-300">
-                    <div className="bg-surface border border-border shadow-2xl rounded-2xl px-6 py-4 flex items-center gap-6 backdrop-blur">
-                        <div className="flex items-center gap-2 border-r border-border pr-6">
-                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
-                                {selectedServiceIds.length}
+                <div className="fixed bottom-4 sm:bottom-8 left-0 right-0 px-4 sm:px-0 sm:left-1/2 sm:-translate-x-1/2 z-[90] animate-in slide-in-from-bottom-10 fade-in duration-300">
+                    <div className="bg-surface border border-border shadow-2xl rounded-2xl px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-6 backdrop-blur max-w-4xl mx-auto">
+                        <div className="flex items-center justify-between w-full sm:w-auto sm:border-r sm:border-border sm:pr-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center text-white text-[10px] sm:text-xs font-black">
+                                    {selectedServiceIds.length}
+                                </div>
+                                <span className="text-xs sm:text-sm font-bold text-text uppercase tracking-widest">Selected</span>
                             </div>
-                            <span className="text-sm font-bold text-text">Selected</span>
+                            <button 
+                                onClick={() => setSelectedServiceIds([])}
+                                className="sm:hidden p-1.5 hover:bg-surface-alt rounded-lg transition-all"
+                            >
+                                <XCircle className="w-5 h-5 text-text-muted" />
+                            </button>
                         </div>
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                             <CustomSelect 
-                                value={bulkCategoryId || 'Select Category'} 
+                                value={bulkCategoryId || 'Category'} 
                                 onChange={setBulkCategoryId} 
-                                options={['Select Category', ...categories.filter(c => c !== 'All')]}
-                                className="min-w-[160px]"
+                                options={['Category', ...categories.filter(c => c !== 'All')]}
+                                className="flex-1 sm:min-w-[140px]"
                                 position="top"
                             />
                             <button 
                                 onClick={async () => {
-                                    if (!bulkCategoryId || bulkCategoryId === 'Select Category') return;
+                                    if (!bulkCategoryId || bulkCategoryId === 'Category') return;
                                     await Promise.all(selectedServiceIds.map(id => updateService(id, { category: bulkCategoryId })));
                                     setSelectedServiceIds([]);
                                     setBulkCategoryId('');
                                     handleRefresh();
                                 }}
-                                disabled={!bulkCategoryId || bulkCategoryId === 'Select Category'}
-                                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-black hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
+                                disabled={!bulkCategoryId || bulkCategoryId === 'Category'}
+                                className="px-3 sm:px-4 py-2 rounded-xl bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                Apply Category
+                                Apply
                             </button>
                         </div>
 
-                        <div className="w-px h-8 bg-border mx-2" />
+                        <div className="hidden sm:block w-px h-8 bg-border mx-1" />
 
-                        <button 
-                            onClick={() => setAssigningOutletsService('bulk')}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-surface-alt text-sm font-bold transition-all"
-                        >
-                            <Building2 className="w-4 h-4 text-primary" />
-                            Update Outlets
-                        </button>
+                        <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
+                            <button 
+                                onClick={() => setAssigningOutletsService('bulk')}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl hover:bg-surface-alt text-[10px] font-black uppercase tracking-widest transition-all text-primary border border-primary/10 sm:border-none"
+                            >
+                                <Building2 className="w-3.5 h-3.5" />
+                                <span className="sm:hidden lg:inline">Outlets</span>
+                            </button>
 
-                        <button 
-                            onClick={async () => {
-                                if (window.confirm(`Are you sure you want to delete ${selectedServiceIds.length} services?`)) {
-                                    await Promise.all(selectedServiceIds.map(id => deleteService(id)));
-                                    setSelectedServiceIds([]);
-                                }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-rose-50 text-rose-600 text-sm font-bold transition-all ml-4"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                            Delete
-                        </button>
+                            <button 
+                                onClick={async () => {
+                                    if (window.confirm(`Are you sure you want to delete ${selectedServiceIds.length} services?`)) {
+                                        await Promise.all(selectedServiceIds.map(id => deleteService(id)));
+                                        setSelectedServiceIds([]);
+                                    }
+                                }}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl hover:bg-rose-50 text-rose-600 text-[10px] font-black uppercase tracking-widest transition-all border border-rose-100 sm:border-none"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span className="sm:hidden lg:inline">Delete</span>
+                            </button>
 
-                        <button 
-                            onClick={() => setSelectedServiceIds([])}
-                            className="p-2 hover:bg-surface-alt rounded-lg transition-all ml-2"
-                        >
-                            <XCircle className="w-5 h-5 text-text-muted" />
-                        </button>
+                            <button 
+                                onClick={() => setSelectedServiceIds([])}
+                                className="hidden sm:block p-2 hover:bg-surface-alt rounded-lg transition-all ml-2"
+                            >
+                                <XCircle className="w-5 h-5 text-text-muted" />
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -256,9 +268,10 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                 categories={categories}
             />
 
-            {/* Service Table */}
+            {/* Service Table / Cards */}
             <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden min-h-[400px]">
-                <div className="table-responsive">
+                {/* Desktop View (Table) */}
+                <div className="hidden lg:block table-responsive">
                     <table className="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr className="bg-surface-alt/50 border-b border-border">
@@ -283,7 +296,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                         <tbody className="divide-y divide-border">
                             {filteredServices.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="px-6 py-20 text-center">
+                                    <td colSpan="9" className="px-6 py-20 text-center">
                                         <div className="flex flex-col items-center gap-2 opacity-40">
                                             <Scissors className="w-8 h-8" />
                                             <p className="text-sm font-bold">No services found matching your criteria</p>
@@ -402,6 +415,102 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Mobile View (Cards) */}
+                <div className="lg:hidden p-4 space-y-4">
+                    {filteredServices.length === 0 ? (
+                        <div className="py-20 text-center opacity-40">
+                            <Scissors className="w-12 h-12 mx-auto mb-4" />
+                            <p className="text-sm font-bold">No services found</p>
+                        </div>
+                    ) : (
+                        filteredServices.map((service) => (
+                            <div 
+                                key={service._id} 
+                                className={`bg-surface-alt/30 border border-border rounded-2xl p-4 space-y-4 transition-all ${selectedServiceIds.includes(service._id) ? 'ring-2 ring-primary border-primary/20 bg-primary/5' : ''}`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
+                                            checked={selectedServiceIds.includes(service._id)}
+                                            onChange={() => toggleSelectService(service._id)}
+                                        />
+                                        <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0">
+                                            <Scissors className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-text mb-1">{service.name}</h3>
+                                            <div className="flex flex-wrap gap-2">
+                                                <span className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
+                                                    <Tag className="w-2.5 h-2.5" />
+                                                    {service.category || 'NO CATEGORY'}
+                                                </span>
+                                                <span className={`text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded flex items-center gap-1 ${service.status === 'active' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
+                                                    <div className={`w-1 h-1 rounded-full ${service.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                                    {service.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <button 
+                                            onClick={() => setViewingService(service)}
+                                            className="p-1.5 text-text-muted hover:text-primary transition-colors"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => navigate(`/admin/services/edit/${service._id}`)}
+                                            className="p-1.5 text-text-muted hover:text-primary transition-colors"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/50">
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">Pricing</span>
+                                        <div className="flex items-center gap-1 text-sm font-bold text-text">
+                                            <IndianRupee className="w-3 h-3 text-text-muted" />
+                                            {service.price}
+                                            <span className="text-[9px] text-rose-400">({service.gst}%)</span>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest">Timing</span>
+                                        <div className="flex items-center gap-1.5 text-sm font-bold text-text">
+                                            <Clock className="w-3.5 h-3.5 text-text-muted" />
+                                            {service.duration} MIN
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2">
+                                    <button 
+                                        onClick={() => setAssigningOutletsService(service)}
+                                        className="inline-flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors"
+                                    >
+                                        <Building2 className="w-3.5 h-3.5" />
+                                        {(!service.outletIds || service.outletIds.length === 0) ? 'GLOBAL (ALL OUTLETS)' : `${service.outletIds.length} BRANCHES`}
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            if (window.confirm(`Delete "${service.name}"?`)) {
+                                                onDelete?.(service._id);
+                                            }
+                                        }}
+                                        className="text-rose-500 p-1.5 hover:bg-rose-50 rounded-lg transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>

@@ -151,7 +151,10 @@ const requestOtp = async (phone, tenantId) => {
     console.error(`-----------------------------------------\n`);
     logger.error('OTP_SENT_DEBUG', { otp, phone, tenantId });
 
-    return { message: 'OTP sent successfully [AUTH_SERVICE_DEBUG]' };
+    return { 
+        message: 'OTP sent successfully [AUTH_SERVICE_DEBUG]',
+        otp: otp // Return OTP for frontend debugging as requested
+    };
 };
 
 const loginWithOtp = async (phone, tenantId, otpCode, referralCode = '') => {

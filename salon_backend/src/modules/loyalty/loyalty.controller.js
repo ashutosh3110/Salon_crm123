@@ -8,6 +8,8 @@ import ReferralSettings from './referralSettings.model.js';
 import LoyaltyTransaction from './loyaltyTransaction.model.js';
 import Client from '../client/client.model.js';
 import Referral from './referral.model.js';
+import CustomerMembership from './customerMembership.model.js';
+import razorpayService from '../billing/razorpay.service.js';
 
 const getWallet = async (req, res, next) => {
     try {
@@ -94,7 +96,6 @@ const debitWallet = async (req, res, next) => {
 
 const setupRules = async (req, res, next) => {
     try {
-        // Upsert latest tenant rule configuration
         const existing = await loyaltyRepository.RuleModel.findOne({ tenantId: req.tenantId }).sort({ updatedAt: -1 });
         const filter = existing ? { _id: existing._id } : { tenantId: req.tenantId };
         const rule = await loyaltyRepository.RuleModel.findOneAndUpdate(
@@ -122,7 +123,7 @@ const referCustomer = async (req, res, next) => {
     try {
         const referral = await loyaltyService.createReferral(
             req.tenantId,
-            req.user._id, // Assumes referrer is the logged in user for this example or passed in body
+            req.user._id,
             req.body.referredCustomerId
         );
         res.status(httpStatus.CREATED).send(referral);
@@ -177,9 +178,7 @@ const updateMembershipPlan = async (req, res, next) => {
 
         const updated = await MembershipPlan.findOneAndUpdate(
             { tenantId: req.tenantId, _id: req.params.planId },
-            {
-                $set: setPayload,
-            },
+            { $set: setPayload },
             { new: true }
         ).lean();
         if (!updated) return res.status(httpStatus.NOT_FOUND).send({ success: false, message: 'Plan not found' });
@@ -317,9 +316,7 @@ const getReferralSettings = async (req, res, next) => {
             ]),
         ]);
 
-        const conversionRate = totalReferrals > 0
-            ? Math.round((completedReferrals / totalReferrals) * 100)
-            : 0;
+        const conversionRate = totalReferrals > 0 ? Math.round((completedReferrals / totalReferrals) * 100) : 0;
         const pointsIssued = Number(pointsAgg?.[0]?.points || 0);
 
         res.status(httpStatus.OK).send({
@@ -369,6 +366,84 @@ const getMyReferrals = async (req, res, next) => {
     }
 };
 
+const createMembershipOrder = async (req, res, next) => {
+    try {
+        const { planId } = req.body;
+        const plan = await MembershipPlan.findOne({ _id: planId, tenantId: req.tenantId });
+        if (!plan) {
+            return res.status(httpStatus.NOT_FOUND).send({ message: 'Membership plan not found' });
+        }
+
+        const amount = plan.price;
+        // Receipt must be no more than 40 chars
+        const order = await razorpayService.createOrder(amount, 'INR', `m_${req.user._id}_${Date.now().toString().slice(-8)}`);
+
+        res.status(httpStatus.OK).send({
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency,
+            plan
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const verifyMembershipPayment = async (req, res, next) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+        
+        const isVerified = razorpayService.verifyPayment(razorpay_order_id, razorpay_payment_id, razorpay_signature);
+        if (!isVerified) {
+            return res.status(httpStatus.BAD_REQUEST).send({ message: 'Payment verification failed' });
+        }
+
+        const plan = await MembershipPlan.findOne({ _id: planId, tenantId: req.tenantId });
+        if (!plan) {
+            return res.status(httpStatus.NOT_FOUND).send({ message: 'Plan not found' });
+        }
+
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 30); 
+
+        const membership = await CustomerMembership.findOneAndUpdate(
+            { customerId: req.user._id, tenantId: req.tenantId },
+            {
+                planId,
+                status: 'active',
+                startDate: new Date(),
+                expiryDate,
+                paymentId: razorpay_payment_id,
+                orderId: razorpay_order_id,
+                amount: plan.price
+            },
+            { upsert: true, new: true }
+        );
+
+        res.status(httpStatus.CREATED).send({
+            message: 'Membership activated successfully',
+            data: membership
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const getActiveMembership = async (req, res, next) => {
+    try {
+        const membership = await CustomerMembership.findOne({
+            customerId: req.user._id,
+            tenantId: req.tenantId,
+            status: 'active',
+            expiryDate: { $gt: new Date() }
+        }).populate('planId');
+
+        res.status(httpStatus.OK).send(membership || null);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getWallet,
     getHistory,
@@ -386,4 +461,7 @@ export default {
     getReferralSettings,
     updateReferralSettings,
     getMyReferrals,
+    createMembershipOrder,
+    verifyMembershipPayment,
+    getActiveMembership
 };

@@ -182,36 +182,31 @@ export const InventoryProvider = ({ children }) => {
     );
     const [shopCategoriesRaw, setShopCategoriesRaw] = useState([]);
 
-    /** Merge per-outlet quantities from Inventory collection so product list shows real stock (not always 0). */
     const mergeInventoryStock = useCallback(async (productRows) => {
         const list = Array.isArray(productRows) ? productRows : [];
-        if (!tenantOutlets?.length) return list;
-        const byPid = {};
-        for (const o of tenantOutlets) {
-            const oid = o._id || o.id;
-            if (!oid) continue;
-            try {
-                const res = await api.get(`/inventory/outlet/${oid}`);
-                const raw = res?.data;
-                const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.results) ? raw.results : [];
-                for (const row of rows) {
-                    const pid = String(row.productId?._id || row.productId || '');
-                    if (!pid) continue;
-                    if (!byPid[pid]) byPid[pid] = {};
-                    byPid[pid][String(oid)] = Number(row.quantity) || 0;
-                }
-            } catch (_) {
-                /* outlet may have no rows yet */
+        try {
+            const res = await api.get('/inventory/overview');
+            const lines = res?.data?.lines || [];
+            const byPid = {};
+            for (const line of lines) {
+                const pid = String(line.productId?._id || line.productId || '');
+                const oid = String(line.outletId?._id || line.outletId || '');
+                if (!pid || !oid) continue;
+                if (!byPid[pid]) byPid[pid] = {};
+                byPid[pid][oid] = Number(line.quantity) || 0;
             }
+            return list.map((p) => {
+                const pid = String(p._id || p.id);
+                const extra = byPid[pid];
+                if (!extra) return p;
+                const stockByOutlet = { ...(p.stockByOutlet || {}), ...extra };
+                return enrichProduct({ ...p, stockByOutlet });
+            });
+        } catch (err) {
+            console.warn('[InventoryContext] Bulk merge failed:', err.message);
+            return list;
         }
-        return list.map((p) => {
-            const pid = String(p._id || p.id);
-            const extra = byPid[pid];
-            if (!extra) return p;
-            const stockByOutlet = { ...(p.stockByOutlet || {}), ...extra };
-            return enrichProduct({ ...p, stockByOutlet });
-        });
-    }, [tenantOutlets]);
+    }, []);
 
     const fetchProducts = useCallback(async () => {
         try {

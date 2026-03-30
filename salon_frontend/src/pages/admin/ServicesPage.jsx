@@ -79,24 +79,24 @@ export default function ServicesPage({ tab = 'list' }) {
             </div>
 
             {/* Analytics Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 text-left font-black">
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 text-left font-black">
+                <div className="sm:col-span-2 grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 text-left">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface py-6 px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
-                            <div className="absolute -right-6 -top-6 w-24 h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
+                        <div key={i} className="bg-surface py-4 sm:py-6 px-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
+                            <div className="absolute -right-6 -top-6 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
                             <div className="relative z-10 flex flex-col justify-between h-full text-left font-black">
-                                <div className="flex items-center justify-between mb-4 text-left">
-                                    <div className="flex items-center gap-3 text-left">
-                                        <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
-                                        <p className="text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
+                                <div className="flex items-center justify-between mb-2 sm:mb-4 text-left">
+                                    <div className="flex items-center gap-2 sm:gap-3 text-left">
+                                        <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted group-hover:text-primary transition-colors" />
+                                        <p className="text-[8px] sm:text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
                                     </div>
-                                    <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.trend}</span>
+                                    <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.trend}</span>
                                 </div>
                                 <div className="flex items-end justify-between text-left">
-                                    <h3 className="text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">
+                                    <h3 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">
                                         {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                                     </h3>
-                                    <div className="opacity-20 group-hover:opacity-100 transition-opacity stroke-[2px]">
+                                    <div className="opacity-20 group-hover:opacity-100 transition-opacity stroke-[2px] hidden xs:block">
                                         <svg width="40" height="12" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
                                             <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
@@ -108,40 +108,40 @@ export default function ServicesPage({ tab = 'list' }) {
                 </div>
 
                 {/* Logic Group Distribution */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Service Categories</span>
-                        <PieIcon className="w-4 h-4 text-primary" />
+                <div className="bg-surface p-4 sm:p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between min-h-[180px]">
+                    <div className="flex items-center justify-between mb-3 text-left">
+                        <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Service Categories</span>
+                        <PieIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left">
+                    <div className="h-[90px] sm:h-[120px] w-full text-left">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
-                                <Pie data={categoryStats} innerRadius={25} outerRadius={45} paddingAngle={5} dataKey="value" stroke="transparent">
+                                <Pie data={categoryStats} innerRadius={20} outerRadius={35} paddingAngle={5} dataKey="value" stroke="transparent">
                                     {categoryStats.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="mt-4 flex flex-wrap gap-2 text-left">
+                    <div className="mt-3 flex flex-wrap gap-2 text-left">
                         {categoryStats.slice(0, 4).map(d => (
                             <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                <div className="w-1.5 h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
-                                <span className="text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
+                                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
+                                <span className="text-[6px] sm:text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* Magnitude Vector Chart */}
-                <div className="bg-surface p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
-                    <div className="flex items-center justify-between mb-4 text-left">
-                        <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Price comparison</span>
-                        <BarChart3 className="w-4 h-4 text-primary" />
+                <div className="bg-surface p-4 sm:p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between min-h-[180px]">
+                    <div className="flex items-center justify-between mb-3 text-left">
+                        <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Price comparison</span>
+                        <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
-                    <div className="h-[120px] w-full text-left">
+                    <div className="h-[90px] sm:h-[120px] w-full text-left">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={valueMatrix}>
                                 <Bar dataKey="price" radius={0}>
@@ -149,11 +149,11 @@ export default function ServicesPage({ tab = 'list' }) {
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '9px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
+                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="mt-4 text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Price / Duration Ratio</div>
+                    <div className="mt-3 text-[6px] sm:text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Price / Duration Ratio</div>
                 </div>
             </div>
 

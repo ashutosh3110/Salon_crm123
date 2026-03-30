@@ -13,13 +13,29 @@ import {
     Star
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import api from '../../services/api';
 
 const AppMembershipCheckoutPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { theme } = useCustomerTheme();
+    const { customer } = useCustomerAuth();
     const isLight = theme === 'light';
     const [isProcessing, setIsProcessing] = useState(false);
+    const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+    const [selectedMethod, setSelectedMethod] = useState('upi');
+
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => setRazorpayLoaded(true);
+        document.body.appendChild(script);
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
 
     // Get plan details from state or default to Gold if none found (fallback)
     const plan = location.state?.plan || {
@@ -59,28 +75,70 @@ const AppMembershipCheckoutPage = () => {
     const taxAmount = Math.round(numericPrice * 0.18);
     const totalWithTax = numericPrice + taxAmount;
 
-    const handlePayment = () => {
-        setIsProcessing(true);
+    const handlePayment = async () => {
+        if (!razorpayLoaded) {
+            alert('Razorpay is still loading. Please wait.');
+            return;
+        }
 
-        // Simulate payment processing time
-        setTimeout(() => {
-            // Persist membership data to localStorage for global use
-            const membershipData = {
-                id: plan.id,
-                name: plan.name,
-                benefits: plan.benefits || [], // Assuming benefits are passed or exist in a global config
+        setIsProcessing(true);
+        try {
+            // 1. Create Order on Backend
+            const orderRes = await api.post('/loyalty/membership/order', {
+                planId: plan.id
+            });
+            const orderData = orderRes.data;
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'Wapixo Membership',
+                description: `Purchase of ${plan.name} plan`,
+                order_id: orderData.orderId,
+                handler: async (response) => {
+                    try {
+                        // 2. Verify Payment on Backend
+                        setIsProcessing(true);
+                        const verifyRes = await api.post('/loyalty/membership/verify', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            planId: plan.id
+                        });
+
+                        if (verifyRes.data) {
+                            // 3. Success
+                            navigate('/app/membership/success', { state: { plan } });
+                        }
+                    } catch (error) {
+                        console.error('Verification failed:', error);
+                        alert('Payment verification failed. Please contact support.');
+                    } finally {
+                        setIsProcessing(false);
+                    }
+                },
+                prefill: {
+                    name: customer?.name || '',
+                    email: customer?.email || '',
+                    contact: customer?.phone || ''
+                },
+                theme: {
+                    color: '#C8956C'
+                },
+                modal: {
+                    ondismiss: () => setIsProcessing(false)
+                }
             };
 
-            // If benefits are missing (fallback), use defaults based on ID
-            if (!membershipData.benefits.length) {
-                if (plan.id === 'silver') membershipData.benefits = ['5% Off on all services'];
-                if (plan.id === 'gold') membershipData.benefits = ['15% Off on all services'];
-                if (plan.id === 'platinum') membershipData.benefits = ['30% Off on all services'];
-            }
-
-            localStorage.setItem('salon_active_membership', JSON.stringify(membershipData));
-            navigate('/app/membership/success', { state: { plan } });
-        }, 2000);
+            const rzp = new window.Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.error('Order creation failed:', error);
+            const errorMsg = error.response?.data?.message || error.message || 'Check your internet connection';
+            alert(`Failed to initiate payment: ${errorMsg}`);
+            setIsProcessing(false);
+        }
     };
 
     const fadeUp = {
@@ -192,22 +250,30 @@ const AppMembershipCheckoutPage = () => {
                             { id: 'upi', name: 'UPI (GPay / PhonePe)', icon: <Smartphone size={20} /> },
                             { id: 'card', name: 'Credit / Debit Card', icon: <CreditCard size={20} /> },
                             { id: 'net', name: 'Net Banking', icon: <Clock size={20} /> }
-                        ].map((method, idx) => (
-                            <div key={method.id} style={{
-                                background: idx === 0 ? 'rgba(200,149,108,0.1)' : colors.card,
-                                border: idx === 0 ? `1.5px solid ${colors.accent}` : `1px solid ${colors.border}`,
-                                borderRadius: '16px 4px 16px 4px',
-                                padding: '16px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '12px',
-                                cursor: 'pointer'
-                            }}>
-                                <div style={{ color: idx === 0 ? colors.accent : colors.textMuted }}>{method.icon}</div>
-                                <span style={{ flex: 1, fontSize: '14px', fontWeight: idx === 0 ? 700 : 500 }}>{method.name}</span>
-                                {idx === 0 && <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.accent }} />}
-                            </div>
-                        ))}
+                        ].map((method) => {
+                            const isSelected = selectedMethod === method.id;
+                            return (
+                                <div 
+                                    key={method.id} 
+                                    onClick={() => setSelectedMethod(method.id)}
+                                    style={{
+                                        background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
+                                        border: isSelected ? `1.5px solid ${colors.accent}` : `1px solid ${colors.border}`,
+                                        borderRadius: '16px 4px 16px 4px',
+                                        padding: '16px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    <div style={{ color: isSelected ? colors.accent : colors.textMuted }}>{method.icon}</div>
+                                    <span style={{ flex: 1, fontSize: '14px', fontWeight: isSelected ? 700 : 500 }}>{method.name}</span>
+                                    {isSelected && <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors.accent }} />}
+                                </div>
+                            );
+                        })}
                     </div>
                 </motion.div>
 

@@ -120,6 +120,7 @@ export default function AppHomePage() {
     const [showExpertModal, setShowExpertModal] = useState(false);
 
     const [isMapView, setIsMapView] = useState(false);
+    const [referralReward, setReferralReward] = useState(200);
 
     // Loyalty card is backend-driven via WalletContext balance.
     const nextRewardPoints = 3000;
@@ -238,10 +239,25 @@ export default function AppHomePage() {
         };
 
         loadMembershipPlans();
+
+        const loadReferralSettings = async () => {
+            if (!customer?._id) return;
+            try {
+                const res = await api.get('/loyalty/referral-settings');
+                if (!cancelled && res?.data?.success) {
+                    setReferralReward(res.data.data.referrerReward || 200);
+                }
+            } catch (err) {
+                console.error('Error loading referral settings:', err);
+            }
+        };
+
+        loadReferralSettings();
+
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [customer?._id]);
 
 
 
@@ -1439,7 +1455,7 @@ export default function AppHomePage() {
                             <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
                             <div>
                                 <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
-                                <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>250 pts</p>
+                                <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>{currentPoints.toLocaleString()} pts</p>
                             </div>
                         </motion.div>
                         <motion.div
@@ -1453,7 +1469,7 @@ export default function AppHomePage() {
                             <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
                             <div>
                                 <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹200</p>
+                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹{referralReward}</p>
                             </div>
                         </motion.div>
                     </div>

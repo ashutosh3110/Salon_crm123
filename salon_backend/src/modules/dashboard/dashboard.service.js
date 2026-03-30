@@ -485,6 +485,7 @@ async function getManagerDashboard(tenantId) {
 async function getReceptionistDashboard(tenantId, outletId) {
     const tid = toTenantObjectId(tenantId);
     const oid = outletId ? toTenantObjectId(outletId) : null;
+    
     const now = new Date();
     const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
@@ -495,7 +496,11 @@ async function getReceptionistDashboard(tenantId, outletId) {
         tenantId: tid,
     };
     if (oid) {
-        baseFilter.outletId = oid;
+        baseFilter.$or = [
+            { outletId: oid },
+            { outletId: { $exists: false } },
+            { outletId: null }
+        ];
     }
 
     const [
@@ -504,6 +509,7 @@ async function getReceptionistDashboard(tenantId, outletId) {
         completedToday,
         newClients,
         revenueAgg,
+        recentBookings,
     ] = await Promise.all([
         Booking.countDocuments({
             ...baseFilter,
@@ -540,7 +546,27 @@ async function getReceptionistDashboard(tenantId, outletId) {
                 },
             },
         ]),
+        Booking.find({
+            ...baseFilter,
+            status: { $ne: 'cancelled' }
+        })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate(['clientId', 'serviceId', 'staffId'])
     ]);
+
+    const recentActivity = await Promise.all(recentBookings.map(async (b) => {
+        return {
+            id: b._id,
+            client: b.clientId?.name || 'Walk-in',
+            service: b.serviceId?.name || 'Service',
+            professional: b.staffId?.name || 'Staff',
+            time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+            date: new Date(b.appointmentDate).toLocaleDateString(),
+            status: b.status,
+            createdAt: b.createdAt
+        };
+    }));
 
     const todayRevenue = revenueAgg[0]?.total || 0;
     const invoiceCount = revenueAgg[0]?.count || 0;
@@ -579,6 +605,7 @@ async function getReceptionistDashboard(tenantId, outletId) {
             avgTicket,
             targetFulfillment,
         },
+        recentActivity,
         generatedAt: now.toISOString(),
     };
 }

@@ -2,61 +2,77 @@
  * BookingRegistryContext
  * ─────────────────────
  * Single source of truth for ALL bookings created via the Customer App.
- * Persists to localStorage under key WAPIXO_BOOKING_REGISTRY.
- * Any panel (Admin, Stylist, App) that reads this context gets live data.
+ * Now fetches from the backend API for live data.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import api from '../services/api';
+import { useCustomerAuth } from './CustomerAuthContext';
 
 const STORAGE_KEY = 'WAPIXO_BOOKING_REGISTRY';
 
 const BookingRegistryContext = createContext(null);
 
 export function BookingRegistryProvider({ children }) {
-    const [bookings, setBookings] = useState(() => {
-        try {
-            return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        } catch {
-            return [];
+    const { customer } = useCustomerAuth();
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const fetchBookings = useCallback(async () => {
+        if (!customer?._id) {
+            setBookings([]);
+            return;
         }
-    });
+        setLoading(true);
+        try {
+            const res = await api.get('/bookings?limit=50');
+            const data = res.data?.results || res.data || [];
+            
+            // Format for components
+            const formatted = data.map(b => {
+                const srv = b.serviceId || b.service;
+                return {
+                    ...b,
+                    id: b._id,
+                    service: srv,
+                    services: srv ? [srv] : [],
+                    staff: b.staffId || b.staff,
+                    appointmentDate: b.appointmentDate || b.date
+                };
+            });
+            
+            setBookings(formatted);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
+        } catch (err) {
+            console.error('[BookingRegistry] Fetch failed', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [customer?._id]);
 
-    // ── Sync from localStorage on cross-tab changes ──
     useEffect(() => {
-        const sync = () => {
-            try {
-                const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                setBookings(stored);
-            } catch { /* ignore parse errors */ }
-        };
+        fetchBookings();
+    }, [fetchBookings]);
 
-        // Listen for other tabs / windows updating localStorage
-        window.addEventListener('storage', sync);
+    // ── Polling / Sync ──
+    useEffect(() => {
+        if (!customer?._id) return;
 
-        // Poll every 2s for same-tab updates (e.g. Stylist dashboard open while customer books)
-        const interval = setInterval(sync, 2000);
+        const interval = setInterval(fetchBookings, 15000); // Poll every 15s for live updates
+        return () => clearInterval(interval);
+    }, [customer?._id, fetchBookings]);
 
-        return () => {
-            window.removeEventListener('storage', sync);
-            clearInterval(interval);
-        };
-    }, []);
-
-    // ── Add a new booking (called by AppBookingPage) ──
-    const addBooking = useCallback((newBooking) => {
-        setBookings(prev => {
-            const updated = [newBooking, ...prev];
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-            return updated;
-        });
-    }, []);
+    // ── Add a new booking ──
+    const addBooking = useCallback(async (newBooking) => {
+        setBookings(prev => [newBooking, ...prev]);
+        setTimeout(fetchBookings, 1000);
+    }, [fetchBookings]);
 
     // ── Update status of an existing booking ──
     const updateBookingStatus = useCallback((bookingId, status) => {
         setBookings(prev => {
             const updated = prev.map(b =>
-                b.id === bookingId ? { ...b, status } : b
+                (b._id === bookingId || b.id === bookingId) ? { ...b, status } : b
             );
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
             return updated;
         });
     }, []);
@@ -74,11 +90,13 @@ export function BookingRegistryProvider({ children }) {
 
     const value = useMemo(() => ({
         bookings,
+        loading,
         addBooking,
         updateBookingStatus,
         cancelBooking,
         clearAll,
-    }), [bookings, addBooking, updateBookingStatus, cancelBooking, clearAll]);
+        refresh: fetchBookings
+    }), [bookings, loading, addBooking, updateBookingStatus, cancelBooking, clearAll, fetchBookings]);
 
     return (
         <BookingRegistryContext.Provider value={value}>

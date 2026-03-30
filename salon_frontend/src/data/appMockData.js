@@ -94,7 +94,7 @@ export function generateTimeSlots(dayOfWeek, serviceDuration = 30, outlet = null
         const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
         slots.push({
             time: label,
-            available: Math.random() > 0.2,
+            available: true,
             isPast: false,
         });
     }

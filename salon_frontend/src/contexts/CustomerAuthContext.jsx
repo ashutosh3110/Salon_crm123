@@ -26,8 +26,12 @@ export function CustomerAuthProvider({ children }) {
     // Step 1: Request OTP — POST /auth/request-otp { phone, tenantId }
     const requestOtp = async (phone, tenantId) => {
         if (!tenantId) throw new Error('Please select a salon first');
-        await api.post('/auth/request-otp', { phone, tenantId });
-        return { success: true, message: 'OTP sent successfully' };
+        const res = await api.post('/auth/request-otp', { phone, tenantId });
+        return { 
+            success: true, 
+            message: 'OTP sent successfully',
+            otp: res.data?.otp // Capture for debug
+        };
     };
 
     // Step 2: Verify OTP — POST /auth/login-otp { phone, tenantId, otp }

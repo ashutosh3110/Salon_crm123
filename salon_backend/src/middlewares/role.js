@@ -16,6 +16,7 @@ const authorize = (requiredRoles = []) => {
         }
 
         if (requiredRoles.length && !requiredRoles.includes(req.user.role)) {
+            console.log(`[Role] Forbidden: Role '${req.user.role}' not in [${requiredRoles.join(', ')}] for ${req.originalUrl}`);
             return res.status(httpStatus.FORBIDDEN).send({ message: 'Forbidden: Insufficient role' });
         }
 

@@ -56,6 +56,7 @@ export default function AppLoginPage() {
         dob: '',
         anniversary: '',
     });
+    const [otpDebug, setOtpDebug] = useState('');
     const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
     const navigate = useNavigate();
     const { requestOtp, customerLogin, completeProfile } = useCustomerAuth();
@@ -147,7 +148,8 @@ export default function AppLoginPage() {
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
         setLoading(true); setError('');
         try {
-            await requestOtp(phone, tenantId);
+            const res = await requestOtp(phone, tenantId);
+            if (res.otp) setOtpDebug(res.otp);
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
         finally { setLoading(false); }
@@ -182,7 +184,8 @@ export default function AppLoginPage() {
 
             // Keep existing OTP login flow
             setPhone(payload.phone);
-            await requestOtp(payload.phone, tenantId);
+            const res = await requestOtp(payload.phone, tenantId);
+            if (res.otp) setOtpDebug(res.otp);
             setCd(30);
             setShowRegisterModal(false);
             goTo(2);
@@ -374,6 +377,13 @@ export default function AppLoginPage() {
                             <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>Phone Verification</h2>
                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 6-digit OTP sent to your phone</p>
                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: '6px 0 0' }}>Sent to <span style={{ color: '#C8956C', fontWeight: 700 }}>{fmtPhone(phone)}</span></p>
+                            {otpDebug && (
+                                <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(200,149,108,0.1)', border: '1px dashed #C8956C', borderRadius: '12px' }}>
+                                    <p style={{ fontSize: '11px', fontWeight: 900, color: '#C8956C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                        DEBUG OTP: <span style={{ fontSize: '16px', letterSpacing: '0.2em', marginLeft: '8px' }}>{otpDebug}</span>
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '28px' }}>
                             {otp.map((digit, i) => (

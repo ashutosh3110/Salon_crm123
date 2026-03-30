@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useCustomerAuth } from './CustomerAuthContext';
 import walletData from '../data/walletData.json';
 import api from '../services/api';
@@ -81,7 +81,7 @@ export function WalletProvider({ children }) {
             .reduce((acc, tx) => acc + Number(tx.amount || 0), 0);
     }, [activeWallet.transactions]);
 
-    const refreshWallet = async (customerId) => {
+    const refreshWallet = useCallback(async (customerId) => {
         if (!customerId) return;
 
         setWalletLoadingMap(prev => ({ ...prev, [customerId]: true }));
@@ -106,29 +106,31 @@ export function WalletProvider({ children }) {
         } finally {
             setWalletLoadingMap(prev => ({ ...prev, [customerId]: false }));
         }
-    };
+    }, []);
 
-    const initializeWallet = async (customerId) => {
+    const initializeWallet = useCallback(async (customerId) => {
         if (!customerId) return;
 
         if (walletLoadingMap[customerId]) return;
 
-        // Use mock quickly (optional), but still try to sync from backend.
-        const mock = walletData.mockWallets?.[customerId];
-        if (mock && !allWallets[customerId]) {
-            setAllWallets(prev => ({ ...prev, [customerId]: mock }));
-        }
+        // Use mock quickly if needed, then sync from backend.
+        setAllWallets(prev => {
+            if (!prev[customerId] && walletData.mockWallets?.[customerId]) {
+                return { ...prev, [customerId]: walletData.mockWallets[customerId] };
+            }
+            return prev;
+        });
 
         try {
             await refreshWallet(customerId);
         } catch {
-            // If backend fails (e.g. POS mock clients), keep mock/fallback.
+            // If backend fails, ensure we have at least an empty wallet object
             setAllWallets(prev => ({
                 ...prev,
                 [customerId]: prev[customerId] || { balance: 0, transactions: [] },
             }));
         }
-    };
+    }, [refreshWallet, walletLoadingMap]);
 
     const getWallet = (customerId) => {
         const w = allWallets[customerId];

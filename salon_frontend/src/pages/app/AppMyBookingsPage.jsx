@@ -2,30 +2,18 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import BookingCard from '../../components/app/BookingCard';
-import { MOCK_BOOKINGS } from '../../data/appMockData';
-import { CalendarX } from 'lucide-react';
+import { CalendarX, Loader2 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 const tabs = ['Upcoming', 'Past'];
 
 export default function AppMyBookingsPage() {
-    const { bookings: registryBookings } = useBookingRegistry();
+    const { bookings, loading } = useBookingRegistry();
     const [activeTab, setActiveTab] = useState('Upcoming');
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
-
-    const bookings = useMemo(() => {
-        // App expects appointmentDate field usually, registry has date/appointmentDate
-        const live = registryBookings.map(b => ({
-            ...b,
-            _id: b.id,
-            appointmentDate: b.appointmentDate || b.date
-        }));
-        return [...live, ...MOCK_BOOKINGS];
-    }, [registryBookings]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -88,7 +76,12 @@ export default function AppMyBookingsPage() {
 
             {/* Bookings List */}
             <div className="space-y-3">
-                {displayBookings.length === 0 ? (
+                {loading ? (
+                    <div className="py-20 flex flex-col items-center justify-center opacity-40">
+                        <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: colors.text }} />
+                        <p className="text-[10px] font-black uppercase tracking-widest">Loading your sessions...</p>
+                    </div>
+                ) : displayBookings.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}

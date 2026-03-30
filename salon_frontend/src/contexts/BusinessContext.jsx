@@ -101,7 +101,7 @@ export function BusinessProvider({ children }) {
         }
     }, [customer]);
 
-    const fetchSalon = async () => {
+    const fetchSalon = useCallback(async () => {
         setSalonLoading(true);
         try {
             const response = await api.get('/tenants/me');
@@ -113,9 +113,9 @@ export function BusinessProvider({ children }) {
         } finally {
             setSalonLoading(false);
         }
-    };
+    }, [salon, salonLoading]);
 
-    const fetchOutlets = async (opts = {}) => {
+    const fetchOutlets = useCallback(async (opts = {}) => {
         setOutletsLoading(true);
         try {
             const params = {};
@@ -134,7 +134,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setOutletsLoading(false);
         }
-    };
+    }, []);
 
     const fetchCustomers = async () => {
         setCustomersLoading(true);
@@ -279,7 +279,7 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const fetchServices = async () => {
+    const fetchServices = useCallback(async () => {
         setServicesLoading(true);
         try {
             const response = await api.get('/services', { params: { limit: 1000 } });
@@ -289,9 +289,9 @@ export function BusinessProvider({ children }) {
         } finally {
             setServicesLoading(false);
         }
-    };
+    }, []);
 
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         setCategoriesLoading(true);
         try {
             const response = await api.get('/services/categories');
@@ -301,13 +301,20 @@ export function BusinessProvider({ children }) {
         } finally {
             setCategoriesLoading(false);
         }
-    };
+    }, []);
 
-    // Persist active outlet ID to localStorage
+    // Persist active outlet ID and Tenant ID to localStorage
     useEffect(() => {
-        if (activeOutletId) localStorage.setItem('active_outlet_id', activeOutletId);
-        else localStorage.removeItem('active_outlet_id');
-    }, [activeOutletId]);
+        if (activeOutletId) {
+            localStorage.setItem('active_outlet_id', activeOutletId);
+            if (activeOutlet?.tenantId) {
+                localStorage.setItem('active_tenant_id', String(activeOutlet.tenantId));
+            }
+        } else {
+            localStorage.removeItem('active_outlet_id');
+            localStorage.removeItem('active_tenant_id');
+        }
+    }, [activeOutletId, activeOutlet]);
 
     // Actions
     const addOutlet = async (outletData) => {
@@ -739,6 +746,18 @@ export function BusinessProvider({ children }) {
         }
     };
 
+    const checkoutPOS = async (billingData) => {
+        try {
+            const response = await api.post('/pos/checkout', billingData);
+            // Refresh bookings since checkout might change status
+            await fetchBookings();
+            return response.data;
+        } catch (error) {
+            console.error('[BusinessContext] POS checkout failed:', error);
+            throw error;
+        }
+    };
+
     const value = useMemo(() => ({
         salon, salonLoading, updateSalon, fetchSalon,
         staff, staffLoading, addStaff, updateStaff, deleteStaff, fetchStaff,
@@ -777,6 +796,7 @@ export function BusinessProvider({ children }) {
         fetchCatalogue,
         updateCatalogue,
         bookings, addBooking, updateBookingStatus,
+        checkoutPOS,
         activeOutletId, setActiveOutletId, activeOutlet
     }), [
         salon, salonLoading, staff, staffLoading, services, servicesLoading, 

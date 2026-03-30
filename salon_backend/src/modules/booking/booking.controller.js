@@ -1,5 +1,7 @@
 import httpStatus from 'http-status-codes';
 import bookingService from './booking.service.js';
+import razorpayService from '../billing/razorpay.service.js';
+import Booking from './booking.model.js';
 
 const createBooking = async (req, res, next) => {
     try {
@@ -20,15 +22,30 @@ const getBookings = async (req, res, next) => {
 
         // Enforcement for receptionists
         if (req.user?.role === 'receptionist' && req.user.outletId) {
-            filter.outletId = req.user.outletId;
+            filter.$or = [
+                { outletId: req.user.outletId },
+                { outletId: { $exists: false } },
+                { outletId: null }
+            ];
+        }
+
+        // Enforcement for customers (only show their own bookings)
+        if (req.user?.role === 'customer') {
+            filter.clientId = req.user._id;
         }
 
         // Date filtering
         if (req.query.date) {
+            // Expand range slightly to capture bookings that might shift due to timezone offsets
+            // from UTC midnight. Typically -12 to +36 hours from UTC start of date.
             const startOfDay = new Date(req.query.date);
-            startOfDay.setHours(0, 0, 0, 0);
+            startOfDay.setUTCHours(0, 0, 0, 0);
+            startOfDay.setHours(startOfDay.getHours() - 6); // Buffer for early morning local time
+
             const endOfDay = new Date(req.query.date);
-            endOfDay.setHours(23, 59, 59, 999);
+            endOfDay.setUTCHours(23, 59, 59, 999);
+            endOfDay.setHours(endOfDay.getHours() + 6); // Buffer for late night local time
+            
             filter.appointmentDate = { $gte: startOfDay, $lte: endOfDay };
         }
 
@@ -88,10 +105,51 @@ const getAvailability = async (req, res, next) => {
     }
 };
 
+const createPaymentOrder = async (req, res, next) => {
+    try {
+        const { amount, receipt } = req.body;
+        const order = await razorpayService.createOrder(amount, 'INR', receipt);
+        res.status(httpStatus.CREATED).send(order);
+    } catch (error) {
+        next(error);
+    }
+};
+
+const verifyBookingPayment = async (req, res, next) => {
+    try {
+        const { razorpayOrderId, razorpayPaymentId, razorpaySignature, bookingId } = req.body;
+
+        const isValid = razorpayService.verifyPayment(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+
+        if (!isValid) {
+            return res.status(httpStatus.BAD_REQUEST).send({ message: 'Invalid payment signature' });
+        }
+
+        // Update booking if bookingId is provided (for post-booking payment)
+        if (bookingId) {
+            const booking = await Booking.findOne({ _id: bookingId, tenantId: req.tenantId });
+            if (booking) {
+                booking.paymentStatus = 'paid';
+                booking.paymentMethod = 'online';
+                booking.razorpayOrderId = razorpayOrderId;
+                booking.razorpayPaymentId = razorpayPaymentId;
+                booking.status = 'confirmed';
+                await booking.save();
+            }
+        }
+
+        res.send({ success: true });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createBooking,
     getBookings,
     getBooking,
     updateBookingStatus,
     getAvailability,
+    createPaymentOrder,
+    verifyBookingPayment,
 };

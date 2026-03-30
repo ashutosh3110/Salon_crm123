@@ -7,6 +7,7 @@ import promotionService from '../promotion/promotion.service.js';
 import Commission from '../hr/commission.model.js';
 import Transaction from '../finance/transaction.model.js';
 import Service from '../service/service.model.js';
+import Booking from '../booking/booking.model.js';
 import logger from '../../utils/logger.js';
 
 const generateInvoiceNumber = () => `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -159,6 +160,21 @@ class PosService {
 
             // 7. Earn Loyalty Points
             await loyaltyService.earnPoints(tenantId, clientId, createdInvoice._id, total);
+
+            // 8. Update Bookings if any
+            const bookingIds = [...new Set(items.map(i => i.bookingId).filter(Boolean))];
+            if (bookingIds.length > 0) {
+                await Booking.updateMany(
+                    { _id: { $in: bookingIds }, tenantId },
+                    { 
+                        $set: { 
+                            paymentStatus: 'paid',
+                            status: 'completed'
+                        } 
+                    },
+                    { session }
+                );
+            }
 
             await session.commitTransaction();
             return createdInvoice;

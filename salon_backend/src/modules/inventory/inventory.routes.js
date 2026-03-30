@@ -27,7 +27,7 @@ router.get(
 router.post('/adjust', authorize(['admin', 'manager']), validate(inventoryValidation.adjustStock), inventoryController.adjustStock);
 router.get(
     '/overview',
-    authorize(['admin', 'manager', 'receptionist', 'inventory_manager', 'stylist']),
+    authorize(['admin', 'manager', 'receptionist', 'inventory_manager', 'stylist', 'customer']),
     inventoryController.getStockOverview
 );
 router.get(
@@ -35,6 +35,6 @@ router.get(
     authorize(['admin', 'manager', 'receptionist', 'inventory_manager']),
     inventoryController.getLowStockAlerts
 );
-router.get('/outlet/:outletId', authorize(['admin', 'manager']), inventoryController.getOutletStock);
+router.get('/outlet/:outletId', authorize(['admin', 'manager', 'receptionist', 'inventory_manager', 'stylist', 'customer']), inventoryController.getOutletStock);
 
 export default router;

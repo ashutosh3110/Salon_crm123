@@ -105,7 +105,9 @@ app.use((err, req, res, next) => {
     const statusCode = err.statusCode || httpStatus.INTERNAL_SERVER_ERROR;
     const message = err.message || httpStatus.getStatusText(statusCode);
 
-    logger.error(err);
+    if (statusCode === httpStatus.INTERNAL_SERVER_ERROR || !err.statusCode) {
+        logger.error(err);
+    }
 
     res.status(statusCode).send({
         code: statusCode,

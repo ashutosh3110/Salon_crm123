@@ -22,6 +22,9 @@ const bookingSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        time: {
+            type: String, // e.g., "10:00 AM"
+        },
         duration: {
             type: Number, // in minutes
             required: true,
@@ -46,6 +49,22 @@ const bookingSchema = new mongoose.Schema(
         },
         chairId: {
             type: Number,
+        },
+        paymentStatus: {
+            type: String,
+            enum: ['unpaid', 'paid', 'partially_paid', 'cancelled'],
+            default: 'unpaid',
+        },
+        paymentMethod: {
+            type: String,
+            enum: ['salon', 'online'],
+            default: 'salon',
+        },
+        razorpayOrderId: {
+            type: String,
+        },
+        razorpayPaymentId: {
+            type: String,
         },
     },
     {

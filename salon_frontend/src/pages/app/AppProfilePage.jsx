@@ -6,7 +6,8 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
-    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera
+    TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera,
+    Crown, Gem
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
@@ -46,6 +47,8 @@ export default function AppProfilePage() {
         birthday: customer?.birthday || '',
     });
     const [focusedField, setFocusedField] = useState(null);
+    const [activeMembership, setActiveMembership] = useState(null);
+    const [loadingMembership, setLoadingMembership] = useState(false);
 
     // Sync form when customer loads or changes
     useEffect(() => {
@@ -79,6 +82,23 @@ export default function AppProfilePage() {
             initializeWallet(customer._id).catch(() => {});
         }
     }, [customer?._id, initializeWallet]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadActiveMembership = async () => {
+            setLoadingMembership(true);
+            try {
+                const res = await api.get('/loyalty/membership/active');
+                if (!cancelled) setActiveMembership(res.data || null);
+            } catch (e) {
+                console.error('Failed to load membership', e);
+            } finally {
+                if (!cancelled) setLoadingMembership(false);
+            }
+        };
+        if (customer?._id) loadActiveMembership();
+        return () => { cancelled = true; };
+    }, [customer?._id]);
 
     useEffect(() => {
         let cancelled = false;
@@ -164,15 +184,44 @@ export default function AppProfilePage() {
     const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="space-y-5 px-4 pb-8">
+        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="px-4 pb-8">
             {/* Header */}
-            <div className="pt-12 pb-2">
+            <div className="pt-2 pb-2">
                 <h1 className="text-2xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
                 <p className="text-xs" style={{ color: colors.textMuted }}>Manage your account and rewards</p>
             </div>
 
+            {/* Active Membership Hero */}
+            {activeMembership && (
+                <motion.div
+                    variants={fadeUp}
+                    onClick={() => navigate('/app/membership')}
+                    style={{
+                        background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #C8956C 0%, #A67C52 100%)',
+                        boxShadow: '0 12px 24px rgba(200,149,108,0.25)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                    }}
+                    className="rounded-2xl p-5 text-white flex items-center justify-between cursor-pointer"
+                >
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-1">
+                            <Crown size={14} className="text-white" />
+                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Active Member</span>
+                        </div>
+                        <h3 className="text-lg font-black">{activeMembership.planId?.name || 'Pro Member'}</h3>
+                        <p className="text-[10px] opacity-70 mt-1 font-bold">Valid until {formatDate(activeMembership.expiryDate)}</p>
+                    </div>
+                    <div className="relative z-10 bg-white/20 p-2 rounded-xl backdrop-blur-md">
+                        <ChevronRight className="w-5 h-5 text-white" />
+                    </div>
+                    {/* Decorative Background Gem */}
+                    <Star size={120} className="absolute -right-8 -bottom-8 opacity-10 rotate-12 text-white" />
+                </motion.div>
+            )}
+
             {/* Profile Card */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl p-5 shadow-sm">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '8px' }} className="rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20">
                         <span className="text-xl font-black text-[#C8956C]">{getInitials(customer?.name)}</span>

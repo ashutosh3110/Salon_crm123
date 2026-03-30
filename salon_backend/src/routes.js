@@ -86,16 +86,16 @@ const defaultRoutes = [
         path: '/shop-categories',
         route: shopCategoryRoute,
     },
+    {
+        path: '/inventory',
+        route: inventoryRoute,
+    },
 ];
 
 const protectedRoutes = [
     {
         path: '/pos',
         route: posRoute,
-    },
-    {
-        path: '/inventory',
-        route: inventoryRoute,
     },
     {
         path: '/clients',

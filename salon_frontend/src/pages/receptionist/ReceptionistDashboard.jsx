@@ -36,6 +36,7 @@ export default function ReceptionistDashboard() {
     const [stats, setStats] = useState([]);
     const [performance, setPerformance] = useState({ revenue: 0, avgTicket: 0 });
     const [liveFeed, setLiveFeed] = useState([]);
+    const [recentActivity, setRecentActivity] = useState([]);
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -67,7 +68,9 @@ export default function ReceptionistDashboard() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const today = new Date().toISOString().split('T')[0];
+                const d = new Date();
+                const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                
                 const [statsRes, bookingsRes, servicesRes, staffRes] = await Promise.all([
                     api.get('/dashboard/receptionist'),
                     api.get(`/bookings?date=${today}&limit=100`),
@@ -88,6 +91,9 @@ export default function ReceptionistDashboard() {
                     })));
                     if (statsRes.data.data?.performance) {
                         setPerformance(statsRes.data.data.performance);
+                    }
+                    if (statsRes.data.data?.recentActivity) {
+                        setRecentActivity(statsRes.data.data.recentActivity);
                     }
                 }
 
@@ -156,7 +162,8 @@ export default function ReceptionistDashboard() {
         try {
             await api.patch(`/bookings/${id}`, { status: 'arrived' });
             // Refresh feed
-            const today = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const feedRes = await api.get(`/bookings?date=${today}&limit=5`);
             if (feedRes.data.results) {
                 setLiveFeed(feedRes.data.results.map(b => ({
@@ -222,7 +229,8 @@ export default function ReceptionistDashboard() {
             await api.post('/bookings', bookingData);
             
             // Refresh feed and stats
-            const today = new Date().toISOString().split('T')[0];
+            const d = new Date();
+            const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const [statsRes, feedRes] = await Promise.all([
                 api.get('/dashboard/receptionist'),
                 api.get(`/bookings?date=${today}&limit=5`)
@@ -436,6 +444,42 @@ export default function ReceptionistDashboard() {
                                     <Shield className="w-4 h-4" /> Finalize Day Shift
                                 </>
                             )}
+                        </button>
+                    </div>
+
+                    {/* New: Recent Activity Feed */}
+                    <div className="bg-surface border border-border p-5 space-y-4">
+                        <div className="flex items-center gap-2">
+                            <div className="w-1 h-3 bg-primary" />
+                            <h3 className="text-[10px] font-black text-text uppercase tracking-widest">Recent Bookings</h3>
+                        </div>
+                        <div className="space-y-3">
+                            {recentActivity.length === 0 ? (
+                                <p className="text-[9px] font-bold text-text-muted uppercase text-center py-4">No recent activity</p>
+                            ) : (
+                                recentActivity.map((activity) => (
+                                    <div key={activity.id} className="group relative flex items-start gap-3 p-3 bg-surface-alt/30 border border-transparent hover:border-primary/10 transition-all">
+                                        <div className="mt-0.5 w-7 h-7 bg-surface border border-border flex items-center justify-center font-black text-[9px] text-primary shrink-0">
+                                            {activity.client[0]}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start mb-0.5">
+                                                <p className="text-[10px] font-black text-text truncate uppercase">{activity.client}</p>
+                                                <span className="text-[7px] font-bold text-text-muted shrink-0 uppercase">{activity.date}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <p className="text-[8px] font-bold text-text-secondary uppercase truncate">{activity.service} · {activity.time}</p>
+                                                <span className={`px-1 py-0.5 text-[6px] font-black uppercase border ${activity.status === 'confirmed' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-primary/10 border-primary/20 text-primary'}`}>
+                                                    {activity.status}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <button onClick={() => navigate('/receptionist/appointments')} className="w-full py-2.5 text-[8px] font-black text-text-muted hover:text-primary uppercase tracking-[0.2em] border border-dashed border-border hover:border-primary/30 transition-all">
+                            View All Appointments
                         </button>
                     </div>
                 </div>
@@ -664,7 +708,8 @@ export default function ReceptionistDashboard() {
                                 alert('Walk-in Successful: Guest registered and checked-in.');
                                 
                                 // Proper refresh
-                                const today = new Date().toISOString().split('T')[0];
+                                const d = new Date();
+                                const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                                 const [sR, fR] = await Promise.all([
                                     api.get('/dashboard/receptionist'),
                                     api.get(`/bookings?date=${today}&limit=5`)

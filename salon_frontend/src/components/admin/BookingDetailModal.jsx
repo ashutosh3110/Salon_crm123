@@ -96,7 +96,37 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                                     </div>
                                     <span className="font-semibold text-sm text-text">{booking.service?.name || 'Unknown Service'}</span>
                                 </div>
-                                <span className="font-bold text-sm text-primary">₹{booking.service?.price || 0}</span>
+                                <span className="font-bold text-sm text-primary">₹{booking.price || booking.service?.price || 0}</span>
+                            </div>
+                        </section>
+
+                        <section>
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 block">Payment Info</label>
+                            <div className="p-4 rounded-xl border border-border bg-surface space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-text-muted">Method</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest text-text">
+                                        {booking.paymentMethod === 'online' ? 'Online (Razorpay)' : 'Pay at Salon'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-text-muted">Status</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${
+                                        booking.paymentStatus === 'paid' 
+                                        ? 'bg-green-50 text-green-600 border-green-100' 
+                                        : 'bg-yellow-50 text-yellow-600 border-yellow-100'
+                                    }`}>
+                                        {booking.paymentStatus || 'unpaid'}
+                                    </span>
+                                </div>
+                                {booking.razorpayPaymentId && (
+                                    <div className="pt-2 border-t border-border mt-2">
+                                        <span className="text-[9px] text-text-muted uppercase block mb-1">Razorpay ID</span>
+                                        <code className="text-[10px] bg-surface-alt px-2 py-1 rounded border border-border block overflow-hidden text-ellipsis">
+                                            {booking.razorpayPaymentId}
+                                        </code>
+                                    </div>
+                                )}
                             </div>
                         </section>
                     </div>

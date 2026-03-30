@@ -37,10 +37,15 @@ const auth = async (req, res, next) => {
         }
 
         if (!identity) {
-            console.log('Auth failed: Identity not found for userId:', payload.userId);
+            console.log(`[Auth] Identity NOT FOUND for userId: ${payload.userId}, tenantId: ${payload.tenantId}`);
             return res.status(httpStatus.UNAUTHORIZED).send({ message: 'User not found' });
         }
 
+        // Ensure critical fields are present for downstream middleware (role, tenant)
+        if (!identity.role && payload.role) identity.role = payload.role;
+        if (!identity.tenantId && payload.tenantId) identity.tenantId = payload.tenantId;
+
+        console.log(`[Auth] Authenticated: ${identity._id} as ${identity.role} for tenant ${identity.tenantId} on ${req.originalUrl}`);
         req.user = identity;
         next();
     } catch (error) {

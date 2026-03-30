@@ -160,10 +160,10 @@ export default function ForgotPasswordPage() {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-full max-w-5xl flex flex-col md:flex-row bg-[#0A0A0A] border border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden rounded-[2rem]"
+                    className="w-full max-w-5xl flex flex-col md:flex-row bg-[#0A0A0A] border border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden rounded-[1.5rem] md:rounded-[2rem] mx-auto overflow-y-auto max-h-[90vh] md:max-h-none"
                 >
                     {/* Visual Section */}
-                    <div className="md:w-5/12 bg-[#0F0F0F] relative p-12 flex flex-col items-center justify-between border-r border-white/5">
+                    <div className="md:w-5/12 bg-[#0F0F0F] relative p-8 md:p-12 flex flex-col gap-8 md:gap-0 items-center justify-between border-b md:border-b-0 md:border-r border-white/5">
                         <div className="w-full relative z-10 text-center md:text-left">
                             <motion.div
                                 key={step}
@@ -201,7 +201,7 @@ export default function ForgotPasswordPage() {
                     </div>
 
                     {/* Content Section */}
-                    <div className="flex-1 p-8 md:p-16 flex flex-col justify-center relative">
+                    <div className="flex-1 p-6 sm:p-10 md:p-16 flex flex-col justify-center relative bg-black/20">
                         <div className="max-w-md mx-auto w-full">
                             <AnimatePresence mode="wait">
                                 <motion.div

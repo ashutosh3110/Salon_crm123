@@ -60,6 +60,21 @@ api.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
+            // Add Tenant ID for customer app context
+            try {
+                const activeTenantId = localStorage.getItem('active_tenant_id');
+                if (activeTenantId) {
+                    config.headers['X-Tenant-Id'] = activeTenantId;
+                } else {
+                    const customerRaw = localStorage.getItem('customer_user');
+                    if (customerRaw) {
+                        const c = JSON.parse(customerRaw);
+                        if (c?.tenantId) {
+                            config.headers['X-Tenant-Id'] = String(c.tenantId);
+                        }
+                    }
+                }
+            } catch { /* ignore */ }
         } else {
             const role = getCurrentRole();
             const token = localStorage.getItem(`auth_token_${role}`);
@@ -96,10 +111,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // No response = connection refused, CORS blocked, wrong URL, or server down
         if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) {
             error.isNetworkError = true;
             error.networkHint = `API unreachable (${API_BASE_URL}). Start the backend, set VITE_API_URL in .env.local, and ensure CORS allows this origin.`;
+        }
+        if (error.response?.status === 404) {
+            console.error('[API] 404 Not Found:', error.config?.url, error.config?.baseURL);
         }
         if (error.response?.status === 401) {
             const path = window.location.pathname;

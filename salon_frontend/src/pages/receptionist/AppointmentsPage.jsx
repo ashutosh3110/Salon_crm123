@@ -22,7 +22,8 @@ import {
     CreditCard,
     Smartphone,
     UserPlus,
-    Loader2
+    Loader2,
+    Banknote
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -53,7 +54,10 @@ export default function AppointmentsPage() {
         serviceId: '',
         staffId: '',
         time: '10:00 AM',
-        date: new Date().toISOString().split('T')[0]
+        date: (() => {
+            const d = new Date();
+            return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        })()
     });
 
     // Load Data
@@ -61,7 +65,7 @@ export default function AppointmentsPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const dateStr = currentDate.toISOString().split('T')[0];
+                const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
                 const [bookingsRes, servicesRes, staffRes] = await Promise.all([
                     api.get(`/bookings?date=${dateStr}&limit=100`),
                     api.get('/services?limit=100'),
@@ -81,6 +85,8 @@ export default function AppointmentsPage() {
                         price: `₹${b.price || 0}`,
                         phone: b.clientId?.phone || b.phone || '',
                         source: b.source || 'APP',
+                        paymentStatus: b.paymentStatus || 'unpaid',
+                        paymentMethod: b.paymentMethod || 'salon',
                         isRegistry: false
                     })));
 
@@ -197,7 +203,9 @@ export default function AppointmentsPage() {
                     status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
                     price: `₹${b.price || 0}`,
                     phone: b.clientId?.phone || b.phone || '',
-                    source: b.source || 'APP'
+                    source: b.source || 'APP',
+                    paymentStatus: b.paymentStatus || 'unpaid',
+                    paymentMethod: b.paymentMethod || 'salon'
                 })));
             }
 
@@ -381,6 +389,7 @@ export default function AppointmentsPage() {
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Time</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Stylist</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Status</th>
+                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Payment</th>
                                     <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -436,6 +445,27 @@ export default function AppointmentsPage() {
                                                             apt.status === 'Upcoming' ? 'bg-amber-500' : 'bg-rose-500'
                                                         }`} />
                                                     {apt.status}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${
+                                                    apt.paymentStatus === 'paid' 
+                                                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' 
+                                                        : 'bg-primary/5 border-primary/20 text-primary'
+                                                }`}>
+                                                    {apt.paymentStatus === 'paid' ? (
+                                                        <>
+                                                            <CheckCircle2 className="w-3 h-3" />
+                                                            PAID
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Banknote className="w-3 h-3" />
+                                                            PAY AT SALON
+                                                        </>
+                                                    )}
                                                 </span>
                                             </div>
                                         </td>

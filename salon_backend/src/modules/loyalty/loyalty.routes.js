@@ -11,6 +11,11 @@ const router = express.Router();
 router.use(auth);
 router.use(validateTenant);
 
+// Membership Purchases (Moved Up for better visibility)
+router.post('/membership/order', authorize(['customer']), loyaltyController.createMembershipOrder);
+router.post('/membership/verify', authorize(['customer']), loyaltyController.verifyMembershipPayment);
+router.get('/membership/active', authorize(['customer']), loyaltyController.getActiveMembership);
+
 router.get('/wallet/:customerId', loyaltyController.getWallet);
 router.get('/history/:customerId', loyaltyController.getHistory);
 router.get('/rules', authorize(['admin', 'manager', 'customer']), loyaltyController.getRules);
@@ -42,6 +47,8 @@ router.post(
     validate(loyaltyValidation.walletDebit),
     loyaltyController.debitWallet
 );
+router.post('/refer', validate(loyaltyValidation.refer), loyaltyController.referCustomer);
+
 router.post('/refer', validate(loyaltyValidation.refer), loyaltyController.referCustomer);
 
 export default router;

@@ -30,6 +30,7 @@ const AppMembershipPage = () => {
 
     const [membershipPlans, setMembershipPlans] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
+    const [activeMembership, setActiveMembership] = React.useState(null);
 
     React.useEffect(() => {
         const loadPlans = async () => {
@@ -59,6 +60,18 @@ const AppMembershipPage = () => {
             }
         };
         loadPlans();
+    }, []);
+
+    React.useEffect(() => {
+        const loadActiveMembership = async () => {
+            try {
+                const res = await api.get('/loyalty/membership/active');
+                setActiveMembership(res.data || null);
+            } catch (e) {
+                console.error('Failed to load membership', e);
+            }
+        };
+        loadActiveMembership();
     }, []);
 
     const getIcon = (iconName) => {
@@ -216,27 +229,38 @@ const AppMembershipPage = () => {
 
                         <motion.button
                             whileTap={{ scale: 0.95 }}
+                            disabled={activeMembership?.planId?._id === plan.id}
                             onClick={() => {
+                                if (activeMembership?.planId?._id === plan.id) return;
                                 const { icon, ...planData } = plan; // Remove JSX icon which causes DataCloneError
                                 navigate('/app/membership/checkout', { state: { plan: planData } });
                             }}
                             style={{
                                 width: '100%',
                                 padding: '14px',
-                                background: plan.id === 'gold' ? '#000' : '#FFF',
-                                color: plan.id === 'gold' ? '#FFF' : (plan.id === 'platinum' ? '#000' : '#333'),
+                                background: activeMembership?.planId?._id === plan.id 
+                                    ? 'rgba(255,255,255,0.2)' 
+                                    : (plan.id === 'gold' ? '#000' : '#FFF'),
+                                color: activeMembership?.planId?._id === plan.id
+                                    ? '#FFF'
+                                    : (plan.id === 'gold' ? '#FFF' : (plan.id === 'platinum' ? '#000' : '#333')),
                                 border: 'none',
                                 borderRadius: '16px 4px 16px 4px',
                                 fontSize: '14px',
                                 fontWeight: 800,
-                                cursor: 'pointer',
+                                cursor: activeMembership?.planId?._id === plan.id ? 'default' : 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                gap: '8px'
+                                gap: '8px',
+                                opacity: activeMembership?.planId?.id === plan.id ? 0.8 : 1
                             }}
                         >
-                            Select Plan <ChevronRight size={18} />
+                            {activeMembership?.planId?._id === plan.id ? (
+                                <><ShieldCheck size={18} /> Activated</>
+                            ) : (
+                                <>Select Plan <ChevronRight size={18} /></>
+                            )}
                         </motion.button>
                     </motion.div>
                 ))}

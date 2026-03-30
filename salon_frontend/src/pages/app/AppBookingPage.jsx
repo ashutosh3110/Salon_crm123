@@ -57,19 +57,32 @@ export default function AppBookingPage() {
     const [isPromoApplied, setIsPromoApplied] = useState(false);
     const [promoDiscount, setPromoDiscount] = useState(0);
     const [availableCoupons, setAvailableCoupons] = useState([]);
+    const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon' or 'online'
     const { customer } = useCustomerAuth();
 
-    // Initial load for membership
+    // Initial load for membership from backend
     useEffect(() => {
-        const mem = localStorage.getItem('salon_active_membership');
-        if (mem) {
+        let cancelled = false;
+        const loadActiveMembership = async () => {
             try {
-                setActiveMembership(JSON.parse(mem));
+                const res = await api.get('/loyalty/membership/active');
+                if (!cancelled) {
+                    setActiveMembership(res.data || null);
+                }
             } catch (e) {
-                console.error("Failed to parse membership", e);
+                console.error("Failed to fetch active membership from backend", e);
+                // Fallback to local storage for backward compatibility during transition
+                const mem = localStorage.getItem('salon_active_membership');
+                if (mem && !cancelled) {
+                    try {
+                        setActiveMembership(JSON.parse(mem));
+                    } catch (err) {}
+                }
             }
-        }
-    }, []);
+        };
+        if (customer?._id) loadActiveMembership();
+        return () => { cancelled = true; };
+    }, [customer?._id]);
 
     // Load active coupon codes for quick selection (Customer view)
     useEffect(() => {
@@ -103,6 +116,19 @@ export default function AppBookingPage() {
         };
     }, [customer?._id]);
 
+    // Load Razorpay Script
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        document.body.appendChild(script);
+        return () => {
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        };
+    }, []);
+
     // If user came from AppHomePage with a promo code, prefill it.
     useEffect(() => {
         const promoFromState = location?.state?.promoCode;
@@ -111,6 +137,42 @@ export default function AppBookingPage() {
         setIsPromoApplied(false);
         setPromoDiscount(0);
     }, [location?.state?.promoCode]);
+
+    const [availabilityData, setAvailabilityData] = useState(null);
+    const [loadingAvailability, setLoadingAvailability] = useState(false);
+
+    // Fetch live availability from backend whenever date or salon changes
+    useEffect(() => {
+        if (!selectedDate || !currentOutlet) {
+            setAvailabilityData(null);
+            return;
+        }
+        
+        const fetchAvailability = async () => {
+            setLoadingAvailability(true);
+            try {
+                // Use local date string instead of toISOString to avoid timezone shifts
+                const d = selectedDate.date;
+                const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                
+                const res = await api.get('/bookings/availability', {
+                    params: {
+                        outletId: currentOutlet._id || currentOutlet.id,
+                        date: dateStr
+                    }
+                });
+                setAvailabilityData(res.data);
+            } catch (err) {
+                console.error("[AppBookingPage] Failed to fetch availability:", err);
+                // Set to empty result rather than null to allow fallback to available slots
+                setAvailabilityData({ bookings: [] });
+            } finally {
+                setLoadingAvailability(false);
+            }
+        };
+        
+        fetchAvailability();
+    }, [selectedDate, currentOutlet]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -214,10 +276,13 @@ export default function AppBookingPage() {
     // Use dynamic data from BusinessContext
     const services = businessServices.filter(s => s.status === 'active');
     const staff = businessStaff.filter(s => {
+        // Only show staff with 'stylist' role or designated as stylists
+        const isStylist = s.role === 'stylist' || s.isStylist === true;
+        if (!isStylist) return false;
+
         if (!currentOutlet) return true;
         const targetOutletId = String(currentOutlet._id || currentOutlet.id);
         const staffOutletId = String(s.outletId?._id || s.outletId || '');
-        // Match if stylist is assigned to this outlet OR if they have NO outlet assigned (Global staff)
         return staffOutletId === targetOutletId || staffOutletId === '';
     });
 
@@ -284,12 +349,70 @@ export default function AppBookingPage() {
         setViewMonth(d);
     };
 
-    // Generate time slots for selected date
+    // Helper to check if a specific stylist is free at a given time
+    const checkStylistAvailable = (staffId, timeStr, duration) => {
+        // While loading, assume unavailable to prevent double-booking during transit
+        if (loadingAvailability) return false;
+        
+        // If data fetch failed but we're not loading, default to true (optimistic)
+        if (!availabilityData || !selectedDate) return true;
+        
+        const [time, modifier] = timeStr.split(' ');
+        let [h, m] = time.split(':').map(Number);
+        if (h === 12) h = 0;
+        if (modifier === 'PM') h += 12;
+
+        const start = new Date(selectedDate.date);
+        start.setHours(h, m, 0, 0);
+        const end = new Date(start.getTime() + duration * 60000);
+
+        const isOverlap = availabilityData.bookings?.some(b => {
+            const sid = b.staffId?._id || b.staffId?.id || b.staffId;
+            if (!sid || String(sid) !== String(staffId)) return false;
+            
+            const bStart = new Date(b.start);
+            const bEnd = new Date(b.end);
+            
+            // Check for valid dates
+            if (isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return false;
+            
+            return (start < bEnd && end > bStart);
+        });
+
+        return !isOverlap;
+    };
+
+    // Calculate dynamic time slots based on totalDuration and staff availability
     const timeSlots = useMemo(() => {
-        if (!selectedDate) return [];
+        if (!selectedDate || !currentOutlet) return [];
         const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' });
-        return generateTimeSlots(dayName, totalDuration || 30, currentOutlet);
-    }, [selectedDate, totalDuration, currentOutlet]);
+        const rawSlots = generateTimeSlots(dayName, totalDuration || 30, currentOutlet);
+        
+        // If still loading or no data yet, show slots as loading/disabled
+        if (loadingAvailability || !availabilityData) {
+            return rawSlots.map(s => ({ ...s, available: false }));
+        }
+
+        const salonStaff = staff;
+        if (salonStaff.length === 0) return rawSlots.map(s => ({ ...s, available: false }));
+
+        // Overlay actual availability: a slot is available if at least ONE stylist is free
+        const evaluated = rawSlots.map(slot => {
+            const availableCount = salonStaff.filter(s => 
+                checkStylistAvailable(s._id || s.id, slot.time, totalDuration || 30)
+            ).length;
+            
+            return { 
+                ...slot, 
+                available: availableCount > 0,
+                availableCount // Useful for debugging
+            };
+        });
+
+        console.log(`[AVAILABILITY] Evaluated ${rawSlots.length} slots for ${selectedDate.date.toDateString()}. Staff count: ${salonStaff.length}. Bookings: ${availabilityData.bookings.length}`);
+        
+        return evaluated;
+    }, [selectedDate, totalDuration, currentOutlet, availabilityData, loadingAvailability, staff]);
 
     // Filter services by search
     const filteredServices = useMemo(() => {
@@ -300,56 +423,164 @@ export default function AppBookingPage() {
 
     // Submit booking
 
+    const mergeDateAndTime = (dateObj, timeStr) => {
+        if (!dateObj || !timeStr) return dateObj;
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') hours = '00';
+        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+        
+        const merged = new Date(dateObj);
+        merged.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        return merged;
+    };
+
     const handleSubmit = async () => {
+        if (submitting) return;
         setSubmitting(true);
         try {
-            await new Promise(r => setTimeout(r, 600));
-
-            // Persist booking in backend so referral first-booking rewards can trigger.
             const primaryService = selectedServices?.[0];
-            const customerId = customer?._id;
+            const customerId = customer?._id || customer?.id;
             const staffId = selectedStaff?.id || selectedStaff?._id;
             const serviceId = primaryService?._id || primaryService?.id;
 
-            if (serviceId && customerId && staffId && selectedDate?.date) {
-                await api.post('/bookings', {
-                    clientId: customerId,
-                    serviceId: serviceId,
-                    staffId,
-                    appointmentDate: selectedDate.date.toISOString(),
-                    duration: Number(totalDuration || primaryService.duration || 30),
-                    price: Number(totalPrice || primaryService.price || 0),
-                    status: 'pending',
-                    notes: `Booked via customer app${selectedTime ? ` at ${selectedTime}` : ''}`,
-                });
+            const outletId = currentOutlet?._id || currentOutlet?.id;
+
+            if (!serviceId || !customerId || !staffId || !selectedDate?.date || !outletId) {
+                throw new Error('Missing booking details (Service, Stylist, Date or Outlet)');
             }
 
-            // --- Persist Booking to Global Registry ---
-            const newBooking = {
-                id: `BOK-${Date.now()}`,
-                clientId: customer?._id || 'cust-001',
-                clientName: customer?.name || 'Priya Sharma',
-                phone: customer?.phone || '',
-                services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
-                totalPrice,
-                totalDuration,
-                date: selectedDate.date.toISOString(),
-                appointmentDate: selectedDate.date.toISOString(), // For admin compatibility
+            const appointmentDate = mergeDateAndTime(selectedDate.date, selectedTime);
+
+            const bookingData = {
+                clientId: customerId,
+                serviceId: serviceId,
+                staffId,
+                outletId: currentOutlet?._id || currentOutlet?.id,
+                appointmentDate: appointmentDate.toISOString(),
                 time: selectedTime,
-                staffId: selectedStaff.id || selectedStaff._id,
-                staffName: selectedStaff.name,
-                status: 'upcoming',
-                timestamp: new Date().toISOString(),
-                source: 'APP'
+                duration: Number(totalDuration || primaryService.duration || 30),
+                price: Number(finalPrice || 0),
+                status: 'pending',
+                notes: `Booked via customer app${selectedTime ? ` at ${selectedTime}` : ''}`,
+                paymentMethod: paymentMethod,
+                paymentStatus: 'unpaid'
             };
 
-            addBooking(newBooking);
+            if (paymentMethod === 'online') {
+                // 1. Create Order
+                const orderRes = await api.post('/bookings/payment/order', {
+                    amount: finalPrice,
+                    receipt: `bk_${customerId}_${Date.now().toString().slice(-8)}`
+                });
+                const order = orderRes.data;
 
-            setBookingComplete(true);
-        } catch {
-            console.error('Booking failed');
+                // 2. Open Razorpay
+                const options = {
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                    amount: order.amount,
+                    currency: order.currency,
+                    name: 'Salon App',
+                    description: `Booking for ${primaryService.name}`,
+                    order_id: order.id,
+                    handler: async function (response) {
+                        try {
+                            // 3. Verify Payment & Finalize Booking
+                            await api.post('/bookings/payment/verify', {
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature
+                            });
+
+                            // Create booking record after payment success
+                            const res = await api.post('/bookings', {
+                                ...bookingData,
+                                status: 'confirmed',
+                                paymentStatus: 'paid',
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id
+                            });
+
+                            // --- Persist Booking to Global Registry ---
+                            const newBooking = {
+                                id: res.data._id || `BOK-${Date.now()}`,
+                                clientId: customerId,
+                                clientName: customer?.name || 'Client',
+                                phone: customer?.phone || '',
+                                services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
+                                totalPrice: finalPrice,
+                                totalDuration,
+                                date: selectedDate.date.toISOString(),
+                                appointmentDate: selectedDate.date.toISOString(),
+                                time: selectedTime,
+                                staffId: staffId,
+                                staffName: selectedStaff.name,
+                                status: 'upcoming',
+                                timestamp: new Date().toISOString(),
+                                source: 'APP'
+                            };
+
+                            addBooking(newBooking);
+                            setBookingComplete(true);
+                        } catch (err) {
+                            console.error('Payment verification failed', err);
+                            alert('Payment verification failed. Please contact support.');
+                        } finally {
+                            setSubmitting(false);
+                        }
+                    },
+                    prefill: {
+                        name: customer?.name || '',
+                        email: customer?.email || '',
+                        contact: customer?.phone || ''
+                    },
+                    theme: { color: '#C8956C' },
+                    modal: {
+                        ondismiss: function() {
+                            setSubmitting(false);
+                        }
+                    }
+                };
+
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+                return; // Wait for handler
+            } else {
+                // Salon Payment (Offline)
+                const res = await api.post('/bookings', {
+                    ...bookingData,
+                    status: 'confirmed'
+                });
+
+                // --- Persist Booking to Global Registry ---
+                const newBooking = {
+                    id: res.data._id || `BOK-${Date.now()}`,
+                    clientId: customerId,
+                    clientName: customer?.name || 'Client',
+                    phone: customer?.phone || '',
+                    services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
+                    totalPrice: finalPrice,
+                    totalDuration,
+                    date: selectedDate.date.toISOString(),
+                    appointmentDate: selectedDate.date.toISOString(),
+                    time: selectedTime,
+                    staffId: staffId,
+                    staffName: selectedStaff.name,
+                    status: 'upcoming',
+                    timestamp: new Date().toISOString(),
+                    source: 'APP'
+                };
+
+                addBooking(newBooking);
+                setBookingComplete(true);
+            }
+        } catch (err) {
+            console.error('Booking failed', err);
+            alert(err.response?.data?.message || 'Booking failed. Please try again.');
         } finally {
-            setSubmitting(false);
+            if (paymentMethod !== 'online') {
+                setSubmitting(false);
+            }
         }
     };
 
@@ -689,7 +920,12 @@ export default function AppBookingPage() {
                         {selectedDate && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Available Slots</p>
-                                <div className="grid grid-cols-4 gap-2.5 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1">
+                                <div className="grid grid-cols-4 gap-2.5 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1 relative min-h-[100px]">
+                                    {loadingAvailability && (
+                                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-[1px] rounded-xl">
+                                            <Loader2 className="w-6 h-6 animate-spin text-[#C8956C]" />
+                                        </div>
+                                    )}
                                     {timeSlots.map((slot, i) => (
                                         <motion.button
                                             key={slot.time}
@@ -748,65 +984,126 @@ export default function AppBookingPage() {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4 max-h-[50vh] overflow-y-auto no-scrollbar pr-1 pb-4">
+                        <div className="grid grid-cols-1 gap-6 max-h-[60vh] overflow-y-auto no-scrollbar pr-1 pb-8">
                             {staff.map((s, i) => {
                                 const sid = s.id || s._id;
+                                const isAvailable = checkStylistAvailable(sid, selectedTime, totalDuration || 30);
                                 const isSelected = !!selectedStaff && (String(selectedStaff.id || selectedStaff._id) === String(sid));
                                 
                                 return (
                                     <motion.button
                                         key={sid || i}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: i * 0.05 }}
-                                        whileTap={{ scale: 0.98 }}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: i * 0.08, type: 'spring', damping: 20 }}
+                                        whileTap={isAvailable ? { scale: 0.98 } : {}}
+                                        disabled={!isAvailable}
                                         onClick={() => setSelectedStaff(s)}
                                         style={{
                                             background: isSelected ? (isLight ? '#FFF9F5' : 'rgba(200,149,108,0.15)') : colors.card,
                                             borderColor: isSelected ? '#C8956C' : colors.border,
                                             fontFamily: "'Poppins', sans-serif"
                                         }}
-                                        className={`w-full flex items-center gap-4 p-5 rounded-[24px] border-2 transition-all duration-300 relative overflow-hidden ${isSelected ? 'shadow-md border-[#C8956C]' : 'border-transparent shadow-sm'}`}
+                                        className={`w-full group flex flex-col p-0 rounded-[32px] border-2 transition-all duration-500 relative overflow-hidden ${isSelected ? 'shadow-2xl border-[#C8956C] -translate-y-1' : 'border-transparent shadow-sm'} ${!isAvailable ? 'opacity-40 grayscale-[0.5] cursor-not-allowed' : ''}`}
                                     >
-                                        {/* Avatar Section */}
-                                        <div className="relative shrink-0">
-                                            <div className="w-16 h-16 rounded-full overflow-hidden bg-white dark:bg-[#1A1A1A] border-2 flex items-center justify-center p-0.5 transition-all duration-300"
-                                                 style={{ borderColor: isSelected ? '#C8956C' : 'rgba(0,0,0,0.05)' }}>
-                                                {s.image ? (
-                                                    <img src={s.image} alt={s.name} className="w-full h-full object-cover rounded-full" />
-                                                ) : (
-                                                    <div className="w-full h-full rounded-full flex items-center justify-center font-black text-[#C8956C] bg-white dark:bg-[#2A211B] text-xl">
-                                                        {s.name?.charAt(0)}
+                                        {/* Background Decoration */}
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -mr-16 -mt-16 rounded-full blur-2xl group-hover:bg-primary/10 transition-all" />
+                                        
+                                        <div className="flex items-center gap-5 p-6 relative z-10 w-full">
+                                            {/* Avatar Section */}
+                                            <div className="relative shrink-0">
+                                                <div className="w-20 h-20 rounded-[24px] overflow-hidden bg-white dark:bg-[#1E1E1E] border-2 flex items-center justify-center p-1 transition-all duration-500 transform group-hover:scale-105"
+                                                     style={{ borderColor: isSelected ? '#C8956C' : 'rgba(0,0,0,0.05)' }}>
+                                                    {s.image ? (
+                                                        <img src={s.image} alt={s.name} className="w-full h-full object-cover rounded-[18px]" />
+                                                    ) : (
+                                                        <div className="w-full h-full rounded-[18px] flex items-center justify-center font-black text-[#C8956C] bg-primary/5 text-2xl">
+                                                            {s.name?.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* Status Badge */}
+                                                <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1A1A1A] p-1 rounded-full shadow-sm">
+                                                    <div className={`w-4 h-4 rounded-full border-2 border-white dark:border-[#1A1A1A] ${isAvailable ? 'bg-[#00D084]' : 'bg-red-500'}`} />
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Info Section */}
+                                            <div className="text-left flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1.5">
+                                                    <p className="text-[18px] font-black tracking-tight leading-tight truncate" style={{ color: colors.text }}>
+                                                        {s.name}
+                                                    </p>
+                                                    {s.rating && (
+                                                        <div className="flex items-center gap-1 bg-amber-400/10 px-2 py-0.5 rounded-full">
+                                                            <Star size={10} className="text-amber-500 fill-amber-500" />
+                                                            <span className="text-[10px] font-black text-amber-600">{s.rating}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-[#C8956C] bg-[#C8956C]/10 px-2.5 py-1 rounded-lg">
+                                                        {s.specialization || 'Master Artist'}
+                                                    </span>
+                                                    <span className="text-[9px] font-bold uppercase tracking-widest opacity-40" style={{ color: colors.text }}>
+                                                        {s.experience || '5+ Years EXP'}
+                                                    </span>
+                                                </div>
+
+                                                <div className="mt-3 flex items-center gap-4 opacity-70">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Sparkles size={12} className="text-[#C8956C]" />
+                                                        <span className="text-[9px] font-black uppercase tracking-tighter">Certified</span>
                                                     </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        {isAvailable ? (
+                                                            <>
+                                                                <Check size={12} className="text-[#00D084]" />
+                                                                <span className="text-[9px] font-black uppercase tracking-tighter text-[#00D084]">Available</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Clock size={12} className="text-red-500" />
+                                                                <span className="text-[9px] font-black uppercase tracking-tighter text-red-500">Booked for this slot</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Selection UI */}
+                                            <div className="shrink-0 flex items-center justify-center w-12">
+                                                {isSelected ? (
+                                                    <motion.div 
+                                                        initial={{ scale: 0 }}
+                                                        animate={{ scale: 1 }}
+                                                        className="w-10 h-10 rounded-full bg-[#C8956C] flex items-center justify-center shadow-lg shadow-[#C8956C]/30"
+                                                    >
+                                                        <Check size={20} color="white" strokeWidth={3} />
+                                                    </motion.div>
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full border-2 border-dashed border-[#C8956C]/20 group-hover:border-[#C8956C]/50 transition-colors" />
                                                 )}
                                             </div>
-                                            {/* Online Indicator */}
-                                            <div className="absolute bottom-0 right-0 w-4 h-4 bg-[#00D084] rounded-full border-2 border-white dark:border-[#1A1A1A] z-10 shadow-sm" />
                                         </div>
-    
-                                        {/* Info Section */}
-                                        <div className="text-left flex-1 min-w-0">
-                                            <p className="text-[17px] font-bold tracking-tight mb-1" style={{ color: colors.text }}>
-                                                {s.name}
-                                            </p>
-                                            <div className="flex items-center gap-1.5">
-                                                <Sparkles size={10} className="text-[#C8956C]" />
-                                                <p className="text-[9px] uppercase font-black tracking-[0.15em] text-[#C8956C]">
-                                                    {s.specialization}
-                                                </p>
-                                            </div>
-                                        </div>
-    
-                                        {/* Selection Checkmark Button Style */}
-                                        {isSelected && (
-                                            <motion.div 
-                                                initial={{ scale: 0, opacity: 0 }}
-                                                animate={{ scale: 1, opacity: 1 }}
-                                                className="w-10 h-10 rounded-full bg-[#C8956C] flex items-center justify-center shadow-lg shadow-[#C8956C]/30"
-                                            >
-                                                <Check size={20} color="white" strokeWidth={3} />
-                                            </motion.div>
-                                        )}
+
+                                        {/* Bottom Action Bar (Only shows when selected or hover) */}
+                                        <AnimatePresence>
+                                            {isSelected && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="bg-[#C8956C] w-full px-6 py-3 flex items-center justify-between"
+                                                >
+                                                    <p className="text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-2">
+                                                        <Star size={12} fill="white" /> TOP RATED EXPERT SELECTED
+                                                    </p>
+                                                    <span className="text-[9px] font-black text-white/80 uppercase tracking-tighter">EXCELLENT CHOICE</span>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </motion.button>
                                 );
                             })}
@@ -939,6 +1236,52 @@ export default function AppBookingPage() {
                                         ))}
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Payment Method Section */}
+                            <div className="pt-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('salon')}
+                                        className={`p-4 rounded-2xl border transition-all text-left relative overflow-hidden ${
+                                            paymentMethod === 'salon' 
+                                            ? 'border-[#C8956C] bg-[#C8956C]/5' 
+                                            : 'border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5'
+                                        }`}
+                                    >
+                                        <div className="relative z-10">
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'salon' ? 'text-[#C8956C]' : 'opacity-60'}`} style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.text }}>Pay at Salon</p>
+                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Cash or Card</p>
+                                        </div>
+                                        {paymentMethod === 'salon' && (
+                                            <motion.div layoutId="active-pay" className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={10} color="white" strokeWidth={4} />
+                                            </motion.div>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setPaymentMethod('online')}
+                                        className={`p-4 rounded-2xl border transition-all text-left relative overflow-hidden ${
+                                            paymentMethod === 'online' 
+                                            ? 'border-[#C8956C] bg-[#C8956C]/5' 
+                                            : 'border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5'
+                                        }`}
+                                    >
+                                        <div className="relative z-10">
+                                            <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#C8956C]' : 'opacity-60'}`} style={{ color: paymentMethod === 'online' ? '#C8956C' : colors.text }}>Pay Online</p>
+                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Razorpay Secure</p>
+                                        </div>
+                                        {paymentMethod === 'online' && (
+                                            <motion.div layoutId="active-pay" className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={10} color="white" strokeWidth={4} />
+                                            </motion.div>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tighter">
