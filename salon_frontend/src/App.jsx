@@ -10,6 +10,7 @@ import { Toaster } from 'react-hot-toast';
 import useFirebaseNotifications from './hooks/useFirebaseNotifications.jsx';
 import { useAuth } from './contexts/AuthContext';
 import { useCustomerAuth } from './contexts/CustomerAuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 // Public pages
 import LandingPage from './pages/landing/LandingPage';
@@ -53,7 +54,33 @@ function NotificationHandler() {
   // Initialize notifications for both dashboard users and customer app users
   useFirebaseNotifications(isAuthenticated || isCustomerAuthenticated);
   
-  return <Toaster />;
+  return (
+    <Toaster 
+      position="top-center" 
+      reverseOrder={false}
+      toastOptions={{
+        duration: 4000,
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '8px',
+          fontSize: '14px',
+        },
+        success: {
+          duration: 3000,
+          theme: {
+            primary: '#4ade80',
+          },
+        },
+        error: {
+          duration: 4000,
+          theme: {
+            primary: '#ef4444',
+          },
+        },
+      }}
+    />
+  );
 }
 
 // Admin layout & pages
@@ -208,7 +235,8 @@ function App() {
           <BusinessProvider>
             <NotificationHandler />
             <WalletProvider>
-              <CMSProvider>
+              <NotificationProvider>
+                <CMSProvider>
                 <BookingRegistryProvider>
                   <ThemeProvider>
                     <PettyCashProvider>
@@ -527,6 +555,7 @@ function App() {
                   </ThemeProvider>
                 </BookingRegistryProvider>
               </CMSProvider>
+              </NotificationProvider>
             </WalletProvider>
           </BusinessProvider>
         </CustomerAuthProvider>

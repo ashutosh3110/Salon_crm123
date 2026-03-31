@@ -346,27 +346,7 @@ export default function AuthPage() {
                                         </div>
 
                                         {/* Manager — demo login details */}
-                                        <div className="p-4 rounded-2xl border border-primary/20 bg-primary/[0.06] space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-4 h-4 text-primary shrink-0" />
-                                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">Manager login</span>
-                                            </div>
-                                            <p className="text-[11px] text-white/85 font-medium leading-relaxed">
-                                                <span className="text-white/45 font-bold text-[9px] uppercase tracking-wider block mb-0.5">Email</span>
-                                                manager@salon.com
-                                            </p>
-                                            <p className="text-[11px] text-white/85 font-medium leading-relaxed">
-                                                <span className="text-white/45 font-bold text-[9px] uppercase tracking-wider block mb-0.5">Password</span>
-                                                password
-                                            </p>
-                                            <button
-                                                type="button"
-                                                onClick={() => setSigninForm({ email: 'manager@salon.com', password: 'password' })}
-                                                className="mt-1 w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-primary/10 text-white/70 hover:text-white transition-all"
-                                            >
-                                                Use manager credentials
-                                            </button>
-                                        </div>
+
 
                                         {error && (
                                             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
@@ -412,47 +392,7 @@ export default function AuthPage() {
                                             </button>
 
                                             {/* Expanded Quick Access Box - Filtered by role from Launchpad */}
-                                            <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-[2rem] space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center gap-2">
-                                                        <Sparkles className="w-3 h-3 text-primary animate-pulse" />
-                                                        <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 italic">Quick Setup</span>
-                                                    </div>
-                                                    <span className="text-[7px] font-bold text-white/20 uppercase tracking-[0.2em]">Demo Accounts</span>
-                                                </div>
 
-                                                <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                                                    {[
-                                                        { r: 'admin', e: 'admin@salon.com' },
-                                                        { r: 'manager', e: 'manager@salon.com' },
-                                                        { r: 'receptionists', e: 'reception@salon.com' },
-                                                        { r: 'stylist', e: 'stylist@salon.com' },
-                                                        { r: 'accountant', e: 'accounts@salon.com' },
-                                                        { r: 'inventory_manager', e: 'inventory@salon.com' },
-                                                        { r: 'superadmin', e: 'superadmin@salon.com' },
-                                                        { r: 'pos', e: 'admin@salon.com' },
-                                                    ]
-                                                        .filter(item => {
-                                                            const params = new URLSearchParams(location.search);
-                                                            const roleParam = params.get('role');
-                                                            if (!roleParam) return true; // Show all if no role in URL
-                                                            // Match the role parameter (handling special cases like pos)
-                                                            if (roleParam === 'pos') return item.r === 'admin';
-                                                            if (roleParam === 'receptionist') return item.r === 'receptionists';
-                                                            return item.r === roleParam;
-                                                        })
-                                                        .map((item) => (
-                                                            <button
-                                                                key={item.e + item.r} type="button"
-                                                                onClick={() => setSigninForm({ email: item.e, password: 'password' })}
-                                                                className="flex flex-col items-start p-3 bg-black/40 border border-white/5 hover:border-primary/50 transition-all rounded-2xl group text-left"
-                                                            >
-                                                                <span className="text-[8px] font-black uppercase text-white/40 group-hover:text-primary/80 transition-colors uppercase">{item.r.replace('_', ' ')} Access</span>
-                                                                <span className="text-[10px] font-bold text-white/60 truncate w-full group-hover:text-white transition-colors">{item.e}</span>
-                                                            </button>
-                                                        ))}
-                                                </div>
-                                            </div>
                                         </form>
                                     </motion.div>
                                 ) : (

@@ -39,7 +39,10 @@ const registerSalonOwner = async (registrationData) => {
             status: paymentId ? 'active' : (plan && plan.trialDays > 0 ? 'trial' : (plan && plan.monthlyPrice === 0 ? 'active' : 'inactive')),
             trialDays: plan ? plan.trialDays : 14,
             features: plan ? plan.features : undefined,
-            limits: plan ? plan.limits : undefined
+            limits: plan ? plan.limits : undefined,
+            onboardingStatus: 'COMPLETED',
+            onboardingStep: 'STAFF_ADDED',
+            staffCount: 1, // Initially 1 for the owner
         });
         await tenant.save({ session });
 
@@ -51,7 +54,7 @@ const registerSalonOwner = async (registrationData) => {
             phone,
             role: 'admin',
             tenantId: tenant._id,
-            onboardingStatus: 'NOT_STARTED',
+            onboardingStatus: 'COMPLETED',
         });
         await user.save({ session });
 

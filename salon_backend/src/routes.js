@@ -7,7 +7,7 @@ import productRoute from './modules/product/product.routes.js';
 import serviceRoute from './modules/service/service.routes.js';
 import loyaltyRoute from './modules/loyalty/loyalty.routes.js';
 import promotionRoute from './modules/promotion/promotion.routes.js';
-import onboardingRoute from './modules/onboarding/onboarding.routes.js';
+import promotionRoute from './modules/promotion/promotion.routes.js';
 import outletRoute from './modules/outlet/outlet.routes.js';
 import userRoute from './modules/user/user.routes.js';
 import bookingRoute from './modules/booking/booking.routes.js';
@@ -22,7 +22,7 @@ import blogRoute from './modules/blog/blog.routes.js';
 import marketingRoute from './modules/marketing/marketing.routes.js';
 import inquiryRoute from './modules/inquiry/inquiry.routes.js';
 import reminderLinkRoute from './modules/reminderLink/reminderLink.routes.js';
-import onboardingGuard from './middlewares/onboardingGuard.js';
+// import onboardingGuard from './middlewares/onboardingGuard.js';
 import geocodeRoute from './modules/geocode/geocode.routes.js';
 import segmentsRoute from './modules/segments/segment.routes.js';
 import feedbackRoutes from './modules/feedback/feedback.routes.js';
@@ -54,10 +54,7 @@ const defaultRoutes = [
         path: '/tenants',
         route: tenantRoute,
     },
-    {
-        path: '/onboarding',
-        route: onboardingRoute,
-    },
+
     {
         path: '/catalogue',
         route: catalogueRoute,
@@ -204,7 +201,7 @@ defaultRoutes.forEach((route) => {
 });
 
 protectedRoutes.forEach((route) => {
-    router.use(route.path, onboardingGuard, route.route);
+    router.use(route.path, route.route);
 });
 
 export default router;

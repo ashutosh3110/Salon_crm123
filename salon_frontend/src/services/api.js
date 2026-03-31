@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 /**
  * Backend mounts all routes under `/v1` (NOT `/api/v1`).
@@ -17,6 +18,34 @@ const normalizeApiBaseUrl = (url) => {
         raw = `${raw}/v1`;
     }
     return raw;
+};
+
+const getFriendlyErrorMessage = (error) => {
+    if (!error.response) {
+        if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+            return 'Internet connection check karein ya server band hai.';
+        }
+        return 'Kuch galat hua. Kripya fir se koshish karein.';
+    }
+
+    const { status, data } = error.response;
+    const message = data?.message || '';
+
+    // Mapping technical messages to user-friendly ones
+    if (status === 403 && message.toLowerCase().includes('limit reached')) {
+        return 'Staff limit poori ho chuki hai. Kripya apna plan upgrade karein.';
+    }
+    if (status === 400 && message.toLowerCase().includes('email already taken')) {
+        return 'Ye Email pehle se use ho raha hai.';
+    }
+    if (status === 401) {
+        return 'Aapka session expire ho gaya hai. Kripya fir se login karein.';
+    }
+    if (status >= 500) {
+        return 'Server par kuch takleef hai. Kripya thodi der baad koshish karein.';
+    }
+
+    return message || 'An unexpected error occurred.';
 };
 
 const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
@@ -107,20 +136,25 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle 401 (avoid redirect loop on login/register pages)
+// Response interceptor — handle errors and show toasts
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (!error.response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) {
+        const { response } = error;
+
+        if (!response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) {
             error.isNetworkError = true;
-            error.networkHint = `API unreachable (${API_BASE_URL}). Start the backend, set VITE_API_URL in .env.local, and ensure CORS allows this origin.`;
+            error.networkHint = `API unreachable (${API_BASE_URL}). Start the backend.`;
         }
-        if (error.response?.status === 404) {
-            console.error('[API] 404 Not Found:', error.config?.url, error.config?.baseURL);
+
+        if (response?.status === 404) {
+            console.error('[API] 404 Not Found:', error.config?.url);
         }
-        if (error.response?.status === 401) {
+
+        if (response?.status === 401) {
             const path = window.location.pathname;
             const isPublicPage = path === '/' || ['/login', '/register', '/forgot-password', '/admin/login', '/superadmin/login', '/blog', '/contact', '/launchpad', '/app/login'].some(p => path === p || path.startsWith(p)) || path.startsWith('/c/');
+            
             if (!isPublicPage) {
                 if (path.startsWith('/app')) {
                     localStorage.removeItem('customer_token');
@@ -134,6 +168,20 @@ api.interceptors.response.use(
                 }
             }
         }
+
+        // --- NEW: Universal Toast Notification ---
+        const path = window.location.pathname;
+        const isLoginPage = path.includes('/login') || path === '/';
+        const friendlyMessage = getFriendlyErrorMessage(error);
+        
+        // Show toast for errors (but skip 401 as it triggers a redirect anyway)
+        if (response?.status !== 401 && !isLoginPage) {
+            toast.error(friendlyMessage, {
+                id: 'api-error-toast', // Prevent duplicate toasts
+                duration: 4000,
+            });
+        }
+
         return Promise.reject(error);
     }
 );

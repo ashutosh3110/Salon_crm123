@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../services/api';
+import { useAuth } from './AuthContext';
 import { useAttendance } from './AttendanceContext';
 
 const FinanceContext = createContext();
@@ -26,7 +27,48 @@ export const FinanceProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(true);
 
+    const [gstSummary, setGstSummary] = useState({ totals: {}, monthly: [] });
+    const [cashBankSummary, setCashBankSummary] = useState(null);
+
+    const fetchGstSummary = useCallback(async (query = {}) => {
+        try {
+            const res = await api.get('/finance/tax/gst-summary', { params: query });
+            setGstSummary(res.data.data || { totals: {}, monthly: [] });
+        } catch (error) {
+            console.error('Fetch GST Summary Error:', error);
+        }
+    }, []);
+
+    const fetchCashBankSummary = useCallback(async (date = new Date().toISOString().split('T')[0]) => {
+        try {
+            const res = await api.get(`/finance/cash-bank`, { params: { date } });
+            setCashBankSummary(res.data.data);
+            return res.data.data;
+        } catch (error) {
+            console.error('Fetch Cash Bank Summary Error:', error);
+        }
+    }, []);
+
+    const saveCashBankReconciliation = async (payload) => {
+        try {
+            const res = await api.post('/finance/cash-bank/reconcile', payload);
+            setCashBankSummary(res.data.data.summary);
+            await refresh(); // Sync overall finance stats
+            return res.data.data;
+        } catch (error) {
+            console.error('Save Reconciliation Error:', error);
+            throw error;
+        }
+    };
+
+    const { user } = useAuth();
     const refresh = useCallback(async () => {
+        // Skip for Superadmin as they don't have a single tenant context
+        if (user?.role === 'superadmin') {
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const [statsRes, trendRes, expRes, invRes] = await Promise.all([
@@ -60,12 +102,16 @@ export const FinanceProvider = ({ children }) => {
 
             setExpenses(expRes.data.results || []);
             setRevenue(invRes.data.results || []);
+            
+            // Also fetch GST and Cash Bank summary
+            fetchGstSummary();
+            fetchCashBankSummary();
         } catch (error) {
-            console.error('Finance Fetch Error:', error);
+            console.error('Finance Refresh Error:', error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user, fetchGstSummary, fetchCashBankSummary]);
 
     useEffect(() => {
         refresh();
@@ -174,6 +220,8 @@ export const FinanceProvider = ({ children }) => {
         expenses,
         payroll: enrichedPayroll,
         payrollPeriod,
+        gstSummary,
+        cashBankSummary,
         taxFilings,
         totalRevenue,
         totalExpenses,
@@ -187,8 +235,11 @@ export const FinanceProvider = ({ children }) => {
         processPayouts,
         addRevenue,
         addExpense,
-        updatePayrollStatus
-    }), [revenue, expenses, enrichedPayroll, payrollPeriod, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll]);
+        updatePayrollStatus,
+        fetchGstSummary,
+        fetchCashBankSummary,
+        saveCashBankReconciliation
+    }), [revenue, expenses, enrichedPayroll, payrollPeriod, gstSummary, cashBankSummary, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll, fetchGstSummary, fetchCashBankSummary]);
 
     return (
         <FinanceContext.Provider value={value}>

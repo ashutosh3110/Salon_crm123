@@ -18,11 +18,16 @@ export const useFirebaseNotifications = (isAuthenticated) => {
         // 1. Request Permission
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          console.log('[useFirebaseNotifications] Permission granted');
           const newToken = await registerToken();
-          if (newToken) setToken(newToken);
+          if (newToken) {
+            setToken(newToken);
+            toast.success('🔔 Notifications Active', { id: 'fcm-setup' });
+          } else {
+            toast.error('⚠️ Could not register notifications', { id: 'fcm-error' });
+          }
         } else {
           console.warn('[useFirebaseNotifications] Permission not granted');
+          toast.error('🚫 Notification Permission Denied', { id: 'fcm-denied' });
         }
       } catch (err) {
         console.error('[useFirebaseNotifications] Setup error:', err.message);

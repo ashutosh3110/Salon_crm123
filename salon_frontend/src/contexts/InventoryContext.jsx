@@ -3,6 +3,7 @@ import inventoryData from '../data/inventoryData.json';
 import { useFinance } from './FinanceContext';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { useAuth } from './AuthContext';
 import api from '../services/api';
 
 const InventoryContext = createContext();
@@ -158,6 +159,7 @@ export const InventoryProvider = ({ children }) => {
     const { outlets: tenantOutlets, suppliers: businessSuppliers } = useBusiness();
     const { customer } = useCustomerAuth();
     const tenantOutletLenRef = useRef(0);
+    const { user: dashboardUser } = useAuth();
     const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
@@ -290,12 +292,16 @@ export const InventoryProvider = ({ children }) => {
             localStorage.getItem('auth_token_inventory_manager') ||
             localStorage.getItem('auth_token_superadmin');
         const customerToken = localStorage.getItem('customer_token');
+        
+        // Skip for Superadmin as they don't have a single tenant context for inventory
+        if (dashboardUser?.role === 'superadmin') return;
+
         if ((isCustomerPath && customerToken) || (!isCustomerPath && roleToken)) {
             fetchProducts();
             fetchShopCategories();
             fetchStockInHistory();
         }
-    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer]);
+    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser]);
 
     // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
     useEffect(() => {

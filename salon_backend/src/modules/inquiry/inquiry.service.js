@@ -9,8 +9,9 @@ class InquiryService {
         // --- Notification ---
         try {
             // Find Super Admins
-            const superAdmins = await User.find({ role: 'superadmin', status: 'active' }).select('_id');
+            const superAdmins = await User.find({ role: 'superadmin', status: 'active' }).select('_id email');
             const saIds = superAdmins.map(sa => sa._id);
+            console.log(`[Inquiry] Found ${saIds.length} Superadmins to notify:`, superAdmins.map(sa => sa.email));
             
             if (saIds.length > 0) {
                 await notificationService.sendToMany(saIds, {

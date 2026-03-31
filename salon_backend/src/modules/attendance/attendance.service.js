@@ -241,6 +241,30 @@ const upsertRecord = async (tenantId, payload) => {
         populate: { path: 'outletId', select: 'name' },
     });
 
+    // --- Notification for Absenteeism ---
+    if (status === 'absent') {
+        try {
+            const staffName = doc.userId?.name || 'Staff';
+            const dateStr = new Date(date).toLocaleDateString();
+
+            const alertPayload = {
+                type: 'staff_attendance',
+                title: 'Staff Absent Alert ⚠️',
+                body: `${staffName} has been marked as ABSENT for today (${dateStr}).`,
+                actionUrl: '/admin/hr/attendance',
+                data: { userId: userId.toString(), date }
+            };
+
+            // Notify both Admin and Accountant roles
+            await Promise.all([
+                notificationService.sendToRole(tenantId, 'admin', alertPayload),
+                notificationService.sendToRole(tenantId, 'accountant', alertPayload)
+            ]);
+        } catch (err) {
+            console.warn('[Attendance] Absence notification failed:', err.message);
+        }
+    }
+
     return doc;
 };
 

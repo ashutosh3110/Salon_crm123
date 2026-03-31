@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 const DEFAULT_CATEGORIES = [
     'Staff Refreshment',
@@ -25,10 +26,16 @@ export const PettyCashProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const { user } = useAuth();
     const refresh = useCallback(async () => {
-        // Skip for public pages to avoid 401 noise
+        // Skip for public pages or if user is SuperAdmin (no tenant context)
         const publicPaths = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'];
-        if (publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/' || window.location.pathname.startsWith('/app')) {
+        if (
+            publicPaths.some(p => window.location.pathname.startsWith(p)) || 
+            window.location.pathname === '/' || 
+            window.location.pathname.startsWith('/app') ||
+            user?.role === 'superadmin'
+        ) {
             setLoading(false);
             return;
         }
@@ -67,7 +74,7 @@ export const PettyCashProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         refresh();

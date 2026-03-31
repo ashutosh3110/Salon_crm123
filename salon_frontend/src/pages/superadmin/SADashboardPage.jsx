@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import useFirebaseNotifications from '../../hooks/useFirebaseNotifications';
 import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
@@ -133,6 +135,9 @@ export default function SADashboardPage() {
             setRefreshing(false);
         }
     };
+
+    const { isAuthenticated } = useAuth();
+    useFirebaseNotifications(isAuthenticated);
 
     useEffect(() => { fetchStats(); }, []);
 

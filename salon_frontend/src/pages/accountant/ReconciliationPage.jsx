@@ -1,18 +1,77 @@
-import { useState, useRef } from 'react';
-import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import { useFinance } from '../../contexts/FinanceContext';
 
 export default function ReconciliationPage() {
-    const [reconItems, setReconItems] = useState([
-        { id: 'RC-101', date: 'Feb 23, 2024', desc: 'UPI Payment Batch - Styling Hub', systemAmt: '₹12,450', bankAmt: '₹12,450', status: 'Matched', diff: '₹0' },
-        { id: 'RC-102', date: 'Feb 22, 2024', desc: 'Card Settlement - Merchant 821', systemAmt: '₹45,200', bankAmt: '₹44,800', status: 'Discrepancy', diff: '-₹400' },
-        { id: 'RC-103', date: 'Feb 21, 2024', desc: 'Cash Deposit - Main Outlet', systemAmt: '₹15,000', bankAmt: '₹15,000', status: 'Matched', diff: '₹0' },
-        { id: 'RC-104', date: 'Feb 20, 2024', desc: 'Supplier Payout - Beauty Hub', systemAmt: '-₹12,450', bankAmt: '₹0', status: 'Pending', diff: '₹12,450' },
-    ]);
-
+    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation } = useFinance();
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    
+    const [reconItems, setReconItems] = useState([]);
     const [isMatching, setIsMatching] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const fileInputRef = useRef(null);
+
+    // Initial Fetch
+    useEffect(() => {
+        fetchCashBankSummary(selectedDate);
+    }, [selectedDate, fetchCashBankSummary]);
+
+    // Map real transactions to Reconciliation Items
+    const systemTransactions = useMemo(() => {
+        const dateMatch = (d) => new Date(d).toISOString().split('T')[0] === selectedDate;
+        
+        const revItems = revenue.filter(r => dateMatch(r.createdAt)).map(r => ({
+            id: r.invoiceNumber,
+            date: new Date(r.createdAt).toLocaleDateString(),
+            desc: `Sales - ${r.paymentMethod.toUpperCase()}`,
+            systemAmt: r.total,
+            bankAmt: 0,
+            status: 'Pending',
+            diff: r.total,
+            type: 'income',
+            method: r.paymentMethod
+        }));
+
+        const expItems = expenses.filter(e => dateMatch(e.date || e.createdAt)).map(e => ({
+            id: e._id.substring(0, 8).toUpperCase(),
+            date: new Date(e.date || e.createdAt).toLocaleDateString(),
+            desc: `${e.category.toUpperCase()} - ${e.description || 'Expense'}`,
+            systemAmt: -e.amount,
+            bankAmt: 0,
+            status: 'Pending',
+            diff: -e.amount,
+            type: 'expense',
+            method: e.paymentMethod
+        }));
+
+        return [...revItems, ...expItems];
+    }, [revenue, expenses, selectedDate]);
+
+    useEffect(() => {
+        if (reconItems.length === 0) {
+            setReconItems(systemTransactions);
+        }
+    }, [systemTransactions, reconItems.length]);
+
+    const handleSaveClosing = async () => {
+        if (!cashBankSummary) return;
+        setIsSaving(true);
+        try {
+            await saveCashBankReconciliation({
+                businessDate: selectedDate,
+                actualCash: cashBankSummary.cash?.net || 0,
+                actualBank: cashBankSummary.bank?.net || 0,
+                notes: 'Automated reconcile via dashboard'
+            });
+            alert('Daily closing saved and reconciled successfully!');
+        } catch (error) {
+            alert('Failed to save closing.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const handleImportClick = () => {
         if (fileInputRef.current) fileInputRef.current.click();
@@ -91,11 +150,31 @@ export default function ReconciliationPage() {
                     <button onClick={handleImportClick} className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold hover:bg-primary hover:text-white transition-all transition-colors duration-300">
                         <ArrowLeftRight className="w-4 h-4" /> Import Statement
                     </button>
-                    <button disabled={isMatching} onClick={handleAutoMatch} className={`flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 transition-all ${isMatching ? 'opacity-80 cursor-wait' : 'hover:scale-105 active:scale-95'}`}>
+                    <button disabled={isMatching} onClick={handleAutoMatch} className={`flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold transition-all ${isMatching ? 'opacity-80 cursor-wait' : 'hover:bg-primary hover:text-white'}`}>
                         <RefreshCcw className={`w-4 h-4 ${isMatching ? 'animate-spin' : ''}`} />
-                        {isMatching ? 'Matching...' : 'Run Auto-Match'}
+                        {isMatching ? 'Matching...' : 'Auto-Match'}
+                    </button>
+                    <button 
+                        onClick={handleSaveClosing}
+                        disabled={isSaving || !cashBankSummary}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                        <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Closing'}
                     </button>
                 </div>
+            </div>
+
+            <div className="flex items-center gap-4 py-2">
+                <p className="text-[10px] font-black uppercase text-text-muted tracking-widest">Selected Business Date:</p>
+                <input 
+                    type="date" 
+                    value={selectedDate}
+                    onChange={(e) => {
+                        setSelectedDate(e.target.value);
+                        setReconItems([]); // Reset items so they re-fetch from system memo
+                    }}
+                    className="bg-surface px-4 py-1.5 border border-border/40 rounded-xl text-xs font-bold outline-none" 
+                />
             </div>
 
             {/* Reconciliation Tools */}
@@ -139,18 +218,14 @@ export default function ReconciliationPage() {
                         <div className="flex items-center gap-4">
                             <h2 className="text-3xl font-black text-text tracking-tighter">12</h2>
                             <div>
-                                <p className="text-xs font-bold text-text-secondary leading-tight">Transactions couldn't be automatically reconciled.</p>
-                                <button className="text-[10px] font-black text-primary uppercase tracking-widest mt-1.5 hover:underline">Start Manual Matching →</button>
-                            </div>
-                        </div>
-                        <div className="h-1.5 w-full bg-background rounded-full overflow-hidden border border-border/10">
-                            <div className="h-full bg-amber-500 w-[65%]" />
+                            <p className="text-xs font-bold text-text-secondary leading-tight">Transactions waiting for verification for {new Date(selectedDate).toLocaleDateString()}.</p>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            {/* Reconciliation History Table */}
+        {/* Reconciliation History Table */}
             <div className="bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm">
                 <div className="px-6 py-5 border-b border-border/40 flex items-center justify-between bg-surface/50">
                     <h2 className="text-sm font-black text-text uppercase tracking-widest leading-none">Transaction Log Analysis</h2>
@@ -186,13 +261,13 @@ export default function ReconciliationPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right text-xs font-bold text-text-secondary">{item.systemAmt}</td>
                                     <td className="px-6 py-4 text-right text-xs font-bold text-text-secondary">{item.bankAmt}</td>
-                                    <td className={`px-6 py-4 text-right text-xs font-black italic ${item.diff !== '₹0' ? 'text-rose-500' : 'text-text-muted opacity-30'}`}>
-                                        {item.diff}
+                                    <td className={`px-6 py-4 text-right text-xs font-black italic ${item.diff !== 0 ? 'text-rose-500' : 'text-text-muted opacity-30'}`}>
+                                        ₹{Math.abs(item.diff).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex items-center justify-center gap-2">
                                             <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${item.status === 'Matched' ? 'bg-emerald-500/10 text-emerald-500' :
-                                                item.status === 'Discrepancy' ? 'bg-rose-500/10 text-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.1)] animate-pulse' :
+                                                item.status === 'Discrepancy' ? 'bg-rose-500/10 text-rose-500' :
                                                     'bg-amber-500/10 text-amber-500'
                                                 }`}>
                                                 {item.status}
