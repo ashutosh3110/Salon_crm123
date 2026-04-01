@@ -7,7 +7,6 @@ import productRoute from './modules/product/product.routes.js';
 import serviceRoute from './modules/service/service.routes.js';
 import loyaltyRoute from './modules/loyalty/loyalty.routes.js';
 import promotionRoute from './modules/promotion/promotion.routes.js';
-import promotionRoute from './modules/promotion/promotion.routes.js';
 import outletRoute from './modules/outlet/outlet.routes.js';
 import userRoute from './modules/user/user.routes.js';
 import bookingRoute from './modules/booking/booking.routes.js';

@@ -15,23 +15,33 @@ router.post('/remove-token', notificationController.removeToken);
 router.get('/', notificationController.getNotifications);
 router.get('/unread-count', notificationController.getUnreadCount);
 
-// Temporary TEST route (You can delete this later)
+// Temporary TEST route (Cleaned up for reliability)
 router.get('/test', async (req, res, next) => {
+    console.info('[Notification] Incoming test request from user:', req.user?._id);
     try {
-        const notificationService = (await import('./notification.service.js')).default;
         const User = (await import('../user/user.model.js')).default;
-        const users = await User.find({ status: 'active' }).select('_id');
-        const ids = users.map(u => u._id);
+        const notificationService = (await import('./notification.service.js')).default;
         
-        await notificationService.sendToMany(ids, {
+        // Target specifically the requesting user first for high-speed test
+        const targetUserId = req.user?._id;
+        if (!targetUserId) {
+            return res.status(400).send({ message: 'User not authenticated for test' });
+        }
+
+        console.info('[Notification] Sending test push to current user:', targetUserId);
+        
+        await notificationService.sendNotification({
+            recipientId: targetUserId,
             type: 'general',
-            title: 'Test Notification 🚀',
-            body: 'Aapka push notification system sahi se kaam kar raha hai!',
-            actionUrl: '/admin'
+            title: 'Immediate Test 🚀',
+            body: 'Aapka push notification system Live hai!',
+            actionUrl: '/superadmin'
         });
-        res.send({ message: `Sent to ${ids.length} users` });
+
+        res.send({ success: true, message: 'Test push sent to your ID!' });
     } catch (err) {
-        next(err);
+        console.error('[Notification] Test route failure:', err.message);
+        res.status(500).send({ success: false, error: err.message });
     }
 });
 

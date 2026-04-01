@@ -20,11 +20,15 @@ const appCmsSchema = new mongoose.Schema(
             type: Array,
             default: [],
         },
+        faqs: {
+            type: Array,
+            default: [],
+        },
     },
     { timestamps: true }
 );
 
-appCmsSchema.index({ tenantId: 1 });
+// Index for fast lookups (tenantId is already unique)
 
 const AppCMS = mongoose.model('AppCMS', appCmsSchema);
 export default AppCMS;

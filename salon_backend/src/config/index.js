@@ -78,7 +78,9 @@ export const config = {
   firebase: {
     projectId: envVars.FIREBASE_PROJECT_ID,
     privateKeyId: envVars.FIREBASE_PRIVATE_KEY_ID,
-    privateKey: envVars.FIREBASE_PRIVATE_KEY ? envVars.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : '',
+    privateKey: envVars.FIREBASE_PRIVATE_KEY 
+      ? envVars.FIREBASE_PRIVATE_KEY.replace(/"/g, '').replace(/\\n/g, '\n') 
+      : '',
     clientEmail: envVars.FIREBASE_CLIENT_EMAIL,
     clientId: envVars.FIREBASE_CLIENT_ID,
   },

@@ -131,6 +131,13 @@ api.interceptors.request.use(
                 /* ignore */
             }
         }
+        if (import.meta.env.DEV && config.method === 'post') {
+            const bodyStr = JSON.stringify(config.data);
+            console.log(`[API MONITOR] POST ${config.url} | Data:`, bodyStr);
+            if (!config.data || Object.keys(config.data).length === 0) {
+                console.warn('[API MONITOR] ALERT: POST request has empty data!');
+            }
+        }
         return config;
     },
     (error) => Promise.reject(error)

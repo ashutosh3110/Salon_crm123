@@ -55,7 +55,7 @@ const catalogueSchema = new mongoose.Schema(
 catalogueSchema.plugin(tenantPlugin);
 
 // Ensure one catalogue per tenant
-catalogueSchema.index({ tenantId: 1 }, { unique: true });
+// Index for fast lookups (tenantId is already unique in field definition)
 
 const Catalogue = mongoose.model('Catalogue', catalogueSchema);
 

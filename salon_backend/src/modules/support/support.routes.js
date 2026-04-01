@@ -1,13 +1,13 @@
 import express from 'express';
 import supportController from './support.controller.js';
-import passport from 'passport';
+import auth from '../../middlewares/auth.js';
 
 const router = express.Router();
 
 /**
  * All routes require authentication
  */
-router.use(passport.authenticate('jwt', { session: false }));
+router.use(auth);
 
 /**
  * Ticket Management

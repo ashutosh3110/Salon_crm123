@@ -329,6 +329,7 @@ async function getManagerTeam(tenantId) {
             startDate: { $lte: todayYmd },
             endDate: { $gte: todayYmd },
         }),
+        getTeamRevenueGrowthLast7Days(tenantId),
     ]);
 
     const countMap = new Map(bookingAgg.map((x) => [x._id.toString(), x.count]));
@@ -383,7 +384,7 @@ async function getManagerDashboard(tenantId) {
     const startYmd = ymdLocal(monthStart);
     const endYmd = ymdLocal(now);
 
-    const [hrData, activeStaff, presentToday, ratingAgg, recentFb] = await Promise.all([
+    const [hrData, activeStaff, presentToday, ratingAgg, recentFb, revenueGrowth] = await Promise.all([
         hrPerformanceService.getStaffPerformance(tenantId, startYmd, endYmd),
         User.countDocuments({ tenantId: tid, status: 'active', role: { $nin: ['superadmin', 'admin', 'manager'] } }),
         Attendance.countDocuments({
@@ -405,6 +406,7 @@ async function getManagerDashboard(tenantId) {
             .limit(8)
             .select('customerName staffName rating comment createdAt')
             .lean(),
+        getTeamRevenueGrowthLast7Days(tenantId),
     ]);
 
     const staffRaw = hrData?.staff || [];
@@ -474,6 +476,7 @@ async function getManagerDashboard(tenantId) {
         staffPerformance,
         performanceComparison,
         recentFeedback,
+        revenueGrowth,
         period: { startDate: startYmd, endDate: endYmd },
         generatedAt: new Date().toISOString(),
     };

@@ -38,7 +38,7 @@ function toTimeInput(iso) {
 
 export default function AttendancePage() {
     const { staff, fetchStaff } = useBusiness();
-    const [records, setRecords] = useState([]);
+    const [rawAttendance, setRawAttendance] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -62,48 +62,19 @@ export default function AttendancePage() {
         toastTimerRef.current = setTimeout(() => setToast(null), 3000);
     }, []);
 
-    const loadDay = useCallback(async () => {
-        const staffList = Array.isArray(staff) ? staff : [];
-        if (!staffList.length) {
-            setRecords([]);
-            return;
-        }
+    const fetchAttendance = useCallback(async () => {
         setLoading(true);
         try {
             const res = await api.get('/attendance', { params: { date: selectedDate } });
             const payload = res.data?.data ?? res.data;
-            const apiRecords = payload?.records ?? [];
-            
-            const byUser = {};
-            apiRecords.forEach((row) => {
-                const uid = row.userId?._id || row.userId;
-                if (uid) byUser[String(uid)] = row;
-            });
-
-            const merged = staffList.map((u) => {
-                const entry = byUser[String(u._id || u.id)];
-                return {
-                    id: String(u._id || u.id),
-                    name: u.name || 'Unknown',
-                    role: u.role || 'Staff',
-                    outlet: u.outletId?.name || 'Main',
-                    checkIn: formatDisplayTime(entry?.checkInAt),
-                    checkOut: formatDisplayTime(entry?.checkOutAt),
-                    checkInAt: entry?.checkInAt,
-                    checkOutAt: entry?.checkOutAt,
-                    status: entry?.status || 'absent',
-                    hours: entry?.hoursWorked ?? 0,
-                    location: entry?.location || 'Salon',
-                    remark: entry?.remark || '',
-                };
-            });
-            setRecords(merged);
+            const records = payload?.records ?? [];
+            setRawAttendance(records);
         } catch (e) {
             showToast('Failed to load attendance logs');
         } finally {
             setLoading(false);
         }
-    }, [selectedDate, staff, showToast]);
+    }, [selectedDate, showToast]);
 
     const loadLeaves = useCallback(async () => {
         setLeavesLoading(true);
@@ -117,10 +88,40 @@ export default function AttendancePage() {
         }
     }, []);
 
+    // Merge staff with raw attendance data on render
+    const records = useMemo(() => {
+        const staffList = Array.isArray(staff) ? staff : [];
+        if (!staffList.length && !loading) return [];
+        
+        const byUser = {};
+        rawAttendance.forEach((row) => {
+            const uid = row.userId?._id || row.userId;
+            if (uid) byUser[String(uid)] = row;
+        });
+
+        return staffList.map((u) => {
+            const entry = byUser[String(u._id || u.id)];
+            return {
+                id: String(u._id || u.id),
+                name: u.name || 'Unknown',
+                role: u.role || 'Staff',
+                outlet: u.outletId?.name || 'Main',
+                checkIn: formatDisplayTime(entry?.checkInAt),
+                checkOut: formatDisplayTime(entry?.checkOutAt),
+                checkInAt: entry?.checkInAt,
+                checkOutAt: entry?.checkOutAt,
+                status: entry?.status || 'absent',
+                hours: entry?.hoursWorked ?? 0,
+                location: entry?.location || 'Salon',
+                remark: entry?.remark || '',
+            };
+        });
+    }, [staff, rawAttendance, loading]);
+
     useEffect(() => {
-        loadDay();
+        fetchAttendance();
         loadLeaves();
-    }, [loadDay, loadLeaves]);
+    }, [fetchAttendance, loadLeaves]);
 
     useEffect(() => {
         fetchStaff?.();

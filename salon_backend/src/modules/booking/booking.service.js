@@ -5,21 +5,61 @@ import loyaltyService from '../loyalty/loyalty.service.js';
 import notificationService from '../notification/notification.service.js';
 import User from '../user/user.model.js';
 import Outlet from '../outlet/outlet.model.js';
+import Service from '../service/service.model.js';
+import Commission from '../hr/commission.model.js';
 
 class BookingService {
-    /**
-     * Create a new booking
-     */
     async createBooking(tenantId, bookingData) {
-        const { staffId, appointmentDate, duration } = bookingData;
+        if (!bookingData || Object.keys(bookingData).length === 0) {
+            console.error('[BookingService] createBooking called with empty body. tenantId:', tenantId);
+            throw new Error('Booking data is required');
+        }
+
+        // --- EXTREME LOGGING ---
+        console.log('[DEBUG] createBooking Entry Point');
+        console.log('[DEBUG] tenantId:', tenantId);
+        console.log('[DEBUG] bookingData Keys:', Object.keys(bookingData));
+
+        // Inline Sanitization (Avoid 'this' issues)
+        const toId = (val, name) => {
+            if (!val) {
+                console.error(`[DEBUG] Missing ID for field: ${name}`);
+                return null;
+            }
+            const str = String(val).trim();
+            if (!mongoose.Types.ObjectId.isValid(str)) {
+                console.error(`[DEBUG] Invalid ID for field ${name}: [${str}]`);
+                return null;
+            }
+            return new mongoose.Types.ObjectId(str);
+        };
+
+        const s_tenantId = toId(tenantId, 'tenantId');
+        const s_clientId = toId(bookingData.clientId, 'clientId');
+        const s_serviceId = toId(bookingData.serviceId, 'serviceId');
+        const s_staffId = toId(bookingData.staffId, 'staffId');
+        const s_outletId = toId(bookingData.outletId, 'outletId');
+
+        if (!s_tenantId || !s_clientId || !s_serviceId || !s_staffId || !s_outletId) {
+            const missing = [];
+            if (!s_tenantId) missing.push('tenantId');
+            if (!s_clientId) missing.push('clientId');
+            if (!s_serviceId) missing.push('serviceId');
+            if (!s_staffId) missing.push('staffId');
+            if (!s_outletId) missing.push('outletId');
+            throw new Error(`Sanitization failed: ${missing.join(', ')}`);
+        }
+
+        const appointmentDate = new Date(bookingData.appointmentDate);
+        const duration = Number(bookingData.duration) || 30;
 
         // 1. Check for overlapping bookings for the same staff
         const start = new Date(appointmentDate);
         const end = new Date(start.getTime() + duration * 60000);
 
         const overlapping = await Booking.findOne({
-            tenantId,
-            staffId,
+            tenantId: s_tenantId,
+            staffId: s_staffId,
             status: { $in: ['pending', 'confirmed'] },
             $or: [
                 {
@@ -35,70 +75,74 @@ class BookingService {
         });
 
         if (overlapping) {
-            throw new Error('Stylist is already booked for this time slot');
+            throw new Error('Stylist is already booked for this slot');
         }
+        
+        console.log('[DEBUG] No overlap. Construction Manual Document...');
 
-        // 2. Check for overlapping bookings for the same chair
-        if (bookingData.chairId) {
-            const chairOverlapping = await Booking.findOne({
-                tenantId,
-                outletId: bookingData.outletId,
-                chairId: bookingData.chairId,
-                status: { $in: ['pending', 'confirmed', 'arrived', 'in-progress'] },
-                $or: [
-                    {
-                        appointmentDate: { $lt: end },
-                        $expr: {
-                            $gt: [
-                                { $add: ["$appointmentDate", { $multiply: ["$duration", 60000] }] },
-                                start
-                            ]
-                        }
-                    }
-                ]
-            });
+        // 2. Direct Mongoose Document
+        const booking = new Booking({
+            tenantId: s_tenantId,
+            clientId: s_clientId,
+            serviceId: s_serviceId,
+            staffId: s_staffId,
+            outletId: s_outletId,
+            appointmentDate: start,
+            duration,
+            price: Number(bookingData.price) || 0,
+            time: bookingData.time,
+            notes: bookingData.notes,
+            paymentStatus: bookingData.paymentStatus || 'unpaid',
+            paymentMethod: bookingData.paymentMethod || 'salon',
+            status: 'confirmed'
+        });
 
-            if (chairOverlapping) {
-                throw new Error('This chair is already occupied or reserved for this time slot');
-            }
-        }
+        console.log('[DEBUG] Final Document BEFORE Save:', JSON.stringify(booking.toObject()));
+        
+        await booking.save();
+        console.log('[DEBUG] Save Success! ID:', booking._id);
 
-        const booking = await bookingRepository.create({ ...bookingData, tenantId });
-
-        if (booking?.clientId) {
-            await loyaltyService.handleReferralEvent(tenantId, booking.clientId, 'FIRST_SERVICE');
-        }
-
-        // --- Notifications ---
+        // 3. Post-Save Operations (Non-blocking for the response)
         try {
-            // Populate necessary fields for notification message
-            const populated = await booking.populate(['clientId', 'staffId', 'serviceId']);
-            const clientName = populated.clientId?.name || 'A client';
-            const serviceName = populated.serviceId?.name || 'service';
-            
-            // 1. Notify Assigned Stylist
-            if (populated.staffId && (populated.staffId._id || populated.staffId.id)) {
-                await notificationService.sendNotification({
-                    recipientId: populated.staffId._id || populated.staffId.id,
-                    tenantId,
-                    type: 'booking_new',
-                    title: 'New Appointment!',
-                    body: `${clientName} booked ${serviceName} for ${new Date(populated.appointmentDate).toLocaleString()}`,
-                    actionUrl: '/stylist/bookings',
-                    data: { bookingId: booking._id.toString() }
+            if (booking?.clientId) {
+                // Loyalty and referrals
+                loyaltyService.handleReferralEvent(s_tenantId, booking.clientId, 'FIRST_SERVICE').catch(err => {
+                    console.warn('[BookingService] Loyalty event failed (silent):', err.message);
                 });
             }
 
-            // 2. Notify Admin/Manager of the salon
-            await notificationService.sendToRole(tenantId, 'admin', {
-                type: 'booking_new',
-                title: 'New Booking Received',
-                body: `${clientName} booked with ${populated.staffId?.name || 'Unassigned'}`,
-                actionUrl: '/admin/bookings',
-                data: { bookingId: booking._id.toString() }
-            });
-        } catch (error) {
-            console.warn('[BookingService] Notification failed:', error.message);
+            // --- Notifications (Fire and Forget) ---
+            (async () => {
+                try {
+                    const populated = await Booking.findById(booking._id).populate(['clientId', 'staffId', 'serviceId']);
+                    if (!populated) return;
+
+                    const clientName = populated.clientId?.name || 'A client';
+                    const serviceName = populated.serviceId?.name || 'service';
+                    
+                    if (populated.staffId) {
+                        await notificationService.sendNotification({
+                            recipientId: populated.staffId._id,
+                            tenantId: s_tenantId,
+                            type: 'booking_new',
+                            title: 'New Appointment!',
+                            body: `${clientName} booked ${serviceName} for ${new Date(populated.appointmentDate).toLocaleString()}`,
+                            data: { bookingId: booking._id.toString() }
+                        });
+                    }
+
+                    await notificationService.sendToRole(s_tenantId, 'admin', {
+                        type: 'booking_new',
+                        title: 'New Booking Received',
+                        body: `${clientName} booked with ${populated.staffId?.name || 'Unassigned'}`,
+                        data: { bookingId: booking._id.toString() }
+                    });
+                } catch (internalErr) {
+                    console.warn('[BookingService] Async notification failed:', internalErr.message);
+                }
+            })();
+        } catch (outerErr) {
+            console.warn('[BookingService] Post-save hooks failed:', outerErr.message);
         }
 
         return booking;
@@ -115,21 +159,24 @@ class BookingService {
      * Update booking status
      */
     async updateBookingStatus(tenantId, bookingId, status) {
-        const booking = await bookingRepository.findOne({ _id: bookingId, tenantId });
+        const booking = await Booking.findOne({ _id: bookingId, tenantId });
         if (!booking) {
             throw new Error('Booking not found');
         }
 
         booking.status = status;
+        console.log(`[BookingService] saving booking ${bookingId} with status ${status}`);
         await booking.save();
+        console.log(`[BookingService] booking ${bookingId} saved successfully`);
 
         // --- Notifications ---
         try {
-            const populated = await booking.populate(['clientId', 'staffId']);
+            const populated = await Booking.findById(booking._id).populate(['clientId', 'staffId']);
+            if (!populated) return booking; // Fallback if record lost
+
             const clientName = populated.clientId?.name || 'Client';
 
             if (status === 'confirmed') {
-                // Notify Client
                 if (populated.clientId) {
                     await notificationService.sendNotification({
                         recipientId: populated.clientId._id,
@@ -142,7 +189,6 @@ class BookingService {
                     });
                 }
             } else if (status === 'cancelled') {
-                // Notify Staff and Admin
                 const msg = {
                     type: 'booking_cancelled',
                     title: 'Appointment Cancelled',
@@ -164,7 +210,7 @@ class BookingService {
                 await notificationService.sendToRole(tenantId, 'admin', msg);
             }
         } catch (error) {
-            console.warn('[BookingService] Status notification failed:', error.message);
+            console.error('[BookingService] Status notification failed:', error);
         }
 
         return booking;
@@ -174,7 +220,7 @@ class BookingService {
      * Get booking details
      */
     async getBookingById(tenantId, bookingId) {
-        const booking = await bookingRepository.findOne({ _id: bookingId, tenantId })
+        const booking = await Booking.findOne({ _id: bookingId, tenantId })
             .populate('clientId')
             .populate('serviceId')
             .populate('staffId', 'name email role');
@@ -221,6 +267,80 @@ class BookingService {
                 end: new Date(new Date(b.appointmentDate).getTime() + b.duration * 60000)
             }))
         };
+    }
+
+    /**
+     * Get bookings pending manager approval
+     */
+    async getPendingApprovals(tenantId) {
+        try {
+            if (!tenantId) {
+                console.warn('[BookingService] getPendingApprovals called without tenantId');
+                return [];
+            }
+            console.log(`[BookingService] fetching pending approvals for tenant: ${tenantId}`);
+            const query = {
+                tenantId,
+                status: 'completed',
+                isApprovedByManager: { $ne: true }
+            };
+            const bookings = await Booking.find(query)
+                .populate('clientId', 'name phone')
+                .populate('serviceId', 'name price category')
+                .populate('staffId', 'name role')
+                .sort({ updatedAt: -1 });
+
+            console.log(`[BookingService] Found ${bookings.length} pending approvals`);
+            return bookings;
+        } catch (error) {
+            console.error('[BookingService] getPendingApprovals fatal error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Approve a service and create commission
+     */
+    async approveBooking(tenantId, bookingId, managerId) {
+        try {
+            const booking = await Booking.findOne({ _id: bookingId, tenantId });
+            if (!booking) throw new Error('Booking not found');
+            if (booking.status !== 'completed') throw new Error('Booking must be completed before approval');
+            if (booking.isApprovedByManager) throw new Error('Booking already approved');
+
+            const service = await Service.findOne({ _id: booking.serviceId, tenantId });
+            if (!service) throw new Error('Service not found');
+
+            // 1. Calculate Commission
+            let commissionAmount = 0;
+            if (service.commissionApplicable) {
+                commissionAmount = service.commissionType === 'percent' 
+                    ? (booking.price * service.commissionValue) / 100 
+                    : service.commissionValue;
+            }
+
+            // 2. Create Commission Record
+            await Commission.create({
+                tenantId,
+                staffId: booking.staffId,
+                serviceId: booking.serviceId,
+                amount: commissionAmount,
+                baseAmount: booking.price,
+                percentage: service.commissionType === 'percent' ? service.commissionValue : null,
+                status: 'pending'
+            });
+
+            // 3. Mark Booking as Approved
+            booking.isApprovedByManager = true;
+            booking.approvedAt = new Date();
+            booking.approvedBy = managerId;
+            await booking.save();
+
+            return booking;
+        } catch (error) {
+            console.error('[BookingService] approveBooking fatal error:', error);
+            throw error;
+        }
     }
 }
 

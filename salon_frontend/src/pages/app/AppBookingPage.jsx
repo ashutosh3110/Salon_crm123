@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star } from 'lucide-react';
@@ -48,6 +48,7 @@ export default function AppBookingPage() {
     const [selectedTime, setSelectedTime] = useState(null);
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const submittingRef = useRef(false);
     const [bookingComplete, setBookingComplete] = useState(false);
     const [serviceSearch, setServiceSearch] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -435,98 +436,88 @@ export default function AppBookingPage() {
         return merged;
     };
 
-    const handleSubmit = async () => {
-        if (submitting) return;
+    const handleSubmit = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        
+        if (submittingRef.current) {
+            console.warn('[AppBookingPage] Blocked double submission attempt');
+            return;
+        }
+        
+        submittingRef.current = true;
         setSubmitting(true);
         try {
             const primaryService = selectedServices?.[0];
             const customerId = customer?._id || customer?.id;
             const staffId = selectedStaff?.id || selectedStaff?._id;
             const serviceId = primaryService?._id || primaryService?.id;
-
             const outletId = currentOutlet?._id || currentOutlet?.id;
 
             if (!serviceId || !customerId || !staffId || !selectedDate?.date || !outletId) {
                 throw new Error('Missing booking details (Service, Stylist, Date or Outlet)');
             }
 
-            const appointmentDate = mergeDateAndTime(selectedDate.date, selectedTime);
-
-            const bookingData = {
+            const appointmentDateObj = mergeDateAndTime(selectedDate.date, selectedTime);
+            
+            // Build Base Booking Data
+            const baseBookingData = {
                 clientId: customerId,
                 serviceId: serviceId,
                 staffId,
-                outletId: currentOutlet?._id || currentOutlet?.id,
-                appointmentDate: appointmentDate.toISOString(),
+                outletId,
+                appointmentDate: appointmentDateObj.toISOString(),
                 time: selectedTime,
                 duration: Number(totalDuration || primaryService.duration || 30),
                 price: Number(finalPrice || 0),
-                status: 'pending',
-                notes: `Booked via customer app${selectedTime ? ` at ${selectedTime}` : ''}`,
-                paymentMethod: paymentMethod,
-                paymentStatus: 'unpaid'
+                tenantId: currentOutlet?.tenantId || currentOutlet?.tenant_id || localStorage.getItem('active_tenant_id'),
+                source: 'APP'
             };
 
+            if (!baseBookingData.tenantId) {
+                console.error('[AppBookingPage] CRITICAL: tenantId is missing from baseBookingData');
+            }
+
             if (paymentMethod === 'online') {
-                // 1. Create Order
+                // 1. Create Razorpay Order
                 const orderRes = await api.post('/bookings/payment/order', {
                     amount: finalPrice,
                     receipt: `bk_${customerId}_${Date.now().toString().slice(-8)}`
                 });
                 const order = orderRes.data;
 
-                // 2. Open Razorpay
                 const options = {
                     key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
-                    amount: order.amount,
-                    currency: order.currency,
+                    amount: order.amount,currency: order.currency,
                     name: 'Salon App',
                     description: `Booking for ${primaryService.name}`,
                     order_id: order.id,
                     handler: async function (response) {
                         try {
-                            // 3. Verify Payment & Finalize Booking
+                            // Verify Payment
                             await api.post('/bookings/payment/verify', {
                                 razorpayOrderId: response.razorpay_order_id,
                                 razorpayPaymentId: response.razorpay_payment_id,
                                 razorpaySignature: response.razorpay_signature
                             });
 
-                            // Create booking record after payment success
+                            // Finalize Booking
                             const res = await api.post('/bookings', {
-                                ...bookingData,
+                                ...baseBookingData,
                                 status: 'confirmed',
                                 paymentStatus: 'paid',
+                                paymentMethod: 'online',
                                 razorpayOrderId: response.razorpay_order_id,
                                 razorpayPaymentId: response.razorpay_payment_id
                             });
 
-                            // --- Persist Booking to Global Registry ---
-                            const newBooking = {
-                                id: res.data._id || `BOK-${Date.now()}`,
-                                clientId: customerId,
-                                clientName: customer?.name || 'Client',
-                                phone: customer?.phone || '',
-                                services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
-                                totalPrice: finalPrice,
-                                totalDuration,
-                                date: selectedDate.date.toISOString(),
-                                appointmentDate: selectedDate.date.toISOString(),
-                                time: selectedTime,
-                                staffId: staffId,
-                                staffName: selectedStaff.name,
-                                status: 'upcoming',
-                                timestamp: new Date().toISOString(),
-                                source: 'APP'
-                            };
-
-                            addBooking(newBooking);
-                            setBookingComplete(true);
+                            finalizeBookingSuccess(res.data);
                         } catch (err) {
-                            console.error('Payment verification failed', err);
+                            console.error('[AppBookingPage] Payment verification failed', err);
                             alert('Payment verification failed. Please contact support.');
                         } finally {
                             setSubmitting(false);
+                            submittingRef.current = false;
                         }
                     },
                     prefill: {
@@ -538,50 +529,92 @@ export default function AppBookingPage() {
                     modal: {
                         ondismiss: function() {
                             setSubmitting(false);
+                            submittingRef.current = false;
                         }
                     }
                 };
 
                 const rzp = new window.Razorpay(options);
                 rzp.open();
-                return; // Wait for handler
             } else {
                 // Salon Payment (Offline)
-                const res = await api.post('/bookings', {
-                    ...bookingData,
-                    status: 'confirmed'
-                });
-
-                // --- Persist Booking to Global Registry ---
-                const newBooking = {
-                    id: res.data._id || `BOK-${Date.now()}`,
-                    clientId: customerId,
-                    clientName: customer?.name || 'Client',
-                    phone: customer?.phone || '',
-                    services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
-                    totalPrice: finalPrice,
-                    totalDuration,
-                    date: selectedDate.date.toISOString(),
-                    appointmentDate: selectedDate.date.toISOString(),
-                    time: selectedTime,
-                    staffId: staffId,
-                    staffName: selectedStaff.name,
-                    status: 'upcoming',
-                    timestamp: new Date().toISOString(),
-                    source: 'APP'
+                const payload = {
+                    ...baseBookingData,
+                    status: 'confirmed',
+                    notes: `Booked via customer app (Pay at Salon)${selectedTime ? ` at ${selectedTime}` : ''}`,
+                    paymentMethod: 'salon',
+                    paymentStatus: 'unpaid'
                 };
 
-                addBooking(newBooking);
-                setBookingComplete(true);
+                console.group('[AppBookingPage] SALON BOOKING AUDIT');
+                console.log('Final Payload:', payload);
+                console.log('Payload Type:', typeof payload);
+                console.log('Endpoint: POST /v1/bookings');
+                Object.keys(payload).forEach(key => {
+                    console.log(`- ${key}:`, payload[key], `(${typeof payload[key]})`);
+                });
+                console.groupEnd();
+
+                if (!payload.tenantId || payload.tenantId === 'undefined') {
+                    console.error('[AppBookingPage] CRITICAL: tenantId is invalid in SALON payload');
+                }
+
+                const finalPayload = {
+                    tenantId: payload.tenantId,
+                    clientId: payload.clientId,
+                    serviceId: payload.serviceId,
+                    staffId: payload.staffId,
+                    outletId: payload.outletId,
+                    appointmentDate: payload.appointmentDate,
+                    time: payload.time,
+                    duration: payload.duration,
+                    price: payload.price,
+                    status: payload.status,
+                    notes: payload.notes,
+                    paymentMethod: payload.paymentMethod,
+                    paymentStatus: payload.paymentStatus,
+                    source: payload.source
+                };
+
+                console.log('[AppBookingPage] FINAL FINAL PAYLOAD:', JSON.stringify(finalPayload));
+
+                const res = await api.post('/bookings', finalPayload);
+                finalizeBookingSuccess(res.data);
             }
         } catch (err) {
-            console.error('Booking failed', err);
+            console.error('[AppBookingPage] Booking submission failed:', err);
             alert(err.response?.data?.message || 'Booking failed. Please try again.');
-        } finally {
-            if (paymentMethod !== 'online') {
-                setSubmitting(false);
-            }
+            setSubmitting(false);
+            submittingRef.current = false;
         }
+    };
+
+    /**
+     * Helper to finalize UI after backend success
+     */
+    const finalizeBookingSuccess = (bookingRes) => {
+        const newBooking = {
+            id: bookingRes._id || `BOK-${Date.now()}`,
+            clientId: customer?._id || customer?.id,
+            clientName: customer?.name || 'Client',
+            phone: customer?.phone || '',
+            services: selectedServices.map(s => ({ name: s.name, price: s.price, duration: s.duration })),
+            totalPrice: finalPrice,
+            totalDuration,
+            date: selectedDate.date.toISOString(),
+            appointmentDate: selectedDate.date.toISOString(),
+            time: selectedTime,
+            staffId: selectedStaff?.id || selectedStaff?._id,
+            staffName: selectedStaff?.name,
+            status: 'upcoming',
+            timestamp: new Date().toISOString(),
+            source: 'APP'
+        };
+
+        addBooking(newBooking);
+        setBookingComplete(true);
+        setSubmitting(false);
+        submittingRef.current = false;
     };
 
     // Success screen
@@ -1124,6 +1157,7 @@ export default function AppBookingPage() {
                         className="space-y-8"
                     >
                         <button
+                            type="button"
                             onClick={handleSubmit}
                             disabled={submitting}
                             style={{

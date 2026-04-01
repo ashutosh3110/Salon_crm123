@@ -283,20 +283,28 @@ export const InventoryProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        const path = window.location.pathname || '';
+        const path = typeof window !== 'undefined' ? window.location.pathname || '' : '';
         const isCustomerPath = path.startsWith('/app');
-        const roleToken =
-            localStorage.getItem('auth_token_admin') ||
-            localStorage.getItem('auth_token_manager') ||
-            localStorage.getItem('auth_token_receptionist') ||
-            localStorage.getItem('auth_token_inventory_manager') ||
-            localStorage.getItem('auth_token_superadmin');
-        const customerToken = localStorage.getItem('customer_token');
-        
+        const customerToken = typeof localStorage !== 'undefined' ? localStorage.getItem('customer_token') : null;
+
         // Skip for Superadmin as they don't have a single tenant context for inventory
         if (dashboardUser?.role === 'superadmin') return;
 
-        if ((isCustomerPath && customerToken) || (!isCustomerPath && roleToken)) {
+        // Robust Gating: Wait for user profile to be loaded
+        if (!dashboardUser) return;
+
+        const role = dashboardUser.role;
+        const isAuthorized = ['admin', 'manager', 'receptionist', 'inventory_manager'].includes(role);
+
+        // Fetch dashboard-side data only if authorized
+        if (!isCustomerPath && isAuthorized) {
+            fetchProducts();
+            fetchShopCategories();
+            fetchStockInHistory();
+        }
+
+        // Customer app path gating (keep legacy logic but prefer customer object if available)
+        if (isCustomerPath && (customerToken || customer)) {
             fetchProducts();
             fetchShopCategories();
             fetchStockInHistory();

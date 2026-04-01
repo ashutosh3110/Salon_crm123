@@ -43,11 +43,12 @@ const getAppCMS = async (tenantId) => {
         banners: doc.banners || [],
         offers: doc.offers || [],
         lookbook: doc.lookbook || [],
+        faqs: doc.faqs || [],
     };
 };
 
 const updateAppCMSSection = async (tenantId, section, content) => {
-    if (!['banners', 'offers', 'lookbook'].includes(section)) {
+    if (!['banners', 'offers', 'lookbook', 'faqs'].includes(section)) {
         throw new Error('Invalid section');
     }
     if (!Array.isArray(content)) {
@@ -60,7 +61,7 @@ const updateAppCMSSection = async (tenantId, section, content) => {
     doc[section] = Array.isArray(content) ? content : [];
     doc.markModified(section);
     await doc.save();
-    return { banners: doc.banners, offers: doc.offers, lookbook: doc.lookbook };
+    return { banners: doc.banners, offers: doc.offers, lookbook: doc.lookbook, faqs: doc.faqs };
 };
 
 const getExpertsFromStaff = async (tenantId) => {

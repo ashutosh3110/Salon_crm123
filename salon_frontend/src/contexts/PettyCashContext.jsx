@@ -28,14 +28,22 @@ export const PettyCashProvider = ({ children }) => {
 
     const { user } = useAuth();
     const refresh = useCallback(async () => {
-        // Skip for public pages or if user is SuperAdmin (no tenant context)
+        // Skip for public pages or customer app
         const publicPaths = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'];
-        if (
-            publicPaths.some(p => window.location.pathname.startsWith(p)) || 
-            window.location.pathname === '/' || 
-            window.location.pathname.startsWith('/app') ||
-            user?.role === 'superadmin'
-        ) {
+        const isPublicPath = publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
+        const isCustomerApp = window.location.pathname.startsWith('/app');
+
+        if (isPublicPath || isCustomerApp) {
+            setLoading(false);
+            return;
+        }
+
+        // Wait for user or check role
+        if (!user) return;
+
+        // Authorized roles for petty cash
+        const allowedRoles = ['admin', 'manager', 'accountant'];
+        if (user.role === 'superadmin' || !allowedRoles.includes(user.role)) {
             setLoading(false);
             return;
         }

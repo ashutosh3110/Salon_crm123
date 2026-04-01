@@ -5,9 +5,22 @@ import Booking from './booking.model.js';
 
 const createBooking = async (req, res, next) => {
     try {
+        console.log('[BookingController] Creating booking for tenant:', req.tenantId);
         const booking = await bookingService.createBooking(req.tenantId, req.body);
         res.status(httpStatus.CREATED).send(booking);
     } catch (error) {
+        console.group('[BookingController] Create Failure');
+        console.error('Type:', error.name);
+        console.error('Message:', error.message);
+        if (error.name === 'CastError') {
+            console.error('Path:', error.path);
+            console.error('Value Received:', `[${error.value}]`);
+            console.error('Value Type:', typeof error.value);
+        }
+        if (error.errors) {
+            console.error('Validation Errors:', Object.keys(error.errors).map(k => `${k}: ${error.errors[k].message}`));
+        }
+        console.groupEnd();
         next(error);
     }
 };
@@ -32,6 +45,11 @@ const getBookings = async (req, res, next) => {
         // Enforcement for customers (only show their own bookings)
         if (req.user?.role === 'customer') {
             filter.clientId = req.user._id;
+        }
+
+        // Enforcement for stylists (only show their own bookings)
+        if (req.user?.role === 'stylist') {
+            filter.staffId = req.user._id;
         }
 
         // Date filtering
@@ -88,6 +106,7 @@ const updateBookingStatus = async (req, res, next) => {
         );
         res.send(booking);
     } catch (error) {
+        console.error('[BookingController] updateBookingStatus error:', error);
         next(error);
     }
 };
@@ -129,17 +148,40 @@ const verifyBookingPayment = async (req, res, next) => {
         if (bookingId) {
             const booking = await Booking.findOne({ _id: bookingId, tenantId: req.tenantId });
             if (booking) {
+                booking.status = 'confirmed';
                 booking.paymentStatus = 'paid';
-                booking.paymentMethod = 'online';
                 booking.razorpayOrderId = razorpayOrderId;
                 booking.razorpayPaymentId = razorpayPaymentId;
-                booking.status = 'confirmed';
                 await booking.save();
             }
         }
 
         res.send({ success: true });
     } catch (error) {
+        next(error);
+    }
+};
+
+const getPendingApprovals = async (req, res, next) => {
+    try {
+        const bookings = await bookingService.getPendingApprovals(req.tenantId);
+        res.send(bookings);
+    } catch (error) {
+        console.error('[BookingController] getPendingApprovals error:', error);
+        next(error);
+    }
+};
+
+const approveService = async (req, res, next) => {
+    try {
+        const booking = await bookingService.approveBooking(
+            req.tenantId,
+            req.params.bookingId,
+            req.user._id
+        );
+        res.send(booking);
+    } catch (error) {
+        console.error('[BookingController] approveService error:', error);
         next(error);
     }
 };
@@ -152,4 +194,6 @@ export default {
     getAvailability,
     createPaymentOrder,
     verifyBookingPayment,
+    getPendingApprovals,
+    approveService,
 };

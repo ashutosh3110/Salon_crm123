@@ -1,41 +1,115 @@
 import {
     BarChart3, TrendingUp, Users, DollarSign,
     ArrowUpRight, ArrowDownRight, Award,
-    Calendar, ChevronRight, Target
+    Calendar, ChevronRight, Target, Loader2
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
-import { useState } from 'react';
-
-const stats = [
-    { label: 'Avg Ticket Size', value: '₹1,450', change: '+12%', isUp: true, icon: DollarSign, color: 'text-emerald-500' },
-    { label: 'Revisit Rate', value: '68%', change: '+5%', isUp: true, icon: TrendingUp, color: 'text-primary' },
-    { label: 'Occupancy', value: '82%', change: '-2%', isUp: false, icon: Calendar, color: 'text-amber-500' },
-    { label: 'Efficiency', value: '94%', change: '+8%', isUp: true, icon: Target, color: 'text-blue-500' },
-];
-
-const topPerformers = [
-    { id: 1, name: 'Ananya Sharma', revenue: '₹42,800', services: 84, rating: 4.9 },
-    { id: 2, name: 'Priya Das', revenue: '₹38,200', services: 72, rating: 4.8 },
-    { id: 3, name: 'Vikas Singh', revenue: '₹31,500', services: 68, rating: 4.5 },
-];
+import { useState, useEffect, useCallback } from 'react';
+import api from '../../services/api';
 
 export default function PerformancePage() {
     const [timeRange, setTimeRange] = useState('7d');
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchPerformance = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const { data: res } = await api.get('/dashboard/manager');
+            setData(res?.data || res);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || 'Failed to load performance data');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchPerformance();
+    }, [fetchPerformance]);
 
     const rangeOptions = [
         { label: 'Last 7 Days', value: '7d' },
         { label: 'Last 30 Days', value: '30d' },
-        { label: 'This Month', value: 'month' },
-        { label: 'This Quarter', value: 'quarter' },
     ];
+
+    if (loading) {
+        return (
+            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-text-muted">Synchronizing :: vector_data</p>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="h-[60vh] flex flex-col items-center justify-center p-8 text-center">
+                <p className="text-rose-500 font-bold mb-4">{error}</p>
+                <button 
+                    onClick={fetchPerformance}
+                    className="px-6 py-2 bg-primary text-white text-[10px] font-black uppercase tracking-widest"
+                >
+                    Retry Connection
+                </button>
+            </div>
+        );
+    }
+
+    const overview = data?.overview || {};
+    const staffPerformance = data?.staffPerformance || [];
+    const revenueGrowth = data?.revenueGrowth || [];
+
+    const stats = [
+        { 
+            label: 'Active Staff', 
+            value: overview.activeStaff || 0, 
+            change: '+0%', 
+            isUp: true, 
+            icon: Users, 
+            color: 'text-primary' 
+        },
+        { 
+            label: 'Present Today', 
+            value: overview.presentToday || 0, 
+            change: 'Live', 
+            isUp: true, 
+            icon: Calendar, 
+            color: 'text-amber-500' 
+        },
+        { 
+            label: 'Avg Rating', 
+            value: overview.avgRating || '0.0', 
+            change: 'MTD', 
+            isUp: true, 
+            icon: StarBadge, 
+            color: 'text-emerald-500' 
+        },
+        { 
+            label: 'Target Achievement', 
+            value: `${overview.monthlyTargetPercent || 0}%`, 
+            change: 'Goal', 
+            isUp: true, 
+            icon: Target, 
+            color: 'text-blue-500' 
+        },
+    ];
+
+    const chartData = revenueGrowth.map(pt => ({
+        label: pt.day,
+        value: pt.revenue
+    }));
+
+    const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${(v / 1000).toFixed(0)}K` : `₹${v}`;
 
     return (
         <div className="space-y-3">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 text-left font-black animate-reveal">
                 <div className="leading-none text-left">
                     <h1 className="text-lg sm:text-xl lg:text-2xl font-black text-text tracking-tight uppercase leading-none">Performance Analytics</h1>
@@ -43,13 +117,10 @@ export default function PerformancePage() {
                 </div>
             </div>
 
-            {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {stats.map((s) => (
                     <div key={s.label} className="bg-surface py-2.5 px-3 sm:py-3 sm:px-4 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative text-left">
-                        {/* Soft Glow Effect */}
                         <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
-
                         <div className="relative z-10">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                                 <div className="flex items-center gap-2">
@@ -57,11 +128,9 @@ export default function PerformancePage() {
                                     <p className="text-[9px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
                                 </div>
                                 <div className={`flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] font-bold ${s.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                    {s.isUp ? <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> : <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
                                     {s.change}
                                 </div>
                             </div>
-
                             <div className="flex items-end justify-between mt-auto">
                                 <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-text tracking-tight uppercase leading-none">
                                     <AnimatedCounter
@@ -76,7 +145,6 @@ export default function PerformancePage() {
                 ))}
             </div>
 
-            {/* Revenue Chart */}
             <div className="bg-white rounded-none border border-border/60 p-3 sm:p-4 shadow-none overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                     <h2 className="text-[10px] sm:text-[11px] font-black text-text uppercase tracking-widest leading-none">Revenue Growth</h2>
@@ -88,110 +156,110 @@ export default function PerformancePage() {
                     />
                 </div>
 
-        <div className="w-full h-[300px] mt-4">
-            {(() => {
-                const datasets = {
-                    '7d': { points: [32000, 48000, 41000, 67000, 53000, 71000, 62000], labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
-                    '30d': { points: [28000, 35000, 42000, 38000, 55000, 61000, 58000, 70000, 65000, 74000, 80000, 76000, 83000, 78000, 90000, 85000, 88000, 92000, 87000, 95000, 91000, 98000, 94000, 100000, 97000, 103000, 99000, 108000, 104000, 112000], labels: Array.from({ length: 30 }, (_, i) => (i + 1) % 5 === 0 ? `Day ${i + 1}` : '') },
-                    'month': { points: [40000, 55000, 48000, 72000, 65000, 80000, 75000, 90000, 85000, 95000, 88000, 102000], labels: ['Jan 1', 'Jan 5', 'Jan 9', 'Jan 13', 'Jan 17', 'Jan 21', 'Jan 25', 'Feb 1', 'Feb 5', 'Feb 9', 'Feb 13', 'Feb 17'] },
-                    'quarter': { points: [120000, 145000, 138000, 162000, 175000, 190000, 185000, 210000, 225000, 215000, 240000, 255000], labels: ['Oct', 'Oct', 'Nov', 'Nov', 'Nov', 'Dec', 'Dec', 'Dec', 'Jan', 'Jan', 'Feb', 'Feb'] },
-                };
-                const raw = datasets[timeRange] || datasets['7d'];
-                const data = raw.points.map((v, i) => ({ value: v, label: raw.labels[i] }));
-                const fmt = (v) => v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : v >= 1000 ? `₹${(v / 1000).toFixed(0)}K` : `₹${v}`;
-
-                return (
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.3} />
-                                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
-                            <XAxis
-                                dataKey="label"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
-                                minTickGap={20}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
-                                tickFormatter={fmt}
-                                width={45}
-                            />
-                            <Tooltip
-                                contentStyle={{
-                                    backgroundColor: 'var(--text)',
-                                    border: 'none',
-                                    borderRadius: '0px',
-                                    fontSize: '10px',
-                                    fontWeight: '900',
-                                    color: 'var(--surface)'
-                                }}
-                                itemStyle={{ color: 'var(--primary)' }}
-                                formatter={(v) => [fmt(v), 'REVENUE']}
-                                labelStyle={{ display: 'none' }}
-                                cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }}
-                            />
-                            <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke="var(--primary)"
-                                strokeWidth={3}
-                                fillOpacity={1}
-                                fill="url(#colorRev)"
-                                animationDuration={1500}
-                                activeDot={{ r: 6, stroke: 'var(--surface)', strokeWidth: 2 }}
-                            />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                );
-            })()}
-        </div>
+                <div className="w-full h-[300px] mt-4">
+                    {chartData.length === 0 ? (
+                        <div className="h-full flex items-center justify-center text-[10px] font-black text-text-muted uppercase tracking-widest">
+                            No transaction records found
+                        </div>
+                    ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.3} />
+                                <XAxis
+                                    dataKey="label"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
+                                    tickFormatter={fmt}
+                                    width={45}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'var(--text)',
+                                        border: 'none',
+                                        borderRadius: '0px',
+                                        fontSize: '10px',
+                                        fontWeight: '900',
+                                        color: 'var(--surface)'
+                                    }}
+                                    itemStyle={{ color: 'var(--primary)' }}
+                                    formatter={(v) => [fmt(v), 'REVENUE']}
+                                    labelStyle={{ display: 'none' }}
+                                    cursor={{ stroke: 'var(--primary)', strokeWidth: 1 }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="var(--primary)"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorRev)"
+                                    activeDot={{ r: 6, stroke: 'var(--surface)', strokeWidth: 2 }}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                {/* Top Performers */}
-                <div className="bg-white rounded-none border border-border/60 p-4 shadow-none">
+                <div className="bg-white rounded-none border border-border/60 p-4 shadow-none lg:col-span-2">
                     <div className="flex items-center gap-2 mb-4">
                         <Award className="w-3.5 h-3.5 text-primary" />
-                        <h2 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Team Rankings</h2>
+                        <h2 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Team Performance Rankings</h2>
                     </div>
-                    <div className="space-y-4">
-                        {topPerformers.map((p, i) => (
-                            <div key={p.id} className="flex items-center gap-3 p-3 rounded-none bg-white border border-border/40 hover:border-primary/20 transition-all cursor-pointer">
-                                <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-none relative text-[11px]">
-                                    {p.name.split(' ').map(n => n[0]).join('')}
-                                    {i === 0 && (
-                                        <div className="absolute -top-1.5 -right-1.5 bg-amber-500 rounded-full p-1 shadow-sm">
-                                            <Award className="w-2.5 h-2.5 text-white" />
+                    <div className="space-y-3">
+                        {staffPerformance.length === 0 ? (
+                            <p className="text-[10px] font-black text-text-muted uppercase text-center py-8">No personnel metrics recorded</p>
+                        ) : (
+                            staffPerformance.slice(0, 5).map((p, i) => (
+                                <div key={p.id} className="flex items-center gap-3 p-3 rounded-none bg-white border border-border/40 hover:border-primary/20 transition-all group cursor-pointer">
+                                    <div className="w-8 h-8 rounded-none bg-primary/10 flex items-center justify-center text-primary font-bold border border-primary/20 shadow-none relative text-[11px]">
+                                        {(p.name || '?').split(' ').map(n => n[0]).join('')}
+                                        {i === 0 && (
+                                            <div className="absolute -top-1.5 -right-1.5 bg-amber-500 rounded-full p-1 shadow-sm">
+                                                <Award className="w-2.5 h-2.5 text-white" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{p.name}</p>
+                                        <p className="text-[11px] text-text-muted font-medium">{p.services} services completed</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-sm font-black text-text">₹{Number(p.revenue || 0).toLocaleString()}</p>
+                                        <div className="flex items-center justify-end gap-1">
+                                            <div className="flex items-center gap-0.5 text-amber-500">
+                                                <StarBadge className="w-2.5 h-2.5 fill-current" />
+                                                <span className="text-[10px] font-bold">{p.rating || '0.0'}</span>
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-bold text-text">{p.name}</p>
-                                    <p className="text-[11px] text-text-muted font-medium">{p.services} services completed</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm font-black text-text">{p.revenue}</p>
-                                    <div className="flex items-center justify-end gap-1">
-                                        <TrendingUp className="w-3 h-3 text-emerald-500" />
-                                        <span className="text-[10px] font-bold text-emerald-500">Peak</span>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
-                    <button className="w-full mt-4 py-2 bg-white border border-border/60 rounded-none text-[9px] font-black text-text-muted uppercase tracking-widest hover:text-primary hover:border-primary transition-all">
-                        View Detailed Report
-                    </button>
                 </div>
             </div>
         </div>
+    );
+}
+
+function StarBadge({ className }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
     );
 }

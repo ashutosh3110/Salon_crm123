@@ -66,6 +66,17 @@ const bookingSchema = new mongoose.Schema(
         razorpayPaymentId: {
             type: String,
         },
+        isApprovedByManager: {
+            type: Boolean,
+            default: false,
+        },
+        approvedAt: {
+            type: Date,
+        },
+        approvedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User',
+        },
     },
     {
         timestamps: true,

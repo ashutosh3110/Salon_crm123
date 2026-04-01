@@ -78,6 +78,16 @@ app.use(helmet({
 // parse json request body
 app.use(express.json({ limit: '50mb' }));
 
+// Trace body (Diagnostic)
+app.use((req, res, next) => {
+    if (req.method === 'POST') {
+        console.log(`[Diagnostic] Incoming POST to ${req.url}`);
+        console.log('Body:', JSON.stringify(req.body, null, 2));
+        console.log('Headers x-tenant-id:', req.headers['x-tenant-id']);
+    }
+    next();
+});
+
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 

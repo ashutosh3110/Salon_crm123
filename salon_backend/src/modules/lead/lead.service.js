@@ -1,7 +1,30 @@
 import Lead from './lead.model.js';
+import notificationService from '../notification/notification.service.js';
+import User from '../user/user.model.js';
 
 const createLead = async (leadBody) => {
-    return Lead.create(leadBody);
+    const lead = await Lead.create(leadBody);
+
+    // --- Notification Trigger for Superadmins ---
+    try {
+        const superAdmins = await User.find({ role: 'superadmin' }).select('_id email status');
+        const saIds = superAdmins.map(sa => sa._id);
+        
+        if (saIds.length > 0) {
+            await notificationService.sendToMany(saIds, {
+                type: 'inquiry_new',
+                title: 'New Website Lead 🚀',
+                body: `${leadBody.name || 'A customer'} is interested in: ${leadBody.salonName || 'Wapixo'}`,
+                actionUrl: '/superadmin/leads',
+                data: { leadId: lead._id.toString() }
+            });
+            console.log(`[LeadService] Notification sent to ${saIds.length} Superadmins`);
+        }
+    } catch (err) {
+        console.warn('[LeadService] Notification failed:', err.message);
+    }
+
+    return lead;
 };
 
 const queryLeads = async (filter, options) => {

@@ -223,6 +223,7 @@ import FeedbackPage from './pages/manager/FeedbackPage';
 import ShiftsPage from './pages/manager/ShiftsPage';
 import ManagerSettingsPage from './pages/manager/ManagerSettingsPage';
 import CatalogueEditorPage from './pages/manager/CatalogueEditorPage';
+import ServiceApprovalPage from './pages/manager/ServiceApprovalPage';
 
 import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
@@ -329,6 +330,7 @@ function App() {
                                 <Route path="/admin/hr/payroll" element={<HRPage tab="payroll" />} />
                                 <Route path="/admin/hr/performance" element={<HRPage tab="performance" />} />
                                 <Route path="/admin/hr/leaves" element={<HRPage tab="leaves" />} />
+                                <Route path="/admin/hr/approvals" element={<HRPage tab="approvals" />} />
                             </Route>
 
                             <Route path="/admin/promotions" element={<PromotionsPage />} />
@@ -371,6 +373,7 @@ function App() {
                             <Route path="/manager/feedback" element={<FeedbackPage />} />
                             <Route path="/manager/shifts" element={<ShiftsPage />} />
                             <Route path="/manager/catalogue" element={<CatalogueEditorPage />} />
+                            <Route path="/manager/approvals" element={<ServiceApprovalPage />} />
                             <Route path="/manager/settings" element={<ManagerSettingsPage />} />
                             <Route path="/manager/support" element={<SupportPage />} />
                           </Route>

@@ -48,6 +48,7 @@ export function AuthProvider({ children }) {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
+    // 1. Initial Load: Robust User Restoration
     useEffect(() => {
         const role = resolveRole();
 
@@ -61,7 +62,12 @@ export function AuthProvider({ children }) {
 
         if (storedUser && token) {
             try {
-                setUser(JSON.parse(storedUser));
+                const parsed = JSON.parse(storedUser);
+                // Only update if the user object is different to maintain reference stability
+                setUser(prev => {
+                    if (prev && prev._id === parsed._id && prev.role === parsed.role) return prev;
+                    return parsed;
+                });
             } catch (e) {
                 console.error('[AuthContext] Failed to parse stored user:', e);
                 localStorage.removeItem(`auth_user_${role}`);
@@ -69,9 +75,9 @@ export function AuthProvider({ children }) {
             }
         }
         setLoading(false);
-    }, [pathname]);
+    }, []); // Run ONLY ONCE on mount
 
-    // Track the last visited panel path for "Exit POS" functionality
+    // 2. Track Navigation & Session Persistence
     useEffect(() => {
         const nonPosPanels = ['/admin', '/manager', '/receptionist', '/stylist', '/inventory', '/accountant', '/superadmin'];
         const isPanel = nonPosPanels.some(p => pathname.startsWith(p));
@@ -82,12 +88,12 @@ export function AuthProvider({ children }) {
         }
     }, [pathname]);
 
-    const getExitPath = () => {
+    const getExitPath = useCallback(() => {
         const fallback = getRedirectPath(user);
         return sessionStorage.getItem('last_panel_path') || fallback;
-    };
+    }, [user]);
 
-    const login = async (email, password) => {
+    const login = useCallback(async (email, password) => {
         try {
             const response = await api.post('/auth/login', { email, password });
             
@@ -111,9 +117,9 @@ export function AuthProvider({ children }) {
             console.error('[AuthContext] Login failed:', error);
             throw error;
         }
-    };
+    }, []);
 
-    const register = async (payload) => {
+    const register = useCallback(async (payload) => {
         try {
             const response = await api.post('/auth/register', payload);
             
@@ -136,9 +142,9 @@ export function AuthProvider({ children }) {
             console.error('[AuthContext] Registration failed:', error);
             throw error;
         }
-    };
+    }, []);
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         const role = user?.role || 'admin';
         const fcmToken = localStorage.getItem('fcm_token');
         if (fcmToken) {
@@ -154,17 +160,17 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('active_auth_role');
         setUser(null);
         navigate('/login');
-    };
+    }, [user, navigate]);
 
-    const updateSubscription = (newPlanId) => {
+    const updateSubscription = useCallback((newPlanId) => {
         if (!user) return;
         const updatedUser = { ...user, subscriptionPlan: newPlanId };
         const role = user.role;
         localStorage.setItem(`auth_user_${role}`, JSON.stringify(updatedUser));
         setUser(updatedUser);
-    };
+    }, [user]);
 
-    const updateProfile = async (data) => {
+    const updateProfile = useCallback(async (data) => {
         try {
             const response = await api.patch('/users/me', data);
             const updatedUser = response.data?.data ?? response.data;
@@ -183,7 +189,7 @@ export function AuthProvider({ children }) {
             const msg = error.response?.data?.message || error.message;
             throw new Error(msg);
         }
-    };
+    }, [user]);
 
     /** Fresh user from server (includes fields not stored at login). */
     const refreshUser = useCallback(async () => {
@@ -198,7 +204,7 @@ export function AuthProvider({ children }) {
         return u;
     }, []);
 
-    const changePassword = async (currentPassword, newPassword) => {
+    const changePassword = useCallback(async (currentPassword, newPassword) => {
         try {
             const response = await api.post('/users/change-password', { currentPassword, newPassword });
             if (response.status === 204 || response.data?.success) {
@@ -210,7 +216,7 @@ export function AuthProvider({ children }) {
             const msg = error.response?.data?.message || error.message;
             throw new Error(msg);
         }
-    };
+    }, []);
 
     const value = useMemo(() => ({
         user,

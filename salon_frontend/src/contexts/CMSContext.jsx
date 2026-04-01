@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
+import { useAuth } from './AuthContext';
 
 /** Admin CMS reads/writes need tenant scope; superadmin has no tenantId on user — pass salon id from /tenants/me */
 function adminCmsQuery(salonId) {
@@ -28,6 +29,7 @@ function readStoredCustomerTenantId() {
 
 export function CMSProvider({ children }) {
     const location = useLocation();
+    const { user } = useAuth();
     const { customer } = useCustomerAuth();
     const { staff, updateStaff, salon } = useBusiness();
     const [banners, setBanners] = useState([]);
@@ -58,8 +60,9 @@ export function CMSProvider({ children }) {
                 }
                 res = await api.get(`/cms/app/tenant/${tenantId}`);
             } else {
-                // If not in customer app, only fetch if salon ID is present (implies we're in a dashboard)
-                if (!salon?._id) {
+                // If not in customer app, only fetch if salon ID and proper role are present
+                const isManagerOrAdmin = ['admin', 'manager'].includes(user?.role);
+                if (!salon?._id || !isManagerOrAdmin) {
                     setLoading(false);
                     return;
                 }
@@ -79,7 +82,7 @@ export function CMSProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }, [location.pathname, customer?.tenantId, salon?._id]);
+    }, [location.pathname, customer?.tenantId, salon?._id, user?.role]);
 
     useEffect(() => {
         fetchAppCMS();

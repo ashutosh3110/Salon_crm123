@@ -58,6 +58,7 @@ export default function AppLoginPage() {
     });
     const [otpDebug, setOtpDebug] = useState('');
     const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
+    const submittingRef = useRef(false);
     const navigate = useNavigate();
     const { requestOtp, customerLogin, completeProfile } = useCustomerAuth();
     const { setActiveOutletId, setOutlets } = useBusiness();
@@ -146,13 +147,20 @@ export default function AppLoginPage() {
     const handleSendOtp = async () => {
         if (!tenantId) { setError('Please select an outlet first'); return; }
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
+        
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+        
         setLoading(true); setError('');
         try {
             const res = await requestOtp(phone, tenantId);
             if (res.otp) setOtpDebug(res.otp);
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
-        finally { setLoading(false); }
+        finally { 
+            setLoading(false); 
+            submittingRef.current = false;
+        }
     };
 
     const handleCustomerRegister = async () => {
@@ -210,6 +218,10 @@ export default function AppLoginPage() {
     const handleVerifyOtp = async () => {
         const code = otp.join('');
         if (code.length !== 6) { setError('Enter the 6-digit OTP'); return; }
+        
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+        
         setLoading(true); setError('');
         try {
             const c = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
@@ -230,11 +242,18 @@ export default function AppLoginPage() {
             setError(e.message || 'Invalid OTP');
             setOtp(['', '', '', '', '', '']);
             otpRefs[0].current?.focus();
-        } finally { setLoading(false); }
+        } finally { 
+            setLoading(false); 
+            submittingRef.current = false;
+        }
     };
 
     const handleProfile = async () => {
         if (!name.trim()) { setError('Please enter your name'); return; }
+        
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+        
         setLoading(true); setError('');
         try {
             await completeProfile({ name: name.trim(), gender: selectedGender });
@@ -246,7 +265,10 @@ export default function AppLoginPage() {
             }
             navigate(selectedOutlet ? '/app' : '/app/salon-selection', { replace: true });
         } catch (e) { setError(e.message || 'Something went wrong'); }
-        finally { setLoading(false); }
+        finally { 
+            setLoading(false); 
+            submittingRef.current = false;
+        }
     };
 
     const fmtPhone = (p) => p.length > 5 ? `+91 ${p.slice(0, 5)} ${p.slice(5)}` : `+91 ${p}`;

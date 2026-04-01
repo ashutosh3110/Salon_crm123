@@ -9,6 +9,7 @@ const registerToken = async (req, res, next) => {
     try {
         const userId = req.user._id || req.user.id;
         const { fcmToken } = req.body;
+        console.log(`[NotificationController] Registering token for user ${userId}: ${fcmToken?.substring(0, 10)}...`);
         const result = await notificationService.registerToken(userId, fcmToken);
         res.status(httpStatus.OK).send(result);
     } catch (error) {

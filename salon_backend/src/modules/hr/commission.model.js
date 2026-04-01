@@ -11,7 +11,7 @@ const commissionSchema = new mongoose.Schema(
         invoiceId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Invoice',
-            required: true,
+            required: false,
         },
         serviceId: {
             type: mongoose.Schema.Types.ObjectId,

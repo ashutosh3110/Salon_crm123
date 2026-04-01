@@ -34,35 +34,45 @@ class NotificationService {
             // 2. Try sending push via FCM
             const messaging = getMessaging();
             if (messaging) {
-                const userDoc = await User.findById(recipientId).select('fcmTokens');
+                const userDoc = await User.findById(recipientId).select('fcmTokens email');
                 const tokens = userDoc?.fcmTokens?.filter(Boolean) || [];
+                console.log(`[Notification] Found ${tokens.length} tokens for user: ${userDoc?.email || recipientId}`);
 
                 if (tokens.length > 0) {
                     const results = await Promise.allSettled(
-                        tokens.map(token =>
-                            messaging.send({
-                                token,
-                                notification: { title, body },
-                                data: {
-                                    type,
-                                    notificationId: notification._id.toString(),
-                                    actionUrl,
-                                    ...Object.fromEntries(
-                                        Object.entries(data).map(([k, v]) => [k, String(v)])
-                                    ),
-                                },
-                                webpush: {
-                                    notification: {
-                                        icon: '/icon.png',
-                                        badge: '/icon.png',
-                                        tag: type,
+                        tokens.map(token => {
+                            // Create a promise that rejects after 10 seconds
+                            const timeoutPromise = new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('FCM Timeout (10s)')), 10000)
+                            );
+
+                            // Race the actual send against the timeout
+                            return Promise.race([
+                                messaging.send({
+                                    token,
+                                    notification: { title, body },
+                                    data: {
+                                        type,
+                                        notificationId: notification._id.toString(),
+                                        actionUrl,
+                                        ...Object.fromEntries(
+                                            Object.entries(data).map(([k, v]) => [k, String(v)])
+                                        ),
                                     },
-                                    fcmOptions: {
-                                        link: actionUrl || '/',
+                                    webpush: {
+                                        notification: {
+                                            icon: '/icon.png',
+                                            badge: '/icon.png',
+                                            tag: type,
+                                        },
+                                        fcmOptions: {
+                                            link: actionUrl || '/',
+                                        },
                                     },
-                                },
-                            })
-                        )
+                                }),
+                                timeoutPromise
+                            ]);
+                        })
                     );
 
                     // Remove invalid tokens
@@ -96,9 +106,10 @@ class NotificationService {
             notification.pushSent = pushSent;
             await notification.save();
 
+            console.log(`[Notification] Finished attempt for ${recipientId}. Push successfully sent: ${pushSent}`);
             return notification;
         } catch (error) {
-            console.error('[NotificationService] Error:', error.message);
+            console.error('[NotificationService] Fatal Error:', error.message);
             // Still try to save if notification wasn't created
             return null;
         }
@@ -202,11 +213,17 @@ class NotificationService {
         if (!fcmToken) throw new Error('FCM token is required');
 
         // Avoid duplicate tokens — addToSet handles it
-        await User.findByIdAndUpdate(userId, {
+        const updatedUser = await User.findByIdAndUpdate(userId, {
             $addToSet: { fcmTokens: fcmToken },
-        });
+        }, { new: true });
+        
+        if (updatedUser) {
+            console.log(`[NotificationService] Token registered for ${updatedUser.email}. Tokens: ${updatedUser.fcmTokens.length}`);
+        } else {
+            console.warn(`[NotificationService] FAILED to find user ${userId} for token registration!`);
+        }
 
-        return { success: true };
+        return { success: !!updatedUser };
     }
 
     /**

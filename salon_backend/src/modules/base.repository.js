@@ -7,7 +7,7 @@ export default class BaseRepository {
         return this.model.create(data, options);
     }
 
-    async findOne(filter) {
+    findOne(filter) {
         return this.model.findOne(filter);
     }
 
@@ -44,11 +44,11 @@ export default class BaseRepository {
         };
     }
 
-    async updateOne(filter, update) {
+    updateOne(filter, update) {
         return this.model.findOneAndUpdate(filter, update, { new: true });
     }
 
-    async deleteOne(filter) {
+    deleteOne(filter) {
         return this.model.findOneAndDelete(filter);
     }
 }

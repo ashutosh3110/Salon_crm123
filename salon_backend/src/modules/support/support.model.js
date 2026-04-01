@@ -44,6 +44,9 @@ const supportTicketSchema = new mongoose.Schema(
         attachments: [{
             type: String,
         }],
+        creatorRole: {
+            type: String,
+        },
         responses: [{
             userId: {
                 type: mongoose.Schema.Types.ObjectId,

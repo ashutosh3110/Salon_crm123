@@ -46,7 +46,8 @@ import {
     Ban,
     Trash2,
     ArrowRight,
-    LifeBuoy
+    LifeBuoy,
+    CheckCircle2
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';
@@ -187,6 +188,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
                 { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
                 { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
+                { label: 'Service Approvals', icon: CheckCircle2, path: '/admin/hr/approvals', badge: { count: 'New', color: 'bg-primary' } },
             ]
         },
         {

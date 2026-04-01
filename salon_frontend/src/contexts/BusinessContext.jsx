@@ -6,7 +6,7 @@ import api from '../services/api';
 const BusinessContext = createContext(null);
 
 export function BusinessProvider({ children }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const { customer } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [salonLoading, setSalonLoading] = useState(false);
@@ -50,8 +50,10 @@ export function BusinessProvider({ children }) {
         return localStorage.getItem('active_outlet_id') || null;
     });
 
-    const activeOutlet =
-        outlets.find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null;
+    const activeOutlet = useMemo(() =>
+        outlets.find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null,
+        [outlets, activeOutletId]
+    );
 
     // Customer app: pick a default outlet so shop filters (outlet-specific stock) work
     useEffect(() => {
@@ -73,22 +75,36 @@ export function BusinessProvider({ children }) {
 
     // Fetch Initial Data on login (admin/staff)
     useEffect(() => {
-        if (isAuthenticated) {
+        // Skip for Superadmin as they don't have a single tenant context
+        if (isAuthenticated && user?.role !== 'superadmin') {
+            const role = user?.role;
+            const isManagerOrAdmin = ['admin', 'manager'].includes(role);
+            const isReceptionist = role === 'receptionist';
+            
+            // Basic data for all staff
             if (!salon && !salonLoading) fetchSalon();
-            fetchOutlets();
             fetchStaff();
-            fetchServices();
-            fetchCategories();
-            fetchCustomers();
             fetchBookings();
-            fetchProducts();
-            fetchSegments();
-            fetchFeedbacks();
-            fetchSuppliers();
-            fetchShifts();
-            fetchCatalogue();
+
+            // Manager/Receptionist/Admin level data
+            if (isManagerOrAdmin || isReceptionist) {
+                fetchOutlets();
+                fetchServices();
+                fetchCategories();
+                fetchCustomers();
+                fetchProducts();
+            }
+
+            // High-level management only
+            if (isManagerOrAdmin) {
+                fetchSegments();
+                fetchFeedbacks();
+                fetchSuppliers();
+                fetchShifts();
+                fetchCatalogue();
+            }
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, user?.role]);
 
     // Fetch outlets, services, categories, and staff when customer logs in (for /app)
     useEffect(() => {
@@ -136,7 +152,7 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = useCallback(async () => {
         setCustomersLoading(true);
         try {
             const response = await api.get('/clients');
@@ -146,9 +162,9 @@ export function BusinessProvider({ children }) {
         } finally {
             setCustomersLoading(false);
         }
-    };
+    }, []);
 
-    const fetchSegments = async () => {
+    const fetchSegments = useCallback(async () => {
         setSegmentsLoading(true);
         try {
             const response = await api.get('/segments');
@@ -160,9 +176,9 @@ export function BusinessProvider({ children }) {
         } finally {
             setSegmentsLoading(false);
         }
-    };
+    }, []);
 
-    const fetchFeedbacks = async () => {
+    const fetchFeedbacks = useCallback(async () => {
         setFeedbacksLoading(true);
         try {
             const response = await api.get('/feedbacks');
@@ -187,7 +203,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setFeedbacksLoading(false);
         }
-    };
+    }, []);
 
     // Auto-refresh feedback list only on feedback screens.
     useEffect(() => {
@@ -221,7 +237,7 @@ export function BusinessProvider({ children }) {
         };
     };
 
-    const fetchBookings = async () => {
+    const fetchBookings = useCallback(async () => {
         setBookingsLoading(true);
         try {
             const response = await api.get('/bookings');
@@ -232,9 +248,9 @@ export function BusinessProvider({ children }) {
         } finally {
             setBookingsLoading(false);
         }
-    };
+    }, []);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         setProductsLoading(true);
         try {
             const response = await api.get('/products');
@@ -244,7 +260,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setProductsLoading(false);
         }
-    };
+    }, []);
 
     const updateSalon = async (data) => {
         try {
@@ -484,7 +500,7 @@ export function BusinessProvider({ children }) {
     const updateCustomer = (id, data) => setCustomers(prev => prev.map(c => c._id === id ? { ...c, ...data } : c));
     const deleteCustomer = (id) => setCustomers(prev => prev.filter(c => c._id !== id));
 
-    const fetchSuppliers = async () => {
+    const fetchSuppliers = useCallback(async () => {
         setSuppliersLoading(true);
         try {
             const response = await api.get('/suppliers');
@@ -504,7 +520,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setSuppliersLoading(false);
         }
-    };
+    }, []);
 
     const addSupplier = async (supplier) => {
         const payload = {
@@ -672,7 +688,7 @@ export function BusinessProvider({ children }) {
         }
     };
 
-    const fetchShifts = async () => {
+    const fetchShifts = useCallback(async () => {
         setShiftsLoading(true);
         try {
             const response = await api.get('/shifts');
@@ -683,7 +699,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setShiftsLoading(false);
         }
-    };
+    }, []);
 
     const addShift = async (shiftData) => {
         try {
@@ -719,7 +735,7 @@ export function BusinessProvider({ children }) {
         }
     };
 
-    const fetchCatalogue = async () => {
+    const fetchCatalogue = useCallback(async () => {
         setCatalogueLoading(true);
         try {
             const response = await api.get('/catalogue');
@@ -730,7 +746,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setCatalogueLoading(false);
         }
-    };
+    }, []);
 
     const updateCatalogue = async (catalogueData) => {
         setCatalogueLoading(true);

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -14,7 +14,8 @@ export function NotificationProvider({ children }) {
         if (!user) return;
         try {
             const res = await api.get('/notifications');
-            setNotifications(res.data.data.results || []);
+            // Backend returns { results: [...], total: ..., unreadCount: ... }
+            setNotifications(res.data.results || []);
         } catch (error) {
             console.error('Fetch Notifications Error:', error);
         }
@@ -24,13 +25,14 @@ export function NotificationProvider({ children }) {
         if (!user) return;
         try {
             const res = await api.get('/notifications/unread-count');
-            setUnreadCount(res.data.count || 0);
+            // Backend returns { unreadCount: ... }
+            setUnreadCount(res.data.unreadCount || 0);
         } catch (error) {
             console.error('Fetch Unread Count Error:', error);
         }
     }, [user]);
 
-    const markAsRead = async (id) => {
+    const markAsRead = useCallback(async (id) => {
         try {
             await api.patch('/notifications/read', { ids: [id] });
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
@@ -38,9 +40,9 @@ export function NotificationProvider({ children }) {
         } catch (error) {
             console.error('Mark Read Error:', error);
         }
-    };
+    }, []);
 
-    const markAllRead = async () => {
+    const markAllRead = useCallback(async () => {
         try {
             await api.patch('/notifications/read-all');
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
@@ -48,9 +50,9 @@ export function NotificationProvider({ children }) {
         } catch (error) {
             console.error('Mark All Read Error:', error);
         }
-    };
+    }, []);
 
-    const deleteNotification = async (id) => {
+    const deleteNotification = useCallback(async (id) => {
         try {
             await api.delete(`/notifications/${id}`);
             setNotifications(prev => prev.filter(n => n._id !== id));
@@ -58,7 +60,7 @@ export function NotificationProvider({ children }) {
         } catch (error) {
             console.error('Delete Notification Error:', error);
         }
-    };
+    }, [fetchUnreadCount]);
 
     useEffect(() => {
         if (user) {
@@ -75,16 +77,26 @@ export function NotificationProvider({ children }) {
         }
     }, [user, fetchNotifications, fetchUnreadCount]);
 
+    const value = useMemo(() => ({
+        notifications,
+        unreadCount,
+        loading,
+        fetchNotifications,
+        markAsRead,
+        markAllRead,
+        deleteNotification
+    }), [
+        notifications,
+        unreadCount,
+        loading,
+        fetchNotifications,
+        markAsRead,
+        markAllRead,
+        deleteNotification
+    ]);
+
     return (
-        <NotificationContext.Provider value={{
-            notifications,
-            unreadCount,
-            loading,
-            fetchNotifications,
-            markAsRead,
-            markAllRead,
-            deleteNotification
-        }}>
+        <NotificationContext.Provider value={value}>
             {children}
         </NotificationContext.Provider>
     );

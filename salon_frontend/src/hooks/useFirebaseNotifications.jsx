@@ -14,6 +14,7 @@ export const useFirebaseNotifications = (isAuthenticated) => {
     if (!isAuthenticated) return;
 
     const setupNotifications = async () => {
+      console.log('[useFirebaseNotifications] Initializing for user:', isAuthenticated);
       try {
         // 1. Request Permission
         const permission = await Notification.requestPermission();
@@ -21,9 +22,9 @@ export const useFirebaseNotifications = (isAuthenticated) => {
           const newToken = await registerToken();
           if (newToken) {
             setToken(newToken);
-            toast.success('🔔 Notifications Active', { id: 'fcm-setup' });
+            toast.success('🔔 Push Notifications Registered!', { id: 'fcm-setup' });
           } else {
-            toast.error('⚠️ Could not register notifications', { id: 'fcm-error' });
+            toast.error('⚠️ FCM Registration Failed (Backend Error)', { id: 'fcm-error' });
           }
         } else {
           console.warn('[useFirebaseNotifications] Permission not granted');
@@ -38,9 +39,12 @@ export const useFirebaseNotifications = (isAuthenticated) => {
 
     // 2. Listen for foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('[useFirebaseNotifications] Foreground Message:', payload);
+      console.log('[useFirebaseNotifications] Foreground Message RECEIVED:', payload);
       
-      const { title, body } = payload.notification;
+      // Definitively notify for testing
+      window.alert(`🔔 NEW PUSH: ${payload.notification?.title}\n${payload.notification?.body}`);
+      
+      const { title, body } = payload.notification || {};
       
       // Customize toast appearance based on theme if needed
       toast.success(

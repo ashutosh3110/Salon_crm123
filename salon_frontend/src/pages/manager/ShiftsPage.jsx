@@ -20,6 +20,16 @@ export default function ShiftsPage() {
     const [targetWeek, setTargetWeek] = useState('01 Mar');
     const [isGenerating, setIsGenerating] = useState(false);
 
+    // Individual Shift Modal State
+    const [isAddShiftModalOpen, setIsAddShiftModalOpen] = useState(false);
+    const [selectedStaff, setSelectedStaff] = useState(null);
+    const [selectedDay, setSelectedDay] = useState(0);
+    const [newShift, setNewShift] = useState({
+        name: 'General Shift',
+        startTime: '09:00',
+        endTime: '17:00'
+    });
+
     useEffect(() => {
         fetchShifts();
         fetchStaff();
@@ -53,6 +63,31 @@ export default function ShiftsPage() {
         } catch (err) {
             console.error('Swap approval failed:', err);
         }
+    };
+
+    const handleAddDirectShift = async () => {
+        if (!selectedStaff || !activeOutlet) return;
+        setIsGenerating(true);
+        try {
+            await addShift({
+                ...newShift,
+                outletId: activeOutlet._id || activeOutlet.id,
+                assignedUserIds: [selectedStaff._id || selectedStaff.id],
+                dayOfWeek: selectedDay,
+                status: 'Active'
+            });
+            setIsAddShiftModalOpen(false);
+        } catch (err) {
+            console.error('Failed to add shift:', err);
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
+    const openAddShift = (member, dayIdx) => {
+        setSelectedStaff(member);
+        setSelectedDay(dayIdx);
+        setIsAddShiftModalOpen(true);
     };
 
     const handleGenerateRoster = async () => {
@@ -154,7 +189,10 @@ export default function ShiftsPage() {
                                                     <span className="text-[9px] font-black text-rose-500/40 uppercase tracking-tighter">Off</span>
                                                 </div>
                                             ) : (
-                                                <div className="h-full border border-dashed border-border/20 flex items-center justify-center group-hover:border-primary/20 transition-all">
+                                                <div 
+                                                    onClick={() => openAddShift(member, dayIdx)}
+                                                    className="h-full border border-dashed border-border/20 flex items-center justify-center group-hover:border-primary/20 transition-all cursor-pointer hover:bg-primary/5"
+                                                >
                                                     <Plus className="w-3 h-3 text-border group-hover:text-primary/40" />
                                                 </div>
                                             )}
@@ -301,7 +339,11 @@ export default function ShiftsPage() {
                                     );
 
                                     return (
-                                        <div key={dayIdx} className="col-span-1 min-h-[60px] p-2 border-l border-b border-border/40">
+                                        <div 
+                                            key={dayIdx} 
+                                            onClick={() => dayShifts.length === 0 && openAddShift(member, dayIdx)}
+                                            className={`col-span-1 min-h-[60px] p-2 border-l border-b border-border/40 ${dayShifts.length === 0 ? 'cursor-pointer hover:bg-primary/5' : ''}`}
+                                        >
                                             {dayShifts.map(s => (
                                                 <div key={s._id || s.id} className={`h-full border-l-2 p-2 rounded-r-none group/shift cursor-pointer hover:brightness-105 transition-all mb-1 ${s.colorClass || 'bg-primary/10 border-primary'}`}>
                                                     <p className="text-[9px] font-black text-primary uppercase leading-tight">{s.startTime} - {s.endTime}</p>
@@ -311,6 +353,11 @@ export default function ShiftsPage() {
                                             {dayShifts.length === 0 && dayIdx === 6 && (
                                                 <div className="h-full bg-rose-500/5 flex items-center justify-center rounded-none border border-dashed border-rose-500/10">
                                                     <span className="text-[9px] font-black text-rose-500/40 uppercase">Day Off</span>
+                                                </div>
+                                            )}
+                                            {dayShifts.length === 0 && dayIdx !== 6 && (
+                                                <div className="h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Plus className="w-3 h-3 text-primary/40" />
                                                 </div>
                                             )}
                                         </div>
@@ -364,6 +411,74 @@ export default function ShiftsPage() {
                                         </>
                                     ) : (
                                         'Launch AI Planner'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Quick Add Shift Modal */}
+            {isAddShiftModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white border border-border/60 rounded-none w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-200">
+                        <div className="p-6 border-b border-border/40 flex items-center justify-between">
+                            <div className="text-left">
+                                <h2 className="text-sm font-black text-text uppercase tracking-widest">Assign Quick Shift</h2>
+                                <p className="text-[10px] font-bold text-text-muted mt-1 uppercase tracking-tighter">
+                                    {selectedStaff?.name} :: {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][selectedDay]}
+                                </p>
+                            </div>
+                            <button onClick={() => setIsAddShiftModalOpen(false)} className="text-text-muted hover:text-primary transition-colors">
+                                <Plus className="w-5 h-5 rotate-45" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4">
+                            <div className="space-y-1.5 text-left">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Shift Template</label>
+                                <input
+                                    className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-xs outline-none focus:border-primary/50"
+                                    value={newShift.name}
+                                    onChange={(e) => setNewShift({ ...newShift, name: e.target.value })}
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Start Time</label>
+                                    <input
+                                        type="time"
+                                        className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-xs outline-none focus:border-primary/50"
+                                        value={newShift.startTime}
+                                        onChange={(e) => setNewShift({ ...newShift, startTime: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-1.5 text-left">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">End Time</label>
+                                    <input
+                                        type="time"
+                                        className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-xs outline-none focus:border-primary/50"
+                                        value={newShift.endTime}
+                                        onChange={(e) => setNewShift({ ...newShift, endTime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="pt-4 flex gap-3">
+                                <button
+                                    onClick={() => setIsAddShiftModalOpen(false)}
+                                    disabled={isGenerating}
+                                    className="flex-1 py-3 bg-white border border-border/60 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all disabled:opacity-50"
+                                >
+                                    Abort
+                                </button>
+                                <button
+                                    onClick={handleAddDirectShift}
+                                    disabled={isGenerating}
+                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isGenerating ? (
+                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                    ) : (
+                                        'Commit Shift'
                                     )}
                                 </button>
                             </div>

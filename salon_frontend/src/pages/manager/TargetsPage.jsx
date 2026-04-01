@@ -190,30 +190,9 @@ export default function TargetsPage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Achievement Badge Section - Order first on mobile */}
-                <div className="order-first lg:order-last bg-primary rounded-none p-6 text-white relative overflow-hidden shadow-none flex flex-col justify-between min-h-[200px]">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-8 translate-x-8" />
-                    <div className="relative">
-                        <div className="w-12 h-12 rounded-none bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 border border-white/20">
-                            <Flame className="w-6 h-6 text-amber-300" />
-                        </div>
-                        <h3 className="text-xl font-black leading-tight tracking-tight uppercase">On a Streak!</h3>
-                        <p className="text-white/70 text-xs mt-2 leading-relaxed font-medium">Your salon has surpassed its revenue targets for 3 consecutive weeks. 🚀</p>
-                    </div>
-
-                    <div className="relative mt-8 bg-black/10 backdrop-blur-md rounded-none p-4 border border-white/5">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Award className="w-4 h-4 text-amber-300" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">New Milestone Unlocked</span>
-                        </div>
-                        <p className="text-sm font-extrabold text-white leading-snug">Platinum Efficiency Rating</p>
-                        <p className="text-[10px] text-white/60 font-medium mt-0.5">Maintain 90% targets for 10 more days.</p>
-                    </div>
-                </div>
-
+            <div className="grid grid-cols-1 gap-6">
                 {/* Team Target Progress */}
-                <div className="lg:col-span-2 bg-white rounded-none border border-border/60 p-4 sm:p-6 shadow-none">
+                <div className="bg-white rounded-none border border-border/60 p-4 sm:p-6 shadow-none">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
                         <div className="flex items-center gap-2">
                             <Users className="w-4 sm:w-4.5 h-4 sm:h-4.5 text-primary" />
@@ -264,7 +243,6 @@ export default function TargetsPage() {
                         </div>
                     )}
                 </div>
-
             </div>
 
             {/* Add Target Modal */}

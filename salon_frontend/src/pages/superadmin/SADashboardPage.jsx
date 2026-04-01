@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import useFirebaseNotifications from '../../hooks/useFirebaseNotifications';
@@ -113,6 +114,7 @@ export default function SADashboardPage() {
     const [refreshing, setRefreshing] = useState(false);
     const [recentTenants, setRecentTenants] = useState([]);
     const [systemOk] = useState(true); // mock system health
+    const [sendingTest, setSendingTest] = useState(false);
 
     const fetchStats = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -186,6 +188,28 @@ export default function SADashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
 
+                    <button
+                        onClick={async () => {
+                            if (sendingTest) return;
+                            console.info('[Dashboard] Triggering Test Push...');
+                            setSendingTest(true);
+                            try {
+                                const res = await api.get('/notifications/test');
+                                console.log('[Dashboard] Test Response:', res.data);
+                                toast.success(`🚀 Test sent! Check your notification.`);
+                            } catch (e) {
+                                console.error('[Dashboard] Test Failed:', e);
+                                toast.error('❌ Test failed: ' + (e.response?.data?.message || e.message));
+                            } finally {
+                                setSendingTest(false);
+                            }
+                        }}
+                        disabled={sendingTest}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                    >
+                        <Zap className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} /> 
+                        {sendingTest ? 'Sending...' : 'Test Push'}
+                    </button>
                     <button
                         onClick={() => fetchStats(true)}
                         disabled={refreshing}

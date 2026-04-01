@@ -12,6 +12,7 @@ export const useFinance = () => {
 };
 
 export const FinanceProvider = ({ children }) => {
+    const { user } = useAuth();
     const { getStylistAttendanceStats } = useAttendance();
     const [revenue, setRevenue] = useState([]);
     const [expenses, setExpenses] = useState([]);
@@ -31,15 +32,19 @@ export const FinanceProvider = ({ children }) => {
     const [cashBankSummary, setCashBankSummary] = useState(null);
 
     const fetchGstSummary = useCallback(async (query = {}) => {
+        const allowedRoles = ['admin', 'accountant'];
+        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
         try {
             const res = await api.get('/finance/tax/gst-summary', { params: query });
             setGstSummary(res.data.data || { totals: {}, monthly: [] });
         } catch (error) {
             console.error('Fetch GST Summary Error:', error);
         }
-    }, []);
+    }, [user?.role]);
 
     const fetchCashBankSummary = useCallback(async (date = new Date().toISOString().split('T')[0]) => {
+        const allowedRoles = ['admin', 'accountant'];
+        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
         try {
             const res = await api.get(`/finance/cash-bank`, { params: { date } });
             setCashBankSummary(res.data.data);
@@ -47,7 +52,7 @@ export const FinanceProvider = ({ children }) => {
         } catch (error) {
             console.error('Fetch Cash Bank Summary Error:', error);
         }
-    }, []);
+    }, [user?.role]);
 
     const saveCashBankReconciliation = async (payload) => {
         try {
@@ -60,11 +65,10 @@ export const FinanceProvider = ({ children }) => {
             throw error;
         }
     };
-
-    const { user } = useAuth();
     const refresh = useCallback(async () => {
-        // Skip for Superadmin as they don't have a single tenant context
-        if (user?.role === 'superadmin') {
+        // Explicitly allow only admin and accountant to fetch full finance data
+        const allowedRoles = ['admin', 'accountant'];
+        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) {
             setLoading(false);
             return;
         }
@@ -137,6 +141,8 @@ export const FinanceProvider = ({ children }) => {
     const [payrollPeriod, setPayrollPeriod] = useState({ year: new Date().getFullYear(), month: new Date().getMonth() + 1, locked: false });
 
     const fetchPayroll = useCallback(async (year, month) => {
+        const allowedRoles = ['admin', 'accountant'];
+        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
         try {
             const res = await api.get('/payroll', { params: { year, month } });
             const payload = res.data.data || {};
@@ -145,7 +151,7 @@ export const FinanceProvider = ({ children }) => {
         } catch (error) {
             console.error('Fetch Payroll Error:', error);
         }
-    }, []);
+    }, [user?.role]);
 
     const generatePayroll = async (year, month) => {
         try {

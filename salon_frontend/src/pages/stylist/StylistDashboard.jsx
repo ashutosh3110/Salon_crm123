@@ -5,7 +5,7 @@ import {
     Calendar, Users, Clock, Star, TrendingUp,
     CheckCircle2, Play, ArrowRight, Activity,
     Target, Award, Search, RefreshCw,
-    X,
+    X, Scissors
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -46,9 +46,12 @@ export default function StylistDashboard() {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
-    const [sectorFilter, setSectorFilter] = useState('ALL');
     const [selectedApt, setSelectedApt] = useState(null);
     const [toast, setToast] = useState(null);
+
+    const [allBookings, setAllBookings] = useState([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+    const [bookingsError, setBookingsError] = useState(null);
 
     const loadOverview = useCallback(async () => {
         setError(null);
@@ -69,6 +72,27 @@ export default function StylistDashboard() {
         loadOverview();
     }, [loadOverview]);
 
+    const loadAllBookings = useCallback(async () => {
+        setBookingsError(null);
+        setBookingsLoading(true);
+        try {
+            const res = await api.get('/bookings', { params: { staffId: user?._id || user?.id, limit: 100 } });
+            // The API might return { data: [...] } or just [...]
+            const data = res.data?.data ?? res.data ?? [];
+            setAllBookings(Array.isArray(data) ? data : data.results || []);
+        } catch (e) {
+            setBookingsError(e?.response?.data?.message || e?.message || 'Failed to load bookings');
+        } finally {
+            setBookingsLoading(false);
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            loadAllBookings();
+        }
+    }, [user, loadAllBookings]);
+
     const scheduleRows = useMemo(() => {
         const rows = overview?.schedule || [];
         return rows.map((r) => ({
@@ -77,20 +101,16 @@ export default function StylistDashboard() {
         }));
     }, [overview]);
 
-    const sectors = useMemo(() => {
-        const u = [...new Set(scheduleRows.map((s) => s.sector).filter(Boolean))];
-        return ['ALL', ...u];
-    }, [scheduleRows]);
-
-    const statuses = ['ALL', 'completed', 'in-progress', 'upcoming', 'pending', 'cancelled'];
+    useEffect(() => {
+        loadOverview();
+    }, [loadOverview]);
 
     const filteredSchedule = scheduleRows.filter((s) => {
         const matchesSearch =
             s.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
             s.service.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'ALL' || s.uiStatus === statusFilter;
-        const matchesSector = sectorFilter === 'ALL' || s.sector === sectorFilter;
-        return matchesSearch && matchesStatus && matchesSector;
+        return matchesSearch && matchesStatus;
     });
 
     const showToast = (msg, isErr) => {
@@ -145,10 +165,6 @@ export default function StylistDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div className="lg:col-span-3 bg-background border border-border p-5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Activity className="w-32 h-32 text-primary" />
-                    </div>
-
                     <div className="relative z-10">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div className="flex items-center gap-3">
@@ -226,21 +242,8 @@ export default function StylistDashboard() {
                                     />
                                 </div>
 
-                                <div className="hidden lg:flex items-center gap-1.5 p-1 bg-background border border-border shadow-inner flex-wrap max-w-[220px]">
-                                    {sectors.map((s) => (
-                                        <button
-                                            key={s}
-                                            type="button"
-                                            onClick={() => setSectorFilter(s)}
-                                            className={`px-2 py-1.5 text-[7px] font-black uppercase tracking-tighter transition-all ${sectorFilter === s ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-text-muted hover:text-text hover:bg-surface-alt/50'}`}
-                                        >
-                                            {s === 'ALL' ? 'ALL' : s.replace('STATION_', 'S ')}
-                                        </button>
-                                    ))}
-                                </div>
-
                                 <div className="flex items-center gap-1.5 p-1 bg-background border border-border shadow-inner flex-wrap">
-                                    {statuses.map((s) => (
+                                    {['ALL', 'completed', 'in-progress', 'upcoming', 'pending', 'cancelled'].map((s) => (
                                         <button
                                             key={s}
                                             type="button"
@@ -257,7 +260,6 @@ export default function StylistDashboard() {
                                     onClick={() => {
                                         setSearchTerm('');
                                         setStatusFilter('ALL');
-                                        setSectorFilter('ALL');
                                         loadOverview();
                                         showToast('Refreshed');
                                     }}
@@ -293,9 +295,6 @@ export default function StylistDashboard() {
                                                             <h4 className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">
                                                                 {apt.customer}
                                                             </h4>
-                                                            <div className="bg-primary/5 px-2 py-0.5 border border-primary/10 text-[8px] text-primary font-black">
-                                                                {apt.sector}
-                                                            </div>
                                                         </div>
                                                         <p className="text-[10px] text-text-muted uppercase tracking-[0.1em] font-bold">
                                                             {apt.service} <span className="mx-2 opacity-30">|</span> {apt.duration}
@@ -363,14 +362,94 @@ export default function StylistDashboard() {
                             </div>
                         </div>
                     </div>
+
+                    {/* ALL SERVICES SECTION */}
+                    <div className="bg-surface border border-border p-6 relative overflow-hidden group">
+                        <div className="flex items-center justify-between mb-6 relative z-10">
+                            <div className="flex items-center gap-3">
+                                <Scissors className="w-5 h-5 text-primary" />
+                                <h3 className="text-sm font-black text-text uppercase tracking-widest">My Service History</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={loadAllBookings}
+                                className="p-2 border border-border text-text-muted hover:text-primary transition-all active:scale-95"
+                                title="Refresh History"
+                            >
+                                <RefreshCw className={`w-3.5 h-3.5 ${bookingsLoading ? 'animate-spin' : ''}`} />
+                            </button>
+                        </div>
+
+                        {bookingsError && (
+                            <div className="p-3 mb-4 border border-rose-500/20 bg-rose-500/5 text-[9px] font-black uppercase text-rose-500">
+                                {bookingsError}
+                            </div>
+                        )}
+
+                        <div className="bg-background border border-border overflow-hidden p-1 shadow-inner max-h-[500px] overflow-y-auto custom-scrollbar">
+                            <div className="divide-y divide-border/10">
+                                {bookingsLoading && !allBookings.length ? (
+                                    <div className="p-12 text-center text-[10px] font-black uppercase text-text-muted tracking-widest">Loading history…</div>
+                                ) : allBookings.length > 0 ? (
+                                    allBookings.map((bk) => {
+                                        const uiStatus = mapBookingToUi(bk.status);
+                                        const sm = STATUS_MAP[uiStatus] || STATUS_MAP.default;
+                                        const dateLabel = new Date(bk.appointmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+                                        
+                                        return (
+                                            <div key={bk._id} className="p-4 group/item hover:bg-surface-alt/20 transition-all">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="min-w-0 flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h4 className="text-[11px] font-black text-text uppercase truncate">
+                                                                {bk.serviceId?.name || 'Service'}
+                                                            </h4>
+                                                            <span className="text-[8px] text-text-muted font-bold opacity-40">/</span>
+                                                            <span className="text-[9px] font-bold text-primary group-hover/item:text-primary transition-colors uppercase">
+                                                                {bk.clientId?.name || 'Walk-in'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[8px] font-black uppercase tracking-widest text-text-muted">
+                                                            <span>{dateLabel}</span>
+                                                            <span className="opacity-30">|</span>
+                                                            <span>{bk.time || '—'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`px-2 py-1 border text-[7px] font-black uppercase tracking-widest ${sm.bg} ${sm.color} ${sm.border}`}>
+                                                            {sm.label}
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => setSelectedApt({
+                                                                id: bk._id,
+                                                                customer: bk.clientId?.name || 'Walk-in',
+                                                                time: bk.time || dateLabel,
+                                                                service: bk.serviceId?.name || 'Service',
+                                                                sector: 'STATION_HIST',
+                                                                uiStatus,
+                                                                duration: `${bk.duration || 0} MIN`
+                                                            })}
+                                                            className="p-1.5 border border-border text-text-muted hover:text-text hover:border-text transition-all"
+                                                        >
+                                                            <ArrowRight className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="p-12 text-center">
+                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">No service history found</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-surface border border-border p-6 h-full flex flex-col relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Target className="w-24 h-24 text-primary" />
-                        </div>
-
                         <div className="flex items-center justify-between mb-8 relative z-10">
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-center gap-3">
@@ -514,10 +593,6 @@ export default function StylistDashboard() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-lg border border-border shadow-2xl relative p-10 overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
-                                <Award className="w-32 h-32 text-primary" />
-                            </div>
-
                             <div className="flex items-center justify-between mb-10 relative z-10">
                                 <div>
                                     <h2 className="text-xl font-black text-text uppercase tracking-tight">Appointment</h2>
@@ -541,10 +616,6 @@ export default function StylistDashboard() {
                                     <div className="space-y-2 col-span-2">
                                         <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Services</p>
                                         <p className="text-lg font-black text-text">{selectedApt.service}</p>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">Station</p>
-                                        <p className="text-lg font-black text-primary">{selectedApt.sector.replace('STATION_', 'CHAIR ')}</p>
                                     </div>
                                 </div>
 

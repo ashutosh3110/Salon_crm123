@@ -38,6 +38,9 @@ export default function StylistAttendance() {
     const [actionMsg, setActionMsg] = useState(null);
     const [worksite, setWorksite] = useState(null);
     const [worksiteLoading, setWorksiteLoading] = useState(true);
+    const [locationName, setLocationName] = useState('');
+    const [isResolvingName, setIsResolvingName] = useState(false);
+    const [historicNames, setHistoricNames] = useState({}); // Cache for log locations
 
     const refreshWorksite = useCallback(async () => {
         setWorksiteLoading(true);
@@ -121,7 +124,7 @@ export default function StylistAttendance() {
                 type: 'IN',
                 time: formatTime(todayRecord.checkInAt),
                 date: dateStr,
-                loc: todayRecord.location || `${location?.latitude?.toFixed(6) ?? '—'}, ${location?.longitude?.toFixed(6) ?? '—'}`,
+                loc: todayRecord.location || (location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : '—'),
                 status: 'VERIFIED',
             });
         }
@@ -131,7 +134,7 @@ export default function StylistAttendance() {
                 type: 'OUT',
                 time: formatTime(todayRecord.checkOutAt),
                 date: dateStr,
-                loc: todayRecord.location || `${location?.latitude?.toFixed(6) ?? '—'}, ${location?.longitude?.toFixed(6) ?? '—'}`,
+                loc: todayRecord.location || (location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : '—'),
                 status: 'VERIFIED',
             });
         }
@@ -142,6 +145,33 @@ export default function StylistAttendance() {
         if (statusFilter === 'ALL') return true;
         return log.type === statusFilter;
     });
+
+    const fetchLocationName = async (lat, lon) => {
+        if (!lat || !lon) return;
+        setIsResolvingName(true);
+        try {
+            // Priority 1: Check if already within geofence of an outlet
+            if (withinGeofence && worksite?.outlet?.name) {
+                setLocationName(worksite.outlet.name);
+                setIsResolvingName(false);
+                return;
+            }
+
+            // Priority 2: Reverse Geocode via Nominatim (OpenStreetMap)
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+            const data = await res.json();
+            const name = data.display_name || 'Unknown Location';
+            // Simplify name: usually take the first few parts
+            const parts = name.split(',');
+            const simplified = parts.slice(0, 3).join(',').trim();
+            setLocationName(simplified);
+        } catch (err) {
+            console.error('Failed to resolve location name:', err);
+            setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+        } finally {
+            setIsResolvingName(false);
+        }
+    };
 
     const fetchLocation = () => {
         setLoading(true);
@@ -155,12 +185,11 @@ export default function StylistAttendance() {
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                setLocation({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                });
+                const { latitude, longitude } = position.coords;
+                setLocation({ latitude, longitude });
                 setAccuracy(position.coords.accuracy.toFixed(1));
                 setLoading(false);
+                fetchLocationName(latitude, longitude);
             },
             (err) => {
                 setError(`Failed to fetch location: ${err.message}`);
@@ -183,7 +212,9 @@ export default function StylistAttendance() {
         setActionMsg(null);
         setError(null);
         try {
-            const locStr = `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+            // Use the resolved locationName if available, otherwise fallback to coordinates
+            const locStr = locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
+            
             await api.post('/attendance/punch', {
                 type: type === 'IN' ? 'in' : 'out',
                 date: todayLocalYmd(),
@@ -287,7 +318,10 @@ export default function StylistAttendance() {
                                         <div className="space-y-1">
                                             <p className="text-2xl font-black text-text tracking-tighter uppercase flex items-center gap-2">
                                                 <Navigation className="w-5 h-5 text-primary" />
-                                                {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+                                                {isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}
+                                            </p>
+                                            <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase mb-1">
+                                                Coordinates: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                                             </p>
                                             <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Accuracy ±{accuracy}m</p>
                                             {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (

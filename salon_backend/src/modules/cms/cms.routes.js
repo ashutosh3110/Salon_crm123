@@ -13,7 +13,9 @@ const appAuth = [auth, role(['admin', 'owner', 'manager', 'superadmin'])];
 router.get('/app', ...appAuth, appCmsController.getAppCMS);
 router.patch('/app/:section', ...appAuth, appCmsController.updateAppCMSSection);
 
+const superAuth = [auth, role(['superadmin'])];
+
 router.get('/', cmsController.getCMSData);
-router.patch('/:section', cmsController.updateCMSSection);
+router.patch('/:section', ...superAuth, cmsController.updateCMSSection);
 
 export default router;
