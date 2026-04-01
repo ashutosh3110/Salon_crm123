@@ -76,8 +76,8 @@ export default function AuthPage() {
         };
         fetchPlans();
 
-        // Load Razorpay Script
-        if (!window.Razorpay) {
+        // Load Razorpay Script (only for registration flow)
+        if (!window.Razorpay && view === 'signup') {
             const script = document.createElement('script');
             script.src = 'https://checkout.razorpay.com/v1/checkout.js';
             script.async = true;

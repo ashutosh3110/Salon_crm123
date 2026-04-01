@@ -210,9 +210,15 @@ export default function OutletsPage() {
                             className="group bg-white border border-border p-4 hover:border-text transition-all duration-300 relative overflow-hidden flex flex-col h-full"
                         >
                             <div className="flex justify-between items-start mb-4">
-                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black group-hover:bg-text group-hover:text-white transition-all">
-                                    <Store className="w-4 h-4" />
-                                </div>
+                                {outlet.image ? (
+                                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-border shadow-sm">
+                                        <img src={outlet.image} alt={outlet.name} className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black group-hover:bg-text group-hover:text-white transition-all">
+                                        <Store className="w-4 h-4" />
+                                    </div>
+                                )}
                                 <div className="flex gap-1.5">
                                     <button
                                         onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}

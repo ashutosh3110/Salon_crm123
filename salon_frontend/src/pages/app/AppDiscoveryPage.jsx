@@ -172,12 +172,18 @@ export default function AppDiscoveryPage() {
                                 className="group overflow-hidden cursor-pointer relative"
                             >
                                 {/* Image Section */}
-                                <div className={viewMode === 'grid' ? "h-32 relative" : "h-48 relative"}>
-                                    <img
-                                        src={salon.image}
-                                        alt={salon.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
+                                <div className={viewMode === 'grid' ? "h-32 relative bg-black/5 dark:bg-white/5 flex items-center justify-center" : "h-48 relative bg-black/5 dark:bg-white/5 flex items-center justify-center"}>
+                                    {salon.image ? (
+                                        <img
+                                            src={salon.image}
+                                            alt={salon.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                    ) : (
+                                        <div className="opacity-20">
+                                            <MapPin size={viewMode === 'grid' ? 32 : 48} color={colors.text} />
+                                        </div>
+                                    )}
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                                     {/* Badges on Image */}

@@ -23,9 +23,23 @@ const messaging = getMessaging(app);
  */
 export const registerToken = async () => {
   try {
-    if (!('serviceWorker' in navigator)) return null;
+    if (!('serviceWorker' in navigator)) {
+      console.warn('[Firebase] Service Workers not supported');
+      return null;
+    }
 
-    const token = await getToken(messaging, { vapidKey });
+    // 1. Explicitly register the service worker
+    console.log('[Firebase] Registering Service Worker...');
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/'
+    });
+    console.log('[Firebase] SW Registered:', registration.scope);
+
+    // 2. Get the FCM token
+    const token = await getToken(messaging, { 
+      vapidKey,
+      serviceWorkerRegistration: registration 
+    });
     
     if (token) {
       console.log('[Firebase] FCM Token:', token);
@@ -34,11 +48,14 @@ export const registerToken = async () => {
       localStorage.setItem('fcm_token', token);
       return token;
     } else {
-      console.warn('[Firebase] No registration token available. Request permission to generate one.');
+      console.warn('[Firebase] No registration token available.');
       return null;
     }
   } catch (err) {
     console.error('[Firebase] Token registration error:', err.message);
+    if (err.message.includes('missing-registration')) {
+      console.error('[Firebase] Possible Service Worker mismatch or missing file.');
+    }
     return null;
   }
 };

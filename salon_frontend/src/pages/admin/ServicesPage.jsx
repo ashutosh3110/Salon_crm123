@@ -29,12 +29,13 @@ export default function ServicesPage({ tab = 'list' }) {
         services,
         categories,
         addService,
+        updateService,
         deleteService,
         toggleServiceStatus,
         addCategory,
+        updateCategory,
         deleteCategory,
         toggleCategoryStatus,
-        updateCategory,
         servicesLoading,
         categoriesLoading
     } = useBusiness();
@@ -174,6 +175,7 @@ export default function ServicesPage({ tab = 'list' }) {
                 )}
                 {activeTab === 'edit-service' && (
                     <ServiceForm
+                        onSave={updateService}
                         categories={categories}
                         initialData={services.find(s => s._id === window.location.pathname.split('/').pop())}
                     />

@@ -11,7 +11,10 @@ import {
     Calendar,
     AlertCircle,
     CheckCircle2,
-    Users
+    Users,
+    Upload,
+    Image as ImageIcon,
+    X
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
@@ -56,6 +59,7 @@ export default function OutletForm() {
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         openingTime: '09:00 AM',
         closingTime: '09:00 PM',
+        image: '',
         chairs: []
     });
 
@@ -107,6 +111,21 @@ export default function OutletForm() {
             chairs: prev.chairs.map(c => c.id === chairId ? { ...c, name: newName } : c)
         }));
     };
+    
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                alert("File size too large. Max 2MB allowed.");
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm(prev => ({ ...prev, image: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -146,9 +165,51 @@ export default function OutletForm() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Basic Information */}
+                    {/* Image & Basic Information */}
                     <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6">
                         <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                                <ImageIcon className="w-4 h-4" />
+                            </div>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Salon Identity</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Salon Photo</label>
+                                <div className="relative group">
+                                    {form.image ? (
+                                        <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
+                                            <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
+                                                    <Upload className="w-4 h-4" />
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                                </label>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setForm({ ...form, image: '' })}
+                                                    className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-slate-50 hover:bg-white hover:border-primary/40 transition-all cursor-pointer group">
+                                            <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                                <ImageIcon className="w-6 h-6" />
+                                            </div>
+                                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2 px-4 text-center">Click to Upload Salon Exterior Photo</p>
+                                            <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                        </label>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-4 border-t border-border/50">
                             <div className="p-2 rounded-xl bg-primary/10 text-primary">
                                 <Store className="w-4 h-4" />
                             </div>

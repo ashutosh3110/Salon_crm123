@@ -14,21 +14,14 @@ export const useFirebaseNotifications = (isAuthenticated) => {
     if (!isAuthenticated) return;
 
     const setupNotifications = async () => {
-      console.log('[useFirebaseNotifications] Initializing for user:', isAuthenticated);
+      const currentPermission = Notification.permission;
       try {
-        // 1. Request Permission
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           const newToken = await registerToken();
           if (newToken) {
             setToken(newToken);
-            toast.success('🔔 Push Notifications Registered!', { id: 'fcm-setup' });
-          } else {
-            toast.error('⚠️ FCM Registration Failed (Backend Error)', { id: 'fcm-error' });
           }
-        } else {
-          console.warn('[useFirebaseNotifications] Permission not granted');
-          toast.error('🚫 Notification Permission Denied', { id: 'fcm-denied' });
         }
       } catch (err) {
         console.error('[useFirebaseNotifications] Setup error:', err.message);
@@ -39,32 +32,29 @@ export const useFirebaseNotifications = (isAuthenticated) => {
 
     // 2. Listen for foreground messages
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('[useFirebaseNotifications] Foreground Message RECEIVED:', payload);
-      
-      // Definitively notify for testing
-      window.alert(`🔔 NEW PUSH: ${payload.notification?.title}\n${payload.notification?.body}`);
-      
       const { title, body } = payload.notification || {};
       
-      // Customize toast appearance based on theme if needed
+      // Rich Toast notification
       toast.success(
-        <div>
-          <p className="font-bold text-sm">{title}</p>
-          <p className="text-xs opacity-80">{body}</p>
+        <div style={{ cursor: 'pointer' }}>
+          <p className="font-bold text-sm tracking-tight">{title || 'New Notification'}</p>
+          <p className="text-xs opacity-75 mt-0.5 line-clamp-2">{body}</p>
+          <div className="mt-2 text-[10px] font-bold text-primary uppercase tracking-widest">Click to View ➔</div>
         </div>,
         {
-          duration: 6000,
+          duration: 8000,
           position: 'top-right',
-          // Action for the toast click
+          id: 'foreground-push-' + Date.now(),
           onClick: () => {
              const url = payload.data?.actionUrl || '/';
+             console.log('[useFirebaseNotifications] Navigating to:', url);
              window.location.href = url;
           }
         }
       );
 
-      // Trigger a custom event for other components to react (e.g., refresh counts)
-      window.dispatchEvent(new CustomEvent('new_notification', { detail: payload }));
+      // 3. Trigger a custom event for other components to react
+      window.dispatchEvent(new CustomEvent('notification_received', { detail: payload }));
     });
 
     return () => {

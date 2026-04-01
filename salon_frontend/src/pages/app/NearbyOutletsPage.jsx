@@ -198,25 +198,34 @@ export default function NearbyOutletsPage() {
                                                 cursor: 'pointer',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                                                <div>
-                                                    <div style={{ fontWeight: 900, fontSize: 15 }}>{o.name}</div>
-                                                    <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
-                                                        {o.address}
-                                                        {o.city ? `, ${o.city}` : ''}
+                                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                                                {o.image && (
+                                                    <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, border: `1px solid ${colors.border}` }}>
+                                                        <img src={o.image} alt={o.name} style={{ width: '100%', height: '100%', objectCover: 'cover' }} />
                                                     </div>
-                                                </div>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    {o.distanceKm != null && (
-                                                        <div style={{ fontSize: 11, fontWeight: 900, color: colors.accent }}>
-                                                            {o.distanceKm} km away
+                                                )}
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                                                        <div>
+                                                            <div style={{ fontWeight: 900, fontSize: 15 }}>{o.name}</div>
+                                                            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
+                                                                {o.address}
+                                                                {o.city ? `, ${o.city}` : ''}
+                                                            </div>
                                                         </div>
-                                                    )}
-                                                    {idx === 0 && (
-                                                        <div style={{ fontSize: 10, fontWeight: 900, color: '#fff', background: colors.accent, padding: '4px 8px', borderRadius: 999, marginTop: 6 }}>
-                                                            Closest
+                                                        <div style={{ textAlign: 'right' }}>
+                                                            {o.distanceKm != null && (
+                                                                <div style={{ fontSize: 11, fontWeight: 900, color: colors.accent }}>
+                                                                    {o.distanceKm} km away
+                                                                </div>
+                                                            )}
+                                                            {idx === 0 && (
+                                                                <div style={{ fontSize: 10, fontWeight: 900, color: '#fff', background: colors.accent, padding: '4px 8px', borderRadius: 999, marginTop: 6 }}>
+                                                                    Closest
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </motion.div>

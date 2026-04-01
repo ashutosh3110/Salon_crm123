@@ -33,7 +33,9 @@ class NotificationService {
 
             // 2. Try sending push via FCM
             const messaging = getMessaging();
-            if (messaging) {
+            if (!messaging) {
+                console.warn('[Notification] FCM not initialized (Check PRIVATE_KEY or PROJECT_ID)');
+            } else {
                 const userDoc = await User.findById(recipientId).select('fcmTokens email');
                 const tokens = userDoc?.fcmTokens?.filter(Boolean) || [];
                 console.log(`[Notification] Found ${tokens.length} tokens for user: ${userDoc?.email || recipientId}`);
@@ -80,6 +82,7 @@ class NotificationService {
                     results.forEach((result, idx) => {
                         if (result.status === 'fulfilled') {
                             pushSent = true;
+                            console.log(`[Notification] FCM Success for user ${userDoc?.email} (Token ${idx})`);
                         } else {
                             const errorCode = result.reason?.code;
                             if (

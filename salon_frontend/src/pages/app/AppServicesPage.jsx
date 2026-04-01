@@ -263,9 +263,9 @@ export default function AppServicesPage() {
                             <span className="text-[9px] font-black text-[#C8956C] bg-[#C8956C]/10 px-2 py-0.5 rounded-full">{groupedServices[categoryName].length} items</span>
                         </div>
 
-                        <div className="app-scroll no-scrollbar flex gap-3 overflow-x-auto -mx-4 px-4 pb-2">
+                        <div className="grid grid-cols-2 gap-3 pb-2">
                             {groupedServices[categoryName].map((service) => (
-                                <div key={service._id || service.id} className="w-[210px] shrink-0">
+                                <div key={service._id || service.id} className="w-full">
                                     <ServiceCard
                                         service={service}
                                         onBook={handleBook}

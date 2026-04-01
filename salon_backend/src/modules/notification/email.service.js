@@ -55,7 +55,7 @@ class EmailService {
                     <p>For security reasons, we recommend that you change your password after your first login.</p>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://wapixo-crm.com/login" style="background-color: #8B1A2D; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Login to Dashboard</a>
+                        <a href="${config.frontendUrl}/login" style="background-color: #8B1A2D; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Login to Dashboard</a>
                     </div>
 
                     <p>If you have any questions, feel free to reply to this email.</p>
@@ -121,7 +121,7 @@ class EmailService {
                     <p style="font-size: 14px; color: #666; font-style: italic;">Note: For security reasons, please do not share these credentials. You can change your password anytime from your profile settings.</p>
                     
                     <div style="text-align: center; margin: 35px 0;">
-                        <a href="https://salon-crm123.vercel.app/login" style="background-color: #8B1A2D; color: #fff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(139, 26, 45, 0.2);">Login to Dashboard</a>
+                        <a href="${config.frontendUrl}/login" style="background-color: #8B1A2D; color: #fff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; box-shadow: 0 4px 6px rgba(139, 26, 45, 0.2);">Login to Dashboard</a>
                     </div>
 
                     <p style="border-top: 1px solid #eee; padding-top: 20px; font-size: 14px; color: #888;">Best Regards,<br/><strong>Team Wapixo</strong></p>

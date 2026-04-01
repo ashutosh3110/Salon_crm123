@@ -30,6 +30,7 @@ const envVarsSchema = Joi.object()
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM_EMAIL: Joi.string().description('the from field in the emails sent by the app'),
     EMAIL_FROM_NAME: Joi.string().default('Wapixo').description('the from name in the emails sent by the app'),
+    FRONTEND_BASE_URL: Joi.string().default('https://salon-crm123.vercel.app').description('Frontend application base URL'),
   })
   .unknown();
 
@@ -92,4 +93,5 @@ export const config = {
     fromEmail: envVars.EMAIL_FROM_EMAIL,
     fromName: envVars.EMAIL_FROM_NAME,
   },
+  frontendUrl: envVars.FRONTEND_BASE_URL,
 };

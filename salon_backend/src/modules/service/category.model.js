@@ -18,6 +18,9 @@ const categorySchema = new mongoose.Schema(
             enum: ['active', 'inactive'],
             default: 'active',
         },
+        image: {
+            type: String,
+        },
     },
     {
         timestamps: true,

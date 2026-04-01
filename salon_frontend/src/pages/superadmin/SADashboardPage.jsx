@@ -4,6 +4,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import useFirebaseNotifications from '../../hooks/useFirebaseNotifications';
+import { registerToken } from '../../services/firebase';
 import {
     Building2, Users, TrendingUp, AlertTriangle, ArrowUpRight,
     CreditCard, Activity, DollarSign, Clock, CheckCircle2,
@@ -191,14 +192,36 @@ export default function SADashboardPage() {
                     <button
                         onClick={async () => {
                             if (sendingTest) return;
-                            console.info('[Dashboard] Triggering Test Push...');
+                            console.info('[Dashboard] Triggering Test Push Flow...');
                             setSendingTest(true);
+                            
                             try {
+                                // 1. Ensure permission is requested (User Gesture)
+                                const permission = await Notification.requestPermission();
+                                console.log('[Dashboard] Notification Permission Status:', permission);
+
+                                if (permission !== 'granted') {
+                                    toast.error('🚫 Notification permission is required for Push.');
+                                    setSendingTest(false);
+                                    return;
+                                }
+
+                                // 2. Force register/refresh token to ensure backend has current ID
+                                toast.loading('Registering device...', { id: 'fcm-reg' });
+                                const token = await registerToken();
+                                if (!token) {
+                                    toast.error('FCM Registration Failed. Check Console.', { id: 'fcm-reg' });
+                                    setSendingTest(false);
+                                    return;
+                                }
+                                toast.success('Device registered!', { id: 'fcm-reg' });
+
+                                // 3. Trigger the actual backend test push
                                 const res = await api.get('/notifications/test');
-                                console.log('[Dashboard] Test Response:', res.data);
+                                console.log('[Dashboard] Test API Response:', res.data);
                                 toast.success(`🚀 Test sent! Check your notification.`);
                             } catch (e) {
-                                console.error('[Dashboard] Test Failed:', e);
+                                console.error('[Dashboard] Test Flow Failed:', e);
                                 toast.error('❌ Test failed: ' + (e.response?.data?.message || e.message));
                             } finally {
                                 setSendingTest(false);
@@ -208,7 +231,7 @@ export default function SADashboardPage() {
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary hover:text-white transition-all disabled:opacity-50"
                     >
                         <Zap className={`w-3.5 h-3.5 ${sendingTest ? 'animate-pulse' : ''}`} /> 
-                        {sendingTest ? 'Sending...' : 'Test Push'}
+                        {sendingTest ? 'Sending...' : 'Test Push 2.0'}
                     </button>
                     <button
                         onClick={() => fetchStats(true)}

@@ -67,6 +67,10 @@ const outletSchema = new mongoose.Schema(
                 status: { type: String, enum: ['active', 'inactive'], default: 'active' }
             }
         ],
+        image: {
+            type: String,
+            default: null,
+        },
     },
     {
         timestamps: true,

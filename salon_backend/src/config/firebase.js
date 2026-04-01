@@ -13,14 +13,19 @@ export function initFirebase() {
     try {
         let rawKey = config.firebase.privateKey || '';
         
-        // NUCLEAR CLEANING: Remove everything that isn't a base64 character
-        // This handles quotes, \n, literal backslashes, spaces, and headers/footers
+        // Step 1: Pre-clean literal characters and common wrapper issues
+        rawKey = rawKey
+            .replace(/^"|"$/g, '')         // Remove outer quotes if present
+            .replace(/\\n/g, '\n')         // Convert literal \n sequence to real newlines
+            .trim();
+
+        // Step 2: Extract base64 content
         const pureBase64 = rawKey
             .replace(/-----BEGIN PRIVATE KEY-----/g, '')
             .replace(/-----END PRIVATE KEY-----/g, '')
             .replace(/[^a-zA-Z0-9+/=]/g, '');
 
-        // Reconstruct perfect PEM format (64 chars per line)
+        // Step 3: Reconstruct perfect PEM format (64 chars per line)
         const lines = pureBase64.match(/.{1,64}/g) || [];
         const finalKey = 
             '-----BEGIN PRIVATE KEY-----\n' + 

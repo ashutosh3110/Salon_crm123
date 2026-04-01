@@ -66,14 +66,6 @@ export function NotificationProvider({ children }) {
         if (user) {
             fetchNotifications();
             fetchUnreadCount();
-
-            // Background polling every 60 seconds
-            const interval = setInterval(() => {
-                fetchNotifications();
-                fetchUnreadCount();
-            }, 60000);
-
-            return () => clearInterval(interval);
         }
     }, [user, fetchNotifications, fetchUnreadCount]);
 

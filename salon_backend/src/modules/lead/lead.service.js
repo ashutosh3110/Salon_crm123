@@ -15,10 +15,10 @@ const createLead = async (leadBody) => {
                 type: 'inquiry_new',
                 title: 'New Website Lead 🚀',
                 body: `${leadBody.name || 'A customer'} is interested in: ${leadBody.salonName || 'Wapixo'}`,
-                actionUrl: '/superadmin/leads',
+                actionUrl: '/superadmin/inquiries',
                 data: { leadId: lead._id.toString() }
             });
-            console.log(`[LeadService] Notification sent to ${saIds.length} Superadmins`);
+            console.log(`[LeadService] FCM Push sent to ${saIds.length} Superadmins for new lead`);
         }
     } catch (err) {
         console.warn('[LeadService] Notification failed:', err.message);

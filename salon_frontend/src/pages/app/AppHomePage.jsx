@@ -6,7 +6,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
@@ -1230,8 +1230,8 @@ export default function AppHomePage() {
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Zap size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Popular Services</span>
+                            <LayoutGrid size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Service Categories</span>
                         </div>
                         <button
                             style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none' }}
@@ -1240,30 +1240,41 @@ export default function AppHomePage() {
                             View All
                         </button>
                     </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {filteredPopularServices.map(service => (
+                    <div className="grid grid-cols-2 gap-4 pb-6 mt-2">
+                        {(businessCategories || []).filter(c => c.status === 'active').map(cat => (
                             <motion.div
-                                key={service.id || service._id}
+                                key={cat._id || cat.id}
                                 whileTap={{ scale: 0.97 }}
-                                onClick={() => navigate(`/app/discovery?serviceId=${service.id || service._id}`)}
+                                onClick={() => navigate(`/app/services?category=${cat.name}`)}
                                 style={{
-                                    flexShrink: 0, width: '160px', background: colors.card, borderRadius: '24px', overflow: 'hidden',
+                                    background: colors.card, borderRadius: '24px', overflow: 'hidden',
                                     border: `1px solid ${colors.border}`, display: 'flex', flexDirection: 'column', cursor: 'pointer'
                                 }}
                             >
-                                <div style={{ height: '100px', width: '100%', position: 'relative' }}>
-                                    <img src={service.image} alt={service.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    <div style={{ position: 'absolute', bottom: '8px', right: '8px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', padding: '2px 6px', borderRadius: '6px', fontSize: '9px', fontWeight: 800, color: '#fff' }}>
-                                        ₹{service.price}
+                                <div style={{ height: '100px', width: '100%', position: 'relative', background: colors.toggle, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {cat.image ? (
+                                        <img 
+                                            src={cat.image} 
+                                            alt={cat.name} 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div style={{ 
+                                        display: cat.image ? 'none' : 'flex', 
+                                        width: '100%', height: '100%', 
+                                        alignItems: 'center', justifyContent: 'center', 
+                                        opacity: 0.2 
+                                    }}>
+                                        <Tag size={32} color={colors.text} />
                                     </div>
                                 </div>
-                                <div style={{ padding: '10px' }}>
-                                    <p style={{ fontSize: '10px', color: colors.accent, fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px', letterSpacing: '0.05em' }}>{service.category}</p>
-                                    <h4 style={{ fontSize: '12px', color: colors.text, margin: 0, fontWeight: 800, lineClamp: 1, overflow: 'hidden', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1 }}>{service.name}</h4>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                                        <Clock size={10} color={colors.textMuted} />
-                                        <span style={{ fontSize: '10px', color: colors.textMuted }}>{service.duration} mins</span>
-                                    </div>
+                                <div style={{ padding: '12px 10px', textAlign: 'center' }}>
+                                    <h4 style={{ fontSize: '13px', color: colors.text, margin: 0, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{cat.name}</h4>
+                                    <p style={{ fontSize: '9px', color: colors.textMuted, marginTop: '2px', fontWeight: 600 }}>Explore Category</p>
                                 </div>
                             </motion.div>
                         ))}

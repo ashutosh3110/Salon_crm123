@@ -66,6 +66,7 @@ export const createCategory = {
         name: Joi.string().required(),
         gender: Joi.string().valid('men', 'women', 'both'),
         status: Joi.string().valid('active', 'inactive'),
+        image: Joi.string().allow(''),
     }),
 };
 
@@ -78,6 +79,7 @@ export const updateCategory = {
             name: Joi.string(),
             gender: Joi.string().valid('men', 'women', 'both'),
             status: Joi.string().valid('active', 'inactive'),
+            image: Joi.string().allow(''),
         })
         .min(1),
 };

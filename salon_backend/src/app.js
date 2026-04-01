@@ -33,10 +33,6 @@ const LOCAL_DEV_ORIGIN_RE = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d
 
 function resolveCorsOrigin(requestOrigin) {
     const allowed = config.cors.origins || [];
-    // Ensure the new Vercel origin is allowed even if env var is missing/stale on Render
-    if (!allowed.includes('https://salon-crm123.vercel.app')) {
-        allowed.push('https://salon-crm123.vercel.app');
-    }
     
     if (!requestOrigin) return true;
     if (allowed.includes('*')) return requestOrigin;
