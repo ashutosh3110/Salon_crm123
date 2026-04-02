@@ -239,7 +239,7 @@ export default function SettingsPage() {
                 });
             },
             () => alert('Could not get your location. Please enter manually.'),
-            { enableHighAccuracy: true }
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
     };
 

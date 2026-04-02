@@ -63,7 +63,11 @@ export default function StaffPage() {
         dob: '',
         pan: '',
         address: '',
-        password: ''
+        password: '',
+        avatar: '',
+        stylistBio: '',
+        stylistExperience: '',
+        stylistSpecializations: ''
     });
 
     useEffect(() => {
@@ -84,18 +88,33 @@ export default function StaffPage() {
         setFilteredStaff(result);
     }, [search, roleFilter, outletFilter, staff]);
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm(prev => ({ ...prev, avatar: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
+            const payload = {
+                ...form,
+                stylistSpecializations: form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : []
+            };
             if (editing) {
-                await updateStaff(editing._id, form);
+                await updateStaff(editing._id, payload);
             } else {
-                await addStaff(form);
+                await addStaff(payload);
             }
             setShowModal(false);
             setEditing(null);
-            setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
+            setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
         } catch (error) {
             alert('Operation failed: ' + error.message);
         } finally {
@@ -133,7 +152,11 @@ export default function StaffPage() {
             dob: u.dob || '',
             pan: u.pan || '',
             address: u.address || '',
-            password: ''
+            password: '',
+            avatar: u.avatar || '',
+            stylistBio: u.stylistBio || '',
+            stylistExperience: u.stylistExperience || '',
+            stylistSpecializations: Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations.join(', ') : (u.stylistSpecializations || '')
         });
         setShowModal(true);
     };
@@ -149,7 +172,7 @@ export default function StaffPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '' });
+                        setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
                         setShowModal(true);
                     }}
                     className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm hover:bg-primary hover:text-white transition-all"
@@ -243,8 +266,12 @@ export default function StaffPage() {
                                     >
                                         <td className="px-4 py-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors">
-                                                    {s.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
+                                                    {s.avatar ? (
+                                                        <img src={s.avatar} alt={s.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        s.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div className="font-black text-text text-[11px] group-hover:text-primary transition-colors italic uppercase font-mono">{s.name}</div>
@@ -327,10 +354,10 @@ export default function StaffPage() {
 
             {/* Shift Modal - High Density Refinement */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-white w-full max-w-md p-6 shadow-2xl relative border-2 border-text overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setShowModal(false)}>
+                    <div className="bg-white w-full max-w-md shadow-2xl relative border-2 border-text flex flex-col my-auto max-h-[95vh]" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="flex items-center gap-4 mb-6 pb-4 border-b border-border">
+                        <div className="flex items-center gap-4 p-6 pb-4 border-b border-border shrink-0">
                             <div className="w-10 h-10 bg-text text-white flex items-center justify-center">
                                 <UserCog className="w-6 h-6" />
                             </div>
@@ -345,8 +372,33 @@ export default function StaffPage() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3">
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(95vh-160px)] custom-scrollbar">
+                                <div className="grid grid-cols-2 gap-3 pb-4">
+                                <div className="col-span-2 space-y-1">
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo</label>
+                                    <div className="flex justify-center py-2">
+                                        <div className="relative group/photo">
+                                            <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
+                                                {form.avatar ? (
+                                                    <img src={form.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Plus className="w-6 h-6 text-text-muted" />
+                                                )}
+                                            </div>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                            />
+                                            <div className="absolute -bottom-1 -right-1 bg-text text-background p-1.5 shadow-lg group-hover/photo:scale-110 transition-transform">
+                                                <Edit className="w-3 h-3" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-1 col-span-2">
                                      <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name</label>
                                     <input
@@ -449,9 +501,47 @@ export default function StaffPage() {
                                         />
                                     </div>
                                 )}
-                            </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-border mt-4">
+                                {form.role === 'stylist' && (
+                                    <>
+                                        <div className="col-span-2 pt-2 border-t border-border mt-2">
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Stylist Public Profile</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Experience</label>
+                                            <input
+                                                type="text"
+                                                value={form.stylistExperience}
+                                                onChange={(e) => setForm({ ...form, stylistExperience: e.target.value })}
+                                                className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                                placeholder="e.g. 5+ Years"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Specializations</label>
+                                            <input
+                                                type="text"
+                                                value={form.stylistSpecializations}
+                                                onChange={(e) => setForm({ ...form, stylistSpecializations: e.target.value })}
+                                                className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                                placeholder="Cut, Color..."
+                                            />
+                                        </div>
+                                        <div className="space-y-1 col-span-2">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Professional Bio</label>
+                                            <textarea
+                                                value={form.stylistBio}
+                                                onChange={(e) => setForm({ ...form, stylistBio: e.target.value })}
+                                                className="w-full px-3 py-1.5 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono resize-none h-16"
+                                                placeholder="A short summary about the expert..."
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                            <div className="flex gap-3 p-6 border-t border-border bg-surface-alt/10 shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}

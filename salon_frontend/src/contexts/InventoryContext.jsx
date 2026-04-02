@@ -90,6 +90,7 @@ const EXTENDED_KEYS = [
     'appRitualStatus',
     'appVendorDetails',
     'appReturnPolicy',
+    'gender',
 ];
 
 const buildExtended = (product) => {
@@ -130,6 +131,8 @@ const normalizeProduct = (p) => {
         threshold: ext.threshold != null ? ext.threshold : minStock,
         minStock,
         stockByOutlet,
+        gender: String(p?.gender ?? ext.gender ?? 'all').toLowerCase(),
+        appCategory: p?.appCategory ?? ext.appCategory,
         outletIds: (
             Array.isArray(p?.outletIds) ? p.outletIds : Array.isArray(ext.outletIds) ? ext.outletIds : []
         ).map((x) => String(x)),
@@ -183,6 +186,9 @@ export const InventoryProvider = ({ children }) => {
         [businessSuppliers]
     );
     const [shopCategoriesRaw, setShopCategoriesRaw] = useState([]);
+    const path = typeof window !== 'undefined' ? window.location.pathname || '' : '';
+    const isCustomerPath = path.startsWith('/app');
+    const customerToken = typeof localStorage !== 'undefined' ? localStorage.getItem('customer_token') : null;
 
     const mergeInventoryStock = useCallback(async (productRows) => {
         const list = Array.isArray(productRows) ? productRows : [];
@@ -211,8 +217,9 @@ export const InventoryProvider = ({ children }) => {
     }, []);
 
     const fetchProducts = useCallback(async () => {
+        const tenantId = localStorage.getItem('active_tenant_id');
         try {
-            const res = await api.get('/products', { params: { page: 1, limit: 500 } });
+            const res = await api.get('/products', { params: { page: 1, limit: 500, tenantId: tenantId || undefined, _v: Date.now() } });
             const rows = res?.data?.results || res?.data?.data?.results || [];
             let list = Array.isArray(rows) ? rows.map(normalizeProduct) : [];
             list = await mergeInventoryStock(list);
@@ -220,7 +227,7 @@ export const InventoryProvider = ({ children }) => {
         } catch (error) {
             setProducts([]);
         }
-    }, [mergeInventoryStock]);
+    }, [mergeInventoryStock, customerToken, isCustomerPath, dashboardUser]);
 
     const fetchShopCategories = useCallback(async () => {
         const path = typeof window !== 'undefined' ? window.location.pathname || '' : '';
@@ -236,7 +243,11 @@ export const InventoryProvider = ({ children }) => {
         let tenantIdForPublic = null;
         try {
             const raw = localStorage.getItem('customer_user');
-            if (raw) tenantIdForPublic = JSON.parse(raw)?.tenantId;
+            if (raw) {
+                tenantIdForPublic = JSON.parse(raw)?.tenantId;
+            } else {
+                tenantIdForPublic = localStorage.getItem('active_tenant_id');
+            }
         } catch {
             /* ignore */
         }
@@ -261,7 +272,7 @@ export const InventoryProvider = ({ children }) => {
         } catch {
             setShopCategoriesRaw([]);
         }
-    }, []);
+    }, [customerToken, dashboardUser, isCustomerPath]);
 
     const shopCategories = useMemo(
         () =>
@@ -287,29 +298,28 @@ export const InventoryProvider = ({ children }) => {
         const isCustomerPath = path.startsWith('/app');
         const customerToken = typeof localStorage !== 'undefined' ? localStorage.getItem('customer_token') : null;
 
-        // Skip for Superadmin as they don't have a single tenant context for inventory
-        if (dashboardUser?.role === 'superadmin') return;
+        // Skip for Superadmin in Dashboard
+        if (!isCustomerPath && dashboardUser?.role === 'superadmin') return;
 
-        // Robust Gating: Wait for user profile to be loaded
-        if (!dashboardUser) return;
+        // Process Dashboard fetch
+        if (!isCustomerPath && dashboardUser) {
+            const role = dashboardUser.role;
+            const isAuthorized = ['admin', 'manager', 'receptionist', 'inventory_manager'].includes(role);
+            if (isAuthorized) {
+                fetchProducts();
+                fetchShopCategories();
+                fetchStockInHistory();
+            }
+        }
 
-        const role = dashboardUser.role;
-        const isAuthorized = ['admin', 'manager', 'receptionist', 'inventory_manager'].includes(role);
-
-        // Fetch dashboard-side data only if authorized
-        if (!isCustomerPath && isAuthorized) {
+        // Process Customer App fetch
+        if (isCustomerPath) {
+            // Internal logic of fetchers now handles guest/tenant/auth fallback
             fetchProducts();
             fetchShopCategories();
             fetchStockInHistory();
         }
-
-        // Customer app path gating (keep legacy logic but prefer customer object if available)
-        if (isCustomerPath && (customerToken || customer)) {
-            fetchProducts();
-            fetchShopCategories();
-            fetchStockInHistory();
-        }
-    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser]);
+    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isCustomerPath]);
 
     // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
     useEffect(() => {
@@ -322,16 +332,34 @@ export const InventoryProvider = ({ children }) => {
         fetchProducts();
     }, [tenantOutlets?.length, fetchProducts]);
 
-    // Persistence Effect
+    // Helper to strip large data before localStorage (to avoid QuotaExceededError)
+    const stripLargeAppData = (data) => {
+        if (!Array.isArray(data)) return data;
+        return data.map(item => {
+            const newItem = { ...item };
+            // Identify large fields (base64 images usually start with data:image)
+            if (newItem.appImage?.length > 500) newItem.appImage = ''; 
+            if (newItem.image?.length > 500) newItem.image = '';
+            return newItem;
+        });
+    };
+
+    // Persistence Effect with Quota Safeguard
     useEffect(() => {
-        localStorage.setItem('inv_products', JSON.stringify(products));
-        localStorage.setItem('inv_movements', JSON.stringify(movements));
-        localStorage.setItem('inv_purchases', JSON.stringify(purchases));
-        localStorage.setItem('inv_transfers', JSON.stringify(transfers));
-        localStorage.setItem('inv_outlets', JSON.stringify(outlets));
-        localStorage.setItem('inv_sale_records', JSON.stringify(saleRecords));
-        localStorage.setItem('inv_stock_in', JSON.stringify(stockInHistory));
-        localStorage.setItem('inv_adjustments', JSON.stringify(adjustmentLog));
+        try {
+            localStorage.setItem('inv_products', JSON.stringify(stripLargeAppData(products)));
+            localStorage.setItem('inv_movements', JSON.stringify(movements));
+            localStorage.setItem('inv_purchases', JSON.stringify(purchases));
+            localStorage.setItem('inv_transfers', JSON.stringify(transfers));
+            localStorage.setItem('inv_outlets', JSON.stringify(outlets));
+            localStorage.setItem('inv_sale_records', JSON.stringify(saleRecords));
+            localStorage.setItem('inv_stock_in', JSON.stringify(stockInHistory));
+            localStorage.setItem('inv_adjustments', JSON.stringify(adjustmentLog));
+        } catch (e) {
+            if (e.name === 'QuotaExceededError' || e.code === 22) {
+                console.warn('[InventoryContext] LocalStorage quota exceeded. Stripping more cache...');
+            }
+        }
     }, [products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, adjustmentLog]);
 
     // ── Monthly History — 6 months of consumption per product ──

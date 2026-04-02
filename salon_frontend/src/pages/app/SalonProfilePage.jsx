@@ -37,6 +37,7 @@ export default function SalonProfilePage() {
     const isFavorite = isSalonLiked(id);
 
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'Services');
+    const [currentImgIndex, setCurrentImgIndex] = useState(0);
 
     // Sync tab if state changes
     useEffect(() => {
@@ -45,8 +46,19 @@ export default function SalonProfilePage() {
         }
     }, [location.state?.activeTab]);
 
-    // Find outlet from live data
-    const outlet = businessOutlets.find(o => o._id === id) || businessOutlets[0] || { name: 'Loading...', image: '' };
+    // Outlet data and Carousel Timer
+    const outlet = businessOutlets.find(o => o._id === id) || businessOutlets[0] || { name: 'Loading...', image: '', images: [] };
+
+    useEffect(() => {
+        const images = outlet.images?.length > 0 ? outlet.images : [outlet.image];
+        if (images.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentImgIndex(prev => (prev + 1) % images.length);
+        }, 4000); // 4 seconds auto-play
+
+        return () => clearInterval(interval);
+    }, [outlet.images, outlet.image]);
 
     const serviceIdFromQuery = searchParams.get('serviceId');
 
@@ -137,12 +149,45 @@ export default function SalonProfilePage() {
             paddingBottom: '100px' // Space for sticky CTA
         }}>
             {/* ── HERO SECTION ── */}
-            <div style={{ position: 'relative', height: '350px', width: '100%' }}>
-                <img
-                    src={outlet.image}
-                    alt={outlet.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+            <div style={{ position: 'relative', height: '350px', width: '100%', overflow: 'hidden' }}>
+                <AnimatePresence mode="wait">
+                    <motion.img
+                        key={currentImgIndex}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 1, ease: 'easeOut' }}
+                        src={outlet.images?.length > 0 ? outlet.images[currentImgIndex] : outlet.image}
+                        alt={outlet.name}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute' }}
+                    />
+                </AnimatePresence>
+                
+                {/* Carousel Progress Bars */}
+                {outlet.images?.length > 1 && (
+                    <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '20px',
+                        right: '20px',
+                        display: 'flex',
+                        gap: '6px',
+                        zIndex: 20
+                    }}>
+                        {outlet.images.map((_, i) => (
+                            <div 
+                                key={i} 
+                                style={{ 
+                                    flex: 1, 
+                                    height: '2.5px', 
+                                    background: i === currentImgIndex ? '#FFF' : 'rgba(255,255,255,0.3)',
+                                    borderRadius: '2px',
+                                    transition: 'all 0.5s ease'
+                                }} 
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {/* Gradient Overlay */}
                 <div style={{
@@ -214,8 +259,17 @@ export default function SalonProfilePage() {
                 {/* Salon Basic Info (Overlay bottom) */}
                 <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <span style={{ background: '#C8956C', color: '#FFF', fontSize: '10px', fontWeight: 900, padding: '4px 10px', borderRadius: '100px', textTransform: 'uppercase' }}>
-                            Top Rated 2024
+                        <span style={{ 
+                            background: g === 'men' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(236, 72, 153, 0.2)', 
+                            color: g === 'men' ? '#3B82F6' : '#EC4899', 
+                            fontSize: '10px', 
+                            fontWeight: 900, 
+                            padding: '6px 12px', 
+                            borderRadius: '100px', 
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.1em'
+                        }}>
+                            {g === 'men' ? 'Gentlemen Exclusive' : 'Ladies Special'}
                         </span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#FFD700' }}>
                             <Star size={14} fill="#FFD700" />
@@ -351,8 +405,10 @@ export default function SalonProfilePage() {
                     {activeTab === 'Services' && (
                         <motion.div key="services" {...fadeUp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                                <Crown size={20} color="#C8956C" />
-                                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Most Popular Services</h3>
+                                <Crown size={20} color={g === 'men' ? '#3B82F6' : '#EC4899'} />
+                                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>
+                                    {g === 'men' ? "Gentlemen's Rituals" : "Ladies' Specials"}
+                                </h3>
                             </div>
                             {businessServices
                                 .filter(s => {
@@ -420,30 +476,60 @@ export default function SalonProfilePage() {
                     {activeTab === 'Lookbook' && (
                         <motion.div key="lookbook" {...fadeUp} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Stylist Lookbook</h3>
+                                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0 }}>Salon Lookbook</h3>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 800, color: colors.accent, padding: '4px 12px', background: `${colors.accent}15`, borderRadius: '8px' }}>Trending</span>
-                                    <span style={{ fontSize: '11px', fontWeight: 600, color: colors.textMuted, padding: '4px 12px', borderRadius: '8px' }}>Classics</span>
+                                    <span style={{ fontSize: '10px', fontWeight: 900, color: colors.accent, padding: '4px 12px', background: `${colors.accent}15`, borderRadius: '30px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent</span>
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-                                {lookbook.filter(l => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).map((item) => (
-                                    <motion.div
-                                        key={item.id}
-                                        whileHover={{ scale: 1.02 }}
-                                        style={{ position: 'relative', height: '220px', borderRadius: '20px', overflow: 'hidden', background: colors.border }}
-                                    >
-                                        <img
-                                            src={item.image}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            alt={item.title}
-                                        />
-                                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: '#FFF' }}>
-                                            <p style={{ fontSize: '11px', fontWeight: 800, margin: 0 }}>{item.title}</p>
-                                            <p style={{ fontSize: '9px', opacity: 0.8, margin: 0 }}>by {item.tag}</p>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                            
+                            <div style={{ 
+                                display: 'grid', 
+                                gridTemplateColumns: 'repeat(2, 1fr)', 
+                                gridAutoRows: 'minmax(180px, auto)',
+                                gap: '12px' 
+                            }}>
+                                {(outlet.images && outlet.images.length > 0) ? (
+                                    outlet.images.map((img, idx) => (
+                                        <motion.div
+                                            key={idx}
+                                            whileTap={{ scale: 0.98 }}
+                                            style={{ 
+                                                position: 'relative', 
+                                                borderRadius: '24px', 
+                                                overflow: 'hidden', 
+                                                background: colors.border,
+                                                gridColumn: idx % 3 === 0 ? 'span 2' : 'span 1', // Create a dynamic bento-like grid
+                                                height: idx % 3 === 0 ? '240px' : '200px'
+                                            }}
+                                        >
+                                            <img
+                                                src={img}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                alt={`Salon Look ${idx}`}
+                                            />
+                                            <div style={{ 
+                                                position: 'absolute', 
+                                                bottom: 0, 
+                                                left: 0, 
+                                                right: 0, 
+                                                padding: '16px', 
+                                                background: 'linear-gradient(transparent, rgba(0,0,0,0.6))', 
+                                                color: '#FFF',
+                                                display: 'flex',
+                                                alignItems: 'baseline',
+                                                gap: '6px'
+                                            }}>
+                                                <Camera size={14} />
+                                                <p style={{ fontSize: '11px', fontWeight: 800, margin: 0 }}>LOOK #{idx + 1}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))
+                                ) : (
+                                    <div style={{ colSpan: '2', padding: '40px', textAlign: 'center', opacity: 0.5 }}>
+                                        <ImageIcon size={40} style={{ marginBottom: '12px' }} />
+                                        <p style={{ fontSize: '13px', fontWeight: 600 }}>No lookbook images yet.</p>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

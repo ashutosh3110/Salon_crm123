@@ -17,6 +17,7 @@ import {
     X
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
 
 const DAYS = [
     { label: 'Mon', full: 'Monday' },
@@ -47,6 +48,92 @@ export default function OutletForm() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
 
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30"
+    });
+
+    const [map, setMap] = useState(null);
+    const [center, setCenter] = useState({ lat: 19.0760, lng: 72.8777 }); // Default: Mumbai
+
+    const reverseGeocode = async (lat, lng) => {
+        try {
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+            const data = await response.json();
+
+            if (data.status === 'OK' && data.results.length > 0) {
+                const result = data.results[0];
+                const addressComponents = result.address_components;
+
+                let city = '';
+                let pincode = '';
+                let state = '';
+
+                addressComponents.forEach(component => {
+                    const types = component.types;
+                    if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+                        city = component.long_name;
+                    }
+                    if (types.includes('postal_code')) {
+                        pincode = component.long_name;
+                    }
+                    if (types.includes('administrative_area_level_1')) {
+                        state = component.long_name;
+                    }
+                });
+
+                setForm(prev => ({
+                    ...prev,
+                    address: result.formatted_address,
+                    city: city || prev.city,
+                    pincode: pincode || prev.pincode,
+                    state: state || prev.state,
+                    latitude: lat,
+                    longitude: lng
+                }));
+            }
+        } catch (error) {
+            console.error("Reverse geocoding failed:", error);
+        }
+    };
+
+    const onMapClick = (e) => {
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        reverseGeocode(lat, lng);
+    };
+
+    const onLoad = (mapInstance) => {
+        setMap(mapInstance);
+    };
+
+    const onUnmount = () => {
+        setMap(null);
+    };
+
+    const useCurrentLocation = () => {
+        if (navigator.geolocation) {
+            setLoading(true);
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setCenter({ lat: latitude, lng: longitude });
+                    reverseGeocode(latitude, longitude);
+                    setLoading(false);
+                },
+                (err) => {
+                    console.error("Geolocation error:", err);
+                    setLoading(false);
+                    alert("Could not get your location. Please ensure GPS is enabled.");
+                },
+                { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    };
+
     const [form, setForm] = useState({
         name: '',
         address: '',
@@ -59,8 +146,10 @@ export default function OutletForm() {
         workingDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         openingTime: '09:00 AM',
         closingTime: '09:00 PM',
-        image: '',
-        chairs: []
+        images: [],
+        chairs: [],
+        latitude: null,
+        longitude: null
     });
 
     useEffect(() => {
@@ -70,6 +159,7 @@ export default function OutletForm() {
                 setForm({
                     ...form,
                     ...found,
+                    images: found.images || (found.image ? [found.image] : []),
                     chairs: found.chairs || []
                 });
             }
@@ -113,18 +203,31 @@ export default function OutletForm() {
     };
     
     const handleImageUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.size > 2 * 1024 * 1024) {
-                alert("File size too large. Max 2MB allowed.");
-                return;
+        const files = Array.from(e.target.files);
+        
+        files.forEach(file => {
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert(`File ${file.name} is too large. Max 2MB allowed.`);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setForm(prev => ({ 
+                        ...prev, 
+                        images: [...(prev.images || []), reader.result] 
+                    }));
+                };
+                reader.readAsDataURL(file);
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setForm(prev => ({ ...prev, image: reader.result }));
-            };
-            reader.readAsDataURL(file);
-        }
+        });
+    };
+
+    const removeImage = (index) => {
+        setForm(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index)
+        }));
     };
 
     const handleSubmit = (e) => {
@@ -176,33 +279,28 @@ export default function OutletForm() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Salon Photo</label>
-                                <div className="relative group">
-                                    {form.image ? (
-                                        <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
-                                            <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                                <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
-                                                    <Upload className="w-4 h-4" />
-                                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                                </label>
-                                                <button 
-                                                    type="button"
-                                                    onClick={() => setForm({ ...form, image: '' })}
-                                                    className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Salon Photos (Max 5)</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(form.images || []).map((img, idx) => (
+                                        <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
+                                            <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                            <button 
+                                                type="button"
+                                                onClick={() => removeImage(idx)}
+                                                className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-rose-500 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
                                         </div>
-                                    ) : (
-                                        <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-slate-50 hover:bg-white hover:border-primary/40 transition-all cursor-pointer group">
-                                            <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
-                                                <ImageIcon className="w-6 h-6" />
+                                    ))}
+                                    
+                                    {(form.images?.length || 0) < 5 && (
+                                        <label className="flex flex-col items-center justify-center aspect-video rounded-xl border-2 border-dashed border-border bg-slate-50 hover:bg-white hover:border-primary/40 transition-all cursor-pointer group">
+                                            <div className="p-2 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                                <Upload className="w-4 h-4" />
                                             </div>
-                                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2 px-4 text-center">Click to Upload Salon Exterior Photo</p>
-                                            <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
-                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest mt-1">Add Photo</p>
+                                            <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
                                         </label>
                                     )}
                                 </div>
@@ -334,9 +432,63 @@ export default function OutletForm() {
                                 </div>
                             </div>
 
+                            {/* Map Section */}
+                            <div className="space-y-3 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Pin Location on Map</label>
+                                    <button 
+                                        type="button"
+                                        onClick={useCurrentLocation}
+                                        className="text-[8px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-all"
+                                    >
+                                        Use Current Location
+                                    </button>
+                                </div>
+                                <div className="h-[200px] w-full rounded-2xl overflow-hidden border border-border bg-slate-50 relative group">
+                                    {isLoaded ? (
+                                        <GoogleMap
+                                            mapContainerStyle={{ width: '100%', height: '100%' }}
+                                            center={form.latitude ? { lat: form.latitude, lng: form.longitude } : center}
+                                            zoom={15}
+                                            onClick={onMapClick}
+                                            onLoad={onLoad}
+                                            onUnmount={onUnmount}
+                                            options={{
+                                                disableDefaultUI: true,
+                                                zoomControl: true,
+                                            }}
+                                        >
+                                            {(form.latitude && form.longitude) && (
+                                                <MarkerF 
+                                                    position={{ lat: form.latitude, lng: form.longitude }}
+                                                    draggable={true}
+                                                    onDragEnd={onMapClick}
+                                                />
+                                            )}
+                                        </GoogleMap>
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-[10px] font-bold text-text-muted uppercase italic">
+                                            Loading Map System...
+                                        </div>
+                                    )}
+                                </div>
+                                {form.latitude && (
+                                    <div className="flex gap-4 px-1">
+                                        <div className="flex-1">
+                                            <p className="text-[8px] text-text-muted uppercase font-bold">Latitude</p>
+                                            <p className="text-[10px] font-bold text-text">{form.latitude.toFixed(6)}</p>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[8px] text-text-muted uppercase font-bold">Longitude</p>
+                                            <p className="text-[10px] font-bold text-text">{form.longitude.toFixed(6)}</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className="p-3 bg-blue-50/50 rounded-2xl border border-blue-100">
                                 <p className="text-[9px] text-blue-800 font-bold leading-relaxed">
-                                    * These details will be printed on all invoices.
+                                    * Pinning on the map helps customers find you more easily in the "Nearby" search.
                                 </p>
                             </div>
                         </div>

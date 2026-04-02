@@ -5,7 +5,7 @@ import Subscription from '../modules/subscription/subscription.model.js';
 const subscriptions = [
     {
         name: 'Free',
-        tag: 'free',
+        tag: 'Starter',
         color: 'slate',
         monthlyPrice: 0,
         yearlyPrice: 0,
@@ -34,10 +34,10 @@ const subscriptions = [
     },
     {
         name: 'Basic',
-        tag: 'basic',
+        tag: 'Growth',
         color: 'blue',
-        monthlyPrice: 999,
-        yearlyPrice: 9999,
+        monthlyPrice: 1999,
+        yearlyPrice: 19990,
         trialDays: 14,
         features: {
             pos: true,
@@ -62,12 +62,12 @@ const subscriptions = [
         }
     },
     {
-        name: 'Premium',
-        tag: 'premium',
+        name: 'Pro',
+        tag: 'Popular',
         color: 'primary',
         popular: true,
-        monthlyPrice: 2499,
-        yearlyPrice: 24999,
+        monthlyPrice: 4999,
+        yearlyPrice: 49990,
         trialDays: 7,
         features: {
             pos: true,
@@ -93,10 +93,10 @@ const subscriptions = [
     },
     {
         name: 'Enterprise',
-        tag: 'enterprise',
+        tag: 'Unlimited',
         color: 'amber',
-        monthlyPrice: 4999,
-        yearlyPrice: 49999,
+        monthlyPrice: 12999,
+        yearlyPrice: 129990,
         trialDays: 0,
         features: {
             pos: true,
@@ -127,14 +127,14 @@ const seed = async () => {
         await mongoose.connect(config.mongoose.url);
         console.log('Connected to MongoDB');
 
+        // Clear existing subscriptions to be safe or just update
         for (const subData of subscriptions) {
-            const existing = await Subscription.findOne({ tag: subData.tag });
-            if (!existing) {
-                await Subscription.create(subData);
-                console.log(`Created subscription: ${subData.name}`);
-            } else {
-                console.log(`Subscription already exists: ${subData.name}`);
-            }
+            await Subscription.findOneAndUpdate(
+                { name: subData.name }, // Match by name instead of tag if tag changed
+                subData,
+                { upsert: true, new: true }
+            );
+            console.log(`Synced subscription: ${subData.name}`);
         }
 
         console.log('Seeding completed');

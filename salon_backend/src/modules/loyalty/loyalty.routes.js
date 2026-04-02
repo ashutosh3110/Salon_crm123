@@ -6,7 +6,12 @@ import authorize from '../../middlewares/role.js';
 import validate from '../../middlewares/validate.js';
 import { loyaltyValidation } from '../../validations/index.js';
 
+import { publicTenant } from '../../middlewares/tenant.js';
+
 const router = express.Router();
+
+// Publicly accessible Membership Plans (Needs Tenant Context, but not Auth)
+router.get('/membership-plans', publicTenant, loyaltyController.listMembershipPlans);
 
 router.use(auth);
 router.use(validateTenant);

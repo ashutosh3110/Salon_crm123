@@ -18,11 +18,13 @@ export const createProduct = {
 };
 
 export const getProducts = {
-    query: Joi.object().keys({
-        name: Joi.string(),
-        page: Joi.number().integer(),
-        limit: Joi.number().integer(),
-    }),
+    query: Joi.object()
+        .keys({
+            name: Joi.string(),
+            page: Joi.number().integer(),
+            limit: Joi.number().integer(),
+        })
+        .unknown(true),
 };
 
 export const getProduct = {

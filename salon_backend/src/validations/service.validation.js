@@ -15,6 +15,7 @@ export const createService = {
         commissionValue: Joi.number().min(0),
         outletIds: Joi.array().items(Joi.string().custom(objectId)),
         status: Joi.string().valid('active', 'inactive'),
+        gender: Joi.string().valid('men', 'women', 'both'),
     }),
 };
 
@@ -50,6 +51,7 @@ export const updateService = {
             commissionValue: Joi.number().min(0),
             outletIds: Joi.array().items(Joi.string().custom(objectId)),
             status: Joi.string().valid('active', 'inactive'),
+            gender: Joi.string().valid('men', 'women', 'both'),
         })
         .min(1),
 };

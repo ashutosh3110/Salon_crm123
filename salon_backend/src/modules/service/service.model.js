@@ -26,6 +26,11 @@ const serviceSchema = new mongoose.Schema(
         image: {
             type: String,
         },
+        gender: {
+            type: String,
+            enum: ['men', 'women', 'both'],
+            default: 'both',
+        },
         gst: {
             type: Number,
             default: 18,

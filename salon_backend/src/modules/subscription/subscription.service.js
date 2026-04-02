@@ -49,14 +49,31 @@ const updateSubscriptionById = async (subscriptionId, updateBody) => {
     // Cascade update to all tenants using this plan
     if (cleanUpdate.features || cleanUpdate.limits || cleanUpdate.name) {
         console.log(`[SUBSCRIPTION SERVICE] Cascading updates for plan: ${existing.tag || existing.name}`);
+        
         const updateFields = {};
         if (cleanUpdate.features) updateFields.features = subscription.features;
         if (cleanUpdate.limits) updateFields.limits = subscription.limits;
         if (cleanUpdate.name) updateFields.subscriptionPlan = subscription.name.toLowerCase();
 
-        const filter = existing.tag ? { subscriptionPlan: existing.tag } : { subscriptionPlan: existing.name.toLowerCase() };
+        // Build a robust filter to match tenants on this plan
+        const possiblePlanIdentifiers = [
+            existing.tag,
+            existing.name.toLowerCase(),
+            existing.name,
+            subscription.tag,
+            subscription.name.toLowerCase()
+        ].filter(Boolean);
+
+        console.log(`[DEBUG] Plan Identifiers:`, possiblePlanIdentifiers);
+
+        const filter = {
+            subscriptionPlan: { $in: possiblePlanIdentifiers }
+        };
         
-        const updateResult = await Tenant.updateMany(filter, updateFields);
+        console.log(`[DEBUG] Update Filter:`, JSON.stringify(filter));
+        console.log(`[DEBUG] Update Fields:`, JSON.stringify(updateFields));
+
+        const updateResult = await Tenant.updateMany(filter, { $set: updateFields });
         console.log(`[SUBSCRIPTION SERVICE] Updated ${updateResult.modifiedCount} tenants.`);
     }
     
@@ -108,15 +125,14 @@ const getSubscriptionStats = async () => {
     };
 };
 
-const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId) => {
+const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscriptionId = null) => {
     console.log(`[SUBSCRIPTION] Finalizing upgrade: tenant=${tenantId}, plan=${planId}, cycle=${billingCycle}`);
     
     let plan;
-    // Try by ID first, then by name if ID looks like a slug
+    // ... plan lookup logic same as before ...
     if (mongoose.Types.ObjectId.isValid(planId)) {
         plan = await getSubscriptionById(planId);
     } else {
-        // Fallback for mock IDs like 'pro', 'basic'
         plan = await subscriptionRepository.findOne({ 
             $or: [
                 { name: new RegExp(`^${planId}$`, 'i') },
@@ -137,10 +153,21 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId) => {
     }
 
     // Update Tenant
+    const now = new Date();
+    const expiry = new Date(now);
+    if (billingCycle === 'yearly') {
+        expiry.setFullYear(expiry.getFullYear() + 1);
+    } else {
+        expiry.setMonth(expiry.getMonth() + 1);
+    }
+
     tenant.subscriptionPlan = plan.name.toLowerCase();
     tenant.status = 'active';
     tenant.features = { ...plan.features };
     tenant.limits = { ...plan.limits };
+    tenant.subscriptionExpiry = expiry;
+    if (subscriptionId) tenant.razorpaySubscriptionId = subscriptionId;
+    
     await tenant.save();
 
     // Create Invoice/Billing Record

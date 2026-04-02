@@ -141,6 +141,15 @@ const tenantSchema = new mongoose.Schema(
                 marketingUpdates: { type: Boolean, default: false },
             },
         },
+        subscriptionExpiry: {
+            type: Date,
+            default: null,
+        },
+        razorpaySubscriptionId: {
+            type: String,
+            trim: true,
+            default: null,
+        },
     },
     {
         timestamps: true,

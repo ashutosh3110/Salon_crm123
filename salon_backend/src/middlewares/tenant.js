@@ -37,4 +37,13 @@ const validateTenant = (req, res, next) => {
     next();
 };
 
+export const publicTenant = (req, res, next) => {
+    const tenantId = req.headers['x-tenant-id'];
+    if (!tenantId) {
+        return res.status(httpStatus.BAD_REQUEST).send({ message: 'X-Tenant-Id header is required' });
+    }
+    req.tenantId = tenantId.toString();
+    next();
+};
+
 export default validateTenant;

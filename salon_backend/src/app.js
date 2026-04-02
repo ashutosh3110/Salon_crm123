@@ -11,12 +11,16 @@ import { globalLimiter } from './middlewares/rateLimiter.js';
 import fs from 'fs';
 
 import { initFirebase } from './config/firebase.js';
+import initInventoryCron from './modules/inventory/inventory.cron.js';
 
 const app = express();
 
 
 // Initialize Firebase Admin
 initFirebase();
+
+// Initialize Cron Jobs
+initInventoryCron();
 
 
 if (!fs.existsSync('uploads')) {
@@ -71,8 +75,15 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// parse json request body
-app.use(express.json({ limit: '50mb' }));
+// parse json request body (capture raw body for webhook verification)
+app.use(express.json({
+    limit: '50mb',
+    verify: (req, res, buf) => {
+        if (req.url?.includes('razorpay/webhook')) {
+            req.rawBody = buf;
+        }
+    }
+}));
 
 // Trace body (Diagnostic)
 app.use((req, res, next) => {

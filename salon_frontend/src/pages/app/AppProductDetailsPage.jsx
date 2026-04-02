@@ -271,14 +271,20 @@ export default function AppProductDetailsPage() {
 
                     <div className="pt-4">
                         <motion.button
-                            whileTap={{ scale: 0.98 }}
+                            whileTap={rawRow.stock > 0 ? { scale: 0.98 } : {}}
                             type="button"
-                            onClick={() => addToCart(product)}
-                            className="w-full h-16 bg-[#C8956C] text-white rounded-2xl flex items-center justify-center gap-4 shadow-2xl shadow-[#C8956C]/30 active:scale-95 transition-all"
+                            onClick={() => rawRow.stock > 0 && addToCart(product)}
+                            disabled={rawRow.stock <= 0}
+                            style={{
+                                background: rawRow.stock <= 0 ? (colors.text === '#1A1A1A' ? '#E5E7EB' : 'rgba(255,255,255,0.1)') : '#C8956C',
+                                color: rawRow.stock <= 0 ? (colors.text === '#1A1A1A' ? '#9CA3AF' : 'rgba(255,255,255,0.3)') : '#FFFFFF',
+                                cursor: rawRow.stock <= 0 ? 'not-allowed' : 'pointer'
+                            }}
+                            className="w-full h-16 rounded-2xl flex items-center justify-center gap-4 shadow-2xl transition-all"
                         >
-                            <ShoppingBag className="w-5 h-5" />
+                            {rawRow.stock > 0 && <ShoppingBag className="w-5 h-5" />}
                             <span className="text-[11px] font-black uppercase tracking-[0.3em]">
-                                {inCart ? 'ADD TO RITUAL BAG' : 'PURCHASE RITUAL NOW'}
+                                {rawRow.stock <= 0 ? 'AVAILABLE SOON' : (inCart ? 'ADD TO CART' : 'BUY NOW')}
                             </span>
                         </motion.button>
                     </div>

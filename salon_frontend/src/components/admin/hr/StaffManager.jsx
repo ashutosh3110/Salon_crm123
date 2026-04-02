@@ -55,6 +55,10 @@ function normalizeStaffUser(u, outletsList) {
         accountNo: u.bankAccountNo || '',
         ifsc: u.ifsc || '',
         specialist: u.specialist || '',
+        avatar: u.avatar || '',
+        stylistBio: u.stylistBio || '',
+        stylistExperience: u.stylistExperience || '',
+        stylistSpecializations: Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations.join(', ') : '',
     };
 }
 
@@ -86,6 +90,10 @@ export default function StaffManager() {
             bankName: '',
             accountNo: '',
             ifsc: '',
+            avatar: '',
+            stylistBio: '',
+            stylistExperience: '',
+            stylistSpecializations: '',
         };
     }, [outlets]);
 
@@ -162,6 +170,10 @@ export default function StaffManager() {
             bankName: s.bankName || '',
             accountNo: s.accountNo || '',
             ifsc: s.ifsc || '',
+            avatar: s.avatar || '',
+            stylistBio: s.stylistBio || '',
+            stylistExperience: s.stylistExperience || '',
+            stylistSpecializations: s.stylistSpecializations || '',
         });
         setModal(true);
         setMenuOpen(null);
@@ -182,9 +194,24 @@ export default function StaffManager() {
             bankName: form.bankName || '',
             bankAccountNo: form.accountNo || '',
             ifsc: form.ifsc || '',
+            avatar: form.avatar || '',
+            stylistBio: form.stylistBio || '',
+            stylistExperience: form.stylistExperience || '',
+            stylistSpecializations: form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [],
         };
         if (form.outletId) payload.outletId = form.outletId;
         return payload;
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm(prev => ({ ...prev, avatar: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const saveStaff = async (e) => {
@@ -370,8 +397,12 @@ export default function StaffManager() {
                                 <tr key={s._id || s.id} className="hover:bg-surface-alt/20 transition-colors group text-left">
                                     <td className="px-6 py-5 text-left">
                                         <div className="flex items-center gap-4 text-left">
-                                            <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0">
-                                                {s.name.split(' ').map(n => n[0]).join('')}
+                                            <div className="w-10 h-10 rounded-none bg-background border border-border flex items-center justify-center text-text-muted font-black text-[11px] shrink-0 overflow-hidden">
+                                                {s.avatar ? (
+                                                    <img src={s.avatar} alt={s.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    s.name.split(' ').map(n => n[0]).join('')
+                                                )}
                                             </div>
                                             <div className="text-left">
                                                 <p className="text-xs font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors text-left">{s.name}</p>
@@ -453,6 +484,29 @@ export default function StaffManager() {
                             <form onSubmit={saveStaff} className="flex flex-col flex-1 overflow-hidden font-black">
                                 <div className="p-8 space-y-6 overflow-y-auto flex-1 text-left">
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-5 text-left">
+                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">Profile Photo</div>
+                                        
+                                        <div className="col-span-2 flex justify-center py-4">
+                                            <div className="relative group">
+                                                <div className="w-32 h-32 rounded-none bg-background border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover:border-primary">
+                                                    {form.avatar ? (
+                                                        <img src={form.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Plus className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handleImageChange}
+                                                    className="absolute inset-0 opacity-0 cursor-pointer"
+                                                />
+                                                <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2 shadow-lg group-hover:scale-110 transition-transform">
+                                                    <Edit2 className="w-4 h-4" />
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">General Details</div>
 
                                         <div className="col-span-2 space-y-2 text-left">
@@ -569,6 +623,33 @@ export default function StaffManager() {
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.ifsc} onChange={e => setForm(f => ({ ...f, ifsc: e.target.value }))} />
                                         </div>
+
+                                        {form.roleKey === 'stylist' && (
+                                            <>
+                                                <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Stylist Profile (Publicly Visible)</div>
+                                                
+                                                <div className="col-span-2 space-y-2 text-left">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Years of Experience</label>
+                                                    <input type="text" placeholder="e.g. 5+ Years"
+                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                        value={form.stylistExperience} onChange={e => setForm(f => ({ ...f, stylistExperience: e.target.value }))} />
+                                                </div>
+
+                                                <div className="col-span-2 space-y-2 text-left">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Specializations (Comma separated)</label>
+                                                    <input type="text" placeholder="e.g. Haircut, Coloring, Facial"
+                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                        value={form.stylistSpecializations} onChange={e => setForm(f => ({ ...f, stylistSpecializations: e.target.value }))} />
+                                                </div>
+
+                                                <div className="col-span-2 space-y-2 text-left">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Professional Bio</label>
+                                                    <textarea placeholder="Write a short summary about the expert..."
+                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-24 resize-none"
+                                                        value={form.stylistBio} onChange={e => setForm(f => ({ ...f, stylistBio: e.target.value }))}></textarea>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="px-10 py-8 border-t border-border bg-surface-alt/20">
@@ -591,8 +672,12 @@ export default function StaffManager() {
                             className="bg-surface w-full max-w-xl rounded-none border border-border shadow-2xl relative flex flex-col max-h-[90vh]">
                             <div className="p-10 border-b border-border bg-surface-alt/10 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-6 text-left font-black">
-                                    <div className="w-20 h-20 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 shadow-2xl shadow-primary/5">
-                                        {viewModal.name.split(' ').map(n => n[0]).join('')}
+                                    <div className="w-20 h-20 rounded-none bg-primary/10 flex items-center justify-center text-primary font-black text-3xl border border-primary/20 shadow-2xl shadow-primary/5 overflow-hidden">
+                                        {viewModal.avatar ? (
+                                            <img src={viewModal.avatar} alt={viewModal.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            viewModal.name.split(' ').map(n => n[0]).join('')
+                                        )}
                                     </div>
                                     <div className="text-left font-black">
                                         <h2 className="text-xl font-black text-text uppercase tracking-tight leading-none">{viewModal.name}</h2>

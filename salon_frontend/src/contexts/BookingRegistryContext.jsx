@@ -41,7 +41,13 @@ export function BookingRegistryProvider({ children }) {
             });
             
             setBookings(formatted);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(formatted));
+            } catch (e) {
+                if (e.name === 'QuotaExceededError' || e.code === 22) {
+                    console.warn('[BookingRegistry] LocalStorage quota exceeded. Using live data only.');
+                }
+            }
         } catch (err) {
             console.error('[BookingRegistry] Fetch failed', err);
         } finally {

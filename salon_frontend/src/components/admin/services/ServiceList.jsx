@@ -284,6 +284,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                     />
                                 </th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Service Name</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Target</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest">Category</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Duration</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-text-muted uppercase tracking-widest text-center">Price</th>
@@ -319,8 +320,28 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
                                                     <Scissors className="w-5 h-5" />
                                                 </div>
-                                                <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{service.name}</p>
+                                                <div className="flex flex-col">
+                                                    <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{service.name}</p>
+                                                    <div className="lg:hidden mt-1">
+                                                        <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                                            service.gender === 'men' ? 'bg-blue-100 text-blue-700' : 
+                                                            service.gender === 'women' ? 'bg-pink-100 text-pink-700' : 
+                                                            'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                            {service.gender || 'both'}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-tighter ${
+                                                service.gender === 'men' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 
+                                                service.gender === 'women' ? 'bg-rose-50 text-rose-600 border border-rose-100' : 
+                                                'bg-slate-50 text-slate-500 border border-slate-200'
+                                            }`}>
+                                                {service.gender === 'men' ? 'Men' : service.gender === 'women' ? 'Women' : 'Both'}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             {service.category ? (
@@ -442,7 +463,16 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                             <Scissors className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h3 className="text-sm font-bold text-text mb-1">{service.name}</h3>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <h3 className="text-sm font-bold text-text">{service.name}</h3>
+                                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                                    service.gender === 'men' ? 'bg-blue-100 text-blue-700' : 
+                                                    service.gender === 'women' ? 'bg-pink-100 text-pink-700' : 
+                                                    'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                    {service.gender || 'both'}
+                                                </span>
+                                            </div>
                                             <div className="flex flex-wrap gap-2">
                                                 <span className="text-[9px] font-black uppercase tracking-tight px-2 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 flex items-center gap-1">
                                                     <Tag className="w-2.5 h-2.5" />

@@ -49,7 +49,7 @@ const createSubscriptionOrder = async (req, res, next) => {
 
 const verifySubscriptionPayment = async (req, res, next) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId, billingCycle } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpay_subscription_id, planId, billingCycle } = req.body;
         const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
         
         const isValid = razorpayService.verifyPayment(
@@ -70,7 +70,7 @@ const verifySubscriptionPayment = async (req, res, next) => {
 
         // Finalize the upgrade in DB ONLY if tenant context exists (Admin Upgrade flow)
         if (tenantId && planId) {
-            await subscriptionService.finalizeUpgrade(tenantId, planId, billingCycle, razorpay_payment_id);
+            await subscriptionService.finalizeUpgrade(tenantId, planId, billingCycle, razorpay_payment_id, razorpay_subscription_id);
             console.log(`[SUBSCRIPTION] Finalized upgrade for tenant: ${tenantId}, plan: ${planId}`);
         }
 

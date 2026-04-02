@@ -313,7 +313,7 @@ export default function AppBookingPage() {
 
             const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
             // Fallback: If no working hours defined, assume open Mon-Sat 10:00-20:00
-            const dayHours = currentOutlet.workingHours?.find(wh => wh.day === dayName);
+            const dayHours = currentOutlet?.workingHours?.find(wh => wh.day === dayName);
             const defaultOpen = dayName !== 'Sunday';
 
             const isCurrentMonth = d.getMonth() === month;

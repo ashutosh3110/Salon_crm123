@@ -38,7 +38,8 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
         commissionValue: initialData?.commissionValue || '10',
         outlet: initialData?.outlet === 'All Outlets' ? 'all' : (initialData?.outletIds?.length > 0 ? 'selected' : 'all'),
         outletIds: initialData?.outletIds || [],
-        status: initialData?.status || 'active'
+        status: initialData?.status || 'active',
+        gender: initialData?.gender || 'both'
     });
 
     const handleImageUpload = (e) => {
@@ -71,7 +72,8 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 price: parseFloat(formData.price),
                 gst: parseInt(formData.gst),
                 commissionValue: parseFloat(formData.commissionValue) || 0,
-                outletIds: formData.outlet === 'all' ? [] : formData.outletIds
+                outletIds: formData.outlet === 'all' ? [] : formData.outletIds,
+                gender: formData.gender
             };
 
             // Remove internal UI state fields that backend validation rejects
@@ -152,13 +154,25 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             </button>
                         </div>
                     ) : (
-                        <CustomSelect 
-                            label="Category *" 
-                            value={formData.category} 
-                            onChange={(val) => setFormData({ ...formData, category: val })} 
-                            options={categories.map(c => c.name)} 
-                            placeholder="Select Category..." 
-                        />
+                        <div className="space-y-4">
+                            <CustomSelect 
+                                label="Category *" 
+                                value={formData.category} 
+                                onChange={(val) => setFormData({ ...formData, category: val })} 
+                                options={categories.map(c => c.name)} 
+                                placeholder="Select Category..." 
+                            />
+
+                            <CustomSelect 
+                                label="Target Gender *" 
+                                value={formData.gender === 'men' ? 'Men Only' : formData.gender === 'women' ? 'Women Only' : 'Both (Unisex)'} 
+                                onChange={(val) => {
+                                    const mapping = { 'Men Only': 'men', 'Women Only': 'women', 'Both (Unisex)': 'both' };
+                                    setFormData({ ...formData, gender: mapping[val] });
+                                }} 
+                                options={['Both (Unisex)', 'Men Only', 'Women Only']} 
+                            />
+                        </div>
                     )}
 
                     <div className="space-y-1">

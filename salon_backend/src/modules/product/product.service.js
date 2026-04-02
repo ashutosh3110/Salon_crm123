@@ -11,8 +11,9 @@ class ProductService {
     async queryProducts(tenantId, filter, options) {
         const cacheKey = cacheService.generateKey(tenantId, 'products', 'list');
         const isDefault = Object.keys(filter).length === 0 && options.page === 1;
+        const forceRefresh = !!options.forceRefresh;
 
-        if (isDefault) {
+        if (isDefault && !forceRefresh) {
             const cached = await cacheService.get(cacheKey);
             if (cached) return cached;
         }

@@ -19,6 +19,7 @@ class InventoryService {
             invoiceRef,
             supplierName,
             performedBy,
+            expiryDate,
         } = data;
 
         let inventory = await inventoryRepository.findStock(productId, outletId, tenantId);
@@ -46,6 +47,7 @@ class InventoryService {
             purchasePrice: purchasePrice != null ? Number(purchasePrice) : undefined,
             invoiceRef: invoiceRef || undefined,
             supplierName: supplierName || undefined,
+            expiryDate: expiryDate || undefined,
         });
 
         return inventory;

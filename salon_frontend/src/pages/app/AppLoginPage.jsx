@@ -102,7 +102,7 @@ export default function AppLoginPage() {
                 setError(msg);
                 setLocationLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
     };
 

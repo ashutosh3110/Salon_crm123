@@ -35,6 +35,7 @@ const getProducts = async (req, res, next) => {
         const options = {
             page: parseInt(req.query.page) || 1,
             limit: parseInt(req.query.limit) || 20,
+            forceRefresh: !!req.query._v,
         };
         const result = await productService.queryProducts(req.tenantId, filter, options);
         res.send(result);

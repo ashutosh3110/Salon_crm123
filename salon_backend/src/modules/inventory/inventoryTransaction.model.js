@@ -39,6 +39,9 @@ const inventoryTransactionSchema = new mongoose.Schema(
             type: String,
             enum: ['ADD', 'DEDUCT'],
         },
+        expiryDate: {
+            type: Date,
+        },
     },
     {
         timestamps: true,

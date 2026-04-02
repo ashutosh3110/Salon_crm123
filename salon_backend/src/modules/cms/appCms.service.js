@@ -70,7 +70,7 @@ const getExpertsFromStaff = async (tenantId) => {
         role: { $in: ['stylist', 'manager', 'admin'] },
         status: 'active',
     })
-        .select('name email role specialist outletId')
+        .select('name email role specialist outletId avatar stylistBio stylistExperience stylistClientsLabel stylistSpecializations')
         .populate('outletId', 'name')
         .lean();
 
@@ -81,12 +81,12 @@ const getExpertsFromStaff = async (tenantId) => {
         userId: s._id,
         name: s.name,
         role: s.specialist || s.role || 'Stylist',
-        img: defaultImg,
-        experience: '—',
-        bio: '',
-        specializations: s.specialist ? [s.specialist] : [],
+        img: s.avatar || defaultImg,
+        experience: s.stylistExperience || '—',
+        bio: s.stylistBio || '',
+        specializations: s.stylistSpecializations?.length ? s.stylistSpecializations : (s.specialist ? [s.specialist] : []),
         status: 'Approved',
-        clients: '—',
+        clients: s.stylistClientsLabel || '—',
         outletId: s.outletId?._id,
         outletName: s.outletId?.name,
     }));

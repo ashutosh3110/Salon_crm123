@@ -27,7 +27,13 @@ router
 
 import optionalAuth from '../../middlewares/optionalAuth.js';
 
+import webhookController from './webhook.controller.js';
+
 // Razorpay routes - Public for registration, Optionally authenticated for upgrade
+router
+    .route('/razorpay/webhook')
+    .post(webhookController.handleWebhook);
+
 router
     .route('/razorpay/create-order')
     .post(optionalAuth, razorpayController.createSubscriptionOrder);

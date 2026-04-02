@@ -53,8 +53,19 @@ const createPlan = async (name, amount, period = 'monthly', description = '') =>
     }
 };
 
+const verifyWebhookSignature = (rawBody, signature) => {
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || 'your_secret_here';
+    const expected_signature = crypto
+        .createHmac('sha256', secret)
+        .update(rawBody)
+        .digest('hex');
+
+    return expected_signature === signature;
+};
+
 export default {
     createOrder,
     verifyPayment,
+    verifyWebhookSignature,
     createPlan,
 };

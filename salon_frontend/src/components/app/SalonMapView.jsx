@@ -21,8 +21,8 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                 position: 'absolute',
                 inset: 0,
                 backgroundImage: isLight
-                    ? `url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/77.6245,12.9352,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`
-                    : `url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/77.6245,12.9352,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`,
+                    ? `url('https://api.mapbox.com/styles/v1/mapbox/light-v10/static/75.9035,22.7814,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`
+                    : `url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/75.9035,22.7814,13,0/600x600?access_token=pk.eyJ1IjoibW9ja21hcHMiLCJhIjoiY2p4eHgzeHh4eHh4eHh4eHh4eHh4In0')`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 filter: 'grayscale(0.2) contrast(1.1)',
@@ -40,15 +40,15 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
             {/* ── MARKERS ── */}
             {outlets.map((outlet, index) => {
-                if (!outlet.location) return null;
+                if (!outlet.location || !outlet.location.lat || !outlet.location.lng) return null;
 
-                // Optimized mock positions for 10 markers
-                const left = 50 + (outlet.location.lng - 77.6245) * 400;
-                const top = 50 - (outlet.location.lat - 12.9352) * 600;
+                // Optimized positions for Indore center (75.9035, 22.7814)
+                const left = 50 + (outlet.location.lng - 75.9035) * 800; // Increased scale for precision
+                const top = 50 - (outlet.location.lat - 22.7814) * 1000;
 
                 // Clamp to stay within circle/bounds for mock UI
-                const clampedLeft = Math.max(10, Math.min(90, left));
-                const clampedTop = Math.max(10, Math.min(90, top));
+                const clampedLeft = Math.max(5, Math.min(95, left));
+                const clampedTop = Math.max(5, Math.min(95, top));
 
                 const isSelected = selectedOutlet?._id === outlet._id;
 
@@ -205,13 +205,68 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
                         <div className="flex gap-4">
                             <div style={{
-                                width: '80px',
-                                height: '80px',
+                                width: '100px',
+                                height: '100px',
                                 borderRadius: '20px',
                                 overflow: 'hidden',
-                                flexShrink: 0
+                                flexShrink: 0,
+                                position: 'relative'
                             }}>
-                                <img src={selectedOutlet.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                {/* Horizontal Carousel */}
+                                <div style={{
+                                    display: 'flex',
+                                    overflowX: 'auto',
+                                    scrollSnapType: 'x mandatory',
+                                    width: '100%',
+                                    height: '100%',
+                                    msOverflowStyle: 'none',
+                                    scrollbarWidth: 'none',
+                                    gap: '4px'
+                                }}>
+                                    {(selectedOutlet.images && selectedOutlet.images.length > 0) ? (
+                                        selectedOutlet.images.map((img, i) => (
+                                            <img 
+                                                key={i}
+                                                src={img} 
+                                                style={{ 
+                                                    width: '100%', 
+                                                    height: '100%', 
+                                                    objectFit: 'cover',
+                                                    flexShrink: 0,
+                                                    scrollSnapAlign: 'start',
+                                                    borderRadius: '12px'
+                                                }} 
+                                            />
+                                        ))
+                                    ) : (
+                                        <img 
+                                            src={selectedOutlet.image} 
+                                            style={{ 
+                                                width: '100%', 
+                                                height: '100%', 
+                                                objectFit: 'cover',
+                                                flexShrink: 0,
+                                                scrollSnapAlign: 'start'
+                                            }} 
+                                        />
+                                    )}
+                                </div>
+                                
+                                {/* Carousel Indicator (if multiple) */}
+                                {selectedOutlet.images?.length > 1 && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '6px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        display: 'flex',
+                                        gap: '3px'
+                                    }}>
+                                        {selectedOutlet.images.map((_, i) => (
+                                            <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(255,255,255,0.6)' }} />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ flex: 1 }}>
@@ -249,6 +304,12 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            const { lat, lng } = selectedOutlet.location;
+                                            if (lat && lng) {
+                                                window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+                                            }
+                                        }}
                                         style={{
                                             flex: 1,
                                             background: isLight ? '#f5f5f5' : '#333',
@@ -269,8 +330,13 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            const phone = selectedOutlet.contactnumber || '9876543210'; // Fallback
+                                            window.location.href = `tel:${phone}`;
+                                        }}
                                         style={{
-                                            width: '44px',
+                                            width: 'auto',
+                                            minWidth: '44px',
                                             height: '44px',
                                             background: isLight ? '#f5f5f5' : '#333',
                                             color: colors.text,
@@ -278,10 +344,15 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                                             borderRadius: '12px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center'
+                                            justifyContent: 'center',
+                                            padding: '0 12px',
+                                            gap: '8px'
                                         }}
                                     >
                                         <Phone size={16} />
+                                        <span style={{ fontSize: '11px', fontWeight: 800 }}>
+                                            {selectedOutlet.contactnumber || 'Contact'}
+                                        </span>
                                     </motion.button>
                                 </div>
                             </div>

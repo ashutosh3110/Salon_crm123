@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Navigation, Star, Clock, ChevronRight, Search, ShieldCheck } from 'lucide-react';
@@ -104,48 +104,87 @@ export default function SalonSelectionPage() {
     const RADIUS_OPTIONS = [3, 5, 10, 25];
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
 
-    // Get user location (real GPS). Distance filtering outlets depend only on coords,
-    // so loader should not be blocked by reverse-geocoding.
+    // Ref to track latest coords (avoids stale closure in setTimeout)
+    const latestCoordsRef = useRef(null);
+
+    // Smart Location Lock: Refine geolocation until high accuracy is achieved or timeout
     useEffect(() => {
-        if (!navigator.geolocation) {
-            setUserLocation({ lat: 26.8467, lng: 80.9462 });
-            setDisplayLocation('Gomti Nagar, Lucknow');
+        let watchId = null;
+        let timeoutId = null;
+        let settled = false;
+
+        const reverseGeocode = async (lat, lng) => {
+            try {
+                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
+                const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+                const data = await res.json();
+                if (data.status === 'OK' && data.results.length > 0) {
+                    const components = data.results[0].address_components;
+                    const neighborhood = components.find(c => c.types.includes('neighborhood'))?.long_name;
+                    const sublocality = components.find(c => c.types.includes('sublocality_level_1') || c.types.includes('sublocality'))?.long_name;
+                    const locality = components.find(c => c.types.includes('locality'))?.long_name;
+                    const primary = neighborhood || sublocality || locality;
+                    const secondary = (primary !== locality) ? locality : '';
+                    setDisplayLocation(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Current Position');
+                } else {
+                    setDisplayLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                }
+            } catch (err) {
+                setDisplayLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }
+        };
+
+        const settle = (lat, lng) => {
+            if (settled) return;
+            settled = true;
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            if (timeoutId) clearTimeout(timeoutId);
+            setUserLocation({ lat, lng });
             setIsLocating(false);
-            return;
+            reverseGeocode(lat, lng);
+        };
+
+        const handleSuccess = (pos) => {
+            const { latitude, longitude, accuracy } = pos.coords;
+            console.log(`GPS Lock: ${latitude}, ${longitude} | Accuracy: ${accuracy}m`);
+            latestCoordsRef.current = { lat: latitude, lng: longitude };
+            setUserLocation({ lat: latitude, lng: longitude });
+
+            if (accuracy < 100) {
+                settle(latitude, longitude);
+            }
+        };
+
+        const handleError = () => {
+            settle(22.7196, 75.8577);
+            setDisplayLocation('Indore, Madhya Pradesh');
+        };
+
+        if (navigator.geolocation) {
+            setIsLocating(true);
+            setDisplayLocation('Calibrating GPS...');
+
+            watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+                enableHighAccuracy: true, timeout: 30000, maximumAge: 0
+            });
+
+            // Force settle after 10s using ref (never stale)
+            timeoutId = setTimeout(() => {
+                const coords = latestCoordsRef.current;
+                if (coords) {
+                    settle(coords.lat, coords.lng);
+                } else {
+                    handleError();
+                }
+            }, 10000);
+        } else {
+            handleError();
         }
 
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                setUserLocation(coords);
-                setDisplayLocation('Detecting location...');
-                setIsLocating(false);
-
-                // Update display text asynchronously (do not block UI).
-                (async () => {
-                    try {
-                        const res = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`,
-                            { headers: { 'User-Agent': 'WapixoSalonApp/1.0' } }
-                        );
-                        const data = await res.json();
-                        const addr = data?.address;
-                        const loc = addr
-                            ? [addr.suburb, addr.neighbourhood, addr.village, addr.city_district, addr.city, addr.state].filter(Boolean).slice(0, 2).join(', ')
-                            : `${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`;
-                        setDisplayLocation(loc || 'Current location');
-                    } catch {
-                        setDisplayLocation(`${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)}`);
-                    }
-                })();
-            },
-            () => {
-                setUserLocation({ lat: 26.8467, lng: 80.9462 });
-                setDisplayLocation('Gomti Nagar, Lucknow');
-                setIsLocating(false);
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
+        return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, []);
 
     useEffect(() => {
@@ -183,247 +222,284 @@ export default function SalonSelectionPage() {
     };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh' }} className="px-6 flex flex-col pt-8">
-            {/* Global Container */}
-            <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
+        <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col relative overflow-x-hidden">
+            
+            {/* Ambient Lighting Background */}
+            {!isLight && (
+                <>
+                    <div className="absolute top-[-5%] left-[-10%] w-[70%] h-[40%] rounded-full blur-[120px] opacity-10 pointer-events-none z-0" 
+                         style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)' }} />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] rounded-full blur-[100px] opacity-10 pointer-events-none z-0" 
+                         style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)' }} />
+                </>
+            )}
 
-                {/* Scrollable/Main Content Wrapper */}
-                <div className="flex-1 space-y-6 pb-8">
-                    {/* Header */}
-                    <div className="space-y-1 text-center">
-                        <div className="flex items-center justify-center gap-2 text-[#C8956C]">
-                            <ShieldCheck size={16} />
-                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Secure Selection</span>
-                        </div>
-                        <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text }}>
-                            Choose your <span style={{ color: colors.accent }}>outlet</span>
-                        </h1>
-                        <p className="text-xs font-medium leading-relaxed opacity-70" style={{ color: colors.text }}>
-                            Outlets near your location (default {DEFAULT_RADIUS_KM} km — adjust radius if needed).
-                        </p>
-                    </div>
-
-                    {/* Location Status Bar */}
-                    <div
-                        style={{
-                            background: isLight
-                                ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                                : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                            borderRadius: '20px 6px 20px 6px',
-                            border: `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
-                            boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                            padding: '12px 16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                        }}
+            <div className="max-w-md mx-auto w-full flex-1 flex flex-col px-6 pt-12 z-20 relative">
+                
+                {/* Cinematic Header */}
+                <div className="mb-10 text-center relative flex flex-col items-center">
+                    <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-white/5 border border-white/5"
                     >
-                        <div className="flex items-center gap-3">
-                            <Navigation size={18} className={isLocating ? 'animate-pulse text-amber-500' : 'text-[#C8956C]'} />
-                            <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">Current Location</p>
-                                <p className="text-xs font-bold" style={{ color: isLight ? '#1A1A1A' : '#fff' }}>
-                                    {isLocating ? 'Detecting...' : displayLocation}
-                                </p>
-                            </div>
-                        </div>
-                        <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => setShowLocationModal(true)}
-                            className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]"
-                        >Change</motion.button>
-                    </div>
+                        <ShieldCheck size={14} className="text-primary" />
+                        <span className="text-[9px] font-black uppercase tracking-[0.35em] opacity-40">Secure Selection</span>
+                    </motion.div>
+                    
+                    <h1 className="text-4xl font-black tracking-tight leading-tight" style={{ color: colors.text }}>
+                        Experience <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C8956C] to-[#E5B58C]">Wapixo</span>
+                    </h1>
+                    <p className="text-[11px] font-bold opacity-30 mt-2 tracking-wide">Select your elite salon gateway</p>
+                </div>
 
-                    <div className="space-y-2">
-                        <p className="text-[9px] font-black uppercase tracking-widest opacity-60" style={{ color: colors.text }}>Search radius (optional)</p>
-                        <div className="flex flex-wrap gap-2">
+                {/* Floating Glass Location Bar */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{ 
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                        backdropFilter: 'blur(20px)',
+                        borderRadius: '28px',
+                        border: `1px solid ${colors.glassBorder}`,
+                        padding: '20px 24px'
+                    }}
+                    className="flex items-center justify-between shadow-[0_20px_40px_rgba(0,0,0,0.2)] relative overflow-hidden mb-8 z-30"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
+                            <Navigation size={22} className={isLocating ? 'animate-pulse' : ''} />
+                        </div>
+                        <div className="min-w-0 pr-2">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-1">Active Zone</p>
+                            <p className="text-sm font-black truncate max-w-[170px] leading-tight" style={{ color: colors.text }}>{isLocating ? 'Scanning...' : displayLocation}</p>
+                        </div>
+                    </div>
+                    <motion.button
+                        whileHover={{ color: '#E5B58C' }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowLocationModal(true)}
+                        className="text-[10px] font-black uppercase tracking-widest text-primary px-4 py-2 rounded-xl bg-primary/5 border border-primary/10 transition-all"
+                    >Change</motion.button>
+                </motion.div>
+
+                {/* Scan Radius & Search Container */}
+                <div className="space-y-6 mb-10 z-40 relative">
+                    <div className="flex items-center justify-between px-1">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Scan Profile</p>
+                        <div className="flex gap-2">
                             {RADIUS_OPTIONS.map((km) => (
                                 <button
                                     key={km}
-                                    type="button"
                                     onClick={() => setSearchRadiusKm(km)}
-                                    className="text-[11px] font-bold px-3 py-1.5 rounded-full transition-all"
-                                    style={{
-                                        border: `1.5px solid ${searchRadiusKm === km ? '#C8956C' : colors.border}`,
-                                        background: searchRadiusKm === km ? 'rgba(200,149,108,0.15)' : colors.card,
-                                        color: searchRadiusKm === km ? '#C8956C' : colors.text,
-                                    }}
+                                    className={`text-[9px] font-black px-3 py-1.5 rounded-full transition-all tracking-widest border ${
+                                        searchRadiusKm === km 
+                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
+                                        : 'bg-white/5 text-white/30 border-white/5 hover:bg-white/10'
+                                    }`}
                                 >
-                                    {km} km
+                                    {km}KM
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Main Search Bar */}
                     <div
                         style={{
-                            background: isLight
-                                ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                                : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                            boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                            borderRadius: '20px 6px 20px 6px',
-                            border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
-                            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                            padding: '0 16px',
-                            height: '52px',
+                            background: 'rgba(255,255,255,0.02)',
+                            borderRadius: '24px',
+                            border: isFocused ? `1px solid ${colors.accent}` : `1px solid ${colors.glassBorder}`,
+                            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                            padding: '0 20px',
+                            height: '56px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px'
+                            gap: '14px'
                         }}
+                        className="shadow-inner"
                     >
-                        <Search size={16} style={{ color: isFocused ? '#C8956C' : (isLight ? '#999' : 'rgba(255,255,255,0.3)'), flexShrink: 0 }} />
+                        <Search size={18} style={{ color: isFocused ? colors.accent : 'rgba(255,255,255,0.2)', transition: 'color 0.3s' }} />
                         <input
                             type="text"
-                            placeholder="Search by name or locality..."
+                            placeholder="Find outlet by name or area..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            className="w-full bg-transparent border-none outline-none font-semibold text-[13px]"
-                            style={{ color: isLight ? '#1A1A1A' : '#fff' }}
+                            className="w-full bg-transparent border-none outline-none font-bold text-sm tracking-wide"
+                            style={{ color: colors.text }}
                         />
-                    </div>
-
-                    {/* Nearby Outlets List */}
-                    <div className="space-y-4">
-                        <h2 className="text-[9px] font-black uppercase tracking-[0.2em] opacity-60" style={{ color: colors.text }}>Nearby Outlets ({filteredOutlets.length})</h2>
-                        <div className="grid gap-3">
-                            <AnimatePresence mode="popLayout">
-                                {filteredOutlets.map((outlet, idx) => (
-                                    <motion.div
-                                        key={outlet._id}
-                                        initial={{ opacity: 0, y: 15 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: idx * 0.05 }}
-                                        onClick={() => handleSelect(outlet._id)}
-                                        style={{
-                                            background: colors.card,
-                                            border: `1px solid ${colors.border}`,
-                                            borderRadius: '24px',
-                                            overflow: 'hidden'
-                                        }}
-                                        className="group cursor-pointer hover:border-[#C8956C] transition-all relative shadow-sm"
-                                    >
-                                        <div className="relative h-32 w-full bg-gray-200 overflow-hidden">
-                                            <img
-                                                src={outlet.image || `https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800&auto=format&fit=crop`}
-                                                alt={outlet.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            />
-                                            <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm">
-                                                <Star size={12} fill="#C8956C" color="#C8956C" />
-                                            </div>
-                                            {idx === 0 && (
-                                                <div className="absolute top-3 left-3 bg-[#C8956C] text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full">
-                                                    Closest
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="p-4 space-y-2">
-                                            <div>
-                                                <h3 className="text-lg font-black tracking-tight" style={{ color: colors.text }}>
-                                                    {outlet.name}
-                                                </h3>
-                                                <div className="flex items-center gap-1.5 mt-1 opacity-60">
-                                                    <MapPin size={12} style={{ color: colors.text }} />
-                                                    <span className="text-[11px] font-bold" style={{ color: colors.text }}>
-                                                        {outlet.address?.split(',')[0]}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <span style={{ background: isLight ? '#FFF5EE' : '#2A211B', color: colors.accent }} className="text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">Luxury</span>
-                                                <span style={{ background: isLight ? '#FFF5EE' : '#2A211B', color: colors.accent }} className="text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">Top Rated</span>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                        </div>
                     </div>
                 </div>
 
-                {/* Bottom Branding Icon - Fixed to end of flex container */}
-                <div className="pt-8 pb-4 flex justify-center mt-auto opacity-70">
-                    <img
+                {/* Local Nodes Grid */}
+                <div className="flex-1">
+                    <div className="flex items-center gap-4 px-1 mb-6">
+                        <h2 className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40 whitespace-nowrap">Local Nodes Detected</h2>
+                        <div className="h-[1px] bg-gradient-to-r from-primary/30 to-transparent flex-1" />
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10">
+                            <span className="text-[10px] font-black text-primary">{filteredOutlets.length}</span>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-6 pb-24">
+                        <AnimatePresence mode="popLayout">
+                            {filteredOutlets.map((outlet, idx) => (
+                                <motion.div
+                                    key={outlet._id}
+                                    layout
+                                    initial={{ opacity: 0, y: 30 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.6, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                                    onClick={() => handleSelect(outlet._id)}
+                                    style={{
+                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)',
+                                        backdropFilter: 'blur(16px)',
+                                        borderRadius: '32px',
+                                        border: `1px solid ${colors.glassBorder}`,
+                                        overflow: 'hidden'
+                                    }}
+                                    className="group cursor-pointer hover:border-primary/50 transition-all relative shadow-[0_15px_35px_rgba(0,0,0,0.2)]"
+                                >
+                                    <div className="relative h-44 w-full overflow-hidden">
+                                        <img
+                                            src={outlet.image || `https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800`}
+                                            alt={outlet.name}
+                                            className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+                                        
+                                        <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl backdrop-blur-xl bg-black/30 border border-white/10">
+                                            <Star size={12} className="fill-primary text-primary" />
+                                            <span className="text-[11px] font-black text-white mt-0.5">4.9</span>
+                                        </div>
+
+                                        {idx === 0 && (
+                                            <div className="absolute top-4 left-4 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/20">
+                                                Closest Detected
+                                            </div>
+                                        )}
+                                        
+                                        <div className="absolute bottom-4 left-5 right-5">
+                                            <h3 className="text-2xl font-black text-white tracking-tight leading-tight mb-1">{outlet.name}</h3>
+                                            <div className="flex items-center gap-1.5 opacity-70">
+                                                <MapPin size={10} className="text-primary" />
+                                                <p className="text-[10px] font-black text-white uppercase tracking-widest truncate">{outlet.address || 'Available Hub'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-5 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10">
+                                                <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                                                <span className="text-[9px] font-black text-primary uppercase tracking-widest">Premium Node</span>
+                                            </div>
+                                            <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
+                                                <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Luxury Salon</span>
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={18} className="text-white/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </div>
+                                    
+                                    {/* Card Hover Glow */}
+                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    </div>
+                </div>
+
+                {/* Bottom Elite Branding */}
+                <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
+                    <motion.img
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.2 }}
                         src="/icon.png"
                         alt="Wapixo Icon"
-                        style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
+                        className="grayscale hover:grayscale-0 transition-all duration-700"
+                        style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
                     />
+                    <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-10 mt-4">Autonomous Node Engine v2.0</p>
                 </div>
             </div>
 
-            {/* Location Selection Bottom Sheet Modal */}
+            {/* Premium Location Selection Sheet */}
             <AnimatePresence>
                 {showLocationModal && (
-                    <div className="fixed inset-0 z-[1001] flex items-end sm:items-center justify-center p-0 sm:p-4">
+                    <div className="fixed inset-0 z-[1001] flex items-end justify-center">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => { setShowLocationModal(false); setLocationFetchError(''); }}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
                         />
                         <motion.div
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            style={{ background: colors.bg, borderTop: `1px solid ${colors.border}` }}
-                            className="relative w-full max-w-md p-6 rounded-t-[32px] sm:rounded-b-[32px] overflow-hidden"
+                            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+                            style={{ 
+                                background: colors.bg, 
+                                borderTop: `1px solid ${colors.glassBorder}`,
+                                boxShadow: '0 -20px 60px rgba(0,0,0,0.5)'
+                            }}
+                            className="relative w-full max-w-md p-8 rounded-t-[40px] overflow-hidden"
                         >
-                            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-6 sm:hidden" />
-                            <div className="space-y-6">
+                            <div className="w-14 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+                            
+                            <div className="space-y-8">
                                 <div>
-                                    <h3 className="text-xl font-black" style={{ color: colors.text }}>Change Location</h3>
-                                    <p className="text-xs font-medium opacity-60" style={{ color: colors.text }}>Select a city or enter your area</p>
+                                    <h3 className="text-3xl font-black text-white tracking-tight">Zone Update</h3>
+                                    <p className="text-sm font-bold opacity-30 mt-1">Specify new sector coordinates</p>
                                 </div>
 
-                                <div
-                                    style={{
-                                        background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                                        borderRadius: '20px 6px 20px 6px',
-                                        border: isModalSearchFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
-                                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                                        padding: '0 16px',
-                                        height: '52px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '12px'
-                                    }}
-                                >
-                                    <Search size={16} style={{ color: isModalSearchFocused ? '#C8956C' : (isLight ? '#999' : 'rgba(255,255,255,0.3)') }} />
-                                    {locationFetchError && (
-                                        <p className="text-xs text-red-500 font-medium">{locationFetchError}</p>
-                                    )}
-                                    <input
-                                        type="text"
-                                        placeholder="Enter area, street or city..."
-                                        value={customLocation}
-                                        onChange={(e) => { setCustomLocation(e.target.value); setLocationFetchError(''); }}
-                                        onFocus={() => setIsModalSearchFocused(true)}
-                                        onBlur={() => setIsModalSearchFocused(false)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && customLocation?.trim()) {
-                                                e.preventDefault();
-                                                applyCustomLocation();
-                                            }
+                                <div className="space-y-4">
+                                    <div
+                                        style={{
+                                            background: 'rgba(255,255,255,0.03)',
+                                            borderRadius: '24px',
+                                            border: isModalSearchFocused ? `1px solid ${colors.accent}` : `1px solid ${colors.glassBorder}`,
+                                            transition: 'all 0.3s',
+                                            padding: '0 20px',
+                                            height: '60px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '14px'
                                         }}
-                                        className="w-full bg-transparent border-none outline-none font-semibold text-[13px]"
-                                        style={{ color: isLight ? '#1A1A1A' : '#fff' }}
-                                    />
+                                    >
+                                        <Search size={18} style={{ color: isModalSearchFocused ? colors.accent : 'rgba(255,255,255,0.2)' }} />
+                                        <input
+                                            type="text"
+                                            placeholder="Enter area, city or coordinates..."
+                                            value={customLocation}
+                                            onChange={(e) => { setCustomLocation(e.target.value); setLocationFetchError(''); }}
+                                            onFocus={() => setIsModalSearchFocused(true)}
+                                            onBlur={() => setIsModalSearchFocused(false)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && customLocation?.trim()) {
+                                                    e.preventDefault();
+                                                    applyCustomLocation();
+                                                }
+                                            }}
+                                            className="w-full bg-transparent border-none outline-none font-bold text-sm"
+                                            style={{ color: colors.text }}
+                                        />
+                                    </div>
+                                    {locationFetchError && (
+                                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-red-500 font-bold uppercase tracking-wider text-center">{locationFetchError}</motion.p>
+                                    )}
                                 </div>
 
-                                <div className="space-y-3">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">Popular Cities</p>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {POPULAR_CITIES.map((city) => (
+                                <div className="space-y-4">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20 ml-1">Elite Regional Clusters</p>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {POPULAR_CITIES.slice(0, 6).map((city) => (
                                             <motion.button
                                                 key={city.name}
-                                                whileTap={{ scale: 0.95 }}
+                                                whileTap={{ scale: 0.96 }}
                                                 onClick={() => {
                                                     setIsLocating(true); setDisplayLocation(city.name);
                                                     setTimeout(() => {
@@ -432,32 +508,29 @@ export default function SalonSelectionPage() {
                                                     }, 800);
                                                 }}
                                                 style={{
-                                                    background: displayLocation === city.name ? 'rgba(200,149,108,0.1)' : (isLight ? '#fff' : '#1A1A1A'),
-                                                    border: `1px solid ${displayLocation === city.name ? colors.accent : colors.border}`,
-                                                    borderRadius: '12px'
+                                                    background: displayLocation === city.name ? 'rgba(200,149,108,0.1)' : 'rgba(255,255,255,0.02)',
+                                                    border: `1px solid ${displayLocation === city.name ? colors.accent : colors.glassBorder}`,
                                                 }}
-                                                className="p-3 text-left transition-all"
+                                                className="p-4 text-left rounded-3xl group transition-all"
                                             >
-                                                <p className="text-xs font-bold leading-tight" style={{ color: colors.text }}>{city.name.split(',')[1] || city.name}</p>
-                                                <p className="text-[9px] font-medium opacity-50" style={{ color: colors.text }}>{city.name.split(',')[0]}</p>
+                                                <p className="text-sm font-black leading-tight text-white mb-0.5">{city.name.split(',')[0]}</p>
+                                                <p className="text-[9px] font-bold text-primary uppercase tracking-widest">{city.name.split(',')[1] || 'Hub'}</p>
                                             </motion.button>
                                         ))}
                                     </div>
                                 </div>
 
-                                <button
+                                <motion.button
+                                    whileTap={{ scale: 0.96 }}
                                     onClick={() => {
-                                        if (customLocation?.trim()) {
-                                            applyCustomLocation();
-                                        } else {
-                                            setShowLocationModal(false);
-                                        }
+                                        if (customLocation?.trim()) applyCustomLocation();
+                                        else setShowLocationModal(false);
                                     }}
-                                    className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest"
-                                    style={{ background: colors.accent, color: '#fff' }}
+                                    className="w-full py-5 rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-primary/30"
+                                    style={{ background: `linear-gradient(135deg, ${colors.accent} 0%, #E5B58C 100%)`, color: '#fff' }}
                                 >
-                                    {customLocation?.trim() ? 'Apply & Close' : 'Close'}
-                                </button>
+                                    Confirm Sector
+                                </motion.button>
                             </div>
                         </motion.div>
                     </div>
@@ -465,4 +538,5 @@ export default function SalonSelectionPage() {
             </AnimatePresence>
         </div>
     );
+
 }

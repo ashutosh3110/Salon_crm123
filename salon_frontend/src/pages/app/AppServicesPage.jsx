@@ -185,15 +185,33 @@ export default function AppServicesPage() {
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
             <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
-                {/* Salon Info */}
-                <div className="flex items-center gap-2 mb-3 px-1">
-                    <div className="flex items-center justify-center">
-                        <ShoppingBag className="text-[#C8956C]" size={16} />
+                {/* Salon Info & Gender Badge */}
+                <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-lg shadow-[#C8956C]/20">
+                            <ShoppingBag className="text-white" size={18} />
+                        </div>
+                        <div>
+                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Exclusive Experience</p>
+                            <h2 className="text-sm font-black tracking-tight" style={{ color: colors.text }}>{activeOutlet?.name || 'Wapixo Salon'}</h2>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Active Salon</p>
-                        <h2 className="text-sm font-black tracking-tight" style={{ color: colors.text }}>{activeOutlet?.name || 'Wapixo Salon'}</h2>
-                    </div>
+
+                    {/* Gender Indicator Badge */}
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="px-3 py-1.5 rounded-xl border flex items-center gap-2"
+                        style={{ 
+                            background: appGender === 'men' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(236, 72, 153, 0.1)',
+                            borderColor: appGender === 'men' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(236, 72, 153, 0.2)'
+                        }}
+                    >
+                        <div className={`w-1.5 h-1.5 rounded-full ${appGender === 'men' ? 'bg-blue-500' : 'bg-pink-500'}`} />
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${appGender === 'men' ? 'text-blue-500' : 'text-pink-500'}`}>
+                            {appGender === 'men' ? 'Gentlemen' : 'Ladies'}
+                        </span>
+                    </motion.div>
                 </div>
 
 
@@ -259,7 +277,9 @@ export default function AppServicesPage() {
                 {Object.keys(groupedServices).map((categoryName) => (
                     <motion.div key={categoryName} variants={fadeUp} className="space-y-3">
                         <div className="flex items-center justify-between px-1">
-                            <h2 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>{categoryName} Services</h2>
+                            <h2 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>
+                                {appGender === 'men' ? "Gentlemen's " : "Ladies' "}{categoryName}
+                            </h2>
                             <span className="text-[9px] font-black text-[#C8956C] bg-[#C8956C]/10 px-2 py-0.5 rounded-full">{groupedServices[categoryName].length} items</span>
                         </div>
 

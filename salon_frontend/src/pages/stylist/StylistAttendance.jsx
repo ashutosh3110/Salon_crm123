@@ -157,14 +157,25 @@ export default function StylistAttendance() {
                 return;
             }
 
-            // Priority 2: Reverse Geocode via Nominatim (OpenStreetMap)
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+            // Priority 2: Reverse Geocode via Google Maps (More accurate)
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
+            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`);
             const data = await res.json();
-            const name = data.display_name || 'Unknown Location';
-            // Simplify name: usually take the first few parts
-            const parts = name.split(',');
-            const simplified = parts.slice(0, 3).join(',').trim();
-            setLocationName(simplified);
+            
+            if (data.status === 'OK' && data.results.length > 0) {
+                // Focus on more granular address: e.g. locality + area
+                const result = data.results[0];
+                const area = result.address_components.find(c => c.types.includes('sublocality'))?.long_name;
+                const city = result.address_components.find(c => c.types.includes('locality'))?.long_name;
+                const formatted = area && city ? `${area}, ${city}` : result.formatted_address;
+                
+                // Cleanup: take first 3 segments if too long
+                const parts = formatted.split(',');
+                const simplified = parts.slice(0, 3).join(',').trim();
+                setLocationName(simplified);
+            } else {
+                setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+            }
         } catch (err) {
             console.error('Failed to resolve location name:', err);
             setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
@@ -195,7 +206,7 @@ export default function StylistAttendance() {
                 setError(`Failed to fetch location: ${err.message}`);
                 setLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
     };
 

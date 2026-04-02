@@ -253,7 +253,7 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
     const [purchasePrice, setPurchasePrice] = useState('');
     const [supplierId, setSupplierId] = useState('');
     const [invoice, setInvoice] = useState('');
-    const [receivedDate, setReceivedDate] = useState('');
+    const [expiryDate, setExpiryDate] = useState('');
     const [saving, setSaving] = useState(false);
 
     const selectedProduct = useMemo(
@@ -319,8 +319,9 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
                 supplierId: supplierId || undefined,
                 invoiceRef: invoice?.trim() || undefined,
                 supplierName: supplier?.name || undefined,
+                expiryDate: expiryDate || undefined,
             });
-            alert('Stock added successfully.');
+            alert('Stock added successfully with expiry alert set.');
             await onSuccess?.();
         } catch (e) {
             const msg =
@@ -491,19 +492,20 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
 
                     <div className="space-y-2">
                         <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest ml-1">
-                            Received date (your notes)
+                            Expiry Date *
                         </label>
                         <div className="relative group">
                             <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
                             <input
                                 type="date"
-                                value={receivedDate}
-                                onChange={(e) => setReceivedDate(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all"
+                                required
+                                value={expiryDate}
+                                onChange={(e) => setExpiryDate(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                             />
                         </div>
-                        <p className="text-[10px] text-text-muted">
-                            Not sent to API yet — use invoice field above for reference.
+                        <p className="text-[10px] text-primary/80 font-semibold">
+                            Push notification will be sent to Admin/Manager on this date.
                         </p>
                     </div>
                 </div>

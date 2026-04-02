@@ -45,6 +45,10 @@ export function CMSProvider({ children }) {
         let tenantId = customer?.tenantId || null;
         if (!tenantId && isCustomerApp) {
             tenantId = readStoredCustomerTenantId();
+            // Fallback for Guest users who have selected an outlet
+            if (!tenantId) {
+                tenantId = localStorage.getItem('active_tenant_id');
+            }
         }
 
         try {

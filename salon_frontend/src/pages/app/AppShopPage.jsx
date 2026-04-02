@@ -8,10 +8,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { isVisibleInCustomerShop } from '../../utils/shopVisibility';
+import { isVisibleInCustomerShop, stockQtyForOutlet } from '../../utils/shopVisibility';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 
-const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLight }) => {
+const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
     const { isProductLiked, toggleProductLike } = useFavorites();
     const isLiked = isProductLiked(product._id);
 
@@ -20,28 +20,43 @@ const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLig
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-            className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full"
+            style={{ 
+                background: colors.card, 
+                border: `1px solid ${colors.border}`,
+                opacity: hasStock ? 1 : 0.8
+            }}
+            className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full relative"
         >
-            <div className="relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5">
+            <div className={`relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5 ${!hasStock ? 'grayscale-[0.3] blur-[1.5px]' : ''}`}>
                 <img
                     onClick={() => onOpenProduct(product)}
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
                 />
-                <button
-                    onClick={() => toggleProductLike(product._id)}
-                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
-                    style={{ color: isLiked ? '#e53e3e' : '#fff' }}
-                >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                </button>
-                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-[#C8956C] text-white text-[8px] font-bold tracking-widest uppercase">
-                    {product.brand}
-                </div>
             </div>
-            <div className="p-3 flex flex-col flex-1">
+
+            {!hasStock && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+                    <div className="bg-black/90 px-4 py-2 rounded-xl shadow-2xl border-2 border-[#C8956C]/50 transform -rotate-12">
+                        <p className="text-[10px] font-black tracking-[0.2em] text-[#C8956C] uppercase">Available Soon</p>
+                    </div>
+                </div>
+            )}
+
+            <button
+                onClick={() => toggleProductLike(product._id)}
+                className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
+                style={{ color: isLiked ? '#e53e3e' : '#fff' }}
+            >
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+            </button>
+            
+            <div className="absolute bottom-[100px] left-2 z-20 px-2 py-1 rounded-md bg-[#C8956C] text-white text-[8px] font-bold tracking-widest uppercase">
+                {product.brand}
+            </div>
+
+            <div className={`p-3 flex flex-col flex-1 ${!hasStock ? 'blur-[1.5px]' : ''}`}>
                 <div className="flex justify-between items-start gap-2 mb-2">
                     <h3
                         onClick={() => onOpenProduct(product)}
@@ -59,12 +74,21 @@ const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLig
                     <div>
                         <span className="text-sm font-black tracking-tighter" style={{ color: colors.text }}>₹ {product.price}</span>
                     </div>
-                    <button
-                        onClick={(e) => onAddToCart(product, e)}
-                        className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
-                    >
-                        <Plus className="w-4 h-4" />
-                    </button>
+                    {hasStock ? (
+                        <button
+                            onClick={(e) => onAddToCart(product, e)}
+                            className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
+                        >
+                            <Plus className="w-4 h-4" />
+                        </button>
+                    ) : (
+                        <button
+                            disabled
+                            className="w-8 h-8 rounded-lg bg-gray-400/20 text-gray-400 flex items-center justify-center cursor-not-allowed"
+                        >
+                            <ShoppingBag className="w-4 h-4 opacity-40" />
+                        </button>
+                    )}
                 </div>
             </div>
         </motion.div>
@@ -408,9 +432,21 @@ export default function AppShopPage() {
             <div className="space-y-6 px-1">
                 <div className="grid grid-cols-2 gap-6 px-1">
                     <AnimatePresence mode="popLayout">
-                        {filteredProducts.map((product, i) => (
-                            <ProductCard key={product._id} product={product} index={i} onOpenProduct={handleOpenProduct} onAddToCart={handleAddToCart} colors={colors} isLight={isLight} />
-                        ))}
+                        {filteredProducts.map((product, i) => {
+                            const hasStock = stockQtyForOutlet(product, activeOutletId) > 0;
+                            return (
+                                <ProductCard 
+                                    key={product._id} 
+                                    product={product} 
+                                    index={i} 
+                                    onOpenProduct={handleOpenProduct} 
+                                    onAddToCart={handleAddToCart} 
+                                    colors={colors} 
+                                    isLight={isLight} 
+                                    hasStock={hasStock}
+                                />
+                            );
+                        })}
                     </AnimatePresence>
                 </div>
             </div>
