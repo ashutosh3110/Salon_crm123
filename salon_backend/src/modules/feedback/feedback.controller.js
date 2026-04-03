@@ -29,7 +29,7 @@ const getFeedbacks = async (req, res, next) => {
         const isAdminOrManager = ['admin', 'manager', 'superadmin'].includes(req.user.role);
         
         const filter = {
-            status: isAdminOrManager ? req.query.status : 'Resolved',
+            status: isAdminOrManager ? req.query.status : 'Approved',
             rating: req.query.rating,
         };
 

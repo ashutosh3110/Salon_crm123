@@ -103,7 +103,7 @@ export default function AppHomePage() {
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const res = await api.get('/feedbacks?status=Resolved');
+                const res = await api.get('/feedbacks?status=Approved');
                 if (res.data?.success) {
                     setReviews(res.data.data);
                 }
@@ -1136,32 +1136,32 @@ export default function AppHomePage() {
                                     </div>
                                 ))
                             ) : (
-                                // Fallback to static reviews if none from DB yet, or show a placeholder
-                                (homeData.REVIEWS || []).map((rev, i) => (
-                                    <div
-                                        key={i}
-                                        style={{
-                                            flexShrink: 0, width: '280px', background: colors.card,
-                                            padding: '20px', borderRadius: '24px', border: `1px solid ${colors.border}`,
-                                            boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
-                                        }}
-                                    >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                            <div style={{ display: 'flex', gap: '4px' }}>
-                                                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={colors.accent} color={colors.accent} />)}
-                                            </div>
-                                            <span style={{ fontSize: '10px', color: colors.textMuted }}>{rev.date}</span>
-                                        </div>
-                                        <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>"{rev.text}"</p>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>{rev.name[0]}</div>
-                                            <div>
-                                                <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0 }}>{rev.name}</p>
-                                                <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>at {rev.salon}</p>
-                                            </div>
-                                        </div>
+                                // Clean Empty State for No Reviews
+                                <div style={{ 
+                                    width: '100vw', // Occupy full scroll width to center perfectly
+                                    display: 'flex', 
+                                    flexDirection: 'column', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    padding: '40px 0',
+                                    opacity: 0.6
+                                }}>
+                                    <div style={{ 
+                                        width: '60px', 
+                                        height: '60px', 
+                                        borderRadius: '20px', 
+                                        background: colors.card,
+                                        border: `1px solid ${colors.border}`,
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        justifyContent: 'center',
+                                        marginBottom: '16px'
+                                    }}>
+                                        <MessageSquare size={24} color={colors.accent} style={{ opacity: 0.4 }} />
                                     </div>
-                                ))
+                                    <p style={{ fontSize: '12px', fontWeight: 800, color: colors.text, margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No reviews yet</p>
+                                    <p style={{ fontSize: '10px', color: colors.textMuted, marginTop: '4px' }}>Be the first to share your experience!</p>
+                                </div>
                             )}
                         </div>
                     </motion.div>

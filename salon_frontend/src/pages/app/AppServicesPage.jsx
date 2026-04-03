@@ -24,6 +24,7 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
                 <img
                     src={service.image || fallbackImage}
                     alt={service.name}
+                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
                 <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
@@ -83,11 +84,25 @@ export default function AppServicesPage() {
         activeOutlet, 
         activeOutletId,
         services: businessServices,
-        categories: businessCategories
+        categories: businessCategories,
+        isInitializing
     } = useBusiness();
     
     const { gender: appGender } = useGender();
     const isLight = theme === 'light';
+
+    if (isInitializing && businessServices.length === 0) {
+        return (
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center">
+                <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                    className="w-10 h-10 border-4 border-[#C8956C] border-t-transparent rounded-full mb-4"
+                />
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Loading Experience...</p>
+            </div>
+        );
+    }
     
     // Get unique active categories that have at least one active service AND match gender
     const dynamicCategories = useMemo(() => {

@@ -189,7 +189,7 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
     await billingRepository.create({
         invoiceNumber,
         tenantId,
-        planId,
+        planId: plan._id, // Use actual MongoDB ID from the found plan
         planName: plan.name,
         amount,
         taxAmount,

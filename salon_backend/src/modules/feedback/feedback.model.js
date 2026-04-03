@@ -14,10 +14,10 @@ const feedbackSchema = new mongoose.Schema(
 
         response: { type: String, trim: true, default: '' },
 
-        // Pending/Urgent/Resolved/Archived (UI expects Archived filtering)
+        // Pending/Urgent/Resolved/Archived/Approved
         status: {
             type: String,
-            enum: ['Pending', 'Urgent', 'Resolved', 'Archived'],
+            enum: ['Pending', 'Urgent', 'Resolved', 'Archived', 'Approved'],
             default: 'Pending',
         },
 

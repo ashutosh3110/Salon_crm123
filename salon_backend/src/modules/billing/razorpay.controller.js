@@ -31,7 +31,13 @@ const createSubscriptionOrder = async (req, res, next) => {
             totalAmount = amount + (amount * plan.gstRate / 100);
         }
 
-        const order = await razorpayService.createOrder(totalAmount, 'INR', `plan_${planId}`);
+        const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
+        const order = await razorpayService.createOrder(
+            totalAmount, 
+            'INR', 
+            `plan_${planId}`, 
+            { tenantId, planId, billingCycle }
+        );
         
         res.status(httpStatus.OK).send({
             success: true,
@@ -91,10 +97,12 @@ const createWalletRechargeOrder = async (req, res, next) => {
             return res.status(400).send({ success: false, message: 'Invalid amount' });
         }
 
+        const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
         const order = await razorpayService.createOrder(
             numericAmount,
             'INR',
-            receipt || `wallet_recharge_${Date.now()}`
+            receipt || `wallet_recharge_${Date.now()}`,
+            { tenantId, type: 'wallet_recharge' }
         );
 
         res.status(httpStatus.OK).send({

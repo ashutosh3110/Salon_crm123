@@ -45,6 +45,7 @@ export function BusinessProvider({ children }) {
     const [shiftsLoading, setShiftsLoading] = useState(false);
     const [catalogue, setCatalogue] = useState(null);
     const [catalogueLoading, setCatalogueLoading] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(false);
 
     const [activeOutletId, setActiveOutletId] = useState(() => {
         return localStorage.getItem('active_outlet_id') || null;
@@ -106,16 +107,43 @@ export function BusinessProvider({ children }) {
         }
     }, [isAuthenticated, user?.role]);
 
+    // Consolidated Initial Data Fetch for Customer App
+    const fetchCustomerInitialData = useCallback(async () => {
+        if (isInitializing) return;
+        setIsInitializing(true);
+        console.log('[DEBUG] Customer App: Batch Initializing Data...');
+        
+        try {
+            const [outletsRes, servicesRes, categoriesRes, staffRes] = await Promise.all([
+                api.get('/outlets'),
+                api.get('/services', { params: { limit: 1000 } }),
+                api.get('/services/categories'),
+                api.get('/users', { params: { limit: 200, page: 1 } })
+            ]);
+
+            // Batch state updates (React 18 batches these automatically into 1 re-render)
+            setOutlets(Array.isArray(outletsRes.data) ? outletsRes.data : []);
+            setServices(servicesRes.data.results || servicesRes.data || []);
+            setCategories(categoriesRes.data || []);
+            
+            const staffRaw = staffRes?.data?.success ? staffRes.data.data : staffRes.data;
+            const staffList = Array.isArray(staffRaw) ? staffRaw : (staffRaw?.results || []);
+            setStaff(staffList.filter((u) => u.role !== 'superadmin'));
+
+            console.log('[DEBUG] Customer App Init: Success');
+        } catch (error) {
+            console.error('[BusinessContext] Customer Initialization Failed:', error);
+        } finally {
+            setIsInitializing(false);
+        }
+    }, [isInitializing]);
+
     // Fetch outlets, services, categories, and staff when customer logs in (for /app)
     useEffect(() => {
         if (customer && typeof window !== 'undefined' && window.location.pathname.startsWith('/app')) {
-            console.log('[DEBUG] Customer Login Triggered Fetching...', customer._id, customer.tenantId);
-            fetchOutlets();
-            fetchServices();
-            fetchCategories();
-            fetchStaff();
+            fetchCustomerInitialData();
         }
-    }, [customer]);
+    }, [customer, fetchCustomerInitialData]);
 
     const fetchSalon = useCallback(async () => {
         setSalonLoading(true);
@@ -811,6 +839,7 @@ export function BusinessProvider({ children }) {
         catalogueLoading,
         fetchCatalogue,
         updateCatalogue,
+        isInitializing,
         bookings, addBooking, updateBookingStatus,
         checkoutPOS,
         activeOutletId, setActiveOutletId, activeOutlet
@@ -819,7 +848,7 @@ export function BusinessProvider({ children }) {
         categories, categoriesLoading, outlets, outletsLoading, products, customers,
         feedbacks, feedbacksLoading, suppliers, suppliersLoading, segments, segmentsLoading,
         shifts, shiftsLoading, catalogue, catalogueLoading, bookings, bookingsLoading,
-        activeOutletId, activeOutlet
+        activeOutletId, activeOutlet, isInitializing
     ]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;

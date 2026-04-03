@@ -8,11 +8,12 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET || 'placeholder_secret',
 });
 
-const createOrder = async (amount, currency = 'INR', receipt = 'receipt_1') => {
+const createOrder = async (amount, currency = 'INR', receipt = 'receipt_1', notes = {}) => {
     const options = {
         amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
         currency,
         receipt,
+        notes,
     };
 
     try {
