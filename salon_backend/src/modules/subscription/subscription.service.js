@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import subscriptionRepository from './subscription.repository.js';
+import Subscription from './subscription.model.js';
 import Tenant from '../tenant/tenant.model.js';
+import Billing from '../billing/billing.model.js';
 import billingRepository from '../billing/billing.repository.js';
 
 const createSubscription = async (subscriptionBody) => {
@@ -195,24 +197,31 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
     }
 
     const billingData = {
-        invoiceNumber,
+        invoiceNumber: String(invoiceNumber),
         tenantId: new mongoose.Types.ObjectId(tenantId),
-        planId: new mongoose.Types.ObjectId(plan._id),
-        planName: plan.name,
-        amount,
-        taxAmount,
-        totalAmount,
+        planId: new mongoose.Types.ObjectId(plan._id || plan.id),
+        planName: String(plan.name),
+        amount: Number(amount) || 0,
+        taxAmount: Number(taxAmount) || 0,
+        totalAmount: Number(totalAmount) || 0,
         status: 'paid',
         paymentMethod: 'razorpay',
-        transactionId: paymentId,
+        transactionId: String(paymentId),
         paymentDate: new Date(),
-        notes: `Subscription Upgrade to ${plan.name} (${cycle})`,
-        billingCycle: cycle
+        notes: `Subscription Upgrade to ${plan.name} (${String(cycle)})`,
+        billingCycle: String(cycle)
     };
 
-    console.log(`[SUBSCRIPTION] Creating Billing Record:`, JSON.stringify(billingData, null, 2));
+    console.log(`[SUBSCRIPTION] Creating Billing Record (Direct):`, JSON.stringify(billingData, null, 2));
 
-    await billingRepository.create(billingData);
+    try {
+        const billingDoc = new Billing(billingData);
+        await billingDoc.save();
+    } catch (err) {
+        console.error(`[SUBSCRIPTION] Billing Save Failed:`, err);
+        // Special case: if it's already 'paid' but billing fails, we shouldn't block the user but we MUST know why
+        throw new Error(`Billing validation failed: ${err.message}`);
+    }
 
     return { tenant, plan };
 };
