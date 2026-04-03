@@ -80,11 +80,26 @@ const getStats = async (req, res, next) => {
     }
 };
 
+const cancelSubscription = async (req, res, next) => {
+    try {
+        const { reason, comment } = req.body;
+        const tenantId = req.user.tenantId; // Get tenantId from auth middleware
+        if (!tenantId) {
+            return res.status(401).send({ success: false, message: 'Tenant ID not found in user session' });
+        }
+        const result = await subscriptionService.cancelSubscription(tenantId, reason, comment);
+        res.send({
+            success: true,
+            message: 'Subscription marked for cancellation. It will remain active until the end of the billing period.',
+            data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
-    createSubscription,
-    getSubscriptions,
-    getSubscription,
-    updateSubscription,
-    deleteSubscription,
-    getStats
+    deleteSubscriptionById,
+    getStats,
+    cancelSubscription
 };

@@ -150,6 +150,10 @@ const tenantSchema = new mongoose.Schema(
             trim: true,
             default: null,
         },
+        isCancelled: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,

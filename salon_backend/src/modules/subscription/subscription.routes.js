@@ -15,6 +15,10 @@ router
     .get(auth, role(['superadmin']), subscriptionController.getStats);
 
 router
+    .route('/cancel')
+    .post(auth, role(['admin', 'manager']), subscriptionController.cancelSubscription);
+
+router
     .route('/:id')
     .get(subscriptionController.getSubscription)
     .patch(auth, role(['superadmin']), subscriptionController.updateSubscription)

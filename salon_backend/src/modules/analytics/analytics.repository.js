@@ -98,29 +98,57 @@ class AnalyticsRepository {
     }
 
     async getChurnTrends() {
-        // Estimate churn based on 'expired' or 'suspended' status updates in a timeframe
-        // This is a rough estimation since we don't track status change history deeply
-        return Tenant.aggregate([
+        const CancellationFeedback = (await import('../subscription/cancellation.model.js')).default;
+        
+        return CancellationFeedback.aggregate([
             {
                 $match: {
-                    status: { $in: ['expired', 'suspended'] },
-                    updatedAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) }
+                    cancelledAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) }
                 }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$updatedAt" } },
+                    _id: { $dateToString: { format: "%Y-%m", date: "$cancelledAt" } },
                     churned: { $sum: 1 }
                 }
             },
             { $sort: { "_id": 1 } },
             {
                 $project: {
+                    _id: 0,
                     month: "$_id",
-                    rate: { $multiply: ["$churned", 2.5] } // Mocking a rate multiplier for visual representation
+                    rate: { $multiply: ["$churned", 5] } // Scaled for trend visibility
                 }
             }
         ]);
+    }
+
+    async getChurnReasons() {
+        const CancellationFeedback = (await import('../subscription/cancellation.model.js')).default;
+        
+        const reasons = await CancellationFeedback.aggregate([
+            {
+                $group: {
+                    _id: "$reason",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const total = reasons.reduce((acc, r) => acc + r.count, 0);
+        
+        const reasonMap = {
+            too_expensive: 'Too Expensive',
+            missing_features: 'Missing Features',
+            going_offline: 'Going Offline',
+            competitor: 'Competitor',
+            other: 'Other'
+        };
+
+        return reasons.map(r => ({
+            reason: reasonMap[r._id] || r._id,
+            pct: total > 0 ? Math.round((r.count / total) * 100) : 0
+        }));
     }
 
     async getPlanDistribution() {

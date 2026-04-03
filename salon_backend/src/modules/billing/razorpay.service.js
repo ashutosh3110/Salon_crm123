@@ -64,9 +64,25 @@ const verifyWebhookSignature = (rawBody, signature) => {
     return expected_signature === signature;
 };
 
+/**
+ * Cancel an active Razorpay subscription
+ * @param {string} subscriptionId 
+ * @returns {Promise<object>}
+ */
+const cancelSubscription = async (subscriptionId) => {
+    try {
+        const result = await razorpay.subscriptions.cancel(subscriptionId);
+        return result;
+    } catch (error) {
+        console.error(`[RAZORPAY] Cancel Subscription Error:`, error);
+        throw new Error(`Razorpay Cancellation Error: ${error.message}`);
+    }
+};
+
 export default {
     createOrder,
     verifyPayment,
     verifyWebhookSignature,
     createPlan,
+    cancelSubscription,
 };

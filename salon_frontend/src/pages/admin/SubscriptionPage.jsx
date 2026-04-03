@@ -52,6 +52,10 @@ export default function SubscriptionPage() {
     const [plans, setPlans] = useState([]);
     const [billingLogs, setBillingLogs] = useState([]);
     const [loadingPlans, setLoadingPlans] = useState(true);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [cancelComment, setCancelComment] = useState('');
 
     const { refreshUser } = useAuth();
 
@@ -174,6 +178,33 @@ export default function SubscriptionPage() {
         }
     };
 
+    const handleCancelSubscription = async () => {
+        if (!cancelReason) {
+            alert('Please select a reason for cancellation.');
+            return;
+        }
+
+        setCancelling(true);
+        try {
+            const res = await api.post('/subscriptions/cancel', {
+                reason: cancelReason,
+                comment: cancelComment
+            });
+
+            if (res.data.success) {
+                setShowCancelModal(false);
+                setShowSuccess(true);
+                await refreshUser(); // Update user status in context
+                setTimeout(() => setShowSuccess(false), 5000);
+            }
+        } catch (error) {
+            console.error('Cancellation failed:', error);
+            alert(error.response?.data?.message || 'Failed to process cancellation. Please try again or contact support.');
+        } finally {
+            setCancelling(false);
+        }
+    };
+
     const displayBillingHistory = billingLogs.map(b => ({
         id: b.invoiceNumber,
         date: new Date(b.createdAt).toLocaleDateString(),
@@ -252,13 +283,112 @@ export default function SubscriptionPage() {
                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Staff Access</p>
                             <p className="text-xl font-bold text-text tracking-tight">{currentPlan.limits.staffLimit === 999 ? '∞' : currentPlan.limits.staffLimit} <span className="text-[10px] font-semibold text-text-secondary">PROFILES</span></p>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end gap-2">
                             <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Next Billing</p>
                             <p className="text-xl font-bold text-text tracking-tight">₹{(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}</p>
+                            
+                            {!user?.tenantId?.isCancelled && (
+                                <button 
+                                    onClick={() => setShowCancelModal(true)}
+                                    className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-widest border-b border-rose-200 hover:border-rose-500 transition-all mt-2"
+                                >
+                                    Cancel Subscription
+                                </button>
+                            )}
+                            {user?.tenantId?.isCancelled && (
+                                <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100 uppercase tracking-widest mt-2">
+                                    Cancelled (Active until Expiry)
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Cancellation Survey Modal */}
+            <AnimatePresence>
+                {showCancelModal && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-white max-w-md w-full p-8 rounded-3xl shadow-2xl relative border border-border"
+                        >
+                            <button 
+                                onClick={() => setShowCancelModal(false)}
+                                className="absolute top-6 right-6 text-text-muted hover:text-text transition-colors"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <h3 className="text-2xl font-bold text-text tracking-tight">We're sorry to see you go</h3>
+                                    <p className="text-sm text-text-muted">Please let us know why you're cancelling your subscription. Your feedback helps us improve.</p>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {[
+                                        { id: 'too_expensive', label: '💸 Too Expensive', desc: 'Pricing doesn\'t match my current needs' },
+                                        { id: 'missing_features', label: '🧩 Missing Features', desc: 'I need tools that aren\'t available yet' },
+                                        { id: 'going_offline', label: '🔌 Going Offline', desc: 'I\'m moving back to manual management' },
+                                        { id: 'competitor', label: '⚔️ Competitor', desc: 'I found a better alternative' },
+                                        { id: 'other', label: '📝 Other', desc: 'Something else' }
+                                    ].map((opt) => (
+                                        <label 
+                                            key={opt.id}
+                                            className={`flex items-start gap-4 p-4 border rounded-2xl cursor-pointer transition-all ${cancelReason === opt.id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:border-text-muted'}`}
+                                        >
+                                            <input 
+                                                type="radio" 
+                                                name="cancelReason" 
+                                                value={opt.id}
+                                                checked={cancelReason === opt.id}
+                                                onChange={(e) => setCancelReason(e.target.value)}
+                                                className="mt-1 accent-primary"
+                                            />
+                                            <div>
+                                                <p className="text-sm font-bold text-text">{opt.label}</p>
+                                                <p className="text-xs text-text-muted mt-0.5">{opt.desc}</p>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-text uppercase tracking-wider">Additional Comments (Optional)</label>
+                                    <textarea 
+                                        value={cancelComment}
+                                        onChange={(e) => setCancelComment(e.target.value)}
+                                        placeholder="Tell us more about your experience..."
+                                        className="w-full p-4 bg-surface border border-border rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all min-h-[100px]"
+                                    />
+                                </div>
+
+                                <div className="pt-4 flex gap-3">
+                                    <button 
+                                        onClick={() => setShowCancelModal(false)}
+                                        className="flex-1 py-4 text-sm font-bold text-text-muted hover:text-text transition-all bg-surface hover:bg-border rounded-2xl"
+                                    >
+                                        Keep Subscription
+                                    </button>
+                                    <button 
+                                        onClick={handleCancelSubscription}
+                                        disabled={cancelling}
+                                        className="flex-3 py-4 text-sm font-bold text-white bg-rose-500 hover:bg-rose-600 transition-all rounded-2xl shadow-lg shadow-rose-500/20 disabled:opacity-50"
+                                    >
+                                        {cancelling ? 'Processing...' : 'Confirm Cancellation'}
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-center text-text-muted font-medium italic">
+                                    Your plan will remain active until the end of your current billing cycle.
+                                </p>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Plans List - More Compact */}
             <div className="space-y-3">

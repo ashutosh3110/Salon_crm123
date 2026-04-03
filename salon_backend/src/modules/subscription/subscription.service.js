@@ -4,6 +4,8 @@ import Subscription from './subscription.model.js';
 import Tenant from '../tenant/tenant.model.js';
 import Billing from '../billing/billing.model.js';
 import billingRepository from '../billing/billing.repository.js';
+import CancellationFeedback from './cancellation.model.js';
+import razorpayService from '../billing/razorpay.service.js';
 
 const createSubscription = async (subscriptionBody) => {
     // 1. Create locally first
@@ -226,12 +228,49 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
     return { tenant, plan };
 };
 
+/**
+ * Cancel a subscription and record feedback
+ * @param {string} tenantId 
+ * @param {string} reason 
+ * @param {string} comment 
+ */
+const cancelSubscription = async (tenantId, reason, comment) => {
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) throw new Error('Tenant not found');
+
+    console.log(`[SUBSCRIPTION] Processing cancellation for tenant: ${tenant.name} (${tenantId})`);
+
+    // 1. Record Feedback
+    await CancellationFeedback.create({
+        tenantId,
+        plan: tenant.subscriptionPlan,
+        reason,
+        comment
+    });
+
+    // 2. Cancel in Razorpay if active
+    if (tenant.razorpaySubscriptionId) {
+        try {
+            await razorpayService.cancelSubscription(tenant.razorpaySubscriptionId);
+            console.log(`[SUBSCRIPTION] Razorpay subscription cancelled: ${tenant.razorpaySubscriptionId}`);
+        } catch (error) {
+            console.warn(`[SUBSCRIPTION] Razorpay Cancellation Failed:`, error.message);
+            // We continue anyway, maybe it was already cancelled or expired in RZP
+        }
+    }
+
+    // 3. Update Tenant Status
+    // We keep status as 'active' and keep expiry date, but mark as cancelled
+    // This ensures it works "mahine tk chalna chaiye"
+    tenant.isCancelled = true;
+    await tenant.save();
+
+    return tenant;
+};
+
 export default {
-    createSubscription,
-    querySubscriptions,
-    getSubscriptionById,
-    updateSubscriptionById,
     deleteSubscriptionById,
     getSubscriptionStats,
-    finalizeUpgrade
+    finalizeUpgrade,
+    cancelSubscription
 };
