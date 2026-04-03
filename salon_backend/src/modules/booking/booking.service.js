@@ -137,6 +137,16 @@ class BookingService {
                         body: `${clientName} booked with ${populated.staffId?.name || 'Unassigned'}`,
                         data: { bookingId: booking._id.toString() }
                     });
+
+                    // --- WhatsApp Placeholder for Client ---
+                    if (populated.clientId?.phone) {
+                        await notificationService.sendWhatsAppTemplate({
+                            phone: populated.clientId.phone,
+                            tenantId: s_tenantId,
+                            template: 'booking_confirmation', // User's template name
+                            values: [clientName, serviceName, new Date(populated.appointmentDate).toLocaleString()]
+                        });
+                    }
                 } catch (internalErr) {
                     console.warn('[BookingService] Async notification failed:', internalErr.message);
                 }
@@ -188,6 +198,16 @@ class BookingService {
                         actionUrl: '/app/bookings'
                     });
                 }
+
+                // --- WhatsApp Confirmation for Client ---
+                if (populated.clientId?.phone) {
+                    await notificationService.sendWhatsAppTemplate({
+                        phone: populated.clientId.phone,
+                        tenantId,
+                        template: 'booking_confirmed',
+                        values: [clientName, new Date(populated.appointmentDate).toLocaleDateString()]
+                    });
+                }
             } else if (status === 'cancelled') {
                 const msg = {
                     type: 'booking_cancelled',
@@ -207,7 +227,18 @@ class BookingService {
                     });
                 }
                 
+                
                 await notificationService.sendToRole(tenantId, 'admin', msg);
+
+                // --- WhatsApp Cancellation for Client ---
+                if (populated.clientId?.phone) {
+                    await notificationService.sendWhatsAppTemplate({
+                        phone: populated.clientId.phone,
+                        tenantId,
+                        template: 'booking_cancelled',
+                        values: [clientName, new Date(populated.appointmentDate).toLocaleDateString()]
+                    });
+                }
             }
         } catch (error) {
             console.error('[BookingService] Status notification failed:', error);

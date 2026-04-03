@@ -8,6 +8,7 @@ import logoDarkMode from '/1-removebg-preview.png';
 import { useState, useEffect } from 'react';
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { MapPin } from 'lucide-react';
 
 const SALON_THOUGHTS = [
@@ -26,6 +27,7 @@ export default function AppHeader() {
     const location = useLocation();
     const { balance } = useWallet();
     const { activeOutlet } = useBusiness();
+    const { unreadCount } = useNotifications();
 
     const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
     const [showThought, setShowThought] = useState(false);
@@ -247,17 +249,28 @@ export default function AppHeader() {
                         position: 'relative'
                     }}
                 >
-                    <Bell size={20} strokeWidth={2} />
-                    <span style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        width: '6px',
-                        height: '6px',
-                        background: '#ff4757',
-                        borderRadius: '50%',
-                        border: isLight ? '1.5px solid #fff' : '1.5px solid #141414'
-                    }} />
+                    <Bell size={20} strokeWidth={2.2} className={unreadCount > 0 ? 'animate-bounce-slow' : ''} />
+                    {unreadCount > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '6px',
+                            minWidth: '14px',
+                            height: '14px',
+                            background: '#ff4757',
+                            color: 'white',
+                            fontSize: '8px',
+                            fontWeight: 900,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: isLight ? '1.5px solid #fff' : '1.5px solid #141414',
+                            boxShadow: '0 2px 4px rgba(255, 71, 87, 0.3)'
+                        }}>
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
                 </motion.button>
 
 

@@ -1,6 +1,7 @@
 import { getMessaging } from '../../config/firebase.js';
 import Notification from './notification.model.js';
 import User from '../user/user.model.js';
+import whatsappService from './whatsapp.service.js';
 
 class NotificationService {
     /**
@@ -232,14 +233,46 @@ class NotificationService {
     /**
      * Remove FCM token (on logout)
      */
-    async removeToken(userId, fcmToken) {
-        if (!fcmToken) return { success: true };
+    /**
+     * Send WhatsApp Template Notification
+     * @param {Object} params - { phone, template, values }
+     */
+    async sendWhatsAppTemplate({ phone, template, values, tenantId }) {
+        if (!phone) return { success: false, message: 'Phone number required' };
+        
+        // Clean phone number (remove spaces, +, etc.)
+        const cleanPhone = String(phone).replace(/\D/g, '');
+        
+        try {
+            const result = await whatsappService.sendTemplateMessage(cleanPhone, template, values);
+            
+            // Increment usage if tenantId provided
+            if (tenantId && result.success && !result.simulated) {
+                const Tenant = (await import('../tenant/tenant.model.js')).default;
+                await Tenant.findByIdAndUpdate(tenantId, { $inc: { whatsappUsed: 1 } });
+            }
+            
+            return result;
+        } catch (error) {
+            console.error(`[NotificationService] WhatsApp Template Error:`, error.message);
+            return { success: false, error: error.message };
+        }
+    }
 
-        await User.findByIdAndUpdate(userId, {
-            $pull: { fcmTokens: fcmToken },
-        });
+    /**
+     * Send Simple WhatsApp Text
+     */
+    async sendWhatsAppText({ phone, text, tenantId }) {
+        if (!phone) return { success: false, message: 'Phone number required' };
+        const cleanPhone = String(phone).replace(/\D/g, '');
 
-        return { success: true };
+        try {
+            const result = await whatsappService.sendTextMessage(cleanPhone, text);
+            return result;
+        } catch (error) {
+            console.error(`[NotificationService] WhatsApp Text Error:`, error.message);
+            return { success: false };
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import Client from '../client/client.model.js';
 import Invoice from '../invoice/invoice.model.js';
 import Tenant from '../tenant/tenant.model.js';
 import mongoose from 'mongoose';
+import notificationService from '../notification/notification.service.js';
 
 const FLOW_DEFINITIONS = {
     birthday: { name: 'Birthday Wishes', short: 'Send a warm message with an offer on the customer\'s birthday.', triggerLabel: 'On the customer\'s birthday', channelLabel: 'WhatsApp + optional SMS', badge: 'Popular', defaultPreview: 'Happy Birthday {{name}} 🎉\nWe\'d love to spoil you today. Enjoy {{offer}} on any service this week. Reply YES to book.' },
@@ -44,11 +45,23 @@ const createCampaign = async (tenantId, payload, userId) => {
         createdBy: userId,
     };
 
-    // Increment usage
     tenant.whatsappUsed = (tenant.whatsappUsed || 0) + targetCount;
     await tenant.save();
 
-    return campaignRepository.create(body);
+    const campaign = await campaignRepository.create(body);
+
+    // --- WhatsApp Bulk Trigger Placeholder ---
+    if (body.channel === 'whatsapp') {
+        (async () => {
+            console.log(`[MARKETING] Triggering Bulk WhatsApp for Campaign: ${campaign.name}`);
+            // Logic to fetch all clients in segment and send messages
+            // for (const client of clients) {
+            //     await notificationService.sendWhatsAppText({ phone: client.phone, text: body.message, tenantId });
+            // }
+        })();
+    }
+
+    return campaign;
 };
 
 const queryCampaigns = async (tenantId, filter, options) => {

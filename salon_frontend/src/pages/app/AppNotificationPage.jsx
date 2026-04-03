@@ -1,64 +1,35 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Calendar, Tag, Shield, CheckCircle2, Trash2, CheckCircle, Package, Star, ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
+import { Bell, Calendar, Tag, Shield, CheckCircle2, Trash2, CheckCircle, Package, Star, ArrowLeft, Clock } from 'lucide-react';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { formatDistanceToNow } from 'date-fns';
 
-const MOCK_NOTIFICATIONS = [
-    {
-        id: 1,
-        type: 'booking',
-        title: 'Booking Confirmed',
-        message: 'Your appointment for "Executive Haircut" on March 1st at 2:00 PM is confirmed.',
-        time: '2 mins ago',
-        isRead: false,
-        icon: Calendar,
-        color: 'text-emerald-500 dark:text-emerald-400',
-    },
-    {
-        id: 2,
-        type: 'offer',
-        title: 'Exclusive Offer!',
-        message: 'Get 25% OFF on all Spa treatments this weekend. Use code SPA25.',
-        time: '1 hour ago',
-        isRead: false,
-        icon: Tag,
-        color: 'text-amber-500 dark:text-amber-400',
-    },
-    {
-        id: 3,
-        type: 'shop',
-        title: 'Order Delivered',
-        message: 'Your order #ORD-7742 for "L\'Oréal Professional Shampoo" has been delivered.',
-        time: '5 hours ago',
-        isRead: true,
-        icon: Package,
-        color: 'text-blue-500 dark:text-blue-400',
-    },
-    {
-        id: 4,
-        type: 'loyalty',
-        title: 'Points Earned',
-        message: 'You just earned 50 loyalty points from your last visit! Check your wallet.',
-        time: 'Yesterday',
-        isRead: true,
-        icon: Star,
-        color: 'text-[#C8956C]',
-    },
-    {
-        id: 5,
-        type: 'security',
-        title: 'New Login',
-        message: 'New login detected from a Chrome browser on Windows 11.',
-        time: '2 days ago',
-        isRead: true,
-        icon: Shield,
-        color: 'text-rose-500 dark:text-rose-400',
-    }
-];
+const NOTIFICATION_ICONS = {
+    booking_confirmed: Calendar,
+    booking_new: Calendar,
+    booking_cancelled: Calendar,
+    offer: Tag,
+    shop_order: Package,
+    loyalty: Star,
+    security: Shield,
+    default: Bell
+};
+
+const NOTIFICATION_COLORS = {
+    booking_confirmed: 'text-emerald-500 dark:text-emerald-400',
+    booking_new: 'text-blue-500 dark:text-blue-400',
+    booking_cancelled: 'text-rose-500 dark:text-rose-400',
+    offer: 'text-amber-500 dark:text-amber-400',
+    shop_order: 'text-indigo-500 dark:text-indigo-400',
+    loyalty: 'text-[#C8956C]',
+    security: 'text-rose-500 dark:text-rose-400',
+    default: 'text-text-muted'
+};
 
 const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) => {
-    const Icon = notification.icon;
+    const Icon = NOTIFICATION_ICONS[notification.type] || NOTIFICATION_ICONS.default;
+    const colorClass = NOTIFICATION_COLORS[notification.type] || NOTIFICATION_COLORS.default;
 
     return (
         <motion.div
@@ -81,7 +52,7 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) =
             )}
 
             <div className="p-3 flex gap-3">
-                <Icon className={`w-6 h-6 shrink-0 ${notification.color}`} />
+                <Icon className={`w-6 h-6 shrink-0 ${colorClass}`} />
 
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
@@ -89,24 +60,24 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) =
                             {notification.title}
                         </h3>
                         <span className="text-[8px] font-bold opacity-40 shrink-0 uppercase tracking-tighter" style={{ color: colors.textMuted }}>
-                            {notification.time}
+                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                         </span>
                     </div>
                     <p className="text-[9px] font-medium leading-tight opacity-70" style={{ color: colors.text }}>
-                        {notification.message}
+                        {notification.body}
                     </p>
 
                     <div className="flex items-center justify-between mt-2">
                         {!notification.isRead ? (
                             <button
-                                onClick={() => onRead(notification.id)}
+                                onClick={() => onRead(notification._id)}
                                 className="flex items-center gap-1 text-[8px] font-black text-[#C8956C] uppercase tracking-widest hover:opacity-80 transition-opacity"
                             >
                                 <CheckCircle2 className="w-3 h-3" /> Mark read
                             </button>
                         ) : <div />}
                         <button
-                            onClick={() => onDelete(notification.id)}
+                            onClick={() => onDelete(notification._id)}
                             className="opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                             <Trash2 className="w-3 h-3 text-rose-500/50 hover:text-rose-500" />
@@ -119,7 +90,10 @@ const NotificationCard = ({ notification, onRead, onDelete, colors, isLight }) =
 };
 
 export default function AppNotificationPage() {
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+    const { 
+        notifications, unreadCount, markAsRead, markAllRead, 
+        deleteNotification, loading 
+    } = useNotifications();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -131,24 +105,6 @@ export default function AppNotificationPage() {
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
         border: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.04)',
     };
-
-    const markAsRead = (id) => {
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    };
-
-    const markAllAsRead = () => {
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    };
-
-    const deleteNotification = (id) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-    };
-
-    const clearAll = () => {
-        setNotifications([]);
-    };
-
-    const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
         <div className="pb-24 min-h-screen" style={{ background: colors.bg }}>
@@ -171,16 +127,10 @@ export default function AppNotificationPage() {
                 {notifications.length > 0 && (
                     <div className="flex items-center gap-2">
                         <button
-                            onClick={markAllAsRead}
+                            onClick={markAllRead}
                             className={`w-8 h-8 flex items-center justify-center transition-all active:scale-90 ${unreadCount > 0 ? 'text-[#C8956C]' : 'opacity-20 pointer-events-none'}`}
                         >
                             <CheckCircle className="w-4 h-4" />
-                        </button>
-                        <button
-                            onClick={clearAll}
-                            className="w-8 h-8 flex items-center justify-center text-rose-500 active:scale-90 transition-all"
-                        >
-                            <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
                 )}
@@ -188,34 +138,44 @@ export default function AppNotificationPage() {
 
             {/* List */}
             <div className="px-3 max-w-lg mx-auto">
-                <AnimatePresence mode="popLayout" initial={false}>
-                    {notifications.length > 0 ? (
-                        notifications.map((n) => (
-                            <NotificationCard
-                                key={n.id}
-                                notification={n}
-                                onRead={markAsRead}
-                                onDelete={deleteNotification}
-                                colors={colors}
-                                isLight={isLight}
-                            />
-                        ))
-                    ) : (
+                {loading ? (
+                    <div className="py-24 text-center">
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="py-24 flex flex-col items-center text-center space-y-4"
-                        >
-                            <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-lg shadow-black/5">
-                                <Bell className="w-6 h-6 opacity-10" style={{ color: colors.text }} />
-                            </div>
-                            <div className="space-y-0.5">
-                                <h3 className="text-lg font-black italic tracking-tighter uppercase" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Silent Boutique</h3>
-                                <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: colors.textMuted }}>Your timeline is momentarily still.</p>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-8 h-8 border-2 border-[#C8956C] border-t-transparent rounded-full mx-auto"
+                        />
+                    </div>
+                ) : (
+                    <AnimatePresence mode="popLayout" initial={false}>
+                        {notifications.length > 0 ? (
+                            notifications.map((n) => (
+                                <NotificationCard
+                                    key={n._id}
+                                    notification={n}
+                                    onRead={markAsRead}
+                                    onDelete={deleteNotification}
+                                    colors={colors}
+                                    isLight={isLight}
+                                />
+                            ))
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="py-24 flex flex-col items-center text-center space-y-4"
+                            >
+                                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-lg shadow-black/5">
+                                    <Bell className="w-6 h-6 opacity-10" style={{ color: colors.text }} />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <h3 className="text-lg font-black italic tracking-tighter uppercase" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>Silent Boutique</h3>
+                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: colors.textMuted }}>Your timeline is momentarily still.</p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                )}
             </div>
         </div>
     );

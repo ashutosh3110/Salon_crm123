@@ -1,28 +1,38 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import { useAuth } from './AuthContext';
+import { useCustomerAuth } from './CustomerAuthContext';
 
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
     const { user } = useAuth();
+    const { customer } = useCustomerAuth();
+    
+    // Identify which user is active
+    const activeUserId = user?._id || user?.id || customer?._id || customer?.id;
+    const isClient = !!customer && !user;
+
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [loading, setLoading] = useState(false);
 
     const fetchNotifications = useCallback(async () => {
-        if (!user) return;
+        if (!activeUserId) return;
         try {
+            setLoading(true);
             const res = await api.get('/notifications');
             // Backend returns { results: [...], total: ..., unreadCount: ... }
             setNotifications(res.data.results || []);
         } catch (error) {
             console.error('Fetch Notifications Error:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [user]);
+    }, [activeUserId]);
 
     const fetchUnreadCount = useCallback(async () => {
-        if (!user) return;
+        if (!activeUserId) return;
         try {
             const res = await api.get('/notifications/unread-count');
             // Backend returns { unreadCount: ... }
@@ -30,11 +40,11 @@ export function NotificationProvider({ children }) {
         } catch (error) {
             console.error('Fetch Unread Count Error:', error);
         }
-    }, [user]);
+    }, [activeUserId]);
 
     const markAsRead = useCallback(async (id) => {
         try {
-            await api.patch('/notifications/read', { ids: [id] });
+            await api.patch('/notifications/read', { notificationIds: [id] });
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
@@ -63,11 +73,14 @@ export function NotificationProvider({ children }) {
     }, [fetchUnreadCount]);
 
     useEffect(() => {
-        if (user) {
+        if (activeUserId) {
             fetchNotifications();
             fetchUnreadCount();
+        } else {
+            setNotifications([]);
+            setUnreadCount(0);
         }
-    }, [user, fetchNotifications, fetchUnreadCount]);
+    }, [activeUserId, fetchNotifications, fetchUnreadCount]);
 
     const value = useMemo(() => ({
         notifications,
