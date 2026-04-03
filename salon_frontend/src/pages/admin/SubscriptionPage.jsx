@@ -149,7 +149,8 @@ export default function SubscriptionPage() {
                             setTimeout(() => setShowSuccess(false), 5000);
                         }
                     } catch (err) {
-                        alert('Payment verification failed. If amount was deducted, please contact support.');
+                        const errorMsg = err.response?.data?.message || err.message || 'Payment verification failed';
+                        alert(`Error: ${errorMsg}. If amount was deducted, please contact support.`);
                     } finally {
                         setUpgrading(null);
                     }

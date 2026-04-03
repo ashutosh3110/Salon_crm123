@@ -76,8 +76,16 @@ const verifySubscriptionPayment = async (req, res, next) => {
 
         // Finalize the upgrade in DB ONLY if tenant context exists (Admin Upgrade flow)
         if (tenantId && planId) {
-            await subscriptionService.finalizeUpgrade(tenantId, planId, billingCycle, razorpay_payment_id, razorpay_subscription_id);
-            console.log(`[SUBSCRIPTION] Finalized upgrade for tenant: ${tenantId}, plan: ${planId}`);
+            try {
+                await subscriptionService.finalizeUpgrade(tenantId, planId, billingCycle, razorpay_payment_id, razorpay_subscription_id);
+                console.log(`[SUBSCRIPTION] Finalized upgrade for tenant: ${tenantId}, plan: ${planId}`);
+            } catch (err) {
+                console.error(`[SUBSCRIPTION] Upgrade finalization failed:`, err.message);
+                return res.status(httpStatus.BAD_REQUEST).send({
+                    success: false,
+                    message: `Upgrade failed: ${err.message}`
+                });
+            }
         }
 
         res.status(httpStatus.OK).send({
