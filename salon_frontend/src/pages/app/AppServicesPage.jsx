@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
@@ -26,11 +26,17 @@ const ServiceCard = ({ service, onBook, colors, isLight }) => {
                     alt={service.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute top-3 right-3 flex gap-2">
-                    <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm">
-                        <Clock size={12} className="text-[#C8956C]" />
-                        <span className="text-[10px] font-bold">{service.duration}m</span>
+                <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+                    <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
+                        <Clock size={10} className="text-[#C8956C]" />
+                        <span>{service.duration}m</span>
                     </div>
+                    {service.resourceType && (
+                        <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
+                            {service.resourceType === 'room' ? <DoorClosed size={10} className="text-[#C8956C]" /> : <Armchair size={10} className="text-[#C8956C]" />}
+                            <span>{service.resourceType}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -91,6 +91,19 @@ export default function BookingCard({ booking, onTap, index = 0 }) {
                 </span>
                 <span className="ml-auto text-sm font-black text-[#C8956C] tracking-tighter">₹{booking.price?.toLocaleString()}</span>
             </div>
+
+            {booking.status === 'completed' && (
+                <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        booking.onRate?.(booking);
+                    }}
+                    className="w-full mt-4 py-3 bg-[#C8956C]/10 border border-[#C8956C]/20 text-[#C8956C] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#C8956C] hover:text-white transition-all flex items-center justify-center gap-2"
+                >
+                    <Star size={12} fill="currentColor" /> Rate & Review
+                </motion.button>
+            )}
         </motion.div>
     );
 }

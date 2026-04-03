@@ -16,6 +16,7 @@ export const createService = {
         outletIds: Joi.array().items(Joi.string().custom(objectId)),
         status: Joi.string().valid('active', 'inactive'),
         gender: Joi.string().valid('men', 'women', 'both'),
+        resourceType: Joi.string().valid('chair', 'room'),
     }),
 };
 
@@ -52,6 +53,7 @@ export const updateService = {
             outletIds: Joi.array().items(Joi.string().custom(objectId)),
             status: Joi.string().valid('active', 'inactive'),
             gender: Joi.string().valid('men', 'women', 'both'),
+            resourceType: Joi.string().valid('chair', 'room'),
         })
         .min(1),
 };

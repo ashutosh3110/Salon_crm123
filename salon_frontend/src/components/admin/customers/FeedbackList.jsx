@@ -15,10 +15,12 @@ import {
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function FeedbackList() {
-    const { feedbacks, archiveFeedback, fetchFeedbacks } = useBusiness();
+    const { feedbacks, archiveFeedback, fetchFeedbacks, updateFeedback } = useBusiness();
     const [ratingFilter, setRatingFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedFeedback, setSelectedFeedback] = useState(null);
+    const [adminResponse, setAdminResponse] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
 
     // Ensure backend data is loaded immediately when admin opens the feedback tab.
     useEffect(() => {
@@ -27,6 +29,26 @@ export default function FeedbackList() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Sync response state when modal opens
+    useEffect(() => {
+        if (selectedFeedback) {
+            setAdminResponse(selectedFeedback.response || '');
+        }
+    }, [selectedFeedback]);
+
+    const handleUpdate = async (id, data) => {
+        setIsSaving(true);
+        try {
+            await updateFeedback(id, data);
+            setSelectedFeedback(null);
+        } catch (error) {
+            console.error('Update failed:', error);
+            alert('Failed to update feedback');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const filteredFeedbacks = feedbacks
         .filter(f => f.status !== 'Archived')
@@ -130,6 +152,9 @@ export default function FeedbackList() {
                                                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
                                                 <span className="text-[11px] font-bold text-yellow-600">{fb.rating}</span>
                                             </div>
+                                            <span className={`text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${fb.status === 'Resolved' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                                                {fb.status === 'Resolved' ? 'Published' : 'Pending'}
+                                            </span>
                                         </div>
                                         <p className="text-sm text-text-secondary font-medium">"{fb.comment}"</p>
                                     </div>
@@ -175,7 +200,7 @@ export default function FeedbackList() {
                                         onClick={() => setSelectedFeedback(fb)}
                                         className="px-4 py-1.5 rounded-lg text-[10px] font-bold bg-primary text-white hover:shadow-lg transition-all uppercase tracking-widest flex items-center gap-2"
                                     >
-                                        View Details
+                                        Moderate
                                         <ArrowUpRight className="w-3 h-3" />
                                     </button>
                                 </div>
@@ -226,21 +251,15 @@ export default function FeedbackList() {
                                 "{selectedFeedback.comment}"
                             </div>
 
-                            {Array.isArray(selectedFeedback.images) && selectedFeedback.images.length > 0 && (
-                                <div>
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Images</label>
-                                    <div className="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
-                                        {selectedFeedback.images.map((imgUrl, idx) => (
-                                            <img
-                                                key={`modal-img-${idx}`}
-                                                src={imgUrl}
-                                                alt="Feedback"
-                                                className="w-full h-28 rounded-lg object-cover border border-border"
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Add Response (Visible to Client)</label>
+                                <textarea
+                                    value={adminResponse}
+                                    onChange={(e) => setAdminResponse(e.target.value)}
+                                    placeholder="Type your reply here..."
+                                    className="w-full p-4 border border-border bg-surface text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[100px] resize-none"
+                                />
+                            </div>
 
                             <div className="grid grid-cols-2 gap-8 py-6 border-y border-border">
                                 <div className="space-y-2">
@@ -261,19 +280,18 @@ export default function FeedbackList() {
 
                             <div className="flex gap-4 pt-4">
                                 <button
-                                    onClick={() => {
-                                        archiveFeedback(selectedFeedback.id);
-                                        setSelectedFeedback(null);
-                                    }}
+                                    onClick={() => handleUpdate(selectedFeedback.id, { status: 'Archived' })}
+                                    disabled={isSaving}
                                     className="flex-1 py-5 border border-border bg-white text-text-muted font-black text-[11px] uppercase tracking-[0.2em] hover:bg-surface transition-all active:scale-[0.98]"
                                 >
                                     Archive
                                 </button>
                                 <button
-                                    onClick={() => alert('Reply to this customer...')}
-                                    className="flex-1 py-5 bg-text text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-text/20 hover:bg-primary transition-all active:scale-[0.98]"
+                                    onClick={() => handleUpdate(selectedFeedback.id, { response: adminResponse, status: 'Resolved' })}
+                                    disabled={isSaving}
+                                    className="flex-[2] py-5 bg-text text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-text/20 hover:bg-primary transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                                 >
-                                    RESPOND TO CLIENT
+                                    {isSaving ? 'Processing...' : (selectedFeedback.status === 'Resolved' ? 'UPDATE RESPONSE' : 'APPROVE & PUBLISH')}
                                 </button>
                             </div>
                         </div>

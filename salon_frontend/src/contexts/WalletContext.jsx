@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useCustomerAuth } from './CustomerAuthContext';
 import walletData from '../data/walletData.json';
 import api from '../services/api';
@@ -34,6 +34,7 @@ function mapLoyaltyTx(tx) {
 
 export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
+    const inflightRequests = useRef(new Set());
 
     // Keep mock wallets as fallback (POS screens use mock clients sometimes).
     const [allWallets, setAllWallets] = useState(walletData.mockWallets || {});
@@ -83,6 +84,10 @@ export function WalletProvider({ children }) {
 
     const refreshWallet = useCallback(async (customerId) => {
         if (!customerId) return;
+        
+        // Synchronous lock to prevent race conditions during rapid re-renders
+        if (inflightRequests.current.has(customerId)) return;
+        inflightRequests.current.add(customerId);
 
         setWalletLoadingMap(prev => ({ ...prev, [customerId]: true }));
         try {
@@ -103,7 +108,10 @@ export function WalletProvider({ children }) {
                     transactions,
                 },
             }));
+        } catch (err) {
+            console.error('[WalletContext] refreshWallet error:', err);
         } finally {
+            inflightRequests.current.delete(customerId);
             setWalletLoadingMap(prev => ({ ...prev, [customerId]: false }));
         }
     }, []);
@@ -111,7 +119,8 @@ export function WalletProvider({ children }) {
     const initializeWallet = useCallback(async (customerId) => {
         if (!customerId) return;
 
-        if (walletLoadingMap[customerId]) return;
+        // Check ref-based lock and existing loading state
+        if (inflightRequests.current.has(customerId) || walletLoadingMap[customerId]) return;
 
         // Use mock quickly if needed, then sync from backend.
         setAllWallets(prev => {
@@ -137,7 +146,7 @@ export function WalletProvider({ children }) {
         if (w) return w;
 
         // Lazy-load for admin screens.
-        if (!walletLoadingMap[customerId]) {
+        if (!walletLoadingMap[customerId] && !inflightRequests.current.has(customerId)) {
             initializeWallet(customerId).catch(() => {});
         }
 

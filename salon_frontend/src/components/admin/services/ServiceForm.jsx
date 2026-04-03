@@ -14,7 +14,9 @@ import {
     Upload,
     Image as ImageIcon,
     ChevronDown,
-    Plus
+    Plus,
+    Armchair,
+    DoorClosed
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -39,7 +41,8 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
         outlet: initialData?.outlet === 'All Outlets' ? 'all' : (initialData?.outletIds?.length > 0 ? 'selected' : 'all'),
         outletIds: initialData?.outletIds || [],
         status: initialData?.status || 'active',
-        gender: initialData?.gender || 'both'
+        gender: initialData?.gender || 'both',
+        resourceType: initialData?.resourceType || 'chair'
     });
 
     const handleImageUpload = (e) => {
@@ -73,7 +76,8 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                 gst: parseInt(formData.gst),
                 commissionValue: parseFloat(formData.commissionValue) || 0,
                 outletIds: formData.outlet === 'all' ? [] : formData.outletIds,
-                gender: formData.gender
+                gender: formData.gender,
+                resourceType: formData.resourceType
             };
 
             // Remove internal UI state fields that backend validation rejects
@@ -216,6 +220,50 @@ export default function ServiceForm({ onSave, categories = [], initialData }) {
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         />
+                    </div>
+
+                    {/* Resource Selection */}
+                    <div className="pt-4 border-t border-border/50">
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest block mb-3">
+                            Facility Allocation *
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, resourceType: 'chair' })}
+                                className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                                    formData.resourceType === 'chair'
+                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
+                                }`}
+                            >
+                                <div className={`p-2 rounded-xl ${formData.resourceType === 'chair' ? 'bg-primary text-white' : 'bg-white border border-border'}`}>
+                                    <Armchair className="w-4 h-4" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-black uppercase tracking-tight">Salon Chair</p>
+                                    <p className="text-[8px] opacity-70 uppercase font-bold tracking-tighter">General Service</p>
+                                </div>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setFormData({ ...formData, resourceType: 'room' })}
+                                className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                                    formData.resourceType === 'room'
+                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
+                                        : 'bg-surface-alt border-border text-text-muted hover:border-primary/40'
+                                }`}
+                            >
+                                <div className={`p-2 rounded-xl ${formData.resourceType === 'room' ? 'bg-primary text-white' : 'bg-white border border-border'}`}>
+                                    <DoorClosed className="w-4 h-4" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[10px] font-black uppercase tracking-tight">Private Room</p>
+                                    <p className="text-[8px] opacity-70 uppercase font-bold tracking-tighter">Spa/Treatment</p>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

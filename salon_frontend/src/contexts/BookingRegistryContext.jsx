@@ -59,13 +59,6 @@ export function BookingRegistryProvider({ children }) {
         fetchBookings();
     }, [fetchBookings]);
 
-    // ── Polling / Sync ──
-    useEffect(() => {
-        if (!customer?._id) return;
-
-        const interval = setInterval(fetchBookings, 15000); // Poll every 15s for live updates
-        return () => clearInterval(interval);
-    }, [customer?._id, fetchBookings]);
 
     // ── Add a new booking ──
     const addBooking = useCallback(async (newBooking) => {

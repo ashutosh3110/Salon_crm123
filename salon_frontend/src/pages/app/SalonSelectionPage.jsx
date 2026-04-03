@@ -100,7 +100,7 @@ export default function SalonSelectionPage() {
         accent: '#C8956C'
     };
 
-    const DEFAULT_RADIUS_KM = 3;
+    const DEFAULT_RADIUS_KM = 10;
     const RADIUS_OPTIONS = [3, 5, 10, 25];
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
 
@@ -125,12 +125,12 @@ export default function SalonSelectionPage() {
                     const locality = components.find(c => c.types.includes('locality'))?.long_name;
                     const primary = neighborhood || sublocality || locality;
                     const secondary = (primary !== locality) ? locality : '';
-                    setDisplayLocation(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Current Position');
+                    setDisplayLocation(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Nearby Your Position');
                 } else {
-                    setDisplayLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                    setDisplayLocation('Nearby Your Position');
                 }
             } catch (err) {
-                setDisplayLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                setDisplayLocation('Nearby Your Position');
             }
         };
 
@@ -148,9 +148,11 @@ export default function SalonSelectionPage() {
             const { latitude, longitude, accuracy } = pos.coords;
             console.log(`GPS Lock: ${latitude}, ${longitude} | Accuracy: ${accuracy}m`);
             latestCoordsRef.current = { lat: latitude, lng: longitude };
-            setUserLocation({ lat: latitude, lng: longitude });
+            
+            // On first success, set user location but don't stop watching until settled or timeout
+            setUserLocation(prev => prev ? prev : { lat: latitude, lng: longitude });
 
-            if (accuracy < 100) {
+            if (accuracy < 500) {
                 settle(latitude, longitude);
             }
         };
@@ -215,6 +217,19 @@ export default function SalonSelectionPage() {
         o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         o.address?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Fallback: Show all active outlets if no nearby ones match the search/radius
+    const otherOutlets = useMemo(() => {
+        if (searchQuery.trim()) {
+            return outlets.filter(o => {
+                const isNearby = filteredOutlets.some(f => f._id === o._id);
+                const matchesSearch = o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                     o.address?.toLowerCase().includes(searchQuery.toLowerCase());
+                return !isNearby && matchesSearch;
+            });
+        }
+        return outlets.filter(o => !filteredOutlets.some(f => f._id === o._id));
+    }, [outlets, filteredOutlets, searchQuery]);
 
     const handleSelect = (id) => {
         setActiveOutletId(id);
@@ -408,6 +423,44 @@ export default function SalonSelectionPage() {
                                 </motion.div>
                             ))}
                         </AnimatePresence>
+
+                        {/* Global Nodes Fallback Section */}
+                        {filteredOutlets.length === 0 && otherOutlets.length > 0 && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 space-y-6">
+                                <div className="flex items-center gap-4 px-1">
+                                    <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-primary whitespace-nowrap">Global Scan Result</h2>
+                                    <div className="h-[1px] bg-gradient-to-r from-primary/30 to-transparent flex-1" />
+                                </div>
+                                
+                                {otherOutlets.map((outlet, idx) => (
+                                    <motion.div
+                                        key={outlet._id}
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ delay: idx * 0.1 }}
+                                        onClick={() => handleSelect(outlet._id)}
+                                        style={{
+                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                                            borderRadius: '32px',
+                                            border: `1px solid ${colors.glassBorder}`,
+                                            overflow: 'hidden'
+                                        }}
+                                        className="group cursor-pointer hover:border-primary/40 transition-all relative"
+                                    >
+                                        <div className="p-5 flex items-center gap-4">
+                                            <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/5 shadow-xl">
+                                                <img src={outlet.image || `https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800`} alt={outlet.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-xl font-black text-white truncate">{outlet.name}</h3>
+                                                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">{outlet.city || 'Regional Hub'}</p>
+                                            </div>
+                                            <ChevronRight size={18} className="text-white/20 group-hover:text-primary transition-all" />
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        )}
                     </div>
                 </div>
 

@@ -94,9 +94,25 @@ export default function AppHomePage() {
     const { balance, initializeWallet } = useWallet();
     const { banners, lookbook: cmsLookbook, experts } = useCMS();
 
+    const [reviews, setReviews] = useState([]);
     const [couponOffers, setCouponOffers] = useState([]);
     const [membershipPlans, setMembershipPlans] = useState([]);
     const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+
+    // ── FETCH DYNAMIC REVIEWS ──
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const res = await api.get('/feedbacks?status=Resolved');
+                if (res.data?.success) {
+                    setReviews(res.data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch reviews:', error);
+            }
+        };
+        fetchReviews();
+    }, []);
 
     const promoBanners = [
         {
@@ -624,7 +640,6 @@ export default function AppHomePage() {
                     transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
             >
-                {/* ── LOCATION HEADER ── */}
                 <motion.div
                     variants={fadeUp}
                     style={{
@@ -1068,31 +1083,86 @@ export default function AppHomePage() {
                             </div>
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {(homeData.REVIEWS || []).map((rev, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        flexShrink: 0, width: '280px', background: colors.card,
-                                        padding: '20px', borderRadius: '24px', border: `1px solid ${colors.border}`,
-                                        boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                            {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={colors.accent} color={colors.accent} />)}
+                            {reviews.length > 0 ? (
+                                reviews.map((rev) => (
+                                    <div
+                                        key={rev._id || rev.id}
+                                        style={{
+                                            flexShrink: 0, width: '280px', background: colors.card,
+                                            padding: '20px', borderRadius: '24px', border: `1px solid ${colors.border}`,
+                                            boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                {[1, 2, 3, 4, 5].map(s => (
+                                                    <Star 
+                                                        key={s} 
+                                                        size={10} 
+                                                        fill={s <= rev.rating ? colors.accent : 'none'} 
+                                                        color={s <= rev.rating ? colors.accent : colors.textMuted} 
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span style={{ fontSize: '10px', color: colors.textMuted }}>
+                                                {new Date(rev.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                                            </span>
                                         </div>
-                                        <span style={{ fontSize: '10px', color: colors.textMuted }}>{rev.date}</span>
+                                        <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                            "{rev.comment}"
+                                        </p>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>
+                                                {(rev.customerName || 'U')[0]}
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0, truncate: 'true' }}>{rev.customerName}</p>
+                                                <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>for {rev.service}</p>
+                                            </div>
+                                        </div>
+
+                                        {rev.response && (
+                                            <div style={{ 
+                                                marginTop: '12px', 
+                                                padding: '10px', 
+                                                background: isLight ? '#FDF8F3' : 'rgba(200, 149, 108, 0.05)', 
+                                                borderRadius: '12px',
+                                                border: `1px solid ${isLight ? '#F3E5D8' : 'rgba(200, 149, 108, 0.2)'}`
+                                            }}>
+                                                <p style={{ fontSize: '9px', fontWeight: 900, color: '#C8956C', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salon Response</p>
+                                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0, fontStyle: 'italic' }}>{rev.response}</p>
+                                            </div>
+                                        )}
                                     </div>
-                                    <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>"{rev.text}"</p>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>{rev.name[0]}</div>
-                                        <div>
-                                            <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0 }}>{rev.name}</p>
-                                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>at {rev.salon}</p>
+                                ))
+                            ) : (
+                                // Fallback to static reviews if none from DB yet, or show a placeholder
+                                (homeData.REVIEWS || []).map((rev, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            flexShrink: 0, width: '280px', background: colors.card,
+                                            padding: '20px', borderRadius: '24px', border: `1px solid ${colors.border}`,
+                                            boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                            <div style={{ display: 'flex', gap: '4px' }}>
+                                                {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} fill={colors.accent} color={colors.accent} />)}
+                                            </div>
+                                            <span style={{ fontSize: '10px', color: colors.textMuted }}>{rev.date}</span>
+                                        </div>
+                                        <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>"{rev.text}"</p>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>{rev.name[0]}</div>
+                                            <div>
+                                                <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0 }}>{rev.name}</p>
+                                                <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>at {rev.salon}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </motion.div>
                 )}

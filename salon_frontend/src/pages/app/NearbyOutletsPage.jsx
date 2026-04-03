@@ -9,7 +9,7 @@ const RADIUS_OPTIONS = [3, 5, 10, 25];
 
 export default function NearbyOutletsPage() {
     const [searchParams] = useSearchParams();
-    const radius = Number(searchParams.get('radius')) || 3;
+    const radius = Number(searchParams.get('radius')) || 10;
 
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
@@ -28,7 +28,7 @@ export default function NearbyOutletsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [outlets, setOutlets] = useState([]);
-    const [allOutlets, setAllOutlets] = useState([]); // For City Fallback
+    const [allOutlets, setAllOutlets] = useState([]); // Fallback for all active salons
     const [addressText, setAddressText] = useState('Detecting location...');
 
     const colors = {
@@ -49,21 +49,21 @@ export default function NearbyOutletsPage() {
             const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
             const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
             const data = await res.json();
-            if (data.status === 'OK' && data.results.length > 0) {
-                const components = data.results[0].address_components;
-                const neighborhood = components.find(c => c.types.includes('neighborhood'))?.long_name;
-                const sublocality = components.find(c => c.types.includes('sublocality_level_1') || c.types.includes('sublocality'))?.long_name;
-                const locality = components.find(c => c.types.includes('locality'))?.long_name;
-                const primary = neighborhood || sublocality || locality;
-                const secondary = (primary !== locality) ? locality : '';
-                setAddressText(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Current Position');
-            } else {
-                setAddressText(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                if (data.status === 'OK' && data.results.length > 0) {
+                    const components = data.results[0].address_components;
+                    const neighborhood = components.find(c => c.types.includes('neighborhood'))?.long_name;
+                    const sublocality = components.find(c => c.types.includes('sublocality_level_1') || c.types.includes('sublocality'))?.long_name;
+                    const locality = components.find(c => c.types.includes('locality'))?.long_name;
+                    const primary = neighborhood || sublocality || locality;
+                    const secondary = (primary !== locality) ? locality : '';
+                    setAddressText(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Nearby Your Position');
+                } else {
+                    setAddressText('Nearby Your Position');
+                }
+            } catch (err) {
+                setAddressText('Nearby Your Position');
             }
-        } catch (err) {
-            setAddressText(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-        }
-    };
+        };
 
     const fetchNearbyOutlets = async (lat, lng) => {
         setLoading(true);
@@ -71,10 +71,11 @@ export default function NearbyOutletsPage() {
         try {
             const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`, { timeout: 10000 });
             setOutlets(Array.isArray(res.data) ? res.data : []);
-            if (res.data?.length === 0) {
-                const allRes = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=100`);
-                setAllOutlets(Array.isArray(allRes.data) ? allRes.data : []);
-            }
+            
+            // Always fetch a broader list (500km) to ensure we have fallbacks if the primary radius is too tight
+            const allRes = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=500`);
+            const globalList = Array.isArray(allRes.data) ? allRes.data : [];
+            setAllOutlets(globalList.filter(o => !outlets.some(nearby => nearby._id === o._id)));
         } catch (e) {
             setError('Unable to link to salon systems. Retrying...');
             setOutlets([]);
@@ -113,8 +114,11 @@ export default function NearbyOutletsPage() {
             const { latitude, longitude, accuracy } = pos.coords;
             console.log(`Nearby GPS Lock: ${latitude}, ${longitude} | Accuracy: ${accuracy}m`);
             latestCoordsRef.current = { lat: latitude, lng: longitude };
-            setUserCoords({ lat: latitude, lng: longitude });
-            if (accuracy < 100) {
+            
+            // Set first reading but keep looking for better accuracy
+            setUserCoords(prev => prev ? prev : { lat: latitude, lng: longitude });
+
+            if (accuracy < 500) {
                 settle(latitude, longitude);
             }
         };
@@ -358,6 +362,54 @@ export default function NearbyOutletsPage() {
                                 ))}
                             </motion.div>
                         </div>
+                    ) : null}
+
+                    {/* Global Nodes Fallback */}
+                    {outlets.length === 0 && allOutlets.length > 0 && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full space-y-6 mt-4">
+                            <div className="flex items-center gap-4 px-1">
+                                <h2 className="text-[11px] font-black tracking-[0.3em] uppercase text-primary whitespace-nowrap">Global Scan Result</h2>
+                                <div className="h-[1px] bg-gradient-to-r from-primary/30 to-transparent flex-1" />
+                            </div>
+                            
+                            <div className="grid gap-5">
+                                {allOutlets.map((o, idx) => (
+                                    <motion.button 
+                                        key={o._id}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
+                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}`);
+                                        }}
+                                        className="w-full p-5 rounded-[2rem] flex items-center justify-between border border-white/5 bg-white/[0.03] hover:border-primary/30 transition-all group cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-5">
+                                            <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/5 shadow-xl">
+                                                <img src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} alt={o.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="text-left flex-1 min-w-0">
+                                                <span className="block text-xl font-black text-white leading-tight mb-1 truncate">{o.name}</span>
+                                                <span className="text-[11px] font-black text-primary/60 uppercase tracking-widest leading-none">{o.city || 'Regional Hub'}</span>
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={20} className="text-white/20 group-hover:text-primary transition-all shrink-0" />
+                                    </motion.button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {outlets.length > 0 || allOutlets.length > 0 ? (
+                        <div className="pb-10 pt-6 text-center">
+                            <motion.button
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => navigate('/app/login')}
+                                className="px-12 py-5 bg-gradient-to-br from-primary to-[#E5B58C] text-white text-[13px] font-black uppercase tracking-[0.2em] rounded-3xl shadow-[0_20px_40px_rgba(200,149,108,0.3)] active:brightness-90 transition-all"
+                            >
+                                Re-Scan Sector
+                            </motion.button>
+                        </div>
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center text-center py-16">
                             <motion.div 
@@ -373,41 +425,6 @@ export default function NearbyOutletsPage() {
                                 We couldn't find any active systems in this range. Try expanding your scan radius.
                             </p>
                             
-                            {allOutlets.length > 0 && (
-                                <div className="w-full space-y-5 mb-10">
-                                    <div className="flex items-center gap-3 mb-2 px-2">
-                                        <div className="h-[1px] bg-primary/20 flex-1" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Global Scan Results</span>
-                                        <div className="h-[1px] bg-primary/20 flex-1" />
-                                    </div>
-                                    <div className="grid gap-4">
-                                        {allOutlets.slice(0, 2).map(o => (
-                                            <motion.button 
-                                                key={o._id}
-                                                whileTap={{ scale: 0.98 }}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
-                                                    navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}`);
-                                                }}
-                                                className="w-full p-6 rounded-[2.5rem] flex items-center justify-between border border-white/5 bg-white/[0.02] hover:bg-white/5 transition-all group cursor-pointer"
-                                            >
-                                                <div className="flex items-center gap-5">
-                                                    <div className="p-3.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-                                                        <MapPin size={22} />
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <span className="block text-lg font-black text-white leading-tight mb-1">{o.name}</span>
-                                                        <span className="text-[11px] font-black text-primary/60 uppercase tracking-widest">{o.city || 'Regional Hub'}</span>
-                                                    </div>
-                                                </div>
-                                                <ChevronRight size={20} className="text-white/20 group-hover:text-primary transition-all" />
-                                            </motion.button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate('/app/login')}
@@ -422,4 +439,3 @@ export default function NearbyOutletsPage() {
         </div>
     );
 }
-

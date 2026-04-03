@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Clock, ChevronRight } from 'lucide-react';
+import { Clock, ChevronRight, Armchair, DoorClosed } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 export default function ServiceCard({ service, onBook, index = 0 }) {
@@ -42,6 +42,16 @@ export default function ServiceCard({ service, onBook, index = 0 }) {
                         <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg tracking-widest ${badgeClass}`}>
                             {service.category}
                         </span>
+                        {service.resourceType === 'room' && (
+                            <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-1 bg-emerald-500/10 text-emerald-600 rounded-lg tracking-widest border border-emerald-500/20">
+                                <DoorClosed className="w-2.5 h-2.5" /> Private Room
+                            </span>
+                        )}
+                        {service.resourceType === 'chair' && (
+                            <span className="flex items-center gap-1 text-[8px] font-black uppercase px-2 py-1 bg-blue-500/10 text-blue-600 rounded-lg tracking-widest border border-blue-500/20">
+                                <Armchair className="w-2.5 h-2.5" /> Salon Chair
+                            </span>
+                        )}
                     </div>
                     <h3 className="text-sm font-black uppercase tracking-tight italic" style={{ color: colors.text, fontFamily: "'Inter', sans-serif" }}>
                         {service.name}

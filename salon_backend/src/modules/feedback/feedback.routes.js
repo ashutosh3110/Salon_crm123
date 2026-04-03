@@ -13,7 +13,7 @@ router.use(validateTenant);
 
 router.get(
     '/',
-    authorize(['admin', 'manager', 'superadmin']),
+    authorize(['admin', 'manager', 'superadmin', 'customer']),
     feedbackController.getFeedbacks
 );
 

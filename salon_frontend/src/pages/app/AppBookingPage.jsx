@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -821,6 +821,15 @@ export default function AppBookingPage() {
                                                     <span>{svc.category}</span>
                                                     <span className="w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
                                                     <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-[#C8956C]" /> {svc.duration} MIN</span>
+                                                    {svc.resourceType && (
+                                                        <>
+                                                            <span className="w-1 h-1 rounded-full bg-black/10 dark:bg-white/10" />
+                                                            <span className="flex items-center gap-1.5 uppercase">
+                                                                {svc.resourceType === 'room' ? <DoorClosed className="w-3 h-3 text-[#C8956C]" /> : <Armchair className="w-3 h-3 text-[#C8956C]" />}
+                                                                {svc.resourceType}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </p>
                                             </div>
                                             <div className="flex flex-col items-end gap-2">

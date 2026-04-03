@@ -59,6 +59,11 @@ const serviceSchema = new mongoose.Schema(
             enum: ['active', 'inactive'],
             default: 'active',
         },
+        resourceType: {
+            type: String,
+            enum: ['chair', 'room'],
+            default: 'chair',
+        },
     },
     {
         timestamps: true,

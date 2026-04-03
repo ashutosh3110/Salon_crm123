@@ -25,10 +25,15 @@ const createFeedback = async (req, res, next) => {
 
 const getFeedbacks = async (req, res, next) => {
     try {
-        const list = await feedbackService.listFeedbacks(req.tenantId, {
-            status: req.query.status,
+        const tenantId = req.tenantId;
+        const isAdminOrManager = ['admin', 'manager', 'superadmin'].includes(req.user.role);
+        
+        const filter = {
+            status: isAdminOrManager ? req.query.status : 'Resolved',
             rating: req.query.rating,
-        });
+        };
+
+        const list = await feedbackService.listFeedbacks(tenantId, filter);
 
         res.status(httpStatus.OK).send({ success: true, data: list });
     } catch (error) {
