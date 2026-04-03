@@ -108,10 +108,10 @@ export function BusinessProvider({ children }) {
     }, [isAuthenticated, user?.role]);
 
     // Consolidated Initial Data Fetch for Customer App
-    const fetchCustomerInitialData = useCallback(async () => {
+    const fetchCustomerInitialData = useCallback(async (isRefresh = false) => {
         if (isInitializing) return;
         setIsInitializing(true);
-        console.log('[DEBUG] Customer App: Batch Initializing Data...');
+        console.log(`[DEBUG] Customer App: ${isRefresh ? 'Refreshing' : 'Batch Initializing'} Data...`);
         
         try {
             const [outletsRes, servicesRes, categoriesRes, staffRes] = await Promise.all([
@@ -121,7 +121,7 @@ export function BusinessProvider({ children }) {
                 api.get('/users', { params: { limit: 200, page: 1 } })
             ]);
 
-            // Batch state updates (React 18 batches these automatically into 1 re-render)
+            // Batch state updates
             setOutlets(Array.isArray(outletsRes.data) ? outletsRes.data : []);
             setServices(servicesRes.data.results || servicesRes.data || []);
             setCategories(categoriesRes.data || []);
@@ -130,7 +130,7 @@ export function BusinessProvider({ children }) {
             const staffList = Array.isArray(staffRaw) ? staffRaw : (staffRaw?.results || []);
             setStaff(staffList.filter((u) => u.role !== 'superadmin'));
 
-            console.log('[DEBUG] Customer App Init: Success');
+            console.log('[DEBUG] Customer App Init/Refresh: Success');
         } catch (error) {
             console.error('[BusinessContext] Customer Initialization Failed:', error);
         } finally {
@@ -840,6 +840,7 @@ export function BusinessProvider({ children }) {
         fetchCatalogue,
         updateCatalogue,
         isInitializing,
+        fetchCustomerInitialData,
         bookings, addBooking, updateBookingStatus,
         checkoutPOS,
         activeOutletId, setActiveOutletId, activeOutlet

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
@@ -93,6 +93,67 @@ export default function AppHomePage() {
     const { shopCategories, products } = useInventory();
     const { balance, initializeWallet } = useWallet();
     const { banners, lookbook: cmsLookbook, experts } = useCMS();
+    const { isInitializing, fetchCustomerInitialData } = useBusiness();
+
+    // ── PULL TO REFRESH LOGIC ──
+    const [pullDistance, setPullDistance] = useState(0);
+    const [isPulling, setIsPulling] = useState(false);
+    const touchStart = useRef(0);
+    const pullThreshold = 75;
+
+    useEffect(() => {
+        const handleTouchStart = (e) => {
+            if (window.scrollY === 0) {
+                touchStart.current = e.touches[0].clientY;
+            } else {
+                touchStart.current = 0;
+            }
+        };
+
+        const handleTouchMove = (e) => {
+            if (touchStart.current === 0) return;
+            const touchY = e.touches[0].clientY;
+            const delta = touchY - touchStart.current;
+
+            if (delta > 0 && window.scrollY === 0) {
+                setIsPulling(true);
+                // Apply rubber-band resistance
+                const distance = Math.pow(delta, 0.8);
+                setPullDistance(Math.min(distance, 120));
+                
+                // Prevent browser default scroll-down (important for mobile)
+                if (delta > 10 && e.cancelable) e.preventDefault();
+            }
+        };
+
+        const handleTouchEnd = async () => {
+            if (!isPulling) return;
+            
+            if (pullDistance >= pullThreshold) {
+                // Trigger Refresh
+                try {
+                    await fetchCustomerInitialData(true);
+                } catch (e) {
+                    console.error('Refresh failed:', e);
+                }
+            }
+            
+            // Animate back
+            setPullDistance(0);
+            setIsPulling(false);
+            touchStart.current = 0;
+        };
+
+        window.addEventListener('touchstart', handleTouchStart, { passive: true });
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd);
+
+        return () => {
+            window.removeEventListener('touchstart', handleTouchStart);
+            window.removeEventListener('touchmove', handleTouchMove);
+            window.removeEventListener('touchend', handleTouchEnd);
+        };
+    }, [isPulling, pullDistance, fetchCustomerInitialData]);
 
     const [reviews, setReviews] = useState([]);
     const [couponOffers, setCouponOffers] = useState([]);

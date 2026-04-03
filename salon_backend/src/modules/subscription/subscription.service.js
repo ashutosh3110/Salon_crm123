@@ -126,6 +126,11 @@ const getSubscriptionStats = async () => {
 };
 
 const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscriptionId = null) => {
+    if (!tenantId || !planId) {
+        console.error(`[SUBSCRIPTION] Missing critical IDs: tenantId=${tenantId}, planId=${planId}`);
+        throw new Error('Missing Tenant ID or Plan ID for upgrade');
+    }
+    
     console.log(`[SUBSCRIPTION] Finalizing upgrade: tenant=${tenantId}, plan=${planId}, cycle=${billingCycle}`);
     
     let plan;
@@ -174,7 +179,10 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
     const count = await billingRepository.model.countDocuments();
     const invoiceNumber = `SUB-${new Date().getFullYear()}-${(count + 1).toString().padStart(4, '0')}`;
     
-    const amount = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
+    // Ensure billingCycle is lowercase for comparison
+    const cycle = (billingCycle || 'monthly').toLowerCase();
+    const amount = cycle === 'yearly' ? (plan.yearlyPrice || 0) : (plan.monthlyPrice || 0);
+
     let taxAmount = 0;
     let totalAmount = amount;
     if (plan.gstStatus) {
@@ -186,10 +194,10 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
         }
     }
 
-    await billingRepository.create({
+    const billingData = {
         invoiceNumber,
-        tenantId,
-        planId: plan._id, // Use actual MongoDB ID from the found plan
+        tenantId: new mongoose.Types.ObjectId(tenantId),
+        planId: new mongoose.Types.ObjectId(plan._id),
         planName: plan.name,
         amount,
         taxAmount,
@@ -198,9 +206,13 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
         paymentMethod: 'razorpay',
         transactionId: paymentId,
         paymentDate: new Date(),
-        notes: `Subscription Upgrade to ${plan.name} (${billingCycle})`,
-        billingCycle
-    });
+        notes: `Subscription Upgrade to ${plan.name} (${cycle})`,
+        billingCycle: cycle
+    };
+
+    console.log(`[SUBSCRIPTION] Creating Billing Record:`, JSON.stringify(billingData, null, 2));
+
+    await billingRepository.create(billingData);
 
     return { tenant, plan };
 };
