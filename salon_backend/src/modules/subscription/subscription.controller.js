@@ -99,7 +99,11 @@ const cancelSubscription = async (req, res, next) => {
 };
 
 export default {
-    deleteSubscriptionById,
+    createSubscription,
+    getSubscriptions,
+    getSubscription,
+    updateSubscription,
+    deleteSubscription,
     getStats,
     cancelSubscription
 };
