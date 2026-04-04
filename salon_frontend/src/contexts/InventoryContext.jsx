@@ -172,6 +172,8 @@ export const InventoryProvider = ({ children }) => {
     // ── Sale Records — Reconciliation log ────────────────────
     const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', INITIAL_SALE_RECORDS));
     const [stockInHistory, setStockInHistory] = useState(() => getInitialState('inv_stock_in', inventoryData.stockInHistory || []));
+    const [supplierInvoices, setSupplierInvoices] = useState([]);
+    const [supplierLedger, setSupplierLedger] = useState(null);
     const [adjustmentLog, setAdjustmentLog] = useState(() => getInitialState('inv_adjustments', inventoryData.adjustmentLog || []));
     // Do not use static/mock product categories.
     const [productCategories] = useState([]);
@@ -293,6 +295,35 @@ export const InventoryProvider = ({ children }) => {
         }
     }, []);
 
+    const fetchSupplierInvoices = useCallback(async () => {
+        try {
+            const res = await api.get('/suppliers/invoices');
+            const rows = res?.data?.results || res?.data?.data?.results || [];
+            setSupplierInvoices(rows);
+        } catch (error) {
+            console.error('[InventoryContext] Fetch supplier invoices failed:', error);
+        }
+    }, []);
+
+    const fetchSupplierLedger = useCallback(async (supplierId) => {
+        try {
+            const res = await api.get(`/suppliers/${supplierId}/ledger`);
+            setSupplierLedger(res?.data?.data || null);
+        } catch (error) {
+            console.error('[InventoryContext] Fetch supplier ledger failed:', error);
+        }
+    }, []);
+
+    const recordSupplierPayment = useCallback(async (payload) => {
+        try {
+            const res = await api.post('/suppliers/payment', payload);
+            await fetchSupplierInvoices();
+            return res.data;
+        } catch (error) {
+            throw error;
+        }
+    }, [fetchSupplierInvoices]);
+
     useEffect(() => {
         const path = typeof window !== 'undefined' ? window.location.pathname || '' : '';
         const isCustomerPath = path.startsWith('/app');
@@ -309,6 +340,7 @@ export const InventoryProvider = ({ children }) => {
                 fetchProducts();
                 fetchShopCategories();
                 fetchStockInHistory();
+                fetchSupplierInvoices();
             }
         }
 
@@ -318,6 +350,7 @@ export const InventoryProvider = ({ children }) => {
             fetchProducts();
             fetchShopCategories();
             fetchStockInHistory();
+            fetchSupplierInvoices();
         }
     }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isCustomerPath]);
 
@@ -754,6 +787,11 @@ export const InventoryProvider = ({ children }) => {
             totalValue: products.reduce((acc, p) => acc + (p.stock * p.costPrice), 0),
         },
         stockInHistory,
+        supplierInvoices,
+        supplierLedger,
+        fetchSupplierInvoices,
+        fetchSupplierLedger,
+        recordSupplierPayment,
         adjustmentLog,
         addStockIn: async (data) => {
             try {
@@ -767,6 +805,9 @@ export const InventoryProvider = ({ children }) => {
                     type: 'STOCK_IN',
                     quantity: Number(data.quantity) || 1,
                     purchasePrice: Number(data.amount) || 0,
+                    taxRate: Number(data.taxRate) || 0,
+                    taxAmount: Number(data.taxAmount) || 0,
+                    attachmentUrl: data.attachmentUrl || '',
                     invoiceRef: data.invoiceRef,
                     supplierName: data.supplierName,
                     reason: 'Accountant Voucher Entry'
@@ -775,18 +816,21 @@ export const InventoryProvider = ({ children }) => {
                 const res = await api.post('/inventory/stock-in', payload);
                 
                 // Add to Finance Expenses as well
+                const totalWithTax = (Number(data.amount) || 0) + (Number(data.taxAmount) || 0);
                 addExpense({
                     date: new Date().toISOString().split('T')[0],
                     vendor: data.supplierName || 'Inventory Supplier',
                     category: 'inventory',
                     desc: `Voucher: ${data.invoiceRef || 'Manual Purchase'}`,
-                    amount: Number(data.amount) || 0,
+                    amount: totalWithTax,
                     status: 'Paid',
                     paymentMethod: data.type === 'Credit' ? 'unpaid' : 'cash'
                 });
 
-                // Refresh history
+                // Refresh history and products
                 await fetchStockInHistory();
+                await fetchSupplierInvoices();
+                await fetchProducts();
                 return { success: true, data: res.data };
             } catch (error) {
                 console.error('[InventoryContext] Add stock-in failed:', error);

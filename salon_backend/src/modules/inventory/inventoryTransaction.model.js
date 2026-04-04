@@ -32,6 +32,9 @@ const inventoryTransactionSchema = new mongoose.Schema(
         },
         /** Stock-in extras (admin purchase log) */
         purchasePrice: { type: Number },
+        taxRate: { type: Number, default: 0 },
+        taxAmount: { type: Number, default: 0 },
+        attachmentUrl: { type: String, default: '' },
         invoiceRef: { type: String },
         supplierName: { type: String },
         /** For type ADJUSTMENT: ADD = add qty, DEDUCT = remove (stock out) */

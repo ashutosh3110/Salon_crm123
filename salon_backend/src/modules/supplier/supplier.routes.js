@@ -26,6 +26,8 @@ router.post(
     supplierController.recordSupplierInvoicePayment
 );
 
+router.get('/:supplierId/ledger', supplierController.getSupplierLedger);
+
 router.post(
     '/',
     authorize(['admin', 'manager', 'superadmin']),

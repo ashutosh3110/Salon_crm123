@@ -45,6 +45,11 @@ const supplierSchema = new mongoose.Schema(
             enum: ['Active', 'Overdue', 'Inactive'],
             default: 'Active',
         },
+        defaultDueDays: {
+            type: Number,
+            default: 30,
+            min: 1,
+        },
     },
     {
         timestamps: true,

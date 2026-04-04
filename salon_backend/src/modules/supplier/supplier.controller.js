@@ -64,6 +64,16 @@ const recordSupplierInvoicePayment = async (req, res, next) => {
     }
 };
 
+const getSupplierLedger = async (req, res, next) => {
+    try {
+        const { supplierId } = req.params;
+        const data = await supplierService.getSupplierLedger(req.tenantId, supplierId);
+        res.status(httpStatus.OK).send({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getSuppliers,
     createSupplier,
@@ -71,4 +81,5 @@ export default {
     removeSupplier,
     getSupplierInvoices,
     recordSupplierInvoicePayment,
+    getSupplierLedger,
 };

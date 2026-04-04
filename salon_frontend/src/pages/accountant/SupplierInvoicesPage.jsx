@@ -6,54 +6,53 @@ import autoTable from 'jspdf-autotable';
 import { useInventory } from '../../contexts/InventoryContext';
 
 export default function SupplierInvoicesPage() {
-    const { stockInHistory, addStockIn, suppliers } = useInventory();
+    const { 
+        supplierInvoices, 
+        fetchSupplierInvoices, 
+        recordSupplierPayment, 
+        fetchSupplierLedger, 
+        supplierLedger,
+        addStockIn, 
+        suppliers 
+    } = useInventory();
+
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [isLedgerModalOpen, setIsLedgerModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [newVoucher, setNewVoucher] = useState({ supplier: '', invoiceRef: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
+    const [selectedInvoice, setSelectedInvoice] = useState(null);
+    const [paymentForm, setPaymentForm] = useState({ amount: '', note: '', method: 'online' });
+
+    const [newVoucher, setNewVoucher] = useState({ 
+        supplier: '', 
+        invoiceRef: '', 
+        date: new Date().toISOString().split('T')[0], 
+        amount: '', 
+        taxRate: '18', 
+        taxAmount: '0',
+        type: 'Credit', 
+        attachmentUrl: ''
+    });
+
     const fileInputRef = useRef(null);
 
     const invoices = useMemo(() => {
-        const groups = {};
-        // Only process STOCK_IN transactions (Actual Purchases)
-        const activeStockIn = stockInHistory.filter(item => item.type === 'STOCK_IN');
-
-        activeStockIn.forEach(item => {
-            const ref = item.invoiceRef || `UNLINKED-${(item._id || item.id || 'NEW').slice(-4)}`;
-            if (!groups[ref]) {
-                groups[ref] = {
-                    id: ref,
-                    supplier: item.supplierName || 'Manual Entry',
-                    date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
-                    dueDate: item.createdAt ? new Date(new Date(item.createdAt).getTime() + 15 * 24 * 60 * 60 * 1000).toLocaleDateString() : 'N/A',
-                    amountRaw: 0,
-                    status: 'Approved',
-                    type: 'Purchase',
-                    items: []
-                };
-            }
-            groups[ref].amountRaw += (item.purchasePrice || 0) * (item.quantity || 1);
-            groups[ref].items.push(item);
-        });
-        
-        return Object.values(groups).map(g => ({
-            ...g,
-            amount: `₹${g.amountRaw.toLocaleString()}`
-        })).filter(inv => 
-            inv.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            inv.supplier.toLowerCase().includes(searchQuery.toLowerCase())
+        return (supplierInvoices || []).filter(inv => 
+            inv.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            inv.supplierName.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [stockInHistory, searchQuery]);
+    }, [supplierInvoices, searchQuery]);
 
     const stats = useMemo(() => {
-        const total = invoices.reduce((acc, curr) => acc + curr.amountRaw, 0);
+        const results = supplierInvoices || [];
         return {
-            pending: invoices.filter(i => i.status === 'Pending').length,
-            pendingValue: invoices.filter(i => i.status === 'Pending').reduce((a, b) => a + b.amountRaw, 0),
-            totalPaid: invoices.filter(i => i.status === 'Paid').reduce((a, b) => a + b.amountRaw, 0),
-            count: invoices.length
+            totalDue: results.reduce((acc, curr) => acc + curr.outstanding, 0),
+            overdueCount: results.filter(i => i.status === 'Overdue').length,
+            overdueValue: results.filter(i => i.status === 'Overdue').reduce((acc, curr) => acc + curr.outstanding, 0),
+            totalInvoices: results.length
         };
-    }, [invoices]);
+    }, [supplierInvoices]);
 
     const handleExport = () => {
         const doc = new jsPDF();
@@ -128,6 +127,37 @@ export default function SupplierInvoicesPage() {
         e.target.value = null;
     };
 
+    const handlePaymentSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedInvoice) return;
+        setIsSubmitting(true);
+        try {
+            await recordSupplierPayment({
+                invoiceKey: selectedInvoice.invoiceKey,
+                amount: Number(paymentForm.amount),
+                note: paymentForm.note,
+                method: paymentForm.method
+            });
+            setIsPaymentModalOpen(false);
+            setPaymentForm({ amount: '', note: '', method: 'online' });
+            alert('Payment recorded successfully!');
+        } catch (error) {
+            alert(error?.response?.data?.message || 'Payment failed');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const openLedger = async (invoice) => {
+        const sup = suppliers.find(s => s.name === invoice.supplierName);
+        if (sup) {
+            await fetchSupplierLedger(sup.id);
+            setIsLedgerModalOpen(true);
+        } else {
+            alert('Supplier details not found for ledger');
+        }
+    };
+
     const handleAddVoucherSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -135,21 +165,40 @@ export default function SupplierInvoicesPage() {
             await addStockIn({
                 supplierName: newVoucher.supplier,
                 invoiceRef: newVoucher.invoiceRef,
-                amount: newVoucher.amount,
+                amount: Number(newVoucher.amount),
+                taxRate: Number(newVoucher.taxRate),
+                taxAmount: Number(newVoucher.taxAmount),
+                attachmentUrl: newVoucher.attachmentUrl,
                 type: newVoucher.type,
-                quantity: 1, // Manual voucher represents 1 bulk entry
+                quantity: 1, 
                 date: newVoucher.date
             });
             setIsAddModalOpen(false);
-            setNewVoucher({ supplier: '', invoiceRef: '', date: '', dueDate: '', amount: '', type: 'Credit', status: 'Pending' });
-            alert('Voucher added successfully and synced with expenses!');
+            setNewVoucher({ 
+                supplier: '', 
+                invoiceRef: '', 
+                date: new Date().toISOString().split('T')[0], 
+                amount: '', 
+                taxRate: '18', 
+                taxAmount: '0',
+                type: 'Credit', 
+                attachmentUrl: '' 
+            });
+            alert('Voucher added and synced with Finance!');
         } catch (error) {
-            console.error('Error adding voucher:', error);
-            alert('Failed to save voucher. Please check database connection.');
+            alert('Failed to save voucher.');
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    // Auto-calculate tax amount when base amount or rate changes
+    useEffect(() => {
+        const base = Number(newVoucher.amount) || 0;
+        const rate = Number(newVoucher.taxRate) || 0;
+        const tax = (base * rate) / 100;
+        setNewVoucher(prev => ({ ...prev, taxAmount: tax.toFixed(2) }));
+    }, [newVoucher.amount, newVoucher.taxRate]);
 
     return (
         <div className="space-y-6">
@@ -179,38 +228,38 @@ export default function SupplierInvoicesPage() {
             {/* Quick Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
                 <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -mr-8 -mt-8" />
-                    <Clock className="w-8 h-8 text-primary mb-4" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Awaiting Approval</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">₹{stats.pendingValue.toLocaleString()}</h3>
-                    <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase tracking-tight">{stats.pending} Pending Invoices</p>
-                </div>
-                <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-rose-500/5 rounded-bl-[100px] -mr-8 -mt-8" />
                     <AlertCircle className="w-8 h-8 text-rose-500 mb-4" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Invoices</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">{stats.count}</h3>
-                    <p className="text-[10px] text-rose-500 font-bold mt-2 uppercase tracking-tight">Inbound Records</p>
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Outstanding</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">₹{stats.totalDue.toLocaleString()}</h3>
+                    <p className="text-[10px] text-rose-500 font-bold mt-2 uppercase tracking-tight">{stats.overdueCount} Overdue Invoices</p>
                 </div>
                 <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-[100px] -mr-8 -mt-8" />
-                    <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-4" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Value</p>
-                    <h3 className="text-2xl font-black text-text tracking-tight">₹{invoices.reduce((a,b) => a + b.amountRaw, 0).toLocaleString()}</h3>
-                    <p className="text-[10px] text-emerald-500 font-bold mt-2 uppercase tracking-tight">Live Ledger Sum</p>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-[100px] -mr-8 -mt-8" />
+                    <Clock className="w-8 h-8 text-amber-500 mb-4" />
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Overdue Amount</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">₹{stats.overdueValue.toLocaleString()}</h3>
+                    <p className="text-[10px] text-amber-500 font-bold mt-2 uppercase tracking-tight">Requires Immediate Action</p>
+                </div>
+                <div className="p-6 bg-surface rounded-3xl border border-border/40 shadow-sm relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[100px] -mr-8 -mt-8" />
+                    <FileText className="w-8 h-8 text-primary mb-4" />
+                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Total Invoices</p>
+                    <h3 className="text-2xl font-black text-text tracking-tight">{stats.totalInvoices}</h3>
+                    <p className="text-[10px] text-primary font-bold mt-2 uppercase tracking-tight">Active Accounts</p>
                 </div>
             </div>
 
             {/* Invoices List */}
             <div className="bg-surface rounded-3xl border border-border/40 overflow-hidden shadow-sm">
                 <div className="px-6 py-5 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50">
-                    <h2 className="text-sm font-black text-text uppercase tracking-widest">Inbound Invoices</h2>
+                    <h2 className="text-sm font-black text-text uppercase tracking-widest">Accounts Payable</h2>
                     <div className="flex gap-2">
                         <div className="relative md:w-64">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                             <input 
                                 type="text" 
-                                placeholder="Search invoices..." 
+                                placeholder="Search ref or supplier..." 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 bg-background border border-border/40 rounded-xl text-xs font-bold outline-none" 
@@ -222,45 +271,62 @@ export default function SupplierInvoicesPage() {
                 <div className="overflow-x-auto text-left">
                     <table className="w-full">
                         <thead>
-                            <tr className="border-b border-border/40 bg-surface/50">
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Invoice ID</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Supplier</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Billing Date</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Due Date</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">Status</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Amount</th>
-                                <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Action</th>
+                            <tr className="border-b border-border/40 bg-surface/50 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
+                                <th className="px-6 py-4">Invoice / Ref</th>
+                                <th className="px-6 py-4">Supplier</th>
+                                <th className="px-6 py-4">Dates</th>
+                                <th className="px-6 py-4">Detail (₹)</th>
+                                <th className="px-6 py-4">Status</th>
+                                <th className="px-6 py-4 text-right">Outstanding</th>
+                                <th className="px-6 py-4 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40">
                             {invoices.map((inv) => (
-                                <tr key={inv.id} className="hover:bg-surface-alt/50 transition-colors group">
+                                <tr key={inv.invoiceKey} className="hover:bg-surface-alt/50 transition-colors group text-xs font-bold">
                                     <td className="px-6 py-4">
-                                        <p className="text-xs font-black text-primary uppercase">{inv.id}</p>
-                                        <p className="text-[10px] text-text-muted font-bold tracking-widest">{inv.type}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-black text-primary uppercase">{inv.invoiceNo}</p>
+                                            {inv.attachmentUrl && <ArrowDownCircle className="w-3 h-3 text-text-muted" />}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors">{inv.supplier}</p>
+                                        <p className="text-sm font-black text-text group-hover:text-primary transition-colors cursor-pointer" onClick={() => openLedger(inv)}>{inv.supplierName}</p>
                                     </td>
-                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">{inv.date}</td>
-                                    <td className="px-6 py-4 text-xs font-bold text-text-secondary">{inv.dueDate}</td>
-                                    <td className="px-6 py-4 text-left">
-                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${inv.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' :
-                                            inv.status === 'Pending' ? 'bg-amber-500/10 text-amber-500' :
-                                                inv.status === 'Approved' ? 'bg-indigo-500/10 text-indigo-500' :
-                                                    'bg-rose-500/10 text-rose-500'
-                                            }`}>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col">
+                                            <span className="text-text-secondary">Bill: {new Date(inv.invoiceDate).toLocaleDateString()}</span>
+                                            <span className="text-rose-500">Due: {new Date(inv.dueDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col text-[10px]">
+                                            <span>Subt: ₹{inv.subtotal.toLocaleString()}</span>
+                                            <span>Tax: ₹{inv.taxTotal.toLocaleString()}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${
+                                            inv.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-500' :
+                                            inv.status === 'Overdue' ? 'bg-rose-500/10 text-rose-500' :
+                                            inv.status === 'Partial' ? 'bg-indigo-500/10 text-indigo-500' :
+                                            'bg-amber-500/10 text-amber-500'
+                                        }`}>
                                             {inv.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">{inv.amount}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{inv.outstanding.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1">
-                                            <button className="p-2 hover:bg-background rounded-lg text-text-muted transition-colors" title="View Detail">
-                                                <Eye className="w-4 h-4" />
+                                            <button 
+                                                onClick={() => { setSelectedInvoice(inv); setPaymentForm({ ...paymentForm, amount: inv.outstanding }); setIsPaymentModalOpen(true); }}
+                                                className="px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg transition-all text-[10px] font-black uppercase"
+                                                disabled={inv.status === 'Paid'}
+                                            >
+                                                Pay
                                             </button>
-                                            <button className="p-2 hover:bg-background rounded-lg text-text-muted transition-colors">
-                                                <MoreHorizontal className="w-4 h-4" />
+                                            <button className="p-2 hover:bg-background rounded-lg text-text-muted transition-colors" title="View Ledger" onClick={() => openLedger(inv)}>
+                                                <Eye className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </td>
@@ -271,109 +337,163 @@ export default function SupplierInvoicesPage() {
                 </div>
             </div>
 
+            {/* Payment Modal */}
+            <AnimatePresence>
+                {isPaymentModalOpen && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-background rounded-3xl overflow-hidden shadow-2xl w-full max-w-md border border-border/40">
+                            <div className="flex items-center justify-between p-6 border-b border-border/40 bg-surface/50">
+                                <div>
+                                    <h3 className="text-lg font-black tracking-tight uppercase">Pay Supplier</h3>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase">{selectedInvoice?.supplierName} - {selectedInvoice?.invoiceNo}</p>
+                                </div>
+                                <button onClick={() => setIsPaymentModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full"><X className="w-5 h-5 text-text-muted" /></button>
+                            </div>
+                            <form onSubmit={handlePaymentSubmit} className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Amount to Pay (₹)</label>
+                                    <input required type="number" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} 
+                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" />
+                                    <p className="text-[10px] text-rose-500 font-bold mt-1 uppercase">Max Payable: ₹{selectedInvoice?.outstanding}</p>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Payment Method</label>
+                                    <select value={paymentForm.method} onChange={(e) => setPaymentForm({ ...paymentForm, method: e.target.value })} 
+                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors">
+                                        <option value="online">Online / UPI</option>
+                                        <option value="cash">Cash</option>
+                                        <option value="card">Card</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Note (Optional)</label>
+                                    <input type="text" value={paymentForm.note} onChange={(e) => setPaymentForm({ ...paymentForm, note: e.target.value })} 
+                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="e.g. Partially paid for inventory" />
+                                </div>
+                                <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">
+                                    {isSubmitting ? 'Processing...' : 'Confirm Payment'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Ledger Modal */}
+            <AnimatePresence>
+                {isLedgerModalOpen && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-background rounded-3xl overflow-hidden shadow-2xl w-full max-w-2xl border border-border/40">
+                            <div className="flex items-center justify-between p-6 border-b border-border/40 bg-surface/50">
+                                <div>
+                                    <h3 className="text-lg font-black tracking-tight uppercase">Supplier Ledger</h3>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase">{supplierLedger?.supplier?.name} (Balance: ₹{supplierLedger?.totalDue?.toLocaleString()})</p>
+                                </div>
+                                <button onClick={() => setIsLedgerModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full"><X className="w-5 h-5 text-text-muted" /></button>
+                            </div>
+                            <div className="p-6 max-h-[60vh] overflow-y-auto">
+                                <table className="w-full text-left text-xs">
+                                    <thead>
+                                        <tr className="border-b border-border/40 text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                            <th className="py-2">Date</th>
+                                            <th className="py-2">Ref</th>
+                                            <th className="py-2">Debit (+)</th>
+                                            <th className="py-2">Credit (-)</th>
+                                            <th className="py-2 text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/20">
+                                        {supplierLedger?.history?.map((h, i) => (
+                                            <tr key={i} className="py-2">
+                                                <td className="py-3 font-bold">{new Date(h.date).toLocaleDateString()}</td>
+                                                <td className="py-3">
+                                                    <p className="font-bold">{h.type}</p>
+                                                    <p className="text-[10px] text-text-muted">{h.ref}</p>
+                                                </td>
+                                                <td className="py-3 text-rose-500 font-bold">{h.debit > 0 ? `+ ₹${h.debit.toLocaleString()}` : '—'}</td>
+                                                <td className="py-3 text-emerald-500 font-bold">{h.credit > 0 ? `- ₹${h.credit.toLocaleString()}` : '—'}</td>
+                                                <td className="py-3 text-right font-black">₹{h.balance.toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Add Voucher Modal */}
             <AnimatePresence>
                 {isAddModalOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-background rounded-3xl overflow-hidden shadow-2xl w-full max-w-md border border-border/40"
-                        >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="bg-background rounded-3xl overflow-hidden shadow-2xl w-full max-w-md border border-border/40">
                             <div className="flex items-center justify-between p-6 border-b border-border/40 bg-surface/50">
                                 <h3 className="text-lg font-black tracking-tight uppercase">Add New Voucher</h3>
-                                <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors">
-                                    <X className="w-5 h-5 text-text-muted" />
-                                </button>
+                                <button onClick={() => setIsAddModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full px-4"><X className="w-5 h-5 text-text-muted" /></button>
                             </div>
-
                             <form onSubmit={handleAddVoucherSubmit} className="p-6 space-y-4">
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Invoice Reference</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        value={newVoucher.invoiceRef}
-                                        onChange={(e) => setNewVoucher({ ...newVoucher, invoiceRef: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                        placeholder="e.g. BILL-2024-001"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Choose Supplier</label>
-                                    <select
-                                        required
-                                        value={newVoucher.supplier}
-                                        onChange={(e) => setNewVoucher({ ...newVoucher, supplier: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                    >
-                                        <option value="">Select a supplier</option>
-                                        {suppliers.map(s => (
-                                            <option key={s.id} value={s.name}>{s.name}</option>
-                                        ))}
-                                        <option value="Misc Supplier">Miscellaneous Supplier</option>
-                                    </select>
-                                </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Billing Date</label>
-                                        <input
-                                            required
-                                            type="date"
-                                            value={newVoucher.date}
-                                            onChange={(e) => setNewVoucher({ ...newVoucher, date: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                        />
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Reference</label>
+                                        <input required type="text" value={newVoucher.invoiceRef} onChange={(e) => setNewVoucher({ ...newVoucher, invoiceRef: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="BILL-001" />
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Due Date</label>
-                                        <input
-                                            required
-                                            type="date"
-                                            value={newVoucher.dueDate}
-                                            onChange={(e) => setNewVoucher({ ...newVoucher, dueDate: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                        />
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Supplier</label>
+                                        <select required value={newVoucher.supplier} onChange={(e) => setNewVoucher({ ...newVoucher, supplier: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors">
+                                            <option value="">Select</option>
+                                            {suppliers.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                                        </select>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Amount (₹)</label>
-                                        <input
-                                            required
-                                            type="number"
-                                            value={newVoucher.amount}
-                                            onChange={(e) => setNewVoucher({ ...newVoucher, amount: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                            placeholder="15000"
-                                        />
+                                        <input required type="number" value={newVoucher.amount} onChange={(e) => setNewVoucher({ ...newVoucher, amount: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="0.00" />
                                     </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Type</label>
-                                        <select
-                                            value={newVoucher.type}
-                                            onChange={(e) => setNewVoucher({ ...newVoucher, type: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors"
-                                        >
-                                            <option>Credit</option>
-                                            <option>Advance</option>
-                                            <option>COD</option>
+                                     <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Tax Rate (GST %)</label>
+                                        <select value={newVoucher.taxRate} onChange={(e) => setNewVoucher({ ...newVoucher, taxRate: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors">
+                                            <option value="0">0%</option>
+                                            <option value="5">5%</option>
+                                            <option value="12">12%</option>
+                                            <option value="18">18%</option>
+                                            <option value="28">28%</option>
                                         </select>
                                     </div>
                                 </div>
-
-                                <button 
-                                    type="submit" 
-                                    disabled={isSubmitting}
-                                    className={`w-full py-3 mt-4 bg-primary text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    {isSubmitting ? 'Saving...' : 'Create Voucher'}
+                                <div className="p-3 bg-surface-alt rounded-2xl border border-border/20">
+                                    <div className="flex justify-between text-[10px] font-bold text-text-muted uppercase">
+                                        <span>Total Tax</span>
+                                        <span className="text-primary tracking-widest">₹{newVoucher.taxAmount}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs font-black text-text uppercase mt-1">
+                                        <span>Total Payable</span>
+                                        <span>₹{(Number(newVoucher.amount) + Number(newVoucher.taxAmount)).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Date</label>
+                                        <input required type="date" value={newVoucher.date} onChange={(e) => setNewVoucher({ ...newVoucher, date: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-text-muted mb-2">Payment Type</label>
+                                        <select value={newVoucher.type} onChange={(e) => setNewVoucher({ ...newVoucher, type: e.target.value })} 
+                                            className="w-full px-4 py-3 bg-surface border border-border/40 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors">
+                                            <option value="Credit">On Credit</option>
+                                            <option value="COD">Cash on Delivery</option>
+                                            <option value="Advance">Advance Paid</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-primary text-white rounded-xl text-sm font-black uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20">
+                                    {isSubmitting ? 'Saving...' : 'Add Stock-In Voucher'}
                                 </button>
                             </form>
                         </motion.div>

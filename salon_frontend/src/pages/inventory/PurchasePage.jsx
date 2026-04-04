@@ -15,17 +15,47 @@ export default function PurchasePage() {
     const [toast, setToast] = useState(null);
 
     // ── Stock-In form ────────────────────────────────────────
-    const [stockIn, setStockIn] = useState({ supplier: '', sku: '', qty: '', price: '' });
+    const { addStockIn, suppliers: businessSuppliers } = useInventory();
+    const [stockIn, setStockIn] = useState({ 
+        supplier: '', 
+        sku: '', 
+        qty: '', 
+        price: '', 
+        invoiceRef: '', 
+        taxRate: '18',
+        taxAmount: '0'
+    });
     const [skuSuggestions, setSkuSuggestions] = useState([]);
 
-    const handleStockIn = (e) => {
+    // Auto-calculate tax
+    useMemo(() => {
+        const base = (Number(stockIn.price) || 0) * (Number(stockIn.qty) || 0);
+        const rate = Number(stockIn.taxRate) || 0;
+        const tax = (base * rate) / 100;
+        setStockIn(prev => ({ ...prev, taxAmount: tax.toFixed(2) }));
+    }, [stockIn.price, stockIn.qty, stockIn.taxRate]);
+
+    const handleStockIn = async (e) => {
         e.preventDefault();
-        const success = updateStock(stockIn.sku, Number(stockIn.qty), 'in', stockIn.supplier);
-        if (success) {
-            showToast(`Stock updated: +${stockIn.qty} units for SKU ${stockIn.sku}`);
-            setStockIn({ supplier: '', sku: '', qty: '', price: '' });
-        } else {
-            showToast('Product SKU not found!', 'error');
+        try {
+            const prod = products.find(p => p.sku === stockIn.sku);
+            if (!prod) return showToast('Product SKU not found!', 'error');
+
+            await addStockIn({
+                productId: prod.id || prod._id,
+                supplierName: stockIn.supplier,
+                invoiceRef: stockIn.invoiceRef,
+                quantity: Number(stockIn.qty),
+                amount: Number(stockIn.price), // backend uses purchasePrice
+                taxRate: Number(stockIn.taxRate),
+                taxAmount: Number(stockIn.taxAmount),
+                type: 'Credit' // Default for accountant ledger
+            });
+            
+            showToast(`Stock updated: +${stockIn.qty} units and synced to Accountant.`);
+            setStockIn({ supplier: '', sku: '', qty: '', price: '', invoiceRef: '', taxRate: '18', taxAmount: '0' });
+        } catch (error) {
+            showToast(error?.response?.data?.message || 'Failed to submit stock-in', 'error');
         }
     };
 
@@ -127,13 +157,21 @@ export default function PurchasePage() {
                     <div className="bg-surface rounded-3xl border border-border/40 p-6 shadow-sm">
                         <h2 className="text-sm font-black text-text uppercase tracking-widest mb-4">Quick Stock-In</h2>
                         <form className="space-y-4 text-left" onSubmit={handleStockIn}>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Supplier</label>
-                                <select required className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors appearance-none"
-                                    value={stockIn.supplier} onChange={e => setStockIn({ ...stockIn, supplier: e.target.value })}>
-                                    <option value="">Select Supplier</option>
-                                    {SUPPLIERS.map(s => <option key={s}>{s}</option>)}
-                                </select>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Supplier</label>
+                                    <select required className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors appearance-none"
+                                        value={stockIn.supplier} onChange={e => setStockIn({ ...stockIn, supplier: e.target.value })}>
+                                        <option value="">Select Supplier</option>
+                                        {(businessSuppliers || []).map(s => <option key={s.id || s._id} value={s.name}>{s.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Invoice Ref</label>
+                                    <input required type="text" placeholder="Bill No"
+                                        className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors"
+                                        value={stockIn.invoiceRef} onChange={e => setStockIn({ ...stockIn, invoiceRef: e.target.value })} />
+                                </div>
                             </div>
 
                             <div className="space-y-2 relative">
@@ -179,8 +217,29 @@ export default function PurchasePage() {
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" className="w-full py-4 bg-background text-primary border-2 border-primary/20 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-primary hover:text-white hover:border-primary transition-all shadow-sm">
-                                Submit Stock-In
+
+                             <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">GST %</label>
+                                    <select className="w-full px-4 py-3 rounded-xl bg-background border border-border/40 text-sm font-bold focus:border-primary outline-none transition-colors appearance-none"
+                                        value={stockIn.taxRate} onChange={e => setStockIn({ ...stockIn, taxRate: e.target.value })}>
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="12">12%</option>
+                                        <option value="18">18%</option>
+                                        <option value="28">28%</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Tax Total</label>
+                                     <div className="w-full px-4 py-3 rounded-xl bg-surface-alt border border-border/20 text-sm font-black text-primary">
+                                        ₹{stockIn.taxAmount}
+                                     </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" className="w-full py-4 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/25">
+                                Submit & Log Invoice
                             </button>
                         </form>
                     </div>

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp, Zap, RefreshCcw, AlertCircle, X, Info, Plus, Minus, CreditCard, Banknote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../contexts/FinanceContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function PayrollPage() {
     const { 
@@ -96,6 +98,85 @@ export default function PayrollPage() {
         } catch (error) {
             showToast('Update failed', 'error');
         }
+    };
+
+    const generatePremiumPDF = (staff) => {
+        const doc = new jsPDF();
+        const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][selectedPeriod.month-1];
+        
+        // --- Branding & Header ---
+        doc.setFont('times', 'bold');
+        doc.setFontSize(24);
+        doc.setTextColor(20, 20, 20);
+        doc.text('WAPPIXO', 105, 20, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(100, 100, 100);
+        doc.text('SALON MANAGEMENT SYSTEM - PROFESSIONAL PAYSLIP', 105, 25, { align: 'center' });
+
+        // --- Divider ---
+        doc.setDrawColor(200, 200, 200);
+        doc.line(20, 30, 190, 30);
+
+        // --- Employee Info ---
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Employee Name: ${staff.name}`, 20, 45);
+        doc.text(`Period: ${monthName} ${selectedPeriod.year}`, 190, 45, { align: 'right' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Designation: ${staff.role}`, 20, 52);
+        doc.text(`Staff ID: ${staff.id.substring(0, 8).toUpperCase()}`, 190, 52, { align: 'right' });
+        
+        doc.text(`Bank Account: ${staff.bankName || 'N/A'} - ${staff.bankAccountNo || '---'}`, 20, 59);
+        doc.text(`Status: ${staff.status.toUpperCase()}`, 190, 59, { align: 'right' });
+
+        // --- Earnings & Deductions Table ---
+        const tableBody = [
+            ['BASIC SALARY', `INR ${staff.salary.toLocaleString()}`, '', ''],
+            ['SALES COMMISSION', `INR ${staff.commission.toLocaleString()}`, 'ATTENDANCE DEDUCTION', `INR ${staff.attendanceDeduction.toLocaleString()}`],
+            ['PERFORMANCE BONUS', `INR ${staff.incentive.toLocaleString()}`, staff.deductAdvance ? 'ADVANCE RECOVERY' : '', staff.deductAdvance ? `INR ${staff.advance.toLocaleString()}` : ''],
+            ['', '', 'OTHER DEDUCTIONS', `INR ${(staff.deductions || 0).toLocaleString()}`],
+        ].filter(row => row.some(cell => cell !== ''));
+
+        autoTable(doc, {
+            startY: 70,
+            head: [['EARNINGS', 'AMOUNT', 'DEDUCTIONS', 'AMOUNT']],
+            body: tableBody,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 30, 38], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9, textColor: 50 },
+            columnStyles: { 
+                1: { fontStyle: 'bold', halign: 'right' },
+                3: { fontStyle: 'bold', halign: 'right', textColor: [180, 0, 0] }
+            },
+        });
+
+        // --- Summary & Total ---
+        const finalY = doc.lastAutoTable.finalY + 15;
+        doc.setDrawColor(30, 30, 38);
+        doc.setLineWidth(0.5);
+        doc.rect(130, finalY - 5, 60, 20); // Total Box
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('NET PAYABLE', 135, finalY + 3);
+        doc.setFontSize(14);
+        doc.text(`INR ${staff.netPay.toLocaleString()}`, 185, finalY + 10, { align: 'right' });
+
+        // --- Footer ---
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(150, 150, 150);
+        doc.text('This is a computer generated payslip and does not require a physical signature.', 105, 280, { align: 'center' });
+        doc.text(`Generated via Wappixo @ ${new Date().toLocaleString()}`, 105, 285, { align: 'center' });
+
+        // --- Save ---
+        doc.save(`${staff.name}_Payslip_${monthName}_${selectedPeriod.year}.pdf`);
+        showToast('Premium PDF Downloaded!');
     };
 
     const totalSalarySum = payroll.reduce((acc, curr) => acc + (curr.salary || 0), 0);
@@ -455,9 +536,9 @@ export default function PayrollPage() {
                             id="salary-slip"
                         >
                             <div className="flex justify-between items-start mb-12 border-b-2 border-slate-900 pb-6">
-                                <div>
-                                    <h1 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Salon Name</h1>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Employee Payslip - {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][selectedPeriod.month-1]} {selectedPeriod.year}</p>
+                                <div className="space-y-1">
+                                    <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 leading-none">Wappixo</h1>
+                                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Professional Payroll Management</p>
                                 </div>
                                 <X className="w-6 h-6 text-slate-400 cursor-pointer print:hidden hover:text-slate-900" onClick={() => setSalarySlip(null)} />
                             </div>
@@ -528,12 +609,25 @@ export default function PayrollPage() {
                                     </div>
                                 </div>
 
-                                <div className="pt-8 border-t-2 border-slate-900 flex justify-between items-center">
+                                <div className="pt-8 border-t-2 border-slate-900 flex justify-between items-center gap-4">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] font-black uppercase text-slate-400">Total Net Payout</span>
                                         <span className="text-3xl font-black tracking-tighter">₹{salarySlip.netPay.toLocaleString()}</span>
                                     </div>
-                                    <button onClick={() => window.print()} className="px-6 py-2 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest print:hidden">Print Slip</button>
+                                    <div className="flex gap-2 print:hidden">
+                                        <button 
+                                            onClick={() => window.print()} 
+                                            className="px-6 py-3 border border-slate-900 text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-colors"
+                                        >
+                                            Print Slip
+                                        </button>
+                                        <button 
+                                            onClick={() => generatePremiumPDF(salarySlip)} 
+                                            className="px-6 py-3 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2"
+                                        >
+                                            <Download className="w-4 h-4" /> Download Premium PDF
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
