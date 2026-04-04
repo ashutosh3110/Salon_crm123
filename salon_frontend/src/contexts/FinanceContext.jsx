@@ -56,6 +56,7 @@ export const FinanceProvider = ({ children }) => {
 
     const saveCashBankReconciliation = async (payload) => {
         try {
+            // payload may contain { actualCashCounted, denominations, bankReconciledItems, date }
             const res = await api.post('/finance/cash-bank/reconcile', payload);
             setCashBankSummary(res.data.data.summary);
             await refresh(); // Sync overall finance stats

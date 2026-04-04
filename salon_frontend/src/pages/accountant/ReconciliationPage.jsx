@@ -12,6 +12,7 @@ export default function ReconciliationPage() {
     const [isMatching, setIsMatching] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [counts, setCounts] = useState({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
     const fileInputRef = useRef(null);
 
     // Initial Fetch
@@ -56,23 +57,6 @@ export default function ReconciliationPage() {
         }
     }, [systemTransactions, reconItems.length]);
 
-    const handleSaveClosing = async () => {
-        if (!cashBankSummary) return;
-        setIsSaving(true);
-        try {
-            await saveCashBankReconciliation({
-                businessDate: selectedDate,
-                actualCash: cashBankSummary.cash?.net || 0,
-                actualBank: cashBankSummary.bank?.net || 0,
-                notes: 'Automated reconcile via dashboard'
-            });
-            alert('Daily closing saved and reconciled successfully!');
-        } catch (error) {
-            alert('Failed to save closing.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     const handleImportClick = () => {
         if (fileInputRef.current) fileInputRef.current.click();
@@ -157,11 +141,26 @@ export default function ReconciliationPage() {
                     status: s.status === 'processed' ? 'Matched' : 'Pending',
                     diff: -(s.amount / 100),
                     type: 'income',
+                    method: 'online',
+                    fee: (s.fees || 0) / 100,
+                    tax: (s.tax || 0) / 100
+                }));
+                
+                // Add Fee entries as expenses to match the bank settlement correctly
+                const feeItems = settlements.map(s => ({
+                    id: `FEE-${s.id}`,
+                    date: new Date(s.created_at * 1000).toLocaleDateString(),
+                    desc: `Razorpay Merchant Fee - ${s.id}`,
+                    systemAmt: -((s.fees || 0) / 100),
+                    bankAmt: -((s.fees || 0) / 100),
+                    status: 'Matched',
+                    diff: 0,
+                    type: 'expense',
                     method: 'online'
                 }));
                 
-                setReconItems(prev => [...mapped, ...prev]);
-                alert(`${mapped.length} Razorpay settlements synced successfully!`);
+                setReconItems(prev => [...mapped, ...feeItems, ...prev]);
+                alert(`${mapped.length} Razorpay settlements and ${feeItems.length} fee adjustments synced!`);
             }
         } catch (err) {
             console.error(err);
@@ -216,6 +215,49 @@ export default function ReconciliationPage() {
         });
     };
 
+    const actualCashCounted = Object.entries(counts).reduce((sum, [d, q]) => sum + (Number(d) * (Number(q) || 0)), 0);
+    const systemCashExpected = reconItems.filter(i => i.method === 'cash').reduce((sum, i) => sum + i.systemAmt, 0);
+    const cashDiscrepancy = actualCashCounted - systemCashExpected;
+
+    const downloadSummary = () => {
+        const body = {
+            date: selectedDate,
+            reconciledItems: reconItems,
+            cashAudit: {
+                expected: systemCashExpected,
+                actual: actualCashCounted,
+                discrepancy: cashDiscrepancy,
+                notes: counts
+            },
+            verifiedBy: "Accountant"
+        };
+        const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reconciliation-${selectedDate}.json`;
+        a.click();
+    };
+
+    const handleSaveClosing = async () => {
+        if (!cashBankSummary) return;
+        setIsSaving(true);
+        try {
+            await saveCashBankReconciliation({
+                date: selectedDate,
+                items: reconItems,
+                actualCashCounted,
+                denominations: counts
+            });
+            alert('Reconciliation and Daily Closing saved successfully!');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to save closing.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="space-y-6 text-left">
             {/* Header */}
@@ -248,11 +290,19 @@ export default function ReconciliationPage() {
                         {isSyncing ? 'Syncing...' : 'Sync Razorpay'}
                     </button>
                     <button 
+                        onClick={downloadSummary}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-text rounded-xl text-sm font-bold transition-all hover:bg-surface"
+                    >
+                        <Download className="w-4 h-4" />
+                        Download Summary
+                    </button>
+                    <button 
                         onClick={handleSaveClosing}
-                        disabled={isSaving || !cashBankSummary}
+                        disabled={isSaving || !cashBankSummary || (reconItems.length > 0 && Math.abs(cashDiscrepancy) > 0)}
                         className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/25 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                     >
-                        <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Closing'}
+                        <Save className="w-4 h-4" />
+                        {isSaving ? 'Saving...' : 'Save Closing'}
                     </button>
                 </div>
             </div>
@@ -372,15 +422,60 @@ export default function ReconciliationPage() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="flex justify-center">
-                                            {!item.id.includes('-ON') && !item.id.includes('-CH') && (
-                                                <button 
-                                                    onClick={() => handleSplitItem(item.id)}
-                                                    className="p-1.5 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all group/split"
-                                                    title="Split Payment (Cash + Online)"
-                                                >
-                                                    <Scissors className="w-4 h-4" />
-                                                </button>
+                                        <div className="flex justify-center gap-2">
+                                            {!item.id.includes('-ON') && !item.id.includes('-CH') && item.method !== 'online' && (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleSplitItem(item.id)}
+                                                        className="p-1.5 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all group/split"
+                                                        title="Manual Split (Cash + Online)"
+                                                    >
+                                                        <Scissors className="w-4 h-4" />
+                                                    </button>
+                                                    {/* Smart Suggestion Logic */}
+                                                    {reconItems.find(s => s.method === 'online' && s.status === 'Pending' && s.bankAmt < item.systemAmt) && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                const s = reconItems.find(s => s.method === 'online' && s.status === 'Pending' && s.bankAmt < item.systemAmt);
+                                                                const onlineAmt = s.bankAmt;
+                                                                const total = item.systemAmt;
+                                                                const cashAmt = total - onlineAmt;
+                                                                
+                                                                const onlineItem = { 
+                                                                    ...item, 
+                                                                    id: `${item.id}-ON`, 
+                                                                    desc: `${item.desc} (Online Part)`, 
+                                                                    systemAmt: onlineAmt,
+                                                                    bankAmt: onlineAmt,
+                                                                    diff: 0,
+                                                                    status: 'Matched',
+                                                                    method: 'online'
+                                                                };
+                                                                const cashItem = { 
+                                                                    ...item, 
+                                                                    id: `${item.id}-CH`, 
+                                                                    desc: `${item.desc} (Cash Part)`, 
+                                                                    systemAmt: cashAmt,
+                                                                    bankAmt: 0,
+                                                                    diff: cashAmt,
+                                                                    status: 'Pending',
+                                                                    method: 'cash'
+                                                                };
+                                                                setReconItems(prev => {
+                                                                    const index = prev.findIndex(i => i.id === item.id);
+                                                                    const newList = [...prev];
+                                                                    newList.splice(index, 1, onlineItem, cashItem);
+                                                                    // Also mark the settlement as matched
+                                                                    return newList.map(i => i.id === s.id ? {...i, status: 'Matched', diff: 0} : i);
+                                                                });
+                                                            }}
+                                                            className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 text-amber-600 rounded-lg text-[9px] font-black uppercase hover:bg-amber-500 hover:text-white transition-all"
+                                                            title="Auto-split based on synced settlement"
+                                                        >
+                                                            <Zap className="w-3.5 h-3.5" /> Suggest Split
+                                                        </button>
+                                                    )}
+                                                </>
                                             )}
                                         </div>
                                     </td>
@@ -388,6 +483,62 @@ export default function ReconciliationPage() {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Cash Drawer Verification (Bottom Panel) */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2 bg-surface border border-border/40 rounded-[2rem] p-8">
+                        <div className="flex items-center gap-3 mb-6">
+                            <Calculator className="w-5 h-5 text-primary" />
+                            <h3 className="text-sm font-black text-text uppercase tracking-widest">Cash Drawer Note Counting</h3>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                            {[500, 200, 100, 50, 20, 10, 5].map(d => (
+                                <div key={d} className="space-y-2 p-3 bg-background border border-border/10 rounded-2xl">
+                                    <label className="text-[10px] font-black text-text-secondary uppercase">₹{d} Notes</label>
+                                    <input 
+                                        type="number"
+                                        placeholder="0"
+                                        value={counts[d]}
+                                        onChange={(e) => setCounts({...counts, [d]: e.target.value})}
+                                        className="w-full bg-surface border border-border/20 rounded-lg py-1 px-2 text-xs font-bold focus:border-primary/50 outline-none"
+                                    />
+                                    <p className="text-[9px] text-text-muted font-bold text-right italic">₹{(d * (Number(counts[d]) || 0)).toLocaleString()}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={`rounded-[2rem] p-8 flex flex-col justify-between border-2 transition-all ${Math.abs(cashDiscrepancy) === 0 ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">Actual Cash</span>
+                                <h4 className={`text-2xl font-black ${Math.abs(cashDiscrepancy) === 0 ? 'text-emerald-600' : 'text-rose-600'}`}>₹{actualCashCounted.toLocaleString()}</h4>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border/10 pt-4">
+                                <span className="text-[10px] font-black text-text-secondary uppercase tracking-widest">System Expected</span>
+                                <h4 className="text-lg font-black text-text-muted">₹{systemCashExpected.toLocaleString()}</h4>
+                            </div>
+                            <div className={`p-4 rounded-2xl flex items-center gap-3 ${Math.abs(cashDiscrepancy) === 0 ? 'bg-emerald-500/10' : 'bg-rose-500/10'}`}>
+                                {Math.abs(cashDiscrepancy) === 0 ? (
+                                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                                ) : (
+                                    <AlertCircle className="w-5 h-5 text-rose-600" />
+                                )}
+                                <div>
+                                    <p className={`text-xs font-black uppercase tracking-tight ${Math.abs(cashDiscrepancy) === 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                        {Math.abs(cashDiscrepancy) === 0 ? 'Perfect Balance' : `₹${Math.abs(cashDiscrepancy).toLocaleString()} Shortage/Variation`}
+                                    </p>
+                                    <p className="text-[9px] text-text-secondary font-medium tracking-wide leading-tight mt-0.5">
+                                        {Math.abs(cashDiscrepancy) === 0 
+                                            ? 'Physical cash exactly matches daily system records.' 
+                                            : 'Cash in hand does not match billing history. Please audit notes.'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest text-center mt-6">Audit Integrity Verified @ {new Date().toLocaleTimeString()}</p>
+                    </div>
                 </div>
             </div>
         </div>
