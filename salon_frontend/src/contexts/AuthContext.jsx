@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
-import { requestForToken } from '../services/pushNotification';
+import { registerToken as requestForToken } from '../services/firebase';
 
 const AuthContext = createContext(null);
 
