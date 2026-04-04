@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save, Scissors, Zap } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save, Scissors, Zap, X, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
 import { useFinance } from '../../contexts/FinanceContext';
@@ -20,6 +20,19 @@ export default function ReconciliationPage() {
     const [showBankModal, setShowBankModal] = useState(false);
     const [bankForm, setBankForm] = useState({ bankName: 'HDFC Bank', accountNumber: '9281', isLinked: true });
     const fileInputRef = useRef(null);
+
+    // Toast popup state
+    const [toast, setToast] = useState(null);
+    const toastTimer = useRef(null);
+    const showToast = useCallback((message, type = 'success') => {
+        if (toastTimer.current) clearTimeout(toastTimer.current);
+        setToast({ message, type });
+        toastTimer.current = setTimeout(() => setToast(null), 4000);
+    }, []);
+
+    // Split modal state
+    const [splitModal, setSplitModal] = useState(null);
+    const [splitValue, setSplitValue] = useState('');
 
     // Initial Fetch
     useEffect(() => {
@@ -107,11 +120,11 @@ export default function ReconciliationPage() {
                         };
                     });
                     setReconItems(prev => [...imported, ...prev]);
-                    alert(`${imported.length} statement records imported successfully!`);
+                    showToast(`${imported.length} statement records imported successfully!`, 'success');
                 }
             } catch (err) {
                 console.error("Error reading file:", err);
-                alert("Failed to parse the file. Please ensure it's a valid Excel/CSV.");
+                showToast("Failed to parse the file. Please ensure it's a valid Excel/CSV.", 'error');
             }
         };
         reader.readAsBinaryString(file);
@@ -147,7 +160,7 @@ export default function ReconciliationPage() {
             );
             
             if (settlements.length === 0) {
-                alert('No Razorpay settlements found for this date.');
+                showToast('No Razorpay settlements found for this date.', 'warning');
             } else {
                 const mapped = settlements.map(s => ({
                     id: s.id,
@@ -177,11 +190,11 @@ export default function ReconciliationPage() {
                 }));
                 
                 setReconItems(prev => [...mapped, ...feeItems, ...prev]);
-                alert(`${mapped.length} Razorpay settlements and ${feeItems.length} fee adjustments synced!`);
+                showToast(`${mapped.length} Razorpay settlements and ${feeItems.length} fee adjustments synced!`, 'success');
             }
         } catch (err) {
             console.error(err);
-            alert('Failed to sync with Razorpay.');
+            showToast('Failed to sync with Razorpay.', 'error');
         } finally {
             setIsSyncing(false);
         }
@@ -190,15 +203,20 @@ export default function ReconciliationPage() {
     const handleSplitItem = (itemId) => {
         const item = reconItems.find(i => i.id === itemId);
         if (!item) return;
-
         const total = Math.abs(item.systemAmt);
-        const splitStr = prompt(`Enter Online portion for ${item.desc} (Total: ₹${total}):`, (total * 0.6).toFixed(0));
-        const onlineAmt = parseFloat(splitStr);
+        setSplitValue((total * 0.6).toFixed(0));
+        setSplitModal({ itemId, item, total });
+    };
 
+    const confirmSplit = () => {
+        if (!splitModal) return;
+        const { itemId, item, total } = splitModal;
+        const onlineAmt = parseFloat(splitValue);
         if (isNaN(onlineAmt) || onlineAmt <= 0 || onlineAmt >= total) {
-            alert("Invalid split amount. Please enter a value between 0 and the total.");
+            showToast('Invalid split amount. Enter a value between 0 and the total.', 'error');
             return;
         }
+        setSplitModal(null);
 
         const cashAmt = total - onlineAmt;
 
@@ -305,10 +323,10 @@ export default function ReconciliationPage() {
                 actualCashCounted,
                 denominations: counts
             });
-            alert('Reconciliation and Daily Closing saved successfully!');
+            showToast('Reconciliation and Daily Closing saved successfully!', 'success');
         } catch (err) {
             console.error(err);
-            alert('Failed to save closing.');
+            showToast('Failed to save closing.', 'error');
         } finally {
             setIsSaving(false);
         }
@@ -319,9 +337,9 @@ export default function ReconciliationPage() {
             await updateBankDetails(user.outletId, bankForm);
             setShowBankModal(false);
             await fetchCashBankSummary(selectedDate);
-            alert('Bank info updated successfully!');
+            showToast('Bank info updated successfully!', 'success');
         } catch (err) {
-            alert('Failed to update bank info.');
+            showToast('Failed to update bank info.', 'error');
         }
     };
 
@@ -671,6 +689,83 @@ export default function ReconciliationPage() {
                                     className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-4"
                                 >
                                     Save Bank Details
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Toast Popup ── */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="fixed bottom-8 right-8 z-[200] max-w-md"
+                    >
+                        <div className={`flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl ${
+                            toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' :
+                            toast.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-800' :
+                            'bg-amber-50 border-amber-200 text-amber-800'
+                        }`}>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                toast.type === 'success' ? 'bg-emerald-500/10' :
+                                toast.type === 'error' ? 'bg-rose-500/10' :
+                                'bg-amber-500/10'
+                            }`}>
+                                {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> :
+                                 toast.type === 'error' ? <AlertCircle className="w-4 h-4 text-rose-600" /> :
+                                 <Info className="w-4 h-4 text-amber-600" />}
+                            </div>
+                            <p className="text-sm font-bold flex-1">{toast.message}</p>
+                            <button onClick={() => setToast(null)} className="p-1 hover:bg-black/5 rounded-lg transition-colors flex-shrink-0">
+                                <X className="w-4 h-4 opacity-50" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Split Modal ── */}
+            <AnimatePresence>
+                {splitModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-black/60">
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="bg-surface w-full max-w-sm rounded-[2.5rem] border border-border/40 p-8 text-left shadow-2xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h2 className="text-lg font-black text-text uppercase tracking-tight">Split Transaction</h2>
+                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Cash + Online Split</p>
+                                </div>
+                                <button onClick={() => setSplitModal(null)} className="p-2 hover:bg-background rounded-full transition-colors"><X className="w-5 h-5" /></button>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="p-4 bg-background border border-border/10 rounded-2xl">
+                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">Transaction</p>
+                                    <p className="text-sm font-bold text-text">{splitModal.item.desc}</p>
+                                    <p className="text-xs font-black text-primary mt-1">Total: ₹{splitModal.total.toLocaleString()}</p>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Online Portion (₹)</label>
+                                    <input
+                                        type="number"
+                                        value={splitValue}
+                                        onChange={e => setSplitValue(e.target.value)}
+                                        className="w-full px-5 py-3.5 bg-background border border-border/40 rounded-2xl text-sm font-bold outline-none focus:border-primary/50"
+                                        placeholder="Enter online amount"
+                                        autoFocus
+                                    />
+                                    {splitValue && parseFloat(splitValue) > 0 && parseFloat(splitValue) < splitModal.total && (
+                                        <p className="text-[10px] text-text-muted font-bold mt-1">Cash portion: ₹{(splitModal.total - parseFloat(splitValue)).toLocaleString()}</p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={confirmSplit}
+                                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-2"
+                                >
+                                    Confirm Split
                                 </button>
                             </div>
                         </motion.div>

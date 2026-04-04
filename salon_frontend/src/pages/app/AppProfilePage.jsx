@@ -185,9 +185,9 @@ export default function AppProfilePage() {
     const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="px-4 pb-8">
+        <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="px-4 pb-32">
             {/* Header */}
-            <div className="pt-2 pb-2">
+            <div className="pt-6 pb-4">
                 <h1 className="text-2xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
                 <p className="text-xs" style={{ color: colors.textMuted }}>Manage your account and rewards</p>
             </div>
@@ -392,6 +392,8 @@ export default function AppProfilePage() {
                 )}
             </motion.div>
 
+            <div className="h-4" />
+
             {/* Loyalty Section */}
             <motion.div variants={fadeUp} className="space-y-4">
                 <div className="flex items-center justify-between px-1">
@@ -399,6 +401,8 @@ export default function AppProfilePage() {
                 </div>
 
                 <LoyaltyCard points={Number(balance || 0)} redeemRate={rules.redeemRate} />
+
+                <div className="h-2" />
 
                 <div className="grid grid-cols-2 gap-2.5">
                     <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
@@ -440,6 +444,8 @@ export default function AppProfilePage() {
                 </div>
             </motion.div>
 
+            <div className="h-6" />
+
             {/* Quick Links */}
             <motion.div variants={fadeUp} className="space-y-3">
                 {quickLinks.map((link) => (
@@ -454,13 +460,15 @@ export default function AppProfilePage() {
                             <link.icon className={`w-6 h-6 ${link.color}`} />
                         </div>
                         <span className="text-[13px] font-black uppercase tracking-wider flex-1 text-left" style={{ color: colors.text }}>{link.label}</span>
-                        <ChevronRight className="w-4 h-4 opacity-20" />
+                                        <ChevronRight className="w-4 h-4 opacity-20" />
                     </motion.button>
                 ))}
             </motion.div>
 
+            <div className="h-10" />
+
             {/* Review Section */}
-            <motion.div variants={fadeUp} className="space-y-4">
+            <motion.div variants={fadeUp} className="space-y-4 pt-16 pb-4">
                 <div className="flex items-center justify-between px-1">
                     <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
                 </div>
@@ -489,7 +497,7 @@ export default function AppProfilePage() {
 
                         <form onSubmit={handleReviewSubmit} className="space-y-4">
                             {/* Star Rating */}
-                            <div className="flex gap-2 justify-center py-2">
+                            <div className="flex gap-3 justify-center py-6">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <motion.button
                                         key={star}
@@ -499,7 +507,7 @@ export default function AppProfilePage() {
                                         style={{ color: review.rating >= star ? '#C8956C' : colors.textMuted }}
                                         disabled={isSubmittingReview}
                                     >
-                                        <Star size={24} fill={review.rating >= star ? "#C8956C" : "none"} />
+                                        <Star size={32} fill={review.rating >= star ? "#C8956C" : "none"} />
                                     </motion.button>
                                 ))}
                             </div>
@@ -604,7 +612,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Support & Legal */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-10">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-8">
                 <button
                     onClick={() => navigate('/app/help')}
                     className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -624,7 +632,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Logout */}
-            <motion.div variants={fadeUp} className="mt-10">
+            <motion.div variants={fadeUp} className="mt-8 mb-6">
                 {!showLogoutConfirm ? (
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
