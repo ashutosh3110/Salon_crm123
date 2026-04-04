@@ -89,10 +89,40 @@ const markAllPaid = async (req, res, next) => {
     }
 };
 
+const syncCommissions = async (req, res, next) => {
+    try {
+        if (!requireTenant(req, res)) return;
+        const ym = parseYm(req);
+        if (!ym) {
+            return res.status(httpStatus.BAD_REQUEST).send({ success: false, message: 'year and month required' });
+        }
+        const data = await payrollService.syncCommissions(req.tenantId, ym.year, ym.month);
+        res.status(httpStatus.OK).send({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const syncAttendance = async (req, res, next) => {
+    try {
+        if (!requireTenant(req, res)) return;
+        const ym = parseYm(req);
+        if (!ym) {
+            return res.status(httpStatus.BAD_REQUEST).send({ success: false, message: 'year and month required' });
+        }
+        const data = await payrollService.syncAttendance(req.tenantId, ym.year, ym.month);
+        res.status(httpStatus.OK).send({ success: true, data });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     getMonth,
     generate,
     setLocked,
     patchEntry,
     markAllPaid,
+    syncCommissions,
+    syncAttendance,
 };

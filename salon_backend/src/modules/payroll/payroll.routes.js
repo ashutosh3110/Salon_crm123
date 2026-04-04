@@ -28,4 +28,8 @@ router.patch(
 
 router.post('/mark-all-paid', authorize(adminRoles), validate(payrollValidation.markAllPaid), payrollController.markAllPaid);
 
+router.post('/sync-commissions', authorize(adminRoles), validate(payrollValidation.syncCommissions), payrollController.syncCommissions);
+
+router.post('/sync-attendance', authorize(adminRoles), validate(payrollValidation.syncAttendance), payrollController.syncAttendance);
+
 export default router;

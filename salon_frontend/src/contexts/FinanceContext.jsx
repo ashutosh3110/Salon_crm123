@@ -1,153 +1,90 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import api from '../services/api';
+import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import api from '../utils/api';
 import { useAuth } from './AuthContext';
 import { useAttendance } from './AttendanceContext';
 
 const FinanceContext = createContext();
 
-export const useFinance = () => {
-    const context = useContext(FinanceContext);
-    if (!context) throw new Error('useFinance must be used within a FinanceProvider');
-    return context;
-};
+export const useFinance = () => useContext(FinanceContext);
 
 export const FinanceProvider = ({ children }) => {
     const { user } = useAuth();
     const { getStylistAttendanceStats } = useAttendance();
     const [revenue, setRevenue] = useState([]);
     const [expenses, setExpenses] = useState([]);
-    const [payroll, setPayroll] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [gstSummary, setGstSummary] = useState({ cgst: 0, sgst: 0, igst: 0, totalTax: 0 });
+    const [cashBankSummary, setCashBankSummary] = useState({ cash: 0, bank: 0, razorset: 0 });
     const [taxFilings, setTaxFilings] = useState([]);
+    const [stats, setStats] = useState({ totalRevenue: 0, totalExpenses: 0, netProfit: 0 });
     const [trendData, setTrendData] = useState([]);
     const [expenseSplits, setExpenseSplits] = useState([]);
-    const [stats, setStats] = useState({
-        totalRevenue: 0,
-        totalExpenses: 0,
-        netProfit: 0,
-        invoiceCount: 0
-    });
-    const [loading, setLoading] = useState(true);
 
-    const [gstSummary, setGstSummary] = useState({ totals: {}, monthly: [] });
-    const [cashBankSummary, setCashBankSummary] = useState(null);
-
-    const fetchGstSummary = useCallback(async (query = {}) => {
-        const allowedRoles = ['admin', 'accountant'];
-        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
+    const refresh = useCallback(async () => {
+        setLoading(true);
         try {
-            const res = await api.get('/finance/tax/gst-summary', { params: query });
-            setGstSummary(res.data.data || { totals: {}, monthly: [] });
+            const res = await api.get('/finance/stats');
+            setStats(res.data.data.summary);
+            setTrendData(res.data.data.trends);
+            setExpenseSplits(res.data.data.expenseSplits);
         } catch (error) {
-            console.error('Fetch GST Summary Error:', error);
+            console.error('Finance Stats Error:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [user?.role]);
+    }, []);
 
-    const fetchCashBankSummary = useCallback(async (date = new Date().toISOString().split('T')[0]) => {
-        const allowedRoles = ['admin', 'accountant'];
-        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
+    const fetchGstSummary = useCallback(async (period) => {
         try {
-            const res = await api.get(`/finance/cash-bank`, { params: { date } });
+            const res = await api.get('/finance/gst', { params: { period } });
+            setGstSummary(res.data.data);
+        } catch (error) {
+            console.error('GST Summary Error:', error);
+        }
+    }, []);
+
+    const fetchCashBankSummary = useCallback(async () => {
+        try {
+            const res = await api.get('/finance/reconcile-summary');
             setCashBankSummary(res.data.data);
+        } catch (error) {
+            console.error('Cash Bank Summary Error:', error);
+        }
+    }, []);
+
+    const fetchRazorpaySettlements = useCallback(async (date) => {
+        try {
+            const res = await api.get('/finance/razorpay-settlements', { params: { date } });
             return res.data.data;
         } catch (error) {
-            console.error('Fetch Cash Bank Summary Error:', error);
+            console.error('Razorpay Settlements Error:', error);
+            throw error;
         }
-    }, [user?.role]);
+    }, []);
 
-    const saveCashBankReconciliation = async (payload) => {
+    const saveCashBankReconciliation = async (data) => {
         try {
-            // payload may contain { actualCashCounted, denominations, bankReconciledItems, date }
-            const res = await api.post('/finance/cash-bank/reconcile', payload);
-            setCashBankSummary(res.data.data.summary);
-            await refresh(); // Sync overall finance stats
+            const res = await api.post('/finance/reconcile', data);
+            await fetchCashBankSummary();
             return res.data.data;
         } catch (error) {
             console.error('Save Reconciliation Error:', error);
             throw error;
         }
     };
-    const fetchRazorpaySettlements = useCallback(async (from, to) => {
-        try {
-            const res = await api.get('/billing/razorpay/settlements', { params: { from, to } });
-            return res.data.data.items || [];
-        } catch (error) {
-            console.error('Fetch Razorpay Settlements Error:', error);
-            throw error;
-        }
-    }, []);
 
-    const refresh = useCallback(async () => {
-        // Explicitly allow only admin and accountant to fetch full finance data
-        const allowedRoles = ['admin', 'accountant'];
-        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) {
-            setLoading(false);
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const [statsRes, trendRes, expRes, invRes] = await Promise.all([
-                api.get('/invoices/stats'),
-                api.get('/invoices/finance-dashboard'),
-                api.get('/finance/expenses?limit=100'),
-                api.get('/invoices?limit=20')
-            ]);
-
-            const s = statsRes.data;
-            const kpis = trendRes.data.kpis || {};
-            
-            setStats({
-                totalRevenue: kpis.grossInflow || 0, // Using MTD gross inflow for dashboard consistency
-                totalExpenses: kpis.totalExpenses || 0,
-                netProfit: (kpis.grossInflow || 0) - (kpis.totalExpenses || 0),
-                invoiceCount: s.invoiceCount || 0
-            });
-
-            setTrendData(trendRes.data.monthlyTrend?.map(t => ({
-                name: t.name,
-                income: t.revenue,
-                expenses: t.expense
-            })) || []);
-
-            const COLORS = ['#3b82f6', '#ef4444', '#f59e0b', '#6366f1', '#10b981', '#f43f5e', '#8b5cf6'];
-            setExpenseSplits(trendRes.data.costAllocation?.map((c, index) => ({
-                name: c.label,
-                value: c.percentage,
-                amount: c.amount,
-                color: COLORS[index % COLORS.length]
-            })) || []);
-
-            setExpenses(expRes.data.results || []);
-            setRevenue(invRes.data.results || []);
-            
-            // Also fetch GST and Cash Bank summary
-            fetchGstSummary();
-            fetchCashBankSummary();
-        } catch (error) {
-            console.error('Finance Refresh Error:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [user, fetchGstSummary, fetchCashBankSummary]);
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
-
-    const addRevenue = async (entry) => {
-        // In real app, this might be handled by POS. 
-        // For accountant, we might just refresh.
+    const addRevenue = async (data) => {
+        const res = await api.post('/finance/revenue', data);
+        setRevenue(prev => [res.data.data, ...prev]);
         await refresh();
+        return res.data;
     };
 
-    const addExpense = async (entry) => {
-        try {
-            await api.post('/finance/expenses', entry);
-            await refresh();
-        } catch (error) {
-            console.error('Add Expense Error:', error);
-            throw error;
-        }
+    const addExpense = async (data) => {
+        const res = await api.post('/finance/expense', data);
+        setExpenses(prev => [res.data.data, ...prev]);
+        await refresh();
+        return res.data;
     };
 
     const [payrollEntries, setPayrollEntries] = useState([]);
@@ -179,6 +116,30 @@ export const FinanceProvider = ({ children }) => {
         }
     };
 
+    const syncCommissions = async (year, month) => {
+        try {
+            const res = await api.post('/payroll/sync-commissions', { year, month });
+            const payload = res.data.data || {};
+            setPayrollEntries(payload.entries || []);
+            return payload;
+        } catch (error) {
+            console.error('Sync Commissions Error:', error);
+            throw error;
+        }
+    };
+
+    const syncAttendance = async (year, month) => {
+        try {
+            const res = await api.post('/payroll/sync-attendance', { year, month });
+            const payload = res.data.data || {};
+            setPayrollEntries(payload.entries || []);
+            return payload;
+        } catch (error) {
+            console.error('Sync Attendance Error:', error);
+            throw error;
+        }
+    };
+
     const processPayouts = async (year, month) => {
         try {
             const res = await api.post('/payroll/mark-all-paid', { year, month });
@@ -188,6 +149,18 @@ export const FinanceProvider = ({ children }) => {
             return payload;
         } catch (error) {
             console.error('Process Payouts Error:', error);
+            throw error;
+        }
+    };
+
+    const updatePayrollEntry = async (id, data) => {
+        try {
+            const res = await api.patch(`/payroll/entries/${id}`, data);
+            const updated = res.data.data;
+            setPayrollEntries(prev => prev.map(p => p._id === id ? updated : p));
+            return updated;
+        } catch (error) {
+            console.error('Update Payroll Entry Error:', error);
             throw error;
         }
     };
@@ -208,31 +181,34 @@ export const FinanceProvider = ({ children }) => {
 
     const enrichedPayroll = useMemo(() => {
         return payrollEntries.map(item => {
-            const user = item.userId || {};
-            const userName = user.name || 'Staff';
-            const attStats = getStylistAttendanceStats(userName);
-            const expectedDays = 25;
-            const missedDays = Math.max(0, expectedDays - attStats.presentDays);
-            const attendanceDeduction = missedDays * 500;
+            const u = item.userId || {};
+            const userName = u.name || 'Staff';
+            
+            // Note: Backend now calculates most of this, but we keep the structure 
+            // consistent for the UI components that expect these fields.
+            const attendanceScore = item.workingDays > 0 
+                ? Math.round(((item.attendanceDays || 0) / item.workingDays) * 100) 
+                : 0;
 
-            // Final deduction includes manual entry + attendance deduction
-            const totalDeductions = (item.deductions || 0) + attendanceDeduction;
-            const netPay = Math.max(0, (item.baseSalary || 0) + (item.commission || 0) - totalDeductions);
+            const totalDeductions = (item.deductions || 0) + 
+                                   (item.attendanceDeduction || 0) + 
+                                   (item.deductAdvance ? (item.advance || 0) : 0);
 
             return {
                 ...item,
                 id: item._id,
                 name: userName,
-                role: user.role || 'Stylist',
+                role: u.role || 'Stylist',
                 salary: item.baseSalary || 0,
                 commission: item.commission || 0,
-                attendanceStats: attStats,
+                incentive: item.incentive || 0,
+                advance: item.advance || 0,
                 totalDeductions,
-                netPay,
-                attendanceScore: Math.round((attStats.presentDays / expectedDays) * 100)
+                netPay: item.netPay || 0,
+                attendanceScore
             };
         });
-    }, [payrollEntries, getStylistAttendanceStats]);
+    }, [payrollEntries]);
 
     const updateBankDetails = async (outletId, bankData) => {
         try {
@@ -261,15 +237,19 @@ export const FinanceProvider = ({ children }) => {
         refresh,
         fetchPayroll,
         generatePayroll,
+        syncCommissions,
+        syncAttendance,
         processPayouts,
+        updatePayrollEntry,
         addRevenue,
         addExpense,
         updatePayrollStatus,
         fetchGstSummary,
         fetchCashBankSummary,
         fetchRazorpaySettlements,
-        saveCashBankReconciliation
-    }), [revenue, expenses, enrichedPayroll, payrollPeriod, gstSummary, cashBankSummary, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll, fetchGstSummary, fetchCashBankSummary, fetchRazorpaySettlements]);
+        saveCashBankReconciliation,
+        updateBankDetails
+    }), [revenue, expenses, enrichedPayroll, payrollPeriod, gstSummary, cashBankSummary, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll, generatePayroll, syncCommissions, syncAttendance, processPayouts, updatePayrollEntry, updatePayrollStatus, fetchGstSummary, fetchCashBankSummary, fetchRazorpaySettlements]);
 
     return (
         <FinanceContext.Provider value={value}>

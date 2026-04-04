@@ -27,6 +27,9 @@ export const payrollValidation = {
             .keys({
                 baseSalary: Joi.number().min(0).optional(),
                 commission: Joi.number().min(0).optional(),
+                incentive: Joi.number().min(0).optional(),
+                advance: Joi.number().min(0).optional(),
+                deductAdvance: Joi.boolean().optional(),
                 deductions: Joi.number().min(0).optional(),
                 workingDays: Joi.number().integer().min(0).max(31).optional(),
                 status: Joi.string().valid('draft', 'approved', 'paid').optional(),
@@ -34,6 +37,12 @@ export const payrollValidation = {
             .min(1),
     },
     markAllPaid: {
+        body: Joi.object().keys(yearMonth),
+    },
+    syncCommissions: {
+        body: Joi.object().keys(yearMonth),
+    },
+    syncAttendance: {
         body: Joi.object().keys(yearMonth),
     },
 };

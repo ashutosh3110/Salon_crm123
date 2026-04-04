@@ -138,7 +138,7 @@ export default function ReconciliationPage() {
             setReconItems(prev => prev.map(item => {
                 if (item.status === 'Pending') {
                     // simulate finding a match and resolving the discrepancy
-                    return { ...item, bankAmt: item.systemAmt, diff: '₹0', status: 'Matched' };
+                    return { ...item, bankAmt: item.systemAmt, diff: 0, status: 'Matched' };
                 }
                 return item;
             }));
@@ -505,8 +505,8 @@ export default function ReconciliationPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right text-xs font-bold text-text-secondary">{item.systemAmt}</td>
                                     <td className="px-6 py-4 text-right text-xs font-bold text-text-secondary">{item.bankAmt}</td>
-                                    <td className={`px-6 py-4 text-right text-xs font-black italic ${item.diff !== 0 ? 'text-rose-500' : 'text-text-muted opacity-30'}`}>
-                                        ₹{Math.abs(item.diff).toLocaleString()}
+                                    <td className={`px-6 py-4 text-right text-xs font-black italic ${Number(item.diff) !== 0 ? 'text-rose-500' : 'text-text-muted opacity-30'}`}>
+                                        ₹{Math.abs(Number(item.diff) || 0).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         <div className="flex items-center justify-center gap-2">
