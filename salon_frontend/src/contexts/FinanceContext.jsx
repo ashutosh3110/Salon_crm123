@@ -65,6 +65,16 @@ export const FinanceProvider = ({ children }) => {
             throw error;
         }
     };
+    const fetchRazorpaySettlements = useCallback(async (from, to) => {
+        try {
+            const res = await api.get('/billing/razorpay/settlements', { params: { from, to } });
+            return res.data.data.items || [];
+        } catch (error) {
+            console.error('Fetch Razorpay Settlements Error:', error);
+            throw error;
+        }
+    }, []);
+
     const refresh = useCallback(async () => {
         // Explicitly allow only admin and accountant to fetch full finance data
         const allowedRoles = ['admin', 'accountant'];
@@ -244,8 +254,9 @@ export const FinanceProvider = ({ children }) => {
         updatePayrollStatus,
         fetchGstSummary,
         fetchCashBankSummary,
+        fetchRazorpaySettlements,
         saveCashBankReconciliation
-    }), [revenue, expenses, enrichedPayroll, payrollPeriod, gstSummary, cashBankSummary, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll, fetchGstSummary, fetchCashBankSummary]);
+    }), [revenue, expenses, enrichedPayroll, payrollPeriod, gstSummary, cashBankSummary, taxFilings, totalRevenue, totalExpenses, netProfit, trendData, expenseSplits, loading, refresh, fetchPayroll, fetchGstSummary, fetchCashBankSummary, fetchRazorpaySettlements]);
 
     return (
         <FinanceContext.Provider value={value}>

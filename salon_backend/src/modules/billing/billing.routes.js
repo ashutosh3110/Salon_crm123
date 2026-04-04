@@ -47,4 +47,8 @@ router
     .route('/razorpay/verify-payment')
     .post(optionalAuth, razorpayController.verifySubscriptionPayment);
 
+router
+    .route('/razorpay/settlements')
+    .get(auth, role(['admin', 'manager', 'accountant', 'superadmin']), razorpayController.getSettlements);
+
 export default router;

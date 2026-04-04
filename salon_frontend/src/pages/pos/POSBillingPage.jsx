@@ -534,7 +534,7 @@ export default function POSBillingPage() {
     const availableStaff = useMemo(() => {
         // The user said "quick bill me to sare stylist aane chahiye" (all stylists should appear).
         // So we revert the filtering and show all staff of the tenant.
-        return businessStaff.filter(s => s.status !== 'inactive' && s.role !== 'admin');
+        return businessStaff.filter(s => s.status !== 'inactive');
     }, [businessStaff]);
 
     // ─── Cart Logic ────────────────────────────────────────

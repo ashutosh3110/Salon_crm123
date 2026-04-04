@@ -10,7 +10,7 @@ import {
     CreditCard,
     Globe,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     AreaChart,
     Area,
@@ -34,6 +34,7 @@ const defaultWeek = () =>
     }));
 
 export default function DashboardPage() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [payload, setPayload] = useState(null);
@@ -365,8 +366,15 @@ export default function DashboardPage() {
                 <div className="bg-surface rounded-2xl border border-border shadow-sm p-6 space-y-6 text-left">
                     <h3 className="text-lg font-bold text-text tracking-tight text-left">Quick Actions</h3>
                     <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => navigate('/pos/billing')}
+                            className="p-6 rounded-2xl bg-primary text-white transition-all border border-primary flex flex-col items-center gap-3 group shadow-lg shadow-primary/20 active:scale-95"
+                        >
+                            <CreditCard className="w-5 h-5 text-white" />
+                            <span className="text-xs font-black uppercase tracking-widest">Create Bill</span>
+                        </button>
                         <Link
-                            to="/admin/appointments"
+                            to="/admin/bookings"
                             className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg"
                         >
                             <Calendar className="w-5 h-5 opacity-60 group-hover:opacity-100" />
@@ -385,13 +393,6 @@ export default function DashboardPage() {
                         >
                             <TrendingUp className="w-5 h-5 opacity-60 group-hover:opacity-100" />
                             <span className="text-xs font-bold tracking-tight">Sales</span>
-                        </Link>
-                        <Link
-                            to="/admin/settings"
-                            className="p-6 rounded-2xl bg-surface-alt hover:bg-primary text-text hover:text-primary-foreground transition-all border border-border hover:border-primary flex flex-col items-center gap-3 group shadow-sm hover:shadow-lg"
-                        >
-                            <Settings className="w-5 h-5 opacity-60 group-hover:opacity-100" />
-                            <span className="text-xs font-bold tracking-tight">Settings</span>
                         </Link>
                     </div>
 

@@ -81,6 +81,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             path: '/pos',
             feature: 'pos',
             subItems: [
+                { label: 'New Bill (POS)', icon: Zap, path: '/pos/billing', roles: ['admin', 'manager', 'receptionist'] },
                 { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
                 { label: 'Invoices', icon: FileText, path: '/pos/invoices', badge: { count: 5, color: 'bg-emerald-400' } },
                 { label: 'Payments', icon: CreditCard, path: '/pos/payments' },

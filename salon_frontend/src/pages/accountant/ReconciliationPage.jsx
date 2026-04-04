@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save } from 'lucide-react';
+import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save, Scissors } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
 import { useFinance } from '../../contexts/FinanceContext';
 
 export default function ReconciliationPage() {
-    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation } = useFinance();
+    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation, fetchRazorpaySettlements } = useFinance();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     
     const [reconItems, setReconItems] = useState([]);
     const [isMatching, setIsMatching] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const fileInputRef = useRef(null);
 
@@ -130,6 +131,90 @@ export default function ReconciliationPage() {
             setIsMatching(false);
         }, 1500);
     };
+    
+    const handleSyncRazorpay = async () => {
+        setIsSyncing(true);
+        try {
+            const start = new Date(selectedDate);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(selectedDate);
+            end.setHours(23, 59, 59, 999);
+            
+            const settlements = await fetchRazorpaySettlements(
+                Math.floor(start.getTime() / 1000),
+                Math.floor(end.getTime() / 1000)
+            );
+            
+            if (settlements.length === 0) {
+                alert('No Razorpay settlements found for this date.');
+            } else {
+                const mapped = settlements.map(s => ({
+                    id: s.id,
+                    date: new Date(s.created_at * 1000).toLocaleDateString(),
+                    desc: `Razorpay Settlement - ${s.status.toUpperCase()}`,
+                    systemAmt: 0,
+                    bankAmt: s.amount / 100,
+                    status: s.status === 'processed' ? 'Matched' : 'Pending',
+                    diff: -(s.amount / 100),
+                    type: 'income',
+                    method: 'online'
+                }));
+                
+                setReconItems(prev => [...mapped, ...prev]);
+                alert(`${mapped.length} Razorpay settlements synced successfully!`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to sync with Razorpay.');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleSplitItem = (itemId) => {
+        const item = reconItems.find(i => i.id === itemId);
+        if (!item) return;
+
+        const total = Math.abs(item.systemAmt);
+        const splitStr = prompt(`Enter Online portion for ${item.desc} (Total: ₹${total}):`, (total * 0.6).toFixed(0));
+        const onlineAmt = parseFloat(splitStr);
+
+        if (isNaN(onlineAmt) || onlineAmt <= 0 || onlineAmt >= total) {
+            alert("Invalid split amount. Please enter a value between 0 and the total.");
+            return;
+        }
+
+        const cashAmt = total - onlineAmt;
+
+        const onlineItem = { 
+            ...item, 
+            id: `${item.id}-ON`, 
+            desc: `${item.desc} (Online Part)`, 
+            systemAmt: item.type === 'income' ? onlineAmt : -onlineAmt,
+            bankAmt: 0,
+            diff: onlineAmt,
+            status: 'Pending',
+            method: 'online'
+        };
+
+        const cashItem = { 
+            ...item, 
+            id: `${item.id}-CH`, 
+            desc: `${item.desc} (Cash Part)`, 
+            systemAmt: item.type === 'income' ? cashAmt : -cashAmt,
+            bankAmt: 0,
+            diff: cashAmt,
+            status: 'Pending',
+            method: 'cash'
+        };
+
+        setReconItems(prev => {
+            const index = prev.findIndex(i => i.id === itemId);
+            const newList = [...prev];
+            newList.splice(index, 1, onlineItem, cashItem);
+            return newList;
+        });
+    };
 
     return (
         <div className="space-y-6 text-left">
@@ -153,6 +238,14 @@ export default function ReconciliationPage() {
                     <button disabled={isMatching} onClick={handleAutoMatch} className={`flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-primary rounded-xl text-sm font-bold transition-all ${isMatching ? 'opacity-80 cursor-wait' : 'hover:bg-primary hover:text-white'}`}>
                         <RefreshCcw className={`w-4 h-4 ${isMatching ? 'animate-spin' : ''}`} />
                         {isMatching ? 'Matching...' : 'Auto-Match'}
+                    </button>
+                    <button 
+                        disabled={isSyncing} 
+                        onClick={handleSyncRazorpay} 
+                        className={`flex items-center gap-2 px-6 py-2.5 bg-background border-2 border-primary/20 text-blue-600 rounded-xl text-sm font-bold transition-all ${isSyncing ? 'opacity-80 cursor-wait' : 'hover:bg-blue-600 hover:text-white'}`}
+                    >
+                        <Zap className={`w-4 h-4 ${isSyncing ? 'animate-pulse' : ''}`} />
+                        {isSyncing ? 'Syncing...' : 'Sync Razorpay'}
                     </button>
                     <button 
                         onClick={handleSaveClosing}
@@ -216,7 +309,9 @@ export default function ReconciliationPage() {
                     </div>
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">
-                            <h2 className="text-3xl font-black text-text tracking-tighter">12</h2>
+                            <h2 className="text-3xl font-black text-text tracking-tighter">
+                                {reconItems.filter(item => item.status !== 'Matched').length}
+                            </h2>
                             <div>
                             <p className="text-xs font-bold text-text-secondary leading-tight">Transactions waiting for verification for {new Date(selectedDate).toLocaleDateString()}.</p>
                         </div>
@@ -247,6 +342,7 @@ export default function ReconciliationPage() {
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Bank Amt</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Difference</th>
                                 <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Outcome</th>
+                                <th className="px-6 py-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40 text-left">
@@ -273,6 +369,19 @@ export default function ReconciliationPage() {
                                                 {item.status}
                                             </span>
                                             {item.status === 'Matched' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex justify-center">
+                                            {!item.id.includes('-ON') && !item.id.includes('-CH') && (
+                                                <button 
+                                                    onClick={() => handleSplitItem(item.id)}
+                                                    className="p-1.5 hover:bg-primary/10 rounded-lg text-text-muted hover:text-primary transition-all group/split"
+                                                    title="Split Payment (Cash + Online)"
+                                                >
+                                                    <Scissors className="w-4 h-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

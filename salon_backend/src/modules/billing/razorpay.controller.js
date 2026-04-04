@@ -127,8 +127,29 @@ const createWalletRechargeOrder = async (req, res, next) => {
     }
 };
 
+const getSettlements = async (req, res, next) => {
+    try {
+        const { count, skip, from, to } = req.query;
+        const options = {
+            count: count ? Number(count) : 10,
+            skip: skip ? Number(skip) : 0,
+        };
+        if (from) options.from = Number(from);
+        if (to) options.to = Number(to);
+
+        const settlements = await razorpayService.fetchSettlements(options);
+        res.status(httpStatus.OK).send({
+            success: true,
+            data: settlements
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
     createSubscriptionOrder,
     verifySubscriptionPayment,
     createWalletRechargeOrder,
+    getSettlements,
 };

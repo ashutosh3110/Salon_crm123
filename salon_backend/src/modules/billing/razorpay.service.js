@@ -79,10 +79,26 @@ const cancelSubscription = async (subscriptionId) => {
     }
 };
 
+/**
+ * Fetch settlements from Razorpay
+ * @param {object} options { count, skip, from, to }
+ * @returns {Promise<object>}
+ */
+const fetchSettlements = async (options = {}) => {
+    try {
+        const settlements = await razorpay.settlements.all(options);
+        return settlements;
+    } catch (error) {
+        console.error(`[RAZORPAY] Fetch Settlements Error:`, error);
+        throw new Error(`Razorpay Settlements Error: ${error.message}`);
+    }
+};
+
 export default {
     createOrder,
     verifyPayment,
     verifyWebhookSignature,
     createPlan,
     cancelSubscription,
+    fetchSettlements,
 };

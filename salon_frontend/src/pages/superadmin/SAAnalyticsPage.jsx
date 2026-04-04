@@ -75,7 +75,6 @@ function Section({ title, subtitle, action, children }) {
 /* ─── Cohort cell ────────────────────────────────────────────────────── */
 function CohortCell({ value }) {
     if (value === undefined) return <td className="px-3 py-2 text-center text-xs text-text-muted/30">—</td>;
-    const intensity = value / 100;
     const bg = value === 100
         ? 'bg-primary text-white font-black'
         : value >= 75 ? 'bg-emerald-100 text-emerald-800 font-bold'
@@ -146,8 +145,8 @@ export default function SAAnalyticsPage() {
             {/* ── Header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">SaaS Analytics</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Growth, retention, revenue and feature adoption metrics</p>
+                    <h1 className="text-2xl font-black text-text tracking-tight">Business Performance Overview</h1>
+                    <p className="text-sm text-text-secondary mt-0.5">Track your earnings, salon growth, and how features are being used</p>
                 </div>
                 <div className="flex items-center gap-3">
                     {/* Range picker */}
@@ -160,7 +159,7 @@ export default function SAAnalyticsPage() {
                         ))}
                     </div>
                     <button onClick={() => {
-                        exportToExcel(mrrTrend, 'Wapixo_MRR_Analytics', 'MRR_Waterfall');
+                        exportToExcel(mrrTrend, 'Wapixo_Analytics_Report', 'Monthly_Performance');
                         showToast('Analytics report exported as Excel!');
                     }}
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
@@ -171,21 +170,21 @@ export default function SAAnalyticsPage() {
 
             {/* ── Top KPIs ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="MRR" value={fmtINR(mrr)} sub="Monthly Recurring Revenue" change={11.9} icon={DollarSign} gradient="from-primary to-[#8B1A2D]" shadow="shadow-primary/20" />
-                <MetricCard label="ARR" value={fmtINR(arr)} sub="Annualised Run Rate" change={9.8} icon={TrendingUp} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
-                <MetricCard label="ARPU" value={fmtINR(arpu)} sub="Avg Revenue / Salon" change={3.2} icon={Users} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
-                <MetricCard label="LTV" value={fmtINR(ltv)} sub="Avg Lifetime Value" change={6.1} icon={Heart} gradient="from-violet-500 to-purple-600" shadow="shadow-violet-500/20" />
+                <MetricCard label="Monthly Income" value={fmtINR(mrr)} sub="Total recurring revenue from all salons" change={11.9} icon={DollarSign} gradient="from-primary to-[#8B1A2D]" shadow="shadow-primary/20" />
+                <MetricCard label="Yearly Income Forecast" value={fmtINR(arr)} sub="Projected total income for the next 12 months" change={9.8} icon={TrendingUp} gradient="from-emerald-500 to-teal-600" shadow="shadow-emerald-500/20" />
+                <MetricCard label="Avg. Sale per Salon" value={fmtINR(arpu)} sub="Average monthly earnings from each salon" change={3.2} icon={Users} gradient="from-blue-500 to-indigo-600" shadow="shadow-blue-500/20" />
+                <MetricCard label="Total Salon Value" value={fmtINR(ltv)} sub="Total expected profit from a single salon" change={6.1} icon={Heart} gradient="from-violet-500 to-purple-600" shadow="shadow-violet-500/20" />
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <MetricCard label="Total Salons" value={totalSalons} sub="Active tenants" change={4.1} icon={Building2} gradient="from-sky-500 to-cyan-600" shadow="shadow-sky-500/20" />
-                <MetricCard label="Churn Rate" value="2.2%" sub="Monthly, ↓ improving" change={-0.3} icon={UserX} gradient="from-orange-500 to-red-500" shadow="shadow-orange-500/20" />
-                <MetricCard label="NPS Score" value={nps} sub="Net Promoter Score" change={4} icon={Star} gradient="from-amber-400 to-orange-500" shadow="shadow-amber-400/20" />
-                <MetricCard label="DAU/MAU Ratio" value={dauMau} sub="Stickiness index" change={2.8} icon={Activity} gradient="from-rose-500 to-pink-600" shadow="shadow-rose-500/20" />
+                <MetricCard label="Registered Salons" value={totalSalons} sub="Salons currently using the platform" change={4.1} icon={Building2} gradient="from-sky-500 to-cyan-600" shadow="shadow-sky-500/20" />
+                <MetricCard label="Cancellation Rate" value="2.2%" sub="Salons leaving our platform (Lower is better)" change={-0.3} icon={UserX} gradient="from-orange-500 to-red-500" shadow="shadow-orange-500/20" />
+                <MetricCard label="Customer Satisfaction" value={nps} sub="How likely salons are to recommend us" change={4} icon={Star} gradient="from-amber-400 to-orange-500" shadow="shadow-amber-400/20" />
+                <MetricCard label="Engagement Score" value={dauMau} sub="How regularly salons use our software" change={2.8} icon={Activity} gradient="from-rose-500 to-pink-600" shadow="shadow-rose-500/20" />
             </div>
 
-            {/* ── MRR Waterfall / Trend ── */}
-            <Section title="MRR Breakdown" subtitle="New, expansion and churned MRR each month"
-                action={<span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% MoM</span>}>
+            {/* ── Income Sources ── */}
+            <Section title="Income Sources" subtitle="Revenue from new joiners, upgrades, and cancellations"
+                action={<span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">↑ 11.9% Monthly Growth</span>}>
                 <ResponsiveContainer width="100%" height={240}>
                     <ComposedChart data={mrrTrend} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                         <defs>
@@ -199,10 +198,10 @@ export default function SAAnalyticsPage() {
                         <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
-                        <Bar dataKey="newMRR" name="New MRR" fill="#10b981" radius={[4, 4, 0, 0]} stackId="a" barSize={18} />
-                        <Bar dataKey="expansion" name="Expansion MRR" fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" barSize={18} />
-                        <Bar dataKey="churnedMRR" name="Churned MRR" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={18} />
-                        <Line type="monotone" dataKey="mrr" name="Total MRR" stroke="#B85C5C" strokeWidth={2.5} dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} />
+                        <Bar dataKey="newMRR" name="Income from New Salons" fill="#10b981" radius={[4, 4, 0, 0]} stackId="a" barSize={18} />
+                        <Bar dataKey="expansion" name="Plan Upgrades" fill="#3b82f6" radius={[4, 4, 0, 0]} stackId="a" barSize={18} />
+                        <Bar dataKey="churnedMRR" name="Revenue Lost" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={18} />
+                        <Line type="monotone" dataKey="mrr" name="Total Monthly Income" stroke="#B85C5C" strokeWidth={2.5} dot={{ r: 4, fill: '#B85C5C', stroke: '#fff', strokeWidth: 2 }} />
                     </ComposedChart>
                 </ResponsiveContainer>
             </Section>
@@ -211,7 +210,7 @@ export default function SAAnalyticsPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* Salon growth */}
-                <Section title="Salon Growth" subtitle="New signups vs churned per month">
+                <Section title="Salon Growth Tracking" subtitle="New salons vs those who stopped their plan">
                     <ResponsiveContainer width="100%" height={210}>
                         <BarChart data={salonGrowth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barSize={18}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
@@ -219,14 +218,14 @@ export default function SAAnalyticsPage() {
                             <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend wrapperStyle={{ fontSize: 11 }} />
-                            <Bar dataKey="new" name="New Salons" fill="#10b981" radius={[6, 6, 0, 0]} />
-                            <Bar dataKey="churned" name="Churned" fill="#ef4444" radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="new" name="New Salons Joined" fill="#10b981" radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="churned" name="Stopped Services" fill="#ef4444" radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
                 </Section>
 
                 {/* Plan distribution */}
-                <Section title="Plan Distribution" subtitle="Salons by current subscription plan">
+                <Section title="Popular Subscription Plans" subtitle="Count of salons currently on each plan">
                     <div className="flex items-center gap-6">
                         <ResponsiveContainer width="55%" height={210}>
                             <PieChart>
@@ -259,15 +258,15 @@ export default function SAAnalyticsPage() {
                 </Section>
             </div>
 
-            {/* ── Cohort Retention ── */}
-            <Section title="Cohort Retention Analysis" subtitle="Monthly retention % by signup cohort — colour = retention health">
+            {/* ── Salon Retention ── */}
+            <Section title="Salon Retention Tracking" subtitle="Percentage of salons staying with us month-over-month">
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                         <thead>
                             <tr className="border-b border-border">
-                                <th className="text-left px-3 py-2 text-text-muted font-semibold whitespace-nowrap">Cohort</th>
+                                <th className="text-left px-3 py-2 text-text-muted font-semibold whitespace-nowrap">Group</th>
                                 {['M0', 'M1', 'M2', 'M3', 'M4', 'M5', 'M6'].map(m => (
-                                    <th key={m} className="px-3 py-2 text-text-muted font-semibold">{m}</th>
+                                    <th key={m} className="px-3 py-2 text-text-muted font-semibold">{m === 'M0' ? 'Start' : `${m.replace('M','')} Months`}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -288,7 +287,7 @@ export default function SAAnalyticsPage() {
                     </table>
                 </div>
                 <p className="text-[11px] text-text-muted mt-3">
-                    💡 M0 = first month (100% baseline). M6 avg retention is <strong className="text-text">45%</strong> — slightly above industry SaaS median of ~40%.
+                    💡 <strong>Insight:</strong> On average, 45% of salons stay with us for more than 6 months. This is 5% better than last year.
                 </p>
             </Section>
 
@@ -296,7 +295,7 @@ export default function SAAnalyticsPage() {
             <div className="grid lg:grid-cols-2 gap-6">
 
                 {/* Feature adoption */}
-                <Section title="Feature Adoption" subtitle="% of active salons using each feature this month">
+                <Section title="Most Used Features" subtitle="Percentage of active salons finding these features useful">
                     <div className="space-y-3">
                         {featureUsage.sort((a, b) => b.usage - a.usage).map(f => (
                             <div key={f.feature}>
@@ -321,7 +320,7 @@ export default function SAAnalyticsPage() {
                 </Section>
 
                 {/* Churn reasons */}
-                <Section title="Churn Reasons" subtitle="Why salons are cancelling their plan">
+                <Section title="Common Feedback for Leaving" subtitle="Why salons decided to stop their plan">
                     <div className="space-y-3">
                         {churnReasons.map(c => (
                             <div key={c.reason}>
@@ -335,19 +334,19 @@ export default function SAAnalyticsPage() {
                             </div>
                         ))}
                         <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700">
-                            💡 <strong>34%</strong> cite pricing as the top reason. Consider introducing a mid-tier plan between Basic and Pro.
+                            💡 <strong>Feedback Analysis:</strong> 34% mention pricing as the top reason. Consider introducing a new affordable plan tier.
                         </div>
                     </div>
                 </Section>
             </div>
 
             {/* ── Geo Distribution ── */}
-            <Section title="Geographic Distribution" subtitle="Salon count and MRR contribution by city">
+            <Section title="Salons by Location" subtitle="Total salon count and revenue contribution by city">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-border">
-                                {['Rank', 'City', 'Salons', 'MRR', 'Avg MRR / Salon', 'Share'].map(h => (
+                                {['Rank', 'City', 'Total Salons', 'Monthly Income', 'Avg per Salon', 'Market Share'].map(h => (
                                     <th key={h} className="text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 text-left">{h}</th>
                                 ))}
                             </tr>
