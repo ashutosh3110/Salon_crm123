@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Truck, Plus, Search, Calendar, FileText, CheckCircle2, X, Package, ChevronRight, Eye, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInventory } from '../../contexts/InventoryContext';
@@ -28,7 +28,7 @@ export default function PurchasePage() {
     const [skuSuggestions, setSkuSuggestions] = useState([]);
 
     // Auto-calculate tax
-    useMemo(() => {
+    useEffect(() => {
         const base = (Number(stockIn.price) || 0) * (Number(stockIn.qty) || 0);
         const rate = Number(stockIn.taxRate) || 0;
         const tax = (base * rate) / 100;
