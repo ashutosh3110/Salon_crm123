@@ -96,10 +96,12 @@ export function BusinessProvider({ children }) {
                 fetchProducts();
             }
 
-            // High-level management only
-            if (isManagerOrAdmin) {
-                fetchSegments();
-                fetchFeedbacks();
+            // High-level management & Accountant data
+            if (isManagerOrAdmin || role === 'accountant') {
+                if (isManagerOrAdmin) {
+                    fetchSegments();
+                    fetchFeedbacks();
+                }
                 fetchSuppliers();
                 fetchShifts();
                 fetchCatalogue();
