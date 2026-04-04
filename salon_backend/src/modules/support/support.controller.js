@@ -1,4 +1,5 @@
 import supportService from './support.service.js';
+import notificationService from '../notification/notification.service.js';
 
 /**
  * Create a new support ticket
@@ -6,13 +7,32 @@ import supportService from './support.service.js';
 const createTicket = async (req, res) => {
     try {
         const userRole = req.user.role?.toLowerCase() || 'unknown';
-        const ticket = await supportService.createTicket({
+        const ticketData = {
             ...req.body,
-            userId: req.user._id,
             creatorRole: userRole,
             tenantId: req.user.tenantId?.toString(),
             status: userRole === 'manager' ? 'escalated' : 'open',
-        });
+        };
+
+        // If it's a customer, set clientId, otherwise set userId
+        if (userRole === 'customer') {
+            ticketData.clientId = req.user._id;
+        } else {
+            ticketData.userId = req.user._id;
+        }
+
+        const ticket = await supportService.createTicket(ticketData);
+
+        // Notify Admins/Managers about the new ticket
+        if (userRole === 'customer') {
+            notificationService.sendToRole(ticketData.tenantId, 'manager', {
+                type: 'new_support_ticket',
+                title: 'New Support Ticket',
+                body: `New ticket from customer: ${req.user.name || 'Customer'}. Subject: ${ticketData.subject}`,
+                actionUrl: `/manager/support/${ticket._id}`,
+            }).catch(err => console.error('[SupportNotification] Staff alert error:', err));
+        }
+
         res.status(201).send({ success: true, data: ticket });
     } catch (error) {
         console.error('CREATE_TICKET_ERROR:', error);
@@ -37,11 +57,16 @@ const getTickets = async (req, res) => {
                 filter.userId = req.user._id;
             }
 
+            // Customers only see their own tickets
+            if (userRole === 'customer') {
+                filter.clientId = req.user._id;
+            }
+
             // Managers see their own tickets AND tickets created by other staff
             if (userRole === 'manager') {
                 filter.$or = [
                     { userId: req.user._id },
-                    { creatorRole: { $in: ['stylist', 'receptionist', 'accountant', 'inventory_manager'] } }
+                    { creatorRole: { $in: ['stylist', 'receptionist', 'accountant', 'inventory_manager', 'customer'] } }
                 ];
             }
         } else {
@@ -93,13 +118,19 @@ const getTicket = async (req, res) => {
                 return res.status(403).send({ success: false, message: 'Unauthorized' });
             }
 
-            // Managers see their own tickets OR tickets created by other staff
+            // Managers see their own tickets OR tickets created by other staff OR tickets created by customers
             if (userRole === 'manager') {
-                const isOwn = ticket.userId._id.toString() === req.user._id.toString();
+                const isOwn = ticket.userId?._id?.toString() === req.user._id.toString();
                 const isStaff = ['stylist', 'receptionist', 'accountant', 'inventory_manager'].includes(ticket.creatorRole?.toLowerCase());
-                if (!isOwn && !isStaff) {
+                const isCustomer = ticket.creatorRole === 'customer';
+                if (!isOwn && !isStaff && !isCustomer) {
                     return res.status(403).send({ success: false, message: 'Unauthorized' });
                 }
+            }
+
+            // Customers only see their own tickets
+            if (userRole === 'customer' && ticket.clientId?._id?.toString() !== req.user._id.toString()) {
+                return res.status(403).send({ success: false, message: 'Unauthorized' });
             }
         }
 
@@ -141,6 +172,33 @@ const addResponse = async (req, res) => {
         }
 
         const updatedTicket = await supportService.getTicketById(req.params.id);
+
+        // Notify the appropriate parties
+        const isStaffResponder = ['admin', 'superadmin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager'].includes(userRole);
+        
+        if (isStaffResponder) {
+            // Notify the customer if they are the ticket owner
+            if (updatedTicket.clientId) {
+                notificationService.sendNotification({
+                    recipientId: updatedTicket.clientId._id || updatedTicket.clientId,
+                    recipientType: 'client',
+                    tenantId: updatedTicket.tenantId._id || updatedTicket.tenantId,
+                    type: 'support_update',
+                    title: 'Support Ticket Update',
+                    body: `An expert has responded to your ticket: "${updatedTicket.subject}"`,
+                    actionUrl: '/app/help-support',
+                }).catch(err => console.error('[SupportNotification] Customer alert error:', err));
+            }
+        } else if (userRole === 'customer') {
+            // Notify Managers
+            notificationService.sendToRole(updatedTicket.tenantId._id || updatedTicket.tenantId, 'manager', {
+                type: 'support_update',
+                title: 'Customer Replied',
+                body: `Customer ${req.user.name} replied to ticket: "${updatedTicket.subject}"`,
+                actionUrl: `/manager/support/${updatedTicket._id}`,
+            }).catch(err => console.error('[SupportNotification] Manager alert error:', err));
+        }
+
         res.status(200).send({ success: true, data: updatedTicket });
     } catch (error) {
         res.status(400).send({ success: false, message: error.message });

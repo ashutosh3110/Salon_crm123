@@ -30,7 +30,11 @@ const supportTicketSchema = new mongoose.Schema(
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
-            required: true,
+            // required: true, // Making it optional for customers who don't have a User record
+        },
+        clientId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Client', // For Customer App tickets
         },
         tenantId: {
             type: mongoose.Schema.Types.ObjectId,

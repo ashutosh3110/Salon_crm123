@@ -29,7 +29,7 @@ export default function AccountantDashboard() {
         { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+0%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
         { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+0%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
         { label: 'Account Payables', value: '₹0', change: '0%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+0%', isPositive: true, icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
+        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+0%', isPositive: true, icon: () => <span className="text-xl font-black">₹</span>, color: 'text-primary', bg: 'bg-primary/10' },
     ];
 
     const recentTransactions = [

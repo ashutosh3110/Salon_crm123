@@ -16,6 +16,7 @@ const queryTickets = async (filter, options) => {
         .skip(options.skip || 0)
         .limit(options.limit || 10)
         .populate('userId', 'name email role')
+        .populate('clientId', 'name email phone')
         .populate('tenantId', 'name');
 };
 
@@ -25,6 +26,7 @@ const queryTickets = async (filter, options) => {
 const getTicketById = async (id) => {
     return SupportTicket.findById(id)
         .populate('userId', 'name email role')
+        .populate('clientId', 'name email phone')
         .populate('tenantId', 'name')
         .populate('responses.userId', 'name email role');
 };

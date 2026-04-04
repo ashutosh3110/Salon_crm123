@@ -94,10 +94,12 @@ export const FinanceProvider = ({ children }) => {
             ]);
 
             const s = statsRes.data;
+            const kpis = trendRes.data.kpis || {};
+            
             setStats({
-                totalRevenue: s.totalRevenue || 0,
-                totalExpenses: trendRes.data.kpis?.totalExpenses || 0,
-                netProfit: (s.totalRevenue || 0) - (trendRes.data.kpis?.totalExpenses || 0),
+                totalRevenue: kpis.grossInflow || 0, // Using MTD gross inflow for dashboard consistency
+                totalExpenses: kpis.totalExpenses || 0,
+                netProfit: (kpis.grossInflow || 0) - (kpis.totalExpenses || 0),
                 invoiceCount: s.invoiceCount || 0
             });
 
@@ -231,6 +233,16 @@ export const FinanceProvider = ({ children }) => {
             };
         });
     }, [payrollEntries, getStylistAttendanceStats]);
+
+    const updateBankDetails = async (outletId, bankData) => {
+        try {
+            const res = await api.patch(`/outlets/${outletId}/bank`, bankData);
+            return res.data;
+        } catch (error) {
+            console.error('Update Bank Details Error:', error);
+            throw error;
+        }
+    };
 
     const value = useMemo(() => ({
         revenue,

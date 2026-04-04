@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { logAudit } from '../../utils/audit.logger.js';
 import ReferralSettings from './referralSettings.model.js';
 import Client from '../client/client.model.js';
+import notificationService from '../notification/notification.service.js';
 
 class LoyaltyService {
     /**
@@ -71,6 +72,17 @@ class LoyaltyService {
 
             await session.commitTransaction();
             logger.info(`Customer ${customerId} earned ${points} points for invoice ${invoiceId}`);
+
+            // Notify Customer about earned points
+            notificationService.sendNotification({
+                recipientId: customerId,
+                recipientType: 'client',
+                tenantId: tenantId,
+                type: 'points_earned',
+                title: 'You Earned Points!',
+                body: `Congratulations! You've earned ${points} loyalty points from your latest visit.`,
+                actionUrl: '/app/wallet',
+            }).catch(err => console.error('[LoyaltyNotification] Earn alert error:', err));
         } catch (error) {
             await session.abortTransaction();
             logger.error('Earn Points Error:', error);
@@ -235,6 +247,17 @@ class LoyaltyService {
             });
             await loyaltyRepository.updateWallet(tenantId, referral.referrerCustomerId, referral.rewardPoints);
 
+            // Notify Referrer
+            notificationService.sendNotification({
+                recipientId: referral.referrerCustomerId,
+                recipientType: 'client',
+                tenantId: tenantId,
+                type: 'referral_reward',
+                title: 'Referral Reward!',
+                body: `You received ${referral.rewardPoints} points because your friend used your referral code!`,
+                actionUrl: '/app/wallet',
+            }).catch(err => console.error('[LoyaltyNotification] Referrer alert error:', err));
+
             // Reward referred customer as per admin setting
             if (referredReward > 0) {
                 await loyaltyRepository.createTransaction({
@@ -245,6 +268,17 @@ class LoyaltyService {
                     metadata: { referralId: referral._id, type: 'REFERRED_REWARD' },
                 });
                 await loyaltyRepository.updateWallet(tenantId, customerId, referredReward);
+
+                // Notify Referred Customer
+                notificationService.sendNotification({
+                    recipientId: customerId,
+                    recipientType: 'client',
+                    tenantId: tenantId,
+                    type: 'referral_reward',
+                    title: 'Welcome Reward!',
+                    body: `You received ${referredReward} points as a welcome gift for joining via referral!`,
+                    actionUrl: '/app/wallet',
+                }).catch(err => console.error('[LoyaltyNotification] Referred customer alert error:', err));
             }
         }
     }

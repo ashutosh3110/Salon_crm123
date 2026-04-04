@@ -3,9 +3,13 @@ import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, 
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
 import { useFinance } from '../../contexts/FinanceContext';
+import { useAuth } from '../../contexts/AuthContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function ReconciliationPage() {
-    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation, fetchRazorpaySettlements } = useFinance();
+    const { user } = useAuth();
+    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation, fetchRazorpaySettlements, updateBankDetails } = useFinance();
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     
     const [reconItems, setReconItems] = useState([]);
@@ -13,12 +17,25 @@ export default function ReconciliationPage() {
     const [isSyncing, setIsSyncing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [counts, setCounts] = useState({ 500: '', 200: '', 100: '', 50: '', 20: '', 10: '', 5: '', 2: '', 1: '' });
+    const [showBankModal, setShowBankModal] = useState(false);
+    const [bankForm, setBankForm] = useState({ bankName: 'HDFC Bank', accountNumber: '9281', isLinked: true });
     const fileInputRef = useRef(null);
 
     // Initial Fetch
     useEffect(() => {
         fetchCashBankSummary(selectedDate);
     }, [selectedDate, fetchCashBankSummary]);
+
+    // Track active outlet's bank info
+    useEffect(() => {
+        if (cashBankSummary?.outlet?.bankAccount) {
+            setBankForm({
+                bankName: cashBankSummary.outlet.bankAccount.bankName || 'HDFC Bank',
+                accountNumber: cashBankSummary.outlet.bankAccount.accountNumber || '9281',
+                isLinked: cashBankSummary.outlet.bankAccount.isLinked ?? true
+            });
+        }
+    }, [cashBankSummary]);
 
     // Map real transactions to Reconciliation Items
     const systemTransactions = useMemo(() => {
@@ -220,23 +237,62 @@ export default function ReconciliationPage() {
     const cashDiscrepancy = actualCashCounted - systemCashExpected;
 
     const downloadSummary = () => {
-        const body = {
-            date: selectedDate,
-            reconciledItems: reconItems,
-            cashAudit: {
-                expected: systemCashExpected,
-                actual: actualCashCounted,
-                discrepancy: cashDiscrepancy,
-                notes: counts
-            },
-            verifiedBy: "Accountant"
-        };
-        const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `reconciliation-${selectedDate}.json`;
-        a.click();
+        const doc = new jsPDF();
+        
+        // Header
+        doc.setFontSize(20);
+        doc.text('Financial Reconciliation Summary', 14, 22);
+        doc.setFontSize(10);
+        doc.text(`Business Date: ${selectedDate}`, 14, 30);
+        doc.text(`Generated At: ${new Date().toLocaleString()}`, 14, 35);
+        doc.text(`Outlet: ${cashBankSummary?.outlet?.name || 'Main Outlet'}`, 14, 40);
+
+        // Transaction Table
+        const tableData = reconItems.map(item => [
+            item.id,
+            item.desc,
+            `Rs.${item.systemAmt.toLocaleString()}`,
+            `Rs.${item.bankAmt.toLocaleString()}`,
+            `Rs.${Math.abs(item.diff).toLocaleString()}`,
+            item.status
+        ]);
+
+        autoTable(doc, {
+            startY: 50,
+            head: [['ID', 'Description', 'System Amt', 'Bank Amt', 'Diff', 'Status']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: { fillColor: [59, 130, 246] } // Primary blue
+        });
+
+        const finalY = doc.lastAutoTable.finalY + 15;
+
+        // Cash Audit Section
+        doc.setFontSize(14);
+        doc.text('Physical Cash Audit (Drawer)', 14, finalY);
+        doc.setFontSize(10);
+        doc.text(`System Expected: Rs.${systemCashExpected.toLocaleString()}`, 14, finalY + 8);
+        doc.text(`Actual Counted: Rs.${actualCashCounted.toLocaleString()}`, 14, finalY + 14);
+        
+        const discrepancy = actualCashCounted - systemCashExpected;
+        doc.setTextColor(discrepancy === 0 ? [16, 185, 129] : [239, 68, 68]);
+        doc.text(`Variance: Rs.${discrepancy.toLocaleString()} (${discrepancy === 0 ? 'MATCHED' : 'DISCREPANCY'})`, 14, finalY + 20);
+        doc.setTextColor(0);
+
+        // Denominations
+        let noteY = finalY + 30;
+        doc.text('Denominations:', 14, noteY);
+        Object.entries(counts).forEach(([note, qty], i) => {
+            if (qty && qty > 0) {
+                doc.text(`Rs.${note} x ${qty} = Rs.${Number(note) * qty}`, 20, noteY + 6 + (i * 5));
+            }
+        });
+
+        // Footer
+        doc.setFontSize(8);
+        doc.text('Verified by Salon Management System - Reconciliation Terminal V3', 14, 285);
+
+        doc.save(`reconciliation-report-${selectedDate}.pdf`);
     };
 
     const handleSaveClosing = async () => {
@@ -255,6 +311,17 @@ export default function ReconciliationPage() {
             alert('Failed to save closing.');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleUpdateBank = async () => {
+        try {
+            await updateBankDetails(user.outletId, bankForm);
+            setShowBankModal(false);
+            await fetchCashBankSummary(selectedDate);
+            alert('Bank info updated successfully!');
+        } catch (err) {
+            alert('Failed to update bank info.');
         }
     };
 
@@ -335,13 +402,26 @@ export default function ReconciliationPage() {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between p-4 bg-background border border-border/10 rounded-2xl group/bank hover:border-primary/30 transition-all">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-xs font-black text-text-muted">HDFC</div>
+                                <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-[10px] font-black text-primary border border-primary/20">
+                                    {bankForm.bankName.substring(0, 4).toUpperCase()}
+                                </div>
                                 <div>
-                                    <p className="text-xs font-black text-text">HDFC Corporate A/c</p>
-                                    <p className="text-[9px] text-text-muted font-bold tracking-widest leading-none">**** 9281</p>
+                                    <p className="text-xs font-black text-text">{bankForm.bankName} Corporate A/c</p>
+                                    <p className="text-[9px] text-text-muted font-bold tracking-widest leading-none">**** {bankForm.accountNumber.slice(-4)}</p>
                                 </div>
                             </div>
-                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1"><div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" /> Linked</span>
+                            <div className="flex flex-col items-end gap-2">
+                                <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1 ${bankForm.isLinked ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    <div className={`w-1 h-1 rounded-full ${bankForm.isLinked ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} /> 
+                                    {bankForm.isLinked ? 'Linked' : 'Disconnected'}
+                                </span>
+                                <button 
+                                    onClick={() => setShowBankModal(true)}
+                                    className="p-1 px-2 text-[8px] font-black uppercase bg-surface border border-border/40 rounded-md hover:bg-white transition-all shadow-sm"
+                                >
+                                    Manage
+                                </button>
+                            </div>
                         </div>
                         <button className="w-full py-3.5 bg-background border border-dashed border-border/60 text-text-muted rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] hover:bg-surface-alt hover:text-primary transition-all">+ Add Bank Feed</button>
                     </div>
@@ -541,6 +621,62 @@ export default function ReconciliationPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Bank Management Modal */}
+            <AnimatePresence>
+                {showBankModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-md bg-black/60">
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-surface w-full max-w-sm rounded-[2.5rem] border border-border/40 p-8 text-left shadow-2xl">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Manage Bank</h2>
+                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Primary Settlement A/c</p>
+                                </div>
+                                <button onClick={() => setShowBankModal(false)} className="p-2 hover:bg-background rounded-full transition-colors"><X className="w-5 h-5" /></button>
+                            </div>
+                            
+                            <div className="space-y-5">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Bank Provider Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={bankForm.bankName} 
+                                        onChange={e => setBankForm({...bankForm, bankName: e.target.value})}
+                                        className="w-full px-5 py-3.5 bg-background border border-border/40 rounded-2xl text-xs font-bold outline-none focus:border-primary/50" 
+                                        placeholder="e.g. ICICI Bank"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Account Number (Last 4 digits)</label>
+                                    <input 
+                                        type="text" 
+                                        maxLength={4}
+                                        value={bankForm.accountNumber} 
+                                        onChange={e => setBankForm({...bankForm, accountNumber: e.target.value})}
+                                        className="w-full px-5 py-3.5 bg-background border border-border/40 rounded-2xl text-xs font-black tracking-widest outline-none focus:border-primary/50" 
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-4 bg-background border border-border/10 rounded-2xl">
+                                    <span className="text-[10px] font-black text-text uppercase tracking-widest">Enable Sync Feed</span>
+                                    <button 
+                                        onClick={() => setBankForm({...bankForm, isLinked: !bankForm.isLinked})}
+                                        className={`w-10 h-5 rounded-full relative transition-all ${bankForm.isLinked ? 'bg-emerald-500' : 'bg-rose-500/50'}`}
+                                    >
+                                        <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all ${bankForm.isLinked ? 'right-0.5' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+                                
+                                <button 
+                                    onClick={handleUpdateBank}
+                                    className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-4"
+                                >
+                                    Save Bank Details
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

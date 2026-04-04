@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { requestForToken } from '../services/pushNotification';
 
 const CustomerAuthContext = createContext(null);
 
@@ -19,6 +20,10 @@ export function CustomerAuthProvider({ children }) {
                 localStorage.removeItem('customer_user');
                 localStorage.removeItem('customer_token');
             }
+        }
+        // Initialize push notifications for customer
+        if (stored && token) {
+            requestForToken().catch(err => console.error('[CustomerAuth] Push init error:', err));
         }
         setLoading(false);
     }, []);
@@ -73,6 +78,8 @@ export function CustomerAuthProvider({ children }) {
         localStorage.setItem('customer_token', token);
         localStorage.setItem('customer_user', JSON.stringify(cust));
         setCustomer(cust);
+        // Register for push notifications after login
+        requestForToken().catch(err => console.error('[CustomerAuth] Push registration error:', err));
         return cust;
     };
 

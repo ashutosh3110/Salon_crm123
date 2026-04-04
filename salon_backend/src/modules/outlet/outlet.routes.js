@@ -22,4 +22,6 @@ router
     .patch(authorize(['admin', 'manager']), outletController.updateOutlet)
     .delete(authorize(['admin', 'manager']), outletController.deleteOutlet);
 
+router.patch('/:outletId/bank', authorize(['admin', 'manager', 'accountant']), outletController.updateBankDetails);
+
 export default router;

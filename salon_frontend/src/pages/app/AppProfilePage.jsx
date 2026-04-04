@@ -7,7 +7,7 @@ import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
     TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera,
-    Crown, Gem
+    Crown, Gem, History
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
@@ -177,6 +177,7 @@ export default function AppProfilePage() {
         { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
         { icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
         { icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
+        { icon: History, label: 'Transaction History', path: '/app/wallet', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
         { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
     ];
 
@@ -437,25 +438,6 @@ export default function AppProfilePage() {
                         </div>
                     )}
                 </div>
-
-                {/* Recent Activity */}
-                <div className="space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest px-1" style={{ color: colors.textMuted }}>Recent Activity</p>
-                    {(transactions || []).slice(0, 3).map((tx) => (
-                        <div key={tx.id || tx._id} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 flex items-center gap-4 shadow-sm">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'CREDIT' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-[#C8956C]/10 border border-[#C8956C]/20'}`}>
-                                {tx.type === 'CREDIT' ? <TrendingUp className="w-5 h-5 text-emerald-500" /> : <TrendingDown className="w-5 h-5 text-[#C8956C]" />}
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-[12px] font-bold truncate" style={{ color: colors.text }}>{tx.description || tx.type}</p>
-                                <p className="text-[10px]" style={{ color: colors.textMuted }}>{formatDate(tx.date || tx.createdAt)}</p>
-                            </div>
-                            <span className={`text-sm font-black tracking-tighter ${tx.type === 'CREDIT' ? 'text-emerald-500' : 'text-[#C8956C]'}`}>
-                                {tx.type === 'CREDIT' ? '+' : '-'}{Number(tx.amount || 0)}
-                            </span>
-                        </div>
-                    ))}
-                </div>
             </motion.div>
 
             {/* Quick Links */}
@@ -622,7 +604,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Support & Legal */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-10">
                 <button
                     onClick={() => navigate('/app/help')}
                     className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -642,7 +624,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Logout */}
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="mt-10">
                 {!showLogoutConfirm ? (
                     <button
                         onClick={() => setShowLogoutConfirm(true)}

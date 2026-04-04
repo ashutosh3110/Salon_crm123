@@ -59,6 +59,17 @@ const updateOutlet = async (req, res, next) => {
     }
 };
 
+const updateBankDetails = async (req, res, next) => {
+    try {
+        const outlet = await outletService.updateOutletById(req.params.outletId, req.tenantId, {
+            bankAccount: req.body
+        });
+        res.send(outlet);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const deleteOutlet = async (req, res, next) => {
     try {
         await outletService.deleteOutletById(req.params.outletId, req.tenantId);
@@ -73,6 +84,7 @@ export default {
     getOutlets,
     getOutlet,
     updateOutlet,
+    updateBankDetails,
     deleteOutlet,
     getNearbyOutletsPublic,
 };

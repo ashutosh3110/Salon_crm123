@@ -8,9 +8,10 @@ import notificationService from './notification.service.js';
 const registerToken = async (req, res, next) => {
     try {
         const userId = req.user._id || req.user.id;
+        const userType = req.user.role === 'customer' ? 'client' : 'user';
         const { fcmToken } = req.body;
-        console.log(`[NotificationController] Registering token for user ${userId}: ${fcmToken?.substring(0, 10)}...`);
-        const result = await notificationService.registerToken(userId, fcmToken);
+        console.log(`[NotificationController] Registering token for ${userType} ${userId}: ${fcmToken?.substring(0, 10)}...`);
+        const result = await notificationService.registerToken(userId, fcmToken, userType);
         res.status(httpStatus.OK).send(result);
     } catch (error) {
         next(error);

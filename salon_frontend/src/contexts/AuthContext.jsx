@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
+import { requestForToken } from '../services/pushNotification';
 
 const AuthContext = createContext(null);
 
@@ -68,6 +69,8 @@ export function AuthProvider({ children }) {
                     if (prev && prev._id === parsed._id && prev.role === parsed.role) return prev;
                     return parsed;
                 });
+                // Initialize push notifications
+                requestForToken().catch(err => console.error('[AuthContext] Push init error:', err));
             } catch (e) {
                 console.error('[AuthContext] Failed to parse stored user:', e);
                 localStorage.removeItem(`auth_user_${role}`);

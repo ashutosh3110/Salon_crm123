@@ -46,6 +46,11 @@ const clientSchema = new mongoose.Schema(
         notes: {
             type: String,
         },
+        /** Firebase Cloud Messaging tokens for push notifications (multi-device) */
+        fcmTokens: {
+            type: [String],
+            default: [],
+        },
     },
     {
         timestamps: true,

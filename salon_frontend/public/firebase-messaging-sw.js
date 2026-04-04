@@ -1,82 +1,54 @@
-// Scripts for firebase and firebase messaging (using modern compat version)
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+// Scripts for firebase and firebase messaging
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
-// 1. Force the Service Worker to update and take control immediately
-self.addEventListener('install', () => {
-    console.log('[SW] Installing new version and skipping waiting...');
-    self.skipWaiting();
+// Initialize the Firebase app in the service worker by passing in
+// your app's Firebase config object.
+// Use the values from your frontend .env
+firebase.initializeApp({
+  apiKey: "AIzaSyBCuITeN78JfjIJSZ2Gnz2-93bDMZRaKYU",
+  authDomain: "salon-crm-d6c9e.firebaseapp.com",
+  projectId: "salon-crm-d6c9e",
+  storageBucket: "salon-crm-d6c9e.firebasestorage.app",
+  messagingSenderId: "813696718753",
+  appId: "1:813696718753:web:1f642f3d3efb36b7375de0"
 });
 
-self.addEventListener('activate', (event) => {
-    console.log('[SW] Activated. Overwriting old controllers...');
-    event.waitUntil(clients.claim());
-});
-
-// Initialize the Firebase app
-const firebaseConfig = {
-  apiKey: "AIzaSyD6SHK44FTvxRUiRFUiutVO6EVuw2HIzd0",
-  authDomain: "saloon-crm-baff4.firebaseapp.com",
-  projectId: "saloon-crm-baff4",
-  storageBucket: "saloon-crm-baff4.firebasestorage.app",
-  messagingSenderId: "606405940224",
-  appId: "1:606405940224:web:c6146f937bd707c46c34e5"
-};
-
-firebase.initializeApp(firebaseConfig);
+// Retrieve an instance of Firebase Messaging so that it can handle background
+// messages.
 const messaging = firebase.messaging();
 
-// ─── NATIVE PUSH FALLBACK ───
-// This ensures notifications SHOW even if the Firebase wrapper is sleeping
-self.addEventListener('push', (event) => {
-  console.log('[SW] Native Push event received:', event);
-  
-  if (event.data) {
-    try {
-      const payload = event.data.json();
-      console.log('[SW] Push payload:', payload);
-      
-      const { title, body } = payload.notification || {};
-      const notificationTitle = title || 'New Notification';
-      const notificationOptions = {
-        body: body || 'New update from Salon CRM',
-        icon: '/icon.png',
-        badge: '/icon.png',
-        data: payload.data || {}
-      };
-      
-      event.waitUntil(
-        self.registration.showNotification(notificationTitle, notificationOptions)
-      );
-    } catch (e) {
-      console.error('[SW] Push payload error (non-JSON or missing data):', e);
-    }
-  }
-});
-
-// Handle background messages via Firebase wrapper (keeping it as backup)
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Firebase background message:', payload);
-  // We handle it in the native push listener above for better reliability
+  console.log('[firebase-messaging-sw.js] Received background message ', payload);
+  
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: payload.data?.icon || '/icon.png',
+    badge: '/icon.png',
+    tag: payload.data?.type || 'general',
+    data: {
+      url: payload.data?.actionUrl || '/'
+    }
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
-// Handle notification click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  // Action URL from the data payload
-  const actionUrl = event.notification.data?.actionUrl || '/superadmin';
-  
+  const urlToOpen = event.notification.data.url;
+
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // If a match is found, focus it
-      for (const client of windowClients) {
-        if (client.url.includes(actionUrl) && 'focus' in client) {
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if (client.url === urlToOpen && 'focus' in client) {
           return client.focus();
         }
       }
-      // Otherwise, open a new window
       if (clients.openWindow) {
-        return clients.openWindow(actionUrl);
+        return clients.openWindow(urlToOpen);
       }
     })
   );

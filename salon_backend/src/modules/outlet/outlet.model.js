@@ -76,6 +76,13 @@ const outletSchema = new mongoose.Schema(
                 type: String,
             }
         ],
+        bankAccount: {
+            bankName: { type: String, default: 'HDFC Bank' },
+            accountHolder: { type: String, default: '' },
+            accountNumber: { type: String, default: '' },
+            ifscCode: { type: String, default: '' },
+            isLinked: { type: Boolean, default: true }
+        },
     },
     {
         timestamps: true,

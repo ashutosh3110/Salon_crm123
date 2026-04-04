@@ -2,11 +2,23 @@ import httpStatus from 'http-status-codes';
 import bookingService from './booking.service.js';
 import razorpayService from '../billing/razorpay.service.js';
 import Booking from './booking.model.js';
+import notificationService from '../notification/notification.service.js';
 
 const createBooking = async (req, res, next) => {
     try {
         console.log('[BookingController] Creating booking for tenant:', req.tenantId);
         const booking = await bookingService.createBooking(req.tenantId, req.body);
+        
+        // Notify Admins/Managers about the new booking
+        if (req.user?.role === 'customer') {
+            notificationService.sendToRole(req.tenantId, 'manager', {
+                type: 'new_booking',
+                title: 'New Appointment Booked',
+                body: `New booking for ${new Date(booking.appointmentDate).toLocaleDateString()}. Customer: ${req.user.name || 'Client'}`,
+                actionUrl: `/manager/bookings/${booking._id}`,
+            }).catch(err => console.error('[BookingNotification] New booking alert error:', err));
+        }
+
         res.status(httpStatus.CREATED).send(booking);
     } catch (error) {
         console.group('[BookingController] Create Failure');
@@ -104,6 +116,26 @@ const updateBookingStatus = async (req, res, next) => {
             req.params.bookingId,
             req.body.status
         );
+
+        // Notify Customer about status change
+        if (booking.clientId) {
+            const statusLabels = {
+                confirmed: 'Confirmed',
+                cancelled: 'Cancelled',
+                completed: 'Completed',
+                'in-progress': 'Started',
+            };
+            notificationService.sendNotification({
+                recipientId: booking.clientId._id || booking.clientId,
+                recipientType: 'client',
+                tenantId: req.tenantId,
+                type: 'booking_update',
+                title: `Booking ${statusLabels[req.body.status] || req.body.status}`,
+                body: `Your appointment status has been updated to: ${statusLabels[req.body.status] || req.body.status}`,
+                actionUrl: '/app/bookings',
+            }).catch(err => console.error('[BookingNotification] Customer update error:', err));
+        }
+
         res.send(booking);
     } catch (error) {
         console.error('[BookingController] updateBookingStatus error:', error);
@@ -153,6 +185,19 @@ const verifyBookingPayment = async (req, res, next) => {
                 booking.razorpayOrderId = razorpayOrderId;
                 booking.razorpayPaymentId = razorpayPaymentId;
                 await booking.save();
+
+                // Notify Customer about successful confirmation
+                if (booking.clientId) {
+                    notificationService.sendNotification({
+                        recipientId: booking.clientId,
+                        recipientType: 'client',
+                        tenantId: req.tenantId,
+                        type: 'payment_success',
+                        title: 'Booking Confirmed!',
+                        body: 'Your payment was successful and your appointment is now confirmed.',
+                        actionUrl: '/app/bookings',
+                    }).catch(err => console.error('[BookingNotification] Payment confirm alert error:', err));
+                }
             }
         }
 
@@ -179,6 +224,20 @@ const approveService = async (req, res, next) => {
             req.params.bookingId,
             req.user._id
         );
+
+        // Notify Customer about approval
+        if (booking.clientId) {
+            notificationService.sendNotification({
+                recipientId: booking.clientId._id || booking.clientId,
+                recipientType: 'client',
+                tenantId: req.tenantId,
+                type: 'service_approved',
+                title: 'Service Approved',
+                body: 'Your requested service has been approved by the salon.',
+                actionUrl: '/app/bookings',
+            }).catch(err => console.error('[BookingNotification] Approval alert error:', err));
+        }
+
         res.send(booking);
     } catch (error) {
         console.error('[BookingController] approveService error:', error);

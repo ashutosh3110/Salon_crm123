@@ -1,6 +1,7 @@
 import { getMessaging } from '../../config/firebase.js';
 import Notification from './notification.model.js';
 import User from '../user/user.model.js';
+import Client from '../client/client.model.js';
 import whatsappService from './whatsapp.service.js';
 
 class NotificationService {
@@ -37,9 +38,15 @@ class NotificationService {
             if (!messaging) {
                 console.warn('[Notification] FCM not initialized (Check PRIVATE_KEY or PROJECT_ID)');
             } else {
-                const userDoc = await User.findById(recipientId).select('fcmTokens email');
-                const tokens = userDoc?.fcmTokens?.filter(Boolean) || [];
-                console.log(`[Notification] Found ${tokens.length} tokens for user: ${userDoc?.email || recipientId}`);
+                let doc;
+                if (recipientType === 'client') {
+                    doc = await Client.findById(recipientId).select('fcmTokens phone name');
+                } else {
+                    doc = await User.findById(recipientId).select('fcmTokens email');
+                }
+
+                const tokens = doc?.fcmTokens?.filter(Boolean) || [];
+                console.log(`[Notification] Found ${tokens.length} tokens for ${recipientType}: ${doc?.email || doc?.phone || recipientId}`);
 
                 if (tokens.length > 0) {
                     const results = await Promise.allSettled(
@@ -83,7 +90,7 @@ class NotificationService {
                     results.forEach((result, idx) => {
                         if (result.status === 'fulfilled') {
                             pushSent = true;
-                            console.log(`[Notification] FCM Success for user ${userDoc?.email} (Token ${idx})`);
+                            console.log(`[Notification] FCM Success for ${recipientType} ${doc?.email || doc?.phone} (Token ${idx})`);
                         } else {
                             const errorCode = result.reason?.code;
                             if (
@@ -98,10 +105,11 @@ class NotificationService {
 
                     // Clean up invalid tokens
                     if (invalidTokens.length > 0) {
-                        await User.findByIdAndUpdate(recipientId, {
+                        const Model = recipientType === 'client' ? Client : User;
+                        await Model.findByIdAndUpdate(recipientId, {
                             $pull: { fcmTokens: { $in: invalidTokens } },
                         });
-                        console.log(`[Notification] Removed ${invalidTokens.length} invalid FCM token(s)`);
+                        console.log(`[Notification] Removed ${invalidTokens.length} invalid FCM token(s) from ${recipientType}`);
                     }
                 }
             }
@@ -213,21 +221,23 @@ class NotificationService {
     /**
      * Register FCM token for a user
      */
-    async registerToken(userId, fcmToken) {
+    async registerToken(userId, fcmToken, userType = 'user') {
         if (!fcmToken) throw new Error('FCM token is required');
 
+        const Model = userType === 'client' ? Client : User;
+        
         // Avoid duplicate tokens — addToSet handles it
-        const updatedUser = await User.findByIdAndUpdate(userId, {
+        const updatedDoc = await Model.findByIdAndUpdate(userId, {
             $addToSet: { fcmTokens: fcmToken },
         }, { new: true });
         
-        if (updatedUser) {
-            console.log(`[NotificationService] Token registered for ${updatedUser.email}. Tokens: ${updatedUser.fcmTokens.length}`);
+        if (updatedDoc) {
+            console.log(`[NotificationService] Token registered for ${userType} ${updatedDoc.email || updatedDoc.phone}. Tokens: ${updatedDoc.fcmTokens.length}`);
         } else {
-            console.warn(`[NotificationService] FAILED to find user ${userId} for token registration!`);
+            console.warn(`[NotificationService] FAILED to find ${userType} ${userId} for token registration!`);
         }
 
-        return { success: !!updatedUser };
+        return { success: !!updatedDoc };
     }
 
     /**
