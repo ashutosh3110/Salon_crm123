@@ -69,20 +69,20 @@ export default function SupplierInvoicesPage() {
 
         autoTable(doc, {
             startY: 45,
-            head: [['Invoice ID', 'Supplier', 'Billing Date', 'Status', 'Total Amount']],
+            head: [['Invoice No', 'Supplier', 'Date', 'Status', 'Outstanding']],
             body: invoices.map(inv => [
-                inv.id,
-                inv.supplier,
-                inv.date,
+                inv.invoiceNo,
+                inv.supplierName,
+                new Date(inv.invoiceDate).toLocaleDateString(),
                 inv.status,
-                inv.amount
+                `₹${inv.outstanding.toLocaleString()}`
             ]),
             styles: { fontSize: 8, font: "helvetica" },
             headStyles: { fillColor: [60, 60, 60] },
             alternateRowStyles: { fillColor: [248, 248, 248] },
         });
 
-        doc.save("Supplier_Invoices_Report.pdf");
+        doc.save(`Supplier_Invoices_${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
     const handleImportClick = () => {
@@ -105,17 +105,7 @@ export default function SupplierInvoicesPage() {
                 const data = XLSX.utils.sheet_to_json(ws);
 
                 if (data && data.length > 0) {
-                    const importedInvoices = data.map((row, index) => ({
-                        id: row.id || `INV-IMP-${Date.now()}-${index}`,
-                        supplier: row.supplier || row.Supplier || 'Unknown Supplier',
-                        date: row.date || row.Date || new Date().toISOString().split('T')[0],
-                        dueDate: row.dueDate || row['Due Date'] || new Date().toISOString().split('T')[0],
-                        amount: String(row.amount || row.Amount || '0'),
-                        status: row.status || row.Status || 'Pending',
-                        type: row.type || row.Type || 'Credit',
-                    }));
-                    setInvoices(prev => [...importedInvoices, ...prev]);
-                    alert(`${importedInvoices.length} invoices imported successfully!`);
+                    alert(`${data.length} invoices found in file. Manual import to backend required.`);
                 }
             } catch (err) {
                 console.error("Error reading file:", err);
@@ -191,6 +181,12 @@ export default function SupplierInvoicesPage() {
             setIsSubmitting(false);
         }
     };
+
+    // Fetch data on mount
+    useEffect(() => {
+        fetchSupplierInvoices();
+        // context doesn't expose fetchSuppliers directly in the same way, but it's part of context
+    }, [fetchSupplierInvoices]);
 
     // Auto-calculate tax amount when base amount or rate changes
     useEffect(() => {

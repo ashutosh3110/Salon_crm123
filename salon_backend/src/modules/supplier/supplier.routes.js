@@ -11,38 +11,38 @@ const router = express.Router();
 router.use(auth);
 router.use(validateTenant);
 
-router.get('/', authorize(['admin', 'manager', 'superadmin']), supplierController.getSuppliers);
+router.get('/', authorize(['admin', 'manager', 'superadmin', 'accountant']), supplierController.getSuppliers);
 
 router.get(
     '/invoices',
-    authorize(['admin', 'manager', 'superadmin', 'inventory_manager']),
+    authorize(['admin', 'manager', 'superadmin', 'inventory_manager', 'accountant']),
     validate(supplierValidation.listInvoices),
     supplierController.getSupplierInvoices
 );
 router.post(
     '/invoices/payments',
-    authorize(['admin', 'manager', 'superadmin', 'inventory_manager']),
+    authorize(['admin', 'manager', 'superadmin', 'inventory_manager', 'accountant']),
     validate(supplierValidation.recordInvoicePayment),
     supplierController.recordSupplierInvoicePayment
 );
 
-router.get('/:supplierId/ledger', supplierController.getSupplierLedger);
+router.get('/:supplierId/ledger', authorize(['admin', 'manager', 'superadmin', 'accountant']), supplierController.getSupplierLedger);
 
 router.post(
     '/',
-    authorize(['admin', 'manager', 'superadmin']),
+    authorize(['admin', 'manager', 'superadmin', 'accountant']),
     validate(supplierValidation.create),
     supplierController.createSupplier
 );
 router.patch(
     '/:supplierId',
-    authorize(['admin', 'manager', 'superadmin']),
+    authorize(['admin', 'manager', 'superadmin', 'accountant']),
     validate(supplierValidation.update),
     supplierController.patchSupplier
 );
 router.delete(
     '/:supplierId',
-    authorize(['admin', 'manager', 'superadmin']),
+    authorize(['admin', 'manager', 'superadmin', 'accountant']),
     supplierController.removeSupplier
 );
 
