@@ -7,15 +7,7 @@ import {
     X, CheckCircle2, Calendar, Scissors, Sparkles, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import { QRCodeSVG } from 'qrcode.react';
-import PremiumLanding from '../../components/catalogue/PremiumLanding';
-import PremiumIndex from '../../components/catalogue/PremiumIndex';
-import PremiumLookbook from '../../components/catalogue/PremiumLookbook';
-import PremiumGrid from '../../components/catalogue/PremiumGrid';
-import initialCatalogueData from '../../data/digitalCatalogueData.json';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1';
+import api, { API_BASE_URL } from '../../services/api';
 
 export default function PublicCataloguePage() {
     const { slug } = useParams();

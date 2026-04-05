@@ -26,25 +26,10 @@ export default function WapixoPricing() {
         fetchSubscriptions();
     }, []);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center p-20">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            </div>
-        );
-    }
+    // If still loading, showing nothing or keeping loading state
+    if (loading) return null;
 
-    // Default plans if none found in backend
-    const defaultPlans = [
-        {
-            name: 'Free',
-            monthlyPrice: 0,
-            features: { pos: true, appointments: true, crm: true },
-            popular: false
-        }
-    ];
-
-    const displayPlans = fetchedPlans.length > 0 ? fetchedPlans : defaultPlans;
+    const hasPlans = fetchedPlans.length > 0;
 
     const featureLabels = {
         pos: 'POS Billing',
@@ -88,33 +73,38 @@ export default function WapixoPricing() {
                 </div>
 
                 {/* Plans Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.2rem', alignItems: 'stretch' }}>
-                    {displayPlans.map((plan, idx) => (
-                        <motion.div
-                            key={plan.name}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: idx * 0.1, duration: 0.8 }}
-                            style={{
-                                '--spotlight-x': '50%',
-                                '--spotlight-y': '0%',
-                                '--spotlight-opacity': 0,
-                                background:
-                                    'radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(255,255,255,var(--spotlight-opacity)), transparent 65%), ' +
-                                    (plan.popular ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'),
-                                border: plan.popular
-                                    ? '1px solid rgba(255,255,255,0.15)'
-                                    : '1px solid rgba(255,255,255,0.06)',
-                                borderRadius: '4px',
-                                padding: '2rem 1.75rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                transition: 'all 0.3s ease',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                boxShadow: '0 0 0 rgba(0,0,0,0)',
-                            }}
+                {!hasPlans ? (
+                    <div style={{ textAlign: 'center', padding: '50px', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', fontWeight: 300 }}>
+                        No active subscription plans found. Please check back later.
+                    </div>
+                ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.2rem', alignItems: 'stretch' }}>
+                        {fetchedPlans.map((plan, idx) => (
+                            <motion.div
+                                key={plan.name}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.1, duration: 0.8 }}
+                                style={{
+                                    '--spotlight-x': '50%',
+                                    '--spotlight-y': '0%',
+                                    '--spotlight-opacity': 0,
+                                    background:
+                                        'radial-gradient(circle at var(--spotlight-x) var(--spotlight-y), rgba(255,255,255,var(--spotlight-opacity)), transparent 65%), ' +
+                                        (plan.popular ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.01)'),
+                                    border: plan.popular
+                                        ? '1px solid rgba(255,255,255,0.15)'
+                                        : '1px solid rgba(255,255,255,0.06)',
+                                    borderRadius: '4px',
+                                    padding: '2rem 1.75rem',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    transition: 'all 0.3s ease',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 0 0 rgba(0,0,0,0)',
+                                }}
                             onMouseMove={(e) => {
                                 const rect = e.currentTarget.getBoundingClientRect();
                                 const x = e.clientX - rect.left;
@@ -221,7 +211,8 @@ export default function WapixoPricing() {
                         </motion.div>
                     ))}
                 </div>
-            </div>
-        </section>
-    );
+            )}
+        </div>
+    </section>
+);
 }

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
@@ -11,7 +11,7 @@ export default function CookiePolicy() {
     useEffect(() => {
         const fetchCMS = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/v1/cms');
+                const response = await api.get('/cms');
                 if (response.data && response.data.legal_cookies) {
                     setCmsData(response.data.legal_cookies);
                 }

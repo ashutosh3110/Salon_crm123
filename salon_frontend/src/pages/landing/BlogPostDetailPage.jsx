@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
-import axios from 'axios';
+import api, { API_BASE_URL } from '../../services/api';
 
 export default function BlogPostDetailPage() {
     const { slug } = useParams();
@@ -15,14 +15,14 @@ export default function BlogPostDetailPage() {
     const getImageUrl = (url) => {
         if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
         if (url.startsWith('http')) return url;
-        // Prefix with backend URL for local uploads
-        return `http://localhost:3000${url.startsWith('/') ? '' : '/'}${url}`;
+        const apiHost = API_BASE_URL.replace(/\/v1\/?$/, '');
+        return `${apiHost}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:3000/v1/blogs/${slug}`);
+                const { data } = await api.get(`/blogs/${slug}`);
                 setPost(data);
             } catch (err) {
                 console.error('Failed to fetch article:', err);

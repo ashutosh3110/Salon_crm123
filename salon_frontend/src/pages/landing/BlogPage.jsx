@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
-import axios from 'axios';
+import api, { API_BASE_URL } from '../../services/api';
 
 export default function BlogPage() {
     const navigate = useNavigate();
@@ -14,13 +14,14 @@ export default function BlogPage() {
     const getImageUrl = (url) => {
         if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
         if (url.startsWith('http')) return url;
-        return `http://localhost:3000${url.startsWith('/') ? '' : '/'}${url}`;
+        const apiHost = API_BASE_URL.replace(/\/v1\/?$/, '');
+        return `${apiHost}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const { data } = await axios.get('http://localhost:3000/v1/blogs?status=published');
+                const { data } = await api.get('/blogs?status=published');
                 setPosts(data);
             } catch (err) {
                 console.error('Failed to fetch journal feed:', err);

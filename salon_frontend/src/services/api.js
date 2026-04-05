@@ -23,7 +23,7 @@ const normalizeApiBaseUrl = (url) => {
 const getFriendlyErrorMessage = (error) => {
     if (!error.response) {
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-            return 'Internet connection check karein ya server band hai.';
+            return 'backend not connected plz try again';
         }
         return 'Kuch galat hua. Kripya fir se koshish karein.';
     }
@@ -48,7 +48,7 @@ const getFriendlyErrorMessage = (error) => {
     return message || 'An unexpected error occurred.';
 };
 
-const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
     baseURL: API_BASE_URL,

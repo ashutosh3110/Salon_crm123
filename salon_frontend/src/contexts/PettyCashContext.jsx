@@ -68,7 +68,7 @@ export const PettyCashProvider = ({ children }) => {
             if (status === 404) {
                 setError(
                     `Not found — API URL galat lag raha hai (${tried || 'check Network tab'}). ` +
-                        `VITE_API_URL ko http://localhost:3000 rakho (sirf host+port; /api mat likho). ` +
+                        `VITE_API_URL check karein dashboard ya .env file mein. ` +
                         `Backend restart karo.`
                 );
             } else {

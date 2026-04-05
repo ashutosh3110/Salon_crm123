@@ -589,7 +589,7 @@ export const InventoryProvider = ({ children }) => {
             const serverMsg = error?.response?.data?.message;
             const hint =
                 status === 404
-                    ? '\n\n(404: API URL check — VITE_API_URL should end with /v1, e.g. http://localhost:3000/v1. Restart frontend after .env change.)'
+                    ? '\n\n(404: API URL check — VITE_API_URL should be set in environment variables. Restart frontend after .env change.)'
                     : '';
             alert(serverMsg || `Failed to add shop section.${hint}`);
         }

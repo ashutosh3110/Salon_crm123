@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../services/api';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
 import WapixoLoader from '../../components/landing/wapixo/WapixoLoader';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
@@ -29,7 +29,7 @@ export default function LandingPage() {
 
     const fetchCMS = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/v1/cms');
+            const response = await api.get('/cms');
             setCmsData(response.data);
         } catch (error) {
             console.error('Error fetching CMS:', error);

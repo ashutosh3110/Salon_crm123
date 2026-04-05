@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../services/api';
 import {
     Save, Layout, Type, Image as ImageIcon, MessageSquare,
     Shield, FileText, Smartphone, Zap, Heart, Target,
@@ -83,7 +83,7 @@ export default function SACMSPage() {
     const fetchCMSData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('http://localhost:3000/v1/cms');
+            const response = await api.get('/cms');
             if (response.data && Object.keys(response.data).length > 0) {
                 setData(prev => ({ ...prev, ...response.data }));
             }
@@ -105,7 +105,7 @@ export default function SACMSPage() {
         try {
             // Save all sections that are currently in 'data'
             const promises = Object.entries(data).map(([section, content]) => 
-                axios.patch(`http://localhost:3000/v1/cms/${section}`, { content })
+                api.patch(`/cms/${section}`, { content })
             );
             await Promise.all(promises);
             showToast("Public content updated successfully!");
