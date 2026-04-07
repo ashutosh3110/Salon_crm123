@@ -25,11 +25,15 @@ class WhatsAppService {
      * @param {string} languageCode - Default is 'en_US' or 'hi'
      */
     async sendTemplateMessage(to, templateName, components = [], languageCode = 'en_US') {
-        console.log(`[WHATSAPP-REQUEST] Target: ${to} | Template: ${templateName}`);
+        // Ensure number has country code 91 if it starts with 10 digits
+        let target = String(to).trim().replace(/\D/g, '');
+        if (target.length === 10) target = '91' + target;
+        
+        console.log(`[WHATSAPP-DEBUG] Preparing to send: Target=${target}, Template=${templateName}`);
         
         const payload = {
             messaging_product: 'whatsapp',
-            to,
+            to: target,
             type: 'template',
             template: {
                 name: templateName,
@@ -44,24 +48,23 @@ class WhatsAppService {
         };
 
         if (!this.token || !this.phoneNumberId) {
-            console.warn(`[WHATSAPP-SIMULATION] No API credentials. Message details:
-            >> TO: ${to}
-            >> TEMPLATE: ${templateName}
-            >> DATA: ${JSON.stringify(components)}`);
+            console.warn(`[WHATSAPP-SIMULATION] No API credentials. Skipping send.`);
             return { success: true, simulated: true };
         }
 
         try {
+            console.log('[WHATSAPP-DEBUG] Sending to Meta API...');
             const response = await axios.post(this.baseUrl, payload, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
                     'Content-Type': 'application/json'
                 }
             });
-            console.log(`[WHATSAPP-SUCCESS] Message sent to ${to}. Message ID: ${response.data.messages[0].id}`);
+            console.log(`[WHATSAPP-SUCCESS] Sent! ID: ${response.data.messages[0].id}`);
             return { success: true, data: response.data };
         } catch (error) {
-            console.error(`[WHATSAPP-ERROR] Failed to send to ${to}:`, error.response?.data || error.message);
+            const apiError = error.response?.data || error.message;
+            console.error(`[WHATSAPP-ERROR] Meta API Rejection:`, JSON.stringify(apiError, null, 2));
             throw new Error(`WhatsApp API Error: ${error.response?.data?.error?.message || error.message}`);
         }
     }
