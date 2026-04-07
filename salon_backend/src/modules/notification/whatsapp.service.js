@@ -5,9 +5,9 @@ import axios from 'axios';
  */
 class WhatsAppService {
     constructor() {
-        this.token = process.env.WHATSAPP_TOKEN;
-        this.phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-        this.version = 'v17.0';
+        this.token = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_TOKEN;
+        this.phoneNumberId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_NUMBER_ID;
+        this.version = 'v20.0';
         this.baseUrl = `https://graph.facebook.net/${this.version}/${this.phoneNumberId}/messages`;
     }
 

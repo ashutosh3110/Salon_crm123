@@ -143,8 +143,13 @@ class BookingService {
                         await notificationService.sendWhatsAppTemplate({
                             phone: populated.clientId.phone,
                             tenantId: s_tenantId,
-                            template: 'booking_confirmation', // User's template name
-                            values: [clientName, serviceName, new Date(populated.appointmentDate).toLocaleString()]
+                            template: process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || 'booking_update',
+                            values: [
+                                clientName, 
+                                serviceName, 
+                                booking._id.toString(), 
+                                new Date(populated.appointmentDate).toLocaleString()
+                            ]
                         });
                     }
                 } catch (internalErr) {
@@ -204,8 +209,13 @@ class BookingService {
                     await notificationService.sendWhatsAppTemplate({
                         phone: populated.clientId.phone,
                         tenantId,
-                        template: 'booking_confirmed',
-                        values: [clientName, new Date(populated.appointmentDate).toLocaleDateString()]
+                        template: process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || 'booking_update',
+                        values: [
+                            clientName, 
+                            populated.serviceId?.name || 'Service', 
+                            bookingId.toString(), 
+                            new Date(populated.appointmentDate).toLocaleString()
+                        ]
                     });
                 }
             } else if (status === 'cancelled') {
