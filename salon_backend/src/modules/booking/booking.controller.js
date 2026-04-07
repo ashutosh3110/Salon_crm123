@@ -6,7 +6,13 @@ import notificationService from '../notification/notification.service.js';
 
 const createBooking = async (req, res, next) => {
     try {
-        console.log('[BookingController] Creating booking for tenant:', req.tenantId);
+        console.log('=========================================');
+        console.log('[BOOKING-TRIGGER] NEW BOOKING REQUEST RECEIVED');
+        console.log('TENANT:', req.tenantId);
+        console.log('CLIENT:', req.body.clientId);
+        console.log('SERVICE:', req.body.serviceId);
+        console.log('=========================================');
+
         const booking = await bookingService.createBooking(req.tenantId, req.body);
         
         // Notify Admins/Managers about the new booking
