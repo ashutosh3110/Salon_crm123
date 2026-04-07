@@ -31,7 +31,9 @@ const reverseGeocode = async (req, res, next) => {
         if (!lat || !lng) {
             return res.status(httpStatus.BAD_REQUEST).send({ message: 'Latitude and Longitude are required' });
         }
+        console.log(`[ReverseGeocode] Request for Lat: ${lat}, Lng: ${lng}`);
         const data = await outletService.reverseGeocode(parseFloat(lat), parseFloat(lng));
+        console.log(`[ReverseGeocode] Result Status: ${data.status}`);
         res.send(data);
     } catch (error) {
         next(error);
