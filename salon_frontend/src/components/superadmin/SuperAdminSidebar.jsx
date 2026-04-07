@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import logoFull from '/2-removebg-preview.png';
+import logoFull from '/new black wapixo logo .png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
@@ -120,7 +120,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/2-removebg-preview.png"
+                            src="/new black wapixo logo .png"
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />

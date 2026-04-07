@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { XCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const comparisons = [
     {
@@ -34,6 +35,7 @@ const comparisons = [
 ];
 
 export default function WapixoSolutions() {
+    const { theme } = useTheme();
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768);
@@ -44,8 +46,8 @@ export default function WapixoSolutions() {
 
     return (
         <section style={{
-            background: '#050505',
-            padding: 'clamp(60px, 10vw, 120px) clamp(1rem, 4vw, 1.5rem)',
+            background: 'var(--wapixo-bg)',
+            padding: 'clamp(40px, 8vw, 80px) clamp(1rem, 4vw, 1.5rem)',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"
@@ -73,12 +75,12 @@ export default function WapixoSolutions() {
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                 {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '100px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '50px' }}>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
+                        style={{ color: 'var(--wapixo-primary)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
                     >
                         The Transition
                     </motion.p>
@@ -87,14 +89,14 @@ export default function WapixoSolutions() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
+                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
                     >
                         From Chaos to Command.
                     </motion.h2>
                 </div>
 
                 {/* Comparison Vertical Flow */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
                     {comparisons.map((item, idx) => (
                         <motion.div
                             key={item.id}
@@ -104,21 +106,21 @@ export default function WapixoSolutions() {
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
                             style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                                gap: '3rem',
+                                gridTemplateColumns: isMobile ? '1fr' : '1fr 100px 1.2fr',
+                                gap: '2.5rem',
                                 alignItems: 'center',
-                                paddingBottom: '4rem',
-                                borderBottom: idx !== comparisons.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none'
+                                paddingBottom: '2.5rem',
+                                borderBottom: idx !== comparisons.length - 1 ? '1px solid var(--wapixo-border)' : 'none'
                             }}
                         >
                             {/* Problem Side */}
                             <div style={{ opacity: 0.8, transition: 'opacity 0.5s ease' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <XCircle size={18} color="rgba(255,255,255,0.6)" strokeWidth={1} />
-                                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Legacy Systems</span>
+                                    <XCircle size={18} color="var(--wapixo-text-muted)" strokeWidth={1} />
+                                    <span style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.2em' }}>Legacy Systems</span>
                                 </div>
-                                <h3 style={{ color: '#ffffff', fontSize: '1.25rem', fontWeight: 300, marginBottom: '1rem', letterSpacing: '0.02em' }}>{item.problem}</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', lineHeight: 1.7, fontWeight: 300 }}>{item.problemDesc}</p>
+                                <h3 style={{ color: 'var(--wapixo-text)', fontSize: '1.25rem', fontWeight: 400, marginBottom: '1rem', letterSpacing: '0.02em' }}>{item.problem}</h3>
+                                <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.9rem', lineHeight: 1.7, fontWeight: 400 }}>{item.problemDesc}</p>
                             </div>
 
                             {/* Center Arrow — Hidden on Mobile */}
@@ -135,28 +137,28 @@ export default function WapixoSolutions() {
                                     }}
                                     style={{ display: 'flex', justifyContent: 'center' }}
                                 >
-                                    <ArrowRight size={48} strokeWidth={0.5} color="#ffffff" style={{ opacity: 0.8 }} />
+                                    <ArrowRight size={48} strokeWidth={0.5} color="var(--wapixo-primary)" style={{ opacity: 0.8 }} />
                                 </motion.div>
                             )}
 
                             {/* Solution Side */}
-                            <motion.div
+                             <motion.div
                                 whileHover={{ scale: 1.02 }}
                                 style={{
-                                    background: 'rgba(255,255,255,0.025)',
-                                    border: '1px solid rgba(255,255,255,0.12)',
+                                    background: 'var(--wapixo-bg-alt)',
+                                    border: '1px solid var(--wapixo-border)',
                                     borderRadius: '4px',
-                                    padding: '2.5rem',
+                                    padding: '1.75rem 2rem',
                                     position: 'relative',
-                                    boxShadow: '0 20px 50px rgba(0,0,0,0.4)'
+                                    boxShadow: theme === 'dark' ? '0 20px 50px rgba(0,0,0,0.4)' : '0 20px 50px rgba(0,0,0,0.05)'
                                 }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                                    <CheckCircle2 size={18} color="#ffffff" strokeWidth={1} style={{ opacity: 0.8 }} />
-                                    <span style={{ color: '#ffffff', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.2em', opacity: 0.8 }}>The Wapixo Standard</span>
+                                    <CheckCircle2 size={18} color="var(--wapixo-primary)" strokeWidth={1} style={{ opacity: 1 }} />
+                                    <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700 }}>The Wapixo Standard</span>
                                 </div>
-                                <h3 style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 300, marginBottom: '1rem', letterSpacing: '0.02em' }}>{item.solution}</h3>
-                                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1rem', lineHeight: 1.7, fontWeight: 300 }}>{item.solutionDesc}</p>
+                                <h3 style={{ color: 'var(--wapixo-text)', fontSize: '1.5rem', fontWeight: 400, marginBottom: '1rem', letterSpacing: '0.02em' }}>{item.solution}</h3>
+                                <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '1rem', lineHeight: 1.7, fontWeight: 400 }}>{item.solutionDesc}</p>
 
                                 {/* Aesthetic Glow Accent */}
                                 <div style={{

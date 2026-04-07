@@ -1,11 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const PRELOAD_COUNT = 40; // preload first 40 frames of sequence 1
 
 export default function WapixoLoader({ onComplete }) {
+    const { theme } = useTheme();
     const [visible, setVisible] = useState(true);
     const [progress, setProgress] = useState(0);
+
+    const logoSrc = theme === 'dark' ? '/new wapixo logo .png' : '/new black wapixo logo .png';
 
     useEffect(() => {
         let loaded = 0;
@@ -39,13 +43,15 @@ export default function WapixoLoader({ onComplete }) {
                         position: 'fixed',
                         inset: 0,
                         zIndex: 9999,
-                        background: '#050505',
+                        background: 'var(--wapixo-bg)',
+                        display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '2.5rem',
                     }}
                 >
-                    {/* Logo */}
+                    {/* Logo Area */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -58,22 +64,21 @@ export default function WapixoLoader({ onComplete }) {
                         }}
                     >
                         <img
-                            src="/1-removebg-preview.png"
+                            src={logoSrc}
                             alt="Wapixo Logo"
                             style={{
                                 height: 'clamp(12rem, 30vw, 24rem)',
                                 width: 'auto',
-                                filter: 'brightness(0) invert(1)'
                             }}
                         />
                     </motion.div>
 
                     {/* Progress bar */}
-                    <div style={{ width: '200px', height: '1px', background: 'rgba(255,255,255,0.1)', borderRadius: '1px', overflow: 'hidden' }}>
+                    <div style={{ width: '200px', height: '1px', background: 'var(--wapixo-border)', opacity: 0.2, borderRadius: '1px', overflow: 'hidden' }}>
                         <motion.div
                             style={{
                                 height: '100%',
-                                background: '#ffffff',
+                                background: 'var(--wapixo-primary)',
                                 borderRadius: '1px',
                             }}
                             initial={{ width: '0%' }}
@@ -90,7 +95,7 @@ export default function WapixoLoader({ onComplete }) {
                         style={{
                             fontFamily: "'Inter', monospace",
                             fontSize: '0.6rem',
-                            color: '#ffffff',
+                            color: 'var(--wapixo-text)',
                             letterSpacing: '0.4em',
                             textTransform: 'uppercase',
                         }}

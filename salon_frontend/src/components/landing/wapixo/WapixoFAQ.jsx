@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const faqs = [
     {
@@ -33,7 +34,7 @@ const faqs = [
 const FAQItem = ({ faq, isOpen, toggle }) => {
     return (
         <div style={{
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            borderBottom: '1px solid var(--wapixo-border)',
             padding: '1.5rem 0',
             cursor: 'pointer'
         }} onClick={toggle}>
@@ -44,9 +45,9 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
                 gap: '1rem'
             }}>
                 <h3 style={{
-                    color: isOpen ? '#ffffff' : 'rgba(255,255,255,0.7)',
+                    color: isOpen ? 'var(--wapixo-primary)' : 'var(--wapixo-text-muted)',
                     fontSize: '1.1rem',
-                    fontWeight: 300,
+                    fontWeight: 400,
                     margin: 0,
                     transition: 'all 0.3s ease',
                     letterSpacing: '0.01em'
@@ -56,7 +57,7 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
                 <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    style={{ color: 'rgba(255,255,255,0.8)' }}
+                    style={{ color: isOpen ? 'var(--wapixo-primary)' : 'var(--wapixo-text-muted)' }}
                 >
                     <ChevronDown size={20} strokeWidth={1} />
                 </motion.div>
@@ -72,12 +73,12 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
                         style={{ overflow: 'hidden' }}
                     >
                         <p style={{
-                            color: 'rgba(255,255,255,0.4)',
+                            color: 'var(--wapixo-text-muted)',
                             fontSize: '0.95rem',
                             lineHeight: 1.7,
                             margin: '1.5rem 0 0.5rem 0',
                             maxWidth: '90%',
-                            fontWeight: 300
+                            fontWeight: 400
                         }}>
                             {faq.answer}
                         </p>
@@ -89,24 +90,25 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
 };
 
 export default function WapixoFAQ() {
+    const { theme } = useTheme();
     const [openId, setOpenId] = useState(1);
 
     return (
         <section style={{
-            background: '#050505',
-            padding: '60px 1.5rem 120px',
+            background: 'var(--wapixo-bg)',
+            padding: '40px 1.5rem 60px',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"
         }}>
             <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                 {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
+                        style={{ color: 'var(--wapixo-primary)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
                     >
                         Inquiry
                     </motion.p>
@@ -115,7 +117,7 @@ export default function WapixoFAQ() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
+                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 200, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
                     >
                         Clarified.
                     </motion.h2>
@@ -145,21 +147,21 @@ export default function WapixoFAQ() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.5 }}
                     style={{
-                        marginTop: '100px',
+                        marginTop: '60px',
                         textAlign: 'center',
-                        padding: '3rem',
-                        border: '1px solid rgba(255,255,255,0.05)',
-                        background: 'rgba(255,255,255,0.01)',
+                        padding: '2rem',
+                        border: '1px solid var(--wapixo-border)',
+                        background: 'var(--wapixo-bg-alt)',
                         borderRadius: '4px'
                     }}
                 >
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 300 }}>
+                     <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 400 }}>
                         Still have questions? Our experts are here to guide you.
                     </p>
                     <button style={{
                         background: 'none',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        color: 'white',
+                        border: '1px solid var(--wapixo-border)',
+                        color: 'var(--wapixo-text)',
                         padding: '0.75rem 2rem',
                         borderRadius: '100px',
                         fontSize: '0.8rem',
@@ -169,12 +171,14 @@ export default function WapixoFAQ() {
                         transition: 'all 0.3s ease'
                     }}
                         onMouseOver={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                            e.currentTarget.style.borderColor = 'white';
+                            e.currentTarget.style.background = 'var(--wapixo-primary)';
+                            e.currentTarget.style.color = 'white';
+                            e.currentTarget.style.borderColor = 'var(--wapixo-primary)';
                         }}
                         onMouseOut={(e) => {
                             e.currentTarget.style.background = 'none';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                            e.currentTarget.style.color = 'var(--wapixo-text)';
+                            e.currentTarget.style.borderColor = 'var(--wapixo-border)';
                         }}
                     >
                         Contact Support

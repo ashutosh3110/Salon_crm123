@@ -28,7 +28,7 @@ export default function Footer() {
                     <div className="lg:col-span-2 flex flex-col items-center sm:items-start text-center sm:text-left">
                         <Link to="/" className="flex items-center gap-2 mb-4">
                             <img
-                                src="/1-removebg-preview.png"
+                                src="/new wapixo logo .png"
                                 alt="SalonCRM Logo"
                                 className="h-20 md:h-28 w-auto object-contain"
                             />

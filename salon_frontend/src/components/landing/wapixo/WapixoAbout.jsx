@@ -154,7 +154,7 @@ export default function WapixoAbout({ data }) {
                                 z: 100
                             }}
                         >
-                            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 0.4rem 0' }}>{data?.trusted_label || 'Trusted By'}</p>
+                            <p style={{ color: 'var(--wapixo-primary)', fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 0.4rem 0', fontWeight: 800 }}>{data?.trusted_label || 'Trusted By'}</p>
                             <h4 style={{ color: '#ffffff', fontSize: '1.4rem', fontWeight: 200, margin: 0 }}>{data?.trusted_value || '500+ Salons'}</h4>
                         </motion.div>
                     </motion.div>
@@ -168,7 +168,7 @@ export default function WapixoAbout({ data }) {
                             transition={{ duration: 0.8 }}
                         >
                             <span style={{
-                                color: 'rgba(255,255,255,0.4)',
+                                color: 'var(--wapixo-primary)',
                                 fontSize: '0.7rem',
                                 fontWeight: 300,
                                 textTransform: 'uppercase',
@@ -202,7 +202,8 @@ export default function WapixoAbout({ data }) {
                             <div style={{
                                 width: '40px',
                                 height: '1px',
-                                background: 'rgba(255,255,255,0.2)',
+                                background: 'var(--wapixo-primary)',
+                                opacity: 0.6,
                                 marginBottom: '2rem'
                             }} />
                             <p style={{

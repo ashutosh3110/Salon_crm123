@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Quote, X, Send, User, Building } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 import landingData from '../../../data/landingMockData.json';
 
@@ -8,12 +9,21 @@ const testimonials = landingData.testimonials.map((t, i) => ({ ...t, id: i + 1 }
 
 
 export default function WapixoTestimonials({ data }) {
+    const { theme } = useTheme();
+    const [isMobile, setIsMobile] = useState(false);
     const displayTestimonials = data && data.length > 0 ? data : testimonials;
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
+
+    useState(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -30,8 +40,8 @@ export default function WapixoTestimonials({ data }) {
 
     return (
         <section style={{
-            background: '#050505',
-            padding: '100px 1.5rem 100px',
+            background: 'var(--wapixo-bg)',
+            padding: '60px 1.5rem 60px',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"
@@ -69,12 +79,12 @@ export default function WapixoTestimonials({ data }) {
 
             <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
                 {/* Header */}
-                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '40px' }}>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
+                        style={{ color: 'var(--wapixo-primary)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
                     >
                         Success Stories
                     </motion.p>
@@ -83,7 +93,7 @@ export default function WapixoTestimonials({ data }) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
+                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
                     >
                         Voices of Excellence.
                     </motion.h2>
@@ -96,7 +106,7 @@ export default function WapixoTestimonials({ data }) {
                         display: 'flex',
                         overflowX: 'auto',
                         gap: '1.5rem',
-                        marginBottom: '60px',
+                        marginBottom: '40px',
                         padding: '10px 5px 30px',
                         scrollSnapType: 'x mandatory',
                         WebkitOverflowScrolling: 'touch',
@@ -114,7 +124,7 @@ export default function WapixoTestimonials({ data }) {
                                 scroll-snap-type: none !important;
                                 padding: 0 !important;
                                 gap: 2rem !important;
-                                margin-bottom: 80px !important;
+                                margin-bottom: 40px !important;
                             }
                         }
                     `}</style>
@@ -126,8 +136,8 @@ export default function WapixoTestimonials({ data }) {
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1, duration: 0.8 }}
                             style={{
-                                background: 'rgba(255,255,255,0.01)',
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                background: 'var(--wapixo-bg)',
+                                border: '1px solid var(--wapixo-border)',
                                 borderRadius: '4px',
                                 padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1.2rem, 4vw, 2.5rem)',
                                 position: 'relative',
@@ -136,34 +146,35 @@ export default function WapixoTestimonials({ data }) {
                                 transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
                                 flex: '0 0 85%',
                                 scrollSnapAlign: 'center',
-                                minWidth: '280px'
+                                minWidth: '280px',
+                                boxShadow: theme === 'dark' ? 'none' : '0 10px 30px rgba(0,0,0,0.03)'
                             }}
-                            onMouseEnter={(e) => {
+                             onMouseEnter={(e) => {
                                 if (window.innerWidth >= 768) {
-                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-                                    e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                    e.currentTarget.style.borderColor = 'var(--wapixo-text-muted)';
+                                    e.currentTarget.style.background = 'var(--wapixo-bg-alt)';
                                     e.currentTarget.style.transform = 'translateY(-10px)';
-                                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.4)';
+                                    e.currentTarget.style.boxShadow = theme === 'dark' ? '0 20px 40px rgba(0,0,0,0.4)' : '0 20px 40px rgba(0,0,0,0.06)';
                                 }
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                                e.currentTarget.style.background = 'rgba(255,255,255,0.01)';
+                                e.currentTarget.style.borderColor = 'var(--wapixo-border)';
+                                e.currentTarget.style.background = 'var(--wapixo-bg)';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.boxShadow = theme === 'dark' ? 'none' : '0 10px 30px rgba(0,0,0,0.03)';
                             }}
                         >
                             <div style={{ position: 'absolute', top: '2rem', right: '2rem', opacity: 0.05 }}>
                                 <Quote size={40} color="#ffffff" />
                             </div>
 
-                            <div style={{ display: 'flex', gap: '4px', marginBottom: '2rem' }}>
+                             <div style={{ display: 'flex', gap: '4px', marginBottom: '2rem' }}>
                                 {[...Array(5)].map((_, i) => (
-                                    <Star key={i} size={12} fill="#ffffff" color="#ffffff" style={{ opacity: 0.6 }} />
+                                    <Star key={i} size={12} fill="var(--wapixo-primary)" color="var(--wapixo-primary)" style={{ opacity: 1 }} />
                                 ))}
                             </div>
 
-                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1rem', fontWeight: 300, lineHeight: 1.8, marginBottom: '3rem', letterSpacing: '0.01em', flex: 1 }}>
+                             <p style={{ color: 'var(--wapixo-text)', fontSize: '1rem', fontWeight: 400, lineHeight: 1.8, marginBottom: '3rem', letterSpacing: '0.01em', flex: 1 }}>
                                 "{t.content}"
                             </p>
 
@@ -171,9 +182,9 @@ export default function WapixoTestimonials({ data }) {
                                 <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' }}>
                                     <img src={t.image} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)' }} />
                                 </div>
-                                <div>
-                                    <h4 style={{ color: '#ffffff', fontSize: '0.95rem', fontWeight: 400, margin: 0, letterSpacing: '0.02em' }}>{t.name}</h4>
-                                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 300, margin: '2px 0 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.role}</p>
+                                 <div>
+                                    <h4 style={{ color: 'var(--wapixo-text)', fontSize: '0.95rem', fontWeight: 400, margin: 0, letterSpacing: '0.02em' }}>{t.name}</h4>
+                                    <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.75rem', fontWeight: 400, margin: '2px 0 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.role}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -189,10 +200,10 @@ export default function WapixoTestimonials({ data }) {
                             onClick={() => setShowForm(true)}
                             style={{
                                 background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                color: '#ffffff',
+                                border: '1px solid var(--wapixo-primary)',
+                                color: 'var(--wapixo-text)',
                                 padding: '1rem 3rem',
-                                borderRadius: '100px',
+                                 borderRadius: '100px',
                                 fontSize: '0.7rem',
                                 fontWeight: 700,
                                 textTransform: 'uppercase',
@@ -201,12 +212,12 @@ export default function WapixoTestimonials({ data }) {
                                 transition: 'all 0.3s'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = '#ffffff';
-                                e.currentTarget.style.color = '#000000';
+                                e.currentTarget.style.background = 'var(--wapixo-primary)';
+                                e.currentTarget.style.color = 'white';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.color = '#ffffff';
+                                e.currentTarget.style.color = 'var(--wapixo-text)';
                             }}
                         >
                             Share Your Journey
