@@ -63,9 +63,14 @@ class WhatsAppService {
             console.log(`[WHATSAPP-SUCCESS] Sent! ID: ${response.data.messages[0].id}`);
             return { success: true, data: response.data };
         } catch (error) {
-            const apiError = error.response?.data || error.message;
-            console.error(`[WHATSAPP-ERROR] Meta API Rejection:`, JSON.stringify(apiError, null, 2));
-            throw new Error(`WhatsApp API Error: ${error.response?.data?.error?.message || error.message}`);
+            const apiError = error.response?.data?.error || { message: error.message };
+            console.error(`[WHATSAPP-ERROR] Meta Rejected Request:`, JSON.stringify(apiError, null, 2));
+            
+            // Suggesting local fix instructions based on common error codes
+            if (apiError.code === 131030) console.warn('[WHATSAPP-HINT] Parameter mismatch! Check if your template actually expects 4 variables.');
+            if (apiError.code === 132001) console.warn('[WHATSAPP-HINT] Template not found! Check your .env WHATSAPP_TEMPLATE_BOOKING_LINK.');
+            
+            throw new Error(`WhatsApp API Error: ${apiError.message}`);
         }
     }
 

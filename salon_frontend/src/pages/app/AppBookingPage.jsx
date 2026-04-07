@@ -36,8 +36,17 @@ export default function AppBookingPage() {
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
-        return outlets.find(o => o.id === outletId || o._id === outletId) || activeOutlet || null;
+        const found = outlets.find(o => String(o.id || o._id) === String(outletId));
+        return found || activeOutlet || null;
     });
+
+    useEffect(() => {
+        if (!selectedOutlet && outlets.length > 0) {
+            const found = outlets.find(o => String(o.id || o._id) === String(outletId));
+            if (found) setSelectedOutlet(found);
+            else if (activeOutlet) setSelectedOutlet(activeOutlet);
+        }
+    }, [outlets, outletId, activeOutlet, selectedOutlet]);
 
     const currentOutlet = selectedOutlet;
 
