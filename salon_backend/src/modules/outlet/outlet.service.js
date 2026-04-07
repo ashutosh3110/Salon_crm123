@@ -1,6 +1,6 @@
 import Outlet from './outlet.model.js';
 import Tenant from '../tenant/tenant.model.js';
-import { geocodeAddress } from '../../utils/geocode.js';
+import { geocodeAddress, reverseGeocodeAddress } from '../../utils/geocode.js';
 import httpStatus from 'http-status';
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -129,6 +129,10 @@ class OutletService {
         await Tenant.updateOne({ _id: tenantId }, { $inc: { outletsCount: -1 } });
         
         return outlet;
+    }
+
+    async reverseGeocode(lat, lng) {
+        return reverseGeocodeAddress(lat, lng);
     }
 }
 

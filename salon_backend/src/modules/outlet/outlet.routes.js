@@ -7,6 +7,7 @@ import outletController from './outlet.controller.js';
 const router = express.Router();
 
 router.get('/nearby', outletController.getNearbyOutletsPublic);
+router.get('/reverse-geocode', outletController.reverseGeocode);
 
 router.use(auth);
 router.use(validateTenant);

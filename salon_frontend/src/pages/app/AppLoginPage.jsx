@@ -92,11 +92,9 @@ export default function AppLoginPage() {
 
     const reverseGeocode = async (lat, lng) => {
         try {
-            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
-            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
-            const data = await res.json();
-            if (data.status === 'OK' && data.results.length > 0) {
-                const addr = data.results[0].formatted_address;
+            const res = await api.get(`/outlets/reverse-geocode?lat=${lat}&lng=${lng}`);
+            if (res.data?.status === 'OK') {
+                const addr = res.data.displayAddress || res.data.formattedAddress;
                 setDetectedAddress(addr);
                 return addr;
             }

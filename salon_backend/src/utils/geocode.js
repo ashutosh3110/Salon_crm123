@@ -82,3 +82,37 @@ export async function geocodeAddress(address, city, state, pincode) {
     }
     return null;
 }
+
+/** Reverse geocode lat/lng to formatted address */
+export async function reverseGeocodeAddress(lat, lng) {
+    const key = process.env.GOOGLE_MAPS_API_KEY;
+    if (!key) return { status: 'NO_KEY', message: 'Google API Key missing' };
+    
+    try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        
+        if (data.status === 'OK' && data.results.length > 0) {
+            const results = data.results;
+            const components = results[0].address_components;
+            const neighborhood = components.find(c => c.types.includes('neighborhood'))?.long_name;
+            const sublocality = components.find(c => c.types.includes('sublocality_level_1') || c.types.includes('sublocality'))?.long_name;
+            const locality = components.find(c => c.types.includes('locality'))?.long_name;
+            
+            const primary = neighborhood || sublocality || locality;
+            const secondary = (primary !== locality) ? locality : '';
+            
+            return {
+                status: 'OK',
+                formattedAddress: results[0].formatted_address,
+                displayAddress: primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Current Position',
+                raw: results[0]
+            };
+        }
+        return { status: 'NO_RESULTS', message: 'No address found for these coordinates' };
+    } catch (e) {
+        console.warn('[ReverseGeocode] Failed:', e.message);
+        return { status: 'ERROR', message: e.message };
+    }
+}
