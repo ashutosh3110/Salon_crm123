@@ -80,7 +80,7 @@ export default function SegmentManager() {
                 <div className="space-y-1">
                         <h3 className="text-xl font-bold text-text tracking-tight">Customer Segments</h3>
                         <p className="text-sm text-text-secondary font-medium">
-                            Customers ko unki activity ke hisaab se smart tareeke se group karein.
+                            Group customers smartly based on their visit activity and engagement rules.
                         </p>
                 </div>
                 <button

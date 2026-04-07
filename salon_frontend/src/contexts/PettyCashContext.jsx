@@ -67,9 +67,8 @@ export const PettyCashProvider = ({ children }) => {
             const tried = base && path ? `${base}${path.startsWith('/') ? '' : '/'}${path}` : '';
             if (status === 404) {
                 setError(
-                    `Not found — API URL galat lag raha hai (${tried || 'check Network tab'}). ` +
-                        `VITE_API_URL check karein dashboard ya .env file mein. ` +
-                        `Backend restart karo.`
+                    `Not found — API URL seems incorrect. Check VITE_API_URL in your .env file. ` +
+                        `Backend might be down or the endpoint is missing.`
                 );
             } else {
                 setError(

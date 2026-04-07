@@ -12,6 +12,7 @@ import fs from 'fs';
 
 import { initFirebase } from './config/firebase.js';
 import initInventoryCron from './modules/inventory/inventory.cron.js';
+import whatsappService from './modules/notification/whatsapp.service.js';
 
 const app = express();
 
@@ -108,6 +109,22 @@ app.use('/v1', globalLimiter);
 
 // api routes
 app.use('/v1', routes);
+
+// Simple Test Route for WhatsApp (Temporary)
+app.get('/wa-test', async (req, res) => {
+    try {
+        const phone = req.query.phone || "918882823861";
+        const result = await whatsappService.sendTemplateMessage(
+            phone,
+            process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || "booking_confirm",
+            ["Tester", "Service", "ID123", "Today 10 AM"],
+            "en_US"
+        );
+        res.json(result);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {

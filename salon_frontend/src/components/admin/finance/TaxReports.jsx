@@ -286,7 +286,7 @@ export default function TaxReports() {
                                 <li>{assumptions?.productServiceTax || ''}</li>
                             </ul>
                             <p className="text-[10px] text-text-muted font-bold uppercase tracking-wider">
-                                CA / filing se pehle bank & books se reconcile karein.
+                                Please reconcile with your bank and accounting books before tax filing.
                             </p>
                         </div>
                     </div>

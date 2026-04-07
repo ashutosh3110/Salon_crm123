@@ -25,6 +25,21 @@ const getNearbyOutletsPublic = async (req, res, next) => {
     }
 };
 
+const reverseGeocode = async (req, res, next) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!lat || !lng) {
+            return res.status(httpStatus.BAD_REQUEST).send({ message: 'Latitude and Longitude are required' });
+        }
+        console.log(`[ReverseGeocode] Request for Lat: ${lat}, Lng: ${lng}`);
+        const data = await outletService.reverseGeocode(parseFloat(lat), parseFloat(lng));
+        console.log(`[ReverseGeocode] Result Status: ${data.status}`);
+        res.send(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getOutlets = async (req, res, next) => {
     try {
         const lat = req.query.lat != null ? parseFloat(req.query.lat) : null;
@@ -87,4 +102,5 @@ export default {
     updateBankDetails,
     deleteOutlet,
     getNearbyOutletsPublic,
+    reverseGeocode,
 };

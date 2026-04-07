@@ -47,7 +47,8 @@ import {
     Trash2,
     ArrowRight,
     LifeBuoy,
-    CheckCircle2
+    CheckCircle2,
+    Zap
 } from 'lucide-react';
 
 import { useCMS } from '../../contexts/CMSContext';

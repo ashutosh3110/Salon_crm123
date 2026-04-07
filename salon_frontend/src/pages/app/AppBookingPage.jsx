@@ -961,14 +961,17 @@ export default function AppBookingPage() {
                         {/* Time Slots */}
                         {selectedDate && (
                             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Available Slots</p>
+                                <div className="flex items-center justify-between">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Available Slots</p>
+                                    {!currentOutlet && <p className="text-[9px] font-bold text-red-500 uppercase">Salons not found</p>}
+                                </div>
                                 <div className="grid grid-cols-4 gap-2.5 max-h-[40vh] overflow-y-auto custom-scrollbar pr-1 relative min-h-[100px]">
                                     {loadingAvailability && (
                                         <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 dark:bg-black/50 backdrop-blur-[1px] rounded-xl">
                                             <Loader2 className="w-6 h-6 animate-spin text-[#C8956C]" />
                                         </div>
                                     )}
-                                    {timeSlots.map((slot, i) => (
+                                    {timeSlots.length > 0 ? timeSlots.map((slot, i) => (
                                         <motion.button
                                             key={slot.time}
                                             initial={{ opacity: 0, scale: 0.9 }}
@@ -987,7 +990,11 @@ export default function AppBookingPage() {
                                         >
                                             {slot.time}
                                         </motion.button>
-                                    ))}
+                                    )) : !loadingAvailability && (
+                                        <div className="col-span-4 py-8 text-center text-[10px] uppercase tracking-widest opacity-30 border border-dashed border-black/10 rounded-2xl">
+                                            No slots found for this date
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}

@@ -115,14 +115,14 @@ const loginUserWithEmailAndPassword = async (email, password) => {
 
     // Check if user or their tenant is deleted
     if (user.status === 'deleted') {
-        throw new ApiError(httpStatus.FORBIDDEN, 'Aapka salon account permanent delete/stop kar diya gaya h. Kripya SuperAdmin se sampark karein.');
+        throw new ApiError(httpStatus.FORBIDDEN, 'Your salon account has been permanently deleted or suspended. Please contact SuperAdmin.');
     }
 
     // Check tenant status too if applicable
     if (user.tenantId) {
         const tenant = await Tenant.findById(user.tenantId);
         if (tenant && tenant.status === 'deleted') {
-            throw new ApiError(httpStatus.FORBIDDEN, 'Aapka salon account (Salon) band/delete ho chuka h. Kripya SuperAdmin se sampark karein.');
+            throw new ApiError(httpStatus.FORBIDDEN, 'Your salon account has been closed or deleted. Please contact SuperAdmin.');
         }
     }
 

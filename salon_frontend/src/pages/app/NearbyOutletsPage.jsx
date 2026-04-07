@@ -48,17 +48,9 @@ export default function NearbyOutletsPage() {
 
     const reverseGeocode = async (lat, lng) => {
         try {
-            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
-            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
-            const data = await res.json();
-            if (data.status === 'OK' && data.results.length > 0) {
-                const components = data.results[0].address_components;
-                const neighborhood = components.find(c => c.types.includes('neighborhood'))?.long_name;
-                const sublocality = components.find(c => c.types.includes('sublocality_level_1') || c.types.includes('sublocality'))?.long_name;
-                const locality = components.find(c => c.types.includes('locality'))?.long_name;
-                const primary = neighborhood || sublocality || locality;
-                const secondary = (primary !== locality) ? locality : '';
-                setAddressText(primary ? (secondary ? `${primary}, ${secondary}` : primary) : 'Current Sanctuary');
+            const res = await api.get(`/outlets/reverse-geocode?lat=${lat}&lng=${lng}`);
+            if (res.data?.status === 'OK') {
+                setAddressText(res.data.displayAddress || 'Current Position');
             } else {
                 setAddressText('Nearby Your Position');
             }
@@ -71,7 +63,7 @@ export default function NearbyOutletsPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`, { timeout: 10000 });
+            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`, { timeout: 30000 });
             setOutlets(Array.isArray(res.data) ? res.data : []);
 
             const allRes = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=500`);
@@ -255,6 +247,11 @@ export default function NearbyOutletsPage() {
                                 <h2 className="text-[17px] font-bold truncate tracking-tight leading-tight" style={{ color: colors.text }}>
                                     {locationLoading ? 'Locating Hub...' : addressText}
                                 </h2>
+                                {!locationLoading && userCoords && (
+                                    <p className="text-[10px] font-medium opacity-40 tracking-wider mt-0.5">
+                                        Lat: {userCoords.lat.toFixed(4)}, Lng: {userCoords.lng.toFixed(4)}
+                                    </p>
+                                )}
                             </div>
                         </div>
 

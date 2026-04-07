@@ -1,6 +1,6 @@
 import Outlet from './outlet.model.js';
 import Tenant from '../tenant/tenant.model.js';
-import { geocodeAddress } from '../../utils/geocode.js';
+import { geocodeAddress, reverseGeocodeAddress } from '../../utils/geocode.js';
 import httpStatus from 'http-status';
 
 function haversineKm(lat1, lon1, lat2, lon2) {
@@ -76,17 +76,8 @@ class OutletService {
         if (lat == null || lng == null) return [];
         let outlets = await Outlet.find({ status: 'active' }).populate('tenantId', 'name').lean();
         
-        // Geocode outlets missing lat/lng on-the-fly
-        for (const o of outlets) {
-            if ((o.latitude == null || o.longitude == null) && (o.address || o.city)) {
-                const geo = await this._geocodeOutlet({ ...o });
-                if (geo.latitude != null && geo.longitude != null) {
-                    await Outlet.updateOne({ _id: o._id }, { latitude: geo.latitude, longitude: geo.longitude });
-                    o.latitude = geo.latitude;
-                    o.longitude = geo.longitude;
-                }
-            }
-        }
+        // No auto-geocoding here to prevent timeout. 
+        // Coordinates must be set during outlet creation/update.
 
         const withDistance = outlets
             .filter(o => o.latitude != null && o.longitude != null)
@@ -129,6 +120,10 @@ class OutletService {
         await Tenant.updateOne({ _id: tenantId }, { $inc: { outletsCount: -1 } });
         
         return outlet;
+    }
+
+    async reverseGeocode(lat, lng) {
+        return reverseGeocodeAddress(lat, lng);
     }
 }
 

@@ -269,6 +269,10 @@ const cancelSubscription = async (tenantId, reason, comment) => {
 };
 
 export default {
+    createSubscription,
+    querySubscriptions,
+    getSubscriptionById,
+    updateSubscriptionById,
     deleteSubscriptionById,
     getSubscriptionStats,
     finalizeUpgrade,

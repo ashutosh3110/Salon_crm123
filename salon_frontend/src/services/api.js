@@ -25,7 +25,7 @@ const getFriendlyErrorMessage = (error) => {
         if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
             return 'backend not connected plz try again';
         }
-        return 'Kuch galat hua. Kripya fir se koshish karein.';
+        return 'Something went wrong. Please try again.';
     }
 
     const { status, data } = error.response;
@@ -33,16 +33,16 @@ const getFriendlyErrorMessage = (error) => {
 
     // Mapping technical messages to user-friendly ones
     if (status === 403 && message.toLowerCase().includes('limit reached')) {
-        return 'Staff limit poori ho chuki hai. Kripya apna plan upgrade karein.';
+        return 'Staff limit reached. Please upgrade your plan.';
     }
     if (status === 400 && message.toLowerCase().includes('email already taken')) {
-        return 'Ye Email pehle se use ho raha hai.';
+        return 'This email is already in use.';
     }
     if (status === 401) {
-        return 'Aapka session expire ho gaya hai. Kripya fir se login karein.';
+        return 'Your session has expired. Please login again.';
     }
     if (status >= 500) {
-        return 'Server par kuch takleef hai. Kripya thodi der baad koshish karein.';
+        return 'Something went wrong on the server. Please try again later.';
     }
 
     return message || 'An unexpected error occurred.';
