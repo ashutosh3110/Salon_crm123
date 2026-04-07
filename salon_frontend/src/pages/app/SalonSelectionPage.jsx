@@ -92,22 +92,23 @@ export default function SalonSelectionPage() {
     };
 
     const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-        accent: '#C8956C'
+        bg: isLight ? '#FCF9F6' : '#040404',
+        card: isLight ? '#FFFFFF' : '#0F0F0F',
+        text: isLight ? '#1A1A1A' : '#F5F5F5',
+        textMuted: isLight ? '#666' : '#888888',
+        accent: '#C8956C', // Warm Gold
+        accentLight: '#E5B58C',
+        border: isLight ? '#EEEEEE' : '#1A1A1A',
+        glassBorder: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)',
+        subtleGlow: 'rgba(200, 149, 108, 0.05)'
     };
 
     const DEFAULT_RADIUS_KM = 10;
     const RADIUS_OPTIONS = [3, 5, 10, 25];
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
 
-    // Ref to track latest coords (avoids stale closure in setTimeout)
     const latestCoordsRef = useRef(null);
 
-    // Smart Location Lock: Refine geolocation until high accuracy is achieved or timeout
     useEffect(() => {
         let watchId = null;
         let timeoutId = null;
@@ -146,15 +147,9 @@ export default function SalonSelectionPage() {
 
         const handleSuccess = (pos) => {
             const { latitude, longitude, accuracy } = pos.coords;
-            console.log(`GPS Lock: ${latitude}, ${longitude} | Accuracy: ${accuracy}m`);
             latestCoordsRef.current = { lat: latitude, lng: longitude };
-            
-            // On first success, set user location but don't stop watching until settled or timeout
             setUserLocation(prev => prev ? prev : { lat: latitude, lng: longitude });
-
-            if (accuracy < 500) {
-                settle(latitude, longitude);
-            }
+            if (accuracy < 500) settle(latitude, longitude);
         };
 
         const handleError = () => {
@@ -164,20 +159,14 @@ export default function SalonSelectionPage() {
 
         if (navigator.geolocation) {
             setIsLocating(true);
-            setDisplayLocation('Calibrating GPS...');
-
+            setDisplayLocation('Reading environment...');
             watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
                 enableHighAccuracy: true, timeout: 30000, maximumAge: 0
             });
-
-            // Force settle after 10s using ref (never stale)
             timeoutId = setTimeout(() => {
                 const coords = latestCoordsRef.current;
-                if (coords) {
-                    settle(coords.lat, coords.lng);
-                } else {
-                    handleError();
-                }
+                if (coords) settle(coords.lat, coords.lng);
+                else handleError();
             }, 10000);
         } else {
             handleError();
@@ -218,7 +207,6 @@ export default function SalonSelectionPage() {
         o.address?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Fallback: Show all active outlets if no nearby ones match the search/radius
     const otherOutlets = useMemo(() => {
         if (searchQuery.trim()) {
             return outlets.filter(o => {
@@ -237,94 +225,95 @@ export default function SalonSelectionPage() {
     };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col relative overflow-x-hidden">
+        <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col relative overflow-x-hidden pt-12 pb-16">
             
-            {/* Ambient Lighting Background */}
+            {/* Ambient Background */}
             {!isLight && (
-                <>
-                    <div className="absolute top-[-5%] left-[-10%] w-[70%] h-[40%] rounded-full blur-[120px] opacity-10 pointer-events-none z-0" 
-                         style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)' }} />
-                    <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[50%] rounded-full blur-[100px] opacity-10 pointer-events-none z-0" 
-                         style={{ background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)' }} />
-                </>
+                <div className="absolute inset-0 pointer-events-none opacity-40">
+                    <div className="absolute top-[5%] left-[-10%] w-[60%] h-[50%] rounded-full blur-[130px]" 
+                         style={{ background: 'radial-gradient(circle, rgba(200,149,108,0.12) 0%, transparent 70%)' }} />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[110px]" 
+                         style={{ background: 'radial-gradient(circle, rgba(200,149,108,0.1) 0%, transparent 70%)' }} />
+                </div>
             )}
 
-            <div className="max-w-md mx-auto w-full flex-1 flex flex-col px-6 pt-12 z-20 relative">
+            <div className="max-w-md mx-auto w-full flex-1 flex flex-col px-7 relative z-10">
                 
-                {/* Cinematic Header */}
-                <div className="mb-10 text-center relative flex flex-col items-center">
-                    <motion.div 
+                {/* Header Section */}
+                <div className="flex flex-col items-center mb-16">
+                    <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 mb-4 px-3 py-1 rounded-full bg-white/5 border border-white/5"
+                        className="mb-4"
                     >
-                        <ShieldCheck size={14} className="text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.35em] opacity-40">Secure Selection</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.4em] px-4 py-1.5 rounded-full border" 
+                              style={{ color: colors.accent, borderColor: 'rgba(200,149,108,0.2)', backgroundColor: 'rgba(200,149,108,0.05)' }}>
+                            Premium Selection
+                        </span>
                     </motion.div>
                     
-                    <h1 className="text-4xl font-black tracking-tight leading-tight" style={{ color: colors.text }}>
-                        Experience <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C8956C] to-[#E5B58C]">Wapixo</span>
+                    <h1 className="text-[2.75rem] font-serif italic text-white text-center leading-[1.1] mb-2">
+                        Discover <span className="font-normal" style={{ color: colors.accent }}>Wapixo</span>
                     </h1>
-                    <p className="text-[11px] font-bold opacity-30 mt-2 tracking-wide">Select your elite salon gateway</p>
+                    <p className="text-[11px] font-medium opacity-30 uppercase tracking-[0.25em]">Choose your sanctuary</p>
                 </div>
 
-                {/* Floating Glass Location Bar */}
-                <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{ 
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
-                        backdropFilter: 'blur(20px)',
-                        borderRadius: '28px',
-                        border: `1px solid ${colors.glassBorder}`,
-                        padding: '20px 24px'
-                    }}
-                    className="flex items-center justify-between shadow-[0_20px_40px_rgba(0,0,0,0.2)] relative overflow-hidden mb-8 z-30"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="p-3.5 rounded-2xl bg-primary/10 text-primary border border-primary/20">
-                            <Navigation size={22} className={isLocating ? 'animate-pulse' : ''} />
+                {/* Search & Radius Section */}
+                <div className="space-y-6 mb-12">
+                    {/* Premium Enhanced Location Bar */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        style={{ 
+                            background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(15,15,15,0.4)',
+                            backdropFilter: 'blur(20px)',
+                            borderRadius: '32px',
+                            padding: '18px 24px',
+                            border: `1px solid ${colors.glassBorder}`,
+                            boxShadow: isLight 
+                                ? '0 10px 40px rgba(0,0,0,0.03)' 
+                                : '0 20px 60px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.03)'
+                        }}
+                        className="flex items-center justify-between"
+                    >
+                        <div className="flex items-center gap-5 min-w-0">
+                            <div className="relative">
+                                <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" 
+                                     style={{ background: 'rgba(200,149,108,0.1)', border: '1px solid rgba(200,149,108,0.2)' }}>
+                                    <MapPin size={20} style={{ color: colors.accent }} />
+                                </div>
+                                {isLocating && (
+                                    <motion.div 
+                                        animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0, 0.3] }}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        className="absolute inset-0 rounded-full bg-accent/20"
+                                    />
+                                )}
+                            </div>
+                            <div className="min-w-0 pr-2">
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30 mb-0.5">Current Zone</p>
+                                <h3 className="text-base font-black truncate max-w-[160px] tracking-wide" style={{ color: colors.text }}>
+                                    {isLocating ? 'Locating...' : displayLocation}
+                                </h3>
+                            </div>
                         </div>
-                        <div className="min-w-0 pr-2">
-                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-1">Active Zone</p>
-                            <p className="text-sm font-black truncate max-w-[170px] leading-tight" style={{ color: colors.text }}>{isLocating ? 'Scanning...' : displayLocation}</p>
-                        </div>
-                    </div>
-                    <motion.button
-                        whileHover={{ color: '#E5B58C' }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setShowLocationModal(true)}
-                        className="text-[10px] font-black uppercase tracking-widest text-primary px-4 py-2 rounded-xl bg-primary/5 border border-primary/10 transition-all"
-                    >Change</motion.button>
-                </motion.div>
+                        <motion.button
+                            whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowLocationModal(true)}
+                            className="w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 bg-white/5 transition-all text-accent"
+                        >
+                            <Navigation size={18} />
+                        </motion.button>
+                    </motion.div>
 
-                {/* Scan Radius & Search Container */}
-                <div className="space-y-6 mb-10 z-40 relative">
-                    <div className="flex items-center justify-between px-1">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Scan Profile</p>
-                        <div className="flex gap-2">
-                            {RADIUS_OPTIONS.map((km) => (
-                                <button
-                                    key={km}
-                                    onClick={() => setSearchRadiusKm(km)}
-                                    className={`text-[9px] font-black px-3 py-1.5 rounded-full transition-all tracking-widest border ${
-                                        searchRadiusKm === km 
-                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' 
-                                        : 'bg-white/5 text-white/30 border-white/5 hover:bg-white/10'
-                                    }`}
-                                >
-                                    {km}KM
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
+                    {/* Search Input */}
                     <div
                         style={{
                             background: 'rgba(255,255,255,0.02)',
                             borderRadius: '24px',
-                            border: isFocused ? `1px solid ${colors.accent}` : `1px solid ${colors.glassBorder}`,
-                            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                            border: isFocused ? `1px solid ${colors.accent}` : `1px solid ${colors.border}`,
+                            transition: 'all 0.4s',
                             padding: '0 20px',
                             height: '56px',
                             display: 'flex',
@@ -333,130 +322,118 @@ export default function SalonSelectionPage() {
                         }}
                         className="shadow-inner"
                     >
-                        <Search size={18} style={{ color: isFocused ? colors.accent : 'rgba(255,255,255,0.2)', transition: 'color 0.3s' }} />
+                        <Search size={18} style={{ color: isFocused ? colors.accent : 'rgba(255,255,255,0.15)' }} />
                         <input
                             type="text"
-                            placeholder="Find outlet by name or area..."
+                            placeholder="Find outlet by name..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            className="w-full bg-transparent border-none outline-none font-bold text-sm tracking-wide"
+                            className="w-full bg-transparent border-none outline-none font-medium text-sm tracking-wide"
                             style={{ color: colors.text }}
                         />
                     </div>
                 </div>
 
-                {/* Local Nodes Grid */}
+                {/* Radius Filter */}
+                <div className="flex items-center gap-3 px-1 mb-10 overflow-x-auto pb-2 no-scrollbar">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] opacity-30 whitespace-nowrap mr-2">Within</p>
+                    {RADIUS_OPTIONS.map((km) => (
+                        <motion.button
+                            key={km}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSearchRadiusKm(km)}
+                            className="px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all whitespace-nowrap"
+                            style={{ 
+                                backgroundColor: searchRadiusKm === km ? 'rgba(200,149,108,0.1)' : 'transparent',
+                                borderColor: searchRadiusKm === km ? colors.accent : colors.border,
+                                color: searchRadiusKm === km ? colors.accent : colors.textMuted
+                            }}
+                        >
+                            {km} km
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Outlet List */}
                 <div className="flex-1">
-                    <div className="flex items-center gap-4 px-1 mb-6">
-                        <h2 className="text-[10px] font-black tracking-[0.3em] uppercase opacity-40 whitespace-nowrap">Local Nodes Detected</h2>
-                        <div className="h-[1px] bg-gradient-to-r from-primary/30 to-transparent flex-1" />
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 border border-primary/10">
-                            <span className="text-[10px] font-black text-primary">{filteredOutlets.length}</span>
-                        </div>
+                    <div className="flex items-center gap-4 mb-6 px-1">
+                        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 whitespace-nowrap">Discovered Salons</h2>
+                        <div className="h-px bg-gradient-to-r from-white/10 to-transparent flex-1" />
                     </div>
 
-                    <div className="grid gap-6 pb-24">
+                    <div className="space-y-6 pb-20">
                         <AnimatePresence mode="popLayout">
                             {filteredOutlets.map((outlet, idx) => (
                                 <motion.div
                                     key={outlet._id}
                                     layout
-                                    initial={{ opacity: 0, y: 30 }}
+                                    initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95 }}
-                                    transition={{ duration: 0.6, delay: idx * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                                    transition={{ delay: idx * 0.05 }}
                                     onClick={() => handleSelect(outlet._id)}
-                                    style={{
-                                        background: 'linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%)',
-                                        backdropFilter: 'blur(16px)',
-                                        borderRadius: '32px',
-                                        border: `1px solid ${colors.glassBorder}`,
-                                        overflow: 'hidden'
-                                    }}
-                                    className="group cursor-pointer hover:border-primary/50 transition-all relative shadow-[0_15px_35px_rgba(0,0,0,0.2)]"
+                                    style={{ background: colors.card, border: `1px solid ${colors.border}` }}
+                                    className="group relative p-5 rounded-[32px] overflow-hidden cursor-pointer shadow-xl transition-all hover:border-accent hover:shadow-accent/5"
                                 >
-                                    <div className="relative h-44 w-full overflow-hidden">
-                                        <img
-                                            src={outlet.image || `https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800`}
-                                            alt={outlet.name}
-                                            className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-                                        
-                                        <div className="absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl backdrop-blur-xl bg-black/30 border border-white/10">
-                                            <Star size={12} className="fill-primary text-primary" />
-                                            <span className="text-[11px] font-black text-white mt-0.5">4.9</span>
+                                    <div className="flex gap-5">
+                                        <div className="w-24 h-24 rounded-2xl overflow-hidden shrink-0">
+                                            <img 
+                                                src={outlet.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} 
+                                                alt={outlet.name}
+                                                className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                                            />
                                         </div>
-
-                                        {idx === 0 && (
-                                            <div className="absolute top-4 left-4 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/20">
-                                                Closest Detected
+                                        <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
+                                            <div>
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <h3 className="text-xl font-serif text-white truncate pr-2 leading-tight">{outlet.name}</h3>
+                                                    <div className="flex items-center gap-1 mt-0.5 whitespace-nowrap">
+                                                        <Star size={10} style={{ color: colors.accent }} className="fill-current" />
+                                                        <span className="text-[10px] font-mask text-white/40">4.9</span>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[10px] font-medium opacity-30 truncate mb-1">{outlet.address || 'Premium Hub'}</p>
                                             </div>
-                                        )}
-                                        
-                                        <div className="absolute bottom-4 left-5 right-5">
-                                            <h3 className="text-2xl font-black text-white tracking-tight leading-tight mb-1">{outlet.name}</h3>
-                                            <div className="flex items-center gap-1.5 opacity-70">
-                                                <MapPin size={10} className="text-primary" />
-                                                <p className="text-[10px] font-black text-white uppercase tracking-widest truncate">{outlet.address || 'Available Hub'}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-5 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/10">
-                                                <div className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                                                <span className="text-[9px] font-black text-primary uppercase tracking-widest">Premium Node</span>
-                                            </div>
-                                            <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/5">
-                                                <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Luxury Salon</span>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-3 py-1.5 rounded-full bg-white/5" style={{ color: colors.accent }}>
+                                                    {Math.round(outlet.distance)} km away
+                                                </span>
+                                                <ChevronRight size={18} className="opacity-20 translate-x-[-10px] group-hover:translate-x-0 group-hover:opacity-100 transition-all text-accent" />
                                             </div>
                                         </div>
-                                        <ChevronRight size={18} className="text-white/20 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                     </div>
                                     
-                                    {/* Card Hover Glow */}
-                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                    {/* Card Hover Inner Glow */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                                 </motion.div>
                             ))}
                         </AnimatePresence>
 
-                        {/* Global Nodes Fallback Section */}
+                        {/* Search Fallbacks */}
                         {filteredOutlets.length === 0 && otherOutlets.length > 0 && (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 space-y-6">
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-12 space-y-6">
                                 <div className="flex items-center gap-4 px-1">
-                                    <h2 className="text-[10px] font-black tracking-[0.3em] uppercase text-primary whitespace-nowrap">Global Scan Result</h2>
-                                    <div className="h-[1px] bg-gradient-to-r from-primary/30 to-transparent flex-1" />
+                                    <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-30 whitespace-nowrap">All Locations</h2>
+                                    <div className="h-px bg-gradient-to-r from-white/10 to-transparent flex-1" />
                                 </div>
-                                
                                 {otherOutlets.map((outlet, idx) => (
                                     <motion.div
                                         key={outlet._id}
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: idx * 0.1 }}
                                         onClick={() => handleSelect(outlet._id)}
-                                        style={{
-                                            background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
-                                            borderRadius: '32px',
-                                            border: `1px solid ${colors.glassBorder}`,
-                                            overflow: 'hidden'
-                                        }}
-                                        className="group cursor-pointer hover:border-primary/40 transition-all relative"
+                                        style={{ border: `1px solid ${colors.border}`, background: 'rgba(255,255,255,0.02)' }}
+                                        className="p-4 rounded-[24px] flex items-center justify-between group cursor-pointer transition-all hover:bg-white/[0.04]"
                                     >
-                                        <div className="p-5 flex items-center gap-4">
-                                            <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/5 shadow-xl">
-                                                <img src={outlet.image || `https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800`} alt={outlet.name} className="w-full h-full object-cover" />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/5">
+                                                <img src={outlet.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} alt={outlet.name} className="w-full h-full object-cover" />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="text-xl font-black text-white truncate">{outlet.name}</h3>
-                                                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">{outlet.city || 'Regional Hub'}</p>
+                                            <div>
+                                                <h4 className="text-base font-bold text-white truncate">{outlet.name}</h4>
+                                                <p className="text-[10px] font-medium opacity-20 uppercase tracking-widest">{outlet.city || 'Regional'}</p>
                                             </div>
-                                            <ChevronRight size={18} className="text-white/20 group-hover:text-primary transition-all" />
                                         </div>
+                                        <ChevronRight size={16} className="opacity-20 group-hover:opacity-100 text-accent transition-all" />
                                     </motion.div>
                                 ))}
                             </motion.div>
@@ -464,21 +441,14 @@ export default function SalonSelectionPage() {
                     </div>
                 </div>
 
-                {/* Bottom Elite Branding */}
-                <div className="pt-12 pb-8 flex flex-col items-center mt-auto">
-                    <motion.img
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.2 }}
-                        src="/icon.png"
-                        alt="Wapixo Icon"
-                        className="grayscale hover:grayscale-0 transition-all duration-700"
-                        style={{ height: '70px', width: 'auto', objectFit: 'contain' }}
-                    />
-                    <p className="text-[8px] font-black uppercase tracking-[0.5em] opacity-10 mt-4">Autonomous Node Engine v2.0</p>
+                {/* Footer Branding */}
+                <div className="pt-12 pb-8 flex flex-col items-center mt-auto opacity-10 grayscale">
+                    <img src="/icon.png" alt="Wapixo" className="h-8 w-auto mb-3" />
+                    <p className="text-[8px] font-bold uppercase tracking-[0.4em]">Designed for Excellence</p>
                 </div>
             </div>
 
-            {/* Premium Location Selection Sheet */}
+            {/* Location Selection Sheet */}
             <AnimatePresence>
                 {showLocationModal && (
                     <div className="fixed inset-0 z-[1001] flex items-end justify-center">
@@ -487,26 +457,26 @@ export default function SalonSelectionPage() {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => { setShowLocationModal(false); setLocationFetchError(''); }}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
                         />
                         <motion.div
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
-                            transition={{ type: "spring", damping: 28, stiffness: 220 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 200 }}
                             style={{ 
                                 background: colors.bg, 
-                                borderTop: `1px solid ${colors.glassBorder}`,
-                                boxShadow: '0 -20px 60px rgba(0,0,0,0.5)'
+                                borderTop: `1px solid ${colors.border}`,
+                                boxShadow: '0 -20px 60px rgba(0,0,0,0.6)'
                             }}
-                            className="relative w-full max-w-md p-8 rounded-t-[40px] overflow-hidden"
+                            className="relative w-full max-w-md p-8 pt-6 rounded-t-[40px]"
                         >
-                            <div className="w-14 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
+                            <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />
                             
                             <div className="space-y-8">
                                 <div>
-                                    <h3 className="text-3xl font-black text-white tracking-tight">Zone Update</h3>
-                                    <p className="text-sm font-bold opacity-30 mt-1">Specify new sector coordinates</p>
+                                    <h3 className="text-2xl font-serif italic text-white mb-1">Set Your Location</h3>
+                                    <p className="text-[11px] font-medium opacity-30 uppercase tracking-widest">Find hubs in a specific sector</p>
                                 </div>
 
                                 <div className="space-y-4">
@@ -514,8 +484,7 @@ export default function SalonSelectionPage() {
                                         style={{
                                             background: 'rgba(255,255,255,0.03)',
                                             borderRadius: '24px',
-                                            border: isModalSearchFocused ? `1px solid ${colors.accent}` : `1px solid ${colors.glassBorder}`,
-                                            transition: 'all 0.3s',
+                                            border: `1px solid ${colors.border}`,
                                             padding: '0 20px',
                                             height: '60px',
                                             display: 'flex',
@@ -523,51 +492,42 @@ export default function SalonSelectionPage() {
                                             gap: '14px'
                                         }}
                                     >
-                                        <Search size={18} style={{ color: isModalSearchFocused ? colors.accent : 'rgba(255,255,255,0.2)' }} />
+                                        <Search size={18} style={{ color: colors.accent }} />
                                         <input
                                             type="text"
-                                            placeholder="Enter area, city or coordinates..."
+                                            placeholder="Enter area or city name..."
                                             value={customLocation}
                                             onChange={(e) => { setCustomLocation(e.target.value); setLocationFetchError(''); }}
-                                            onFocus={() => setIsModalSearchFocused(true)}
-                                            onBlur={() => setIsModalSearchFocused(false)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && customLocation?.trim()) {
-                                                    e.preventDefault();
-                                                    applyCustomLocation();
-                                                }
-                                            }}
+                                            onKeyDown={(e) => e.key === 'Enter' && applyCustomLocation()}
                                             className="w-full bg-transparent border-none outline-none font-bold text-sm"
                                             style={{ color: colors.text }}
                                         />
                                     </div>
                                     {locationFetchError && (
-                                        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] text-red-500 font-bold uppercase tracking-wider text-center">{locationFetchError}</motion.p>
+                                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest text-center">{locationFetchError}</p>
                                     )}
                                 </div>
 
                                 <div className="space-y-4">
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20 ml-1">Elite Regional Clusters</p>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {POPULAR_CITIES.slice(0, 6).map((city) => (
+                                    <p className="text-[9px] font-bold uppercase tracking-[0.3em] opacity-20 ml-1">Curated Districts</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {POPULAR_CITIES.slice(0, 4).map((city) => (
                                             <motion.button
                                                 key={city.name}
                                                 whileTap={{ scale: 0.96 }}
                                                 onClick={() => {
                                                     setIsLocating(true); setDisplayLocation(city.name);
-                                                    setTimeout(() => {
-                                                        setUserLocation({ lat: city.lat, lng: city.lng });
-                                                        setIsLocating(false); setShowLocationModal(false);
-                                                    }, 800);
+                                                    setUserLocation({ lat: city.lat, lng: city.lng });
+                                                    setShowLocationModal(false);
                                                 }}
                                                 style={{
-                                                    background: displayLocation === city.name ? 'rgba(200,149,108,0.1)' : 'rgba(255,255,255,0.02)',
-                                                    border: `1px solid ${displayLocation === city.name ? colors.accent : colors.glassBorder}`,
+                                                    background: 'rgba(255,255,255,0.02)',
+                                                    border: `1px solid ${colors.border}`,
                                                 }}
-                                                className="p-4 text-left rounded-3xl group transition-all"
+                                                className="p-4 text-left rounded-2xl"
                                             >
-                                                <p className="text-sm font-black leading-tight text-white mb-0.5">{city.name.split(',')[0]}</p>
-                                                <p className="text-[9px] font-bold text-primary uppercase tracking-widest">{city.name.split(',')[1] || 'Hub'}</p>
+                                                <p className="text-[13px] font-bold text-white leading-tight mb-0.5">{city.name.split(',')[0]}</p>
+                                                <p className="text-[8px] font-bold text-accent uppercase tracking-[0.2em]">{city.name.split(',')[1] || 'Hub'}</p>
                                             </motion.button>
                                         ))}
                                     </div>
@@ -575,12 +535,9 @@ export default function SalonSelectionPage() {
 
                                 <motion.button
                                     whileTap={{ scale: 0.96 }}
-                                    onClick={() => {
-                                        if (customLocation?.trim()) applyCustomLocation();
-                                        else setShowLocationModal(false);
-                                    }}
-                                    className="w-full py-5 rounded-3xl font-black text-sm uppercase tracking-[0.2em] shadow-2xl shadow-primary/30"
-                                    style={{ background: `linear-gradient(135deg, ${colors.accent} 0%, #E5B58C 100%)`, color: '#fff' }}
+                                    onClick={() => applyCustomLocation()}
+                                    className="w-full py-5 rounded-[24px] font-bold text-[11px] uppercase tracking-[0.4em] shadow-xl"
+                                    style={{ backgroundColor: colors.accent, color: '#000' }}
                                 >
                                     Confirm Sector
                                 </motion.button>
@@ -591,5 +548,4 @@ export default function SalonSelectionPage() {
             </AnimatePresence>
         </div>
     );
-
 }

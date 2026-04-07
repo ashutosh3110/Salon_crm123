@@ -5,7 +5,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, User, MapPin, MapPinned } from 'lucide-react';
+import { ArrowLeft, Loader2, User, MapPin, MapPinned, Star, ChevronRight } from 'lucide-react';
 import api from '../../services/api';
 import PasswordField from '../../components/common/PasswordField';
 
@@ -73,44 +73,71 @@ export default function AppLoginPage() {
         }
     }, [countdown]);
 
+    const [detectedAddress, setDetectedAddress] = useState('');
+    const [nearbyOutlets, setNearbyOutlets] = useState([]);
+    const [isFetchingOutlets, setIsFetchingOutlets] = useState(false);
+
+    const fetchOutlets = async (lat, lng, radiusKm) => {
+        setIsFetchingOutlets(true);
+        try {
+            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`, { timeout: 10000 });
+            setNearbyOutlets(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error('Fetch error:', err);
+            setError('Collection refresh delayed.');
+        } finally {
+            setIsFetchingOutlets(false);
+        }
+    };
+
+    const reverseGeocode = async (lat, lng) => {
+        try {
+            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
+            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+            const data = await res.json();
+            if (data.status === 'OK' && data.results.length > 0) {
+                const addr = data.results[0].formatted_address;
+                setDetectedAddress(addr);
+                return addr;
+            }
+        } catch (err) { }
+        return '';
+    };
+
     const fetchLocationAndNearby = () => {
         setLocationLoading(true);
         setError('');
+        setDetectedAddress('Calibrating position...');
+
         if (!navigator.geolocation) {
-            setError('Location not supported. Use search below.');
+            setError('Geolocation not supported.');
             setLocationLoading(false);
             return;
         }
-        if (!window.isSecureContext && window.location.hostname !== 'localhost') {
-            setError('Location requires HTTPS.');
-            setLocationLoading(false);
-            return;
-        }
+
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
+            async (pos) => {
                 const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 setUserCoords(coords);
-                try {
-                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
-                } catch {
-                    // ignore
-                }
+                localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                await reverseGeocode(coords.lat, coords.lng);
                 setLocationLoading(false);
+                fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
             },
             (err) => {
-                const msg = err.code === 1 ? 'Location permission denied.' : 'Could not get location.';
-                setError(msg);
+                setError('Location access denied. Please enable GPS.');
                 setLocationLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
         );
     };
 
     useEffect(() => {
-        // If tenantId is already known (from URL or localStorage), we should be on phone/OTP step.
-        if (tenantIdFromUrl || storedSelectedOutlet?.tenantId) {
+        // Only skip to Step 1 (Login) if we have a tenantId from the URL (e.g. QR code).
+        // If it's just from localStorage, stay on Step 0 (Discovery) so the user sees the salon list first.
+        if (tenantIdFromUrl) {
             if (storedSelectedOutlet?.tenantId && !selectedOutlet) setSelectedOutlet(storedSelectedOutlet);
-            setTenantId(tenantIdFromUrl || storedSelectedOutlet?.tenantId || '');
+            setTenantId(tenantIdFromUrl);
             setStep(1);
             setLocationLoading(false);
             return;
@@ -147,18 +174,18 @@ export default function AppLoginPage() {
     const handleSendOtp = async () => {
         if (!tenantId) { setError('Please select an outlet first'); return; }
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
-        
+
         if (submittingRef.current) return;
         submittingRef.current = true;
-        
+
         setLoading(true); setError('');
         try {
             const res = await requestOtp(phone, tenantId);
             if (res.otp) setOtpDebug(res.otp);
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
-        finally { 
-            setLoading(false); 
+        finally {
+            setLoading(false);
             submittingRef.current = false;
         }
     };
@@ -218,10 +245,10 @@ export default function AppLoginPage() {
     const handleVerifyOtp = async () => {
         const code = otp.join('');
         if (code.length !== 6) { setError('Enter the 6-digit OTP'); return; }
-        
+
         if (submittingRef.current) return;
         submittingRef.current = true;
-        
+
         setLoading(true); setError('');
         try {
             const c = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
@@ -242,18 +269,18 @@ export default function AppLoginPage() {
             setError(e.message || 'Invalid OTP');
             setOtp(['', '', '', '', '', '']);
             otpRefs[0].current?.focus();
-        } finally { 
-            setLoading(false); 
+        } finally {
+            setLoading(false);
             submittingRef.current = false;
         }
     };
 
     const handleProfile = async () => {
         if (!name.trim()) { setError('Please enter your name'); return; }
-        
+
         if (submittingRef.current) return;
         submittingRef.current = true;
-        
+
         setLoading(true); setError('');
         try {
             await completeProfile({ name: name.trim(), gender: selectedGender });
@@ -265,8 +292,8 @@ export default function AppLoginPage() {
             }
             navigate(selectedOutlet ? '/app' : '/app/salon-selection', { replace: true });
         } catch (e) { setError(e.message || 'Something went wrong'); }
-        finally { 
-            setLoading(false); 
+        finally {
+            setLoading(false);
             submittingRef.current = false;
         }
     };
@@ -284,76 +311,144 @@ export default function AppLoginPage() {
         <div style={S.page}>
             <AnimatePresence mode="wait" custom={direction}>
 
-                {/* STEP 0: Location + Nearby outlets list */}
+                {/* STEP 0: MINIMAL SALON DISCOVERY */}
                 {step === 0 && (
-                    <motion.div key="outlets" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        style={{ width: '100%', maxWidth: '360px', textAlign: 'center' }}
+                    <motion.div
+                        key="discovery"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        style={{ width: '100%', maxWidth: '420px' }}
                     >
-                        {/* Custom header for login selection */}
-                        <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-                            <div style={{ width: 70, display: 'flex', justifyContent: 'flex-start' }}>
-                                <img
-                                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
-                                    alt="Wapixo Logo"
-                                    style={{ width: 52, height: 40, objectFit: 'contain' }}
-                                />
-                            </div>
-                            <div style={{ flex: 1, textAlign: 'center' }}>
-                                <div style={{ fontSize: 12, fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                    Nearby outlets
-                                </div>
-                            </div>
-                            <div style={{ width: 70 }} />
+                        {/* Clean Brand Header */}
+                        <div className="flex flex-col items-center mb-10">
+                            <img
+                                src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                                alt="Wapixo"
+                                className="w-12 h-auto opacity-60 mb-6"
+                            />
+                            <h1 className="text-3xl font-serif italic text-white mb-2">
+                                Select Your <span className="font-normal text-[#C8956C]">Salon</span>
+                            </h1>
+                            <p className="text-[11px] font-medium tracking-widest text-white/30 uppercase">Discover boutiques near you</p>
                         </div>
 
                         {locationLoading ? (
-                            <>
-                                <Loader2 size={32} className="animate-spin mx-auto mb-4" style={{ color: '#C8956C' }} />
-                                <p style={{ fontSize: '15px', fontWeight: 600, color: colors.text, marginBottom: '8px' }}>Detecting your location…</p>
-                                <p style={{ fontSize: '13px', color: colors.textMuted }}><MapPin size={14} style={{ display: 'inline', verticalAlign: -2 }} /> Get GPS coordinates</p>
-                            </>
+                            <div className="py-16 flex flex-col items-center">
+                                <Loader2 size={32} className="text-[#C8956C] animate-spin mb-4 opacity-50" />
+                                <p className="text-xs font-bold tracking-widest text-[#C8956C] uppercase">Detecting Location...</p>
+                                {detectedAddress && <p className="text-[10px] text-white/20 mt-2 truncate max-w-[200px]">{detectedAddress}</p>}
+                            </div>
                         ) : (
-                            <>
-                                <div style={{ marginBottom: 8 }}>
-                                    <p style={{ fontSize: '10px', fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                                        Select distance
-                                    </p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
+                            <div className="space-y-8">
+                                {/* Concentrated Search Radius Hub */}
+                                <div className="space-y-2.5 max-w-[320px] mx-auto">
+                                    <div className="flex items-center justify-between px-1">
+                                        <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Sanctuary Perimeter</h2>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-1 h-1 rounded-full bg-[#C8956C]" />
+                                            <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest">{searchRadiusKm} KM Focus</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/[0.03] overflow-visible">
                                         {RADIUS_OPTIONS.map((km) => (
                                             <button
                                                 key={km}
-                                                type="button"
                                                 onClick={() => {
                                                     setSearchRadiusKm(km);
-                                                    navigate(`/app/nearby-outlets?radius=${km}`);
+                                                    if (userCoords) fetchOutlets(userCoords.lat, userCoords.lng, km);
                                                 }}
-                                                style={{
-                                                    padding: '8px 14px',
-                                                    borderRadius: '999px',
-                                                    border: `1.5px solid ${searchRadiusKm === km ? '#C8956C' : colors.border}`,
-                                                    background: searchRadiusKm === km ? 'rgba(200,149,108,0.15)' : colors.card,
-                                                    color: searchRadiusKm === km ? '#C8956C' : colors.text,
-                                                    fontSize: '12px',
-                                                    fontWeight: 800,
-                                                    cursor: 'pointer',
-                                                }}
+                                                className={`relative h-9 rounded-xl transition-all duration-300 overflow-hidden flex items-center justify-center ${searchRadiusKm === km
+                                                    ? 'bg-[#C8956C]'
+                                                    : 'bg-white/[0.01] hover:bg-white/[0.03]'
+                                                    }`}
                                             >
-                                                {km} km
+                                                <span className={`relative z-10 text-sm font-serif italic ${searchRadiusKm === km ? 'text-white font-black' : 'text-white/20'
+                                                    }`}>
+                                                    {km}
+                                                </span>
+                                                {searchRadiusKm === km && (
+                                                    <motion.div
+                                                        layoutId="active-range-focused"
+                                                        className="absolute inset-0 bg-gradient-to-tr from-[#C8956C] to-[#E5B58F] opacity-30 shadow-[0_4px_10px_rgba(200,149,108,0.2)]"
+                                                    />
+                                                )}
                                             </button>
                                         ))}
                                     </div>
-                                    <p style={{ fontSize: '10px', color: colors.textMuted, marginTop: '10px' }}>
-                                        Next page will show outlets within your selected distance.
-                                    </p>
                                 </div>
 
-                                <button onClick={() => fetchLocationAndNearby()} style={{ ...S.ghost, margin: '18px auto 0', color: '#C8956C' }}>
-                                    <MapPinned size={16} /> Use current location
+                                {/* Salon Collection */}
+                                {(isFetchingOutlets || nearbyOutlets.length > 0) && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nearby Boutiques</span>
+                                            <span className="text-[10px] italic text-white/20">{nearbyOutlets.length} found</span>
+                                        </div>
+
+                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar pb-2">
+                                            {isFetchingOutlets ? (
+                                                [1, 2].map(i => (
+                                                    <div key={i} className="h-24 rounded-2xl bg-[#1A1A1A] animate-pulse border border-white/5" />
+                                                ))
+                                            ) : (
+                                                nearbyOutlets.map((o) => (
+                                                    <button
+                                                        key={o._id}
+                                                        onClick={() => handleSelectOutlet(o)}
+                                                        className="w-full text-left bg-[#1A1A1A] p-3 rounded-2xl border border-white/5 hover:border-[#C8956C]/40 transition-all duration-300 flex items-center gap-4 group"
+                                                    >
+                                                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-black">
+                                                            <img
+                                                                src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                alt={o.name}
+                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                            />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <h4 className="text-base font-serif italic text-white truncate">{o.name}</h4>
+                                                                <div className="flex items-center gap-1 shrink-0">
+                                                                    <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
+                                                                    <span className="text-xs font-bold text-white/60">4.9</span>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-[10px] text-white/30 truncate mb-2">{o.address}</p>
+                                                            <div className="inline-flex items-center gap-2">
+                                                                <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
+                                                                <span className="text-[9px] font-bold text-[#C8956C] uppercase tracking-widest">
+                                                                    {o.distance?.toFixed(2) || '1.2'} KM AWAY
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <ChevronRight size={14} className="text-white/10 group-hover:text-[#C8956C] transition-colors" />
+                                                    </button>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={() => fetchLocationAndNearby()}
+                                    className="w-full h-14 rounded-2xl border border-[#C8956C]/20 bg-[#C8956C]/10 text-[#C8956C] flex items-center justify-center gap-3 hover:bg-[#C8956C]/20 transition-all font-bold text-xs uppercase tracking-widest"
+                                >
+                                    <MapPinned size={18} />
+                                    Use Live Location
                                 </button>
-                            </>
+                            </div>
                         )}
 
-                        {error && <p style={{ fontSize: '13px', color: '#ff4757', marginTop: '16px' }}>{error}</p>}
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="mt-8 p-3 rounded-xl bg-red-500/10 border border-red-500/20"
+                            >
+                                <p className="text-[11px] font-bold text-red-500/80 tracking-tight">{error}</p>
+                            </motion.div>
+                        )}
                     </motion.div>
                 )}
 
@@ -409,8 +504,10 @@ export default function AppLoginPage() {
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '28px' }}>
                             {otp.map((digit, i) => (
-                                <input key={i} ref={otpRefs[i]} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKey(i, e)} autoFocus={i === 0} style={{ width: '54px', height: '60px', background: digit ? '#C8956C' : colors.inputBg, border: `1.5px solid ${digit ? '#C8956C' : colors.border}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
-                                    cursor: 'text', transition: 'all 0.2s' }} />
+                                <input key={i} ref={otpRefs[i]} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKey(i, e)} autoFocus={i === 0} style={{
+                                    width: '54px', height: '60px', background: digit ? '#C8956C' : colors.inputBg, border: `1.5px solid ${digit ? '#C8956C' : colors.border}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
+                                    cursor: 'text', transition: 'all 0.2s'
+                                }} />
                             ))}
                         </div>
                         <p style={{ textAlign: 'center', fontSize: '14px', color: colors.textMuted, marginBottom: '24px' }}>{countdown > 0 ? <span style={{ fontFamily: 'monospace', fontSize: '16px', color: colors.text, fontWeight: 700 }}>{String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}</span> : null}</p>
@@ -511,7 +608,7 @@ export default function AppLoginPage() {
                             />
 
                             <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Password</label>
-                            <PasswordField 
+                            <PasswordField
                                 value={registerForm.password}
                                 onChange={(e) => setRegisterForm(prev => ({ ...prev, password: e.target.value }))}
                                 placeholder="Minimum 8 chars"

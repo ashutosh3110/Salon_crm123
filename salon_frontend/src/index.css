@@ -86,22 +86,22 @@
   }
 
   .dark {
-    --color-background: #0B0F1A;
-    --color-surface: #121826;
-    --color-surface-alt: #1B2233;
+    --color-background: #050505;
+    --color-surface: #101010;
+    --color-surface-alt: #181818;
     --color-text: #F8FAFC;
     --color-text-secondary: #CBD5E1;
     --color-text-muted: #94A3B8;
-    --color-border: rgba(255, 255, 255, 0.1);
+    --color-border: rgba(255, 255, 255, 0.08);
     --color-secondary: #121826;
     --color-secondary-dark: #0B0F1A;
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --border: oklch(1 0 0 / 10%);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.145 0 0);
+    --background: #050505;
+    --foreground: #ffffff;
+    --border: rgba(255, 255, 255, 0.1);
+    --card: #0A0A0A;
+    --card-foreground: #ffffff;
+    --primary: #C8956C;
+    --primary-foreground: #000000;
   }
 
   .new-dark-theme {
@@ -288,16 +288,39 @@
 }
 
 @keyframes pulse-subtle {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
     transform: scale(1);
   }
-
   50% {
     opacity: 0.8;
-    transform: scale(1.05);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@utility animate-gradient-x {
+  animation: gradient-x 15s ease infinite;
+}
+
+@utility animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
