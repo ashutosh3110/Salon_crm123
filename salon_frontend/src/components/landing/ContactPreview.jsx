@@ -42,7 +42,7 @@ export default function ContactPreview() {
 
                             <PreviewLinkCardContent>
                                 <PreviewLinkCardImage
-                                    src="/2-removebg-preview.png"
+                                    src="/new black wapixo logo .png"
                                     alt="SalonCRM Support"
                                     className="bg-primary/5 p-4"
                                 />

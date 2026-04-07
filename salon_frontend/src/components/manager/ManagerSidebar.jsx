@@ -49,7 +49,7 @@ export default function ManagerSidebar({ collapsed, setCollapsed, mobileOpen, se
                 <div className="flex-1 flex items-center justify-center overflow-hidden">
                     <div className="w-45 h-45 flex items-center justify-center shrink-0">
                         <img
-                            src="/2-removebg-preview.png"
+                            src="/new black wapixo logo .png"
                             alt="Logo"
                             className="w-full h-full object-contain"
                         />

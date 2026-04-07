@@ -321,7 +321,7 @@ export default function AppLoginPage() {
                         {/* Clean Brand Header */}
                         <div className="flex flex-col items-center mb-10">
                             <img
-                                src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                                src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'}
                                 alt="Wapixo"
                                 className="w-12 h-auto opacity-60 mb-6"
                             />
@@ -466,7 +466,7 @@ export default function AppLoginPage() {
                     <motion.div key="phone" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px' }}>
                         <button onClick={() => goTo(0)} style={{ ...S.ghost, marginBottom: '24px' }}><ArrowLeft size={18} /> Back</button>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                            <img src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
+                            <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
                             <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>Welcome Back</h1>
                             {selectedOutlet && <p style={{ fontSize: '13px', color: '#C8956C', marginTop: '8px' }}>{selectedOutlet.name}</p>}
                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Sign in to continue</p>
@@ -530,7 +530,7 @@ export default function AppLoginPage() {
                 {step === 3 && (
                     <motion.div key="profile" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '400px' }} className="py-4">
                         <div className="text-center mb-6">
-                            <img src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'} alt="Logo" className="h-22 w-auto mx-auto mb-4" />
+                            <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-22 w-auto mx-auto mb-4" />
                             <h1 style={{ fontSize: '22px', fontWeight: 900, color: colors.text, margin: '0 0 6px', fontFamily: "'SF Pro Display', sans-serif" }}>Personalize <span style={{ color: '#C8956C' }}>Experience</span></h1>
                             <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.2em' }}>Select your preference</p>
                         </div>

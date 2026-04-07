@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const navItems = ['Features', 'Pricing', 'Blog', 'Contact'];
 
 export default function WapixoNavbar() {
+    const { theme, toggleTheme } = useTheme();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Close menu on resize to desktop
@@ -23,19 +25,12 @@ export default function WapixoNavbar() {
         return () => { document.body.style.overflow = ''; };
     }, [isMenuOpen]);
 
-    const getLinkProps = (item) => {
-        const isPage = item === 'Contact' || item === 'Blog';
-        return isPage
-            ? { as: Link, to: `/${item.toLowerCase()}` }
-            : { as: 'a', href: `/#${item.toLowerCase()}` };
-    };
-
     const linkStyle = {
         fontFamily: "'Inter', sans-serif",
-        fontWeight: 300,
+        fontWeight: 400,
         fontSize: '0.85rem',
-        color: 'rgba(255,255,255,0.55)',
-        letterSpacing: '0.06em',
+        color: 'var(--wapixo-text-muted)',
+        letterSpacing: '0.04em',
         textDecoration: 'none',
         transition: 'color 0.25s ease',
     };
@@ -47,31 +42,30 @@ export default function WapixoNavbar() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, delay: 0.2, ease: 'easeOut' }}
                 style={{
-                    position: 'absolute',
+                    position: 'sticky',
                     top: 0,
                     left: 0,
                     right: 0,
-                    zIndex: 1000,
+                    zIndex: 2000,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '0 clamp(1rem, 4vw, 4rem)',
-                    height: '60px',
-                    background: 'rgba(5, 5, 5, 0.75)',
+                    height: '64px',
+                    background: theme === 'dark' ? 'rgba(5, 5, 5, 0.75)' : 'rgba(255, 255, 255, 0.85)',
                     backdropFilter: 'blur(24px)',
                     WebkitBackdropFilter: 'blur(24px)',
-                    borderBottom: '1px solid rgba(255,255,255,0.07)',
+                    borderBottom: '1px solid var(--wapixo-border)',
                 }}
             >
                 {/* Logo */}
                 <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, zIndex: 1010 }}>
                     <img
-                        src="/1-removebg-preview.png"
+                        src={theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png"}
                         alt="Wapixo Logo"
                         style={{
-                            height: 'clamp(80px, 15vw, 150px)',
+                            height: 'clamp(40px, 12vw, 55px)',
                             width: 'auto',
-                            filter: 'brightness(0) invert(1)',
                         }}
                     />
                 </Link>
@@ -93,8 +87,8 @@ export default function WapixoNavbar() {
                                 key={item}
                                 to={`/${item.toLowerCase()}`}
                                 style={linkStyle}
-                                onMouseEnter={(e) => (e.target.style.color = '#ffffff')}
-                                onMouseLeave={(e) => (e.target.style.color = 'rgba(255,255,255,0.55)')}
+                                onMouseEnter={(e) => (e.target.style.color = 'var(--wapixo-text)')}
+                                onMouseLeave={(e) => (e.target.style.color = 'var(--wapixo-text-muted)')}
                             >
                                 {item}
                             </Link>
@@ -103,8 +97,8 @@ export default function WapixoNavbar() {
                                 key={item}
                                 href={`/#${item.toLowerCase()}`}
                                 style={linkStyle}
-                                onMouseEnter={(e) => (e.target.style.color = '#ffffff')}
-                                onMouseLeave={(e) => (e.target.style.color = 'rgba(255,255,255,0.55)')}
+                                onMouseEnter={(e) => (e.target.style.color = 'var(--wapixo-text)')}
+                                onMouseLeave={(e) => (e.target.style.color = 'var(--wapixo-text-muted)')}
                             >
                                 {item}
                             </a>
@@ -112,49 +106,92 @@ export default function WapixoNavbar() {
                     ))}
                 </div>
 
-                {/* Desktop CTA */}
-                <Link to="/register" style={{ textDecoration: 'none', flexShrink: 0 }} className="hidden-mobile-nav">
-                    <motion.button
-                        whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.95)' }}
-                        whileTap={{ scale: 0.97 }}
+                {/* Desktop Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }} className="hidden-mobile-nav">
+                    {/* Theme Toggle Button */}
+                    <button
+                        onClick={toggleTheme}
                         style={{
-                            fontFamily: "'Inter', sans-serif",
-                            fontWeight: 500,
-                            fontSize: '0.8rem',
-                            color: '#050505',
-                            background: '#ffffff',
-                            border: 'none',
+                            background: 'none',
+                            border: '1px solid var(--wapixo-border)',
                             borderRadius: '8px',
-                            padding: '0.65rem 1.5rem',
+                            color: 'var(--wapixo-text)',
                             cursor: 'pointer',
-                            letterSpacing: '0.04em',
-                            transition: 'background 0.25s ease',
+                            padding: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease',
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--wapixo-border)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+                    >
+                        {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
+                    </button>
+
+                    <Link to="/register" style={{ textDecoration: 'none' }}>
+                        <motion.button
+                            whileHover={{ scale: 1.04 }}
+                            whileTap={{ scale: 0.97 }}
+                            style={{
+                                fontFamily: "'Inter', sans-serif",
+                                fontWeight: 500,
+                                fontSize: '0.8rem',
+                                color: 'white',
+                                background: 'var(--wapixo-primary)',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '0.6rem 1.2rem',
+                                cursor: 'pointer',
+                                letterSpacing: '0.04em',
+                                transition: 'all 0.25s ease',
+                                boxShadow: '0 4px 15px rgba(180, 145, 43, 0.2)'
+                            }}
+                        >
+                            Get Started
+                        </motion.button>
+                    </Link>
+                </div>
+
+                {/* Mobile Actions Container */}
+                <div style={{ display: 'none', alignItems: 'center', gap: '0.75rem' }} className="show-mobile-nav">
+                    <button
+                        onClick={toggleTheme}
+                        style={{
+                            background: 'none',
+                            border: '1px solid var(--wapixo-border)',
+                            borderRadius: '8px',
+                            color: 'var(--wapixo-text)',
+                            cursor: 'pointer',
+                            padding: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
                         }}
                     >
-                        Get Started
-                    </motion.button>
-                </Link>
+                        {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
+                    </button>
 
-                {/* Mobile Hamburger Button */}
-                <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="show-mobile-nav"
-                    style={{
-                        background: 'none',
-                        border: '1px solid rgba(255,255,255,0.15)',
-                        borderRadius: '8px',
-                        color: '#ffffff',
-                        cursor: 'pointer',
-                        padding: '0.45rem',
-                        display: 'none',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 1010,
-                    }}
-                    aria-label="Toggle menu"
-                >
-                    {isMenuOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
-                </button>
+                    {/* Mobile Hamburger Button */}
+                    <button
+                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        style={{
+                            background: 'none',
+                            border: '1px solid var(--wapixo-border)',
+                            borderRadius: '8px',
+                            color: 'var(--wapixo-text)',
+                            cursor: 'pointer',
+                            padding: '0.5rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 2010,
+                        }}
+                        aria-label="Toggle menu"
+                    >
+                        {isMenuOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+                    </button>
+                </div>
             </motion.nav>
 
             {/* Mobile Full-Screen Drawer */}
@@ -167,19 +204,19 @@ export default function WapixoNavbar() {
                         transition={{ duration: 0.3, ease: 'easeOut' }}
                         style={{
                             position: 'fixed',
-                            top: '60px',
+                            top: '0',
                             left: 0,
                             right: 0,
                             bottom: 0,
-                            background: 'rgba(5, 5, 5, 0.98)',
+                            background: 'var(--wapixo-bg)',
                             backdropFilter: 'blur(30px)',
                             WebkitBackdropFilter: 'blur(30px)',
-                            zIndex: 999,
+                            zIndex: 1999,
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '2.5rem',
+                            gap: '2rem',
                             fontFamily: "'Inter', sans-serif",
                         }}
                     >
@@ -188,7 +225,7 @@ export default function WapixoNavbar() {
                                 key={item}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.07 }}
+                                transition={{ delay: idx * 0.05 }}
                             >
                                 {item === 'Contact' || item === 'Blog' ? (
                                     <Link
@@ -197,13 +234,10 @@ export default function WapixoNavbar() {
                                         style={{
                                             fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
                                             fontWeight: 200,
-                                            color: 'rgba(255,255,255,0.7)',
+                                            color: 'var(--wapixo-text-muted)',
                                             textDecoration: 'none',
                                             letterSpacing: '-0.01em',
-                                            transition: 'color 0.25s ease',
                                         }}
-                                        onMouseEnter={(e) => (e.target.style.color = '#ffffff')}
-                                        onMouseLeave={(e) => (e.target.style.color = 'rgba(255,255,255,0.7)')}
                                     >
                                         {item}
                                     </Link>
@@ -214,13 +248,10 @@ export default function WapixoNavbar() {
                                         style={{
                                             fontSize: 'clamp(1.5rem, 6vw, 2.5rem)',
                                             fontWeight: 200,
-                                            color: 'rgba(255,255,255,0.7)',
+                                            color: 'var(--wapixo-text-muted)',
                                             textDecoration: 'none',
                                             letterSpacing: '-0.01em',
-                                            transition: 'color 0.25s ease',
                                         }}
-                                        onMouseEnter={(e) => (e.target.style.color = '#ffffff')}
-                                        onMouseLeave={(e) => (e.target.style.color = 'rgba(255,255,255,0.7)')}
                                     >
                                         {item}
                                     </a>
@@ -231,17 +262,17 @@ export default function WapixoNavbar() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: navItems.length * 0.07 }}
+                            transition={{ delay: navItems.length * 0.05 }}
                             style={{ marginTop: '1rem' }}
                         >
                             <Link to="/register" style={{ textDecoration: 'none' }} onClick={() => setIsMenuOpen(false)}>
                                 <button
                                     style={{
-                                        background: '#ffffff',
-                                        color: '#050505',
+                                        background: 'var(--wapixo-primary)',
+                                        color: 'white',
                                         border: 'none',
                                         borderRadius: '8px',
-                                        padding: '0.85rem 2.5rem',
+                                        padding: '0.8rem 2.5rem',
                                         fontSize: '0.9rem',
                                         fontWeight: 500,
                                         cursor: 'pointer',

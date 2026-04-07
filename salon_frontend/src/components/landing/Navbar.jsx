@@ -19,8 +19,8 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-20">
                     <Link to="/" className="flex items-center gap-2">
                         <img
-                            src="/2-removebg-preview.png"
-                            alt="SalonCRM Logo"
+                            src="/new black wapixo logo .png"
+                            alt="Wapixo Logo"
                             className="h-16 w-auto object-contain"
                         />
                     </Link>

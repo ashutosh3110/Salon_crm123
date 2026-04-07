@@ -58,8 +58,8 @@ export default function Features({ data }) {
         <section
             id="features"
             style={{
-                background: '#050505',
-                padding: 'clamp(5rem, 10vw, 10rem) clamp(1.5rem, 5vw, 5rem)',
+                background: 'var(--wapixo-bg)',
+                padding: 'clamp(3.5rem, 7vw, 6rem) clamp(1.5rem, 5vw, 5rem)',
             }}
         >
             {/* Section header */}
@@ -68,13 +68,13 @@ export default function Features({ data }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
-                style={{ textAlign: 'center', marginBottom: 'clamp(3rem, 6vw, 6rem)' }}
+                style={{ textAlign: 'center', marginBottom: 'clamp(2rem, 4vw, 3.5rem)' }}
             >
                 <p style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300,
+                    fontWeight: 700,
                     fontSize: '0.7rem',
-                    color: 'rgba(255,255,255,0.35)',
+                    color: 'var(--wapixo-primary)',
                     letterSpacing: '0.4em',
                     textTransform: 'uppercase',
                     marginBottom: '1.25rem',
@@ -83,9 +83,9 @@ export default function Features({ data }) {
                 </p>
                 <h2 style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 200,
+                    fontWeight: 300,
                     fontSize: 'clamp(2rem, 5vw, 4rem)',
-                    color: '#ffffff',
+                    color: 'var(--wapixo-text)',
                     letterSpacing: '-0.02em',
                     lineHeight: 1.1,
                     margin: 0,
@@ -94,9 +94,9 @@ export default function Features({ data }) {
                 </h2>
                 <p style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300,
+                    fontWeight: 400,
                     fontSize: 'clamp(0.85rem, 1.5vw, 1.05rem)',
-                    color: 'rgba(255,255,255,0.45)',
+                    color: 'var(--wapixo-text-muted)',
                     marginTop: '1.5rem',
                     maxWidth: '500px',
                     marginLeft: 'auto',
@@ -119,18 +119,18 @@ export default function Features({ data }) {
                     gap: '1px',
                     maxWidth: '1100px',
                     margin: '0 auto',
-                    border: '1px solid rgba(255,255,255,0.06)',
+                    border: '1px solid var(--wapixo-border)',
                 }}
             >
                 {displayFeatures.map(({ icon: Icon, title, desc }) => (
                     <motion.div
                         key={title}
                         variants={itemVariants}
-                        whileHover={{ background: 'rgba(255,255,255,0.04)' }}
+                        whileHover={{ background: 'var(--wapixo-bg-alt)' }}
                         style={{
-                            padding: 'clamp(2rem, 4vw, 3rem)',
-                            background: 'rgba(255,255,255,0.01)',
-                            border: '1px solid rgba(255,255,255,0.06)',
+                            padding: 'clamp(1.5rem, 3vw, 2.25rem)',
+                            background: 'var(--wapixo-bg)',
+                            border: '1px solid var(--wapixo-border)',
                             cursor: 'default',
                             transition: 'background 0.3s ease',
                         }}
@@ -138,20 +138,20 @@ export default function Features({ data }) {
                         <div style={{
                             width: '40px',
                             height: '40px',
-                            border: '1px solid rgba(255,255,255,0.15)',
+                            border: '1px solid var(--wapixo-border)',
                             borderRadius: '8px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             marginBottom: '1.5rem',
                         }}>
-                            <Icon size={18} color="rgba(255,255,255,0.7)" strokeWidth={1.5} />
+                            <Icon size={18} color="var(--wapixo-primary)" strokeWidth={1.5} />
                         </div>
                         <h3 style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontWeight: 300,
+                            fontWeight: 500,
                             fontSize: '1.05rem',
-                            color: '#ffffff',
+                            color: 'var(--wapixo-text)',
                             margin: '0 0 0.75rem 0',
                             letterSpacing: '-0.01em',
                         }}>
@@ -159,9 +159,9 @@ export default function Features({ data }) {
                         </h3>
                         <p style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontWeight: 300,
+                            fontWeight: 400,
                             fontSize: '0.85rem',
-                            color: 'rgba(255,255,255,0.4)',
+                            color: 'var(--wapixo-text-muted)',
                             margin: 0,
                             lineHeight: 1.7,
                         }}>
@@ -181,7 +181,7 @@ export default function Features({ data }) {
                     display: 'flex',
                     justifyContent: 'center',
                     gap: 'clamp(2rem, 6vw, 6rem)',
-                    marginTop: 'clamp(4rem, 8vw, 8rem)',
+                    marginTop: 'clamp(3rem, 5vw, 5rem)',
                     flexWrap: 'wrap',
                 }}
             >
@@ -195,16 +195,16 @@ export default function Features({ data }) {
                             fontFamily: "'Inter', sans-serif",
                             fontWeight: 200,
                             fontSize: 'clamp(2rem, 4vw, 3.5rem)',
-                            color: '#ffffff',
+                            color: 'var(--wapixo-primary)',
                             letterSpacing: '-0.03em',
                         }}>
                             {value}
                         </div>
                         <div style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontWeight: 300,
+                            fontWeight: 400,
                             fontSize: '0.75rem',
-                            color: 'rgba(255,255,255,0.35)',
+                            color: 'var(--wapixo-text-muted)',
                             letterSpacing: '0.2em',
                             textTransform: 'uppercase',
                             marginTop: '0.5rem',

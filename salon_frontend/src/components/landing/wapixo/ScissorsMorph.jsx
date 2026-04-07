@@ -145,9 +145,9 @@ export default function ScissorsMorph() {
                 >
                     <p style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontWeight: 200,
+                        fontWeight: 700,
                         fontSize: 'clamp(0.65rem, 1.2vw, 0.85rem)',
-                        color: 'rgba(255,255,255,0.4)',
+                        color: 'var(--wapixo-primary)',
                         letterSpacing: '0.45em',
                         textTransform: 'uppercase',
                         margin: '0 0 1rem 0',

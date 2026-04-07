@@ -70,9 +70,9 @@ export default function ChairSection() {
                     transition={{ delay: 0.3, duration: 0.8 }}
                     style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontWeight: 200,
+                        fontWeight: 700,
                         fontSize: 'clamp(0.65rem, 1.2vw, 0.85rem)',
-                        color: 'rgba(255,255,255,0.45)',
+                        color: 'var(--wapixo-primary)',
                         letterSpacing: '0.45em',
                         textTransform: 'uppercase',
                         margin: '0 0 1.5rem 0',
@@ -109,23 +109,24 @@ export default function ChairSection() {
                 >
                     <Link to="/register" style={{ textDecoration: 'none' }}>
                         <motion.button
-                            whileHover={{ scale: 1.04, backgroundColor: '#f0f0f0' }}
+                            whileHover={{ scale: 1.04, backgroundColor: 'var(--wapixo-primary)', opacity: 0.9 }}
                             whileTap={{ scale: 0.96 }}
                             style={{
                                 fontFamily: "'Inter', sans-serif",
-                                fontWeight: 400,
+                                fontWeight: 700,
                                 fontSize: '0.9rem',
-                                color: '#050505',
-                                background: '#ffffff',
+                                color: 'white',
+                                background: 'var(--wapixo-primary)',
                                 border: 'none',
                                 borderRadius: '100px',
                                 padding: '0.9rem 2.2rem',
                                 cursor: 'pointer',
-                                letterSpacing: '0.03em',
+                                letterSpacing: '0.05em',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '0.5rem',
-                                transition: 'background 0.2s',
+                                transition: 'all 0.3s ease',
+                                boxShadow: '0 10px 20px rgba(180, 145, 43, 0.2)'
                             }}
                         >
                             Experience Wapixo
@@ -135,20 +136,20 @@ export default function ChairSection() {
 
                     <Link to="/login" style={{ textDecoration: 'none' }}>
                         <motion.button
-                            whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.1)' }}
+                            whileHover={{ scale: 1.04, backgroundColor: 'rgba(180, 145, 43, 0.1)', borderColor: 'var(--wapixo-primary)' }}
                             whileTap={{ scale: 0.96 }}
                             style={{
                                 fontFamily: "'Inter', sans-serif",
                                 fontWeight: 300,
                                 fontSize: '0.9rem',
-                                color: 'rgba(255,255,255,0.8)',
+                                color: '#ffffff',
                                 background: 'transparent',
                                 border: '1px solid rgba(255,255,255,0.2)',
                                 borderRadius: '100px',
                                 padding: '0.9rem 2.2rem',
                                 cursor: 'pointer',
                                 letterSpacing: '0.03em',
-                                transition: 'background 0.2s',
+                                transition: 'all 0.3s ease',
                             }}
                         >
                             Sign In

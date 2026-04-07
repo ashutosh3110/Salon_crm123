@@ -90,7 +90,7 @@ export default function AppSplashScreen({ onComplete }) {
             >
                 {/* {isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'} */}
                 {/* <img
-                    src={isLight ? '/2-removebg-preview.png' : '/1-removebg-preview.png'}
+                    src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'}
                     alt="Salon Logo"
                     style={{
                         height: '110px',

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useTheme } from '../../contexts/ThemeContext';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
 import WapixoLoader from '../../components/landing/wapixo/WapixoLoader';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
@@ -15,16 +16,12 @@ import ChairSection from '../../components/landing/wapixo/ChairSection';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
 export default function LandingPage() {
+    const { theme } = useTheme();
     const [loaded, setLoaded] = useState(false);
     const [cmsData, setCmsData] = useState(null);
 
     useEffect(() => {
-        const originalBg = document.body.style.backgroundColor;
-        document.body.style.backgroundColor = '#050505';
         fetchCMS();
-        return () => {
-            document.body.style.backgroundColor = originalBg;
-        };
     }, []);
 
     const fetchCMS = async () => {
@@ -43,11 +40,9 @@ export default function LandingPage() {
 
             {/* Main page content */}
             <SmoothScroll>
-                <div className="new-dark-theme" style={{ minHeight: '100vh', position: 'relative' }}>
+                <div className="new-theme" style={{ minHeight: '100vh', position: 'relative' }}>
                     <WapixoNavbar />
-                    <div style={{ paddingTop: '60px' }}>
-                        <HeroScroll data={cmsData?.landing_hero} />
-                    </div>
+                    <HeroScroll data={cmsData?.landing_hero} />
                     <Features data={cmsData?.landing_features} />
                     <ScissorsMorph />
                     <WapixoSolutions />

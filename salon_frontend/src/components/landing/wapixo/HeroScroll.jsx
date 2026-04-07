@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, useTransform, useMotionValue } from 'framer-motion';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const TOTAL_FRAMES = 120;
 const FOLDER = '/Sequence-1';
@@ -10,6 +11,7 @@ function getFrameUrl(index) {
 }
 
 export default function HeroScroll({ data }) {
+    const { theme } = useTheme();
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const imagesRef = useRef([]);
@@ -119,7 +121,7 @@ export default function HeroScroll({ data }) {
     return (
         <div
             ref={containerRef}
-            style={{ height: isMobile ? '300vh' : '500vh', position: 'relative' }}
+            style={{ height: '200vh', position: 'relative' }}
         >
             {/* Sticky canvas viewport — will-change promotes layer to reduce scroll repaints */}
             <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden', willChange: 'transform' }}>
@@ -129,7 +131,7 @@ export default function HeroScroll({ data }) {
                         display: 'block',
                         width: '100%',
                         height: '100%',
-                        background: '#050505',
+                        background: 'var(--wapixo-bg)',
                     }}
                 />
 
@@ -137,7 +139,9 @@ export default function HeroScroll({ data }) {
                 <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(5,5,5,0.2) 0%, transparent 30%, transparent 70%, rgba(5,5,5,0.5) 100%)',
+                    background: theme === 'dark' 
+                        ? 'linear-gradient(to bottom, rgba(5,5,5,0.2) 0%, transparent 30%, transparent 70%, rgba(5,5,5,0.5) 100%)'
+                        : 'linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 30%, transparent 70%, rgba(255,255,255,0.3) 100%)',
                     pointerEvents: 'none',
                 }} />
 
@@ -156,14 +160,14 @@ export default function HeroScroll({ data }) {
                 >
                     <h1 style={{
                         fontFamily: "'Inter', sans-serif",
-                        fontWeight: 200,
+                        fontWeight: 300,
                         fontSize: 'clamp(1.8rem, 5vw, 4.5rem)',
-                        color: '#ffffff',
+                        color: 'var(--wapixo-text)',
                         letterSpacing: '-0.02em',
                         lineHeight: 1.1,
                         margin: 0,
                         padding: '0 1.5rem',
-                        textShadow: '0 2px 40px rgba(0,0,0,0.5)',
+                        textShadow: theme === 'dark' ? '0 2px 40px rgba(0,0,0,0.5)' : 'none',
                     }}>
                         {data?.title ? (
                             <>
@@ -208,23 +212,23 @@ export default function HeroScroll({ data }) {
                         }}
                     >
                         <img
-                            src="/1-removebg-preview.png"
+                            src={theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png"}
                             alt="Wapixo"
                             style={{
                                 height: 'clamp(100px, 18vw, 250px)',
                                 width: 'auto',
-                                filter: 'brightness(0) invert(1)',
                             }}
                         />
                         <p style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontSize: '0.7rem',
-                            color: 'rgba(255,255,255,0.4)',
+                            fontSize: '0.75rem',
+                            color: 'var(--wapixo-primary)',
+                            fontWeight: 600,
                             letterSpacing: '0.3em',
                             textTransform: 'uppercase',
-                            margin: '1.5rem 0 0 0', // Moved down slightly as requested
+                            margin: '1.5rem 0 0 0',
                         }}>
-                            POWERING SMART BUSINESSES
+                             Elevating Smart Businesses
                         </p>
                     </motion.div>
                     <motion.h2
@@ -233,9 +237,9 @@ export default function HeroScroll({ data }) {
                         transition={{ duration: 1, delay: 0.7 }}
                         style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontWeight: 200,
+                            fontWeight: 300,
                             fontSize: 'clamp(2rem, 6vw, 5.5rem)',
-                            color: '#ffffff',
+                            color: 'var(--wapixo-text)',
                             letterSpacing: '-0.03em',
                             lineHeight: 1.05,
                             margin: 'clamp(-3rem, -6vw, -6rem) 0 0 0',
@@ -275,7 +279,7 @@ export default function HeroScroll({ data }) {
                             fontFamily: "'Inter', sans-serif",
                             fontSize: '0.6rem',
                             letterSpacing: '0.3em',
-                            color: 'rgba(255,255,255,0.35)',
+                            color: 'var(--wapixo-text-muted)',
                             textTransform: 'uppercase',
                         }}>Scroll</span>
                         <motion.div
@@ -283,8 +287,9 @@ export default function HeroScroll({ data }) {
                             transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
                             style={{
                                 width: '1px',
-                                height: '40px',
-                                background: 'linear-gradient(to bottom, rgba(255,255,255,0.4), transparent)',
+                                height: '50px',
+                                background: 'linear-gradient(to bottom, var(--wapixo-primary), transparent)',
+                                opacity: 0.8
                             }}
                         />
                     </motion.div>

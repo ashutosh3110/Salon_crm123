@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function PrivacyPolicy() {
     const [cmsData, setCmsData] = useState(null);
@@ -32,7 +33,7 @@ export default function PrivacyPolicy() {
         <LegalLayout title={title}>
             {loading ? (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#B85C5C]"></div>
                 </div>
             ) : content ? (
                 <div dangerouslySetInnerHTML={{ __html: content }} />
@@ -73,8 +74,8 @@ export default function PrivacyPolicy() {
                     </section>
                 </>
             )}
-            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-                <p style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
+            <div style={{ marginTop: '5rem', paddingTop: '2.5rem', borderTop: '1px solid var(--wapixo-border)', textAlign: 'center' }}>
+                <p style={{ fontSize: '10px', fontWeight: 500, color: 'var(--wapixo-text-muted)', textTransform: 'uppercase', letterSpacing: '0.2em' }}>
                     Last Updated: {lastUpdated}
                 </p>
             </div>
@@ -83,30 +84,36 @@ export default function PrivacyPolicy() {
 }
 
 const LegalLayout = ({ title, children }) => {
+    const { theme } = useTheme();
+    
     useEffect(() => {
-        const originalBg = document.body.style.backgroundColor;
-        document.body.style.backgroundColor = '#050505';
+        document.body.style.backgroundColor = 'var(--wapixo-bg)';
         return () => {
-            document.body.style.backgroundColor = originalBg;
+            document.body.style.backgroundColor = '';
         };
     }, []);
 
     return (
-        <div className="new-dark-theme" style={{ background: 'radial-gradient(circle at 50% 0%, #111111 0%, #050505 70%)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
+        <div className="new-theme" style={{ background: 'var(--wapixo-bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif", color: 'var(--wapixo-text)' }}>
             <WapixoNavbar />
 
-            {/* Elegant Cinematic Header */}
-            <div style={{ paddingTop: 'clamp(80px, 12vw, 100px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            {/* Elegant Header */}
+            <div style={{ paddingTop: 'clamp(100px, 15vw, 140px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', inset: 0, opacity: theme === 'dark' ? 0.1 : 0.05, pointerEvents: 'none' }}>
+                    <div style={{ position: 'absolute', top: '-10%', left: '20%', width: '400px', height: '400px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(120px)' }} />
+                    <div style={{ position: 'absolute', bottom: '-10%', right: '20%', width: '500px', height: '500px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(140px)' }} />
+                </div>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                     style={{ position: 'relative', zIndex: 10, padding: '0 1rem' }}
                 >
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.65rem', fontWeight: 300, textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block' }}>
-                        Salon Ecosystem
+                    <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.65rem', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block' }}>
+                        Security Protocol
                     </p>
-                    <h1 style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>
+                    <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>
                         {title}.
                     </h1>
                 </motion.div>
@@ -118,19 +125,19 @@ const LegalLayout = ({ title, children }) => {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    style={{ background: 'rgba(255,255,255,0.02)', padding: 'clamp(2rem, 5vw, 5rem)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '4px' }}
+                    style={{ background: 'var(--wapixo-bg-alt)', padding: 'clamp(2rem, 5vw, 5rem)', border: '1px solid var(--wapixo-border)', borderRadius: '8px' }}
                 >
-                    <div style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '1.1rem', fontWeight: 300 }} className="legal-content-wapixo">
+                    <div style={{ color: 'var(--wapixo-text-muted)', lineHeight: 1.8, fontSize: '1.05rem', fontWeight: 400 }} className="legal-content-wapixo">
                         {children}
                     </div>
 
                     <style>{`
                         .legal-content-wapixo h2 {
-                            color: #ffffff;
-                            font-weight: 200;
-                            font-size: 1.5rem;
-                            margin-top: 3rem;
-                            margin-bottom: 1.25rem;
+                            color: var(--wapixo-text);
+                            font-weight: 300;
+                            font-size: 1.75rem;
+                            margin-top: 3.5rem;
+                            margin-bottom: 1.5rem;
                             letter-spacing: -0.01em;
                         }
                         .legal-content-wapixo p {
@@ -149,19 +156,19 @@ const LegalLayout = ({ title, children }) => {
                         }
                         .legal-content-wapixo li::before {
                             content: "—";
-                            color: rgba(255,255,255,0.3);
+                            color: var(--wapixo-text-muted);
+                            opacity: 0.3;
                         }
                     `}</style>
                 </motion.div>
             </main>
 
-            {/* Bottom Dark Section */}
-            <div style={{ background: '#050505', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '60px 0', textAlign: 'center' }}>
-                <h2 style={{ fontSize: '1.75rem', fontWeight: 200, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>Secure & Trusted.</h2>
+            {/* Bottom Section */}
+            <div style={{ background: 'var(--wapixo-bg)', borderTop: '1px solid var(--wapixo-border)', padding: '80px 0', textAlign: 'center' }}>
+                <h2 style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', margin: 0 }}>Secure & Trusted.</h2>
             </div>
 
             <WapixoFooter />
         </div>
     );
 };
-
