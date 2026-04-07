@@ -86,12 +86,14 @@ export async function geocodeAddress(address, city, state, pincode) {
 /** Reverse geocode lat/lng to formatted address */
 export async function reverseGeocodeAddress(lat, lng) {
     const key = process.env.GOOGLE_MAPS_API_KEY;
+    console.log('[Geocode] Key present:', !!key);
     if (!key) return { status: 'NO_KEY', message: 'Google API Key missing' };
     
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`;
         const res = await fetch(url);
         const data = await res.json();
+        console.log('[Geocode] Response Status:', data.status);
         
         if (data.status === 'OK' && data.results.length > 0) {
             const results = data.results;
