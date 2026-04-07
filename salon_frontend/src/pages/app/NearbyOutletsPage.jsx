@@ -71,7 +71,7 @@ export default function NearbyOutletsPage() {
         setLoading(true);
         setError('');
         try {
-            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`, { timeout: 10000 });
+            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`, { timeout: 30000 });
             setOutlets(Array.isArray(res.data) ? res.data : []);
 
             const allRes = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=500`);
