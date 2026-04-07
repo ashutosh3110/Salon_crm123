@@ -9,6 +9,12 @@ class WhatsAppService {
         this.phoneNumberId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_NUMBER_ID;
         this.version = 'v20.0';
         this.baseUrl = `https://graph.facebook.net/${this.version}/${this.phoneNumberId}/messages`;
+        
+        if (this.token && this.phoneNumberId) {
+            console.log(`[WHATSAPP-SYSTEM] Initialized with PhoneID: ${this.phoneNumberId} (Ready)`);
+        } else {
+            console.warn(`[WHATSAPP-SYSTEM] WARNING: Missing Token or Phone Number ID in .env. System will run in Simulation Mode.`);
+        }
     }
 
     /**
@@ -19,6 +25,8 @@ class WhatsAppService {
      * @param {string} languageCode - Default is 'en_US' or 'hi'
      */
     async sendTemplateMessage(to, templateName, components = [], languageCode = 'en_US') {
+        console.log(`[WHATSAPP-REQUEST] Target: ${to} | Template: ${templateName}`);
+        
         const payload = {
             messaging_product: 'whatsapp',
             to,
@@ -36,10 +44,10 @@ class WhatsAppService {
         };
 
         if (!this.token || !this.phoneNumberId) {
-            console.warn(`[WHATSAPP-PLACEHOLDER] API Key missing. Simulation:
-            TO: ${to}
-            TEMPLATE: ${templateName}
-            VALUES: ${JSON.stringify(components)}`);
+            console.warn(`[WHATSAPP-SIMULATION] No API credentials. Message details:
+            >> TO: ${to}
+            >> TEMPLATE: ${templateName}
+            >> DATA: ${JSON.stringify(components)}`);
             return { success: true, simulated: true };
         }
 
