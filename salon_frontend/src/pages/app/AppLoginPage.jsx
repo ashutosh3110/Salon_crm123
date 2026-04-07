@@ -349,6 +349,17 @@ export default function AppLoginPage() {
                                         </div>
                                     </div>
 
+                                    {!locationLoading && userCoords && (
+                                        <div className="mb-2 px-1">
+                                            <p className="text-[10px] font-bold text-[#C8956C] truncate max-w-full italic mb-0.5">
+                                                {detectedAddress || 'Location Synchronized'}
+                                            </p>
+                                            <p className="text-[8px] font-medium opacity-20 tracking-widest">
+                                                LAT: {userCoords.lat.toFixed(4)} | LNG: {userCoords.lng.toFixed(4)}
+                                            </p>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/[0.03] overflow-visible">
                                         {RADIUS_OPTIONS.map((km) => (
                                             <button
