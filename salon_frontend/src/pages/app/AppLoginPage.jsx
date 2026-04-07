@@ -80,7 +80,7 @@ export default function AppLoginPage() {
     const fetchOutlets = async (lat, lng, radiusKm) => {
         setIsFetchingOutlets(true);
         try {
-            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`, { timeout: 10000 });
+            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`, { timeout: 30000 });
             setNearbyOutlets(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error('Fetch error:', err);
