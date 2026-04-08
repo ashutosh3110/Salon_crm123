@@ -73,22 +73,64 @@ class OutletService {
     }
 
     async getNearbyOutletsPublic(lat, lng, radiusKm = 10) {
-        if (lat == null || lng == null) return [];
-        let outlets = await Outlet.find({ status: 'active' }).populate('tenantId', 'name').lean();
+        console.log(`[getNearbyOutletsPublic] Start. Lat: ${lat}, Lng: ${lng}, Radius: ${radiusKm}`);
+        const startTime = Date.now();
         
-        // No auto-geocoding here to prevent timeout. 
-        // Coordinates must be set during outlet creation/update.
-
-        const withDistance = outlets
-            .filter(o => o.latitude != null && o.longitude != null)
-            .map(o => {
-                const dist = haversineKm(lat, lng, o.latitude, o.longitude);
-                return { ...o, distanceKm: Math.round(dist * 100) / 100, salonName: o.tenantId?.name };
-            })
-            .filter(o => o.distanceKm <= radiusKm)
-            .sort((a, b) => a.distanceKm - b.distanceKm);
+        try {
+            // 1. Fetch active outlets with basic fields
+            const outlets = await Outlet.find({ status: 'active' })
+                .select('name address image latitude longitude tenantId city')
+                .lean();
+                
+            console.log(`[getNearbyOutletsPublic] Found ${outlets.length} active outlets in ${Date.now() - startTime}ms`);
             
-        return withDistance.map(({ tenantId, ...rest }) => ({ ...rest, tenantId: tenantId?._id || tenantId }));
+            if (outlets.length === 0) return [];
+
+            // 2. Manual join for Salon Names (Tenant names)
+            const tenantIds = [...new Set(outlets.map(o => o.tenantId?.toString()).filter(Boolean))];
+            const tenants = await Tenant.find({ _id: { $in: tenantIds } }).select('name').lean();
+            const tenantMap = tenants.reduce((acc, t) => {
+                acc[t._id.toString()] = t.name;
+                return acc;
+            }, {});
+
+            console.log(`[getNearbyOutletsPublic] Fetched ${tenants.length} tenants in ${Date.now() - startTime}ms`);
+
+            // 3. Process distances
+            let results = outlets.map(o => {
+                const tId = o.tenantId?.toString();
+                const salonName = tenantMap[tId] || o.name;
+                
+                let distanceKm = null;
+                if (lat != null && lng != null && o.latitude != null && o.longitude != null) {
+                    distanceKm = haversineKm(lat, lng, o.latitude, o.longitude);
+                    distanceKm = Math.round(distanceKm * 100) / 100;
+                }
+
+                return {
+                    ...o,
+                    tenantId: tId,
+                    salonName,
+                    distanceKm
+                };
+            });
+
+            // 4. Filter by radius if coords provided
+            if (lat != null && lng != null) {
+                results = results
+                    .filter(o => o.distanceKm !== null && o.distanceKm <= radiusKm)
+                    .sort((a, b) => a.distanceKm - b.distanceKm);
+            }
+
+            console.log(`[getNearbyOutletsPublic] Completed in ${Date.now() - startTime}ms. Count: ${results.length}`);
+            return results.slice(0, 50);
+
+        } catch (error) {
+            console.error(`[getNearbyOutletsPublic] Error:`, error);
+            // Fallback: return everything without distance if possible
+            const basic = await Outlet.find({ status: 'active' }).limit(20).lean();
+            return basic.map(o => ({ ...o, salonName: o.name, distanceKm: null }));
+        }
     }
 
     async getOutletById(id, tenantId) {
@@ -124,6 +166,10 @@ class OutletService {
 
     async reverseGeocode(lat, lng) {
         return reverseGeocodeAddress(lat, lng);
+    }
+
+    async geocodeQuery(q) {
+        return geocodeAddress(q, '', '', '');
     }
 }
 

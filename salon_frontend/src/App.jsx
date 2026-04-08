@@ -432,7 +432,7 @@ function App() {
 
                         {/* ═══════════════════════════════════════════════════════════
                  INVENTORY MANAGER — Stock Panel
-                 ═══════════════════════════════════════════════════════════ */}
+                   */}
                         <Route element={<ProtectedRoute allowedRoles={['inventory_manager']} />}>
                           <Route element={<InventoryLayout />}>
                             <Route path="/inventory" element={<InventoryDashboard />} />

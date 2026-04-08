@@ -5,7 +5,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Loader2, User, MapPin, MapPinned, Star, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Loader2, User, MapPin, MapPinned, Star, ChevronRight, Search, Navigation, Scan } from 'lucide-react';
 import api from '../../services/api';
 import PasswordField from '../../components/common/PasswordField';
 
@@ -36,7 +36,7 @@ export default function AppLoginPage() {
     const [userCoords, setUserCoords] = useState(null);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [tenantId, setTenantId] = useState(tenantIdFromUrl || storedSelectedOutlet?.tenantId || '');
-    const [locationLoading, setLocationLoading] = useState(!(tenantIdFromUrl || storedSelectedOutlet?.tenantId));
+    const [locationLoading, setLocationLoading] = useState(false);
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -77,14 +77,29 @@ export default function AppLoginPage() {
     const [nearbyOutlets, setNearbyOutlets] = useState([]);
     const [isFetchingOutlets, setIsFetchingOutlets] = useState(false);
 
+    const [searchQuery, setSearchQuery] = useState('');
+
     const fetchOutlets = async (lat, lng, radiusKm) => {
         setIsFetchingOutlets(true);
+        const url = (lat != null && lng != null) 
+            ? `/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`
+            : `/outlets/nearby`; // Public endpoint now returns all if no coords
+        
         try {
-            const res = await api.get(`/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`, { timeout: 30000 });
-            setNearbyOutlets(Array.isArray(res.data) ? res.data : []);
+            const res = await api.get(url, { timeout: 30000 });
+            let data = Array.isArray(res.data) ? res.data : [];
+            
+            // Auto-expand radius if no outlets found near
+            if (data.length === 0 && lat != null && radiusKm < 25) {
+                const nextRadius = radiusKm === 3 ? 10 : 25;
+                setSearchRadiusKm(nextRadius);
+                return fetchOutlets(lat, lng, nextRadius);
+            }
+
+            setNearbyOutlets(data);
         } catch (err) {
             console.error('Fetch error:', err);
-            setError('Collection refresh delayed.');
+            setError('Could not reach server. Please check connection.');
         } finally {
             setIsFetchingOutlets(false);
         }
@@ -102,6 +117,27 @@ export default function AppLoginPage() {
         return '';
     };
 
+    const handleLocationSearch = async (query) => {
+        if (!query || query.length < 3) return;
+        setIsFetchingOutlets(true);
+        setError('');
+        try {
+            const res = await api.get(`/outlets/geocode?q=${encodeURIComponent(query)}`);
+            if (res.data?.latitude && res.data?.longitude) {
+                const coords = { lat: res.data.latitude, lng: res.data.longitude };
+                setUserCoords(coords);
+                setDetectedAddress(query);
+                fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
+            } else {
+                fetchOutlets(null, null, searchRadiusKm);
+            }
+        } catch (err) {
+            fetchOutlets(null, null, searchRadiusKm);
+        } finally {
+            setIsFetchingOutlets(false);
+        }
+    };
+
     const fetchLocationAndNearby = () => {
         setLocationLoading(true);
         setError('');
@@ -110,6 +146,7 @@ export default function AppLoginPage() {
         if (!navigator.geolocation) {
             setError('Geolocation not supported.');
             setLocationLoading(false);
+            fetchOutlets(null, null, searchRadiusKm); // Fallback to all outlets
             return;
         }
 
@@ -123,26 +160,37 @@ export default function AppLoginPage() {
                 fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
             },
             (err) => {
-                setError('Location access denied. Please enable GPS.');
+                const msg = err.code === 1 ? 'Location access denied. Showing all salons.' : 'Location sync failed. Switching to manual.';
+                setError(msg);
                 setLocationLoading(false);
+                fetchOutlets(null, null, searchRadiusKm); // Fallback to all outlets
             },
-            { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
     };
 
     useEffect(() => {
-        // Only skip to Step 1 (Login) if we have a tenantId from the URL (e.g. QR code).
-        // If it's just from localStorage, stay on Step 0 (Discovery) so the user sees the salon list first.
         if (tenantIdFromUrl) {
-            if (storedSelectedOutlet?.tenantId && !selectedOutlet) setSelectedOutlet(storedSelectedOutlet);
             setTenantId(tenantIdFromUrl);
             setStep(1);
-            setLocationLoading(false);
             return;
         }
 
-        fetchLocationAndNearby();
-    }, [tenantIdFromUrl, storedSelectedOutlet?.tenantId]);
+        const saved = localStorage.getItem('wapixo_user_coords');
+        if (saved) {
+            try {
+                const coords = JSON.parse(saved);
+                setUserCoords(coords);
+                setLocationLoading(false);
+                fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
+                reverseGeocode(coords.lat, coords.lng);
+            } catch (e) { 
+                fetchOutlets(null, null, searchRadiusKm);
+            }
+        } else {
+            fetchOutlets(null, null, searchRadiusKm);
+        }
+    }, [tenantIdFromUrl]);
 
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
@@ -318,134 +366,177 @@ export default function AppLoginPage() {
                         exit={{ opacity: 0 }}
                         style={{ width: '100%', maxWidth: '420px' }}
                     >
-                        {/* Clean Brand Header */}
-                        <div className="flex flex-col items-center mb-10">
+                        <div className="flex flex-col items-center mb-8">
                             <img
                                 src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'}
                                 alt="Wapixo"
-                                className="w-12 h-auto opacity-60 mb-6"
+                                className="w-14 h-auto opacity-80 mb-6 drop-shadow-2xl"
                             />
-                            <h1 className="text-3xl font-serif italic text-white mb-2">
-                                Select Your <span className="font-normal text-[#C8956C]">Salon</span>
+                            <h1 className="text-4xl font-serif italic text-white mb-2 text-center">
+                                Precision <span className="font-normal text-[#C8956C]">Meets</span> Style
                             </h1>
-                            <p className="text-[11px] font-medium tracking-widest text-white/30 uppercase">Discover boutiques near you</p>
+                            <p className="text-[10px] font-black tracking-[0.3em] text-white/30 uppercase text-center">Find your signature sanctuary</p>
                         </div>
 
                         {locationLoading ? (
                             <div className="py-16 flex flex-col items-center">
-                                <Loader2 size={32} className="text-[#C8956C] animate-spin mb-4 opacity-50" />
-                                <p className="text-xs font-bold tracking-widest text-[#C8956C] uppercase">Detecting Location...</p>
-                                {detectedAddress && <p className="text-[10px] text-white/20 mt-2 truncate max-w-[200px]">{detectedAddress}</p>}
+                                <div className="relative w-16 h-16 mb-6">
+                                    <div className="absolute inset-0 rounded-full border-2 border-[#C8956C]/20" />
+                                    <div className="absolute inset-0 rounded-full border-t-2 border-[#C8956C] animate-spin" />
+                                    <MapPin size={24} className="absolute inset-0 m-auto text-[#C8956C] animate-pulse" />
+                                </div>
+                                <p className="text-xs font-black tracking-widest text-[#C8956C] uppercase mb-1">Synchronizing Location</p>
+                                <p className="text-[10px] text-white/20 italic text-center">Calibrating nearest boutiques...</p>
                             </div>
                         ) : (
-                            <div className="space-y-8">
-                                {/* Concentrated Search Radius Hub */}
-                                <div className="space-y-2.5 max-w-[320px] mx-auto">
-                                    <div className="flex items-center justify-between px-1">
-                                        <h2 className="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Sanctuary Perimeter</h2>
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="w-1 h-1 rounded-full bg-[#C8956C]" />
-                                            <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest">{searchRadiusKm} KM Focus</span>
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <div className="relative group">
+                                        <div className="absolute inset-0 bg-[#C8956C]/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="relative flex items-center gap-3 bg-white/[0.03] border border-white/[0.05] h-14 px-4 rounded-2xl group-focus-within:border-[#C8956C]/50 transition-all">
+                                            <Search size={18} className="text-white/20 group-focus-within:text-[#C8956C] transition-colors" />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Salon name or city..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handleLocationSearch(searchQuery);
+                                                }}
+                                                className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-white/20"
+                                            />
                                         </div>
                                     </div>
 
-                                    {!locationLoading && userCoords && (
-                                        <div className="mb-2 px-1">
-                                            <p className="text-[10px] font-bold text-[#C8956C] truncate max-w-full italic mb-0.5">
-                                                {detectedAddress || 'Location Synchronized'}
-                                            </p>
-                                            <p className="text-[8px] font-medium opacity-20 tracking-widest">
-                                                LAT: {userCoords.lat.toFixed(4)} | LNG: {userCoords.lng.toFixed(4)}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/[0.03] overflow-visible">
-                                        {RADIUS_OPTIONS.map((km) => (
-                                            <button
-                                                key={km}
-                                                onClick={() => {
-                                                    setSearchRadiusKm(km);
-                                                    if (userCoords) fetchOutlets(userCoords.lat, userCoords.lng, km);
-                                                }}
-                                                className={`relative h-9 rounded-xl transition-all duration-300 overflow-hidden flex items-center justify-center ${searchRadiusKm === km
-                                                    ? 'bg-[#C8956C]'
-                                                    : 'bg-white/[0.01] hover:bg-white/[0.03]'
-                                                    }`}
+                                    <div className="bg-black/40 p-4 rounded-3xl border border-white/[0.03] space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h2 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Search Radius</h2>
+                                                <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => fetchLocationAndNearby()}
+                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8956C]/10 text-[#C8956C] border border-[#C8956C]/20 hover:bg-[#C8956C]/20 transition-all"
                                             >
-                                                <span className={`relative z-10 text-sm font-serif italic ${searchRadiusKm === km ? 'text-white font-black' : 'text-white/20'
-                                                    }`}>
-                                                    {km}
-                                                </span>
-                                                {searchRadiusKm === km && (
-                                                    <motion.div
-                                                        layoutId="active-range-focused"
-                                                        className="absolute inset-0 bg-gradient-to-tr from-[#C8956C] to-[#E5B58F] opacity-30 shadow-[0_4px_10px_rgba(200,149,108,0.2)]"
-                                                    />
-                                                )}
+                                                <Navigation size={12} fill="currentColor" />
+                                                <span className="text-[10px] font-bold uppercase tracking-tight">Auto Detect</span>
                                             </button>
-                                        ))}
+                                        </div>
+
+                                        <div className="grid grid-cols-4 gap-2">
+                                            {RADIUS_OPTIONS.map((km) => (
+                                                <button
+                                                    key={km}
+                                                    onClick={() => {
+                                                        setSearchRadiusKm(km);
+                                                        if (userCoords) fetchOutlets(userCoords.lat, userCoords.lng, km);
+                                                    }}
+                                                    className={`h-10 rounded-xl text-xs font-bold transition-all relative ${
+                                                        searchRadiusKm === km 
+                                                        ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]' 
+                                                        : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
+                                                    }`}
+                                                >
+                                                    {km} km
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Salon Collection */}
-                                {(isFetchingOutlets || nearbyOutlets.length > 0) && (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between px-1">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Nearby Boutiques</span>
-                                            <span className="text-[10px] italic text-white/20">{nearbyOutlets.length} found</span>
-                                        </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Discovery Results</span>
+                                        {detectedAddress && (
+                                            <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
+                                                Near {detectedAddress}
+                                            </span>
+                                        )}
+                                    </div>
 
-                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar pb-2">
-                                            {isFetchingOutlets ? (
-                                                [1, 2].map(i => (
-                                                    <div key={i} className="h-24 rounded-2xl bg-[#1A1A1A] animate-pulse border border-white/5" />
-                                                ))
-                                            ) : (
-                                                nearbyOutlets.map((o) => (
-                                                    <button
+                                    <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar pb-2">
+                                        {isFetchingOutlets ? (
+                                            [1, 2, 3].map(i => (
+                                                <div key={i} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
+                                                    <div className="w-20 h-20 rounded-2xl bg-white/[0.02]" />
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="h-4 w-1/2 bg-white/[0.02] rounded" />
+                                                        <div className="h-3 w-3/4 bg-white/[0.02] rounded" />
+                                                        <div className="h-3 w-1/4 bg-white/[0.02] rounded" />
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : nearbyOutlets.length > 0 ? (
+                                            nearbyOutlets
+                                                .filter(o => 
+                                                    !searchQuery || 
+                                                    o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                                    o.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                    o.address?.toLowerCase().includes(searchQuery.toLowerCase())
+                                                )
+                                                .map((o) => (
+                                                    <motion.button
                                                         key={o._id}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
                                                         onClick={() => handleSelectOutlet(o)}
-                                                        className="w-full text-left bg-[#1A1A1A] p-3 rounded-2xl border border-white/5 hover:border-[#C8956C]/40 transition-all duration-300 flex items-center gap-4 group"
+                                                        className="w-full group relative overflow-hidden bg-white/[0.02] p-4 rounded-3xl border border-white/[0.05] hover:border-[#C8956C]/40 transition-all duration-500 flex items-center gap-4"
                                                     >
-                                                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-black">
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-white/10 relative z-10 shadow-2xl">
                                                             <img
                                                                 src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                                 alt={o.name}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                                             />
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
+                                                        <div className="flex-1 min-w-0 relative z-10">
                                                             <div className="flex items-center justify-between mb-1">
-                                                                <h4 className="text-base font-serif italic text-white truncate">{o.name}</h4>
-                                                                <div className="flex items-center gap-1 shrink-0">
+                                                                <h4 className="text-lg font-serif italic text-white truncate drop-shadow-sm">{o.name}</h4>
+                                                                <ChevronRight size={16} className="text-white/10 group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all" />
+                                                            </div>
+                                                            <p className="text-[11px] text-white/40 truncate mb-3 font-medium tracking-tight">
+                                                                {o.address || o.city || 'Signature Sanctuary'}
+                                                            </p>
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/40 border border-white/5">
+                                                                    <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
+                                                                    <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
+                                                                        {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 opacity-40">
                                                                     <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
-                                                                    <span className="text-xs font-bold text-white/60">4.9</span>
+                                                                    <span className="text-[9px] font-bold text-white uppercase tracking-tighter">4.8</span>
                                                                 </div>
                                                             </div>
-                                                            <p className="text-[10px] text-white/30 truncate mb-2">{o.address}</p>
-                                                            <div className="inline-flex items-center gap-2">
-                                                                <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
-                                                                <span className="text-[9px] font-bold text-[#C8956C] uppercase tracking-widest">
-                                                                    {o.distance?.toFixed(2) || '1.2'} KM AWAY
-                                                                </span>
-                                                            </div>
                                                         </div>
-                                                        <ChevronRight size={14} className="text-white/10 group-hover:text-[#C8956C] transition-colors" />
-                                                    </button>
+                                                    </motion.button>
                                                 ))
-                                            )}
-                                        </div>
+                                        ) : (
+                                            <div className="py-12 flex flex-col items-center text-center px-6">
+                                                <div className="w-16 h-16 rounded-full bg-white/[0.02] flex items-center justify-center mb-4 border border-white/5">
+                                                    <Search size={24} className="text-white/10" />
+                                                </div>
+                                                <h3 className="text-sm font-serif italic text-white/60 mb-2">No Sanctuaries Nearby</h3>
+                                                <p className="text-[10px] text-white/30 font-medium leading-relaxed uppercase tracking-widest text-center">
+                                                    Expand your perimeter or search <br/>for a specific destination
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </div>
 
-                                <button
-                                    onClick={() => fetchLocationAndNearby()}
-                                    className="w-full h-14 rounded-2xl border border-[#C8956C]/20 bg-[#C8956C]/10 text-[#C8956C] flex items-center justify-center gap-3 hover:bg-[#C8956C]/20 transition-all font-bold text-xs uppercase tracking-widest"
-                                >
-                                    <MapPinned size={18} />
-                                    Use Live Location
-                                </button>
+                                <div className="pt-2">
+                                    <p className="text-[10px] text-center text-white/10 font-bold uppercase tracking-[0.2em] mb-4">— OR —</p>
+                                    <button
+                                        onClick={() => setStep(1)}
+                                        className="w-full h-14 rounded-2xl border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 hover:text-white transition-all flex items-center justify-center gap-2"
+                                    >
+                                        <Scan size={14} />
+                                        Manual Identification
+                                    </button>
+                                </div>
                             </div>
                         )}
 

@@ -345,14 +345,18 @@ export const InventoryProvider = ({ children }) => {
         }
 
         // Process Customer App fetch
-        if (isCustomerPath) {
-            // Internal logic of fetchers now handles guest/tenant/auth fallback
-            fetchProducts();
-            fetchShopCategories();
-            fetchStockInHistory();
-            fetchSupplierInvoices();
+        const publicPaths = ['/app/login', '/app/signup'];
+        const isPublicPath = publicPaths.some(p => path.startsWith(p));
+
+        if (isCustomerPath && !isPublicPath) {
+            if (customerToken || customer) {
+                fetchProducts();
+                fetchShopCategories();
+                fetchStockInHistory();
+                fetchSupplierInvoices();
+            }
         }
-    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isCustomerPath]);
+    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isCustomerPath, path]);
 
     // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
     useEffect(() => {
