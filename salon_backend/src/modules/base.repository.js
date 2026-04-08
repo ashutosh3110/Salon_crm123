@@ -3,8 +3,11 @@ export default class BaseRepository {
         this.model = model;
     }
 
-    async create(data, options = {}) {
-        return this.model.create(data, options);
+    async create(data, options = null) {
+        if (options) {
+            return (await this.model.create([data], options))[0];
+        }
+        return this.model.create(data);
     }
 
     findOne(filter) {

@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.get('/nearby', outletController.getNearbyOutletsPublic);
 router.get('/reverse-geocode', outletController.reverseGeocode);
+router.get('/geocode', outletController.geocodeQuery);
 
 router.use(auth);
 router.use(validateTenant);

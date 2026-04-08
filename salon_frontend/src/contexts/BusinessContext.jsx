@@ -6,7 +6,7 @@ import api from '../services/api';
 const BusinessContext = createContext(null);
 
 export function BusinessProvider({ children }) {
-    const { isAuthenticated, user } = useAuth();
+    const { isAuthenticated, user, isPlanActive } = useAuth();
     const { customer } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [salonLoading, setSalonLoading] = useState(false);
@@ -77,7 +77,7 @@ export function BusinessProvider({ children }) {
     // Fetch Initial Data on login (admin/staff)
     useEffect(() => {
         // Skip for Superadmin as they don't have a single tenant context
-        if (isAuthenticated && user?.role !== 'superadmin') {
+        if (isAuthenticated && user?.role !== 'superadmin' && isPlanActive) {
             const role = user?.role;
             const isManagerOrAdmin = ['admin', 'manager'].includes(role);
             const isReceptionist = role === 'receptionist';
@@ -111,7 +111,7 @@ export function BusinessProvider({ children }) {
 
     // Consolidated Initial Data Fetch for Customer App
     const fetchCustomerInitialData = useCallback(async (isRefresh = false) => {
-        // We use a functional update or just check the state without making it a dependency
+        if (isInitializing || !isPlanActive) return;
         setIsInitializing(true);
         console.log(`[DEBUG] Customer App: ${isRefresh ? 'Refreshing' : 'Batch Initializing'} Data...`);
         

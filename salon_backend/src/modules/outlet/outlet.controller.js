@@ -40,6 +40,17 @@ const reverseGeocode = async (req, res, next) => {
     }
 };
 
+const geocodeQuery = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.status(httpStatus.BAD_REQUEST).send({ message: 'Query is required' });
+        const coords = await outletService.geocodeQuery(q);
+        res.send(coords);
+    } catch (error) {
+        next(error);
+    }
+};
+
 const getOutlets = async (req, res, next) => {
     try {
         const lat = req.query.lat != null ? parseFloat(req.query.lat) : null;
@@ -103,4 +114,5 @@ export default {
     deleteOutlet,
     getNearbyOutletsPublic,
     reverseGeocode,
+    geocodeQuery,
 };

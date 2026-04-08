@@ -26,7 +26,7 @@ export const PettyCashProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const { user } = useAuth();
+    const { user, isPlanActive } = useAuth();
     const refresh = useCallback(async () => {
         // Skip for public pages or customer app
         const publicPaths = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'];
@@ -39,7 +39,10 @@ export const PettyCashProvider = ({ children }) => {
         }
 
         // Wait for user or check role
-        if (!user) return;
+        if (!user || !isPlanActive) {
+            setLoading(false);
+            return;
+        }
 
         // Authorized roles for petty cash
         const allowedRoles = ['admin', 'manager', 'accountant'];

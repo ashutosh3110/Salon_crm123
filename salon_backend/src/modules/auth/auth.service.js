@@ -15,8 +15,8 @@ import loyaltyService from '../loyalty/loyalty.service.js';
 const registerSalonOwner = async (registrationData) => {
     const { salonName, fullName, email, phone, password, subscriptionPlan = 'free', paymentId, orderId } = registrationData;
 
-    // Check if user already exists
-    if (await User.isEmailTaken(email)) {
+    // Check if user already exists (in both collections)
+    if (await User.isEmailTaken(email) || await Tenant.findOne({ email: email.toLowerCase() })) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
     }
 
@@ -27,42 +27,24 @@ const registerSalonOwner = async (registrationData) => {
     session.startTransaction();
 
     try {
-        // 1. Create Tenant
-        const slug = salonName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+        // 1. Create Tenant (This IS the salon + its admin login now)
         const tenant = new Tenant({
             name: salonName,
-            slug,
             email: String(email).trim().toLowerCase(),
             phone,
+            password, // Stored directly in Tenant
             ownerName: fullName,
             subscriptionPlan: plan ? plan.name.toLowerCase() : subscriptionPlan,
-            status: paymentId ? 'active' : (plan && plan.trialDays > 0 ? 'trial' : (plan && plan.monthlyPrice === 0 ? 'active' : 'inactive')),
-            trialDays: plan ? plan.trialDays : 14,
+            status: paymentId ? 'active' : (plan && plan.monthlyPrice === 0 ? 'active' : 'inactive'),
             features: plan ? plan.features : undefined,
             limits: plan ? plan.limits : undefined,
-            onboardingStatus: 'COMPLETED',
-            onboardingStep: 'STAFF_ADDED',
-            staffCount: 1, // Initially 1 for the owner
         });
         await tenant.save({ session });
 
-        // 2. Create Admin User linked to Tenant
-        const user = new User({
-            name: fullName,
-            email: String(email).trim().toLowerCase(),
-            password,
-            phone,
-            role: 'admin',
-            tenantId: tenant._id,
-            onboardingStatus: 'COMPLETED',
-        });
-        await user.save({ session });
+        // 2. We skip creating a separate User record as per user request
+        // All tenant data stays in the Tenant collection.
 
-        // 3. Link Owner back to Tenant
-        tenant.owner = user._id;
-        await tenant.save({ session });
-
-        // 4. Create Billing record if payment was made
+        // 3. Create Billing record if payment was made
         if (paymentId && plan) {
             const amount = plan.monthlyPrice;
             const taxAmount = plan.gstStatus && plan.gstType === 'exclusive' ? (amount * plan.gstRate / 100) : 0;
@@ -98,7 +80,17 @@ const registerSalonOwner = async (registrationData) => {
             console.error('[AuthService] Welcome email failed:', e.message);
         }
 
-        return { user, tenant };
+        // Return a normalized user object for token generation
+        return { 
+            user: {
+                _id: tenant._id,
+                tenantId: tenant._id,
+                role: 'admin',
+                email: tenant.email,
+                name: tenant.ownerName,
+            }, 
+            tenant 
+        };
     } catch (error) {
         await session.abortTransaction();
         throw error;
@@ -108,7 +100,29 @@ const registerSalonOwner = async (registrationData) => {
 };
 
 const loginUserWithEmailAndPassword = async (email, password) => {
-    const user = await userService.getUserByEmail(email);
+    // 1. Try User collection first (Staff & SuperAdmin)
+    let user = await userService.getUserByEmail(email);
+    
+    // 2. Try Tenant collection if not found (Salon Owners)
+    if (!user) {
+        const tenant = await Tenant.findOne({ email: email.toLowerCase() });
+        if (tenant && await tenant.isPasswordMatch(password)) {
+            // Check status
+            if (tenant.status === 'deleted') {
+                throw new ApiError(httpStatus.FORBIDDEN, 'Your salon account has been closed. Please contact SuperAdmin.');
+            }
+            // Normalize as user for the auth flow
+            return {
+                _id: tenant._id,
+                tenantId: tenant._id,
+                role: 'admin',
+                email: tenant.email,
+                name: tenant.ownerName,
+                status: tenant.status
+            };
+        }
+    }
+
     if (!user || !(await user.isPasswordMatch(password))) {
         throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
     }

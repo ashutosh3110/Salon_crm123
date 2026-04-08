@@ -33,24 +33,43 @@ class UserService {
         if (user.tenantId && user.role !== 'superadmin') {
             await Tenant.updateOne({ _id: user.tenantId }, { $inc: { staffCount: 1 } });
             
-            // Send Onboarding Email with Credentials
-            const tenant = await Tenant.findById(user.tenantId);
-            const salonName = tenant ? tenant.name : 'Your Salon';
-            const plainPassword = body.password; // This is the generated (or provided) plain password
-            
-            // Trigger email (no await to avoid slowing down API response)
-            emailService.sendStaffCredentialsEmail(user.email, user.name, user.role, salonName, plainPassword);
+            // Send Onboarding Email with Credentials (unless explicitly skipped)
+            if (!userBody.skipEmail) {
+                const tenant = await Tenant.findById(user.tenantId);
+                const salonName = tenant ? tenant.name : 'Your Salon';
+                const plainPassword = body.password; // This is the generated (or provided) plain password
+                
+                // Trigger email (no await to avoid slowing down API response)
+                emailService.sendStaffCredentialsEmail(user.email, user.name, user.role, salonName, plainPassword);
+            }
         }
         
         return user;
     }
 
     async getUserById(id) {
-        return userRepository.findOne({ _id: id });
+        const user = await userRepository.findOne({ _id: id });
+        if (!user && id && mongoose.Types.ObjectId.isValid(id)) {
+            // Check if it's a salon owner (identity is the Tenant itself)
+            const tenant = await Tenant.findById(id);
+            if (tenant) {
+                // Ensure it has common user properties
+                const userObj = tenant.toObject();
+                userObj.tenantId = tenant._id; // Owner is their own tenant
+                if (!userObj.role) userObj.role = 'admin';
+                return tenant; // Return document to support .save() and methods
+            }
+        }
+        return user;
     }
 
     async getUserByEmail(email) {
-        return userRepository.findByEmail(email);
+        const user = await userRepository.findByEmail(email);
+        if (!user && email) {
+            const tenant = await Tenant.findOne({ email: email.toLowerCase() });
+            if (tenant) return tenant;
+        }
+        return user;
     }
 
     async queryUsers(filter, options) {

@@ -15,8 +15,9 @@ const validateTenant = (req, res, next) => {
     }
 
     if (!req.user.tenantId) {
-        console.warn(`[Tenant] Missing tenantId for user ${req.user._id} (${req.user.role})`);
-        return res.status(httpStatus.FORBIDDEN).send({ message: 'Tenant context missing' });
+        const msg = `Tenant context missing for user ${req.user._id} (${req.user.role})`;
+        console.warn(`[Tenant] ${msg}`);
+        return res.status(httpStatus.FORBIDDEN).send({ message: msg });
     }
 
     // Force req.tenantId from user record to ensure isolation
@@ -29,8 +30,9 @@ const validateTenant = (req, res, next) => {
         req.tenantId = requestedTenantId.toString();
     } else {
         if (!req.user.tenantId) {
-            console.warn(`[Tenant] User ${req.user._id} (${req.user.role}) has no assigned tenantId`);
-            return res.status(httpStatus.FORBIDDEN).send({ message: 'User not assigned to any tenant' });
+            const msg = `User ${req.user._id} (${req.user.role}) has no assigned tenantId`;
+            console.warn(`[Tenant] ${msg}`);
+            return res.status(httpStatus.FORBIDDEN).send({ message: msg });
         }
         req.tenantId = req.user.tenantId.toString();
     }

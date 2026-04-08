@@ -155,9 +155,19 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
         throw new Error('Subscription plan not found');
     }
 
-    const tenant = await Tenant.findById(tenantId);
+    console.log(`[SUBSCRIPTION_DEBUG] Starting finalizeUpgrade search for: "${tenantId}"`);
+    
+    // Robust lookup: try ID first, then Email as fallback if possible
+    let tenant = await Tenant.findById(tenantId);
+    
+    if (!tenant && typeof tenantId === 'string') {
+        tenant = await Tenant.findOne({ email: tenantId.toLowerCase() });
+    }
+
     if (!tenant) {
-        console.error(`[SUBSCRIPTION] Tenant not found: ${tenantId}`);
+        console.error(`[SUBSCRIPTION_FATAL] Tenant NOT FOUND for lookup value: "${tenantId}"`);
+        const allTenants = await Tenant.find({}).limit(5).select('name email _id');
+        console.log(`[SUBSCRIPTION_FATAL] Sample Tenants in DB:`, JSON.stringify(allTenants, null, 2));
         throw new Error('Tenant not found');
     }
 
@@ -170,8 +180,10 @@ const finalizeUpgrade = async (tenantId, planId, billingCycle, paymentId, subscr
         expiry.setMonth(expiry.getMonth() + 1);
     }
 
-    tenant.subscriptionPlan = plan.name.toLowerCase();
+    // Update tenant subscription status
     tenant.status = 'active';
+    tenant.subscriptionPlan = plan.name;
+    tenant.subscriptionPlanId = plan._id;
     tenant.features = { ...plan.features };
     tenant.limits = { ...plan.limits };
     tenant.subscriptionExpiry = expiry;

@@ -8,7 +8,7 @@ const FinanceContext = createContext();
 export const useFinance = () => useContext(FinanceContext);
 
 export const FinanceProvider = ({ children }) => {
-    const { user } = useAuth();
+    const { user, isPlanActive } = useAuth();
     const { getStylistAttendanceStats } = useAttendance();
     const [revenue, setRevenue] = useState([]);
     const [expenses, setExpenses] = useState([]);
@@ -21,6 +21,10 @@ export const FinanceProvider = ({ children }) => {
     const [expenseSplits, setExpenseSplits] = useState([]);
 
     const refresh = useCallback(async () => {
+        if (!isPlanActive) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
             const res = await api.get('/finance/stats');
@@ -92,7 +96,7 @@ export const FinanceProvider = ({ children }) => {
 
     const fetchPayroll = useCallback(async (year, month) => {
         const allowedRoles = ['admin', 'accountant'];
-        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role)) return;
+        if (!user || user.role === 'superadmin' || !allowedRoles.includes(user.role) || !isPlanActive) return;
         try {
             const res = await api.get('/payroll', { params: { year, month } });
             const payload = res.data.data || {};

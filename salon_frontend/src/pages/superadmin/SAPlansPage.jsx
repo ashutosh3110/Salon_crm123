@@ -32,7 +32,7 @@ const COLOR = {
 /* ─── Empty plan template ────────────────────────────────────────────── */
 const EMPTY_PLAN = {
     id: '', name: '', tag: '', color: 'blue', active: true, popular: false,
-    monthlyPrice: 0, yearlyPrice: 0, trialDays: 14,
+    monthlyPrice: 0, yearlyPrice: 0,
     features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
     limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000, whatsappLimit: 0 },
     gstStatus: true,
@@ -95,7 +95,6 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
             <div className="grid grid-cols-3 divide-x divide-border border-b border-border text-center">
                 {[
                     { label: 'Salons', value: plan.salonsCount },
-                    { label: 'Trial', value: plan.trialDays ? `${plan.trialDays}d` : 'None' },
                     { label: 'Staff ≤', value: plan.limits.staffLimit > 100 ? '∞' : plan.limits.staffLimit },
                 ].map(s => (
                     <div key={s.label} className="py-2.5">
@@ -226,10 +225,6 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                     value={form.yearlyPrice}
                                     readOnly
                                 />
-                            </div>
-                            <div>
-                                <label className={labelCls}>Trial Days</label>
-                                <input type="number" min={0} max={90} className={inputCls} value={form.trialDays} onChange={e => set('trialDays', +e.target.value)} />
                             </div>
                             <div>
                                 <label className={labelCls}>Card Color</label>

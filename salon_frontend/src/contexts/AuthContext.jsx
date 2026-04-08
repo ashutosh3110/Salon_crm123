@@ -221,9 +221,16 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    const isPlanActive = useMemo(() => {
+        if (!user) return false;
+        if (user.role === 'superadmin') return true;
+        return user.subscriptionStatus === 'active';
+    }, [user]);
+
     const value = useMemo(() => ({
         user,
         loading,
+        isPlanActive,
         login,
         register,
         logout,
@@ -234,7 +241,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!user,
         getRedirectPath: () => getRedirectPath(user),
         getExitPath,
-    }), [user, loading, login, register, logout, refreshUser, getExitPath]);
+    }), [user, loading, isPlanActive, login, register, logout, refreshUser, getExitPath]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
