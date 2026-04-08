@@ -61,6 +61,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const { stats } = useInventory();
     const lowStockCount = stats?.lowStockCount || 0;
     const location = useLocation();
+    
+    const isActiveStatus = salon?.status === 'active';
+    const isRestricted = salon && !isActiveStatus;
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
@@ -280,6 +283,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             {/* Nav Links */}
             <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
+                    const isLocked = isRestricted && !['Subscription & Plans', 'Support'].includes(item.label);
                     // Feature check
                     if (item.feature && salon && !salon.features?.[item.feature]) return null;
                     
@@ -293,9 +297,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                         return (
                             <div key={item.label} className="space-y-1">
                                 <button
-                                    onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group ${active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-surface hover:text-text'
-                                        }`}
+                                    onClick={() => !isLocked && toggleExpand(item.label)}
+                                    className={`flex items-center justify-between w-full px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group ${active ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:bg-surface hover:text-text'} ${isLocked ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed' : ''}`}
                                 >
                                     <div className="flex items-center gap-3">
                                         <item.icon
@@ -341,14 +344,14 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     return (
                         <NavLink
                             key={item.path}
-                            to={item.path}
+                            to={isLocked ? '#' : item.path}
                             end={item.path === '/admin'}
-                            onClick={() => setMobileOpen(false)}
+                            onClick={(e) => { if (isLocked) e.preventDefault(); else setMobileOpen(false); }}
                             className={({ isActive: isItemActive }) =>
-                                `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group ${isItemActive
+                                `flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 group ${isItemActive && !isLocked
                                     ? 'bg-primary/10 text-primary shadow-sm ring-1 ring-primary/20'
                                     : 'text-text-secondary hover:bg-surface hover:text-text'
-                                }`
+                                } ${isLocked ? 'opacity-40 grayscale pointer-events-none cursor-not-allowed' : ''}`
                             }
                         >
                             <item.icon

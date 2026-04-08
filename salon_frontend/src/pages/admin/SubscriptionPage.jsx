@@ -23,6 +23,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
 const ICON_MAP = {
@@ -45,6 +46,7 @@ const PLAN_RANK = {
 
 export default function SubscriptionPage() {
     const { user, updateSubscription } = useAuth();
+    const { salon } = useBusiness();
     const [billingCycle, setBillingCycle] = useState('monthly');
     const [downloadingInvoice, setDownloadingInvoice] = useState(false);
     const [upgrading, setUpgrading] = useState(null);
@@ -100,9 +102,16 @@ export default function SubscriptionPage() {
         });
     };
     
-    const currentPlanName = user?.subscriptionPlan || 'free';
+    const activePlanId = salon?.subscriptionPlanId || user?.subscriptionPlanId;
+    const currentPlanName = (salon?.status === 'active') ? (salon?.subscriptionPlan || user?.subscriptionPlan || '') : '';
     const displayPlans = (plans && plans.length > 0) ? plans : subscriptionData.INITIAL_PLANS;
-    const currentPlan = displayPlans.find(p => p.name?.toLowerCase() === currentPlanName.toLowerCase()) || displayPlans[0] || subscriptionData.INITIAL_PLANS[0];
+    
+    const currentPlan = displayPlans.find(p => {
+        const pid = p._id || p.id;
+        if (activePlanId && pid === activePlanId) return true;
+        if (currentPlanName && p.name?.toLowerCase() === currentPlanName.toLowerCase()) return true;
+        return false;
+    }) || null;
 
     const handleDownloadInvoice = async () => {
         setDownloadingInvoice(true);
@@ -125,6 +134,16 @@ export default function SubscriptionPage() {
             });
 
             if (!orderRes.data.success) throw new Error(orderRes.data.message || 'Order creation failed');
+            
+            if (orderRes.data.data?.isFree) {
+                setShowSuccess(true);
+                await refreshUser();
+                await fetchBillingHistory();
+                setTimeout(() => setShowSuccess(false), 5000);
+                setUpgrading(null);
+                return;
+            }
+
             const { orderId, amount, currency, keyId } = orderRes.data.data;
 
             // 2. Open Razorpay Modal
@@ -270,22 +289,24 @@ export default function SubscriptionPage() {
                     <div className="space-y-1">
                         <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Active Protocol</span>
                         <h2 className="text-3xl font-bold text-text tracking-tight">
-                            {currentPlan.name} <span className="text-sm opacity-50 font-medium">/ Current Tier</span>
+                            {currentPlan ? currentPlan.name : 'No Active Plan'} <span className="text-sm opacity-50 font-medium">/ Current Tier</span>
                         </h2>
                     </div>
 
                     <div className="flex gap-8 border-l border-border pl-8">
                         <div>
                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Outlet Limit</p>
-                            <p className="text-xl font-bold text-text tracking-tight">{currentPlan.limits.outletLimit} <span className="text-[10px] font-semibold text-text-secondary">UNITS</span></p>
+                            <p className="text-xl font-bold text-text tracking-tight">{currentPlan ? currentPlan.limits?.outletLimit : '0'} <span className="text-[10px] font-semibold text-text-secondary">UNITS</span></p>
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Staff Access</p>
-                            <p className="text-xl font-bold text-text tracking-tight">{currentPlan.limits.staffLimit === 999 ? '∞' : currentPlan.limits.staffLimit} <span className="text-[10px] font-semibold text-text-secondary">PROFILES</span></p>
+                            <p className="text-xl font-bold text-text tracking-tight">{currentPlan ? (currentPlan.limits?.staffLimit === 999 ? '∞' : currentPlan.limits?.staffLimit) : '0'} <span className="text-[10px] font-semibold text-text-secondary">PROFILES</span></p>
                         </div>
                         <div className="text-right flex flex-col items-end gap-2">
                             <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Next Billing</p>
-                            <p className="text-xl font-bold text-text tracking-tight">₹{(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}</p>
+                            <p className="text-xl font-bold text-text tracking-tight">
+                                {currentPlan ? `₹${(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}` : 'N/A'}
+                            </p>
                             
                             {!user?.tenantId?.isCancelled && (
                                 <button 
@@ -399,7 +420,7 @@ export default function SubscriptionPage() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
                     {displayPlans.map((plan) => {
-                        const isCurrent = plan.name?.toLowerCase() === currentPlanName.toLowerCase();
+                        const isCurrent = currentPlan && (plan._id === currentPlan._id || plan.id === currentPlan.id);
                         const currentRank = PLAN_RANK[currentPlanName.toLowerCase()] || 0;
                         const targetRank = PLAN_RANK[plan.name?.toLowerCase()] || 0;
                         const isDowngrade = targetRank < currentRank;
@@ -457,7 +478,7 @@ export default function SubscriptionPage() {
                                             disabled={upgrading !== null}
                                             className="w-full py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all disabled:opacity-50 font-mono"
                                         >
-                                            {upgrading === (plan._id || plan.id) ? 'Processing...' : 'Upgrade Now'}
+                                            {upgrading === (plan._id || plan.id) ? 'Processing...' : (plan.monthlyPrice === 0 ? 'Activate' : 'Upgrade Now')}
                                         </button>
                                     )}
                                 </div>
@@ -478,7 +499,7 @@ export default function SubscriptionPage() {
                             <tr className="bg-surface">
                                 <th className="p-4 border border-border text-left text-xs font-bold uppercase tracking-wider">Protocol Attributes</th>
                                 {displayPlans.map(plan => (
-                                    <th key={plan._id || plan.id} className={`p-4 border border-border text-center ${plan.name.toLowerCase() === currentPlanName.toLowerCase() ? 'text-primary' : 'text-text'}`}>
+                                    <th key={plan._id || plan.id} className={`p-4 border border-border text-center ${currentPlan && (plan._id === currentPlan._id || plan.id === currentPlan.id) ? 'text-primary' : 'text-text'}`}>
                                         <span className="text-xs font-bold uppercase tracking-wider">{plan.name}</span>
                                     </th>
                                 ))}

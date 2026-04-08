@@ -276,10 +276,6 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         city: tenant?.city || '',
         address: tenant?.address || '',
         description: tenant?.description || '',
-        subscriptionPlan: tenant?.subscriptionPlan || 'basic',
-        status: tenant?.status || 'trial',
-        trialDays: tenant?.trialDays ?? 14,
-        outletsCount: tenant?.outletsCount || 1,
         gstNumber: tenant?.gstNumber || '',
     });
 
@@ -370,56 +366,10 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                                 </div>
                             </div>
                             <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
-                            <div>
-                                <label className={labelCls}>Plan</label>
-                                <CustomDropdown
-                                    variant="form"
-                                    value={form.subscriptionPlan}
-                                    onChange={v => set('subscriptionPlan', v)}
-                                    options={[
-                                        { value: 'free', label: 'Free' },
-                                        { value: 'basic', label: 'Basic' },
-                                        { value: 'pro', label: 'Pro' },
-                                        { value: 'enterprise', label: 'Enterprise' },
-                                    ]}
-                                />
-                            </div>
-                            <div>
-                                <label className={labelCls}>Allowed Outlets</label>
-                                <input type="number" min={1} max={100} className={inputCls} value={form.outletsCount} onChange={e => set('outletsCount', +e.target.value)} />
-                            </div>
                         </div>
                     </div>
 
-                    {/* Advanced Settings (Edit Only) */}
-                    {mode === 'edit' && (
-                        <div className="space-y-4 pb-2">
-                            <div className="flex items-center gap-2 mb-1">
-                                <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
-                                <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider text-indigo-500">Subscription Control</h4>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100">
-                                <div className="col-span-1">
-                                    <label className={labelCls}>Status</label>
-                                    <CustomDropdown
-                                        variant="form"
-                                        value={form.status}
-                                        onChange={v => set('status', v)}
-                                        options={[
-                                            { value: 'trial', label: 'Trial', icon: Clock },
-                                            { value: 'active', label: 'Active', icon: CheckCircle },
-                                            { value: 'expired', label: 'Expired', icon: AlertTriangle },
-                                            { value: 'suspended', label: 'Suspended', icon: XCircle },
-                                        ]}
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className={labelCls}>Trial Days</label>
-                                    <input type="number" min={0} max={90} className={inputCls} value={form.trialDays} onChange={e => set('trialDays', +e.target.value)} />
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                 
                 </div>
 
                 {/* Footer */}
@@ -774,18 +724,6 @@ export default function SATenantsPage() {
                         placeholder="Find a salon..."
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" />
                 </div>
-                <CustomDropdown
-                    value={planFilter}
-                    onChange={setPlan}
-                    placeholder="All Plans"
-                    options={[
-                        { value: '', label: 'All Plans' },
-                        { value: 'free', label: 'Free' },
-                        { value: 'basic', label: 'Basic' },
-                        { value: 'pro', label: 'Pro' },
-                        { value: 'enterprise', label: 'Enterprise' },
-                    ]}
-                />
                 {FilterToggleBtn}
             </div>
             {/* Date filter panel */}
@@ -804,7 +742,7 @@ export default function SATenantsPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-surface/60 border-b border-border">
-                                    {['Salon', 'Owner', 'City', 'Outlets', 'Plan', 'Status', 'Staff', 'Joined', ''].map(h => (
+                                    {['Salon', 'Owner', 'City', 'Joined', ''].map(h => (
                                         <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === '' ? 'text-right' : 'text-left'}`}>
                                             {h}
                                         </th>
@@ -824,7 +762,6 @@ export default function SATenantsPage() {
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-semibold text-text group-hover/link:text-primary transition-colors">{t.name}</div>
-                                                        <div className="text-[11px] text-text-muted font-mono">{t.slug}</div>
                                                     </div>
                                                 </Link>
                                             </td>
@@ -838,36 +775,6 @@ export default function SATenantsPage() {
                                                 <div className="flex items-center gap-1 text-sm text-text-secondary">
                                                     <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
                                                     {t.city}
-                                                </div>
-                                            </td>
-                                            {/* Outlets */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-1 text-sm text-text-secondary">
-                                                    <Home className="w-3.5 h-3.5 text-text-muted" />
-                                                    {t.outletsCount}
-                                                </div>
-                                            </td>
-                                            {/* Plan */}
-                                            <td className="px-4 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border uppercase ${planColors[t.subscriptionPlan] || planColors.free}`}>
-                                                    {t.subscriptionPlan}
-                                                </span>
-                                            </td>
-                                            {/* Status */}
-                                            <td className="px-4 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${sc.cls}`}>
-                                                    <sc.icon className="w-3 h-3" />
-                                                    {sc.label}
-                                                    {t.status === 'trial' && t.trialDays > 0 && (
-                                                        <span className="ml-0.5 opacity-70">({t.trialDays}d)</span>
-                                                    )}
-                                                </span>
-                                            </td>
-                                            {/* Staff */}
-                                            <td className="px-4 py-3.5">
-                                                <div className="flex items-center gap-1 text-sm text-text-secondary">
-                                                    <Users className="w-3.5 h-3.5 text-text-muted" />
-                                                    {t.staffCount}
                                                 </div>
                                             </td>
                                             {/* Joined */}

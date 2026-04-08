@@ -162,7 +162,7 @@ export const InventoryProvider = ({ children }) => {
     const { outlets: tenantOutlets, suppliers: businessSuppliers } = useBusiness();
     const { customer } = useCustomerAuth();
     const tenantOutletLenRef = useRef(0);
-    const { user: dashboardUser } = useAuth();
+    const { user: dashboardUser, isPlanActive } = useAuth();
     const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
@@ -333,7 +333,7 @@ export const InventoryProvider = ({ children }) => {
         if (!isCustomerPath && dashboardUser?.role === 'superadmin') return;
 
         // Process Dashboard fetch
-        if (!isCustomerPath && dashboardUser) {
+        if (!isCustomerPath && dashboardUser && isPlanActive) {
             const role = dashboardUser.role;
             const isAuthorized = ['admin', 'manager', 'receptionist', 'inventory_manager'].includes(role);
             if (isAuthorized) {
@@ -356,7 +356,7 @@ export const InventoryProvider = ({ children }) => {
                 fetchSupplierInvoices();
             }
         }
-    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isCustomerPath, path]);
+    }, [fetchProducts, fetchShopCategories, fetchStockInHistory, customer, dashboardUser, isPlanActive, isCustomerPath, path]);
 
     // Customer app: when outlets first load (0 → N), re-fetch so mergeInventoryStock applies per-outlet qty
     useEffect(() => {

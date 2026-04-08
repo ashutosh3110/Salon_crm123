@@ -124,12 +124,21 @@ async function getMe(req, res, next) {
         if (!fresh) {
             return res.status(httpStatus.UNAUTHORIZED).send({ message: 'User not found' });
         }
-        await fresh.populate({ path: 'outletId', select: 'name address' });
+        
+        const isTenant = fresh.constructor.modelName === 'Tenant';
+        
+        if (!isTenant) {
+            await fresh.populate({ path: 'outletId', select: 'name address' });
+        }
+
         const userObj = fresh.toObject();
         delete userObj.password;
 
-        // Merge Tenant Subscription Info
-        if (fresh.tenantId) {
+        if (isTenant) {
+            userObj.tenantId = fresh._id;
+            userObj.subscriptionStatus = fresh.status;
+            // userObj.subscriptionPlan is already in Tenant model
+        } else if (fresh.tenantId) {
             const tenant = await Tenant.findById(fresh.tenantId).select('subscriptionPlan status');
             if (tenant) {
                 userObj.subscriptionPlan = tenant.subscriptionPlan;

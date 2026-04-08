@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const tenantSchema = new mongoose.Schema(
     {
@@ -6,13 +7,6 @@ const tenantSchema = new mongoose.Schema(
             type: String,
             required: true,
             trim: true,
-        },
-        slug: {
-            type: String,
-            required: true,
-            unique: true,
-            trim: true,
-            lowercase: true,
         },
         ownerName: {
             type: String,
@@ -41,119 +35,63 @@ const tenantSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
-        latitude: {
-            type: Number,
-            default: null,
-        },
-        longitude: {
-            type: Number,
-            default: null,
-        },
         gstNumber: {
             type: String,
             trim: true,
             unique: true,
             sparse: true, // Allow multiple nulls if not provided, but unique if exists
         },
-        owner: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: false,
-        },
         status: {
             type: String,
             enum: ['active', 'inactive', 'trial', 'expired', 'suspended', 'deleted'],
-            default: 'trial',
         },
-        trialDays: {
-            type: Number,
-            default: 14,
-        },
-        subscriptionPlan: {
-            type: String,
-            enum: ['free', 'basic', 'pro', 'premium', 'enterprise', 'custom'],
-            default: 'free',
-        },
-        mrr: {
-            type: Number,
-            default: 0,
-        },
-        totalRevenue: {
-            type: Number,
-            default: 0,
+        subscriptionPlan: String,
+        subscriptionPlanId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Subscription',
         },
         features: {
-            pos: { type: Boolean, default: true },
-            appointments: { type: Boolean, default: true },
-            inventory: { type: Boolean, default: false },
-            crm: { type: Boolean, default: false },
-            marketing: { type: Boolean, default: false },
-            payroll: { type: Boolean, default: false },
-            mobileApp: { type: Boolean, default: false },
-            finance: { type: Boolean, default: false },
-            reports: { type: Boolean, default: true },
-            whatsapp: { type: Boolean, default: false },
-            loyalty: { type: Boolean, default: false },
-            feedback: { type: Boolean, default: false },
+            pos: Boolean,
+            appointments: Boolean,
+            inventory: Boolean,
+            crm: Boolean,
+            marketing: Boolean,
+            payroll: Boolean,
+            mobileApp: Boolean,
+            finance: Boolean,
+            reports: Boolean,
+            whatsapp: Boolean,
+            loyalty: Boolean,
+            feedback: Boolean,
         },
         limits: {
-            staffLimit: { type: Number, default: 5 },
-            outletLimit: { type: Number, default: 1 },
-            smsCredits: { type: Number, default: 100 },
-            whatsappLimit: { type: Number, default: 0 },
-            storageGB: { type: Number, default: 2 },
-        },
-        outletsCount: {
-            type: Number,
-            default: 0,
-        },
-        staffCount: {
-            type: Number,
-            default: 0,
-        },
-        whatsappUsed: {
-            type: Number,
-            default: 0,
-        },
-        onboardingStatus: {
-            type: String,
-            enum: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'],
-            default: 'NOT_STARTED',
-        },
-        onboardingStep: {
-            type: String,
-            enum: ['INITIAL', 'SALON_CONFIRMED', 'OUTLET_CREATED', 'STAFF_ADDED'],
-            default: 'INITIAL',
+            staffLimit: Number,
+            outletLimit: Number,
+            smsCredits: Number,
+            whatsappLimit: Number,
+            storageGB: Number,
         },
         settings: {
-            currency: { type: String, default: 'INR' },
-            timezone: { type: String, default: 'UTC' },
-            state: { type: String, trim: true },
-            stateCode: { type: String, trim: true },
-            serviceGst: { type: Number, default: 18 },
-            productGst: { type: Number, default: 12 },
-            inclusiveTax: { type: Boolean, default: true },
-            notifications: {
-                bookingConfirmations: { type: Boolean, default: true },
-                paymentAlerts: { type: Boolean, default: true },
-                lowStockWarnings: { type: Boolean, default: true },
-                dailySummary: { type: Boolean, default: false },
-                marketingUpdates: { type: Boolean, default: false },
-            },
+            currency: String,
+            timezone: String,
+            state: String,
+            stateCode: String,
+            serviceGst: Number,
+            productGst: Number,
+            inclusiveTax: Boolean,
         },
-        subscriptionExpiry: {
-            type: Date,
-            default: null,
-        },
-        razorpaySubscriptionId: {
+        subscriptionExpiry: Date,
+        razorpaySubscriptionId: String,
+        isCancelled: Boolean,
+        password: {
             type: String,
             trim: true,
-            default: null,
+            private: true,
         },
-        isCancelled: {
-            type: Boolean,
-            default: false,
-        },
+        role: {
+            type: String,
+            default: 'admin',
+        }
     },
     {
         timestamps: true,
@@ -163,6 +101,19 @@ const tenantSchema = new mongoose.Schema(
 // Index for performance
 tenantSchema.index({ status: 1 });
 tenantSchema.index({ subscriptionPlan: 1 });
+
+// Methods
+tenantSchema.methods.isPasswordMatch = async function (password) {
+    const tenant = this;
+    return bcrypt.compare(password, tenant.password);
+};
+
+tenantSchema.pre('save', async function () {
+    const tenant = this;
+    if (tenant.isModified('password')) {
+        tenant.password = await bcrypt.hash(tenant.password, 8);
+    }
+});
 
 const Tenant = mongoose.model('Tenant', tenantSchema);
 

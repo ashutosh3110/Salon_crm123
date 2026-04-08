@@ -6,60 +6,13 @@ import userService from '../user/user.service.js';
 import emailService from '../notification/email.service.js';
 import Subscription from '../subscription/subscription.model.js';
 
-const PLAN_DEFAULTS = {
-    free: {
-        mrr: 0,
-        trialDays: 14,
-        features: { pos: true, appointments: true, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
-        limits: { staffLimit: 3, outletLimit: 1, smsCredits: 0, storageGB: 1 }
-    },
-    basic: {
-        mrr: 1999,
-        trialDays: 14,
-        features: { pos: true, appointments: true, inventory: true, marketing: false, payroll: false, crm: true, mobileApp: false, reports: true, whatsapp: false, loyalty: false, finance: true, feedback: false },
-        limits: { staffLimit: 10, outletLimit: 2, smsCredits: 200, storageGB: 5 }
-    },
-    pro: {
-        mrr: 4999,
-        trialDays: 7,
-        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: false, loyalty: true, finance: true, feedback: true },
-        limits: { staffLimit: 25, outletLimit: 5, smsCredits: 1000, storageGB: 20 }
-    },
-    enterprise: {
-        mrr: 12999,
-        trialDays: 0,
-        features: { pos: true, appointments: true, inventory: true, marketing: true, payroll: true, crm: true, mobileApp: true, reports: true, whatsapp: true, loyalty: true, finance: true, feedback: true },
-        limits: { staffLimit: 999, outletLimit: 999, smsCredits: 10000, storageGB: 100 }
-    }
-};
 
 class TenantService {
     async createTenant(tenantData) {
-        // Generate slug if not provided
-        if (!tenantData.slug && tenantData.name) {
-            tenantData.slug = tenantData.name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-        }
 
-        if (await tenantRepository.findBySlug(tenantData.slug)) {
-            tenantData.slug = `${tenantData.slug}-${Math.floor(Math.random() * 1000)}`;
-        }
-
-        // Apply plan defaults if plan is provided
-        const planTag = tenantData.subscriptionPlan || 'free';
-        const subscription = await Subscription.findOne({ tag: planTag });
-        
-        if (subscription) {
-            tenantData.features = { ...subscription.features.toObject(), ...(tenantData.features || {}) };
-            tenantData.limits = { ...subscription.limits.toObject(), ...(tenantData.limits || {}) };
-            tenantData.mrr = subscription.monthlyPrice;
-            tenantData.trialDays = subscription.trialDays;
-        } else if (PLAN_DEFAULTS[planTag]) {
-            // Fallback to hardcoded defaults if DB record missing
-            tenantData.features = { ...PLAN_DEFAULTS[planTag].features, ...(tenantData.features || {}) };
-            tenantData.limits = { ...PLAN_DEFAULTS[planTag].limits, ...(tenantData.limits || {}) };
-            tenantData.mrr = PLAN_DEFAULTS[planTag].mrr;
-            tenantData.trialDays = PLAN_DEFAULTS[planTag].trialDays;
-        }
+        // Remove plan defaults auto-assignment as per user request
+        // New salons will start with schema defaults for features/limits
+        // and only the fields provided in the form will be stored.
 
         // Check for duplicate email
         if (tenantData.email) {
@@ -73,47 +26,18 @@ class TenantService {
             if (existingGst) throw new Error('GST Number already registered for another salon');
         }
 
+        // Set default password for owner/admin in the Tenant record
+        const ownerPassword = '123456';
+        tenantData.password = ownerPassword;
+
         const tenant = await tenantRepository.create(tenantData);
 
-        // Automate Owner Creation
+        // Automate Welcome Email
         try {
-            const ownerPassword = '123456';
-            let owner = await User.findOne({ email: tenant.email.toLowerCase() });
-            
-            if (!owner) {
-                // If user doesn't exist, create them
-                owner = await userService.createUser({
-                    name: tenant.ownerName,
-                    email: tenant.email,
-                    password: ownerPassword,
-                    role: 'admin',
-                    tenantId: tenant._id,
-                });
-            } else {
-                // If user exists, just update their tenantId and role if it's not set
-                // or if it matches the current registration
-                console.log(`[TenantService] Reusing existing user for owner: ${owner.email}`);
-                if (!owner.tenantId) {
-                    owner.tenantId = tenant._id;
-                    owner.role = 'admin';
-                    owner.password = ownerPassword; // Reset to 123456 for convenience
-                    await owner.save();
-                } else if (String(owner.tenantId) !== String(tenant._id)) {
-                    // Conflict if person is already an owner elsewhere
-                    console.warn(`[TenantService] User ${owner.email} is already linked to another salon (${owner.tenantId})`);
-                }
-            }
-
-            // Link owner to tenant
-            if (owner && !tenant.owner) {
-                tenant.owner = owner._id;
-                await tenant.save();
-            }
-
-            // Send Welcome Email
-            await emailService.sendWelcomeEmail(tenant.email, tenant.ownerName, tenant.name, ownerPassword);
+            console.log(`[TenantService] Triggering welcome email for: ${tenant.email}`);
+            await emailService.sendWelcomeEmail(tenant.email, tenant.ownerName || tenant.name, tenant.name, ownerPassword);
         } catch (error) {
-            console.error('[TenantService] ❌ Failed to automate owner/email (CRITICAL):', error.message);
+            console.error('[TenantService] ❌ Failed to send welcome email:', error.message);
         }
 
         return tenant;

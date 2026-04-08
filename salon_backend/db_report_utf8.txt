@@ -1,0 +1,7 @@
+﻿[dotenv@17.3.1] injecting env (31) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+--- RECENT TENANTS ---
+Tenant: ID=69d627737ba84ebdc266f697, Name=Rehan Hair Saloon, Email=mrmmultani@gmail.com, Status=undefined
+
+--- RECENT USERS ---
+User: ID=69d626bc6a9464ebf250bea5, Name=Rehan, Email=mrmmultani@gmail.com, Role=admin, TenantID=69d626bb6a9464ebf250bea0
+User: ID=69cd217ddb97d5916a89f637, Name=Super Admin, Email=superadmin@salon.com, Role=superadmin, TenantID=undefined

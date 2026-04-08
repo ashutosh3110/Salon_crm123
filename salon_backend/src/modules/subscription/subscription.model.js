@@ -35,7 +35,7 @@ const subscriptionSchema = new mongoose.Schema({
     },
     trialDays: {
         type: Number,
-        default: 14,
+        default: 0,
         min: 0
     },
     features: {

@@ -359,6 +359,34 @@ export default function AuthPage() {
                                             <button type="submit" disabled={loading} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/10 active:scale-95 disabled:opacity-50">
                                                 {loading ? 'Authenticating...' : 'Login'}
                                             </button>
+
+                                            {/* Quick Logins Section */}
+                                            <div className="pt-6 border-t border-white/5 space-y-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles className="w-3.5 h-3.5 text-[#B4912B]" />
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Quick Access</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {[
+                                                        { label: 'SuperAdmin', e: 'superadmin@salon.com', p: 'superadmin123' },
+                                                        { label: 'Admin', e: 'mrmmultani@gmail.com', p: '123456' },
+                                                        { label: 'Stylist', e: 'neha@gmail.com', p: '123456' },
+                                                        { label: 'Accountant', e: 'prachi@gmail.com', p: '123456' },
+                                                        { label: 'Manager', e: 'aditya@gmail.com', p: '123456' },
+                                                        { label: 'Receptionist', e: 'aman@gmail.com', p: '123456' },
+                                                    ].map(q => (
+                                                        <button
+                                                            key={q.label}
+                                                            type="button"
+                                                            onClick={() => setSigninForm({ email: q.e, password: q.p })}
+                                                            className="flex flex-col items-center justify-center p-2 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all group"
+                                                        >
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-[#B4912B] group-hover:scale-110 transition-transform">{q.label}</span>
+                                                            <span className="text-[9px] text-white/20 group-hover:text-white/40 truncate w-full px-1">{q.e.split('@')[0]}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </form>
                                     </motion.div>
                                 ) : (

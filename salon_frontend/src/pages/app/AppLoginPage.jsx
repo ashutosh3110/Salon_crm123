@@ -184,13 +184,37 @@ export default function AppLoginPage() {
                 setLocationLoading(false);
                 fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
                 reverseGeocode(coords.lat, coords.lng);
+                return;
             } catch (e) { 
-                fetchOutlets(null, null, searchRadiusKm);
+                // Fall through to auto-detect
             }
+        }
+
+        // Auto-detect location on mount (instead of showing all outlets without coords)
+        if (navigator.geolocation) {
+            setLocationLoading(true);
+            setDetectedAddress('Detecting your location...');
+            navigator.geolocation.getCurrentPosition(
+                async (pos) => {
+                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    setUserCoords(coords);
+                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                    await reverseGeocode(coords.lat, coords.lng);
+                    setLocationLoading(false);
+                    fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
+                },
+                (err) => {
+                    console.warn('[AppLogin] Geolocation denied/failed:', err.message);
+                    setLocationLoading(false);
+                    fetchOutlets(null, null, searchRadiusKm); // Fallback to all outlets
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+            );
         } else {
             fetchOutlets(null, null, searchRadiusKm);
         }
     }, [tenantIdFromUrl]);
+
 
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
@@ -582,6 +606,16 @@ export default function AppLoginPage() {
                         >
                             Register instead
                         </button>
+                        
+                        <button
+                            type="button"
+                            onClick={() => setPhone('6263510091')}
+                            className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/20 text-[#C8956C] font-black uppercase tracking-widest text-[10px] hover:bg-[#C8956C]/10 transition-all"
+                        >
+                            <User size={14} />
+                            Customer Demo Account
+                        </button>
+
                         <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> & <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a></p>
                     </motion.div>
                 )}

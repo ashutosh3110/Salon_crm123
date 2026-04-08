@@ -25,6 +25,21 @@ const createSubscriptionOrder = async (req, res, next) => {
 
         const amount = billingCycle === 'yearly' ? plan.yearlyPrice : plan.monthlyPrice;
         
+        // Handle Direct Activation for Free/0-Price Plans
+        if (amount === 0) {
+            const tenantId = req.user?.tenantId || req.user?._id || req.user?.email || req.headers['x-tenant-id'];
+            console.log(`[DEBUG] Attempting Free Activation: User=${req.user?._id}, TenantId=${tenantId}, Role=${req.user?.role}`);
+            if (!tenantId) {
+                return res.status(httpStatus.UNAUTHORIZED).send({ success: false, message: 'Tenant ID required' });
+            }
+            await subscriptionService.finalizeUpgrade(tenantId, plan._id, billingCycle, 'free_activation');
+            return res.status(httpStatus.OK).send({
+                success: true,
+                message: 'Plan activated successfully',
+                data: { isFree: true }
+            });
+        }
+
         // Add GST if applicable
         let totalAmount = amount;
         if (plan.gstStatus && plan.gstType === 'exclusive') {
@@ -56,7 +71,7 @@ const createSubscriptionOrder = async (req, res, next) => {
 const verifySubscriptionPayment = async (req, res, next) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature, razorpay_subscription_id, planId, billingCycle } = req.body;
-        const tenantId = req.user?.tenantId || req.headers['x-tenant-id'];
+        const tenantId = req.user?.tenantId || req.user?._id || req.user?.email || req.headers['x-tenant-id'];
         
         const isValid = razorpayService.verifyPayment(
             razorpay_order_id,

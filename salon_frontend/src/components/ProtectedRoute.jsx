@@ -24,6 +24,18 @@ export default function ProtectedRoute({ allowedRoles, feature }) {
         return <Navigate to={correctPath} replace />;
     }
 
+    // Subscription/Payment gate for Salon-related roles
+    if (salon && ['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager'].includes(user.role)) {
+        const isSubscriptionPage = window.location.pathname.startsWith('/admin/subscription');
+        const isSupportPage = window.location.pathname.startsWith('/admin/support');
+        const isActive = salon.status === 'active';
+
+        // Redirect to subscription page if salon is not active
+        if (!isActive && !isSubscriptionPage && !isSupportPage) {
+            return <Navigate to="/admin/subscription" replace />;
+        }
+    }
+
     // Feature gating
     if (feature && salon && !salon.features?.[feature]) {
         return <Navigate to="/admin/feature-locked" replace />;
