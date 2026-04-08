@@ -8,7 +8,7 @@ class WhatsAppService {
         this.token = process.env.WHATSAPP_CLOUD_TOKEN || process.env.WHATSAPP_TOKEN;
         this.phoneNumberId = process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID || process.env.WHATSAPP_PHONE_NUMBER_ID;
         this.version = 'v20.0';
-        this.baseUrl = `https://graph.facebook.net/${this.version}/${this.phoneNumberId}/messages`;
+        this.baseUrl = `https://graph.facebook.com/${this.version}/${this.phoneNumberId}/messages`;
         
         if (this.token && this.phoneNumberId) {
             console.log(`[WHATSAPP-SYSTEM] Initialized with PhoneID: ${this.phoneNumberId} (Ready)`);
@@ -52,15 +52,24 @@ class WhatsAppService {
             return { success: true, simulated: true };
         }
 
+        // Preview for the user in terminal
+        const previewText = components.length > 0 
+            ? `PREVIEW (Approx): Hello ${components[0]}, your booking for ${components[1]} is confirmed! Order ID: ${components[2]} on ${components[3]}.`
+            : `Template: ${templateName} (No variables)`;
+        
+        console.log('=========================================');
+        console.log(`[WHATSAPP-PREVIEW] Content: ${previewText}`);
+        console.log('=========================================');
+
         try {
-            console.log('[WHATSAPP-DEBUG] Sending to Meta API...');
+            console.log('[WHATSAPP-DEBUG] Sending to Meta API with Payload:', JSON.stringify(payload, null, 2));
             const response = await axios.post(this.baseUrl, payload, {
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
                     'Content-Type': 'application/json'
                 }
             });
-            console.log(`[WHATSAPP-SUCCESS] Sent! ID: ${response.data.messages[0].id}`);
+            console.log(`[WHATSAPP-SUCCESS] Meta Accepted! ID: ${response.data.messages[0].id}`);
             return { success: true, data: response.data };
         } catch (error) {
             const apiError = error.response?.data?.error || { message: error.message };

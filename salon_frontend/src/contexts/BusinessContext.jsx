@@ -111,7 +111,7 @@ export function BusinessProvider({ children }) {
 
     // Consolidated Initial Data Fetch for Customer App
     const fetchCustomerInitialData = useCallback(async (isRefresh = false) => {
-        if (isInitializing) return;
+        // We use a functional update or just check the state without making it a dependency
         setIsInitializing(true);
         console.log(`[DEBUG] Customer App: ${isRefresh ? 'Refreshing' : 'Batch Initializing'} Data...`);
         
@@ -138,7 +138,7 @@ export function BusinessProvider({ children }) {
         } finally {
             setIsInitializing(false);
         }
-    }, [isInitializing]);
+    }, []); // Identity never changes now
 
     // Fetch outlets, services, categories, and staff when customer logs in (for /app)
     useEffect(() => {

@@ -254,7 +254,8 @@ class NotificationService {
         const cleanPhone = String(phone).replace(/\D/g, '');
         
         try {
-            const result = await whatsappService.sendTemplateMessage(cleanPhone, template, values);
+            const langCode = process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en_US';
+            const result = await whatsappService.sendTemplateMessage(cleanPhone, template, values, langCode);
             
             // Increment usage if tenantId provided
             if (tenantId && result.success && !result.simulated) {

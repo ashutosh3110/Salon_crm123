@@ -203,6 +203,22 @@ const verifyBookingPayment = async (req, res, next) => {
                         body: 'Your payment was successful and your appointment is now confirmed.',
                         actionUrl: '/app/bookings',
                     }).catch(err => console.error('[BookingNotification] Payment confirm alert error:', err));
+
+                    // WhatsApp Implementation
+                    const populated = await Booking.findById(booking._id).populate(['clientId', 'serviceId']);
+                    if (populated.clientId?.phone) {
+                        notificationService.sendWhatsAppTemplate({
+                            phone: populated.clientId.phone,
+                            template: 'payment_success',
+                            values: [
+                                populated.clientId.name || 'Customer',
+                                booking.price || 0,
+                                populated.serviceId?.name || 'Service',
+                                booking._id.toString().slice(-6).toUpperCase()
+                            ],
+                            tenantId: req.tenantId
+                        }).catch(err => console.error('[WHATSAPP-ERROR] Payment success alert error:', err.message));
+                    }
                 }
             }
         }
