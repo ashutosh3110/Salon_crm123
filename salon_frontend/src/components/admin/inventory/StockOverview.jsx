@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import {
     Search,
     MapPin,
@@ -24,7 +24,7 @@ export default function StockOverview() {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/inventory/overview');
+            const res = await mockApi.get('/inventory/overview');
             setPayload(res.data);
         } catch (e) {
             setError(e?.response?.data?.message || e?.message || 'Could not load stock overview.');
@@ -42,8 +42,8 @@ export default function StockOverview() {
     const [outletFilter, setOutletFilter] = useState('All Outlets');
     const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
-    const lines = payload?.lines || [];
-    const outlets = payload?.outlets || [];
+    const lines = Array.isArray(payload?.lines) ? payload.lines : [];
+    const outlets = Array.isArray(payload?.outlets) ? payload.outlets : [];
 
     const categories = useMemo(() => {
         const set = new Set();
@@ -97,30 +97,26 @@ export default function StockOverview() {
 
     return (
         <div className="flex flex-col h-full slide-right overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-2 pb-4 border-b border-border/60">
-                <div className="space-y-1">
-                    <p className="text-xs text-text-muted">
-                        Data from <span className="font-mono text-[10px]">GET /inventory/overview</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-2 pb-6 border-b border-border/40">
+                <div className="text-left font-black leading-none">
+                    <h2 className="text-lg font-black text-foreground uppercase tracking-tight italic">Global Density Matrix</h2>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
+                        Real-time Asset Distribution :: SKU x Outlet Vector
                         {payload?.summary ? (
-                            <span className="ml-2">
-                                · {payload.summary.skuCount} SKUs × {payload.summary.outletCount} outlets
+                            <span className="ml-2 border-l border-border/60 pl-2">
+                                {payload.summary.skuCount} REGISTERED SKUs · {payload.summary.outletCount} DEPLOYED NODES
                             </span>
                         ) : null}
-                    </p>
-                    <p className="text-[11px] text-text-muted leading-snug max-w-2xl">
-                        <span className="font-semibold text-text/80">Why the same product repeats?</span> Each row is{' '}
-                        <span className="font-semibold">one product at one outlet</span> — so 5 outlets = up to 5 rows for
-                        the same SKU (stock per branch). Use the outlet filter to see only one place.
                     </p>
                 </div>
                 <button
                     type="button"
                     onClick={load}
                     disabled={loading}
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 bg-surface-alt border border-border/40 text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:bg-primary/5 transition-all italic shadow-sm"
                 >
-                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
+                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                    Synchronize Registry
                 </button>
             </div>
 

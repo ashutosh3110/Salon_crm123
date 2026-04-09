@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
-import api from '../services/api';
+import mockApi from '../services/mock/mockApi';
 import { useAuth } from './AuthContext';
 
 /** Admin CMS reads/writes need tenant scope; superadmin has no tenantId on user — pass salon id from /tenants/me */
@@ -62,7 +62,7 @@ export function CMSProvider({ children }) {
                     setLoading(false);
                     return;
                 }
-                res = await api.get(`/cms/app/tenant/${tenantId}`);
+                res = await mockApi.get(`/cms/app/tenant/${tenantId}`);
             } else {
                 // If not in customer app, only fetch if salon ID and proper role are present
                 const isManagerOrAdmin = ['admin', 'manager'].includes(user?.role);
@@ -71,7 +71,7 @@ export function CMSProvider({ children }) {
                     return;
                 }
                 const qs = adminCmsQuery(salon?._id);
-                res = await api.get(`/cms/app${qs}`);
+                res = await mockApi.get(`/cms/app${qs}`);
             }
             const d = res.data?.data || {};
             setBanners((d.banners || []).map(ensureId));
@@ -97,7 +97,7 @@ export function CMSProvider({ children }) {
             const path = location.pathname || '';
             const isCustomerApp = path.startsWith('/app');
             const qs = !isCustomerApp ? adminCmsQuery(salon?._id) : '';
-            await api.patch(`/cms/app/${section}${qs}`, { content: Array.isArray(content) ? content : [] });
+            await mockApi.patch(`/cms/app/${section}${qs}`, { content: Array.isArray(content) ? content : [] });
         } catch (e) {
             console.error('[CMS] Save failed:', e);
             throw e;

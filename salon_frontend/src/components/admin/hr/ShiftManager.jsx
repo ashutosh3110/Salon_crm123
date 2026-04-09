@@ -11,7 +11,7 @@ import {
     Cell,
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6366f1'];
 const TW_COLORS = ['bg-emerald-500', 'bg-blue-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-primary'];
@@ -74,7 +74,7 @@ export default function ShiftManager() {
     const fetchShifts = useCallback(async () => {
         setListLoading(true);
         try {
-            const res = await api.get('/shifts');
+            const res = await mockApi.get('/shifts');
             const raw = res.data?.data ?? res.data ?? [];
             const arr = Array.isArray(raw) ? raw : [];
             setShifts(arr.map(mapShiftFromApi));
@@ -156,10 +156,10 @@ export default function ShiftManager() {
                 colorClass: form.color,
             };
             if (editTarget) {
-                await api.patch(`/shifts/${editTarget.id}`, payload);
+                await mockApi.patch(`/shifts/${editTarget.id}`, payload);
                 showToast(`“${form.name}” updated`);
             } else {
-                await api.post('/shifts', payload);
+                await mockApi.post('/shifts', payload);
                 showToast(`“${form.name}” added`);
             }
             setShiftModal(false);
@@ -171,7 +171,7 @@ export default function ShiftManager() {
 
     const deleteShift = async (id) => {
         try {
-            await api.delete(`/shifts/${id}`);
+            await mockApi.delete(`/shifts/${id}`);
             setDeleteConfirm(null);
             showToast('Shift removed');
             await fetchShifts();
@@ -184,7 +184,7 @@ export default function ShiftManager() {
         if (!rosterModal) return;
         setSavingRoster(true);
         try {
-            await api.patch(`/shifts/${rosterModal.id}/roster`, { userIds: rosterDraft });
+            await mockApi.patch(`/shifts/${rosterModal.id}/roster`, { userIds: rosterDraft });
             showToast(`Team saved for “${rosterModal.name}”`);
             setRosterModal(null);
             await fetchShifts();

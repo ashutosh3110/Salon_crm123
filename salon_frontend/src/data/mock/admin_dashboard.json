@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "data": {
+    "generatedAt": "2026-04-09T10:00:00.000Z",
+    "stats": {
+      "outlets": 4,
+      "bookingsTotal": 1240,
+      "clients": 850,
+      "staff": 24,
+      "walletLiability": 125000
+    },
+    "revenueWeek": [
+      { "name": "Mon", "revenue": 12000, "appointments": 45 },
+      { "name": "Tue", "revenue": 15000, "appointments": 52 },
+      { "name": "Wed", "revenue": 11000, "appointments": 38 },
+      { "name": "Thu", "revenue": 18000, "appointments": 60 },
+      { "name": "Fri", "revenue": 22000, "appointments": 75 },
+      { "name": "Sat", "revenue": 35000, "appointments": 110 },
+      { "name": "Sun", "revenue": 28000, "appointments": 95 }
+    ],
+    "serviceDistribution": [
+      { "name": "Haircut", "value": 450, "color": "#3b82f6" },
+      { "name": "Hair Color", "value": 300, "color": "#10b981" },
+      { "name": "Facial", "value": 250, "color": "#f59e0b" },
+      { "name": "Manicure", "value": 150, "color": "#ef4444" },
+      { "name": "Massage", "value": 100, "color": "#8b5cf6" }
+    ],
+    "recentActivity": [
+      { "client": "Rahul Sharma", "service": "Haircut & Styling", "amount": "₹850", "time": "10 mins ago", "status": "Paid", "isLive": true },
+      { "client": "Priya Patel", "service": "Premium Facial", "amount": "₹2,400", "time": "45 mins ago", "status": "Scheduled", "isLive": false },
+      { "client": "Amit Verma", "service": "Beard Trim", "amount": "₹350", "time": "1 hour ago", "status": "Paid", "isLive": false },
+      { "client": "Sneha Reddy", "service": "Keratin Treatment", "amount": "₹4,500", "time": "2 hours ago", "status": "Paid", "isLive": false }
+    ]
+  }
+}

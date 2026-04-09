@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import {
     MinusCircle,
     History,
@@ -31,7 +31,7 @@ export default function StockAdjustment() {
         setLogLoading(true);
         setLogError(null);
         try {
-            const res = await api.get('/inventory/adjust/history', { params: { page: 1, limit: 100 } });
+            const res = await mockApi.get('/inventory/adjust/history', { params: { page: 1, limit: 100 } });
             const rows = res?.data?.results ?? res?.data ?? [];
             setLog(Array.isArray(rows) ? rows : []);
         } catch (e) {
@@ -139,9 +139,8 @@ function AdjustmentHistory({ rows, loading, error, onRetry }) {
 
     return (
         <div className="p-0 animate-fadeIn">
-            <p className="px-8 py-3 text-[11px] text-text-muted border-b border-border/60">
-                From <span className="font-mono">GET /inventory/adjust/history</span> — stock out uses{' '}
-                <span className="font-mono">POST /inventory/adjust</span> with <span className="font-mono">DEDUCT</span>.
+            <p className="px-8 py-3 text-[10px] font-black text-text-muted border-b border-border/40 uppercase tracking-widest italic leading-none">
+                Adjustment Registry History :: Manual Intervention Audit Log
             </p>
             {mapped.length === 0 ? (
                 <div className="p-12 text-center text-sm text-text-muted">
@@ -271,7 +270,7 @@ function AdjustmentForm({ onCancel, onSuccess, products, outlets }) {
 
         setSaving(true);
         try {
-            await api.post('/inventory/adjust', {
+            await mockApi.post('/inventory/adjust', {
                 productId,
                 outletId,
                 quantity: qty,
@@ -298,13 +297,10 @@ function AdjustmentForm({ onCancel, onSuccess, products, outlets }) {
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-rose-600 mb-2">
                         <AlertOctagon className="w-5 h-5" />
-                        <h3 className="text-lg font-bold tracking-tight">Stock out / manual adjustment</h3>
+                        <h3 className="text-lg font-black text-foreground uppercase tracking-tight italic">Manual Stock Neutralization</h3>
                     </div>
-                    <p className="text-sm text-text-secondary font-medium">
-                        Uses <span className="font-mono text-xs">POST /inventory/adjust</span>.{' '}
-                        <span className="font-semibold">Stock out</span> removes quantity;{' '}
-                        <span className="font-semibold">Add stock</span> increases without a purchase order (e.g.
-                        correction).
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
+                        Correction Protocol :: Deduct or Augment Inventory Density
                     </p>
                 </div>
 

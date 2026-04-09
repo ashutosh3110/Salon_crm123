@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Package, AlertTriangle, IndianRupee, Store, CheckCircle2 } from 'lucide-react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useInventory } from '../../contexts/InventoryContext';
 
 export default function ProductsPage() {
     const { outlets } = useBusiness();
-    const { addProduct, updateProduct: updateInvProduct, products: invProducts } = useInventory(); // Using context for robustness if needed, but the page uses API
-    // Actually, this page uses direct API calls. I should stick to that but add outletIds.
+    const { addProduct: contextAddProduct, updateProduct: contextUpdateProduct, products: invProducts } = useInventory();
     
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,19 +21,17 @@ export default function ProductsPage() {
         category: '', 
         stockQuantity: '', 
         lowStockThreshold: 5,
-        availabilityType: 'all', // 'all' or 'selected'
+        availabilityType: 'all', 
         outletIds: []
     });
 
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/products');
-            // Backend returns { results: [], ... } for paginated queries
+            const { data } = await mockApi.get('/products');
             const list = data?.data?.results || data?.results || data?.data || data || [];
             setProducts(Array.isArray(list) ? list : []);
         } catch (err) {
-            console.error('Failed to fetch products:', err);
             setProducts([]);
         } finally {
             setLoading(false);
@@ -48,9 +45,10 @@ export default function ProductsPage() {
         sku: f.sku,
         price: Number(f.price) || 0,
         category: f.category || '',
+        stockQuantity: Number(f.stockQuantity) || 0,
         status: 'active',
         extended: {
-            threshold: f.lowStockThreshold,
+            threshold: Number(f.lowStockThreshold) || 5,
             availability: f.availabilityType === 'selected' ? 'selected' : 'all',
             outletIds: Array.isArray(f.outletIds) ? f.outletIds : [],
         },
@@ -61,19 +59,19 @@ export default function ProductsPage() {
         try {
             const payload = toApiPayload(form);
             if (editing) {
-                await api.patch(`/products/${editing._id}`, payload);
+                await mockApi.patch(`/products/${editing._id || editing.id}`, payload);
             } else {
-                await api.post('/products', payload);
+                await mockApi.post('/products', payload);
             }
             setShowModal(false); setEditing(null);
             setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] });
             fetchProducts();
-        } catch (err) { alert(err.response?.data?.message || 'Error saving product'); }
+        } catch (err) { alert('Error saving product locally'); }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this product?')) return;
-        try { await api.delete(`/products/${id}`); fetchProducts(); } catch { alert('Error deleting'); }
+        try { await mockApi.delete(`/products/${id}`); fetchProducts(); } catch { alert('Error deleting'); }
     };
 
     const openEdit = (p) => {
@@ -83,46 +81,47 @@ export default function ProductsPage() {
             sku: p.sku || '', 
             price: p.price, 
             category: p.category || '', 
-            stockQuantity: p.stockQuantity, 
-            lowStockThreshold: p.lowStockThreshold || 5,
-            availabilityType: p.outletIds?.length > 0 ? 'selected' : 'all',
-            outletIds: p.outletIds || []
+            stockQuantity: p.stockQuantity || p.stock || 0, 
+            lowStockThreshold: p.extended?.threshold || p.lowStockThreshold || 5,
+            availabilityType: p.extended?.outletIds?.length > 0 || p.outletIds?.length > 0 ? 'selected' : 'all',
+            outletIds: p.extended?.outletIds || p.outletIds || []
         });
         setShowModal(true);
     };
 
     const filtered = products.filter((p) => {
         const matchesSearch = p.name?.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase());
+        const prodOutletIds = p.extended?.outletIds || p.outletIds || [];
         const matchesOutlet = filterOutlet === 'All' || 
-                             (p.outletIds?.includes(filterOutlet)) || 
-                             (filterOutlet === 'General' && (!p.outletIds || p.outletIds.length === 0));
+                             (prodOutletIds.includes(filterOutlet)) || 
+                             (filterOutlet === 'General' && prodOutletIds.length === 0);
         return matchesSearch && matchesOutlet;
     });
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 italic text-left">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Product Inventory</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} products in stock</p>
+                <div className="text-left font-black leading-none">
+                    <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">Products Master</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em]">{products.length} products registered</p>
                 </div>
                 <button
                     onClick={() => { setEditing(null); setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] }); setShowModal(true); }}
-                    className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-2.5 rounded-none text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all"
+                    className="flex items-center gap-2 bg-primary text-white px-6 py-3 border font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all"
                 >
-                    <Plus className="w-4 h-4" /> Add New Product
+                    <Plus className="w-4 h-4" /> Register New Asset
                 </button>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 flex items-center bg-surface-alt rounded-none border border-border px-4 py-3 shadow-sm transition-all focus-within:ring-2 focus-within:ring-primary/20">
+                <div className="flex-1 flex items-center bg-surface border border-border/40 px-4 py-3 shadow-sm">
                     <Search className="w-4 h-4 text-text-muted mr-3" />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search products by name or SKU..."
-                        className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-text placeholder:text-text-muted/40 outline-none w-full"
+                        placeholder="Search assets by name or SKU..."
+                        className="bg-transparent text-[10px] font-black uppercase tracking-[0.2em] text-foreground placeholder:text-text-muted/40 outline-none w-full italic"
                     />
                 </div>
 
@@ -130,89 +129,77 @@ export default function ProductsPage() {
                     <select
                         value={filterOutlet}
                         onChange={(e) => setFilterOutlet(e.target.value)}
-                        className="w-full bg-surface-alt border border-border px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-text outline-none focus:ring-2 focus:ring-primary/20"
+                        className="w-full bg-surface border border-border/40 px-4 py-3 text-[10px] font-black uppercase tracking-[0.2em] text-foreground outline-none font-black italic"
                     >
-                        <option value="All">All Outlets</option>
-                        <option value="General">Global (No Outlet)</option>
+                        <option value="All">Global Catalog (All)</option>
+                        <option value="General">System General</option>
                         {outlets.map(o => (
-                            <option key={o._id} value={o._id}>{o.name}</option>
+                            <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
                         ))}
                     </select>
                 </div>
             </div>
 
-            <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
+            <div className="bg-surface border border-border/40 overflow-hidden shadow-sm">
                 {loading ? (
                     <div className="flex items-center justify-center py-24">
-                        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
+                        <p className="text-sm font-black italic opacity-40 uppercase tracking-widest">Accessing Asset Database...</p>
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-24">
-                        <Package className="w-12 h-12 text-text-muted mx-auto mb-4 opacity-20" />
-                        <h3 className="text-sm font-black text-text uppercase tracking-widest">No Products Found</h3>
-                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">We couldn't find any products matching your search.</p>
+                        <Package className="w-12 h-12 text-text-muted mx-auto mb-4 opacity-10" />
+                        <h3 className="text-sm font-black text-foreground uppercase tracking-widest">No Assets Detected</h3>
+                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">Zero results for current search parameters</p>
                     </div>
                 ) : (
-                    <div className="table-responsive">
-                        <table className="w-full text-sm min-w-[1000px]">
-                            <thead><tr className="border-b border-border bg-surface-alt">
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Product Name</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden sm:table-cell">SKU Code</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Price</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Stock Status</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Available at</th>
-                                <th className="text-left px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80 hidden md:table-cell">Category</th>
-                                <th className="text-right px-8 py-5 text-[11px] font-black text-text uppercase tracking-widest bg-surface-alt/80">Actions</th>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead className="bg-surface-alt border-b border-border/40"><tr>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic">Product Identity</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic hidden sm:table-cell">SKU Vector</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic">Valuation</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic">Stock Density</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic hidden md:table-cell">Asset Deployment</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest italic text-right">Operation</th>
                             </tr></thead>
-                            <tbody>
+                            <tbody className="divide-y divide-border/20">
                                 {filtered.map((p) => (
-                                    <tr key={p._id} className="border-b border-border last:border-0 hover:bg-surface-alt transition-all group">
+                                    <tr key={p._id || p.id} className="hover:bg-surface-alt/30 transition-all group">
                                         <td className="px-8 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-none bg-primary/5 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary group-hover:scale-105 transition-transform">
-                                                    <Package className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-black text-text uppercase tracking-tight">{p.name}</span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1 h-6 bg-primary" />
+                                                <span className="text-sm font-black text-foreground uppercase tracking-tight italic">{p.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-5 text-[11px] font-bold text-text-muted uppercase tracking-widest hidden sm:table-cell font-mono">{p.sku || 'N/A'}</td>
+                                        <td className="px-8 py-5 text-[10px] font-black text-text-muted uppercase font-mono">{p.sku || '---'}</td>
                                         <td className="px-8 py-5">
-                                            <span className="flex items-center gap-1 font-black text-text text-sm">
-                                                <IndianRupee className="w-3.5 h-3.5 opacity-40" />
-                                                {p.price.toLocaleString('en-IN')}
+                                            <span className="flex items-center gap-1 font-black text-foreground text-sm italic tracking-tighter">
+                                                <IndianRupee size={12} className="text-primary" />
+                                                {(p.price || 0).toLocaleString('en-IN')}
                                             </span>
                                         </td>
                                         <td className="px-8 py-5">
-                                            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${p.stockQuantity <= (p.lowStockThreshold || 5) ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 border-rose-100 dark:border-rose-900/50' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50'}`}>
-                                                {p.stockQuantity <= (p.lowStockThreshold || 5) && <AlertTriangle className="w-3.5 h-3.5" />}
-                                                {p.stockQuantity} UNITS
+                                            <span className={`inline-flex items-center gap-2 px-3 py-1 text-[9px] font-black uppercase tracking-widest border ${p.stockQuantity <= (p.extended?.threshold || p.lowStockThreshold || 5) ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'}`}>
+                                                {p.stockQuantity <= (p.extended?.threshold || p.lowStockThreshold || 5) && <AlertTriangle size={10} />}
+                                                {p.stockQuantity || 0} UNITS
                                             </span>
                                         </td>
                                         <td className="px-8 py-5 hidden md:table-cell">
                                             <div className="flex flex-wrap gap-1">
-                                                {!p.outletIds || p.outletIds.length === 0 ? (
-                                                    <span className="text-[9px] font-black text-text-muted bg-surface-alt px-2 py-1 border border-border uppercase tracking-widest">All Outlets</span>
+                                                {!(p.extended?.outletIds || p.outletIds)?.length ? (
+                                                    <span className="text-[8px] font-black text-text-muted bg-surface-alt px-2 py-0.5 border border-border/40 uppercase">Global</span>
                                                 ) : (
-                                                    p.outletIds.map(oid => {
-                                                        const o = outlets.find(out => out._id === oid);
-                                                        return (
-                                                            <span key={oid} className="text-[9px] font-black text-primary bg-primary/5 px-2 py-1 border border-primary/20 uppercase tracking-widest">
-                                                                {o ? o.name : oid}
-                                                            </span>
-                                                        );
+                                                    (p.extended?.outletIds || p.outletIds).map(oid => {
+                                                        const o = outlets.find(out => out._id === oid || out.id === oid);
+                                                        return <span key={oid} className="text-[8px] font-black text-primary bg-primary/5 px-2 py-0.5 border border-primary/10 uppercase">{o?.name || 'Local Outlet'}</span>
                                                     })
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest hidden md:table-cell">{p.category || 'GENERAL'}</td>
                                         <td className="px-8 py-5 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => openEdit(p)} className="p-2.5 rounded-none bg-surface-alt border border-border text-text-muted hover:text-primary transition-all shadow-sm">
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button onClick={() => handleDelete(p._id)} className="p-2.5 rounded-none bg-surface-alt border border-border text-text-muted hover:text-rose-600 transition-all shadow-sm">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                                                <button onClick={() => openEdit(p)} className="p-2 border border-border/40 text-text-muted hover:text-primary transition-all"><Edit size={14} /></button>
+                                                <button onClick={() => handleDelete(p._id || p.id)} className="p-2 border border-border/40 text-text-muted hover:text-rose-500 transition-all"><Trash2 size={14} /></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -224,106 +211,70 @@ export default function ProductsPage() {
             </div>
 
             {showModal && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all" onClick={() => setShowModal(false)}>
-                    <div className="bg-surface rounded-3xl w-full max-w-lg p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-white/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+                    <div className="bg-surface border border-border w-full max-w-lg p-10 shadow-2xl relative italic text-left" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-col items-center text-center mb-10">
-                            <div className="w-16 h-16 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-6 border border-primary/20">
-                                <Package className="w-8 h-8" />
-                            </div>
-                            <h2 className="text-2xl font-black text-text uppercase tracking-tight">{editing ? 'Edit Product' : 'Add New Product'}</h2>
-                            <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Enter product details below</p>
+                            <Package className="w-10 h-10 text-primary mb-4" />
+                            <h2 className="text-2xl font-black text-foreground uppercase tracking-tighter italic">{editing ? 'Modify Asset' : 'Register Asset'}</h2>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Product Name *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. Silk Serum Pro" />
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Asset Designation *</label>
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">SKU Code</label>
-                                    <input type="text" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="SKU-XXXX" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">SKU Vector</label>
+                                    <input type="text" value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Category</label>
-                                    <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/20" placeholder="e.g. HAIRCARE" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Category</label>
+                                    <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Price (₹) *</label>
-                                    <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Valuation (₹)</label>
+                                    <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Stock *</label>
-                                    <input type="number" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Volume</label>
+                                    <input type="number" value={form.stockQuantity} onChange={(e) => setForm({ ...form, stockQuantity: e.target.value })} required className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Threshold</label>
-                                    <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} className="w-full px-5 py-3.5 rounded-none bg-surface-alt border border-border text-sm font-bold focus:border-primary outline-none transition-all" />
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">Threshold</label>
+                                    <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} className="w-full px-5 py-3 bg-surface-alt border border-border/60 text-sm font-black italic focus:border-primary outline-none" />
                                 </div>
                             </div>
 
-                            {/* Outlet Availability Section */}
-                            <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Store className="w-4 h-4 text-primary" />
-                                    <label className="text-[10px] font-black text-text uppercase tracking-[0.2em]">{editing ? 'Edit' : 'Select'} Outlet Availability</label>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
-                                        <input
-                                            type="radio"
-                                            name="availability"
-                                            checked={form.availabilityType === 'all'}
-                                            onChange={() => setForm({ ...form, availabilityType: 'all', outletIds: [] })}
-                                            className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
-                                        />
-                                        <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
+                            <div className="p-6 bg-surface-alt border border-border/60 space-y-4">
+                                <label className="text-[10px] font-black text-foreground uppercase tracking-widest flex items-center gap-2 italic"><Store size={14} className="text-primary" /> Deployment Protocol</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" checked={form.availabilityType === 'all'} onChange={() => setForm({ ...form, availabilityType: 'all', outletIds: [] })} className="accent-primary" />
+                                        <span className="text-[10px] font-black uppercase">Global</span>
                                     </label>
-                                    <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
-                                        <input
-                                            type="radio"
-                                            name="availability"
-                                            checked={form.availabilityType === 'selected'}
-                                            onChange={() => setForm({ ...form, availabilityType: 'selected' })}
-                                            className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
-                                        />
-                                        <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Selected Outlets Only</span>
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" checked={form.availabilityType === 'selected'} onChange={() => setForm({ ...form, availabilityType: 'selected' })} className="accent-primary" />
+                                        <span className="text-[10px] font-black uppercase">Segmented</span>
                                     </label>
                                 </div>
-
                                 {form.availabilityType === 'selected' && (
-                                    <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
-                                        {outlets.map(outlet => (
-                                            <button
-                                                key={outlet._id}
-                                                type="button"
-                                                onClick={() => {
-                                                    const ids = form.outletIds.includes(outlet._id)
-                                                        ? form.outletIds.filter(id => id !== outlet._id)
-                                                        : [...form.outletIds, outlet._id];
-                                                    setForm({ ...form, outletIds: ids });
-                                                }}
-                                                className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${form.outletIds.includes(outlet._id)
-                                                    ? 'bg-primary/5 border-primary text-primary shadow-sm'
-                                                    : 'bg-white border-border text-text-muted hover:border-primary/40'
-                                                }`}
-                                            >
-                                                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${form.outletIds.includes(outlet._id)
-                                                    ? 'bg-primary border-primary text-white'
-                                                    : 'bg-white border-border'
-                                                }`}>
-                                                    {form.outletIds.includes(outlet._id) && <CheckCircle2 className="w-3 h-3" />}
-                                                </div>
-                                                <span className="text-xs font-bold uppercase tracking-tight">{outlet.name}</span>
+                                    <div className="grid grid-cols-2 gap-2 pt-2">
+                                        {outlets.map(o => (
+                                            <button key={o._id || o.id} type="button" onClick={() => {
+                                                const ids = form.outletIds.includes(o._id || o.id) ? form.outletIds.filter(id => id !== (o._id || o.id)) : [...form.outletIds, (o._id || o.id)];
+                                                setForm({ ...form, outletIds: ids });
+                                            }} className={`px-3 py-2 border text-[9px] font-black uppercase transition-all ${form.outletIds.includes(o._id || o.id) ? 'bg-primary text-white border-primary' : 'bg-white border-border/40 text-text-muted'}`}>
+                                                {o.name}
                                             </button>
                                         ))}
                                     </div>
                                 )}
                             </div>
-                            <div className="flex gap-4 pt-6">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4.5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
-                                <button type="submit" className="flex-1 py-4.5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/25 hover:brightness-110 transition-all">{editing ? 'Save Changes' : 'Add Product'}</button>
+                            <div className="flex gap-4 pt-4">
+                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-4 border border-border/60 text-[10px] font-black uppercase tracking-widest italic">Cancel</button>
+                                <button type="submit" className="flex-1 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-widest italic shadow-xl shadow-primary/20">{editing ? 'Update' : 'Register'}</button>
                             </div>
                         </form>
                     </div>

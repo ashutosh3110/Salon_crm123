@@ -6,7 +6,7 @@ import {
     X, Send, RefreshCw, User as UserIcon, MoreHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -63,7 +63,7 @@ export default function SupportPage() {
 
     const fetchFAQs = async () => {
         try {
-            const response = await api.get('/cms');
+            const response = await mockApi.get('/cms');
             if (response.data && response.data.support_faqs) {
                 setFaqs(response.data.support_faqs);
             }
@@ -85,7 +85,7 @@ export default function SupportPage() {
     const fetchTickets = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/support/tickets');
+            const response = await mockApi.get('/support/tickets');
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -119,7 +119,7 @@ export default function SupportPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/support/tickets', form);
+            const response = await mockApi.post('/support/tickets', form);
             if (response.data.success) {
                 setTickets([response.data.data, ...tickets]);
                 setShowModal(false);
@@ -136,7 +136,7 @@ export default function SupportPage() {
         try {
             setLoadingDetail(true);
             setSelectedTicket({ _id: id }); // Show drawer immediately with loading state
-            const response = await api.get(`/support/tickets/${id}`);
+            const response = await mockApi.get(`/support/tickets/${id}`);
             if (response.data.success) {
                 setSelectedTicket(response.data.data);
             }
@@ -154,7 +154,7 @@ export default function SupportPage() {
 
         try {
             setSending(true);
-            const response = await api.post(`/support/tickets/${selectedTicket._id}/responses`, { message: reply });
+            const response = await mockApi.post(`/support/tickets/${selectedTicket._id}/responses`, { message: reply });
             if (response.data.success) {
                 setSelectedTicket(response.data.data);
                 setReply('');
@@ -170,7 +170,7 @@ export default function SupportPage() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const response = await api.patch(`/support/tickets/${id}`, { status });
+            const response = await mockApi.patch(`/support/tickets/${id}`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? response.data.data : t));
                 if (selectedTicket?._id === id) {

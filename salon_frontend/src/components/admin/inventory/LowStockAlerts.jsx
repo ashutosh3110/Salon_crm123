@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import {
     ArrowRight,
     Package,
@@ -26,7 +26,7 @@ export default function LowStockAlerts() {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/inventory/low-stock');
+            const res = await mockApi.get('/inventory/low-stock');
             setPayload(res.data);
         } catch (e) {
             setError(e?.response?.data?.message || e?.message || 'Could not load low stock data.');
@@ -77,14 +77,11 @@ export default function LowStockAlerts() {
                         <Bell className="w-6 h-6 text-primary-foreground animate-pulse" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-rose-900 dark:text-rose-100 tracking-tight">
-                            Low stock alerts
+                        <h3 className="text-lg font-black text-rose-900 dark:text-rose-100 uppercase tracking-tighter italic leading-none">
+                            Critical Density Breach
                         </h3>
-                        <p className="text-sm text-rose-700 dark:text-rose-300 font-medium">
-                            <span className="font-bold">{summary.total}</span> rows below threshold (Critical:{' '}
-                            <span className="font-bold">{summary.critical}</span>, Low:{' '}
-                            <span className="font-bold">{summary.low}</span>). Data:{' '}
-                            <span className="font-mono text-[10px]">GET /inventory/low-stock</span>
+                        <p className="text-[10px] font-black text-rose-700 dark:text-rose-300 mt-1 uppercase tracking-[0.2em] italic">
+                            Inventory Alerts Protocol :: <span className="font-bold">{summary.total}</span> ASSETS REQUIRE REPLENISHMENT
                         </p>
                     </div>
                 </div>

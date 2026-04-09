@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import {
     Plus,
     History,
@@ -29,7 +29,7 @@ export default function StockIn() {
         setHistoryLoading(true);
         setHistoryError(null);
         try {
-            const res = await api.get('/inventory/stock-in/history', { params: { page: 1, limit: 100 } });
+            const res = await mockApi.get('/inventory/stock-in/history', { params: { page: 1, limit: 100 } });
             const rows = res?.data?.results ?? res?.data ?? [];
             setHistory(Array.isArray(rows) ? rows : []);
         } catch (e) {
@@ -311,7 +311,7 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
         const supplier = suppliers.find((s) => String(s._id || s.id) === String(supplierId));
         setSaving(true);
         try {
-            await api.post('/inventory/stock-in', {
+            await mockApi.post('/inventory/stock-in', {
                 productId,
                 outletId,
                 quantity: qty,
@@ -339,10 +339,9 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
         <div className="p-10 max-w-3xl mx-auto animate-slideUp">
             <div className="space-y-8">
                 <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-text tracking-tight">Record New Inward</h3>
-                    <p className="text-sm text-text-secondary font-medium">
-                        Saves to server: updates outlet stock and appears in Inward History (
-                        <span className="font-mono text-xs">POST /inventory/stock-in</span>).
+                    <h3 className="text-lg font-black text-foreground uppercase tracking-tight italic">Asset Inbound Protocol</h3>
+                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
+                        Registry Synchronization :: Update Stock Density per Node Allocation
                     </p>
                 </div>
 

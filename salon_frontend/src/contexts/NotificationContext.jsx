@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import api from '../services/api';
+import mockApi from '../services/mock/mockApi';
 import { useAuth } from './AuthContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 
@@ -9,9 +9,7 @@ export function NotificationProvider({ children }) {
     const { user } = useAuth();
     const { customer } = useCustomerAuth();
     
-    // Identify which user is active
     const activeUserId = user?._id || user?.id || customer?._id || customer?.id;
-    const isClient = !!customer && !user;
 
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -21,8 +19,7 @@ export function NotificationProvider({ children }) {
         if (!activeUserId) return;
         try {
             setLoading(true);
-            const res = await api.get('/notifications');
-            // Backend returns { results: [...], total: ..., unreadCount: ... }
+            const res = await mockApi.get('/notifications');
             setNotifications(res.data.results || []);
         } catch (error) {
             console.error('Fetch Notifications Error:', error);
@@ -34,8 +31,7 @@ export function NotificationProvider({ children }) {
     const fetchUnreadCount = useCallback(async () => {
         if (!activeUserId) return;
         try {
-            const res = await api.get('/notifications/unread-count');
-            // Backend returns { unreadCount: ... }
+            const res = await mockApi.get('/notifications/unread-count');
             setUnreadCount(res.data.unreadCount || 0);
         } catch (error) {
             console.error('Fetch Unread Count Error:', error);
@@ -44,8 +40,8 @@ export function NotificationProvider({ children }) {
 
     const markAsRead = useCallback(async (id) => {
         try {
-            await api.patch('/notifications/read', { notificationIds: [id] });
-            setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+            await mockApi.patch('/notifications/read', { notificationIds: [id] });
+            setNotifications(prev => prev.map(n => (n._id === id || n.id === id) ? { ...n, isRead: true } : n));
             setUnreadCount(prev => Math.max(0, prev - 1));
         } catch (error) {
             console.error('Mark Read Error:', error);
@@ -54,7 +50,7 @@ export function NotificationProvider({ children }) {
 
     const markAllRead = useCallback(async () => {
         try {
-            await api.patch('/notifications/read-all');
+            await mockApi.patch('/notifications/read-all');
             setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             setUnreadCount(0);
         } catch (error) {
@@ -64,8 +60,8 @@ export function NotificationProvider({ children }) {
 
     const deleteNotification = useCallback(async (id) => {
         try {
-            await api.delete(`/notifications/${id}`);
-            setNotifications(prev => prev.filter(n => n._id !== id));
+            await mockApi.delete(`/notifications/${id}`);
+            setNotifications(prev => prev.filter(n => n._id !== id && n.id !== id));
             await fetchUnreadCount();
         } catch (error) {
             console.error('Delete Notification Error:', error);

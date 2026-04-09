@@ -15,7 +15,7 @@ import {
     RefreshCw,
     Loader2,
 } from 'lucide-react';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 const CATEGORY_OPTIONS = [
@@ -90,7 +90,7 @@ function ExpenseList({ onAdd }) {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/finance/expenses', { params: { limit: 200, page: 1 } });
+            const res = await mockApi.get('/finance/expenses', { params: { limit: 200, page: 1 } });
             setRows(pickExpenseRows(res));
         } catch (e) {
             setError(e?.networkHint || e?.response?.data?.message || e.message || 'Failed to load expenses');
@@ -289,7 +289,7 @@ function ExpenseForm({ onCancel, onSaved }) {
         }
         setSaving(true);
         try {
-            await api.post('/finance/expenses', {
+            await mockApi.post('/finance/expenses', {
                 amount: amt,
                 category,
                 paymentMethod: paymentMode === 'cash' ? 'cash' : 'online',

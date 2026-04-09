@@ -1,19 +1,30 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle2, XCircle, Search, Filter, Shield, Activity, ChevronRight, User, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import mockApi from '../../../services/mock/mockApi';
 
 export default function LeaveApprovalManager() {
     const [requests, setRequests] = useState([]);
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [searchTerm, setSearchTerm] = useState('');
     const [toast, setToast] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Initial load from localStorage
-    useEffect(() => {
-        const stored = localStorage.getItem('WAPIXO_LEAVE_REGISTRY');
-        if (stored) {
-            setRequests(JSON.parse(stored));
+    const fetchLeaves = async () => {
+        try {
+            setLoading(true);
+            const res = await mockApi.get('/leaves');
+            setRequests(res.data?.data || []);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    // Initial load
+    useEffect(() => {
+        fetchLeaves();
     }, []);
 
     const showToast = (msg) => {
@@ -21,13 +32,14 @@ export default function LeaveApprovalManager() {
         setTimeout(() => setToast(null), 3000);
     };
 
-    const handleAction = (id, newStatus) => {
-        const updated = requests.map(req =>
-            req.id === id ? { ...req, status: newStatus } : req
-        );
-        setRequests(updated);
-        localStorage.setItem('WAPIXO_LEAVE_REGISTRY', JSON.stringify(updated));
-        showToast(`Protocol: ${newStatus === 'APPROVED' ? 'AUTHORIZED' : 'TERMINATED'}`);
+    const handleAction = async (id, newStatus) => {
+        try {
+            await mockApi.patch(`/leaves/${id}`, { status: newStatus });
+            showToast(`Protocol: ${newStatus === 'APPROVED' ? 'AUTHORIZED' : 'TERMINATED'}`);
+            await fetchLeaves();
+        } catch (e) {
+            showToast('Action failed');
+        }
     };
 
     const filtered = requests.filter(req => {

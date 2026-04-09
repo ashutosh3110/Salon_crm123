@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Star, Gift, Users, Save, Info, Zap, Share2 } from 'lucide-react';
-import api from '../../../services/api';
+import { Trophy, Star, Gift, Users, Save, Info, Zap, Share2, X } from 'lucide-react';
+import mockApi from '../../../services/mock/mockApi';
 
 export default function ReferralSettingsTab() {
     const [config, setConfig] = useState({
@@ -22,7 +22,7 @@ export default function ReferralSettingsTab() {
         const load = async () => {
             setLoading(true);
             try {
-                const res = await api.get('/loyalty/referral-settings');
+                const res = await mockApi.get('/loyalty/referral-settings');
                 const data = res?.data?.data || {};
                 const st = res?.data?.stats || {};
                 setConfig({
@@ -49,29 +49,29 @@ export default function ReferralSettingsTab() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.put('/loyalty/referral-settings', {
+            await mockApi.put('/loyalty/referral-settings', {
                 enabled: !!config.enabled,
                 referrerReward: Number(config.referrerReward || 0),
                 referredReward: Number(config.referredReward || 0),
                 threshold: config.threshold,
                 expiryDays: Number(config.expiryDays || 1),
             });
-            alert('Referral settings saved successfully');
+            alert('Referral settings saved locally!');
         } catch (err) {
-            alert(err?.response?.data?.message || 'Failed to save referral settings');
+            alert('Failed to save referral settings');
         } finally {
             setSaving(false);
         }
     };
 
     return (
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-8 italic text-left">
             <div className="lg:col-span-2 space-y-8">
                 {/* Master Switch */}
                 <div className="bg-surface p-8 border border-border/40 flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter leading-none">Referral Program</h2>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Invite customers and reward both sides</p>
+                        <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-1">Invite friends and reward both sides</p>
                     </div>
                     <button
                         onClick={() => setConfig({ ...config, enabled: !config.enabled })}
@@ -80,7 +80,7 @@ export default function ReferralSettingsTab() {
                             : 'bg-surface-alt text-text-muted border border-border/40'
                             }`}
                     >
-                        {config.enabled ? 'Program: ON' : 'Program: OFF'}
+                        {config.enabled ? 'Program: Active' : 'Program: Paused'}
                     </button>
                 </div>
 
@@ -88,20 +88,20 @@ export default function ReferralSettingsTab() {
                 <div className="bg-surface p-8 border border-border/40 space-y-8">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-6 bg-primary" />
-                        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">Reward Settings</h2>
+                        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">Points Settings</h2>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <SettingInput
-                            label="Referrer Reward"
+                            label="Points for Referrer"
                             sub="Points for customer who refers a friend"
                             value={config.referrerReward}
                             onChange={v => setConfig({ ...config, referrerReward: v })}
                             icon={<Trophy className="text-primary" size={16} />}
                         />
                         <SettingInput
-                            label="New Customer Reward"
-                            sub="Points for customer who joins with referral"
+                            label="Points for Friend"
+                            sub="Points for the friend who joins"
                             value={config.referredReward}
                             onChange={v => setConfig({ ...config, referredReward: v })}
                             icon={<Star className="text-primary" size={16} />}
@@ -113,12 +113,12 @@ export default function ReferralSettingsTab() {
                 <div className="bg-surface p-8 border border-border/40 space-y-8">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-6 bg-primary" />
-                        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">When Reward Should Trigger</h2>
+                        <h2 className="text-sm font-black text-foreground uppercase tracking-widest">Reward Trigger Condition</h2>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <div className="space-y-4">
-                            <label className="text-[10px] font-black text-foreground uppercase tracking-widest">Reward Trigger Event</label>
+                            <label className="text-[10px] font-black text-foreground uppercase tracking-widest">When to give points?</label>
                             <div className="space-y-2">
                                 {['FIRST_SERVICE', 'REGISTRATION', 'FIRST_INVOICE_MIN_1000'].map(m => (
                                     <button
@@ -135,8 +135,8 @@ export default function ReferralSettingsTab() {
                             </div>
                         </div>
                         <SettingInput
-                            label="Reward Expiry (Days)"
-                            sub="After how many days referral reward expires"
+                            label="Points Expiry (Days)"
+                            sub="After how many days points expire"
                             value={config.expiryDays}
                             onChange={v => setConfig({ ...config, expiryDays: v })}
                             icon={<Zap className="text-primary" size={16} />}
@@ -148,12 +148,12 @@ export default function ReferralSettingsTab() {
             {/* Sidebar Stats */}
             <div className="space-y-6">
                 <div className="bg-surface border border-border/40 p-8 space-y-8">
-                    <h3 className="text-sm font-black text-text-muted uppercase tracking-widest">Growth Performance</h3>
+                    <h3 className="text-sm font-black text-text-muted uppercase tracking-widest">Referral Stats</h3>
 
                     <div className="space-y-6">
-                        <StatItem label="Total Referrals" value={loading ? '...' : stats.totalReferrals.toLocaleString('en-IN')} icon={<Users size={16} />} />
-                        <StatItem label="Conversion Rate" value={loading ? '...' : `${stats.conversionRate}%`} icon={<Share2 size={16} />} />
-                        <StatItem label="Points Issued" value={loading ? '...' : stats.pointsIssued.toLocaleString('en-IN')} icon={<Gift size={16} />} />
+                        <StatItem label="Total Invites" value={loading ? '...' : stats.totalReferrals.toLocaleString('en-IN')} icon={<Users size={16} />} />
+                        <StatItem label="Conversion %" value={loading ? '...' : `${stats.conversionRate}%`} icon={<Share2 size={16} />} />
+                        <StatItem label="Points Shared" value={loading ? '...' : stats.pointsIssued.toLocaleString('en-IN')} icon={<Gift size={16} />} />
                     </div>
 
                     <button
@@ -161,13 +161,13 @@ export default function ReferralSettingsTab() {
                         disabled={saving}
                         className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 flex items-center justify-center gap-2 hover:scale-[1.02] transition-all"
                     >
-                        {saving ? 'Saving...' : <>Save Configuration <Save size={14} /></>}
+                        {saving ? 'Saving...' : <>Save Referral Settings <Save size={14} /></>}
                     </button>
                 </div>
 
                 <div className="p-6 border border-border/40 bg-surface-alt/50 italic flex gap-4 text-xs text-text-muted leading-relaxed">
                     <Info className="w-5 h-5 text-primary shrink-0" />
-                    Referral reward sirf ek unique customer par ek baar apply hota hai. Duplicate referrals par reward nahi milega.
+                    Referral rewards are applied only to unique new customers.
                 </div>
             </div>
         </div>
@@ -188,7 +188,7 @@ function SettingInput({ label, sub, value, onChange, icon }) {
                 type="number"
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                className="w-full h-14 bg-surface-alt border border-border/60 px-5 text-xl font-black text-foreground focus:border-primary outline-none transition-all"
+                className="w-full h-14 bg-surface-alt border border-border/60 px-5 text-xl font-black text-foreground focus:border-primary outline-none transition-all shadow-sm"
             />
         </div>
     );

@@ -11,7 +11,7 @@ import {
     Filter,
     Receipt
 } from 'lucide-react';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 export default function POSPaymentsPage() {
     const [invoices, setInvoices] = useState([]);
@@ -23,8 +23,8 @@ export default function POSPaymentsPage() {
             try {
                 setLoading(true);
                 const params = dateFilter === 'today' ? '?date=today&limit=100' : '?limit=100';
-                const res = await api.get(`/invoices${params}`);
-                const list = res?.data?.results || [];
+                const res = await mockApi.get(`/invoices${params}`);
+                const list = res?.data?.results || res?.data?.data?.results || [];
                 setInvoices(Array.isArray(list) ? list : []);
             } catch (err) {
                 console.error('Failed to fetch payments:', err);
@@ -46,10 +46,10 @@ export default function POSPaymentsPage() {
             }
         });
         return [
-            { mode: 'Cash', key: 'cash', value: summary.cash.total, count: summary.cash.count, icon: Banknote, color: 'text-green-600 bg-green-50 border-green-100' },
-            { mode: 'Card', key: 'card', value: summary.card.total, count: summary.card.count, icon: CreditCard, color: 'text-blue-600 bg-blue-50 border-blue-100' },
-            { mode: 'UPI / Online', key: 'online', value: summary.online.total, count: summary.online.count, icon: Smartphone, color: 'text-purple-600 bg-purple-50 border-purple-100' },
-            { mode: 'Unpaid', key: 'unpaid', value: summary.unpaid.total, count: summary.unpaid.count, icon: Ban, color: 'text-orange-600 bg-orange-50 border-orange-100' },
+            { mode: 'Cash Channel', key: 'cash', value: summary.cash.total, count: summary.cash.count, icon: Banknote },
+            { mode: 'Card Protocol', key: 'card', value: summary.card.total, count: summary.card.count, icon: CreditCard },
+            { mode: 'Digital UPI Vector', key: 'online', value: summary.online.total, count: summary.online.count, icon: Smartphone },
+            { mode: 'Unpaid Loop', key: 'unpaid', value: summary.unpaid.total, count: summary.unpaid.count, icon: Ban },
         ];
     }, [invoices]);
 
@@ -67,105 +67,72 @@ export default function POSPaymentsPage() {
         }
     };
 
+    if (loading && invoices.length === 0) return <div className="p-20 text-center font-black uppercase tracking-widest text-text-muted">Loading Treasury Data...</div>;
+
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
+        <div className="space-y-8 animate-in fade-in duration-700 max-w-[1400px] mx-auto text-left">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-                <div>
-                    <h1 className="text-2xl font-black text-text uppercase tracking-tight">Treasury Surveillance</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Revenue channel tracking and verification logs</p>
+                <div className="text-left font-black">
+                    <h1 className="text-2xl font-black text-text uppercase tracking-tight italic">Treasury Surveillance</h1>
+                    <p className="text-[10px] text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Revenue Channel Audit & Verification [OFFLINE ENABLED]</p>
                 </div>
                 <div className="flex gap-2">
-                    <button
-                        onClick={() => setDateFilter('today')}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'today' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
-                    >
-                        <Calendar className="w-4 h-4" /> Current Cycle
-                    </button>
-                    <button
-                        onClick={() => setDateFilter('all')}
-                        className={`inline-flex items-center gap-3 px-6 py-3.5 rounded-none text-[10px] font-black uppercase tracking-[0.2em] transition-all border ${dateFilter === 'all' ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20' : 'bg-surface border-border text-text-muted hover:bg-surface-alt'}`}
-                    >
-                        <Filter className="w-4 h-4" /> Historical Data
-                    </button>
+                    <button onClick={() => setDateFilter('today')} className={`px-6 py-3.5 text-[10px] font-black uppercase tracking-widest border ${dateFilter === 'today' ? 'bg-primary text-white border-primary' : 'bg-white border-border text-text-muted hover:bg-surface-alt'}`}>Current Cycle</button>
+                    <button onClick={() => setDateFilter('all')} className={`px-6 py-3.5 text-[10px] font-black uppercase tracking-widest border ${dateFilter === 'all' ? 'bg-primary text-white border-primary' : 'bg-white border-border text-text-muted hover:bg-surface-alt'}`}>Historical Log</button>
                 </div>
             </div>
 
-            {loading ? (
-                <div className="flex flex-col items-center justify-center py-24 gap-6 bg-surface-alt/10">
-                    <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" />
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Querying Database Modules...</p>
-                </div>
-            ) : (
-                <>
-                    {/* Mode Summary */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {paymentSummary.map((item, i) => (
-                            <div key={i} className="bg-surface rounded-none border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 -mr-8 -mt-8 rounded-none rotate-45 pointer-events-none transition-transform group-hover:scale-110" />
-                                <div className="flex items-center gap-5 relative z-10">
-                                    <div className={`w-12 h-12 rounded-none border border-border flex items-center justify-center shrink-0 bg-surface-alt transition-colors group-hover:bg-primary group-hover:text-primary-foreground`}>
-                                        <item.icon className="w-6 h-6" />
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1">{item.mode}</p>
-                                        <h3 className="text-xl font-black text-text tracking-tight">₹{item.value.toLocaleString()}</h3>
-                                        <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1 opacity-60">{item.count} PAYLOADS</p>
-                                    </div>
-                                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
+                {paymentSummary.map((item, i) => (
+                    <div key={i} className="bg-white border border-border p-6 shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
+                        <div className="flex items-center gap-5 relative z-10 text-left">
+                            <div className="w-12 h-12 border border-border flex items-center justify-center shrink-0 bg-surface-alt text-text group-hover:bg-primary group-hover:text-white transition-all">
+                                <item.icon className="w-6 h-6" />
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Transaction List */}
-                    <div className="bg-surface rounded-none border border-border shadow-sm overflow-hidden">
-                        <div className="px-8 py-5 border-b border-border bg-surface-alt/50">
-                            <h3 className="text-sm font-black text-text uppercase tracking-widest">Revenue Auth Ledger</h3>
+                            <div className="text-left">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1 italic">{item.mode}</p>
+                                <h3 className="text-xl font-black text-text tracking-tighter">₹{item.value.toLocaleString()}</h3>
+                                <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1 opacity-60">{item.count} PAYLOADS</p>
+                            </div>
                         </div>
-                        {invoices.length === 0 ? (
-                            <div className="py-24 text-center bg-surface-alt/10">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Zero entries detected in query results</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-surface-alt/50 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] border-b border-border">
-                                            <th className="px-8 py-5">TXN ID</th>
-                                            <th className="px-8 py-5">Temporal Index</th>
-                                            <th className="px-8 py-5">Origin Entity</th>
-                                            <th className="px-8 py-5">Protocol</th>
-                                            <th className="px-8 py-5 text-right">Value</th>
-                                            <th className="px-8 py-5">Validation</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        {invoices.map((inv) => (
-                                            <tr key={inv._id} className="hover:bg-surface-alt transition-all group text-sm">
-                                                <td className="px-8 py-5 font-black text-primary uppercase tracking-widest">{inv.invoiceNumber}</td>
-                                                <td className="px-8 py-5 text-[11px] font-bold text-text-muted uppercase tracking-tight flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {formatTime(inv.createdAt)}</td>
-                                                <td className="px-8 py-5 font-black text-text uppercase tracking-widest">{inv.clientId?.name || 'Walk-in Entity'}</td>
-                                                <td className="px-8 py-5">
-                                                    <span className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-widest leading-none">
-                                                        {getMethodIcon(inv.paymentMethod)}
-                                                        {inv.paymentMethod === 'online' ? 'UPI VECTOR' : `${inv.paymentMethod.toUpperCase()} CHANNEL`}
-                                                    </span>
-                                                </td>
-                                                <td className="px-8 py-5 text-right font-black text-text tracking-tight">₹{inv.total?.toLocaleString()}</td>
-                                                <td className="px-8 py-5">
-                                                    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-widest border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400 border-emerald-500/20' : 'bg-orange-500/10 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 border-orange-500/20'}`}>
-                                                        <CheckCircle2 className="w-3 h-3" />
-                                                        {inv.paymentStatus}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
                     </div>
-                </>
-            )}
+                ))}
+            </div>
+
+            <div className="bg-white border border-border overflow-hidden text-left shadow-sm">
+                <div className="px-8 py-5 border-b border-border bg-surface-alt/50 text-left font-black uppercase tracking-widest text-[11px]">Revenue Auth Ledger</div>
+                <div className="overflow-x-auto text-left">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-surface-alt/50 text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border">
+                                <th className="px-8 py-5">TXN-ID</th>
+                                <th className="px-8 py-5">Temporal-Index</th>
+                                <th className="px-8 py-5">Origin-Entity</th>
+                                <th className="px-8 py-5">Auth-Protocol</th>
+                                <th className="px-8 py-5 text-right">Payload Value</th>
+                                <th className="px-8 py-5">Validation</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border text-left">
+                            {invoices.map((inv) => (
+                                <tr key={inv._id} className="hover:bg-surface-alt transition-all text-sm group text-left">
+                                    <td className="px-8 py-5 font-black text-primary uppercase italic">{inv.invoiceNumber}</td>
+                                    <td className="px-8 py-5 text-[10px] font-bold text-text-muted uppercase tracking-tight"><Clock className="w-3 h-3 inline mr-1" /> {formatTime(inv.createdAt)}</td>
+                                    <td className="px-8 py-5 font-black text-text uppercase tracking-widest">{inv.clientId?.name || 'Walk-in'}</td>
+                                    <td className="px-8 py-5">
+                                        <span className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-widest leading-none italic">
+                                            {getMethodIcon(inv.paymentMethod)}
+                                            {inv.paymentMethod?.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-5 text-right font-black text-text tracking-tighter">₹{inv.total?.toLocaleString()}</td>
+                                    <td className="px-8 py-5 italic font-black text-[10px] text-emerald-600 uppercase">Verified</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }

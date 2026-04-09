@@ -13,7 +13,7 @@ import {
     Calendar,
     History,
 } from 'lucide-react';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import { useAuth } from '../../../contexts/AuthContext';
 
 function formatInr(n) {
@@ -41,7 +41,7 @@ export default function EndOfDay() {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/finance/eod/summary', { params: { date: businessDate } });
+            const res = await mockApi.get('/finance/eod/summary', { params: { date: businessDate } });
             setData(res.data?.data || null);
         } catch (e) {
             setError(e?.response?.data?.message || e.message || 'EOD load failed');
@@ -57,7 +57,7 @@ export default function EndOfDay() {
 
     const loadHistory = useCallback(async () => {
         try {
-            const res = await api.get('/finance/eod/history', { params: { limit: 15 } });
+            const res = await mockApi.get('/finance/eod/history', { params: { limit: 15 } });
             setHistory(res.data?.data?.results || []);
         } catch {
             setHistory([]);
@@ -79,7 +79,7 @@ export default function EndOfDay() {
         setClosing(true);
         setError(null);
         try {
-            await api.post('/finance/eod/close', {
+            await mockApi.post('/finance/eod/close', {
                 businessDate,
                 notes: notes.trim(),
             });

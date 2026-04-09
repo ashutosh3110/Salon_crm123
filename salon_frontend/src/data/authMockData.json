@@ -1,34 +1,33 @@
+
 {
     "mock_users": {
-        "admin@salon.com": {
-            "role": "admin",
+        "admin@salon.com": { 
+            "role": "admin", 
             "name": "Salon Owner",
-            "subscriptionPlan": "pro"
+            "subscriptionPlan": "enterprise",
+            "subscriptionStatus": "active",
+            "permissions": {
+                "canAccessPOS": true,
+                "canAccessInventory": true,
+                "canAccessFinance": true,
+                "canAccessReports": true,
+                "canAccessSettings": true
+            }
         },
-        "manager@salon.com": {
-            "role": "manager",
-            "name": "Rajesh Manager"
+        "superadmin@salon.com": { 
+            "role": "superadmin", 
+            "name": "Super Admin" 
         },
-        "reception@salon.com": {
-            "role": "receptionist",
-            "name": "Priya Receptionist"
+        "mrmmultani@gmail.com": { 
+            "role": "admin", 
+            "name": "M.R. Multani",
+            "subscriptionPlan": "enterprise",
+            "subscriptionStatus": "active"
         },
-        "stylist@salon.com": {
-            "role": "stylist",
-            "name": "Anita Verma"
-        },
-        "accounts@salon.com": {
-            "role": "accountant",
-            "name": "Deepak Accountant"
-        },
-        "inventory@salon.com": {
-            "role": "inventory_manager",
-            "name": "Suresh Inventory"
-        },
-        "superadmin@salon.com": {
-            "role": "superadmin",
-            "name": "Super Admin"
-        }
+        "neha@gmail.com": { "role": "stylist", "name": "Neha Stylist" },
+        "prachi@gmail.com": { "role": "accountant", "name": "Prachi Accountant" },
+        "aditya@gmail.com": { "role": "manager", "name": "Aditya Manager" },
+        "aman@gmail.com": { "role": "receptionist", "name": "Aman Receptionist" }
     },
     "redirect_map": {
         "superadmin": "/superadmin",

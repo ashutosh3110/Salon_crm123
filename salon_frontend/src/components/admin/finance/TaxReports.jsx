@@ -9,7 +9,7 @@ import {
     List,
     RefreshCw,
 } from 'lucide-react';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 function formatInr(n) {
     const v = Number(n);
@@ -62,7 +62,7 @@ export default function TaxReports() {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/finance/tax/gst-summary', { params: { fy } });
+            const res = await mockApi.get('/finance/tax/gst-summary', { params: { fy } });
             setData(res.data?.data || null);
         } catch (e) {
             setError(

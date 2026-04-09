@@ -12,7 +12,7 @@ import {
     Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 
@@ -101,7 +101,7 @@ export default function MarketingHub() {
 
     const loadDashboard = async () => {
         try {
-            const res = await api.get('/marketing/dashboard');
+            const res = await mockApi.get('/marketing/dashboard');
             if (res.data?.success) setDashboardData(res.data.data);
         } catch (e) {
             setDashboardData(null);
@@ -110,7 +110,7 @@ export default function MarketingHub() {
 
     const loadSegments = async () => {
         try {
-            const res = await api.get('/marketing/segments');
+            const res = await mockApi.get('/marketing/segments');
             if (res.data?.success) setSegments(res.data.data || []);
         } catch (e) {
             setSegments([]);
@@ -120,7 +120,7 @@ export default function MarketingHub() {
     const loadCampaigns = async () => {
         setCampaignsLoading(true);
         try {
-            const res = await api.get('/marketing/campaigns?limit=100');
+            const res = await mockApi.get('/marketing/campaigns?limit=100');
             if (res.data?.success) setCampaigns(res.data.data?.results || []);
         } catch (e) {
             setCampaigns([]);
@@ -162,7 +162,7 @@ export default function MarketingHub() {
                 message: campaignForm.message,
                 channel: 'whatsapp',
             };
-            await api.post('/marketing/campaigns', payload);
+            await mockApi.post('/marketing/campaigns', payload);
             clearInterval(interval);
             setSendingProgress(100);
             await loadCampaigns();
@@ -775,7 +775,7 @@ function AutomationsContent() {
     const loadAutomations = async () => {
         setLoading(true);
         try {
-            const res = await api.get('/marketing/automations');
+            const res = await mockApi.get('/marketing/automations');
             const data = res.data?.data || [];
             setFlows(Array.isArray(data) ? data : []);
             if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
@@ -799,7 +799,7 @@ function AutomationsContent() {
     const handleToggle = async (flowId, enabled) => {
         setActionLoading(true);
         try {
-            await api.patch(`/marketing/automations/${flowId}`, { enabled });
+            await mockApi.patch(`/marketing/automations/${flowId}`, { enabled });
             setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, enabled } : f)));
         } catch (e) {
             console.error(e);
@@ -811,7 +811,7 @@ function AutomationsContent() {
     const handleSaveMessage = async (flowId, messageTemplate) => {
         setActionLoading(true);
         try {
-            const res = await api.patch(`/marketing/automations/${flowId}`, { messageTemplate });
+            const res = await mockApi.patch(`/marketing/automations/${flowId}`, { messageTemplate });
             setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, preview: res.data?.data?.preview ?? messageTemplate } : f)));
             setEditModal(null);
         } catch (e) {

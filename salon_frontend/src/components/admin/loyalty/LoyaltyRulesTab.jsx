@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Save, RefreshCcw, Info, Zap, AlertTriangle } from 'lucide-react';
-import api from '../../../services/api';
+import { Save, RefreshCcw, Info, Zap } from 'lucide-react';
+import mockApi from '../../../services/mock/mockApi';
 import { motion } from 'framer-motion';
 
 export default function LoyaltyRulesTab() {
@@ -18,7 +18,7 @@ export default function LoyaltyRulesTab() {
     useEffect(() => {
         const fetchRules = async () => {
             try {
-                const { data } = await api.get('/loyalty/rules');
+                const { data } = await mockApi.get('/loyalty/rules');
                 const server = data?.data || data || {};
                 if (server) {
                     setRules(prev => ({
@@ -29,7 +29,6 @@ export default function LoyaltyRulesTab() {
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
-                // Fallback to defaults if backend fails
             } finally {
                 setLoading(false);
             }
@@ -48,19 +47,10 @@ export default function LoyaltyRulesTab() {
                 expiryDays: Number(rules.expiryDays || 1),
                 isActive: !!rules.isActive,
             };
-            try {
-                await api.put('/loyalty/rules', payload);
-            } catch (err) {
-                // Backward compatibility for older backend process without PUT route.
-                if (err?.response?.status === 404) {
-                    await api.post('/loyalty/rules', payload);
-                } else {
-                    throw err;
-                }
-            }
+            await mockApi.put('/loyalty/rules', payload);
             alert('Loyalty Rules Saved Successfully!');
         } catch (err) {
-            alert(err.response?.data?.message || 'Configuration Sync Error');
+            alert('Configuration Sync Error');
         } finally {
             setSaving(false);
         }
@@ -75,7 +65,6 @@ export default function LoyaltyRulesTab() {
 
     return (
         <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left: Input Controls */}
             <div className="lg:col-span-2 space-y-6">
                 <div className="bg-surface p-8 border border-border/40 relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -84,30 +73,30 @@ export default function LoyaltyRulesTab() {
 
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-primary" />
-                        <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">Points Earning Rules</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">How Customers Earn Points</h2>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <RuleInput
-                            label="Points Earn Rate"
+                            label="Points Per Rupee"
                             sub="Customer gets points for every ₹1 spent"
                             value={rules.earnRate}
                             onChange={v => setRules({ ...rules, earnRate: parseFloat(v) })}
                         />
                         <RuleInput
-                            label="Redeem Value"
+                            label="Point Value (₹)"
                             sub="1 point is worth this much in ₹"
                             value={rules.redeemRate}
                             onChange={v => setRules({ ...rules, redeemRate: parseFloat(v) })}
                         />
                         <RuleInput
-                            label="Minimum Redeem Points"
+                            label="Minimum Points to Use"
                             sub="Customer needs at least these points to redeem"
                             value={rules.minRedeemPoints}
                             onChange={v => setRules({ ...rules, minRedeemPoints: parseInt(v) })}
                         />
                         <RuleInput
-                            label="Maximum Points Per Bill"
+                            label="Max Points Per Order"
                             sub="Upper limit of points earned in one invoice"
                             value={rules.maxEarnPerInvoice}
                             onChange={v => setRules({ ...rules, maxEarnPerInvoice: parseInt(v) })}
@@ -118,7 +107,7 @@ export default function LoyaltyRulesTab() {
                 <div className="bg-surface p-8 border border-border/40">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="w-1.5 h-6 bg-primary" />
-                        <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">Validity & Program Status</h2>
+                        <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">Expiry & Program Status</h2>
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-8">
@@ -135,14 +124,13 @@ export default function LoyaltyRulesTab() {
                                 className={`px-6 py-3 font-black text-xs uppercase tracking-widest border transition-all ${rules.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
                                     }`}
                             >
-                                {rules.isActive ? 'Program: Active' : 'Program: Inactive'}
+                                {rules.isActive ? 'Program Status: Active' : 'Program Status: Paused'}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Right: Summary & Action */}
             <div className="space-y-6">
                 <div className="bg-primary p-8 border border-white/10 shadow-2xl shadow-primary/20">
                     <h3 className="text-sm font-black text-white/80 uppercase tracking-widest mb-6 border-b border-white/20 pb-2">Current Summary</h3>
@@ -160,16 +148,9 @@ export default function LoyaltyRulesTab() {
                         {saving ? (
                             <RefreshCcw className="w-4 h-4 animate-spin" />
                         ) : (
-                            <>Save Loyalty Rules <Save className="w-4 h-4" /></>
+                            <>Save Rules Configuration <Save className="w-4 h-4" /></>
                         )}
                     </button>
-                </div>
-
-                <div className="p-6 border border-border/40 bg-surface-alt/50 italic flex gap-4">
-                    <Info className="w-5 h-5 text-primary shrink-0" />
-                    <p className="text-xs text-text-muted leading-relaxed">
-                        These settings apply to all customers. Point calculations are rounded to the nearest whole number.
-                    </p>
                 </div>
             </div>
         </div>

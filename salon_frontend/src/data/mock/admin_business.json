@@ -1,0 +1,65 @@
+
+{
+    "salon": {
+        "success": true,
+        "data": {
+            "_id": "65f1234567890abcdef12345",
+            "name": "Wapixo Premium Salon",
+            "status": "active",
+            "subscriptionPlan": "enterprise",
+            "subscriptionPlanId": "plan_enterprise_123",
+            "features": {
+                "pos": true,
+                "inventory": true,
+                "finance": true,
+                "crm": true,
+                "marketing": true,
+                "loyalty": true,
+                "payroll": true,
+                "appointments": true,
+                "analytics": true
+            },
+            "settings": {
+                "currency": "INR",
+                "timezone": "Asia/Kolkata"
+            }
+        }
+    },
+    "outlets": {
+        "success": true,
+        "data": [
+            { "_id": "out_1", "name": "Main Branch - Mumbai", "status": "active", "totalStaff": 12 },
+            { "_id": "out_2", "name": "Express Branch - Pune", "status": "active", "totalStaff": 8 }
+        ]
+    },
+    "staff": [
+        { "_id": "staff_1", "name": "Rahul Sharma", "role": "admin", "outlet": "Mumbai" },
+        { "_id": "staff_2", "name": "Priya Verma", "role": "manager", "outlet": "Pune" }
+    ],
+    "services": {
+        "success": true,
+        "data": {
+            "results": [
+                { "_id": "ser_1", "name": "Hair Cut & Styling", "price": 499, "category": "Hair" },
+                { "_id": "ser_2", "name": "Premium Facial", "price": 1299, "category": "Skin" }
+            ]
+        }
+    },
+    "categories": {
+        "success": true,
+        "data": [
+            { "_id": "cat_1", "name": "Hair" },
+            { "_id": "cat_2", "name": "Skin" },
+            { "_id": "cat_3", "name": "Makeup" }
+        ]
+    },
+    "clients": {
+        "success": true,
+        "data": {
+            "results": [
+                { "_id": "cli_1", "name": "Amit Patel", "phone": "9876543210", "totalBookings": 5 },
+                { "_id": "cli_2", "name": "Sneha Kapur", "phone": "9876543211", "totalBookings": 3 }
+            ]
+        }
+    }
+}

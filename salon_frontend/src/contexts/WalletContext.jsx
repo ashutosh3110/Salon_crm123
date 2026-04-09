@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useCustomerAuth } from './CustomerAuthContext';
 import walletData from '../data/walletData.json';
-import api from '../services/api';
+import mockApi from '../services/mock/mockApi';
 
 const WalletContext = createContext(null);
 
@@ -36,13 +36,11 @@ export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
     const inflightRequests = useRef(new Set());
 
-    // Keep mock wallets as fallback (POS screens use mock clients sometimes).
     const [allWallets, setAllWallets] = useState(walletData.mockWallets || {});
     const [loading, setLoading] = useState(true);
     const [walletSettings, setWalletSettings] = useState(walletData.walletSettings);
     const [walletLoadingMap, setWalletLoadingMap] = useState({});
 
-    // Initial load of ALL wallets and settings from localStorage (fallback only).
     useEffect(() => {
         const stored = localStorage.getItem('global_wallets');
         if (stored) {
@@ -64,7 +62,6 @@ export function WalletProvider({ children }) {
         setLoading(false);
     }, []);
 
-    // Sync to localStorage (fallback only).
     useEffect(() => {
         if (!loading) {
             localStorage.setItem('global_wallets', JSON.stringify(allWallets));
@@ -84,21 +81,18 @@ export function WalletProvider({ children }) {
 
     const refreshWallet = useCallback(async (customerId) => {
         if (!customerId) return;
-        
-        // Synchronous lock to prevent race conditions during rapid re-renders
         if (inflightRequests.current.has(customerId)) return;
         inflightRequests.current.add(customerId);
 
         setWalletLoadingMap(prev => ({ ...prev, [customerId]: true }));
         try {
             const [walletRes, historyRes] = await Promise.all([
-                api.get(`/loyalty/wallet/${customerId}`),
-                api.get(`/loyalty/history/${customerId}?page=1&limit=50`),
+                mockApi.get(`/loyalty/wallet/${customerId}`),
+                mockApi.get(`/loyalty/history/${customerId}?page=1&limit=50`),
             ]);
 
             const wallet = walletRes?.data || { totalPoints: 0 };
             const history = historyRes?.data?.results || [];
-
             const transactions = Array.isArray(history) ? history.map(mapLoyaltyTx) : [];
 
             setAllWallets(prev => ({
@@ -118,11 +112,8 @@ export function WalletProvider({ children }) {
 
     const initializeWallet = useCallback(async (customerId) => {
         if (!customerId) return;
-
-        // Check ref-based lock and existing loading state
         if (inflightRequests.current.has(customerId) || walletLoadingMap[customerId]) return;
 
-        // Use mock quickly if needed, then sync from backend.
         setAllWallets(prev => {
             if (!prev[customerId] && walletData.mockWallets?.[customerId]) {
                 return { ...prev, [customerId]: walletData.mockWallets[customerId] };
@@ -133,7 +124,6 @@ export function WalletProvider({ children }) {
         try {
             await refreshWallet(customerId);
         } catch {
-            // If backend fails, ensure we have at least an empty wallet object
             setAllWallets(prev => ({
                 ...prev,
                 [customerId]: prev[customerId] || { balance: 0, transactions: [] },
@@ -144,156 +134,50 @@ export function WalletProvider({ children }) {
     const getWallet = (customerId) => {
         const w = allWallets[customerId];
         if (w) return w;
-
-        // Lazy-load for admin screens.
         if (!walletLoadingMap[customerId] && !inflightRequests.current.has(customerId)) {
             initializeWallet(customerId).catch(() => {});
         }
-
         return { balance: 0, transactions: [] };
-    };
-
-    const ensureRazorpayLoaded = async () => {
-        if (window.Razorpay) return;
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.async = true;
-            script.onload = resolve;
-            script.onerror = () => reject(new Error('Razorpay SDK load failed'));
-            document.body.appendChild(script);
-        });
     };
 
     const addMoney = async (amount) => {
         if (!customer?._id) return;
         const numAmount = Number(amount);
-        if (!Number.isFinite(numAmount) || numAmount <= 0) return;
-
-        // Security check from settings
         if (numAmount > (walletSettings?.fraudRules?.maxSingleRecharge || 50000)) {
-            throw new Error(`Transaction limit exceeded. Maximum per recharge is ₹${walletSettings.fraudRules.maxSingleRecharge}`);
+            throw new Error('Limit exceeded');
         }
 
-        // Apply Bonuses (Dynamic from Settings)
-        let bonus = 0;
-        const sortedOffers = [...(walletSettings.offers || [])]
-            .filter(o => o.isActive && numAmount >= o.minAdd)
-            .sort((a, b) => b.minAdd - a.minAdd);
-        if (sortedOffers.length > 0) bonus = Number(sortedOffers[0].extra || 0);
-
-        await ensureRazorpayLoaded();
-
-        const orderRes = await api.post('/billing/razorpay/create-wallet-order', { amount: numAmount });
-        if (!orderRes.data?.success) throw new Error(orderRes.data?.message || 'Failed to create wallet order');
-
-        const { orderId, amount: orderAmount, currency, keyId } = orderRes.data.data;
-
-        await new Promise((resolve, reject) => {
-            const options = {
-                key: keyId,
-                amount: orderAmount,
-                currency,
-                name: 'Wapixo Salon',
-                description: `Wallet recharge`,
-                order_id: orderId,
-                prefill: {
-                    contact: customer?.phone || '',
-                    name: customer?.name || '',
-                },
-                theme: { color: '#C8956C' },
-                modal: { ondismiss: () => reject(new Error('Payment cancelled')) },
-                handler: async (response) => {
-                    try {
-                        const verifyRes = await api.post('/billing/razorpay/verify-payment', {
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                        });
-
-                        if (!verifyRes.data?.success) {
-                            throw new Error('Payment verification failed');
-                        }
-
-                        // Credit wallet from backend
-                        await api.post('/loyalty/credit', {
-                            amount: numAmount,
-                            description: 'Wallet Top-up',
-                        });
-
-                        if (bonus > 0) {
-                            await api.post('/loyalty/credit', {
-                                amount: bonus,
-                                description: 'Recharge Loyalty Bonus',
-                            });
-                        }
-
-                        await refreshWallet(customer._id);
-                        resolve(true);
-                    } catch (e) {
-                        reject(e);
-                    }
-                },
-            };
-
-            // eslint-disable-next-line no-new
-            const rzp = new window.Razorpay(options);
-            rzp.open();
-        });
-
-        return { success: true, bonus };
+        const orderRes = await mockApi.post('/billing/razorpay/create-wallet-order', { amount: numAmount });
+        if (orderRes.data?.success) {
+            await mockApi.post('/loyalty/credit', { amount: numAmount, description: 'Wallet Top-up' });
+            await refreshWallet(customer._id);
+            return { success: true };
+        }
+        return { success: false };
     };
 
     const payWithWallet = async (amount, description) => {
         if (!customer?._id) return;
         const numAmount = Number(amount);
-        if (!numAmount) return;
-        if (activeWallet.balance < numAmount) throw new Error('Insufficient wallet balance');
+        if (activeWallet.balance < numAmount) throw new Error('Insufficient balance');
         return adminAdjustBalance(customer._id, numAmount, 'DEBIT', description || 'Service Payment');
     };
 
     const adminAdjustBalance = async (customerId, amount, type, description) => {
         const numAmount = Number(amount);
-        if (!customerId || !Number.isFinite(numAmount) || numAmount <= 0) return { success: false };
-
         if (type === 'CREDIT') {
-            await api.post('/loyalty/credit', {
-                customerId,
-                amount: numAmount,
-                description: description || 'Wallet Credit',
-            });
-        } else if (type === 'DEBIT') {
-            await api.post('/loyalty/debit', {
-                customerId,
-                amount: numAmount,
-                description: description || 'Wallet Debit',
-            });
+            await mockApi.post('/loyalty/credit', { customerId, amount: numAmount, description });
         } else {
-            throw new Error('Invalid wallet transaction type');
+            await mockApi.post('/loyalty/debit', { customerId, amount: numAmount, description });
         }
-
         await refreshWallet(customerId);
         return { success: true };
     };
 
     const bulkRecharge = async (customerIds, amount, description) => {
-        if (!Array.isArray(customerIds) || customerIds.length === 0) return { success: false };
-        const numAmount = Number(amount);
-        if (!Number.isFinite(numAmount) || numAmount <= 0) return { success: false };
-
-        // Execute sequentially to keep backend load stable.
-        // (If you need faster performance, we can add a bulk endpoint.)
-        // eslint-disable-next-line no-restricted-syntax
         for (const id of customerIds) {
-            // CREDIT only for admin bulk.
-            await api.post('/loyalty/credit', {
-                customerId: id,
-                amount: numAmount,
-                description: description || 'Bulk Promotional Credit',
-            });
+            await mockApi.post('/loyalty/credit', { customerId: id, amount: Number(amount), description });
         }
-
-        // Refresh wallets
         await Promise.all(customerIds.map(id => refreshWallet(id)));
         return { success: true };
     };
@@ -308,7 +192,6 @@ export function WalletProvider({ children }) {
         loading,
         spentThisMonth,
         totalLiability,
-        // Admin exports
         allWallets,
         walletSettings,
         setWalletSettings,
@@ -326,23 +209,5 @@ export function WalletProvider({ children }) {
 }
 
 export function useWallet() {
-    const context = useContext(WalletContext);
-    if (!context) {
-        console.warn('useWallet called outside of WalletProvider. Returning fallback.');
-        return {
-            balance: 0,
-            transactions: [],
-            loading: true,
-            spentThisMonth: 0,
-            totalLiability: 0,
-            allWallets: {},
-            walletSettings: { offers: [], fraudRules: {} },
-            setWalletSettings: () => {},
-            adminAdjustBalance: async () => {},
-            bulkRecharge: async () => {},
-            getWallet: () => ({ balance: 0, transactions: [] }),
-            initializeWallet: async () => {},
-        };
-    }
-    return context;
+    return useContext(WalletContext);
 }

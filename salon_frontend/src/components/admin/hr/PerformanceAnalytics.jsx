@@ -28,7 +28,7 @@ import {
     PolarAngleAxis,
 } from 'recharts';
 
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 const CONTRIBUTION_META = {
     Elite: { cls: 'bg-violet-600 text-white' },
@@ -101,7 +101,7 @@ export default function PerformanceAnalytics() {
         const { startDate, endDate } = getRangeForPeriod(period);
         setListLoading(true);
         try {
-            const res = await api.get('/hr-performance', { params: { startDate, endDate } });
+            const res = await mockApi.get('/hr-performance', { params: { startDate, endDate } });
             const payload = res.data?.data;
             setPeriodMeta(payload?.period || { startDate, endDate });
             setPerf(Array.isArray(payload?.staff) ? payload.staff : []);
@@ -177,7 +177,7 @@ export default function PerformanceAnalytics() {
         }
         setGoalSaving(true);
         try {
-            await api.patch(`/hr-performance/staff/${goalModal.id}/goal`, { goal: val });
+            await mockApi.patch(`/hr-performance/staff/${goalModal.id}/goal`, { goal: val });
             setPerf((prev) => prev.map((p) => (p.id === goalModal.id ? { ...p, goal: val } : p)));
             showToast(`Goal updated for ${goalModal.staff}`);
             setGoalModal(null);

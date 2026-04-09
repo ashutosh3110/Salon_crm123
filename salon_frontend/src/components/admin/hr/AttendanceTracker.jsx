@@ -9,7 +9,7 @@ import {
     Tooltip
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -109,7 +109,7 @@ export default function AttendanceTracker() {
         }
         setLoading(true);
         try {
-            const res = await api.get('/attendance', { params: { date: selectedDate } });
+            const res = await mockApi.get('/attendance', { params: { date: selectedDate } });
             const payload = res.data?.data ?? res.data;
             const apiRecords = payload?.records ?? [];
             const byUser = {};
@@ -175,7 +175,7 @@ export default function AttendanceTracker() {
         e.preventDefault();
         if (!changeStatusModal) return;
         try {
-            await api.post('/attendance', {
+            await mockApi.post('/attendance', {
                 userId: changeStatusModal.id,
                 date: selectedDate,
                 status: newStatus,
@@ -192,7 +192,7 @@ export default function AttendanceTracker() {
 
     const bulkMarkPresent = async () => {
         try {
-            await api.post('/attendance/bulk', {
+            await mockApi.post('/attendance/bulk', {
                 date: selectedDate,
                 status: 'present',
                 defaultCheckIn: '09:00',
@@ -207,7 +207,7 @@ export default function AttendanceTracker() {
 
     const bulkMarkAbsent = async () => {
         try {
-            await api.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
+            await mockApi.post('/attendance/bulk', { date: selectedDate, status: 'absent' });
             setBulkModal(false);
             showToast(`All staff marked absent for ${selectedDate}`);
             await loadDay();
@@ -220,7 +220,7 @@ export default function AttendanceTracker() {
         e.preventDefault();
         if (!remarkModal) return;
         try {
-            await api.post('/attendance', {
+            await mockApi.post('/attendance', {
                 userId: remarkModal.id,
                 date: selectedDate,
                 status: remarkModal.status,

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3 } from 'lucide-react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import {
     BarChart,
     Bar,
@@ -19,12 +19,6 @@ const typeColors = {
     combo: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
 };
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
-const MOCK_PROMOS = [
-    { _id: 'p1', name: 'ALPHA FLASH 20', type: 'percentage', value: 20, startDate: '2024-03-01', endDate: '2024-03-31', usageLimit: 100, isActive: true },
-    { _id: 'p2', name: 'FLAT 500 SAVER', type: 'flat', value: 500, startDate: '2024-03-05', endDate: '2024-03-15', usageLimit: 50, isActive: true },
-    { _id: 'p3', name: 'WELCOME COMBO', type: 'combo', value: 1000, startDate: '2024-01-01', endDate: '2024-12-31', usageLimit: null, isActive: true }
-];
 
 export default function PromotionsPage() {
     const [promos, setPromos] = useState([]);
@@ -64,7 +58,7 @@ export default function PromotionsPage() {
     const fetchPromos = async () => {
         setLoading(true);
         try {
-            const res = await api.get('/promotions');
+            const res = await mockApi.get('/promotions');
             const raw = res?.data?.results || res?.data?.data?.results || res?.data?.data || res?.data || [];
             const list = Array.isArray(raw) ? raw : [];
             setPromos(list.map(normalizePromo));
@@ -77,12 +71,11 @@ export default function PromotionsPage() {
 
     useEffect(() => {
         fetchPromos();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const chartData = useMemo(() => {
         return promos.slice(0, 6).map((p, i) => ({
-            name: p.name.split(' ')[0],
+            name: (p.name || '').split(' ')[0],
             value: Number(p.value),
             color: CHART_COLORS[i % CHART_COLORS.length]
         }));
@@ -96,27 +89,18 @@ export default function PromotionsPage() {
                 description: '',
                 type: form.type === 'flat' ? 'FLAT' : (form.type === 'combo' ? 'COMBO' : 'PERCENTAGE'),
                 value: Number(form.value),
-                maxDiscountAmount: 0,
-                minBillAmount: 0,
-                applicableServices: [],
-                applicableProducts: [],
-                applicableOutlets: [],
                 startDate: new Date(form.startDate),
                 endDate: new Date(form.endDate),
                 isActive: !!form.isActive,
-                targetingType: 'ALL',
-                usageLimitPerCustomer: 1,
-                totalUsageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
                 activationMode: form.activationMode || 'AUTO',
                 couponCode: form.activationMode === 'COUPON' ? String(form.couponCode).toUpperCase() : undefined,
-                startTime: null,
-                endTime: null,
+                totalUsageLimit: form.usageLimit ? Number(form.usageLimit) : undefined,
             };
 
             if (editing) {
-                await api.patch(`/promotions/${editing._id}`, payload);
+                await mockApi.patch(`/promotions/${editing._id}`, payload);
             } else {
-                await api.post('/promotions', payload);
+                await mockApi.post('/promotions', payload);
             }
 
             setShowModal(false);
@@ -137,7 +121,6 @@ export default function PromotionsPage() {
 
         commit().catch((err) => {
             const msg = err?.response?.data?.message || err?.message || 'Could not save coupon. Please try again.';
-            // eslint-disable-next-line no-alert
             alert(msg);
             fetchPromos();
         });
@@ -145,7 +128,7 @@ export default function PromotionsPage() {
 
     const handleDelete = (id) => {
         if (!confirm('Delete this coupon? This cannot be undone.')) return;
-        api.delete(`/promotions/${id}`).then(() => fetchPromos());
+        mockApi.delete(`/promotions/${id}`).then(() => fetchPromos());
     };
 
     const openEdit = (p) => {
@@ -166,26 +149,15 @@ export default function PromotionsPage() {
 
     return (
         <div className="space-y-6 text-left font-black">
-            {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Coupons &amp; offers</h1>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Coupons & offers</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">{promos.length} offer{promos.length !== 1 ? 's' : ''} in your list</p>
                 </div>
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({
-                            name: '',
-                            type: 'percentage',
-                            value: '',
-                            startDate: '',
-                            endDate: '',
-                            usageLimit: '',
-                            isActive: true,
-                            activationMode: 'AUTO',
-                            couponCode: '',
-                        });
+                        setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: '', isActive: true, activationMode: 'AUTO', couponCode: '' });
                         setShowModal(true);
                     }}
                     className="w-full lg:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
@@ -194,7 +166,6 @@ export default function PromotionsPage() {
                 </button>
             </div>
 
-            {/* Top Analytics Section */}
             {!loading && promos.length > 0 && (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 text-left font-black">
                     <div className="md:col-span-1 bg-surface p-8 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between">
@@ -214,18 +185,17 @@ export default function PromotionsPage() {
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
-                        <p className="mt-6 text-[8px] font-black text-text-muted uppercase tracking-[0.2em] text-center italic opacity-40">Quick view of offer values</p>
                     </div>
 
                     <div className="md:col-span-1 xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left font-black">
                         {[
                             { label: 'Active Matrix', value: promos.filter(p => p.isActive).length, icon: TrendingUp, color: 'emerald' },
-                            { label: 'Avg Magnitude', value: `${Math.round(promos.reduce((s, p) => s + Number(p.value), 0) / promos.length)} units`, icon: Percent, color: 'blue' },
+                            { label: 'Avg Magnitude', value: `${promos.length > 0 ? Math.round(promos.reduce((s, p) => s + Number(p.value), 0) / promos.length) : 0} units`, icon: Percent, color: 'blue' },
                             { label: 'Expiring Soon', value: promos.filter(p => p.endDate && new Date(p.endDate) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length, icon: Calendar, color: 'rose' },
                             { label: 'Total Volume', value: promos.length, icon: Tag, color: 'violet' }
                         ].map((stat, i) => (
                             <div key={i} className="bg-surface p-6 rounded-none border border-border flex items-center gap-6 group hover:shadow-xl transition-all text-left">
-                                <div className={`p-4 rounded-none bg-${stat.color}-500/10 dark:bg-${stat.color}-900/40 text-${stat.color}-500 dark:text-${stat.color}-400 border border-${stat.color}-500/20 dark:border-${stat.color}-500/10 group-hover:scale-110 transition-transform`}>
+                                <div className={`p-4 rounded-none bg-primary/10 text-primary border border-primary/20 group-hover:scale-110 transition-transform`}>
                                     <stat.icon className="w-6 h-6" />
                                 </div>
                                 <div className="text-left leading-none font-black">
@@ -248,7 +218,6 @@ export default function PromotionsPage() {
                     <div className="col-span-full text-center py-32 bg-surface rounded-none border border-border border-dashed text-left">
                         <Tag className="w-16 h-16 text-text-muted/20 mx-auto mb-8" />
                         <h3 className="text-sm font-black text-text uppercase tracking-[0.3em]">No coupons yet</h3>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mt-3 opacity-60">Create a coupon — customers will see it in the app when it is active.</p>
                     </div>
                 ) : (
                     promos.map((p) => (
@@ -268,12 +237,6 @@ export default function PromotionsPage() {
                                     <Calendar className="w-4 h-4 opacity-40" />
                                     {p.startDate ? new Date(p.startDate).toLocaleDateString('en-IN') : '—'} → {p.endDate ? new Date(p.endDate).toLocaleDateString('en-IN') : '—'}
                                 </div>
-                                {p.usageLimit && (
-                                    <div className="flex items-center gap-3 text-[10px] font-black text-text-muted uppercase tracking-widest text-left">
-                                        <TrendingUp className="w-4 h-4 opacity-40" />
-                                        Max uses: {p.usageLimit}
-                                    </div>
-                                )}
                             </div>
 
                             <div className="absolute bottom-0 right-0 p-4 font-black">
@@ -289,31 +252,22 @@ export default function PromotionsPage() {
             {showModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 text-left font-black" onClick={() => setShowModal(false)}>
                     <div className="bg-surface rounded-none w-full max-w-xl p-12 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-300 border border-border text-left font-black" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex flex-col items-center text-center mb-12">
-                            <div className="w-20 h-20 rounded-none bg-primary/5 text-primary flex items-center justify-center mb-8 border border-primary/20 shadow-xl shadow-primary/5">
-                                <Percent className="w-10 h-10" />
-                            </div>
-                            <h2 className="text-2xl font-black text-text uppercase tracking-tight leading-none">{editing ? 'Edit coupon' : 'New coupon'}</h2>
-                            <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Set discount, dates, and how customers apply it</p>
-                        </div>
-
                         <form onSubmit={handleSubmit} className="space-y-8 text-left font-black">
-                            <div className="space-y-3 text-left">
+                             <div className="space-y-3 text-left">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Offer name *</label>
-                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value.replace(/[^a-zA-Z\\s]/g, '') })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="e.g. Weekend Spa 20" />
+                                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" />
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Discount type *</label>
-                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                                    <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer">
                                         <option value="percentage">Percent off</option>
                                         <option value="flat">Fixed ₹ off</option>
-                                        <option value="combo">Combo</option>
                                     </select>
                                 </div>
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Discount value *</label>
-                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder={form.type === 'percentage' ? 'e.g. 20' : 'e.g. 500'} />
+                                    <input type="number" value={form.value} onChange={(e) => setForm({ ...form, value: e.target.value })} required className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-8 text-left font-black">
@@ -326,37 +280,22 @@ export default function PromotionsPage() {
                                     <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black focus:border-primary outline-none transition-all uppercase" />
                                 </div>
                             </div>
-                            <div className="space-y-3 text-left font-black">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Max total uses (optional)</label>
-                                <input type="number" value={form.usageLimit} onChange={(e) => setForm({ ...form, usageLimit: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" placeholder="Leave empty for unlimited" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-8 text-left font-black">
+                             <div className="grid grid-cols-2 gap-8 text-left font-black">
                                 <div className="space-y-3 text-left">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">How it applies</label>
-                                    <select
-                                        value={form.activationMode || 'AUTO'}
-                                        onChange={(e) => setForm({ ...form, activationMode: e.target.value })}
-                                        className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all appearance-none cursor-pointer"
-                                    >
-                                        <option value="AUTO">Automatic (no code)</option>
-                                        <option value="COUPON">Customer enters a code</option>
+                                    <select value={form.activationMode || 'AUTO'} onChange={(e) => setForm({ ...form, activationMode: e.target.value })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer">
+                                        <option value="AUTO">Automatic</option>
+                                        <option value="COUPON">Coupon Code</option>
                                     </select>
                                 </div>
                                 <div className="space-y-3 text-left">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Code (when &quot;customer enters a code&quot;)</label>
-                                    <input
-                                        type="text"
-                                        value={form.couponCode}
-                                        onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })}
-                                        className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all"
-                                        placeholder={form.activationMode === 'COUPON' ? 'e.g. SPAWEEKEND' : 'Not needed for automatic'}
-                                        disabled={form.activationMode !== 'COUPON'}
-                                    />
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Code</label>
+                                    <input type="text" value={form.couponCode} onChange={(e) => setForm({ ...form, couponCode: e.target.value.toUpperCase() })} className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none transition-all" disabled={form.activationMode !== 'COUPON'} />
                                 </div>
                             </div>
                             <div className="flex gap-6 pt-10 font-black">
                                 <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-5 rounded-none border border-border text-[10px] font-black uppercase tracking-[0.3em] text-text-muted hover:bg-surface-alt transition-all">Cancel</button>
-                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:bg-primary-dark transition-all">{editing ? 'Save changes' : 'Create offer'}</button>
+                                <button type="submit" className="flex-1 py-5 bg-primary text-primary-foreground rounded-none font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl shadow-primary/20 hover:brightness-110 transition-all">{editing ? 'Save changes' : 'Create offer'}</button>
                             </div>
                         </form>
                     </div>

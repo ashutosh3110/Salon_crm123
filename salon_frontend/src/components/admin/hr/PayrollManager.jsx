@@ -12,7 +12,7 @@ import {
     Cell
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 const STATUS_META = {
     paid: { label: 'Paid', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
@@ -89,7 +89,7 @@ export default function PayrollManager() {
     const loadPayroll = useCallback(async () => {
         setListLoading(true);
         try {
-            const res = await api.get('/payroll', { params: { year: period.year, month: period.month } });
+            const res = await mockApi.get('/payroll', { params: { year: period.year, month: period.month } });
             const data = res.data?.data;
             setPeriodLocked(!!data?.period?.locked);
             const rows = (data?.entries || []).map(mapEntryFromApi);
@@ -145,7 +145,7 @@ export default function PayrollManager() {
         e.preventDefault();
         if (!editModal) return;
         try {
-            await api.patch(`/payroll/entries/${editModal.id}`, {
+            await mockApi.patch(`/payroll/entries/${editModal.id}`, {
                 baseSalary: Number(editForm.base),
                 commission: Number(editForm.commission),
                 deductions: Number(editForm.deductions),
@@ -160,7 +160,7 @@ export default function PayrollManager() {
 
     const markPaid = async (id) => {
         try {
-            await api.patch(`/payroll/entries/${id}`, { status: 'paid' });
+            await mockApi.patch(`/payroll/entries/${id}`, { status: 'paid' });
             showToast('Marked as paid');
             await loadPayroll();
         } catch (err) {
@@ -172,7 +172,7 @@ export default function PayrollManager() {
         if (periodLocked) return showToast('Payroll is locked. Unlock to process.');
         setActionLoading(true);
         try {
-            await api.post('/payroll/mark-all-paid', { year: period.year, month: period.month });
+            await mockApi.post('/payroll/mark-all-paid', { year: period.year, month: period.month });
             setPayAllConfirm(false);
             showToast(`All ${payroll.length} payslips marked as paid`);
             await loadPayroll();
@@ -187,7 +187,7 @@ export default function PayrollManager() {
         if (periodLocked) return;
         setActionLoading(true);
         try {
-            await api.post('/payroll/generate', { year: period.year, month: period.month });
+            await mockApi.post('/payroll/generate', { year: period.year, month: period.month });
             showToast('Payslips generated / synced from staff');
             await loadPayroll();
         } catch (err) {
@@ -200,7 +200,7 @@ export default function PayrollManager() {
     const toggleLock = async () => {
         try {
             const next = !periodLocked;
-            await api.patch('/payroll/period', { year: period.year, month: period.month, locked: next });
+            await mockApi.patch('/payroll/period', { year: period.year, month: period.month, locked: next });
             setPeriodLocked(next);
             showToast(next ? 'Payroll locked for this month' : 'Payroll unlocked');
             await loadPayroll();

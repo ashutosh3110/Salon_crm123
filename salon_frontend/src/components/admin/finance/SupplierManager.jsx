@@ -152,7 +152,7 @@ function SupplierTable({ suppliers, onEdit, onDelete }) {
                             </td>
                             <td className="px-8 py-5 text-right">
                                 <span className={`text-sm font-bold ${supplier.due > 0 ? (supplier.status === 'Overdue' ? 'text-rose-600' : 'text-orange-500') : 'text-emerald-600'}`}>
-                                    ₹{supplier.due.toLocaleString()}
+                                    ₹{(supplier.due || 0).toLocaleString()}
                                 </span>
                             </td>
                             <td className="px-8 py-5">

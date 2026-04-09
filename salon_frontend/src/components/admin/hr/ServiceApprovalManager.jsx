@@ -12,7 +12,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 import toast from 'react-hot-toast';
 
 export default function ServiceApprovalManager() {
@@ -24,10 +24,13 @@ export default function ServiceApprovalManager() {
     const fetchPending = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/bookings/approvals');
-            setBookings(response.data || []);
+            const response = await mockApi.get('/bookings/approvals');
+            // MockApi returns { data: { success: true, data: [...] } }
+            const payload = response.data?.data || response.data || [];
+            setBookings(Array.isArray(payload) ? payload : []);
         } catch (error) {
             console.error('[ServiceApproval] Fetch error:', error);
+            setBookings([]);
         } finally {
             setLoading(false);
         }
@@ -40,10 +43,10 @@ export default function ServiceApprovalManager() {
     const handleApprove = async (id) => {
         try {
             setProcessingId(id);
-            await api.patch(`/bookings/${id}/approve`);
+            await mockApi.patch(`/bookings/${id}/approve`);
             toast.success('Service Authorized. Commission Credited.');
             // Remove from list
-            setBookings(prev => prev.filter(b => b._id !== id));
+            setBookings(prev => Array.isArray(prev) ? prev.filter(b => b._id !== id) : []);
         } catch (error) {
             console.error('[ServiceApproval] Action error:', error);
         } finally {
@@ -51,7 +54,9 @@ export default function ServiceApprovalManager() {
         }
     };
 
-    const filtered = bookings.filter(b => {
+    const bookingsList = Array.isArray(bookings) ? bookings : [];
+
+    const filtered = bookingsList.filter(b => {
         const staffName = b.staffId?.name || '';
         const clientName = b.clientId?.name || '';
         const serviceName = b.serviceId?.name || '';

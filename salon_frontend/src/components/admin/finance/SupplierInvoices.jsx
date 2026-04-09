@@ -12,7 +12,7 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../../services/api';
+import mockApi from '../../../services/mock/mockApi';
 
 function pickResults(res) {
     const d = res?.data?.data ?? res?.data;
@@ -36,7 +36,7 @@ export default function SupplierInvoices() {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/suppliers/invoices');
+            const res = await mockApi.get('/suppliers/invoices');
             setRows(pickResults(res));
         } catch (e) {
             const msg =
@@ -101,7 +101,7 @@ export default function SupplierInvoices() {
             return;
         }
         try {
-            await api.post('/suppliers/invoices/payments', {
+            await mockApi.post('/suppliers/invoices/payments', {
                 invoiceKey: payingKey,
                 amount: amt,
                 note: payNote?.trim() || undefined,

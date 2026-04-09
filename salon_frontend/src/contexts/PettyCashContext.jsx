@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import api from '../services/api';
+import mockApi from '../services/mock/mockApi';
 import { useAuth } from './AuthContext';
 
 const DEFAULT_CATEGORIES = [
@@ -55,9 +55,9 @@ export const PettyCashProvider = ({ children }) => {
         setError(null);
         try {
             const [sumRes, entRes, clRes] = await Promise.all([
-                api.get('/finance/petty-cash/summary'),
-                api.get('/finance/petty-cash/entries?limit=200'),
-                api.get('/finance/petty-cash/closings?limit=60'),
+                mockApi.get('/finance/petty-cash/summary'),
+                mockApi.get('/finance/petty-cash/entries?limit=200'),
+                mockApi.get('/finance/petty-cash/closings?limit=60'),
             ]);
             const sum = sumRes.data?.data;
             setSummary(sum);
@@ -93,7 +93,7 @@ export const PettyCashProvider = ({ children }) => {
     const openDay = async (staffName) => {
         setError(null);
         try {
-            await api.post('/finance/petty-cash/open-day', { staffName: staffName || 'Manager' });
+            await mockApi.post('/finance/petty-cash/open-day', { staffName: staffName || 'Manager' });
             await refresh();
         } catch (e) {
             const msg = e?.response?.data?.message || e.message || 'Failed to open day';
@@ -105,7 +105,7 @@ export const PettyCashProvider = ({ children }) => {
     const addFund = async ({ amount, description, staff, source }) => {
         setError(null);
         try {
-            await api.post('/finance/petty-cash/fund', {
+            await mockApi.post('/finance/petty-cash/fund', {
                 amount: Number(amount),
                 description: description || undefined,
                 source: source || staff || 'Owner',
@@ -121,7 +121,7 @@ export const PettyCashProvider = ({ children }) => {
     const addExpense = async ({ amount, category, description, staff, attachment }) => {
         setError(null);
         try {
-            await api.post('/finance/petty-cash/expense', {
+            await mockApi.post('/finance/petty-cash/expense', {
                 amount: Number(amount),
                 category: category || 'Miscellaneous',
                 description: description || '',
@@ -146,7 +146,7 @@ export const PettyCashProvider = ({ children }) => {
                     if (n > 0) den[k] = n;
                 });
             }
-            await api.post('/finance/petty-cash/close', {
+            await mockApi.post('/finance/petty-cash/close', {
                 denominations: den,
                 verifiedBy: log.verifiedBy,
             });
