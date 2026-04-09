@@ -4,7 +4,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
 import WapixoLoader from '../../components/landing/wapixo/WapixoLoader';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
-import HeroScroll from '../../components/landing/wapixo/HeroScroll';
+import AnimatedHero from '../../components/landing/wapixo/AnimatedHero';
+import AppShowcase from '../../components/landing/wapixo/AppShowcase';
 import Features from '../../components/landing/wapixo/Features';
 import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
@@ -42,7 +43,8 @@ export default function LandingPage() {
             <SmoothScroll>
                 <div className="new-theme" style={{ minHeight: '100vh', position: 'relative' }}>
                     <WapixoNavbar />
-                    <HeroScroll data={cmsData?.landing_hero} />
+                    <AnimatedHero />
+                    <AppShowcase />
                     <Features data={cmsData?.landing_features} />
                     <ScissorsMorph />
                     <WapixoSolutions />

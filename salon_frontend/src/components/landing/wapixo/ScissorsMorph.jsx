@@ -1,202 +1,59 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, useTransform, useMotionValue } from 'framer-motion';
-
-const TOTAL_FRAMES = 120;
-const FOLDER = '/sequence-2';
-
-function getFrameUrl(index) {
-    const num = String(index + 1).padStart(3, '0');
-    return `${FOLDER}/ezgif-frame-${num}.jpg`;
-}
+import { useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
 export default function ScissorsMorph() {
-    const canvasRef = useRef(null);
-    const containerRef = useRef(null);
-    const imagesRef = useRef([]);
-    const currentFrameRef = useRef(0);
-    const rafRef = useRef(null);
-    const progressMV = useMotionValue(0);
-    const [isMobile, setIsMobile] = useState(false);
+    const videoRef = useRef(null);
 
     useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth < 768);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
-
-    const text1Opacity = useTransform(progressMV, [0.2, 0.4, 0.7, 0.85], [0, 1, 1, 0]);
-    const text1Y = useTransform(progressMV, [0.2, 0.45], [40, 0]);
-    const text2Opacity = useTransform(progressMV, [0.6, 0.8], [0, 1]);
-    const text2Y = useTransform(progressMV, [0.6, 0.85], [30, 0]);
-
-    useEffect(() => {
-        const imgs = Array.from({ length: TOTAL_FRAMES }, (_, i) => {
-            const img = new Image();
-            img.src = getFrameUrl(i);
-            return img;
-        });
-        imagesRef.current = imgs;
-    }, []);
-
-    const drawFrame = (index) => {
-        const canvas = canvasRef.current;
-        const img = imagesRef.current[index];
-        if (!canvas || !img || !img.naturalWidth) return;
-
-        const ctx = canvas.getContext('2d');
-        const cw = canvas.width;
-        const ch = canvas.height;
-        const iw = img.naturalWidth;
-        const ih = img.naturalHeight;
-
-        const scale = Math.max(cw / iw, ch / ih);
-        const dw = iw * scale;
-        const dh = ih * scale;
-        const dx = (cw - dw) / 2;
-        const dy = (ch - dh) / 2;
-
-        ctx.clearRect(0, 0, cw, ch);
-        ctx.drawImage(img, dx, dy, dw, dh);
-    };
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const container = containerRef.current;
-            if (!container) return;
-
-            const rect = container.getBoundingClientRect();
-            const containerHeight = container.offsetHeight - window.innerHeight;
-            const scrolled = -rect.top;
-            const progress = Math.max(0, Math.min(1, scrolled / containerHeight));
-
-            progressMV.set(progress);
-
-            const frameIndex = Math.min(
-                TOTAL_FRAMES - 1,
-                Math.floor(progress * (TOTAL_FRAMES - 1))
-            );
-
-            if (frameIndex !== currentFrameRef.current) {
-                currentFrameRef.current = frameIndex;
-                cancelAnimationFrame(rafRef.current);
-                rafRef.current = requestAnimationFrame(() => drawFrame(frameIndex));
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll();
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            cancelAnimationFrame(rafRef.current);
-        };
-    }, []);
-
-    useEffect(() => {
-        const resize = () => {
-            const canvas = canvasRef.current;
-            if (!canvas) return;
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            drawFrame(currentFrameRef.current);
-        };
-        window.addEventListener('resize', resize);
-        resize();
-        return () => window.removeEventListener('resize', resize);
+        if (videoRef.current) {
+            videoRef.current.playbackRate = 1.5;
+        }
     }, []);
 
     return (
-        <div
-            ref={containerRef}
-            style={{ height: isMobile ? '300vh' : '400vh', position: 'relative' }}
-        >
-            <div style={{ position: 'sticky', top: 0, height: '100vh', overflow: 'hidden' }}>
-                <canvas
-                    ref={canvasRef}
-                    style={{
-                        display: 'block',
-                        width: '100%',
-                        height: '100%',
-                        background: '#050505',
-                    }}
-                />
+        <section className="relative h-screen min-h-[600px] w-full overflow-hidden bg-black">
+            {/* Background Video */}
+            <video
+                ref={videoRef}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover opacity-80"
+                style={{ filter: 'brightness(0.7)' }}
+            >
+                <source src="/video/tools video no watermark.mp4" type="video/mp4" />
+            </video>
 
-                {/* Vignette */}
-                <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'radial-gradient(ellipse at center, transparent 40%, rgba(5,5,5,0.65) 100%)',
-                    pointerEvents: 'none',
-                }} />
+            {/* Cinematic Gradient Overlays */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/40" />
 
-                {/* Text overlay 1 */}
+            {/* Content Overlay */}
+            <div className="relative z-10 h-full w-full flex flex-col items-center justify-center px-6 text-center">
                 <motion.div
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: 0,
-                        right: 0,
-                        transform: 'translateY(-50%)',
-                        textAlign: 'center',
-                        opacity: text1Opacity,
-                        y: text1Y,
-                        pointerEvents: 'none',
-                    }}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    <p style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 700,
-                        fontSize: 'clamp(0.65rem, 1.2vw, 0.85rem)',
-                        color: 'var(--wapixo-primary)',
-                        letterSpacing: '0.45em',
-                        textTransform: 'uppercase',
-                        margin: '0 0 1rem 0',
-                    }}>
+                    <p className="text-sm font-semibold tracking-[0.4em] text-[#B4912B] uppercase mb-6">
                         Crafted for Artists
                     </p>
-                    <h2 style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 200,
-                        fontSize: 'clamp(1.8rem, 5vw, 4rem)',
-                        color: '#ffffff',
-                        letterSpacing: '-0.02em',
-                        lineHeight: 1.1,
-                        margin: 0,
-                        padding: '0 1.5rem',
-                        textShadow: '0 4px 60px rgba(0,0,0,0.6)',
-                    }}>
-                        Precision Tools for<br />the Modern Artist.
+                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white font-serif leading-tight">
+                        Precision Tools for <br />
+                        <span className="italic">The Modern Artist.</span>
                     </h2>
+                    <p className="mt-8 text-lg md:text-xl text-white/60 font-light max-w-2xl mx-auto">
+                        Elevate your craft with the industry's most refined equipment. 
+                        Performance meet elegance in every cut and style.
+                    </p>
                 </motion.div>
 
-                {/* Text overlay 2 */}
-                <motion.div
-                    style={{
-                        position: 'absolute',
-                        bottom: '12%',
-                        left: 0,
-                        right: 0,
-                        textAlign: 'center',
-                        opacity: text2Opacity,
-                        y: text2Y,
-                        pointerEvents: 'none',
-                    }}
-                >
-                    <h2 style={{
-                        fontFamily: "'Inter', sans-serif",
-                        fontWeight: 200,
-                        fontSize: 'clamp(1.5rem, 4vw, 3.5rem)',
-                        color: '#ffffff',
-                        letterSpacing: '-0.02em',
-                        lineHeight: 1.1,
-                        margin: 0,
-                        padding: '0 1.5rem',
-                        textShadow: '0 4px 60px rgba(0,0,0,0.7)',
-                    }}>
-                        Designed for the Elite.
-                    </h2>
-                </motion.div>
             </div>
-        </div>
+
+            {/* Bottom Glow */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent z-0" />
+        </section>
     );
 }
