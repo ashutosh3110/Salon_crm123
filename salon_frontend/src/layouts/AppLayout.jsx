@@ -9,9 +9,9 @@ import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 import { useBusiness } from '../contexts/BusinessContext';
 
 const pageVariants = {
-    initial: { opacity: 0, x: 0 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: 0 },
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -15 },
 };
 
 export default function AppLayout() {
@@ -53,9 +53,11 @@ export default function AppLayout() {
     }, [customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications'];
+    const hideHeaderPaths = ['/app/product'];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
     const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
+    const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
 
     // Apply global body background based on theme
     useEffect(() => {
@@ -78,6 +80,7 @@ export default function AppLayout() {
             margin: '0 auto',
             position: 'relative',
             overflowX: 'hidden',
+            width: '100%',
             fontFamily: "'Inter', sans-serif",
             transition: 'background 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         }}>
@@ -209,27 +212,38 @@ export default function AppLayout() {
                     />
                 </div>
 
-                <AppHeader />
+                {!shouldHideHeader && <AppHeader />}
 
                 <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.main
-                        key={location.pathname}
-                        variants={pageVariants}
-                        initial="initial"
-                        animate="animate"
-                        exit="exit"
-                        transition={{
-                            opacity: { duration: 0.2 },
-                            ease: "easeInOut"
-                        }}
-                        style={{
-                            paddingBottom: shouldHideNav ? '0' : '90px',
-                            minHeight: '100svh',
-                            width: '100%'
-                        }}
-                    >
-                        <Outlet />
-                    </motion.main>
+                    {(() => {
+                        const isFromModal = location.state?.fromModal;
+                        const customVariants = isFromModal ? {
+                            initial: { opacity: 0 },
+                            animate: { opacity: 1 },
+                            exit: { opacity: 0 }
+                        } : pageVariants;
+
+                        return (
+                            <motion.main
+                                key={location.pathname}
+                                variants={customVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                transition={{
+                                    duration: 0.3,
+                                    ease: "easeOut"
+                                }}
+                                style={{
+                                    paddingBottom: shouldHideNav ? '0' : '90px',
+                                    minHeight: '100svh',
+                                    width: '100%'
+                                }}
+                            >
+                                <Outlet />
+                            </motion.main>
+                        );
+                    })()}
                 </AnimatePresence>
 
                 {!shouldHideNav && <AppBottomNav />}

@@ -102,7 +102,7 @@
             "salons": [
                 {
                     "id": 1,
-                    "name": "Kobike Barber Shop",
+                    "name": "Wapixo Vijaynagar",
                     "address": "12 Main St, Chicago",
                     "rating": 4.8,
                     "dist": "1.2 km",
@@ -110,7 +110,7 @@
                 },
                 {
                     "id": 2,
-                    "name": "Classic Cuts Studio",
+                    "name": "Wapixo Indiranagar",
                     "address": "45 Park Ave, Chicago",
                     "rating": 4.6,
                     "dist": "2.4 km",
@@ -118,7 +118,7 @@
                 },
                 {
                     "id": 3,
-                    "name": "Gentlemens Lounge",
+                    "name": "Wapixo Koregaon Park",
                     "address": "88 River Rd, Chicago",
                     "rating": 4.7,
                     "dist": "3.1 km",
@@ -210,7 +210,7 @@
             "salons": [
                 {
                     "id": 1,
-                    "name": "Brett Gomez Salon",
+                    "name": "Wapixo Whitefield",
                     "address": "817 Rebecca Lodge",
                     "rating": 4.5,
                     "dist": "4.5 km",
@@ -218,7 +218,7 @@
                 },
                 {
                     "id": 2,
-                    "name": "Gimabel Hair Style",
+                    "name": "Wapixo HSR Layout",
                     "address": "Park View Plaza",
                     "rating": 4.5,
                     "dist": "2.8 km",
@@ -226,7 +226,7 @@
                 },
                 {
                     "id": 3,
-                    "name": "Beauty Women Salon",
+                    "name": "Wapixo Jayanagar",
                     "address": "Lakeshore Drive",
                     "rating": 4.7,
                     "dist": "1.9 km",
@@ -307,22 +307,37 @@
     ],
     "REVIEWS": [
         {
-            "name": "Rahul S.",
-            "date": "2 days ago",
-            "text": "Best grooming experience in the city. The staff is elite.",
-            "salon": "Wapixo Premium"
+            "id": "m1",
+            "customerName": "Arjun Malhotra",
+            "rating": 5,
+            "createdAt": "2026-04-07T10:00:00.000Z",
+            "comment": "The Signature Ritual was absolutely refreshing. Hands down the best salon experience I've had in years. The attention to detail is remarkable.",
+            "service": "Signature Ritual",
+            "response": "Thank you Arjun! We're thrilled you enjoyed the ritual. See you again soon!"
         },
         {
-            "name": "Sneha M.",
-            "date": "1 week ago",
-            "text": "Love the new membership benefits. Highly recommended!",
-            "salon": "Elegance Salon"
+            "id": "m2",
+            "customerName": "Priya Sharma",
+            "rating": 5,
+            "createdAt": "2026-04-05T14:30:00.000Z",
+            "comment": "Loved the Gold Glow Facial! My skin feels incredibly smooth and hydrated. Professional staff and beautiful ambiance.",
+            "service": "Gold Glow Facial"
         },
         {
-            "name": "Vikram K.",
-            "date": "3 days ago",
-            "text": "Top-notch service and very professional stylists.",
-            "salon": "The Royal Salon"
+            "id": "m3",
+            "customerName": "Vikram Singh",
+            "rating": 4,
+            "createdAt": "2026-04-02T09:15:00.000Z",
+            "comment": "Great haircut and beard grooming. The specialist was very knowledgeable about style trends. Slightly long wait time but worth it.",
+            "service": "Executive Grooming"
+        },
+        {
+            "id": "m4",
+            "customerName": "Sanya Iyer",
+            "rating": 5,
+            "createdAt": "2026-03-30T16:45:00.000Z",
+            "comment": "The spa experience here is therapeutic. Perfect place to unwind after a long week. Highly recommend their aromatherapy sessions.",
+            "service": "Aromatherapy Spa"
         }
     ],
     "PLACEHOLDERS": [

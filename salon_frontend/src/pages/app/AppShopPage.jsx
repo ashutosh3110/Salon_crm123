@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus } from 'lucide-react';
@@ -11,7 +11,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { isVisibleInCustomerShop, stockQtyForOutlet } from '../../utils/shopVisibility';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 
-const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
+const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
     const { isProductLiked, toggleProductLike } = useFavorites();
     const isLiked = isProductLiked(product._id);
 
@@ -19,7 +19,7 @@ const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLig
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
+            transition={{ delay: index * 0.01 }}
             style={{ 
                 background: colors.card, 
                 border: `1px solid ${colors.border}`,
@@ -93,7 +93,7 @@ const ProductCard = ({ product, index, onOpenProduct, onAddToCart, colors, isLig
             </div>
         </motion.div>
     );
-};
+});
 
 const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, onCheckout, colors, isLight }) => {
     const drawerContent = (
@@ -270,9 +270,16 @@ export default function AppShopPage() {
         setSearchParams(newParams);
     };
 
+    const [selectedProduct, setSelectedProduct] = useState(null);
+
     const handleOpenProduct = (product) => {
-        navigate(`/app/product/${encodeURIComponent(product._id)}`);
+        setSelectedProduct(product);
     };
+
+    const isRedirecting = useRef(false);
+    useEffect(() => {
+        if (!selectedProduct) isRedirecting.current = false;
+    }, [selectedProduct]);
 
     const filteredProducts = useMemo(() => {
         let result = MOCK_PRODUCTS.filter((p) => isVisibleInCustomerShop(p, activeOutletId));
@@ -460,6 +467,105 @@ export default function AppShopPage() {
                     ))}
                 </AnimatePresence>
             </div>
+
+            {/* PRODUCT PREVIEW MODAL */}
+            <AnimatePresence>
+                {selectedProduct && (
+                    <ProductPreviewModal 
+                        product={selectedProduct} 
+                        onClose={() => setSelectedProduct(null)} 
+                        colors={colors}
+                        isLight={isLight}
+                        navigate={navigate}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+
+const ProductPreviewModal = ({ product, onClose, colors, isLight, navigate }) => {
+    const [isExpanding, setIsExpanding] = useState(false);
+    const isRedirecting = useRef(false);
+
+    useEffect(() => {
+        if (product) {
+            document.body.style.overflow = 'hidden';
+            setIsExpanding(false);
+            isRedirecting.current = false;
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [product]);
+
+    if (!product) return null;
+
+    return (
+        <div className="absolute inset-0 z-[5000] flex items-end justify-center">
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className={`absolute inset-0 ${isLight ? 'bg-black/20' : 'bg-black/70'} backdrop-blur-sm`}
+            />
+            <motion.div
+                layout
+                initial={{ y: '100%', maxHeight: '75vh', borderRadius: '32px 32px 0 0' }}
+                animate={{ 
+                    y: 0, 
+                    height: isExpanding ? '100dvh' : '75vh',
+                    maxHeight: '100dvh',
+                    borderRadius: isExpanding ? '0px' : '32px 32px 0 0'
+                }}
+                exit={{ y: '100%' }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="relative w-full overflow-hidden shadow-2xl flex flex-col"
+                style={{ background: colors.card }}
+            >
+                <div className="absolute top-4 right-4 z-10">
+                    <button 
+                        onClick={onClose}
+                        className="w-8 h-8 rounded-full bg-black/30 text-white backdrop-blur-md flex items-center justify-center hover:bg-black/50 transition-colors border border-white/10 shadow-lg"
+                    >
+                        <X size={14} strokeWidth={3} />
+                    </button>
+                </div>
+                <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto my-3 shrink-0 opacity-50" />
+                <div 
+                    className="overflow-y-auto px-6 pb-12 custom-scrollbar overscroll-contain"
+                    style={{ flex: 1, touchAction: 'pan-y', overscrollBehavior: 'none' }}
+                    onScroll={(e) => {
+                        if(e.currentTarget.scrollTop > 60 && !isRedirecting.current) {
+                            isRedirecting.current = true;
+                            setIsExpanding(true);
+                            navigate(`/app/product/${encodeURIComponent(product._id)}`, { 
+                                state: { fromModal: true }
+                            });
+                        }
+                    }}
+                >
+                    <div className="relative aspect-square mb-6 rounded-2xl overflow-hidden bg-black/5 mt-2 shadow-sm border border-black/5 dark:border-white/5">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex gap-4 items-start justify-between">
+                        <div>
+                            <h2 className="text-2xl font-black leading-tight tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>{product.name}</h2>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] mt-2 text-[#C8956C]">{product.brand}</p>
+                        </div>
+                        <span className="text-[#C8956C] font-black text-2xl tracking-tighter italic shrink-0" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>₹{product.price}</span>
+                    </div>
+                    
+                    <p className="text-[13px] font-medium opacity-60 mt-4 leading-relaxed" style={{ color: colors.text }}>{product.description}</p>
+                    
+                    <div className="text-center mt-12 mb-4 opacity-40">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-bounce text-[#C8956C]">↑ Scroll up for full details</p>
+                    </div>
+
+                    <div style={{ height: '300px' }} />
+                </div>
+            </motion.div>
+        </div>
+    );
+};

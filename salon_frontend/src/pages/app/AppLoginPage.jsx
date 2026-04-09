@@ -371,7 +371,7 @@ export default function AppLoginPage() {
     const fmtPhone = (p) => p.length > 5 ? `+91 ${p.slice(0, 5)} ${p.slice(5)}` : `+91 ${p}`;
 
     const S = {
-        page: { minHeight: '100svh', width: '100%', background: colors.bg, color: colors.text, fontFamily: "'SF Pro Text', sans-serif", display: 'grid', placeItems: 'center', padding: '24px', transition: 'background 0.3s ease', overflow: 'hidden' },
+        page: { minHeight: '100svh', width: '100%', background: colors.bg, color: colors.text, fontFamily: "'SF Pro Text', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', transition: 'background 0.3s ease', overflowX: 'hidden', boxSizing: 'border-box' },
         input: { width: '100%', background: colors.inputBg, border: `1.5px solid ${colors.border}`, borderRadius: '14px', padding: '14px 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif" },
         btn: { width: '100%', background: '#C8956C', border: 'none', borderRadius: '14px', padding: '15px', fontSize: '16px', fontWeight: 700, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', letterSpacing: '0.02em', transition: 'opacity 0.2s', boxShadow: '0 4px 12px rgba(200,149,108,0.2)' },
         ghost: { background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, fontFamily: "'Inter', sans-serif" },
@@ -396,10 +396,10 @@ export default function AppLoginPage() {
                                 alt="Wapixo"
                                 className="w-14 h-auto opacity-80 mb-6 drop-shadow-2xl"
                             />
-                            <h1 className="text-4xl font-serif italic text-white mb-2 text-center">
+                            <h1 className={`text-3xl sm:text-4xl font-serif italic mb-2 text-center leading-tight ${isLight ? 'text-neutral-900' : 'text-white'}`}>
                                 Precision <span className="font-normal text-[#C8956C]">Meets</span> Style
                             </h1>
-                            <p className="text-[10px] font-black tracking-[0.3em] text-white/30 uppercase text-center">Find your signature sanctuary</p>
+                            <p className={`text-[10px] font-black tracking-[0.3em] uppercase text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>Find your signature sanctuary</p>
                         </div>
 
                         {locationLoading ? (
@@ -417,8 +417,8 @@ export default function AppLoginPage() {
                                 <div className="space-y-4">
                                     <div className="relative group">
                                         <div className="absolute inset-0 bg-[#C8956C]/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        <div className="relative flex items-center gap-3 bg-white/[0.03] border border-white/[0.05] h-14 px-4 rounded-2xl group-focus-within:border-[#C8956C]/50 transition-all">
-                                            <Search size={18} className="text-white/20 group-focus-within:text-[#C8956C] transition-colors" />
+                                        <div className={`relative flex items-center gap-3 border h-14 px-4 rounded-2xl group-focus-within:border-[#C8956C]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
+                                            <Search size={18} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#C8956C] transition-colors`} />
                                             <input 
                                                 type="text" 
                                                 placeholder="Salon name or city..."
@@ -427,25 +427,24 @@ export default function AppLoginPage() {
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter') handleLocationSearch(searchQuery);
                                                 }}
-                                                className="w-full bg-transparent border-none outline-none text-sm text-white placeholder:text-white/20"
+                                                className={`w-full bg-transparent border-none outline-none text-sm placeholder:opacity-50 ${isLight ? 'text-neutral-900 placeholder:text-neutral-900' : 'text-white placeholder:text-white'}`}
                                             />
                                         </div>
                                     </div>
-
-                                    <div className="bg-black/40 p-4 rounded-3xl border border-white/[0.03] space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h2 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Search Radius</h2>
-                                                <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
-                                            </div>
-                                            <button 
-                                                onClick={() => fetchLocationAndNearby()}
-                                                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8956C]/10 text-[#C8956C] border border-[#C8956C]/20 hover:bg-[#C8956C]/20 transition-all"
-                                            >
-                                                <Navigation size={12} fill="currentColor" />
-                                                <span className="text-[10px] font-bold uppercase tracking-tight">Auto Detect</span>
-                                            </button>
-                                        </div>
+                                     <div className={`p-4 rounded-3xl border space-y-4 ${isLight ? 'bg-neutral-50 border-neutral-200 shadow-sm' : 'bg-black/40 border-white/[0.03]'}`}>
+                                         <div className="flex items-center justify-between">
+                                             <div>
+                                                 <h2 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isLight ? 'text-neutral-400' : 'text-white/40'}`}>Search Radius</h2>
+                                                 <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
+                                             </div>
+                                             <button 
+                                                 onClick={() => fetchLocationAndNearby()}
+                                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8956C]/10 text-[#C8956C] border border-[#C8956C]/20 hover:bg-[#C8956C]/20 transition-all"
+                                             >
+                                                 <Navigation size={12} fill="currentColor" />
+                                                 <span className="text-[10px] font-bold uppercase tracking-tight">Auto Detect</span>
+                                             </button>
+                                         </div>
 
                                         <div className="grid grid-cols-4 gap-2">
                                             {RADIUS_OPTIONS.map((km) => (
@@ -458,7 +457,9 @@ export default function AppLoginPage() {
                                                     className={`h-10 rounded-xl text-xs font-bold transition-all relative ${
                                                         searchRadiusKm === km 
                                                         ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]' 
-                                                        : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
+                                                        : isLight 
+                                                            ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
+                                                            : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
                                                     }`}
                                                 >
                                                     {km} km
@@ -470,7 +471,7 @@ export default function AppLoginPage() {
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between px-1">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-white/20">Discovery Results</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-neutral-300' : 'text-white/20'}`}>Discovery Results</span>
                                         {detectedAddress && (
                                             <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
                                                 Near {detectedAddress}
@@ -478,7 +479,7 @@ export default function AppLoginPage() {
                                         )}
                                     </div>
 
-                                    <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar pb-2">
+                                    <div className="space-y-3 max-h-[380px] overflow-y-auto px-1 custom-scrollbar pb-2">
                                         {isFetchingOutlets ? (
                                             [1, 2, 3].map(i => (
                                                 <div key={i} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
@@ -503,11 +504,10 @@ export default function AppLoginPage() {
                                                         key={o._id}
                                                         initial={{ opacity: 0, y: 10 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        onClick={() => handleSelectOutlet(o)}
-                                                        className="w-full group relative overflow-hidden bg-white/[0.02] p-4 rounded-3xl border border-white/[0.05] hover:border-[#C8956C]/40 transition-all duration-500 flex items-center gap-4"
+                                                        onClick={() => handleSelectOutlet(o)}                                                         className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
                                                     >
                                                         <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-white/10 relative z-10 shadow-2xl">
+                                                        <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
                                                             <img
                                                                 src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                                                 alt={o.name}
@@ -516,14 +516,15 @@ export default function AppLoginPage() {
                                                         </div>
                                                         <div className="flex-1 min-w-0 relative z-10">
                                                             <div className="flex items-center justify-between mb-1">
-                                                                <h4 className="text-lg font-serif italic text-white truncate drop-shadow-sm">{o.name}</h4>
-                                                                <ChevronRight size={16} className="text-white/10 group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all" />
+                                                                <h4 className={`text-lg font-serif italic truncate drop-shadow-sm ${isLight ? 'text-neutral-900' : 'text-white'}`}>{o.name}</h4>
+                                                                <ChevronRight size={16} className={`${isLight ? 'text-neutral-200' : 'text-white/10'} group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all`} />
                                                             </div>
-                                                            <p className="text-[11px] text-white/40 truncate mb-3 font-medium tracking-tight">
+                                                            <p className={`text-[11px] truncate mb-3 font-medium tracking-tight ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
                                                                 {o.address || o.city || 'Signature Sanctuary'}
                                                             </p>
+
                                                             <div className="flex items-center gap-3">
-                                                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/40 border border-white/5">
+                                                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-black/40 border-white/5'}`}>
                                                                     <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
                                                                     <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
                                                                         {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
@@ -531,7 +532,7 @@ export default function AppLoginPage() {
                                                                 </div>
                                                                 <div className="flex items-center gap-1 opacity-40">
                                                                     <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
-                                                                    <span className="text-[9px] font-bold text-white uppercase tracking-tighter">4.8</span>
+                                                                    <span className={`text-[9px] font-bold uppercase tracking-tighter ${isLight ? 'text-neutral-900' : 'text-white'}`}>4.8</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -539,11 +540,11 @@ export default function AppLoginPage() {
                                                 ))
                                         ) : (
                                             <div className="py-12 flex flex-col items-center text-center px-6">
-                                                <div className="w-16 h-16 rounded-full bg-white/[0.02] flex items-center justify-center mb-4 border border-white/5">
-                                                    <Search size={24} className="text-white/10" />
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${isLight ? 'bg-neutral-50 border-neutral-100' : 'bg-white/[0.02] border-white/5'}`}>
+                                                    <Search size={24} className={isLight ? 'text-neutral-300' : 'text-white/10'} />
                                                 </div>
-                                                <h3 className="text-sm font-serif italic text-white/60 mb-2">No Sanctuaries Nearby</h3>
-                                                <p className="text-[10px] text-white/30 font-medium leading-relaxed uppercase tracking-widest text-center">
+                                                <h3 className={`text-sm font-serif italic mb-2 ${isLight ? 'text-neutral-900' : 'text-white/60'}`}>No Sanctuaries Nearby</h3>
+                                                <p className={`text-[10px] font-medium leading-relaxed uppercase tracking-widest text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>
                                                     Expand your perimeter or search <br/>for a specific destination
                                                 </p>
                                             </div>
@@ -555,7 +556,11 @@ export default function AppLoginPage() {
                                     <p className="text-[10px] text-center text-white/10 font-bold uppercase tracking-[0.2em] mb-4">— OR —</p>
                                     <button
                                         onClick={() => setStep(1)}
-                                        className="w-full h-14 rounded-2xl border border-white/10 text-white/40 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/5 hover:text-white transition-all flex items-center justify-center gap-2"
+                                        className={`w-full h-14 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
+                                            isLight 
+                                            ? 'border-neutral-200 text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900' 
+                                            : 'border-white/10 text-white/40 hover:bg-white/5 hover:text-white'
+                                        }`}
                                     >
                                         <Scan size={14} />
                                         Manual Identification
@@ -623,7 +628,7 @@ export default function AppLoginPage() {
                 {/* STEP 2: OTP */}
                 {step === 2 && (
                     <motion.div key="otp" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px' }}>
-                        <button onClick={() => goTo(1)} style={{ ...S.ghost, marginBottom: '32px' }}><ArrowLeft size={18} /> Back</button>
+                        <button onClick={() => goTo(1)} style={{ ...S.ghost, marginBottom: '32px', color: isLight ? '#1A1A1A' : 'rgba(255,255,255,0.4)' }}><ArrowLeft size={18} /> Back</button>
                         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>Phone Verification</h2>
                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 6-digit OTP sent to your phone</p>
@@ -636,10 +641,10 @@ export default function AppLoginPage() {
                                 </div>
                             )}
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', marginBottom: '28px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '28px' }}>
                             {otp.map((digit, i) => (
                                 <input key={i} ref={otpRefs[i]} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKey(i, e)} autoFocus={i === 0} style={{
-                                    width: '54px', height: '60px', background: digit ? '#C8956C' : colors.inputBg, border: `1.5px solid ${digit ? '#C8956C' : colors.border}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
+                                    width: '45px', height: '54px', background: digit ? '#C8956C' : (isLight ? '#F5F5F5' : colors.inputBg), border: `1.5px solid ${digit ? '#C8956C' : (isLight ? '#E5E5E5' : colors.border)}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
                                     cursor: 'text', transition: 'all 0.2s'
                                 }} />
                             ))}

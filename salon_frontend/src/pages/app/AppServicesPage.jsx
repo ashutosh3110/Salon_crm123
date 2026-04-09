@@ -5,6 +5,7 @@ import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, Slide
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
+import mockData from '../../data/mockServicesPageData.json';
 
 const ServiceCard = ({ service, onBook, colors, isLight }) => {
     const fallbackImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop";
@@ -83,13 +84,16 @@ export default function AppServicesPage() {
     const { 
         activeOutlet, 
         activeOutletId,
-        services: businessServices,
-        categories: businessCategories,
+        services: contextServices,
+        categories: contextCategories,
         isInitializing
     } = useBusiness();
     
     const { gender: appGender } = useGender();
     const isLight = theme === 'light';
+
+    const businessServices = contextServices.length > 0 ? contextServices : mockData.services;
+    const businessCategories = contextCategories.length > 0 ? contextCategories : mockData.categories;
 
     if (isInitializing && businessServices.length === 0) {
         return (
