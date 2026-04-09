@@ -1,0 +1,88 @@
+{
+  "categories": [
+    { "name": "Haircuts", "status": "active", "gender": "both" },
+    { "name": "Styling", "status": "active", "gender": "both" },
+    { "name": "Color & Treatment", "status": "active", "gender": "both" },
+    { "name": "Beard Grooming", "status": "active", "gender": "men" },
+    { "name": "Facial & Skincare", "status": "active", "gender": "both" }
+  ],
+  "services": [
+    {
+      "id": "s1",
+      "name": "Signature Precision Haircut",
+      "category": "Haircuts",
+      "description": "A bespoke cut designed specifically for your face shape and personal style.",
+      "price": 499,
+      "duration": 30,
+      "resourceType": "chair",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s2",
+      "name": "Executive Cut & Revitalizing Wash",
+      "category": "Haircuts",
+      "description": "Premium haircut accompanied by a relaxing scalp massage and invigorating wash.",
+      "price": 899,
+      "duration": 45,
+      "resourceType": "chair",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s3",
+      "name": "Volume Blowout & Styling",
+      "category": "Styling",
+      "description": "Professional styling and blowdry for a perfect, long-lasting evening look.",
+      "price": 399,
+      "duration": 20,
+      "resourceType": "chair",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s4",
+      "name": "Ammonia-Free Premium Coloring",
+      "category": "Color & Treatment",
+      "description": "Vibrant, ammonia-free coloring using top-tier professional salon products.",
+      "price": 1499,
+      "duration": 90,
+      "resourceType": "room",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1522337660859-02fbefca4702?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s5",
+      "name": "Keratin Smoothing Treatment",
+      "category": "Color & Treatment",
+      "description": "Intensive keratin treatment to eliminate frizz and add brilliant shine.",
+      "price": 2499,
+      "duration": 120,
+      "resourceType": "room",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1595476108010-b4d1f10d5e43?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s6",
+      "name": "Royal Hot Towel Shave",
+      "category": "Beard Grooming",
+      "description": "Classic straight razor shave with a soothing hot towel prep.",
+      "price": 349,
+      "duration": 30,
+      "resourceType": "chair",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?q=80&w=600&auto=format&fit=crop"
+    },
+    {
+      "id": "s7",
+      "name": "Hydrating Glow Facial",
+      "category": "Facial & Skincare",
+      "description": "Deep cleansing and hydrating facial to restore your skin's natural luminance.",
+      "price": 1299,
+      "duration": 60,
+      "resourceType": "room",
+      "status": "active",
+      "image": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?q=80&w=600&auto=format&fit=crop"
+    }
+  ]
+}

@@ -397,7 +397,7 @@ export default function AppProfilePage() {
             {/* Loyalty Section */}
             <motion.div variants={fadeUp} className="space-y-4">
                 <div className="flex items-center justify-between px-1">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Loyalty Rewards</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Loyalty Rewards</h3>
                 </div>
 
                 <LoyaltyCard points={Number(balance || 0)} redeemRate={rules.redeemRate} />
@@ -459,7 +459,7 @@ export default function AppProfilePage() {
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 bg-black/5 dark:bg-white/5`}>
                             <link.icon className={`w-6 h-6 ${link.color}`} />
                         </div>
-                        <span className="text-[13px] font-black uppercase tracking-wider flex-1 text-left" style={{ color: colors.text }}>{link.label}</span>
+                        <span className="text-sm font-bold tracking-tight flex-1 text-left" style={{ color: colors.text }}>{link.label}</span>
                                         <ChevronRight className="w-4 h-4 opacity-20" />
                     </motion.button>
                 ))}
@@ -470,7 +470,7 @@ export default function AppProfilePage() {
             {/* Review Section */}
             <motion.div variants={fadeUp} className="space-y-4 pt-16 pb-4">
                 <div className="flex items-center justify-between px-1">
-                    <h3 className="text-xs font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
                 </div>
 
                 <div style={{
@@ -618,7 +618,7 @@ export default function AppProfilePage() {
                     className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                     <HelpCircle className="w-5 h-5 opacity-40" />
-                    <span className="text-sm font-bold flex-1 text-left opacity-60" style={{ color: colors.text }}>Help & Support</span>
+                    <span className="text-sm font-bold flex-1 text-left" style={{ color: colors.text }}>Help & Support</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />
                 </button>
                 <button
@@ -626,7 +626,7 @@ export default function AppProfilePage() {
                     className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                     <Shield className="w-5 h-5 opacity-40" />
-                    <span className="text-sm font-bold flex-1 text-left opacity-60" style={{ color: colors.text }}>Privacy Policy</span>
+                    <span className="text-sm font-bold flex-1 text-left" style={{ color: colors.text }}>Privacy Policy</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />
                 </button>
             </motion.div>
