@@ -36,14 +36,6 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Check active status
-        if (userData.isActive === false) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Your account is pending approval or has been suspended. Please contact support.' 
-            });
-        }
-
         // Generate JWT
         const token = jwt.sign(
             { id: userData._id, role: role, salonId: userData.salonId || (role === 'admin' ? userData._id : null) },
@@ -60,7 +52,9 @@ exports.login = async (req, res) => {
                     name: userData.name || userData.ownerName,
                     email: userData.email,
                     role: role,
-                    salonId: userData.salonId || (role === 'admin' ? userData._id : null)
+                    salonId: userData.salonId || (role === 'admin' ? userData._id : null),
+                    planStatus: userData.planStatus || 'none',
+                    status: userData.status || 'active'
                 }
             }
         });
@@ -74,104 +68,134 @@ exports.login = async (req, res) => {
     }
 };
 
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
-exports.getMe = async (req, res) => {
+
+
+exports.forgotPassword = async (req, res) => {
     try {
-        let userData;
-        if (req.user.role === 'admin') {
-            userData = await Salon.findById(req.user.id);
-        } else {
-            userData = await User.findById(req.user.id);
+        const { email } = req.body;
+
+        // 1. Check User collection
+        let userData = await User.findOne({ email });
+        
+        // 2. Check Salon collection if not found
+        if (!userData) {
+            userData = await Salon.findOne({ email });
         }
 
         if (!userData) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        res.status(200).json({
-            success: true,
-            data: {
-                id: userData._id,
-                name: userData.name || userData.ownerName,
-                email: userData.email,
-                phone: userData.phone,
-                role: req.user.role,
-                salonId: req.user.salonId
-            }
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
-    }
-};
-
-// @desc    Update user details
-// @route   PATCH /api/auth/updatedetails
-// @access  Private
-exports.updateDetails = async (req, res) => {
-    try {
-        const fieldsToUpdate = {
-            name: req.body.name,
-            ownerName: req.body.name, // For Salon model
-            email: req.body.email,
-            phone: req.body.phone
-        };
-
-        let user;
-        if (req.user.role === 'admin') {
-            user = await Salon.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-                new: true,
-                runValidators: true
-            });
-        } else {
-            user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-                new: true,
-                runValidators: true
+            return res.status(404).json({
+                success: false,
+                message: 'No user found with that email'
             });
         }
 
-        res.status(200).json({
-            success: true,
-            data: {
-                id: user._id,
-                name: user.name || user.ownerName,
-                email: user.email,
-                phone: user.phone,
-                role: req.user.role
-            }
+        const sendEmail = require('../Utils/sendEmail');
+        const otp = '123456'; // As requested: "otp bhejo 6 digit ka 123456"
+
+        await sendEmail({
+            email: userData.email,
+            subject: 'Password Reset OTP - Wapixo',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #333; text-align: center;">Forgot Password?</h2>
+                    <p>Hello <strong>${userData.name || userData.ownerName}</strong>,</p>
+                    <p>You requested a password reset. Please use the following 6-digit OTP to verify your identity:</p>
+                    <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+                        <h1 style="letter-spacing: 5px; color: #D32F2F; margin: 0;">${otp}</h1>
+                    </div>
+                    <p>This OTP is valid for 10 minutes. If you didn't request this, please ignore this email.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 11px; color: #777; text-align: center;">Team Wapixo</p>
+                </div>
+            `
         });
+
+        res.json({
+            success: true,
+            message: 'OTP sent to your email address'
+        });
+
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Forgot password error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
     }
 };
 
-// @desc    Update password
-// @route   PUT /api/auth/updatepassword
-// @access  Private
-exports.updatePassword = async (req, res) => {
+exports.verifyOTP = async (req, res) => {
     try {
-        let user;
-        if (req.user.role === 'admin') {
-            user = await Salon.findById(req.user.id).select('+password');
+        const { email, otp } = req.body;
+
+        if (otp === '123456') {
+            res.json({
+                success: true,
+                message: 'OTP verified successfully'
+            });
         } else {
-            user = await User.findById(req.user.id).select('+password');
+            res.status(400).json({
+                success: false,
+                message: 'Invalid OTP'
+            });
         }
-
-        // Check current password
-        const isMatch = await user.comparePassword(req.body.currentPassword);
-        if (!isMatch) {
-            return res.status(401).json({ success: false, message: 'Current password is incorrect' });
-        }
-
-        user.password = req.body.newPassword;
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Password updated successfully'
-        });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Verify OTP error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
     }
 };
+
+exports.resetPassword = async (req, res) => {
+    try {
+        const { email, otp, password } = req.body;
+
+        if (otp !== '123456') {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid or expired OTP'
+            });
+        }
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Password is required'
+            });
+        }
+
+        // 1. Check User collection
+        let userData = await User.findOne({ email });
+        
+        // 2. Check Salon collection if not found
+        if (!userData) {
+            userData = await Salon.findOne({ email });
+        }
+
+        if (!userData) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Update password (pre-save hook will hash it)
+        userData.password = password;
+        await userData.save();
+
+        res.json({
+            success: true,
+            message: 'Password reset successful. You can now login with your new password.'
+        });
+
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+v

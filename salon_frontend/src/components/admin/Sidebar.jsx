@@ -62,8 +62,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const lowStockCount = stats?.lowStockCount || 0;
     const location = useLocation();
     
-    const isActiveStatus = salon?.status === 'active';
-    const isRestricted = salon && !isActiveStatus;
+    const isActiveStatus = (salon?.status || user?.status) === 'active';
+    const hasActivePlan = (salon?.planStatus || user?.planStatus) === 'active';
+    const isRestricted = (user?.role === 'admin') && (!isActiveStatus || !hasActivePlan);
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },

@@ -9,4 +9,8 @@ router.get('/me', protect, authController.getMe);
 router.patch('/updatedetails', protect, authController.updateDetails);
 router.put('/updatepassword', protect, authController.updatePassword);
 
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/verify-reset-otp', authController.verifyOTP);
+router.post('/reset-password', authController.resetPassword);
+
 module.exports = router;

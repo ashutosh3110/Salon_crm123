@@ -248,33 +248,40 @@ export default function ForgotPasswordPage() {
 
                                     {/* STEP 2: OTP */}
                                     {step === S_OTP && (
-                                        <form onSubmit={handleVerifyOtp} className="space-y-10">
-                                            <div className="flex justify-between gap-2 max-w-[320px] mx-auto">
+                                        <form onSubmit={handleVerifyOtp} className="space-y-12">
+                                            <div className="flex justify-between gap-3 max-w-[360px] mx-auto">
                                                 {otp.map((digit, idx) => (
                                                     <input
                                                         key={idx} ref={el => boxRefs.current[idx] = el} type="text" inputMode="numeric" maxLength={1} value={digit}
                                                         onChange={e => handleOtpInput(e.target.value, idx)}
                                                         onKeyDown={e => handleOtpKeyDown(e, idx)}
-                                                        className={`w-10 h-16 text-center text-2xl font-black bg-transparent border-b-2 transition-all duration-300 focus:outline-none`}
+                                                        className={`w-12 h-16 text-center text-2xl font-black rounded-2xl border-2 transition-all duration-300 focus:outline-none shadow-sm`}
                                                         style={{ 
+                                                            backgroundColor: digit ? 'rgba(180, 145, 43, 0.05)' : 'var(--wapixo-bg)',
                                                             borderColor: digit ? '#B4912B' : 'var(--wapixo-border)',
                                                             color: 'var(--wapixo-text)',
-                                                            opacity: digit ? 1 : 0.3
+                                                            boxShadow: digit ? '0 10px 15px -3px rgba(180, 145, 43, 0.1)' : 'none'
                                                         }}
                                                     />
                                                 ))}
                                             </div>
 
-                                            <div className="text-center space-y-4">
+                                            <div className="text-center space-y-6">
                                                 {sec > 0 ? (
-                                                    <p className="text-[9px] font-black uppercase tracking-widest text-white/20">Resend Sequence: <span className="text-[#B4912B]">{sec}s</span></p>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-[#B4912B] animate-pulse" />
+                                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: 'var(--wapixo-text-muted)' }}>
+                                                            Resend Sequence: <span className="text-[#B4912B] font-black">{sec}s</span>
+                                                        </p>
+                                                    </div>
                                                 ) : (
-                                                    <button type="button" onClick={handleResend} className="text-[9px] font-black uppercase tracking-widest text-[#B4912B] hover:text-[#B4912B]/80 transition-colors flex items-center gap-2 mx-auto">
-                                                        <RefreshCw className="w-3 h-3" /> Transmit New Pulse
+                                                    <button type="button" onClick={handleResend} className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B4912B] hover:brightness-125 transition-all flex items-center gap-2 mx-auto group">
+                                                        <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" /> 
+                                                        Transmit New Pulse
                                                     </button>
                                                 )}
-                                                <button type="submit" disabled={loading || otp.join('').length < 6} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl flex items-center justify-center gap-3">
-                                                    {loading ? 'Validating...' : <><span>Authorize Access</span><ArrowRight className="w-4 h-4" /></>}
+                                                <button type="submit" disabled={loading || otp.join('').length < 6} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/20 flex items-center justify-center gap-3 active:scale-[0.98]">
+                                                    {loading ? 'Validating Pulse...' : <><span>Authorize Access</span><ArrowRight className="w-4 h-4" /></>}
                                                 </button>
                                             </div>
                                         </form>
