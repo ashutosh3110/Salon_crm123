@@ -1,0 +1,40 @@
+const mongoose = require('mongoose');
+
+const planSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'Please add a name'],
+        unique: true,
+        trim: true
+    },
+    description: {
+        type: String,
+        required: [true, 'Please add a description']
+    },
+    price: {
+        type: Number,
+        required: [true, 'Please add a price']
+    },
+    billingCycle: {
+        type: String,
+        enum: ['monthly', 'yearly', 'forever'],
+        default: 'monthly'
+    },
+    features: {
+        type: Object,
+        default: {}
+    },
+    limits: {
+        staffLimit: { type: Number, default: 0 },
+        outletLimit: { type: Number, default: 0 },
+        whatsappLimit: { type: Number, default: 0 }
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    }
+}, {
+    timestamps: true
+});
+
+module.exports = mongoose.model('Plan', planSchema);

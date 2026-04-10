@@ -6,9 +6,14 @@ const {
     getSalon, 
     updateSalon, 
     deleteSalon,
-    getSalonStats
+    getSalonStats,
+    registerSalon,
+    getMe
 } = require('../Controllers/salonController');
+const { protect, authorize } = require('../Middleware/auth');
 
+router.post('/register', registerSalon);
+router.get('/me', protect, getMe);
 router.get('/stats', getSalonStats);
 router.post('/', createSalon);
 router.get('/', getSalons);

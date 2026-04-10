@@ -36,6 +36,14 @@ exports.login = async (req, res) => {
             });
         }
 
+        // Check active status
+        if (userData.isActive === false) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Your account is pending approval or has been suspended. Please contact support.' 
+            });
+        }
+
         // Generate JWT
         const token = jwt.sign(
             { id: userData._id, role: role, salonId: userData.salonId || (role === 'admin' ? userData._id : null) },
@@ -63,5 +71,107 @@ exports.login = async (req, res) => {
             success: false, 
             message: 'Internal server error' 
         });
+    }
+};
+
+// @desc    Get current logged in user
+// @route   GET /api/auth/me
+// @access  Private
+exports.getMe = async (req, res) => {
+    try {
+        let userData;
+        if (req.user.role === 'admin') {
+            userData = await Salon.findById(req.user.id);
+        } else {
+            userData = await User.findById(req.user.id);
+        }
+
+        if (!userData) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: userData._id,
+                name: userData.name || userData.ownerName,
+                email: userData.email,
+                phone: userData.phone,
+                role: req.user.role,
+                salonId: req.user.salonId
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Update user details
+// @route   PATCH /api/auth/updatedetails
+// @access  Private
+exports.updateDetails = async (req, res) => {
+    try {
+        const fieldsToUpdate = {
+            name: req.body.name,
+            ownerName: req.body.name, // For Salon model
+            email: req.body.email,
+            phone: req.body.phone
+        };
+
+        let user;
+        if (req.user.role === 'admin') {
+            user = await Salon.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+                new: true,
+                runValidators: true
+            });
+        } else {
+            user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+                new: true,
+                runValidators: true
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                name: user.name || user.ownerName,
+                email: user.email,
+                phone: user.phone,
+                role: req.user.role
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Update password
+// @route   PUT /api/auth/updatepassword
+// @access  Private
+exports.updatePassword = async (req, res) => {
+    try {
+        let user;
+        if (req.user.role === 'admin') {
+            user = await Salon.findById(req.user.id).select('+password');
+        } else {
+            user = await User.findById(req.user.id).select('+password');
+        }
+
+        // Check current password
+        const isMatch = await user.comparePassword(req.body.currentPassword);
+        if (!isMatch) {
+            return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+        }
+
+        user.password = req.body.newPassword;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 };

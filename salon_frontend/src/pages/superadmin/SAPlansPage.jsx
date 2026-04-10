@@ -7,7 +7,7 @@ import {
     ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
 /* ─── Feature definitions ─────────────────────────────────────────────── */
@@ -32,6 +32,8 @@ const COLOR = {
 /* ─── Empty plan template ────────────────────────────────────────────── */
 const EMPTY_PLAN = {
     id: '', name: '', tag: '', color: 'blue', active: true, popular: false,
+    price: 0, 
+    description: '',
     monthlyPrice: 0, yearlyPrice: 0,
     features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
     limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000, whatsappLimit: 0 },
@@ -64,7 +66,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <span className="text-xl font-black">{plan.name}</span>
-                            {!plan.active && (
+                            {!plan.isActive && (
                                 <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">Disabled</span>
                             )}
                         </div>
@@ -72,15 +74,16 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                     </div>
                     <div className="text-right">
                         <div className="text-2xl font-black">
-                            {plan.monthlyPrice === 0 ? 'Free' : `₹${plan.monthlyPrice.toLocaleString('en-IN')}`}
+                            {(plan.monthlyPrice === 0 || plan.price === 0) ? 'Free' : `₹${(plan.monthlyPrice || plan.price || 0).toLocaleString('en-IN')}`}
                         </div>
-                        {plan.monthlyPrice > 0 && <div className="text-white/70 text-[11px]">/month</div>}
+                        {(plan.monthlyPrice > 0 || plan.price > 0) && <div className="text-white/70 text-[11px]">/month</div>}
                     </div>
                 </div>
-                {plan.monthlyPrice > 0 && (
+                {plan.description && <p className="mt-3 text-[11px] text-white/60 line-clamp-2 italic">{plan.description}</p>}
+                {(plan.monthlyPrice > 0 || plan.price > 0) && (
                     <div className="flex flex-col gap-0.5 mt-1 relative z-10">
                         <div className="text-[11px] text-white/60">
-                            ₹{plan.yearlyPrice.toLocaleString('en-IN')}/yr · Save {Math.round((1 - plan.yearlyPrice / (plan.monthlyPrice * 12)) * 100)}%
+                            ₹{(plan.yearlyPrice || (plan.price * 12 * 0.8) || 0).toLocaleString('en-IN')}/yr · Save {Math.round((1 - (plan.yearlyPrice || (plan.price * 12 * 0.8)) / ((plan.monthlyPrice || plan.price || 1) * 12)) * 100)}%
                         </div>
                         {plan.gstStatus && (
                             <div className="text-[9px] font-black uppercase tracking-widest text-white/40">
@@ -140,9 +143,9 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                     <Copy className="w-3.5 h-3.5" /> Clone
                 </button>
                 <button onClick={() => onToggleActive(plan)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold transition-all ${plan.active ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'}`}>
-                    {plan.active ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
-                    {plan.active ? 'Disable' : 'Enable'}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold transition-all ${plan.isActive ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'}`}>
+                    {plan.isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
+                    {plan.isActive ? 'Disable' : 'Enable'}
                 </button>
                 <button onClick={() => onDelete(plan)}
                     className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-all">
@@ -195,10 +198,20 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                 <label className={labelCls}>Plan Name *</label>
                                 <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Pro" required />
                             </div>
-                            <div>
-                                <label className={labelCls}>Tag / Subtitle</label>
-                                <input className={inputCls} value={form.tag} onChange={e => set('tag', e.target.value)} placeholder="e.g. Most Popular" />
-                            </div>
+                             <div>
+                                 <label className={labelCls}>Tag / Subtitle</label>
+                                 <input className={inputCls} value={form.tag} onChange={e => set('tag', e.target.value)} placeholder="e.g. Most Popular" />
+                             </div>
+                             <div className="col-span-2">
+                                 <label className={labelCls}>Description *</label>
+                                 <textarea 
+                                     className={`${inputCls} min-h-[60px] py-2 resize-none`} 
+                                     value={form.description} 
+                                     onChange={e => set('description', e.target.value)} 
+                                     placeholder="Describe the plan features and target audience..."
+                                     required
+                                 />
+                             </div>
                             <div>
                                 <label className={labelCls}>Monthly Price (₹)</label>
                                 <input
@@ -211,6 +224,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                         setForm(prev => ({
                                             ...prev,
                                             monthlyPrice: monthly,
+                                            price: monthly, // Map to backend price field
                                             yearlyPrice: autoYearlyFromMonthly(monthly),
                                         }));
                                     }}
@@ -292,10 +306,10 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                 <span className="text-sm text-text-secondary font-medium">Mark as Popular</span>
                             </label>
                             <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <div onClick={() => set('active', !form.active)}
-                                    className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.active ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                <div onClick={() => set('isActive', !form.isActive)}
+                                    className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
                                     style={{ height: '22px', width: '40px' }}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.active ? 'translate-x-[18px]' : 'translate-x-0'}`} />
+                                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.isActive ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                                 </div>
                                 <span className="text-sm text-text-secondary font-medium">Active (visible to salons)</span>
                             </label>
@@ -365,7 +379,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                         className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">
                         Cancel
                     </button>
-                    <button onClick={() => onSave(form)} disabled={saving || !form.name}
+                    <button onClick={() => onSave({ ...form, price: form.monthlyPrice || form.price })} disabled={saving || !form.name || !form.description}
                         className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
                         {saving ? 'Saving…' : plan?._id ? 'Save Changes' : 'Create Plan'}
                     </button>
@@ -407,9 +421,16 @@ export default function SAPlansPage() {
     };
 
     const fetchPlans = async () => {
-        const response = await mockApi.get('/subscriptions');
+        const response = await api.get('/plans');
         const data = response.data.data;
-        setPlans(Array.isArray(data) ? data : data.results || []);
+        const list = Array.isArray(data) ? data : data.results || [];
+        // Normalize backend 'price' to frontend 'monthlyPrice' if needed
+        const normalized = list.map(p => ({
+            ...p,
+            monthlyPrice: p.monthlyPrice || p.price || 0,
+            yearlyPrice: p.yearlyPrice || (p.price * 12 * 0.8) || 0
+        }));
+        setPlans(normalized);
     };
 
     const fetchStats = async () => {
@@ -425,10 +446,10 @@ export default function SAPlansPage() {
         setSaving(true);
         try {
             if (form._id) {
-                await mockApi.patch(`/subscriptions/${form._id}`, form);
+                await api.put(`/plans/${form._id}`, form);
                 showToast(`Plan "${form.name}" updated!`);
             } else {
-                await mockApi.post('/subscriptions', form);
+                await api.post('/plans', form);
                 showToast(`Plan "${form.name}" created!`);
             }
             await fetchData();
@@ -450,7 +471,7 @@ export default function SAPlansPage() {
             delete cloned.createdAt;
             delete cloned.updatedAt;
 
-            await mockApi.post('/subscriptions', cloned);
+            await api.post('/plans', cloned);
             showToast(`Plan "${plan.name}" cloned!`);
             await fetchData();
         } catch (error) {
@@ -463,8 +484,8 @@ export default function SAPlansPage() {
 
     const handleToggleActive = async (plan) => {
         try {
-            await mockApi.patch(`/subscriptions/${plan._id}`, { active: !plan.active });
-            showToast(`Plan "${plan.name}" ${plan.active ? 'disabled' : 'enabled'}.`, plan.active ? 'error' : 'success');
+            await api.put(`/plans/${plan._id}`, { isActive: !plan.isActive });
+            showToast(`Plan "${plan.name}" ${plan.isActive ? 'disabled' : 'enabled'}.`, plan.isActive ? 'error' : 'success');
             await fetchData();
         } catch (error) {
             console.error('Error toggling plan status:', error);
@@ -475,7 +496,7 @@ export default function SAPlansPage() {
     const handleDelete = async (plan) => {
         if (window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
             try {
-                await mockApi.delete(`/subscriptions/${plan._id}`);
+                await api.delete(`/plans/${plan._id}`);
                 showToast(`Plan "${plan.name}" deleted.`, 'error');
                 await fetchData();
             } catch (error) {

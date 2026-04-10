@@ -31,7 +31,7 @@ export default function WapixoContactPage() {
         setIsSubmitting(true);
 
         try {
-            await api.post('/leads', formState);
+            await api.post('/inquiries', formState);
             setSubmitted(true);
             setFormState({ name: '', email: '', salonName: '', phone: '', message: '' });
         } catch (error) {

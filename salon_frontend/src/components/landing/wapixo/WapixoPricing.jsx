@@ -13,11 +13,19 @@ export default function WapixoPricing() {
     useEffect(() => {
         const fetchSubscriptions = async () => {
             try {
-                const res = await api.get('/subscriptions?active=true&limit=100');
+                const res = await api.get('/plans?isActive=true');
                 if (res.data.success) {
+                    const data = res.data.data;
+                    const list = Array.isArray(data) ? data : (data.results || []);
                     // Sort plans by price
-                    const sorted = (res.data.data.results || []).sort((a, b) => a.monthlyPrice - b.monthlyPrice);
-                    setFetchedPlans(sorted);
+                    const sorted = list.sort((a, b) => (a.price || a.monthlyPrice || 0) - (b.price || b.monthlyPrice || 0));
+                    
+                    // Map to standardize fields if needed
+                    const normalized = sorted.map(p => ({
+                        ...p,
+                        monthlyPrice: p.monthlyPrice || p.price || 0
+                    }));
+                    setFetchedPlans(normalized);
                 }
             } catch (err) {
                 console.error('Error fetching plans:', err);

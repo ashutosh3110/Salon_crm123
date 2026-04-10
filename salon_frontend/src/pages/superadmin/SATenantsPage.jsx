@@ -73,18 +73,20 @@ const STATUS_CFG = {
     expired: { label: 'Ended', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
     suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
     inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
+    pending: { label: 'Pending', cls: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800', icon: Clock },
 };
 
 const FILTER_TABS = [
     { key: '', label: 'All', icon: Layers },
     { key: 'active', label: 'Active', icon: CheckCircle },
+    { key: 'pending', label: 'Pending', icon: Clock },
     { key: 'trial', label: 'On Trial', icon: Clock },
     { key: 'expired', label: 'Ended', icon: AlertTriangle },
     { key: 'suspended', label: 'Paused', icon: XCircle },
 ];
 
 /* ─── Row action dropdown ─────────────────────────────────────────────────── */
-function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }) {
+function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, onApprove }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -97,6 +99,14 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }
     const actions = [
         { label: 'View Profile', icon: EyeIcon, href: `/superadmin/tenants/${tenant._id}`, color: 'text-text-secondary', hover: 'hover:text-primary hover:bg-primary/5' },
         { label: 'Edit Details', icon: Edit3, onClick: () => { onEdit(tenant); setOpen(false); }, color: 'text-text-secondary', hover: 'hover:text-primary hover:bg-primary/5' },
+        { 
+            label: 'Approve / Activate', 
+            icon: CheckCircle, 
+            onClick: () => { onApprove(tenant); setOpen(false); }, 
+            color: 'text-emerald-600', 
+            hover: 'hover:bg-emerald-50',
+            hidden: tenant.status === 'active' 
+        },
         { label: 'Upgrade Plan', icon: ArrowUpRight, onClick: () => { onEdit(tenant, 'plan'); setOpen(false); }, color: 'text-amber-600', hover: 'hover:bg-amber-50' },
         { divider: true },
         {
@@ -145,7 +155,7 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }
                             {actions.map((a, i) => (
                                 a.divider ? (
                                     <div key={`d-${i}`} className="h-px bg-border/50 my-1.5 mx-3" />
-                                ) : a.href ? (
+                                ) : a.hidden ? null : a.href ? (
                                     <Link key={a.label} to={a.href}
                                         className={`flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} m-1 rounded-xl`}
                                         onClick={() => setOpen(false)}>
@@ -173,7 +183,7 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }
 }
 
 /* ─── Plan Change Modal (Fast Access) ─────────────────────────────────────── */
-function PlanChangeModal({ tenant, onClose, onSave }) {
+function PlanChangeModal({ tenant, onClose, onSave, plans = [] }) {
     if (!tenant) return null;
     return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
@@ -188,33 +198,32 @@ function PlanChangeModal({ tenant, onClose, onSave }) {
                         <XCircle className="w-5 h-5 text-text-muted" />
                     </button>
                 </div>
-                <div className="p-6 space-y-3">
-                    {[
-                        { id: 'free', name: 'Free Starter', price: 0, color: 'slate' },
-                        { id: 'basic', name: 'Basic Growth', price: 1999, color: 'blue' },
-                        { id: 'pro', name: 'Pro Business', price: 4999, color: 'primary' },
-                        { id: 'enterprise', name: 'Enterprise Power', price: 12999, color: 'amber' },
-                    ].map((p) => (
+                <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
+                    {plans.map((p) => (
                         <button
-                            key={p.id}
-                            onClick={() => onSave(tenant._id, p.id)}
-                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${tenant.subscriptionPlan === p.id
+                            key={p._id}
+                            onClick={() => onSave(tenant._id, p.name)}
+                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${tenant.subscriptionPlan === p.name
                                 ? 'border-primary bg-primary/[0.02] ring-2 ring-primary/10'
                                 : 'border-border hover:border-primary/40 hover:bg-surface/50'
                                 }`}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${planColors[p.color]}`}>
+                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border bg-primary/10 text-primary`}>
                                     <Crown className="w-4 h-4" />
                                 </div>
-                                <div className="text-sm font-bold text-text">{p.name}</div>
+                                <div>
+                                    <div className="text-sm font-bold text-text">{p.name}</div>
+                                    <div className="text-[10px] text-text-muted">{p.description}</div>
+                                </div>
                             </div>
                             <div className="text-right">
                                 <div className="text-sm font-black text-text">₹{p.price.toLocaleString('en-IN')}</div>
-                                <div className="text-[9px] text-text-muted font-bold">MONTHLY</div>
+                                <div className="text-[9px] text-text-muted font-bold tracking-widest uppercase">{p.billingCycle}</div>
                             </div>
                         </button>
                     ))}
+                    {plans.length === 0 && <p className="text-center text-sm text-text-muted py-8">No active plans found. Please create one in Subscription Plans section.</p>}
                 </div>
             </div>
         </div>
@@ -291,6 +300,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         address: tenant?.address || '',
         description: tenant?.description || '',
         gstNumber: tenant?.gstNumber || '',
+        subscriptionPlan: tenant?.subscriptionPlan || 'free',
     });
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -383,7 +393,29 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         </div>
                     </div>
 
-                 
+                    {/* Subscription Section */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
+                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">Plan & Subscription</h4>
+                        </div>
+                        <div>
+                            <label className={labelCls}>Assigned Plan</label>
+                            <CustomDropdown
+                                variant="form"
+                                value={form.subscriptionPlan}
+                                onChange={v => set('subscriptionPlan', v)}
+                                options={[
+                                    { value: 'free', label: 'Free (Default)' },
+                                    { value: 'basic', label: 'Basic' },
+                                    { value: 'pro', label: 'Pro' },
+                                    { value: 'premium', label: 'Premium' },
+                                    { value: 'enterprise', label: 'Enterprise' },
+                                ]}
+                            />
+                            <p className="text-[10px] text-text-muted mt-2">Selecting a plan will automatically apply the corresponding features and limits.</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Footer */}
@@ -419,6 +451,7 @@ export default function SATenantsPage() {
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
     const [stats, setStats] = useState(null);
+    const [availablePlans, setAvailablePlans] = useState([]);
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ totalPages: 1, totalResults: 0, limit: 10 });
 
@@ -440,6 +473,18 @@ export default function SATenantsPage() {
             console.error('Error fetching stats:', error);
         }
     };
+
+    useEffect(() => {
+        const fetchAllPlans = async () => {
+            try {
+                const res = await api.get('/plans');
+                setAvailablePlans(res.data.data || []);
+            } catch (err) {
+                console.error('Error fetching plans:', err);
+            }
+        };
+        fetchAllPlans();
+    }, []);
     useEffect(() => {
         const timer = setTimeout(() => {
             fetchTenants();
@@ -574,6 +619,7 @@ export default function SATenantsPage() {
     const counts = {
         '': stats?.totalSalons || 0,
         active: stats?.countsByStatus?.find(v => v._id === 'active')?.count || 0,
+        pending: stats?.countsByStatus?.find(v => v._id === 'pending')?.count || 0,
         trial: stats?.countsByStatus?.find(v => v._id === 'trial')?.count || 0,
         expired: stats?.countsByStatus?.find(v => v._id === 'expired')?.count || 0,
         suspended: stats?.countsByStatus?.find(v => v._id === 'suspended')?.count || 0,
@@ -611,6 +657,19 @@ export default function SATenantsPage() {
             }
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleApprove = async (tenant) => {
+        if (!window.confirm(`Approve and activate "${tenant.name}"? This will allow the owner to log in.`)) return;
+        try {
+            await api.put(`/salons/${tenant._id}`, { status: 'active' });
+            showToast(`Salon "${tenant.name}" is now Active!`);
+            fetchTenants();
+            fetchStats();
+        } catch (error) {
+            console.error('Approval failed:', error);
+            showToast('Approval failed.', 'error');
         }
     };
 
@@ -795,10 +854,20 @@ export default function SATenantsPage() {
                                             </td>
                                             {/* Status */}
                                             <td className="px-4 py-3.5">
-                                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.cls}`}>
-                                                    {sc.icon && <sc.icon className="w-3 h-3" />}
-                                                    {sc.label.toUpperCase()}
-                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.cls}`}>
+                                                        {sc.icon && <sc.icon className="w-3 h-3" />}
+                                                        {sc.label.toUpperCase()}
+                                                    </span>
+                                                    {(t.status === 'pending' || t.status === 'inactive') && (
+                                                        <button 
+                                                            onClick={() => handleApprove(t)}
+                                                            className="p-1 px-2 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider hover:bg-emerald-600 transition-all shadow-sm shadow-emerald-500/20"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                             {/* Joined */}
                                             <td className="px-4 py-3.5">
@@ -814,6 +883,7 @@ export default function SATenantsPage() {
                                                     onSuspend={handleSuspend}
                                                     onDelete={handleDelete}
                                                     onResendCredentials={handleResendCredentials}
+                                                    onApprove={handleApprove}
                                                 />
                                             </td>
                                         </tr>

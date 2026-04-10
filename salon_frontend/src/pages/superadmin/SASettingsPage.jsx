@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
     User, Mail, Phone, Lock, Eye, EyeOff, Save,
-    CheckCircle, Shield, Edit3, KeyRound,
-    BadgeCheck, AlertCircle, Loader2
+    CheckCircle, Shield, Edit3, KeyRound, Globe,
+    BadgeCheck, AlertCircle, Loader2, DollarSign,
+    Info, MapPin, Share2
 } from 'lucide-react';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
@@ -59,6 +60,21 @@ export default function SASettingsPage() {
     const [loading, setLoading] = useState(true);
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
+    const [savingPlatform, setSavingPlatform] = useState(false);
+
+    /* Platform Settings */
+    const [platform, setPlatform] = useState({
+        siteName: '',
+        siteTagline: '',
+        contactEmail: '',
+        contactPhone: '',
+        address: '',
+        socialLinks: { facebook: '', instagram: '', twitter: '', linkedin: '' },
+        currency: 'INR',
+        currencySymbol: '₹'
+    });
+    const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
+    const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
 
     /* Profile form */
     const [profile, setProfile] = useState({
@@ -77,24 +93,36 @@ export default function SASettingsPage() {
     const [showCon, setShowCon] = useState(false);
 
     useEffect(() => {
-        fetchProfile();
+        fetchAll();
     }, []);
+
+    const fetchAll = async () => {
+        setLoading(true);
+        await Promise.all([fetchProfile(), fetchSettings()]);
+        setLoading(false);
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const { data } = await api.get('/settings');
+            if (data.success) setPlatform(data.data);
+        } catch (err) {
+            console.error('Failed to fetch settings:', err);
+        }
+    };
 
     const fetchProfile = async () => {
         try {
-            setLoading(true);
-            const { data } = await mockApi.get('/users/me');
+            const { data } = await api.get('/auth/me');
             setProfile({
-                name: data.name,
-                email: data.email,
-                phone: data.phone || '',
-                role: data.role,
+                name: data.data.name,
+                email: data.data.email,
+                phone: data.data.phone || '',
+                role: data.data.role,
             });
         } catch (err) {
             console.error('Failed to fetch profile:', err);
             showToast('Failed to load profile settings.', 'error');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -120,7 +148,7 @@ export default function SASettingsPage() {
         if (!profile.name || !profile.email) return showToast('Name and Email are required.', 'error');
         setSavingProfile(true);
         try {
-            await mockApi.patch('/users/me', {
+            await api.patch('/auth/updatedetails', {
                 name: profile.name,
                 email: profile.email,
                 phone: profile.phone
@@ -134,6 +162,19 @@ export default function SASettingsPage() {
         }
     };
 
+    const handleSavePlatform = async () => {
+        setSavingPlatform(true);
+        try {
+            await api.patch('/settings', platform);
+            showToast('Platform settings saved!');
+        } catch (err) {
+            console.error('Update failed:', err);
+            showToast(err.response?.data?.message || 'Failed to update settings.', 'error');
+        } finally {
+            setSavingPlatform(false);
+        }
+    };
+
     const handleChangePassword = async () => {
         if (!pwd.current) return showToast('Enter your current password.', 'error');
         if (pwd.newPwd.length < 8) return showToast('New password must be at least 8 characters.', 'error');
@@ -141,7 +182,7 @@ export default function SASettingsPage() {
         
         setSavingPassword(true);
         try {
-            await mockApi.post('/users/change-password', {
+            await api.put('/auth/updatepassword', {
                 currentPassword: pwd.current,
                 newPassword: pwd.newPwd
             });
@@ -371,6 +412,41 @@ export default function SASettingsPage() {
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Changing…</>
                                 : <><KeyRound className="w-4 h-4" /> Change Password</>
                             }
+                        </button>
+                    </div>
+                </SectionCard>
+
+                {/* ── Platform Configuration ── */}
+                <SectionCard
+                    title="Platform Configuration"
+                    subtitle="Global settings for the entire application"
+                    icon={Globe}
+                    iconColor="bg-blue-50 text-blue-600"
+                >
+                    <div className="space-y-6">
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            <Field label="Site Name" value={platform.siteName} onChange={e => setPlat('siteName', e.target.value)} placeholder="Salon CRM" />
+                            <Field label="Currency Symbol" value={platform.currencySymbol} onChange={e => setPlat('currencySymbol', e.target.value)} placeholder="₹" />
+                        </div>
+                        <Field label="Support Email" icon={Mail} value={platform.contactEmail} onChange={e => setPlat('contactEmail', e.target.value)} />
+                        <Field label="Office Address" icon={MapPin} value={platform.address} onChange={e => setPlat('address', e.target.value)} />
+                        
+                        <div className="pt-2 border-t border-border">
+                            <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <Share2 className="w-3 h-3" /> Social Presence
+                            </h4>
+                            <div className="grid sm:grid-cols-2 gap-3">
+                                <Field label="Instagram" value={platform.socialLinks.instagram} onChange={e => setSocial('instagram', e.target.value)} placeholder="https://..." />
+                                <Field label="Facebook" value={platform.socialLinks.facebook} onChange={e => setSocial('facebook', e.target.value)} placeholder="https://..." />
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleSavePlatform}
+                            disabled={savingPlatform}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
+                        >
+                            {savingPlatform ? 'Saving...' : 'Update Platform Settings'}
                         </button>
                     </div>
                 </SectionCard>

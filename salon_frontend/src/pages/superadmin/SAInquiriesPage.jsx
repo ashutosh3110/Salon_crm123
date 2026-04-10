@@ -6,6 +6,7 @@ import {
     CheckCircle2, Clock, Trash2, ArrowUpRight, Loader2
 } from 'lucide-react';
 import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 export default function SAInquiriesPage() {
     const [loading, setLoading] = useState(true);
@@ -16,14 +17,25 @@ export default function SAInquiriesPage() {
     const fetchInquiries = async () => {
         setLoading(true);
         try {
-            const params = {
-                status: filterStatus !== 'all' ? filterStatus : undefined,
-                search: searchQuery || undefined
-            };
-            const response = await mockApi.get('/leads', { params });
-            setInquiries(response.data.data.results || []);
+            const response = await api.get('/inquiries');
+            let data = response.data.data || [];
+            
+            // Client-side filtering as the simple backend doesn't handle all params yet
+            if (filterStatus !== 'all') {
+                data = data.filter(i => i.status === filterStatus);
+            }
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                data = data.filter(i => 
+                    i.name.toLowerCase().includes(query) || 
+                    (i.salonName && i.salonName.toLowerCase().includes(query)) ||
+                    i.email.toLowerCase().includes(query)
+                );
+            }
+            
+            setInquiries(data);
         } catch (error) {
-            console.error('Error fetching leads:', error);
+            console.error('Error fetching inquiries:', error);
         } finally {
             setLoading(false);
         }
@@ -40,11 +52,11 @@ export default function SAInquiriesPage() {
         }
     };
 
-    const filteredInquiries = inquiries; // Filtering is handled by backend now
+    const filteredInquiries = inquiries;
 
     const updateStatus = async (id, newStatus) => {
         try {
-            await mockApi.patch(`/leads/${id}`, { status: newStatus });
+            await api.patch(`/inquiries/${id}`, { status: newStatus });
             setInquiries(inquiries.map(item =>
                 item._id === id ? { ...item, status: newStatus } : item
             ));
@@ -56,7 +68,7 @@ export default function SAInquiriesPage() {
     const deleteInquiry = async (id) => {
         if (!window.confirm('Are you sure you want to delete this inquiry?')) return;
         try {
-            await mockApi.delete(`/leads/${id}`);
+            await api.delete(`/inquiries/${id}`);
             setInquiries(inquiries.filter(item => item._id !== id));
         } catch (error) {
             console.error('Error deleting inquiry:', error);

@@ -16,13 +16,6 @@ const menuItems = [
         badge: null,
     },
     {
-        label: 'Customer Messages',
-        icon: MessageSquare,
-        path: '/superadmin/inquiries',
-        badge: 1,
-        badgeColor: 'bg-primary/10 text-primary',
-    },
-    {
         label: 'Manage Salons',
         icon: Building2,
         path: '/superadmin/tenants',
@@ -60,6 +53,13 @@ const menuItems = [
         icon: FileText,
         path: '/superadmin/blogs',
         badge: 3,
+        badgeColor: 'bg-primary/10 text-primary',
+    },
+    {
+        label: 'Customer Messages',
+        icon: MessageSquare,
+        path: '/superadmin/inquiries',
+        badge: 1,
         badgeColor: 'bg-primary/10 text-primary',
     },
     {

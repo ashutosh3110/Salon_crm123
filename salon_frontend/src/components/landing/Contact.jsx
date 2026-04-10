@@ -20,7 +20,7 @@ export default function Contact() {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post('/leads', formData);
+            await api.post('/inquiries', formData);
             alert('Thank you! We will get back to you within 24 hours.');
             setFormData({ name: '', email: '', phone: '', message: '' });
         } catch (err) {

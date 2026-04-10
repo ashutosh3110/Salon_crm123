@@ -47,8 +47,21 @@ const salonSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'active', 'suspended'],
+        enum: ['pending', 'active', 'suspended', 'expired', 'trial'],
         default: 'active'
+    },
+    subscriptionPlan: {
+        type: String,
+        default: 'free'
+    },
+    features: {
+        type: Object,
+        default: {}
+    },
+    limits: {
+        staffLimit: { type: Number, default: 0 },
+        outletLimit: { type: Number, default: 0 },
+        whatsappLimit: { type: Number, default: 0 }
     }
 }, {
     timestamps: true

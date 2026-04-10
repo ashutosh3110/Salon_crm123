@@ -28,7 +28,12 @@ export default function AuthPage() {
         phone: '',
         password: '',
         confirmPassword: '',
+        gstNumber: '',
+        description: '',
+        address: '',
+        city: '',
     });
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(null);
 
     // Sync view with URL and handle auto-fill role from Launchpad
@@ -173,7 +178,7 @@ export default function AuthPage() {
                     ...signupForm,
                     subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'free'
                 });
-                navigate('/admin');
+                setRegistrationSuccess(true);
             }
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed.');
@@ -397,73 +402,119 @@ export default function AuthPage() {
                                             </motion.div>
                                         )}
 
-                                        <form onSubmit={handleSignup} className="space-y-6">
-                                            <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
-                                                <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Salon Name</label>
-                                                    <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
-                                                        <Store className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        <input type="text" name="salonName" value={signupForm.salonName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="My Premium Salon" />
-                                                    </div>
+                                        {registrationSuccess ? (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="text-center space-y-6 pt-10"
+                                            >
+                                                <div className="w-20 h-20 bg-[#B4912B]/10 rounded-full flex items-center justify-center mx-auto border border-[#B4912B]/20">
+                                                    <Sparkles className="w-10 h-10 text-[#B4912B]" />
                                                 </div>
-                                                <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Full Name</label>
-                                                    <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
-                                                        <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        <input type="text" name="fullName" value={signupForm.fullName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Your Name" />
-                                                    </div>
+                                                <div className="space-y-2">
+                                                    <h3 className="text-2xl font-black uppercase italic tracking-tight" style={{ color: 'var(--wapixo-text)' }}>Registration Received!</h3>
+                                                    <p className="text-sm font-medium leading-relaxed max-w-[320px] mx-auto" style={{ color: 'var(--wapixo-text-muted)' }}>
+                                                        Your application is currently being reviewed by our Superadmin. Once approved, you will receive an onboarding email with your credentials.
+                                                    </p>
                                                 </div>
-                                                <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Email Address</label>
-                                                    <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
-                                                        <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        <input type="email" name="email" value={signupForm.email} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="name@example.com" />
-                                                    </div>
-                                                </div>
-                                                <div className="group space-y-1">
-                                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Phone Number</label>
-                                                    <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
-                                                        <Phone className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        <input type="tel" name="phone" value={signupForm.phone} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="+91 00000" />
-                                                    </div>
-                                                </div>
-                                                <div className="group space-y-1">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Password</label>
-                                                    <PasswordField 
-                                                        name="password" value={signupForm.password} onChange={handleSignupChange} required placeholder="Create Password"
-                                                        containerClassName="border-b-2 transition-all duration-300"
-                                                        style={{ borderColor: 'var(--wapixo-border)' }}
-                                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                        buttonClassName="hover:text-[#B85C5C]"
-                                                        inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
-                                                    >
-                                                        <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                    </PasswordField>
-                                                </div>
-                                                <div className="group space-y-1">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Confirm Password</label>
-                                                    <PasswordField 
-                                                        name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required placeholder="Repeat Password"
-                                                        containerClassName="border-b-2 transition-all duration-300"
-                                                        style={{ borderColor: 'var(--wapixo-border)' }}
-                                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                        buttonClassName="hover:text-[#B85C5C]"
-                                                        inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
-                                                    >
-                                                        <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                    </PasswordField>
-                                                </div>
-                                            </div>
-                                            <div className="pt-4 space-y-6">
-                                                <button type="submit" disabled={loading} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/10 active:scale-95 disabled:opacity-50">
-                                                    {loading ? 'Creating Account...' : 'Register Now'}
+                                                <button 
+                                                    onClick={() => toggleView('signin')}
+                                                    className="px-12 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#B4912B]/10 active:scale-95"
+                                                >
+                                                    Return to Login
                                                 </button>
-                                                <p className="text-[8px] text-center uppercase tracking-widest font-black leading-relaxed" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.5 }}>
-                                                    By registering, you accept our <br />
-                                                    <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Protocols</span> & <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Privacy Sandbox</span>.
-                                                </p>
-                                            </div>
-                                        </form>
+                                            </motion.div>
+                                        ) : (
+                                            <form onSubmit={handleSignup} className="space-y-6">
+                                                <div className="grid md:grid-cols-2 gap-x-10 gap-y-6">
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Salon Name *</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <Store className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                            <input type="text" name="salonName" value={signupForm.salonName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="My Premium Salon" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Owner Full Name *</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                            <input type="text" name="fullName" value={signupForm.fullName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Your Name" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Work Email *</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <Mail className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                            <input type="email" name="email" value={signupForm.email} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="name@example.com" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Phone Number *</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <Phone className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                            <input type="tel" name="phone" value={signupForm.phone} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="+91 00000" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>GST Number</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <input type="text" name="gstNumber" value={signupForm.gstNumber} onChange={handleSignupChange} className="w-full pl-0 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="15-digit GSTIN" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>City</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <input type="text" name="city" value={signupForm.city} onChange={handleSignupChange} className="w-full pl-0 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="e.g. Ahmedabad" />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-span-2 group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Street Address</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <input type="text" name="address" value={signupForm.address} onChange={handleSignupChange} className="w-full pl-0 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Shop no, Building, Area..." />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Password *</label>
+                                                        <PasswordField 
+                                                            name="password" value={signupForm.password} onChange={handleSignupChange} required placeholder="Create Password"
+                                                            containerClassName="border-b-2 transition-all duration-300"
+                                                            style={{ borderColor: 'var(--wapixo-border)' }}
+                                                            inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
+                                                            buttonClassName="hover:text-[#B85C5C]"
+                                                            inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
+                                                        >
+                                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                        </PasswordField>
+                                                    </div>
+                                                    <div className="group space-y-1">
+                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Confirm Password *</label>
+                                                        <PasswordField 
+                                                            name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required placeholder="Repeat Password"
+                                                            containerClassName="border-b-2 transition-all duration-300"
+                                                            style={{ borderColor: 'var(--wapixo-border)' }}
+                                                            inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
+                                                            buttonClassName="hover:text-[#B85C5C]"
+                                                            inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
+                                                        >
+                                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
+                                                        </PasswordField>
+                                                    </div>
+                                                </div>
+                                                <div className="pt-4 space-y-6">
+                                                    <button type="submit" disabled={loading} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/10 active:scale-95 disabled:opacity-50">
+                                                        {loading ? 'Creating Account...' : 'Register Now'}
+                                                    </button>
+                                                    <p className="text-[8px] text-center uppercase tracking-widest font-black leading-relaxed" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.5 }}>
+                                                        By registering, you accept our <br />
+                                                        <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Protocols</span> & <span className="hover:text-[#B4912B] transition-colors cursor-pointer underline">Privacy Sandbox</span>.
+                                                    </p>
+                                                </div>
+                                            </form>
+                                        )}
                                     </motion.div>
                                 )}
                             </AnimatePresence>
