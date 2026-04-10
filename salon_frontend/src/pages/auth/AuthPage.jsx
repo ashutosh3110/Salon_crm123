@@ -63,7 +63,7 @@ export default function AuthPage() {
             try {
                 const res = await api.get('/subscriptions?active=true&limit=100');
                 if (res.data.success) {
-                    setPlans(res.data.data.results);
+                    setPlans(res.data.data?.results || []);
                 }
             } catch (err) {
                 console.error('Error fetching plans:', err);
@@ -82,7 +82,7 @@ export default function AuthPage() {
 
     // Handle selected plan from URL
     useEffect(() => {
-        if (plans.length > 0) {
+        if (plans && plans.length > 0) {
             const params = new URLSearchParams(location.search);
             const planParam = params.get('plan');
             if (planParam) {
@@ -140,7 +140,7 @@ export default function AuthPage() {
             const planParam = params.get('plan');
             
             let currentPlan = selectedPlan;
-            if (!currentPlan && plans.length > 0 && planParam) {
+            if (!currentPlan && plans && plans.length > 0 && planParam) {
                 currentPlan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
             }
 

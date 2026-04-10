@@ -6,18 +6,21 @@ export default function PasswordField({
     inputClassName = '', 
     iconClassName = 'w-4 h-4',
     buttonClassName = '',
+    inputStyle = {},
+    style = {},
     children,
     ...props 
 }) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <div className={`relative ${containerClassName}`}>
+        <div className={`relative ${containerClassName}`} style={style}>
             {children}
             <input
                 {...props}
                 type={showPassword ? 'text' : 'password'}
                 className={inputClassName}
+                style={inputStyle}
             />
             <button
                 type="button"
