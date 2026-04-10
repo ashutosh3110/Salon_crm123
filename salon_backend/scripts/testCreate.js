@@ -24,11 +24,11 @@ const testCreate = async () => {
             name: "Test Password Salon",
             ownerName: "Tester",
             email: email,
-            defaultPassword: hashedPassword,
+            password: hashedPassword,
             address: { street: "123 Test St", city: "Test City" }
         });
 
-        console.log('Salon created with defaultPassword:', salon.defaultPassword);
+        console.log('Salon created with password:', salon.password);
         
         // 3. Create User
         const user = await User.create({

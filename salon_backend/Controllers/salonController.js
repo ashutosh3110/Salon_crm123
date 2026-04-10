@@ -48,7 +48,7 @@ exports.createSalon = async (req, res) => {
             email,
             phone,
             gstNumber,
-            defaultPassword: hashedPassword, // Store as hash for user visibility
+            password: hashedPassword, // Store as hash for user visibility
             address: {
                 street: address,
                 city: city
@@ -58,22 +58,13 @@ exports.createSalon = async (req, res) => {
         });
         console.log('Salon Record Created:', salon);
 
-        // 3. Create Admin User for this salon
-        const user = await User.create({
-            name: ownerName,
-            email,
-            password: hashedPassword, // Use the manually hashed password
-            role: 'admin',
-            salonId: salon._id,
-            isActive: true // Direct approved
-        });
-        console.log('User Record Created:', user);
+        console.log('Salon Record Created:', salon);
 
         // 4. Send Onboarding Email
         try {
             const html = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <h2 style="color: #333 text-align: center;">Welcome to ${process.env.EMAIL_FROM_NAME}!</h2>
+                    <h2 style="color: #333; text-align: center;">Welcome to ${process.env.EMAIL_FROM_NAME}!</h2>
                     <p>Dear <strong>${ownerName}</strong>,</p>
                     <p>Congratulations! Your salon, <strong>${name}</strong>, has been successfully registered on our platform.</p>
                     <p>You can now log in to your dashboard using the following credentials:</p>
@@ -103,13 +94,7 @@ exports.createSalon = async (req, res) => {
             success: true,
             message: 'Salon and Admin created successfully. Onboarding email sent.',
             data: {
-                salon,
-                admin: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role
-                }
+                salon
             }
         });
 

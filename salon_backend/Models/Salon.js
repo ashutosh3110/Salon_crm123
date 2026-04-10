@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const salonSchema = new mongoose.Schema({
     name: {
@@ -30,7 +31,7 @@ const salonSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    defaultPassword: {
+    password: {
         type: String,
         default: '123456'
     },
@@ -52,6 +53,24 @@ const salonSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Hash password before saving
+salonSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    
+    // Check if already hashed
+    if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
+        return next();
+    }
+    
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+// Compare password method
+salonSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
 
 const Salon = mongoose.model('Salon', salonSchema);
 module.exports = Salon;

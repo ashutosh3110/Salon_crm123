@@ -31,9 +31,9 @@ const updateUser = async () => {
         // Also update the Salon record if it exists
         const salon = await Salon.findOne({ email });
         if (salon) {
-            salon.defaultPassword = newPassword;
+            salon.password = newPassword;
             await salon.save();
-            console.log(`Updated defaultPassword in Salon record for ${email}`);
+            console.log(`Updated password in Salon record for ${email}`);
         }
 
         process.exit(0);

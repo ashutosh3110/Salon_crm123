@@ -380,12 +380,6 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                                 </div>
                             </div>
                             <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
-                            {mode === 'create' && (
-                                <div>
-                                    <label className={labelCls}>Admin Password</label>
-                                    <input type="text" className={inputCls} value={form.password || ''} onChange={e => set('password', e.target.value)} placeholder="Default: 123456" />
-                                </div>
-                            )}
                         </div>
                     </div>
 
@@ -594,13 +588,6 @@ export default function SATenantsPage() {
             return;
         }
 
-        if (form.gstNumber) {
-            const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-            if (!gstRegex.test(form.gstNumber)) {
-                showToast('Invalid GST format. (e.g. 22AAAAA0000A1Z5)', 'error');
-                return;
-            }
-        }
 
         setSaving(true);
         try {
@@ -762,8 +749,8 @@ export default function SATenantsPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-surface/60 border-b border-border">
-                                    {['Salon', 'Owner', 'City', 'Joined', ''].map(h => (
-                                        <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === '' ? 'text-right' : 'text-left'}`}>
+                                    {['Salon', 'Owner / Email', 'Phone', 'GST', 'City', 'Status', 'Joined', 'Actions'].map(h => (
+                                        <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                                             {h}
                                         </th>
                                     ))}
@@ -782,13 +769,22 @@ export default function SATenantsPage() {
                                                     </div>
                                                     <div>
                                                         <div className="text-sm font-semibold text-text group-hover/link:text-primary transition-colors">{t.name}</div>
+                                                        <div className="text-[10px] text-text-muted font-mono">{t.slug}</div>
                                                     </div>
                                                 </Link>
                                             </td>
-                                            {/* Owner */}
+                                            {/* Owner / Email */}
                                             <td className="px-4 py-3.5">
-                                                <div className="text-sm text-text-secondary">{t.ownerName}</div>
+                                                <div className="text-sm font-medium text-text">{t.ownerName}</div>
                                                 <div className="text-[11px] text-text-muted">{t.email}</div>
+                                            </td>
+                                            {/* Phone */}
+                                            <td className="px-4 py-3.5">
+                                                <div className="text-sm text-text-secondary">{t.phone || '—'}</div>
+                                            </td>
+                                            {/* GST */}
+                                            <td className="px-4 py-3.5">
+                                                <div className="text-[11px] font-mono font-bold text-text-secondary">{t.gstNumber || '—'}</div>
                                             </td>
                                             {/* City */}
                                             <td className="px-4 py-3.5">
@@ -796,6 +792,13 @@ export default function SATenantsPage() {
                                                     <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
                                                     {t.city}
                                                 </div>
+                                            </td>
+                                            {/* Status */}
+                                            <td className="px-4 py-3.5">
+                                                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${sc.cls}`}>
+                                                    {sc.icon && <sc.icon className="w-3 h-3" />}
+                                                    {sc.label.toUpperCase()}
+                                                </span>
                                             </td>
                                             {/* Joined */}
                                             <td className="px-4 py-3.5">
