@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import {
     Save, Layout, Type, Image as ImageIcon, MessageSquare,
     Shield, FileText, Smartphone, Zap, Heart, Target,
     Package, BarChart2, CheckCircle2, AlertCircle, Info,
     Eye, Edit3, Globe, Smartphone as MobileIcon, Search,
-    Monitor, RefreshCw
+    Monitor, RefreshCw, HelpCircle
 } from 'lucide-react';
 
 // Import Landing Components for Live Preview
@@ -59,6 +59,10 @@ const INITIAL_CMS_DATA = {
         { id: 4, title: "Loyalty Engine", desc: "Automated rewards and referral programs that retain clients." },
         { id: 5, title: "Staff Scheduling", desc: "Shift management, commissions, and performance tracking." },
         { id: 6, title: "Multi-Outlet", desc: "Manage every branch from one powerful dashboard." }
+    ],
+    landing_faqs: [
+        { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all SalonCRM features for 14 days. No credit card is required to start.' },
+        { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. SalonCRM is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
     ]
 };
 
@@ -66,7 +70,9 @@ const CMS_TABS = [
     { id: 'landing', label: 'Landing Page', icon: Layout },
     { id: 'legal', label: 'Legal Pages', icon: Shield },
     { id: 'contact', label: 'Contact Page', icon: MessageSquare },
+    { id: 'faqs', label: 'Platform FAQs', icon: HelpCircle },
 ];
+
 
 export default function SACMSPage() {
     const navigate = useNavigate();
@@ -83,7 +89,7 @@ export default function SACMSPage() {
     const fetchCMSData = async () => {
         try {
             setLoading(true);
-            const response = await mockApi.get('/cms');
+            const response = await api.get('/cms');
             if (response.data && Object.keys(response.data).length > 0) {
                 setData(prev => ({ ...prev, ...response.data }));
             }
@@ -105,7 +111,7 @@ export default function SACMSPage() {
         try {
             // Save all sections that are currently in 'data'
             const promises = Object.entries(data).map(([section, content]) => 
-                mockApi.patch(`/cms/${section}`, { content })
+                api.patch(`/cms/${section}`, { content })
             );
             await Promise.all(promises);
             showToast("Public content updated successfully!");
@@ -378,6 +384,68 @@ export default function SACMSPage() {
                         </section>
                     )}
 
+                    {activeTab === 'faqs' && (
+                        <section className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                                        <HelpCircle size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Landing Page FAQs</h2>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        const newF = [...data.landing_faqs, { id: Date.now(), question: 'New Question?', answer: 'New Answer...' }];
+                                        setData(prev => ({ ...prev, landing_faqs: newF }));
+                                    }}
+                                    className="px-4 py-2 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all flex items-center gap-2"
+                                >
+                                    <Plus size={14} /> Add FAQ
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                {data.landing_faqs.map((faq, idx) => (
+                                    <div key={faq.id} className="p-6 border border-border bg-surface/30 relative group">
+                                        <button 
+                                            onClick={() => {
+                                                const newF = data.landing_faqs.filter((_, i) => i !== idx);
+                                                setData(prev => ({ ...prev, landing_faqs: newF }));
+                                            }}
+                                            className="absolute top-4 right-4 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                        <div className="space-y-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Question</label>
+                                                <input
+                                                    className="w-full bg-white border border-border px-3 py-2 text-sm font-bold focus:border-primary outline-none"
+                                                    value={faq.question}
+                                                    onChange={(e) => {
+                                                        const newF = [...data.landing_faqs];
+                                                        newF[idx].question = e.target.value;
+                                                        setData(prev => ({ ...prev, landing_faqs: newF }));
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Answer</label>
+                                                <textarea
+                                                    className="w-full bg-white border border-border p-3 text-sm focus:border-primary outline-none min-h-[80px]"
+                                                    value={faq.answer}
+                                                    onChange={(e) => {
+                                                        const newF = [...data.landing_faqs];
+                                                        newF[idx].answer = e.target.value;
+                                                        setData(prev => ({ ...prev, landing_faqs: newF }));
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
                 </div>
 
                 {/* Live Preview Pane */}

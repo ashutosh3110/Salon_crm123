@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
-    CheckCircle, XCircle, Crown, Zap, Shield, CreditCard, ArrowRight, Package, Calendar, Users, Store, Smartphone, BarChart2, MessageSquare, Heart, Target, Activity, Star, DollarSign
+    CheckCircle, XCircle, Crown, Zap, Shield, CreditCard, ArrowRight, Package, Calendar, Users, Store, Smartphone, BarChart2, MessageSquare, Heart, Target, Activity, Star, DollarSign, Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/mock/mockApi';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
@@ -21,7 +20,7 @@ const PLAN_COLORS = {
 };
 
 const PLAN_RANK = {
-    'free': 0, 'basic': 1, 'pro': 2, 'enterprise': 3
+    'free': 0, 'basic': 1, 'pro': 2, 'premium': 3, 'enterprise': 4
 };
 
 export default function SubscriptionPage() {
@@ -41,22 +40,59 @@ export default function SubscriptionPage() {
 
     const { refreshUser } = useAuth();
 
+    const loadRazorpayScript = () => {
+        return new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
+        });
+    };
+
     const fetchPlans = useCallback(async () => {
         setLoadingPlans(true);
         try {
-            const res = await mockApi.get('/subscriptions?active=true');
+            const res = await api.get('/plans');
             if (res.data?.success) {
-                setPlans(res.data.data.results || []);
+                // Group plans by name to handle monthly/yearly prices in the same card
+                const rawPlans = res.data.data || [];
+                const grouped = {};
+                
+                rawPlans.forEach(p => {
+                    const name = p.name;
+                    if (!grouped[name]) {
+                        grouped[name] = {
+                            ...p,
+                            id: p._id,
+                            monthlyPrice: p.billingCycle === 'monthly' ? p.price : 0,
+                            yearlyPrice: p.billingCycle === 'yearly' ? p.price : 0,
+                            monthlyId: p.billingCycle === 'monthly' ? p._id : null,
+                            yearlyId: p.billingCycle === 'yearly' ? p._id : null
+                        };
+                    } else {
+                        if (p.billingCycle === 'monthly') {
+                            grouped[name].monthlyPrice = p.price;
+                            grouped[name].monthlyId = p._id;
+                        }
+                        if (p.billingCycle === 'yearly') {
+                            grouped[name].yearlyPrice = p.price;
+                            grouped[name].yearlyId = p._id;
+                        }
+                    }
+                });
+                
+                setPlans(Object.values(grouped).sort((a,b) => (PLAN_RANK[a.name.toLowerCase()] || 0) - (PLAN_RANK[b.name.toLowerCase()] || 0)));
             }
-        } catch (e) { console.error(e); } finally { setLoadingPlans(false); }
+        } catch (e) { 
+            console.error('Error fetching plans:', e);
+            setPlans(subscriptionData.INITIAL_PLANS);
+        } finally { setLoadingPlans(false); }
     }, []);
 
     const fetchBillingHistory = useCallback(async () => {
         try {
-            const res = await mockApi.get('/billing/my-transactions?limit=20');
-            if (res.data?.success) {
-                setBillingLogs(res.data.data.results || []);
-            }
+            // Placeholder for real billing history if available
         } catch (e) { console.error(e); }
     }, []);
 
@@ -66,12 +102,10 @@ export default function SubscriptionPage() {
     }, [fetchPlans, fetchBillingHistory]);
 
     const activePlanId = salon?.subscriptionPlanId || user?.subscriptionPlanId;
-    const currentPlanName = (salon?.status === 'active') ? (salon?.subscriptionPlan || user?.subscriptionPlan || '') : '';
+    const currentPlanName = salon?.subscriptionPlan || '';
     const displayPlans = (plans && plans.length > 0) ? plans : subscriptionData.INITIAL_PLANS;
     
     const currentPlan = displayPlans.find(p => {
-        const pid = p._id || p.id;
-        if (activePlanId && pid === activePlanId) return true;
         if (currentPlanName && p.name?.toLowerCase() === currentPlanName.toLowerCase()) return true;
         return false;
     }) || null;
@@ -85,18 +119,69 @@ export default function SubscriptionPage() {
     };
 
     /**
-     * STANDALONE UPGRADE: Razorpay removed.
+     * RAZORPAY INTEGRATION
      */
     const handleUpgrade = async (plan) => {
-        setUpgrading(plan._id || plan.id);
+        const resScript = await loadRazorpayScript();
+        if (!resScript) {
+            alert('Razorpay SDK failed to load. Are you online?');
+            return;
+        }
+
+        const planToPurchaseId = billingCycle === 'monthly' ? plan.monthlyId : plan.yearlyId;
+        if (!planToPurchaseId) {
+            alert('This plan variant is not available currently.');
+            return;
+        }
+
+        setUpgrading(plan.id);
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            setShowSuccess(true);
-            if (refreshUser) await refreshUser();
-            if (fetchBillingHistory) await fetchBillingHistory();
-            setTimeout(() => setShowSuccess(false), 5000);
+            // 1. Create Order
+            const { data } = await api.post('/payments/create-order', {
+                planId: planToPurchaseId,
+                billingCycle
+            });
+
+            if (!data.success) throw new Error(data.message);
+
+            const options = {
+                key: data.data.key,
+                amount: data.data.amount,
+                currency: data.data.currency,
+                name: "Wapixo Salon CRM",
+                description: `Upgrade to ${plan.name} (${billingCycle})`,
+                order_id: data.data.orderId,
+                handler: async (response) => {
+                    try {
+                        // 2. Verify Payment
+                        const verifyRes = await api.post('/payments/verify', response);
+                        if (verifyRes.data.success) {
+                            setShowSuccess(true);
+                            if (refreshUser) await refreshUser();
+                            // Refresh page to show new status
+                            window.location.reload();
+                        }
+                    } catch (err) {
+                        console.error('Verification error:', err);
+                        alert('Payment verification failed. Please contact support.');
+                    }
+                },
+                prefill: {
+                    name: user?.name,
+                    email: user?.email,
+                    contact: salon?.phone
+                },
+                theme: {
+                    color: "#B4912B"
+                }
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+
         } catch (error) {
             console.error('Upgrade failed:', error);
+            alert(error.response?.data?.message || 'Something went wrong');
         } finally {
             setUpgrading(null);
         }
@@ -137,105 +222,139 @@ export default function SubscriptionPage() {
                 )}
             </AnimatePresence>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 border border-border shadow-sm">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary/10 flex items-center justify-center"><Crown className="w-4 h-4 text-primary" /></div>
-                    <div>
-                        <h1 className="text-3xl font-bold text-text tracking-tight">Subscription</h1>
-                        <p className="text-sm text-text-muted font-medium mt-0.5">Plan & Lifecycle Management</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-1.5 h-6 bg-[#B4912B] rounded-full" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Subscription Management</span>
                     </div>
+                    <h1 className="text-4xl font-black text-text tracking-tighter uppercase italic leading-none">
+                        Our <span className="text-text-muted opacity-50">Plans.</span>
+                    </h1>
                 </div>
-                <div className="flex items-center gap-2 bg-surface p-1 border border-border">
-                    <button onClick={() => setBillingCycle('monthly')} className={`px-5 py-2 text-[11px] font-bold uppercase tracking-wider transition-all rounded-lg ${billingCycle === 'monthly' ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}>Monthly</button>
-                    <button onClick={() => setBillingCycle('yearly')} className={`px-5 py-2 text-[11px] font-bold uppercase tracking-wider transition-all relative rounded-lg ${billingCycle === 'yearly' ? 'bg-white text-text shadow-sm' : 'text-text-muted hover:text-text'}`}>Yearly<span className="absolute -top-2 -right-1 bg-emerald-500 text-[8px] text-white px-1.5 py-0.5 font-bold rounded-sm">20% OFF</span></button>
+
+                <div className="flex items-center gap-1 bg-surface p-1.5 border border-border rounded-2xl shadow-inner">
+                    <button 
+                        onClick={() => setBillingCycle('monthly')} 
+                        className={`px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${billingCycle === 'monthly' ? 'bg-[#B4912B] text-white shadow-lg shadow-[#B4912B]/20' : 'text-text-muted hover:text-text hover:bg-white/50'}`}
+                    >
+                        Monthly
+                    </button>
+                    <button 
+                        onClick={() => setBillingCycle('yearly')} 
+                        className={`px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 relative rounded-xl ${billingCycle === 'yearly' ? 'bg-[#B4912B] text-white shadow-lg shadow-[#B4912B]/20' : 'text-text-muted hover:text-text hover:bg-white/50'}`}
+                    >
+                        Yearly
+                        <span className="absolute -top-2 -right-2 bg-emerald-500 text-[8px] text-white px-2 py-0.5 font-black rounded-full shadow-sm animate-bounce">
+                            -20%
+                        </span>
+                    </button>
                 </div>
             </div>
 
-            <div className="bg-white border border-border p-6 rounded-2xl relative overflow-hidden group shadow-sm">
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-1">
-                        <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Active Protocol</span>
-                        <h2 className="text-3xl font-bold text-text tracking-tight">{currentPlan ? currentPlan.name : 'No Active Plan'}</h2>
-                    </div>
-                    <div className="flex gap-8 border-l border-border pl-8">
-                        <div><p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Outlet Limit</p><p className="text-xl font-bold text-text tracking-tight">{currentPlan ? currentPlan.limits?.outletLimit : '0'} UNITS</p></div>
-                        <div className="text-right flex flex-col items-end gap-2">
-                            <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">Next Billing</p>
-                            <p className="text-xl font-bold text-text tracking-tight">{currentPlan ? `₹${(billingCycle === 'monthly' ? currentPlan.monthlyPrice : currentPlan.yearlyPrice).toLocaleString()}` : 'N/A'}</p>
-                            {!user?.tenantId?.isCancelled && (
-                                <button onClick={() => setShowCancelModal(true)} className="text-[10px] font-bold text-rose-500 hover:text-rose-700 uppercase tracking-widest border-b border-rose-200">Cancel Subscription</button>
-                            )}
+            {/* Current Plan Banner */}
+            <div className="relative group mb-12">
+                <div className="absolute inset-0 bg-gradient-to-r from-[#B4912B]/20 via-transparent to-transparent rounded-[2.5rem] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="relative bg-white border border-border p-10 rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#B4912B]/5 to-transparent rounded-full -translate-y-1/2 translate-x-1/2" />
+                    
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-10">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-[#B4912B]/10 flex items-center justify-center border border-[#B4912B]/20">
+                                    <Crown className="w-6 h-6 text-[#B4912B]" strokeWidth={1.5} />
+                                </div>
+                                <div className="space-y-0.5">
+                                    <span className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] block">Your Current Plan</span>
+                                    <h2 className="text-4xl font-black text-text tracking-tighter uppercase italic">{currentPlan ? currentPlan.name : 'No Active Plan'}</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-12 md:border-l border-border md:pl-12">
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Outlet Limit</p>
+                                <p className="text-2xl font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : '0'} <span className="text-sm font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Renewal Amount</p>
+                                <div className="space-y-1">
+                                    <p className="text-2xl font-black text-text tracking-tighter">
+                                        ₹{currentPlan ? (billingCycle === 'monthly' ? currentPlan.monthlyPrice : (currentPlan.yearlyPrice || 0)).toLocaleString() : '0'}
+                                    </p>
+                                    {!user?.tenantId?.isCancelled && (
+                                        <button onClick={() => setShowCancelModal(true)} className="text-[9px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-widest border-b border-rose-100 transition-colors">Cancel Subscription</button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <AnimatePresence>
-                {showCancelModal && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white max-w-md w-full p-8 rounded-3xl shadow-2xl relative border border-border">
-                            <div className="space-y-6">
-                                <h3 className="text-2xl font-bold text-text tracking-tight">We're sorry to see you go</h3>
-                                <div className="space-y-3">
-                                    {['too_expensive', 'missing_features', 'going_offline', 'other'].map(id => (
-                                        <label key={id} className={`flex items-start gap-4 p-4 border rounded-2xl cursor-pointer transition-all ${cancelReason === id ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'}`}>
-                                            <input type="radio" checked={cancelReason === id} onChange={() => setCancelReason(id)} className="mt-1 accent-primary" />
-                                            <span className="text-sm font-bold capitalize">{id.replace('_', ' ')}</span>
-                                        </label>
-                                    ))}
+            {/* Plans Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {displayPlans.map((plan) => {
+                    const isCurrent = currentPlanName?.toLowerCase() === plan.name?.toLowerCase();
+                    const rankName = plan.name?.toLowerCase();
+
+                    return (
+                        <div 
+                            key={plan.id} 
+                            className={`group relative bg-white border rounded-[2rem] p-8 flex flex-col gap-8 transition-all duration-500 hover:-translate-y-2 ${isCurrent ? 'ring-2 ring-[#B4912B] shadow-2xl shadow-[#B4912B]/10' : 'hover:shadow-xl border-border'}`}
+                        >
+                            {isCurrent && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#B4912B] text-white text-[9px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-lg">
+                                    Active Now
                                 </div>
-                                <div className="pt-4 flex gap-3">
-                                    <button onClick={() => setShowCancelModal(false)} className="flex-1 py-4 text-sm font-bold bg-surface rounded-2xl">Keep</button>
-                                    <button onClick={handleCancelSubscription} disabled={cancelling} className="flex-3 py-4 text-sm font-bold text-white bg-rose-500 rounded-2xl">Confirm</button>
+                            )}
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-2xl font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
+                                    {plan.popular && <Sparkles className="w-5 h-5 text-[#B4912B] animate-pulse" />}
+                                </div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-black tracking-tighter">₹{(billingCycle === 'monthly' ? plan.monthlyPrice : (plan.yearlyPrice || 0)).toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
                                 </div>
                             </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {displayPlans.map((plan) => (
-                    <div key={plan.id} className="bg-white border rounded-2xl p-4 flex flex-col gap-4">
-                        <h4 className="text-xl font-bold">{plan.name}</h4>
-                        <div className="text-4xl font-bold">₹{(billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice).toLocaleString()}</div>
-                        <ul className="space-y-1.5 pt-2">
-                            {subscriptionData.ALL_FEATURES.slice(0, 6).map(feat => (
-                                <li key={feat.key} className="flex items-center gap-2 text-[11px] font-bold text-text-secondary"><CheckCircle className="w-2.5 h-2.5 text-primary" />{feat.label}</li>
-                            ))}
-                        </ul>
-                        <button onClick={() => handleUpgrade(plan)} className="w-full py-3 bg-text text-white text-[10px] font-black uppercase rounded-lg">Upgrade Now</button>
-                    </div>
-                ))}
+                            <div className="h-px bg-border group-hover:bg-[#B4912B]/20 transition-colors" />
+
+                            <ul className="space-y-4 flex-1">
+                                {[
+                                    { icon: Users, label: `${plan.limits?.staffLimit || 0} Staff Members` },
+                                    { icon: Store, label: `${plan.limits?.outletLimit || 0} Salon Branches` },
+                                    { icon: MessageSquare, label: `${plan.limits?.whatsappLimit || 0} AI Automations` },
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-3">
+                                        <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center group-hover:bg-white transition-colors border border-transparent group-hover:border-border">
+                                            <item.icon className="w-3.5 h-3.5 text-text-muted group-hover:text-[#B4912B] transition-colors" strokeWidth={2} />
+                                        </div>
+                                        <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider">{item.label}</span>
+                                    </li>
+                                ))}
+                            </ul>
+
+                            <button 
+                                onClick={() => handleUpgrade(plan)} 
+                                disabled={isCurrent || upgrading === plan.id}
+                                className={`w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-lg ${
+                                    isCurrent 
+                                    ? 'bg-surface text-text-muted cursor-default' 
+                                    : upgrading === plan.id 
+                                        ? 'bg-[#B4912B]/50 text-white cursor-wait'
+                                        : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
+                                }`}
+                            >
+                                {isCurrent ? 'Current Plan' : upgrading === plan.id ? 'Processing...' : 'Upgrade Now'}
+                            </button>
+                        </div>
+                    );
+                })}
             </div>
 
-            <div className="bg-white border border-border p-3 shadow-sm">
-                <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">Deep Specifications</h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead><tr className="bg-surface"><th className="p-4 border border-border text-left text-xs font-bold uppercase tracking-wider">Protocol Attributes</th>{displayPlans.map(p => (<th key={p.id} className="p-4 border border-border text-center text-xs font-bold uppercase tracking-wider">{p.name}</th>))}</tr></thead>
-                        <tbody className="text-[11px] font-medium">
-                            {subscriptionData.ALL_FEATURES.map(feat => (
-                                <tr key={feat.key}><td className="p-3 border border-border text-text-secondary uppercase font-bold text-[10px] tracking-tight">{feat.label}</td>{displayPlans.map(p => (<td key={p.id} className="p-2 border border-border text-center">{p.features?.[feat.key] ? <CheckCircle className="w-3 h-3 text-emerald-500 mx-auto" /> : <XCircle className="w-3 h-3 text-rose-300 mx-auto opacity-20" />}</td>))}</tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div className="bg-white border border-border p-4 rounded-2xl shadow-sm">
-                <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">Billing Audit Log</h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                        <thead><tr className="bg-surface"><th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">ID</th><th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Date</th><th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Amount</th><th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Status</th><th className="p-3 border border-border text-left text-xs font-bold uppercase tracking-wider">Action</th></tr></thead>
-                        <tbody className="text-[11px] font-bold font-sans">
-                            {displayBillingHistory.map(item => (
-                                <tr key={item.id} className="hover:bg-surface/50"><td className="p-3 border border-border">{item.id}</td><td className="p-3 border border-border">{item.date}</td><td className="p-3 border border-border">{item.amount}</td><td className="p-3 border border-border"><span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700">{item.status}</span></td><td className="p-3 border border-border"><button onClick={handleDownloadInvoice} className="text-primary font-bold">Inbound</button></td></tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     );
 }

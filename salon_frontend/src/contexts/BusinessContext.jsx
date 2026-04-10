@@ -7,6 +7,7 @@ const BusinessContext = createContext({
     salon: null, outlets: [], staff: [], services: [], categories: [], products: [],
     customers: [], bookings: [], feedbacks: [], suppliers: [], segments: [], shifts: [], catalogue: null,
     fetchCustomers: async () => {}, fetchSegments: async () => {}, fetchFeedbacks: async () => {},
+    fetchServices: async () => {}, fetchBookings: async () => {}, fetchProducts: async () => {}, fetchSuppliers: async () => {},
     addCustomer: async () => {}, updateCustomer: async () => {}, deleteCustomer: async () => {},
     addSegment: async () => {}, deleteSegment: async () => {},
     updateFeedback: async () => {}, archiveFeedback: async () => {}, fetchSegmentCustomers: async () => [],
@@ -66,36 +67,52 @@ export function BusinessProvider({ children }) {
 
     const initializationRef = useRef(false);
 
+    const fetchServices = useCallback(async () => {
+        try {
+            const r = await api.get('/services');
+            setServices(r.data?.data || r.data?.results || r.data || []);
+        } catch { setServices([]); }
+    }, []);
+
+    const fetchBookings = useCallback(async () => {
+        try {
+            const r = await api.get('/bookings');
+            setBookings(r.data?.results || r.data?.data || r.data || []);
+        } catch { setBookings([]); }
+    }, []);
+
+    const fetchProducts = useCallback(async () => {
+        try {
+            const r = await api.get('/products');
+            setProducts(r.data?.results || r.data || []);
+        } catch { setProducts([]); }
+    }, []);
+
+    const fetchSuppliers = useCallback(async () => {
+        try {
+            const r = await api.get('/suppliers');
+            setSuppliers(r.data?.data || r.data || []);
+        } catch { setSuppliers([]); }
+    }, []);
+
     const fetchCustomerInitialData = useCallback(async (force = false) => {
         if (initializationRef.current && !force) return;
         initializationRef.current = true;
         try {
-            const [t, o, s, b, c, cat, p, sup, sh] = await Promise.all([
+            // Core Salon & Outlets only
+            const [t, o] = await Promise.all([
                 api.get('/salons/me'),
-                api.get('/outlets'),
-                api.get('/users'),
-                api.get('/bookings'),
-                api.get('/services'),
-                api.get('/services/categories'),
-                api.get('/products'),
-                api.get('/suppliers'),
-                api.get('/shifts')
+                api.get('/salons')
             ]);
             if (t.data.success) setSalon(t.data.data);
             setOutlets(o.data?.data || o.data || []);
-            setStaff(s.data?.data || s.data?.results || s.data || []);
-            setBookings(b.data?.results || b.data?.data || b.data || []);
-            setServices(c.data?.results || c.data || []);
-            setCategories(cat.data?.data || cat.data || []);
-            setProducts(p.data?.results || p.data || []);
-            setSuppliers(sup.data?.data || sup.data || []);
-            setShifts(sh.data?.data || sh.data || []);
-            await Promise.all([fetchCustomers(), fetchSegments(), fetchFeedbacks()]);
+            
+            // Other modules like customers, staff, etc. should be fetched by their respective pages
         } catch (err) {
             console.error("[BusinessContext] Failed to fetch initial data", err);
             initializationRef.current = false;
         }
-    }, [fetchCustomers, fetchSegments, fetchFeedbacks]);
+    }, []);
 
     useEffect(() => {
         if (isAuthenticated && user?.role !== 'superadmin') {
@@ -135,7 +152,7 @@ export function BusinessProvider({ children }) {
             const { lat, lng, radius } = params || {};
             const url = (lat != null && lng != null) 
                 ? `/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-                : `/outlets`;
+                : `/salons`;
             const res = await api.get(url);
             const data = res.data?.data || res.data || [];
             setOutlets(data);
@@ -177,6 +194,7 @@ export function BusinessProvider({ children }) {
         addSupplier, updateSupplier, deleteSupplier,
         addOutlet,
         fetchCustomerInitialData,
+        fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
         addStaff,
         updateStaff,
         deleteStaff,
@@ -189,6 +207,7 @@ export function BusinessProvider({ children }) {
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
         bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
         shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, fetchCustomerInitialData,
+        fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff, fetchShifts, addShift, updateShift
     ]);
 

@@ -6,7 +6,7 @@ import {
     X, Send, RefreshCw, User as UserIcon, MoreHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -29,12 +29,6 @@ const CATEGORY_STYLES = {
     'Account Access': 'text-amber-600 bg-amber-50 border-amber-100',
 };
 
-const FAQS = [
-    { q: "How do I change my subscription plan?", a: "You can upgrade or downgrade your plan from the 'Subscription & Plans' section in the sidebar." },
-    { q: "Can I use the app offline?", a: "Wapixo is cloud-based and requires an active internet connection to sync data across devices." },
-    { q: "How to add multiple outlets?", a: "Multi-outlet support is available in our Business and Enterprise plans. Contact support to enable it." },
-];
-
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function SupportPage() {
@@ -43,7 +37,7 @@ export default function SupportPage() {
     const isOwner = userRole === 'admin';
     const canEscalate = userRole === 'manager';
 
-    const [faqs, setFaqs] = useState(FAQS);
+    const [faqs, setFaqs] = useState([]);
     const [tickets, setTickets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -63,9 +57,10 @@ export default function SupportPage() {
 
     const fetchFAQs = async () => {
         try {
-            const response = await mockApi.get('/cms');
-            if (response.data && response.data.support_faqs) {
-                setFaqs(response.data.support_faqs);
+            const response = await api.get('/settings');
+            const data = response.data?.data;
+            if (data && data.supportFaqs) {
+                setFaqs(data.supportFaqs);
             }
         } catch (error) {
             console.error('Failed to fetch FAQs:', error);
@@ -85,7 +80,7 @@ export default function SupportPage() {
     const fetchTickets = async () => {
         try {
             setLoading(true);
-            const response = await mockApi.get('/support/tickets');
+            const response = await api.get('/tickets');
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -119,7 +114,7 @@ export default function SupportPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await mockApi.post('/support/tickets', form);
+            const response = await api.post('/tickets', form);
             if (response.data.success) {
                 setTickets([response.data.data, ...tickets]);
                 setShowModal(false);
@@ -136,7 +131,7 @@ export default function SupportPage() {
         try {
             setLoadingDetail(true);
             setSelectedTicket({ _id: id }); // Show drawer immediately with loading state
-            const response = await mockApi.get(`/support/tickets/${id}`);
+            const response = await api.get(`/tickets/${id}`);
             if (response.data.success) {
                 setSelectedTicket(response.data.data);
             }
@@ -154,7 +149,7 @@ export default function SupportPage() {
 
         try {
             setSending(true);
-            const response = await mockApi.post(`/support/tickets/${selectedTicket._id}/responses`, { message: reply });
+            const response = await api.post(`/tickets/${selectedTicket._id}/responses`, { message: reply });
             if (response.data.success) {
                 setSelectedTicket(response.data.data);
                 setReply('');
@@ -170,7 +165,7 @@ export default function SupportPage() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const response = await mockApi.patch(`/support/tickets/${id}`, { status });
+            const response = await api.patch(`/tickets/${id}`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? response.data.data : t));
                 if (selectedTicket?._id === id) {

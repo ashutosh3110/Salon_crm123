@@ -43,12 +43,6 @@ const menuItems = [
         badge: null,
     },
     {
-        label: 'Website Editor',
-        icon: Layout,
-        path: '/superadmin/cms',
-        badge: null,
-    },
-    {
         label: 'Articles & News',
         icon: FileText,
         path: '/superadmin/blogs',

@@ -37,8 +37,13 @@ export default function ServicesPage({ tab = 'list' }) {
         deleteCategory,
         toggleCategoryStatus,
         servicesLoading,
-        categoriesLoading
+        categoriesLoading,
+        fetchServices
     } = useBusiness();
+
+    React.useEffect(() => {
+        fetchServices();
+    }, [fetchServices]);
 
     const categoryStats = useMemo(() => {
         return categories.map((cat, i) => ({

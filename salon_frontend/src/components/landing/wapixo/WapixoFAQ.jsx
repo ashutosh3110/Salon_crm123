@@ -89,9 +89,11 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
     );
 };
 
-export default function WapixoFAQ() {
+export default function WapixoFAQ({ data }) {
     const { theme } = useTheme();
-    const [openId, setOpenId] = useState(1);
+    const [openId, setOpenId] = useState(data?.[0]?.id || 1);
+
+    const displayFaqs = (data && data.length > 0) ? data : faqs;
 
     return (
         <section style={{
@@ -130,10 +132,10 @@ export default function WapixoFAQ() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.2 }}
                 >
-                    {faqs.map((faq) => (
+                    {displayFaqs.map((faq) => (
                         <FAQItem
                             key={faq.id}
-                            faq={faq}
+                            faq={{ question: faq.question || faq.q, answer: faq.answer || faq.a }}
                             isOpen={openId === faq.id}
                             toggle={() => setOpenId(openId === faq.id ? null : faq.id)}
                         />

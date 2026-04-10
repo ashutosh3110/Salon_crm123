@@ -41,7 +41,11 @@ import { maskPhone } from '../../utils/phoneUtils';
 export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { customers: rawCustomers, addCustomer, deleteCustomer } = useBusiness();
+    const { customers: rawCustomers, addCustomer, deleteCustomer, fetchCustomers } = useBusiness();
+    
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
     
     // Safety Fix: Ensuring customers is always an array for filtering
     const customers = Array.isArray(rawCustomers) ? rawCustomers : (rawCustomers?.results || rawCustomers?.data || []);

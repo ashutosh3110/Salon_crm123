@@ -7,51 +7,8 @@ import {
     MousePointer2, Share2, SearchCode, Megaphone, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
-const CATEGORIES = ["Growth", "Marketing", "Operations", "Insights", "Product"];
-
-const INITIAL_POSTS = [
-    {
-        id: 1,
-        category: "Growth",
-        title: "How to Scale Your Salon to Multiple Outlets",
-        slug: "scale-your-salon-multi-outlet",
-        excerpt: "Learn the essential strategies for managing operations across different locations without losing quality.",
-        image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=800",
-        date: "Feb 15, 2026",
-        status: "published",
-        isFeatured: true,
-        author: "Wapixo HQ",
-        reads: 2450
-    },
-    {
-        id: 2,
-        category: "Marketing",
-        title: "Automated WhatsApp Marketing for Beauty Businesses",
-        slug: "automated-whatsapp-marketing",
-        excerpt: "Discover how automated reminders and campaigns can increase your booking rate by up to 40%.",
-        image: "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?auto=format&fit=crop&q=80&w=800",
-        date: "Feb 10, 2026",
-        status: "published",
-        isFeatured: false,
-        author: "Wapixo HQ",
-        reads: 1890
-    },
-    {
-        id: 3,
-        category: "Operations",
-        title: "The Future of POS in the Salon Industry",
-        slug: "future-of-pos-salon",
-        excerpt: "Why traditional billing is dead and how modern cloud-based systems are changing the game.",
-        image: "https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&q=80&w=800",
-        date: "Feb 05, 2026",
-        status: "draft",
-        isFeatured: false,
-        author: "Business Lead",
-        reads: 0
-    }
-];
 
 export default function SABlogPage() {
     const [posts, setPosts] = useState([]);
@@ -73,7 +30,7 @@ export default function SABlogPage() {
     const fetchPosts = async () => {
         try {
             setLoading(true);
-            const { data } = await mockApi.get('/blogs');
+            const { data } = await api.get('/blogs');
             setPosts(data);
         } catch (err) {
             console.error('Failed to fetch posts:', err);
@@ -93,7 +50,7 @@ export default function SABlogPage() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to decommission this editorial? This action is irreversible.")) {
             try {
-                await mockApi.delete(`/blogs/${id}`);
+                await api.delete(`/blogs/${id}`);
                 setPosts(posts.filter(p => p._id !== id));
                 showToast("Article deleted.");
             } catch (err) {
@@ -122,7 +79,7 @@ export default function SABlogPage() {
             if (selectedImage) {
                 const imageFormData = new FormData();
                 imageFormData.append('image', selectedImage);
-                const { data: uploadRes } = await mockApi.post('/blogs/upload-image', imageFormData, {
+                const { data: uploadRes } = await api.post('/blogs/upload-image', imageFormData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 imageUrl = uploadRes.url;
@@ -131,8 +88,6 @@ export default function SABlogPage() {
             const postData = {
                 title: formData.get('title'),
                 slug: formData.get('slug'),
-                category: formData.get('category'),
-                excerpt: formData.get('excerpt'),
                 content: formData.get('content'), // Need to make sure this matches textarea name
                 status: formData.get('status'),
                 isFeatured: formData.get('isFeatured') === 'on',
@@ -141,10 +96,10 @@ export default function SABlogPage() {
             };
 
             if (editingPost) {
-                const { data: updated } = await mockApi.patch(`/blogs/${editingPost._id}`, postData);
+                const { data: updated } = await api.patch(`/blogs/${editingPost._id}`, postData);
                 setPosts(posts.map(p => p._id === editingPost._id ? updated : p));
             } else {
-                const { data: created } = await mockApi.post('/blogs', postData);
+                const { data: created } = await api.post('/blogs', postData);
                 setPosts([created, ...posts]);
             }
 
@@ -266,9 +221,6 @@ export default function SABlogPage() {
                                 className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000"
                             />
                             <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                <span className="px-3 py-1.5 bg-black/80 backdrop-blur-md text-white text-[9px] font-black uppercase tracking-widest">
-                                    {post.category}
-                                </span>
                                 {post.isFeatured && (
                                     <span className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-primary/30">
                                         <Sparkles size={10} /> Signature Post
@@ -307,12 +259,9 @@ export default function SABlogPage() {
                             <div className="flex items-center gap-3 text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">
                                 <Calendar size={12} /> {new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                             </div>
-                            <h3 className="text-xl font-black italic tracking-tighter uppercase leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-4">
+                            <h3 className="text-xl font-black italic tracking-tighter uppercase leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-8">
                                 {post.title}
                             </h3>
-                            <p className="text-xs text-text-muted leading-relaxed font-medium line-clamp-3 mb-8">
-                                {post.excerpt}
-                            </p>
 
                             <div className="pt-6 border-t border-border flex items-center justify-between mt-auto">
                                 <div className="flex items-center gap-3">
@@ -391,23 +340,7 @@ export default function SABlogPage() {
                                             />
                                         </div>
 
-                                        {/* SEO / Indexing */}
-                                        <div className="p-10 border border-border bg-[#fafafa] space-y-6">
-                                            <div className="flex items-center gap-3 border-b border-border pb-4">
-                                                <SearchCode size={20} className="text-primary" />
-                                                <span className="text-xs font-black uppercase tracking-widest italic">SEO Optimization Meta</span>
-                                            </div>
-                                            <div className="space-y-6">
-                                                <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-text-muted uppercase italic">Metadata Focus Title</label>
-                                                    <input className="w-full bg-white border border-border px-5 py-4 text-xs font-bold outline-none focus:border-primary" placeholder="Max 60 chars" maxLength={60} />
-                                                </div>
-                                                <div className="space-y-2">
-                                                    <label className="text-[9px] font-black text-text-muted uppercase italic">Metadata Narrative Snippet</label>
-                                                    <textarea name="seoDescription" defaultValue={editingPost?.seoDescription} className="w-full bg-white border border-border px-5 py-4 text-xs font-medium outline-none focus:border-primary min-h-[120px] resize-none leading-relaxed" placeholder="Max 160 chars" maxLength={160} />
-                                                </div>
-                                            </div>
-                                        </div>
+
                                     </div>
                                 </div>
 
@@ -442,12 +375,7 @@ export default function SABlogPage() {
 
                                     {/* Category & Status */}
                                     <div className="space-y-6 mt-8">
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Category</label>
-                                            <select name="category" defaultValue={editingPost?.category || "Growth"} className="w-full bg-white border border-border px-5 py-4 text-xs font-black uppercase outline-none cursor-pointer focus:ring-2 ring-primary/10 transition-all appearance-none">
-                                                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-                                            </select>
-                                        </div>
+
                                         <div className="space-y-2">
                                             <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Status</label>
                                             <select name="status" defaultValue={editingPost?.status || "published"} className="w-full bg-white border border-border px-5 py-4 text-xs font-black uppercase outline-none cursor-pointer focus:ring-2 ring-primary/10 transition-all appearance-none">
@@ -461,16 +389,6 @@ export default function SABlogPage() {
                                         </div>
                                     </div>
 
-                                    {/* Excerpt */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Short Summary</label>
-                                        <textarea
-                                            name="excerpt"
-                                            defaultValue={editingPost?.excerpt}
-                                            className="w-full bg-white border border-border p-6 text-xs font-bold leading-relaxed focus:border-primary outline-none transition-all h-[180px] resize-none shadow-sm placeholder:italic"
-                                            placeholder="Provide a short summary of this article..."
-                                        />
-                                    </div>
 
                                     {/* Action Hub */}
                                     <div className="pt-10 border-t border-border space-y-4">

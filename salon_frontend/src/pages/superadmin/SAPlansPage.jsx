@@ -4,19 +4,35 @@ import {
     Crown, X, ChevronDown, Zap, Users, Home, MessageSquare,
     HardDrive, Activity, BarChart2, Smartphone, Heart, Target,
     Star, Package, Flame, DollarSign, ArrowRight, Info,
-    ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard
+    ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard,
+    Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import api from '../../services/api';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
-/* ─── Feature definitions ─────────────────────────────────────────────── */
-const ALL_FEATURES = subscriptionData.ALL_FEATURES.map(f => ({
-    ...f,
-    icon: {
-        CreditCard, Calendar, Package, Heart, Target, Users, Smartphone, DollarSign, BarChart2, MessageSquare, Star, Activity
-    }[f.icon] || CreditCard
-}));
+/* ─── Feature Icon Mapping ────────────────────────────────────────────── */
+const GET_FEATURE_ICON = (key) => {
+    const icons = {
+        pos: Zap,
+        appointments: Calendar,
+        inventory: Package,
+        marketing: Megaphone,
+        payroll: Briefcase,
+        crm: Users,
+        loyalty: Crown,
+        finance: DollarSign,
+        mobileApp: Smartphone,
+        whatsapp: MessageSquare,
+        reports: BarChart2,
+        feedback: Star,
+        cms: Layout,
+        inquiries: ClipboardList,
+        reminders: Bell,
+        setup: UserCog
+    };
+    return icons[key] || CreditCard;
+};
 
 /* ─── Mock plan data ─────────────────────────────────────────────────── */
 const INITIAL_PLANS = subscriptionData.INITIAL_PLANS;
@@ -31,22 +47,19 @@ const COLOR = {
 
 /* ─── Empty plan template ────────────────────────────────────────────── */
 const EMPTY_PLAN = {
-    id: '', name: '', tag: '', color: 'blue', active: true, popular: false,
+    id: '', name: '', tag: '', color: 'blue', isActive: true, popular: false,
     price: 0, 
     description: '',
     monthlyPrice: 0, yearlyPrice: 0,
-    features: { pos: false, appointments: false, inventory: false, marketing: false, payroll: false, crm: false, mobileApp: false, reports: false, whatsapp: false, loyalty: false, finance: false, feedback: false },
-    limits: { staffLimit: 10, outletLimit: 1, smsCredits: 100, storageGB: 5, apiCalls: 10000, whatsappLimit: 0 },
-    gstStatus: true,
-    gstType: 'exclusive',
-    gstRate: 18,
+    features: {},
+    limits: { staffLimit: 10, outletLimit: 1, whatsappLimit: 0 },
     salonsCount: 0,
 };
 
 /* ─── Plan card ──────────────────────────────────────────────────────── */
-function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
+function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, allFeatures = [] }) {
     const c = COLOR[plan.color] || COLOR.blue;
-    const featOn = Object.values(plan.features).filter(Boolean).length;
+    const featOn = Object.values(plan.features || {}).filter(Boolean).length;
     const featOff = Object.values(plan.features).filter(v => !v).length;
 
     return (
@@ -85,11 +98,6 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                         <div className="text-[11px] text-white/60">
                             ₹{(plan.yearlyPrice || (plan.price * 12 * 0.8) || 0).toLocaleString('en-IN')}/yr · Save {Math.round((1 - (plan.yearlyPrice || (plan.price * 12 * 0.8)) / ((plan.monthlyPrice || plan.price || 1) * 12)) * 100)}%
                         </div>
-                        {plan.gstStatus && (
-                            <div className="text-[9px] font-black uppercase tracking-widest text-white/40">
-                                {plan.gstType === 'inclusive' ? 'GST Inclusive' : `+ ${plan.gstRate}% GST Extra`}
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
@@ -109,9 +117,9 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
 
             {/* Features */}
             <div className="p-4 flex-1 space-y-1">
-                {ALL_FEATURES.map(f => (
-                    <div key={f.key} className={`flex items-center gap-2 text-xs py-0.5 ${plan.features[f.key] ? 'text-text-secondary' : 'text-text-muted line-through opacity-50'}`}>
-                        {plan.features[f.key]
+                {allFeatures.map(f => (
+                    <div key={f.key} className={`flex items-center gap-2 text-xs py-0.5 ${plan.features?.[f.key] ? 'text-text-secondary' : 'text-text-muted line-through opacity-50'}`}>
+                        {plan.features?.[f.key]
                             ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                             : <XCircle className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                         }
@@ -157,7 +165,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
 }
 
 /* ─── Plan modal ─────────────────────────────────────────────────────── */
-function PlanModal({ plan, onClose, onSave, saving }) {
+function PlanModal({ plan, onClose, onSave, saving, allFeatures = [] }) {
     const [form, setForm] = useState({ ...EMPTY_PLAN, ...plan });
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
     const setFeature = (k, v) => setForm(p => ({ ...p, features: { ...p.features, [k]: v } }));
@@ -256,46 +264,7 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             </div>
                         </div>
 
-                        {/* GST Configuration */}
-                        <div className="mt-4 p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-1.5 rounded-lg bg-white border border-slate-200">
-                                        <DollarSign className="w-3.5 h-3.5 text-slate-500" />
-                                    </div>
-                                    <span className="text-xs font-bold text-text">GST Configuration</span>
-                                </div>
-                                <label className="flex items-center gap-2 cursor-pointer select-none">
-                                    <div onClick={() => set('gstStatus', !form.gstStatus)}
-                                        className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.gstStatus ? 'bg-primary' : 'bg-slate-200'}`}
-                                        style={{ height: '22px', width: '40px' }}>
-                                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.gstStatus ? 'translate-x-[18px]' : 'translate-x-0'}`} />
-                                    </div>
-                                    <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Charge GST</span>
-                                </label>
-                            </div>
 
-                            {form.gstStatus && (
-                                <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <div>
-                                        <label className={labelCls}>GST Type</label>
-                                        <CustomDropdown
-                                            variant="form"
-                                            value={form.gstType}
-                                            onChange={v => set('gstType', v)}
-                                            options={[
-                                                { value: 'exclusive', label: 'Exclusive (Add-on)' },
-                                                { value: 'inclusive', label: 'Inclusive (Included)' },
-                                            ]}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className={labelCls}>GST Rate (%)</label>
-                                        <input type="number" min={0} max={100} className={inputCls} value={form.gstRate} onChange={e => set('gstRate', +e.target.value)} />
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                         <div className="flex items-center gap-4 mt-3">
                             <label className="flex items-center gap-2 cursor-pointer select-none">
                                 <div onClick={() => set('popular', !form.popular)}
@@ -324,28 +293,32 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             <Zap className="w-3.5 h-3.5" /> Select Features
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {ALL_FEATURES.map(f => (
-                                <label key={f.key}
-                                    className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border cursor-pointer transition-all ${form.features[f.key]
-                                        ? 'bg-emerald-50/70 border-emerald-200'
-                                        : 'bg-surface/50 border-border hover:border-slate-300'
-                                        }`}>
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${form.features[f.key] ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-                                            <f.icon className={`w-3.5 h-3.5 ${form.features[f.key] ? 'text-emerald-600' : 'text-slate-400'}`} />
+                            {allFeatures.map(f => {
+                                const Icon = GET_FEATURE_ICON(f.key);
+                                const isEnabled = !!form.features?.[f.key];
+                                return (
+                                    <label key={f.key}
+                                        className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border cursor-pointer transition-all ${isEnabled
+                                            ? 'bg-emerald-50/70 border-emerald-200'
+                                            : 'bg-surface/50 border-border hover:border-slate-300'
+                                            }`}>
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isEnabled ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+                                                <Icon className={`w-3.5 h-3.5 ${isEnabled ? 'text-emerald-600' : 'text-slate-400'}`} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className={`text-xs font-bold ${isEnabled ? 'text-emerald-700' : 'text-text-secondary'}`}>{f.label}</div>
+                                                <div className="text-[10px] text-text-muted truncate">{f.desc}</div>
+                                            </div>
                                         </div>
-                                        <div className="min-w-0">
-                                            <div className={`text-xs font-bold ${form.features[f.key] ? 'text-emerald-700' : 'text-text-secondary'}`}>{f.label}</div>
-                                            <div className="text-[10px] text-text-muted truncate">{f.desc}</div>
+                                        <div onClick={() => setFeature(f.key, !isEnabled)}
+                                            className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors shrink-0 ${isEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
+                                            style={{ height: '22px', width: '40px' }}>
+                                            <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${isEnabled ? 'translate-x-[18px]' : 'translate-x-0'}`} />
                                         </div>
-                                    </div>
-                                    <div onClick={() => setFeature(f.key, !form.features[f.key])}
-                                        className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors shrink-0 ${form.features[f.key] ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                                        style={{ height: '22px', width: '40px' }}>
-                                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.features[f.key] ? 'translate-x-[18px]' : 'translate-x-0'}`} />
-                                    </div>
-                                </label>
-                            ))}
+                                    </label>
+                                );
+                            })}
                         </div>
                     </section>
 
@@ -394,6 +367,7 @@ export default function SAPlansPage() {
     const [plans, setPlans] = useState([]);
     const [statsData, setStatsData] = useState({ totalPlans: 0, activePlans: 0, totalSalons: 0, estimatedMRR: 0 });
     const [loading, setLoading] = useState(true);
+    const [featuresList, setFeaturesList] = useState([]);
     const [modal, setModal] = useState(null);   // null | plan object (for edit) | 'new'
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
@@ -411,7 +385,7 @@ export default function SAPlansPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            await Promise.all([fetchPlans(), fetchStats()]);
+            await Promise.all([fetchPlans(), fetchStats(), fetchFeatures()]);
         } catch (error) {
             console.error('Error fetching plans data:', error);
             showToast('Failed to load plans.', 'error');
@@ -434,12 +408,12 @@ export default function SAPlansPage() {
     };
 
     const fetchStats = async () => {
-        try {
-            const response = await mockApi.get('/subscriptions/stats');
-            setStatsData(response.data.data);
-        } catch (error) {
-            console.error('Error fetching subscription stats:', error);
-        }
+        // Stats are now computed dynamically from plans
+    };
+
+    const fetchFeatures = async () => {
+        const response = await api.get('/plans/features/list');
+        setFeaturesList(response.data.data || []);
     };
 
     const handleSave = async (form) => {
@@ -506,9 +480,9 @@ export default function SAPlansPage() {
         }
     };
 
-    const activePlans = plans.filter(p => p.active).length;
-    const totalSalons = plans.reduce((a, p) => a + p.salonsCount, 0);
-    const totalRevenue = plans.reduce((a, p) => a + p.salonsCount * p.monthlyPrice, 0);
+    const activePlansCt = plans.filter(p => p.isActive !== false).length;
+    const totalSalonsCt = plans.reduce((a, p) => a + (p.salonsCount || 0), 0);
+    const totalRevenueCt = plans.reduce((a, p) => a + (p.salonsCount || 0) * (p.monthlyPrice || p.price || 0), 0);
 
     return (
         <div className="space-y-6 pb-8">
@@ -537,10 +511,10 @@ export default function SAPlansPage() {
             {/* ── KPI strip ── */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Plans', value: statsData.totalPlans, icon: Package, color: 'text-primary   bg-primary/10' },
-                    { label: 'Active Plans', value: statsData.activePlans, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
-                    { label: 'Active Salons', value: statsData.totalSalons, icon: Users, color: 'text-blue-600  bg-blue-50' },
-                    { label: 'Est. Monthly Income', value: `₹${statsData.estimatedMRR.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
+                    { label: 'Total Plans', value: plans.length, icon: Package, color: 'text-primary   bg-primary/10' },
+                    { label: 'Active Plans', value: activePlansCt, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
+                    { label: 'Active Salons', value: totalSalonsCt, icon: Users, color: 'text-blue-600  bg-blue-50' },
+                    { label: 'Est. Monthly Income', value: `₹${totalRevenueCt.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border-border border shadow-sm p-4 flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-xl ${k.color} flex items-center justify-center shrink-0`}>
@@ -565,6 +539,7 @@ export default function SAPlansPage() {
                         <PlanCard
                             key={plan._id}
                             plan={plan}
+                            allFeatures={featuresList}
                             onEdit={p => setModal(p)}
                             onClone={handleClone}
                             onToggleActive={handleToggleActive}
@@ -579,6 +554,7 @@ export default function SAPlansPage() {
             {modal !== null && (
                 <PlanModal
                     plan={modal?._id ? modal : null}
+                    allFeatures={featuresList}
                     onClose={() => setModal(null)}
                     onSave={handleSave}
                     saving={saving}

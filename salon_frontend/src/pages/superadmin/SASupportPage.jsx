@@ -8,7 +8,7 @@ import {
     Plus, Trash2, Save, FileEdit, HelpCircle
 } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportUtils';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Constants ────────────────────────────────────────────────────── */
 
@@ -43,16 +43,13 @@ export default function SASupportPage() {
     const fetchFAQs = async () => {
         try {
             setLoadingFaqs(true);
-            const response = await mockApi.get('/cms');
-            if (response.data && response.data.support_faqs) {
-                setFaqs(response.data.support_faqs);
+            const response = await api.get('/settings');
+            const data = response.data?.data;
+            if (data && data.supportFaqs) {
+                setFaqs(data.supportFaqs);
             } else {
-                // Fallback / Initial empty state
-                setFaqs([
-                    { q: "How do I change my subscription plan?", a: "You can upgrade or downgrade your plan from the 'Subscription & Plans' section in the sidebar." },
-                    { q: "Can I use the app offline?", a: "Wapixo is cloud-based and requires an active internet connection to sync data across devices." },
-                    { q: "How to add multiple outlets?", a: "Multi-outlet support is available in our Business and Enterprise plans. Contact support to enable it." },
-                ]);
+                // Initial empty state if nothing exists in DB yet
+                setFaqs([]);
             }
         } catch (error) {
             console.error('Failed to fetch FAQs:', error);
@@ -64,8 +61,8 @@ export default function SASupportPage() {
     const handleSaveFAQs = async () => {
         try {
             setSavingFaqs(true);
-            const response = await mockApi.patch('/cms/support_faqs', { content: faqs });
-            if (response.status === 200 || response.status === 204 || response.data?.success) {
+            const response = await api.patch('/settings', { supportFaqs: faqs });
+            if (response.data?.success) {
                 showToast('FAQs updated successfully!');
             }
         } catch (error) {
@@ -93,7 +90,7 @@ export default function SASupportPage() {
     const fetchTickets = async () => {
         try {
             setLoadingTickets(true);
-            const response = await mockApi.get('/support/tickets');
+            const response = await api.get('/tickets');
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -106,7 +103,7 @@ export default function SASupportPage() {
 
     const updateStatus = async (id, status) => {
         try {
-            const response = await mockApi.patch(`/support/tickets/${id}`, { status });
+            const response = await api.patch(`/tickets/${id}`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? response.data.data : t));
                 showToast(`Ticket status updated to ${status}`);

@@ -199,9 +199,7 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-// @desc    Get current logged in user
-// @route   GET /api/auth/me
-// @access  Private
+    
 exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);

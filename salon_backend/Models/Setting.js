@@ -42,6 +42,10 @@ const settingSchema = new mongoose.Schema({
     faviconUrl: {
         type: String,
         default: ''
+    },
+    supportFaqs: {
+        type: Array,
+        default: []
     }
 }, {
     timestamps: true

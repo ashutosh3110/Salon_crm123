@@ -296,8 +296,8 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         ownerName: tenant?.ownerName || '',
         email: tenant?.email || '',
         phone: tenant?.phone || '',
-        city: tenant?.city || '',
-        address: tenant?.address || '',
+        city: tenant?.address?.city || tenant?.city || '',
+        address: typeof tenant?.address === 'object' ? tenant.address?.street : (tenant?.address || ''),
         description: tenant?.description || '',
         gstNumber: tenant?.gstNumber || '',
         subscriptionPlan: tenant?.subscriptionPlan || 'free',
@@ -393,29 +393,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         </div>
                     </div>
 
-                    {/* Subscription Section */}
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-2 mb-1">
-                            <div className="w-1.5 h-4 bg-amber-500 rounded-full" />
-                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">Plan & Subscription</h4>
-                        </div>
-                        <div>
-                            <label className={labelCls}>Assigned Plan</label>
-                            <CustomDropdown
-                                variant="form"
-                                value={form.subscriptionPlan}
-                                onChange={v => set('subscriptionPlan', v)}
-                                options={[
-                                    { value: 'free', label: 'Free (Default)' },
-                                    { value: 'basic', label: 'Basic' },
-                                    { value: 'pro', label: 'Pro' },
-                                    { value: 'premium', label: 'Premium' },
-                                    { value: 'enterprise', label: 'Enterprise' },
-                                ]}
-                            />
-                            <p className="text-[10px] text-text-muted mt-2">Selecting a plan will automatically apply the corresponding features and limits.</p>
-                        </div>
-                    </div>
+             
                 </div>
 
                 {/* Footer */}
@@ -849,7 +827,7 @@ export default function SATenantsPage() {
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-1 text-sm text-text-secondary">
                                                     <MapPin className="w-3.5 h-3.5 text-text-muted shrink-0" />
-                                                    {t.city}
+                                                    {t.address?.city || t.city || '—'}
                                                 </div>
                                             </td>
                                             {/* Status */}
@@ -859,14 +837,6 @@ export default function SATenantsPage() {
                                                         {sc.icon && <sc.icon className="w-3 h-3" />}
                                                         {sc.label.toUpperCase()}
                                                     </span>
-                                                    {(t.status === 'pending' || t.status === 'inactive') && (
-                                                        <button 
-                                                            onClick={() => handleApprove(t)}
-                                                            className="p-1 px-2 rounded-lg bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider hover:bg-emerald-600 transition-all shadow-sm shadow-emerald-500/20"
-                                                        >
-                                                            Approve
-                                                        </button>
-                                                    )}
                                                 </div>
                                             </td>
                                             {/* Joined */}
@@ -876,15 +846,56 @@ export default function SATenantsPage() {
                                                 </span>
                                             </td>
                                             {/* Actions */}
-                                            <td className="px-4 py-3.5 text-right">
-                                                <ActionMenu
-                                                    tenant={t}
-                                                    onEdit={(ten, type) => setModal({ mode: type === 'plan' ? 'plan' : 'edit', tenant: ten })}
-                                                    onSuspend={handleSuspend}
-                                                    onDelete={handleDelete}
-                                                    onResendCredentials={handleResendCredentials}
-                                                    onApprove={handleApprove}
-                                                />
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex items-center justify-end gap-1">
+                                                    {/* View */}
+                                                    <Link 
+                                                        to={`/superadmin/tenants/${t._id}`}
+                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-primary hover:border-primary/30 transition-all"
+                                                        title="View Profile"
+                                                    >
+                                                        <EyeIcon className="w-4 h-4" />
+                                                    </Link>
+                                                    
+                                                    {/* Edit */}
+                                                    <button 
+                                                        onClick={() => setModal({ mode: 'edit', tenant: t })}
+                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-blue-500 hover:border-blue-200 transition-all"
+                                                        title="Edit Salon"
+                                                    >
+                                                        <Edit3 className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* Approve/Deactivate */}
+                                                    {t.status === 'pending' || t.status === 'inactive' ? (
+                                                        <button 
+                                                            onClick={() => handleApprove(t)}
+                                                            className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
+                                                            title="Approve & Activate"
+                                                        >
+                                                            <CheckCircle className="w-4 h-4" />
+                                                        </button>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => handleSuspend(t)}
+                                                            className={`p-2 rounded-lg border transition-all ${t.status === 'suspended' 
+                                                                ? 'bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white' 
+                                                                : 'bg-surface border-border text-text-muted hover:text-orange-500 hover:border-orange-200'}`}
+                                                            title={t.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                                                        >
+                                                            {t.status === 'suspended' ? <RefreshCw className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                                                        </button>
+                                                    )}
+
+                                                    {/* Delete */}
+                                                    <button 
+                                                        onClick={() => handleDelete(t)}
+                                                        className="p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-red-500 hover:border-red-200 transition-all"
+                                                        title="Delete Salon"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     );

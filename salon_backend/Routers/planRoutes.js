@@ -5,8 +5,11 @@ const {
     getPlan,
     createPlan,
     updatePlan,
-    deletePlan
+    deletePlan,
+    getFeatures
 } = require('../Controllers/planController');
+
+router.get('/features/list', getFeatures);
 
 router.route('/')
     .get(getPlans)

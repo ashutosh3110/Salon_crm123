@@ -248,6 +248,9 @@ exports.getSalonStats = async (req, res) => {
 // @access  Private
 exports.getMe = async (req, res) => {
     try {
+        if (!req.user || !req.user.salonId) {
+            return res.status(400).json({ success: false, message: 'User is not associated with any salon' });
+        }
         const salon = await Salon.findById(req.user.salonId);
         if (!salon) {
             return res.status(404).json({ success: false, message: 'Salon not found' });

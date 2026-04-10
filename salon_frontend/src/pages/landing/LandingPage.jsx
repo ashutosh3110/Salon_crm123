@@ -51,7 +51,7 @@ export default function LandingPage() {
                     <WapixoPricing />
                     <WapixoBlog />
                     <WapixoTestimonials data={cmsData?.landing_testimonials} />
-                    <WapixoFAQ />
+                    <WapixoFAQ data={cmsData?.landing_faqs} />
                     <ChairSection />
                     <WapixoFooter />
                 </div>

@@ -62,6 +62,9 @@ const salonSchema = new mongoose.Schema({
         staffLimit: { type: Number, default: 0 },
         outletLimit: { type: Number, default: 0 },
         whatsappLimit: { type: Number, default: 0 }
+    },
+    subscriptionExpiry: {
+        type: Date
     }
 }, {
     timestamps: true

@@ -276,21 +276,7 @@ export default function SASettingsPage() {
                             onChange={e => setP('email', e.target.value)}
                             placeholder="admin@wapixo.com"
                         />
-                        <Field
-                            label="Phone Number"
-                            icon={Phone}
-                            type="tel"
-                            value={profile.phone}
-                            onChange={e => setP('phone', e.target.value)}
-                            placeholder="+91 XXXXX XXXXX"
-                        />
-                        <Field
-                            label="Role"
-                            icon={Shield}
-                            value={profile.role}
-                            readOnly
-                        />
-
+                    
                         <button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
@@ -417,39 +403,40 @@ export default function SASettingsPage() {
                 </SectionCard>
 
                 {/* ── Platform Configuration ── */}
-                <SectionCard
-                    title="Platform Configuration"
-                    subtitle="Global settings for the entire application"
-                    icon={Globe}
-                    iconColor="bg-blue-50 text-blue-600"
-                >
-                    <div className="space-y-6">
-                        <div className="grid sm:grid-cols-2 gap-4">
-                            <Field label="Site Name" value={platform.siteName} onChange={e => setPlat('siteName', e.target.value)} placeholder="Salon CRM" />
-                            <Field label="Currency Symbol" value={platform.currencySymbol} onChange={e => setPlat('currencySymbol', e.target.value)} placeholder="₹" />
-                        </div>
-                        <Field label="Support Email" icon={Mail} value={platform.contactEmail} onChange={e => setPlat('contactEmail', e.target.value)} />
-                        <Field label="Office Address" icon={MapPin} value={platform.address} onChange={e => setPlat('address', e.target.value)} />
-                        
-                        <div className="pt-2 border-t border-border">
-                            <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                                <Share2 className="w-3 h-3" /> Social Presence
-                            </h4>
-                            <div className="grid sm:grid-cols-2 gap-3">
-                                <Field label="Instagram" value={platform.socialLinks.instagram} onChange={e => setSocial('instagram', e.target.value)} placeholder="https://..." />
-                                <Field label="Facebook" value={platform.socialLinks.facebook} onChange={e => setSocial('facebook', e.target.value)} placeholder="https://..." />
+                <div className="lg:col-span-2">
+                    <SectionCard
+                        title="Platform Configuration"
+                        subtitle="Global settings for the entire application"
+                        icon={Globe}
+                        iconColor="bg-blue-50 text-blue-600"
+                    >
+                        <div className="space-y-6">
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <Field label="Site Name" value={platform.siteName} onChange={e => setPlat('siteName', e.target.value)} placeholder="Salon CRM" />
+                                <Field label="Support Email" icon={Mail} value={platform.contactEmail} onChange={e => setPlat('contactEmail', e.target.value)} />
                             </div>
-                        </div>
+                            <Field label="Office Address" icon={MapPin} value={platform.address} onChange={e => setPlat('address', e.target.value)} />
+                            
+                            <div className="pt-4 border-t border-border">
+                                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <Share2 className="w-3 h-3" /> Social Presence
+                                </h4>
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                    <Field label="Instagram" value={platform.socialLinks.instagram} onChange={e => setSocial('instagram', e.target.value)} placeholder="https://..." />
+                                    <Field label="Facebook" value={platform.socialLinks.facebook} onChange={e => setSocial('facebook', e.target.value)} placeholder="https://..." />
+                                </div>
+                            </div>
 
-                        <button
-                            onClick={handleSavePlatform}
-                            disabled={savingPlatform}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
-                        >
-                            {savingPlatform ? 'Saving...' : 'Update Platform Settings'}
-                        </button>
-                    </div>
-                </SectionCard>
+                            <button
+                                onClick={handleSavePlatform}
+                                disabled={savingPlatform}
+                                className="w-auto flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-blue-200 active:scale-[0.98]"
+                            >
+                                {savingPlatform ? 'Saving...' : 'Update Platform Settings'}
+                            </button>
+                        </div>
+                    </SectionCard>
+                </div>
             </div>
 
         </div>
