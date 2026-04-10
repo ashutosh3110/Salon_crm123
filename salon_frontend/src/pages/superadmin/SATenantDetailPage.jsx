@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft, Building2, MapPin, Phone, Mail, Users, Home,
@@ -96,7 +96,7 @@ export default function SATenantDetailPage() {
     const fetchTenant = async () => {
         setLoading(true);
         try {
-            const response = await mockApi.get(`/tenants/${id}`);
+            const response = await api.get(`/salons/${id}`);
             setSelectedTenant(response.data.data);
         } catch (error) {
             console.error('Error fetching tenant:', error);
@@ -145,7 +145,7 @@ export default function SATenantDetailPage() {
 
     const handlePlanChange = async (newPlanId) => {
         try {
-            await mockApi.put(`/tenants/${id}`, { subscriptionPlan: newPlanId });
+            await api.put(`/salons/${id}`, { subscriptionPlan: newPlanId });
             showToast(`Plan successfully changed to ${newPlanId.toUpperCase()}`);
             fetchTenant();
             setIsPlanModalOpen(false);
@@ -157,7 +157,7 @@ export default function SATenantDetailPage() {
 
     const handleCustomSave = async () => {
         try {
-            await mockApi.put(`/tenants/${id}`, {
+            await api.put(`/salons/${id}`, {
                 features: customForm.features,
                 limits: customForm.limits,
             });

@@ -14,7 +14,8 @@ exports.createSalon = async (req, res) => {
             email, 
             phone, 
             gstNumber, 
-            address,
+            address, // This is 'street' from frontend
+            city,
             password 
         } = req.body;
 
@@ -39,7 +40,10 @@ exports.createSalon = async (req, res) => {
             email,
             phone,
             gstNumber,
-            address,
+            address: {
+                street: address,
+                city: city
+            },
             status: 'active', // Direct approved
             isActive: true
         });
@@ -178,6 +182,34 @@ exports.deleteSalon = async (req, res) => {
         res.json({ success: true, message: 'Salon and associated users deleted' });
     } catch (err) {
         console.error('Delete error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get salon statistics
+// @route   GET /api/salons/stats
+// @access  Private/SuperAdmin
+exports.getSalonStats = async (req, res) => {
+    try {
+        const totalSalons = await Salon.countDocuments();
+        const activeCount = await Salon.countDocuments({ status: 'active' });
+        const trialCount = await Salon.countDocuments({ status: 'trial' });
+        const expiredCount = await Salon.countDocuments({ status: 'expired' });
+        const suspendedCount = await Salon.countDocuments({ status: 'suspended' });
+
+        res.json({
+            success: true,
+            data: {
+                totalSalons,
+                countsByStatus: [
+                    { _id: 'active', count: activeCount },
+                    { _id: 'trial', count: trialCount },
+                    { _id: 'expired', count: expiredCount },
+                    { _id: 'suspended', count: suspendedCount }
+                ]
+            }
+        });
+    } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

@@ -5,9 +5,11 @@ const {
     getSalons, 
     getSalon, 
     updateSalon, 
-    deleteSalon 
+    deleteSalon,
+    getSalonStats
 } = require('../Controllers/salonController');
 
+router.get('/stats', getSalonStats);
 router.post('/', createSalon);
 router.get('/', getSalons);
 router.get('/:id', getSalon);

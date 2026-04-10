@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
     CheckCircle, EyeIcon, ArrowUpRight, Trash2, LogIn,
@@ -126,32 +126,46 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials }
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-52 bg-surface border border-border rounded-2xl shadow-2xl z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-200 origin-top-right ring-1 ring-black/5">
-                    <div className="px-3 py-2 border-b border-border/50 mb-1">
-                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Salon Actions</p>
-                    </div>
-                    {actions.map((a, i) => (
-                        a.divider ? (
-                            <div key={`d-${i}`} className="h-px bg-border/50 my-1 mx-2" />
-                        ) : a.href ? (
-                            <Link key={a.label} to={a.href}
-                                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} m-1 rounded-xl`}
-                                onClick={() => setOpen(false)}>
-                                <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center shrink-0">
-                                    <a.icon className="w-3.5 h-3.5" />
-                                </div>
-                                {a.label}
-                            </Link>
-                        ) : (
-                            <button key={a.label} onClick={a.onClick}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} dark:hover:bg-surface-alt m-1 rounded-xl`}>
-                                <div className="w-7 h-7 rounded-lg bg-surface flex items-center justify-center shrink-0">
-                                    <a.icon className="w-3.5 h-3.5" />
-                                </div>
-                                {a.label}
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200" 
+                        onClick={() => setOpen(false)} 
+                    />
+                    
+                    {/* Modal Content */}
+                    <div className="relative w-full max-w-[280px] bg-surface border border-border rounded-2xl shadow-2xl py-2 animate-in zoom-in-95 fade-in duration-200">
+                        <div className="px-4 py-3 border-b border-border/50 mb-1 flex items-center justify-between">
+                            <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Salon Actions</p>
+                            <button onClick={() => setOpen(false)} className="p-1 hover:bg-surface-alt rounded-lg transition-colors">
+                                <X className="w-3.5 h-3.5 text-text-muted" />
                             </button>
-                        )
-                    ))}
+                        </div>
+                        <div className="max-h-[70vh] overflow-y-auto px-1">
+                            {actions.map((a, i) => (
+                                a.divider ? (
+                                    <div key={`d-${i}`} className="h-px bg-border/50 my-1.5 mx-3" />
+                                ) : a.href ? (
+                                    <Link key={a.label} to={a.href}
+                                        className={`flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} m-1 rounded-xl`}
+                                        onClick={() => setOpen(false)}>
+                                        <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center shrink-0 border border-border/50 shadow-sm">
+                                            <a.icon className="w-4 h-4" />
+                                        </div>
+                                        {a.label}
+                                    </Link>
+                                ) : (
+                                    <button key={a.label} onClick={a.onClick}
+                                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-all ${a.color} ${a.hover} dark:hover:bg-surface-alt m-1 rounded-xl text-left`}>
+                                        <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center shrink-0 border border-border/50 shadow-sm">
+                                            <a.icon className="w-4 h-4" />
+                                        </div>
+                                        {a.label}
+                                    </button>
+                                )
+                            ))}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -420,7 +434,7 @@ export default function SATenantsPage() {
 
     const fetchStats = async () => {
         try {
-            const response = await mockApi.get('/tenants/stats');
+            const response = await api.get('/salons/stats');
             setStats(response.data.data);
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -469,7 +483,7 @@ export default function SATenantsPage() {
                 page,
                 limit: 10
             };
-            const response = await mockApi.get('/tenants', { params });
+            const response = await api.get('/salons', { params });
             const data = response.data.data;
             if (data && data.results) {
                 setTenants(data.results);
@@ -585,10 +599,10 @@ export default function SATenantsPage() {
         setSaving(true);
         try {
             if (modal.mode === 'create') {
-                await mockApi.post('/tenants', form);
+                await api.post('/salons', form);
                 showToast(`Salon "${form.name}" created!`);
             } else {
-                await mockApi.put(`/tenants/${modal.tenant._id}`, form);
+                await api.put(`/salons/${modal.tenant._id}`, form);
                 showToast(`"${form.name}" updated!`);
             }
             await fetchTenants();
@@ -609,7 +623,7 @@ export default function SATenantsPage() {
 
     const handleQuickPlanUpdate = async (tenantId, newPlan) => {
         try {
-            await mockApi.put(`/tenants/${tenantId}`, { subscriptionPlan: newPlan });
+            await api.put(`/salons/${tenantId}`, { subscriptionPlan: newPlan });
             showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
             fetchTenants();
             setModal(null);
@@ -625,7 +639,7 @@ export default function SATenantsPage() {
         
         try {
             const newStatus = tenant.status === 'suspended' ? 'active' : 'suspended';
-            await mockApi.put(`/tenants/${tenant._id}`, { status: newStatus });
+            await api.put(`/salons/${tenant._id}`, { status: newStatus });
             showToast(`Salon ${action}d successfully.`);
             fetchTenants();
         } catch (error) {
@@ -637,7 +651,7 @@ export default function SATenantsPage() {
     const handleDelete = async (tenant) => {
         if (!confirm(`Permanently delete "${tenant.name}"? This cannot be undone.`)) return;
         try {
-            await mockApi.delete(`/tenants/${tenant._id}`);
+            await api.delete(`/salons/${tenant._id}`);
             showToast(`Salon deleted.`, 'error');
             fetchTenants();
         } catch (error) {
@@ -650,7 +664,7 @@ export default function SATenantsPage() {
         if (!confirm(`This will reset the password of "${tenant.name}" owner to "123456" and send them an email. Continue?`)) return;
         
         try {
-            const res = await mockApi.post(`/tenants/${tenant._id}/resend-credentials`);
+            const res = await api.post(`/salons/${tenant._id}/resend-credentials`);
             showToast(res.data.message);
         } catch (error) {
             console.error('Error resending credentials:', error);
