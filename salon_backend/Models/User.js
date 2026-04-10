@@ -24,9 +24,9 @@ const userSchema = new mongoose.Schema({
         enum: ['superadmin', 'admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager', 'customer'],
         default: 'customer'
     },
-    tenantId: {
+    salonId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Tenant',
+        ref: 'Salon',
         required: function() { return this.role !== 'superadmin'; }
     },
     isActive: {

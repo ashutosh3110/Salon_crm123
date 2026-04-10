@@ -11,9 +11,11 @@ app.use(cors());
 
 // Route files
 const auth = require('./Routers/authRoutes');
+const salons = require('./Routers/salonRoutes');
 
 // Mount routers
 app.use('/api/auth', auth);
+app.use('/api/salons', salons);
 
 // Root route
 app.get('/', (req, res) => {

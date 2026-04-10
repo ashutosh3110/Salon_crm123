@@ -21,14 +21,14 @@ const createSuperAdmin = async () => {
         const superAdmin = new User({
             name: 'System SuperAdmin',
             email: email,
-            password: 'superadmin123',
+            password: '123456',
             role: 'superadmin'
         });
 
         await superAdmin.save();
         console.log('SuperAdmin created successfully!');
         console.log('Email:', email);
-        console.log('Password: superadmin123');
+        console.log('Password: 123456');
 
         process.exit(0);
     } catch (err) {
