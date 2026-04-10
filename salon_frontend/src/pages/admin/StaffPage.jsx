@@ -44,7 +44,7 @@ const statusColors = {
 
 export default function StaffPage() {
     const { user } = useAuth();
-    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff, fetchStaff } = useBusiness();
+    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff, fetchStaff, roles, fetchRoles } = useBusiness();
     const { pendingExpertsCount } = useCMS();
     const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
@@ -52,7 +52,8 @@ export default function StaffPage() {
 
     useEffect(() => {
         fetchStaff();
-    }, [fetchStaff]);
+        fetchRoles();
+    }, [fetchStaff, fetchRoles]);
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [outletFilter, setOutletFilter] = useState('all');
@@ -67,7 +68,6 @@ export default function StaffPage() {
         dob: '',
         pan: '',
         address: '',
-        password: '',
         avatar: '',
         stylistBio: '',
         stylistExperience: '',
@@ -118,7 +118,7 @@ export default function StaffPage() {
             }
             setShowModal(false);
             setEditing(null);
-            setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
+            setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
         } catch (error) {
             alert('Operation failed: ' + error.message);
         } finally {
@@ -156,7 +156,6 @@ export default function StaffPage() {
             dob: u.dob || '',
             pan: u.pan || '',
             address: u.address || '',
-            password: '',
             avatar: u.avatar || '',
             stylistBio: u.stylistBio || '',
             stylistExperience: u.stylistExperience || '',
@@ -166,20 +165,20 @@ export default function StaffPage() {
     };
 
     return (
-        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8">
+        <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left">
             {/* Header - Compact */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
-                <div className="text-left">
-                    <h1 className="text-2xl font-bold text-text tracking-tight leading-none">Our Team</h1>
-                    <p className="text-[11px] font-medium text-text-muted mt-1 uppercase tracking-wider">Manage Staff & Permissions</p>
+                <div className="text-left leading-none">
+                    <h1 className="text-2xl font-black text-text tracking-tight italic uppercase">Our Team</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em] opacity-60">Manage Staff & Permissions</p>
                 </div>
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
+                        setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
                         setShowModal(true);
                     }}
-                    className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wider shadow-sm hover:bg-primary hover:text-white transition-all"
+                    className="flex items-center gap-2 bg-text text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all italic active:scale-95"
                 >
                     <Plus className="w-4 h-4" /> Add New Member
                 </button>
@@ -189,15 +188,15 @@ export default function StaffPage() {
             {pendingExpertsCount > 0 && (
                 <div 
                     onClick={() => navigate('/admin/marketing/cms')}
-                    className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all"
+                    className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-amber-500 flex items-center justify-center text-white">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white">
                             <ShieldAlert className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider leading-none mb-1">Update Required</p>
-                            <h4 className="text-sm font-semibold text-text tracking-tight">
+                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider leading-none mb-1 italic">Update Required</p>
+                            <h4 className="text-[11px] font-black text-text tracking-tight uppercase">
                                 {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Under Review
                             </h4>
                         </div>
@@ -217,14 +216,14 @@ export default function StaffPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by name or email..."
-                        className="w-full pl-9 pr-3 py-1.5 bg-surface border border-border text-[11px] font-bold focus:border-primary outline-none transition-all placeholder:text-[10px]"
+                        className="w-full pl-9 pr-3 py-2 bg-surface border border-border text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-[9px]"
                     />
                 </div>
                 <div className="flex gap-2">
                     <CustomSelect
-                        value={roleFilter === 'all' ? 'All Roles' : roleFilter.charAt(0).toUpperCase() + roleFilter.slice(1)}
+                        value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
                         onChange={(val) => setRoleFilter(val === 'All Roles' ? 'all' : val.toLowerCase())}
-                        options={['All Roles', 'Admin', 'Manager', 'Receptionist', 'Stylist']}
+                        options={['All Roles', ...roles.map(r => r.name.toUpperCase())]}
                         variant="compact"
                         className="min-w-[120px]"
                     />
@@ -446,12 +445,17 @@ export default function StaffPage() {
                                         onChange={(e) => setForm({ ...form, role: e.target.value })}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
                                     >
-                                        <option value="stylist">Stylist</option>
-                                        <option value="receptionist">Receptionist</option>
-                                        <option value="manager">Manager</option>
-                                        <option value="accountant">Accountant</option>
-                                        <option value="inventory_manager">Inventory Manager</option>
-                                        <option value="admin">Admin</option>
+                                        {roles.map(r => (
+                                            <option key={r._id} value={r.name}>{r.name.toUpperCase()}</option>
+                                        ))}
+                                        {roles.length === 0 && (
+                                            <>
+                                                <option value="stylist">Stylist</option>
+                                                <option value="receptionist">Receptionist</option>
+                                                <option value="manager">Manager</option>
+                                                <option value="admin">Admin</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
                                 <div className="space-y-1">
@@ -493,18 +497,6 @@ export default function StaffPage() {
                                         placeholder="FULL ADDRESS"
                                     />
                                 </div>
-                                {!editing && (
-                                    <div className="space-y-1 col-span-2">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Create Password</label>
-                                        <PasswordField
-                                            required
-                                            value={form.password}
-                                            onChange={(e) => setForm({ ...form, password: e.target.value })}
-                                            inputClassName="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono"
-                                            placeholder="PASSWORD"
-                                        />
-                                    </div>
-                                )}
 
                                 {form.role === 'stylist' && (
                                     <>

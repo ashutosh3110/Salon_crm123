@@ -27,7 +27,7 @@ import OutletAssignmentModal from './OutletAssignmentModal';
 import ServiceDetailsModal from './ServiceDetailsModal';
 import CategorySelectModal from './CategorySelectModal';
 
-export default function ServiceList({ services = [], onDelete, onToggleStatus }) {
+export default function ServiceList({ services = [], onDelete, onToggleStatus, onEdit, onAdd }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { outlets, fetchServices, fetchCategories, updateService, deleteService } = useBusiness();
@@ -138,7 +138,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                         </button>
 
                         <button
-                            onClick={() => navigate('/admin/services/new')}
+                            onClick={() => onAdd?.()}
                             className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all scale-active"
                         >
                             <Plus className="w-4 h-4" /> Add Service
@@ -409,7 +409,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus })
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => navigate(`/admin/services/edit/${service._id}`)}
+                                                    onClick={() => onEdit?.(service)}
                                                     className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all"
                                                     title="Edit Service"
                                                 >

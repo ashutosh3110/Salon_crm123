@@ -157,10 +157,16 @@ export default function OutletForm() {
             const found = outlets.find(o => o._id === id);
             if (found) {
                 setForm({
-                    ...form,
                     ...found,
+                    address: found.address?.street || found.address || '',
+                    city: found.address?.city || found.city || '',
+                    state: found.address?.state || found.state || '',
+                    pincode: found.address?.pincode || found.pincode || '',
+                    latitude: found.location?.coordinates?.[1] || found.latitude || null,
+                    longitude: found.location?.coordinates?.[0] || found.longitude || null,
                     images: found.images || (found.image ? [found.image] : []),
-                    chairs: found.chairs || []
+                    chairs: found.chairs || [],
+                    workingDays: found.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
                 });
             }
         }
@@ -230,21 +236,24 @@ export default function OutletForm() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
 
-        // Simulate network delay
-        setTimeout(() => {
+        try {
             if (isEdit) {
-                updateOutlet(id, form);
+                await updateOutlet(id, form);
             } else {
-                addOutlet(form);
+                await addOutlet(form);
             }
-            setSaving(false);
             navigate('/admin/outlets');
-        }, 500);
+        } catch (err) {
+            console.error("Outlet save failed:", err);
+            setError(err.response?.data?.message || err.message || "Something went wrong while saving the outlet.");
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -588,7 +597,7 @@ export default function OutletForm() {
                                             key={day.full}
                                             type="button"
                                             onClick={() => handleDayToggle(day.full)}
-                                            className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${form.workingDays.includes(day.full)
+                                            className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${(form.workingDays || []).includes(day.full)
                                                 ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 border border-white/20'
                                                 : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10'
                                                 }`}

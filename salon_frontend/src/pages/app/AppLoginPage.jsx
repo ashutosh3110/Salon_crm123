@@ -6,7 +6,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, User, MapPin, MapPinned, Star, ChevronRight, Search, Navigation, Scan } from 'lucide-react';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api'; // Use real API
 import PasswordField from '../../components/common/PasswordField';
 
 const slideVariants = {
@@ -87,7 +87,7 @@ export default function AppLoginPage() {
         
         try {
             const res = await api.get(url, { timeout: 30000 });
-            let data = Array.isArray(res.data) ? res.data : [];
+            let data = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
             
             // Auto-expand radius if no outlets found near
             if (data.length === 0 && lat != null && radiusKm < 25) {

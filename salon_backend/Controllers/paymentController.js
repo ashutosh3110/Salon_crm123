@@ -15,7 +15,12 @@ const razorpayInstance = () => new Razorpay({
 exports.createOrder = async (req, res) => {
     try {
         const { planId, billingCycle } = req.body;
-        const salonId = req.user.salonId;
+        // Salon owners have their own _id as salonId, Staff have a separate salonId field
+        const salonId = req.user.salonId || (req.user.role === 'admin' ? req.user._id : null);
+
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'No salon associated with this account' });
+        }
 
         const plan = await Plan.findById(planId);
         if (!plan) {
@@ -23,11 +28,15 @@ exports.createOrder = async (req, res) => {
         }
 
         // Calculate amount in paise (1 INR = 100 Paise)
-        // If billingCycle is yearly, we might want to check the plan's yearly price
-        // For now, let's assume 'price' is monthly and handled via billingCycle logic in frontend
-        // If the user wants specific prices for yearly, we use them.
+        let planPrice = 0;
+        if (billingCycle === 'yearly') {
+            planPrice = plan.yearlyPrice || (plan.monthlyPrice ? plan.monthlyPrice * 12 * 0.8 : plan.price * 12 * 0.8);
+        } else {
+            planPrice = plan.monthlyPrice || plan.price;
+        }
         
-        const amount = plan.price * 100; // Assuming plan.price is already adjusted for cycle in request or derived
+        const amount = Math.round(planPrice * 100); 
+        const displayPrice = planPrice; // For storage in Payment record
 
         const options = {
             amount: amount,
@@ -43,7 +52,7 @@ exports.createOrder = async (req, res) => {
             salonId,
             planId,
             orderId: order.id,
-            amount: plan.price,
+            amount: displayPrice,
             billingCycle,
             status: 'created'
         });

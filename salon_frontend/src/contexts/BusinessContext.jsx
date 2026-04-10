@@ -12,6 +12,7 @@ const BusinessContext = createContext({
     addSegment: async () => {}, deleteSegment: async () => {},
     updateFeedback: async () => {}, archiveFeedback: async () => {}, fetchSegmentCustomers: async () => [],
     fetchStaff: async () => {}, addStaff: async () => {}, updateStaff: async () => {}, deleteStaff: async () => {},
+    roles: [], fetchRoles: async () => {},
     setOutlets: () => {}, fetchOutlets: async () => {}, outletsLoading: false
 });
 
@@ -22,6 +23,7 @@ export function BusinessProvider({ children }) {
     const [staff, setStaff] = useState([]);
     const [services, setServices] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [roles, setRoles] = useState([]);
     const [products, setProducts] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [bookings, setBookings] = useState([]);
@@ -99,15 +101,14 @@ export function BusinessProvider({ children }) {
         if (initializationRef.current && !force) return;
         initializationRef.current = true;
         try {
-            // Core Salon & Outlets only
-            const [t, o] = await Promise.all([
-                api.get('/salons/me'),
-                api.get('/salons')
-            ]);
-            if (t.data.success) setSalon(t.data.data);
-            setOutlets(o.data?.data || o.data || []);
-            
-            // Other modules like customers, staff, etc. should be fetched by their respective pages
+            // Core Salon & Outlets
+            const t = await api.get('/salons/me');
+            if (t.data.success) {
+                setSalon(t.data.data);
+                // Fetch outlets for this salon
+                const o = await api.get('/outlets');
+                setOutlets(o.data?.data || []);
+            }
         } catch (err) {
             console.error("[BusinessContext] Failed to fetch initial data", err);
             initializationRef.current = false;
@@ -146,15 +147,11 @@ export function BusinessProvider({ children }) {
         return r.data; 
     }, []);
 
-    const fetchOutlets = useCallback(async (params) => {
+    const fetchOutlets = useCallback(async () => {
         setOutletsLoading(true);
         try {
-            const { lat, lng, radius } = params || {};
-            const url = (lat != null && lng != null) 
-                ? `/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radius}`
-                : `/salons`;
-            const res = await api.get(url);
-            const data = res.data?.data || res.data || [];
+            const res = await api.get('/outlets');
+            const data = res.data?.data || [];
             setOutlets(data);
             return data;
         } finally {
@@ -163,52 +160,173 @@ export function BusinessProvider({ children }) {
     }, []);
 
     const addOutlet = useCallback(async (d) => {
-        if (salon?.limits?.outletLimit > 0 && outlets.length >= salon.limits.outletLimit && salon.limits.outletLimit !== 999) {
-            throw new Error(`Plan Limit Reached: You can only have up to ${salon.limits.outletLimit} outlets on the ${salon.subscriptionPlan.toUpperCase()} plan.`);
-        }
-        const r = await api.post('/outlets', d);
-        setOutlets(p => [r.data, ...p]);
-        return r.data;
-    }, [salon, outlets.length]);
+        const payload = {
+            ...d,
+            address: {
+                street: d.address,
+                city: d.city,
+                state: d.state,
+                pincode: d.pincode
+            },
+            location: {
+                type: 'Point',
+                coordinates: [d.longitude || 0, d.latitude || 0]
+            }
+        };
+        const r = await api.post('/outlets', payload);
+        const newOutlet = r.data.data;
+        setOutlets(p => [newOutlet, ...p]);
+        return newOutlet;
+    }, []);
+
+    const updateOutlet = useCallback(async (id, d) => {
+        const payload = {
+            ...d,
+            address: {
+                street: d.address,
+                city: d.city,
+                state: d.state,
+                pincode: d.pincode
+            },
+            location: {
+                type: 'Point',
+                coordinates: [d.longitude || 0, d.latitude || 0]
+            }
+        };
+        const r = await api.put(`/outlets/${id}`, payload);
+        const updated = r.data.data;
+        setOutlets(p => p.map(o => o._id === id ? updated : o));
+        return updated;
+    }, []);
+
+    const deleteOutlet = useCallback(async (id) => {
+        await api.delete(`/outlets/${id}`);
+        setOutlets(p => p.filter(o => o._id !== id));
+    }, []);
 
     const addStaff = useCallback(async (d) => { 
         if (salon?.limits?.staffLimit > 0 && staff.length >= salon.limits.staffLimit && salon.limits.staffLimit !== 999) {
             throw new Error(`Plan Limit Reached: You can only have up to ${salon.limits.staffLimit} staff members on the ${salon.subscriptionPlan.toUpperCase()} plan.`);
         }
         const r = await api.post('/users', d); 
-        setStaff(p => [r.data, ...p]); 
-        return r.data; 
+        const newUser = r.data.data;
+        setStaff(p => [newUser, ...p]); 
+        return newUser; 
     }, [salon, staff.length]);
 
-    const updateStaff = useCallback(async (id, d) => { const r = await api.patch(`/users/${id}`, d); setStaff(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s)); return r.data; }, []);
+    const updateStaff = useCallback(async (id, d) => { const r = await api.patch(`/users/${id}`, d); const updated = r.data.data; setStaff(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s)); return updated; }, []);
     const deleteStaff = useCallback(async (id) => { await api.delete(`/users/${id}`); setStaff(p => p.filter(s => (s._id !== id && s.id !== id))); }, []);
     const fetchStaff = useCallback(async () => { const r = await api.get('/users'); setStaff(r.data?.data || r.data?.results || r.data || []); }, []);
     const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
     const addShift = useCallback(async (d) => { const r = await api.post('/shifts', d); setShifts(p => [r.data, ...p]); return r.data; }, []);
     const updateShift = useCallback(async (id, d) => { const r = await api.patch(`/shifts/${id}`, d); setShifts(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s)); return r.data; }, []);
+    const fetchRoles = useCallback(async () => {
+        try {
+            const r = await api.get('/roles');
+            setRoles(r.data?.data || []);
+        } catch { setRoles([]); }
+    }, []);
+
+    const addService = useCallback(async (d) => {
+        const r = await api.post('/services', d);
+        const newService = r.data.data;
+        setServices(p => [newService, ...p]);
+        return newService;
+    }, []);
+
+    const updateService = useCallback(async (id, d) => {
+        const r = await api.put(`/services/${id}`, d);
+        const updated = r.data.data;
+        setServices(p => p.map(s => s._id === id ? updated : s));
+        return updated;
+    }, []);
+
+    const deleteService = useCallback(async (id) => {
+        await api.delete(`/services/${id}`);
+        setServices(p => p.filter(s => s._id !== id));
+    }, []);
+
+    const toggleServiceStatus = useCallback(async (id, status) => {
+        const newStatus = status === 'active' ? 'inactive' : 'active';
+        await api.put(`/services/${id}`, { status: newStatus });
+        setServices(p => p.map(s => s._id === id ? { ...s, status: newStatus } : s));
+    }, []);
+
+    const fetchCategories = useCallback(async () => {
+        try {
+            const r = await api.get('/categories');
+            setCategories(r.data?.data || []);
+        } catch { setCategories([]); }
+    }, []);
+
+    const addCategory = useCallback(async (d) => {
+        const r = await api.post('/categories', d);
+        const newCat = r.data.data;
+        setCategories(p => [newCat, ...p]);
+        return newCat;
+    }, []);
+
+    const updateCategory = useCallback(async (id, d) => {
+        const r = await api.put(`/categories/${id}`, d);
+        const updated = r.data.data;
+        setCategories(p => p.map(c => c._id === id ? updated : c));
+        return updated;
+    }, []);
+
+    const deleteCategory = useCallback(async (id) => {
+        await api.delete(`/categories/${id}`);
+        setCategories(p => p.filter(c => c._id !== id));
+    }, []);
+
+    const toggleCategoryStatus = useCallback(async (id) => {
+        const cat = categories.find(c => c._id === id);
+        if (!cat) return;
+        const newStatus = cat.status === 'active' ? 'inactive' : 'active';
+        await api.put(`/categories/${id}`, { status: newStatus });
+        setCategories(p => p.map(c => c._id === id ? { ...c, status: newStatus } : c));
+    }, [categories]);
+
+    const addBooking = useCallback(async (d) => {
+        const r = await api.post('/bookings', d);
+        const newBooking = r.data.data;
+        setBookings(p => [newBooking, ...p]);
+        return newBooking;
+    }, []);
+
+    const updateBookingStatus = useCallback(async (id, status) => {
+        const r = await api.patch(`/bookings/${id}/status`, { status });
+        const updated = r.data.data;
+        setBookings(p => p.map(b => b._id === id ? { ...b, status: updated.status } : b));
+        return updated;
+    }, []);
 
     const value = useMemo(() => ({
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, updateCustomer, deleteCustomer,
         bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, suppliers, segments, segmentsLoading, fetchSegments, 
         addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets,
         addSupplier, updateSupplier, deleteSupplier,
-        addOutlet,
+        addOutlet, updateOutlet, deleteOutlet,
+        roles, fetchRoles,
         fetchCustomerInitialData,
         fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
-        addStaff,
-        updateStaff,
-        deleteStaff,
-        fetchStaff,
-        fetchShifts,
-        addShift,
-        updateShift,
+        addStaff, updateStaff, deleteStaff, fetchStaff,
+        addService, updateService, deleteService, toggleServiceStatus,
+        fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
+        addBooking, updateBookingStatus,
+        fetchShifts, addShift, updateShift,
         shiftsLoading: false
     }), [
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
         bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
-        shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, fetchCustomerInitialData,
+        shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
+        roles, fetchRoles,
+        fetchCustomerInitialData,
         fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
-        addStaff, updateStaff, deleteStaff, fetchStaff, fetchShifts, addShift, updateShift
+        addStaff, updateStaff, deleteStaff, fetchStaff,
+        addService, updateService, deleteService, toggleServiceStatus,
+        fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
+        addBooking, updateBookingStatus,
+        fetchShifts, addShift, updateShift
     ]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;

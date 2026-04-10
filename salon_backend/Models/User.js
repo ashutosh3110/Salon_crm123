@@ -27,8 +27,33 @@ const userSchema = new mongoose.Schema({
     salonId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Salon',
-        required: function() { return this.role !== 'superadmin'; }
+        required: function() { return !['superadmin', 'customer'].includes(this.role); }
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    dob: String,
+    pan: {
+        type: String,
+        uppercase: true,
+        trim: true
+    },
+    address: String,
+    avatar: String,
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'pending'],
+        default: 'active'
+    },
+    // Stylist Specific Fields
+    stylistBio: String,
+    stylistExperience: String,
+    stylistSpecializations: [String],
     isActive: {
         type: Boolean,
         default: true

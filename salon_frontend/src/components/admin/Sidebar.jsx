@@ -16,6 +16,7 @@ import {
     Briefcase,
     Calendar,
     CalendarCheck,
+    List,
     Users,
     Settings,
     LogOut,
@@ -62,9 +63,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const lowStockCount = stats?.lowStockCount || 0;
     const location = useLocation();
     
-    const isActiveStatus = (salon?.status || user?.status) === 'active';
-    const hasActivePlan = (salon?.planStatus || user?.planStatus) === 'active';
-    const isRestricted = (user?.role === 'admin') && (!isActiveStatus || !hasActivePlan);
+    const isActiveStatus = ['active', 'trial'].includes(salon?.status || user?.status);
+    const isRestricted = (user?.role === 'admin') && !isActiveStatus;
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
@@ -75,6 +75,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             path: '/admin/setup',
             subItems: [
                 { label: 'Outlets', icon: Store, path: '/admin/outlets' },
+                { label: 'Roles & Permissions', icon: Shield, path: '/admin/setup/roles' },
                 { label: 'Staff', icon: UserCog, path: '/admin/staff' },
                 { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
                 { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
@@ -98,15 +99,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             label: 'Bookings',
             icon: Calendar,
             path: '/admin/bookings',
-            roles: ['admin', 'manager', 'staff'],
-            feature: 'appointments'
+            subItems: [
+                { label: 'Booking Registry', icon: List, path: '/admin/bookings' },
+                { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new' },
+            ]
         },
         {
             label: 'Marketing',
             icon: Megaphone,
             path: '/admin/marketing',
-            roles: ['admin', 'manager'],
-            feature: 'marketing',
             subItems: [
                 { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
                 { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms', badge: pendingExpertsCount > 0 ? { count: pendingExpertsCount, color: 'bg-rose-500 animate-pulse' } : null },
@@ -285,8 +286,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
                     const isLocked = isRestricted && !['Subscription & Plans', 'Support'].includes(item.label);
-                    // Feature check
-                    if (item.feature && salon && !salon.features?.[item.feature]) return null;
+                    // Feature check - relaxed to show by default if features object is empty or not yet defined
+                    if (item.feature && salon && salon.features && salon.features[item.feature] === false) return null;
                     
                     if (item.roles && !item.roles.includes(user?.role)) return null;
 

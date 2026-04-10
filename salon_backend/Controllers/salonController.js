@@ -180,6 +180,35 @@ exports.updateSalon = async (req, res) => {
             }
         }
 
+        // If status is changing to active from pending, send approval email
+        if (req.body.status === 'active' && salon.status === 'pending') {
+            try {
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #2e7d32; text-align: center;">Account Approved!</h2>
+                        <p>Dear <strong>${salon.ownerName}</strong>,</p>
+                        <p>Great news! Your salon, <strong>${salon.name}</strong>, has been approved by our team.</p>
+                        <p>You can now log in to your dashboard and start managing your business.</p>
+                        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                            <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="${process.env.FRONTEND_BASE_URL}/login">${process.env.FRONTEND_BASE_URL}/login</a></p>
+                            <p style="margin: 5px 0;"><strong>Email:</strong> ${salon.email}</p>
+                            <p style="margin: 5px 0;"><strong>Default Password:</strong> 123456</p>
+                        </div>
+                        <p>For security reasons, we strongly recommend changing your password after your first login using the profile settings.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                `;
+                await sendEmail({
+                    email: salon.email,
+                    subject: `Your Salon Account is Approved - ${process.env.EMAIL_FROM_NAME}`,
+                    html
+                });
+            } catch (err) {
+                console.error('Approval email failed:', err);
+            }
+        }
+
         salon = await Salon.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
@@ -333,6 +362,31 @@ exports.registerSalon = async (req, res) => {
             isActive: false // Cannot login yet
         });
 
+        // Send "Application Received" Email
+        try {
+            const html = `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <h2 style="color: #333; text-align: center;">Application Received!</h2>
+                    <p>Dear <strong>${ownerName}</strong>,</p>
+                    <p>Thank you for registering <strong>${name}</strong> with ${process.env.EMAIL_FROM_NAME}.</p>
+                    <p>Your application is currently <strong>Pending Approval</strong>. Our team will review your details and you will receive an email once your account is activated.</p>
+                    <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #B4912B;">
+                        <p style="margin: 0; font-size: 14px; color: #555;"><strong>Status:</strong> Waiting for Superadmin Approval</p>
+                    </div>
+                    <p>We appreciate your patience.</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                </div>
+            `;
+            await sendEmail({
+                email: email,
+                subject: `Registration Received - ${process.env.EMAIL_FROM_NAME}`,
+                html
+            });
+        } catch (err) {
+            console.error('Registration email failed:', err);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Registration successful! Your account is pending approval by Superadmin.',
@@ -347,5 +401,53 @@ exports.registerSalon = async (req, res) => {
             success: false, 
             message: err.message || 'Server Error' 
         });
+    }
+};
+
+// @desc    Resend credentials (Reset password to 123456 and email)
+// @route   POST /api/salons/:id/resend-credentials
+// @access  Private/SuperAdmin
+exports.resendCredentials = async (req, res) => {
+    try {
+        const salon = await Salon.findById(req.params.id);
+        if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
+
+        const newPassword = '123456';
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update Salon
+        salon.password = hashedPassword;
+        await salon.save();
+
+        // Update Admin User
+        await User.findOneAndUpdate({ email: salon.email }, { password: hashedPassword });
+
+        // Send Email
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #333; text-align: center;">Account Credentials Reset</h2>
+                <p>Hello <strong>${salon.ownerName}</strong>,</p>
+                <p>Your login credentials for <strong>${salon.name}</strong> have been reset by the administrator.</p>
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Email:</strong> ${salon.email}</p>
+                    <p style="margin: 5px 0;"><strong>New Password:</strong> ${newPassword}</p>
+                </div>
+                <p>Please log in and change your password immediately for security.</p>
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #777; text-align: center;">Team ${process.env.EMAIL_FROM_NAME}</p>
+            </div>
+        `;
+
+        await sendEmail({
+            email: salon.email,
+            subject: 'Your Account Credentials - Wapixo',
+            html
+        });
+
+        res.json({ success: true, message: `Credentials sent to ${salon.email}` });
+    } catch (err) {
+        console.error('Resend credentials error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

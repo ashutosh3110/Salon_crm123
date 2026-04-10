@@ -22,12 +22,10 @@ export default function AuthPage() {
     // Form States
     const [signinForm, setSigninForm] = useState({ email: '', password: '' });
     const [signupForm, setSignupForm] = useState({
-        salonName: '',
-        fullName: '',
+        name: '',
+        ownerName: '',
         email: '',
         phone: '',
-        password: '',
-        confirmPassword: '',
         gstNumber: '',
         description: '',
         address: '',
@@ -103,16 +101,6 @@ export default function AuthPage() {
         e.preventDefault();
         setError('');
 
-        if (signupForm.password !== signupForm.confirmPassword) {
-            setError('Passwords do not match');
-            return;
-        }
-
-        if (signupForm.password.length < 8) {
-            setError('Password must be at least 8 characters');
-            return;
-        }
-
         setLoading(true);
 
         try {
@@ -121,65 +109,13 @@ export default function AuthPage() {
             
             let currentPlan = selectedPlan;
 
-            if (currentPlan && currentPlan.monthlyPrice > 0 && Number(currentPlan.trialDays) === 0) {
-                const orderRes = await api.post('/billing/razorpay/create-order', {
-                    planId: currentPlan._id,
-                    billingCycle: 'monthly'
-                });
-
-                if (!orderRes.data.success) throw new Error('Failed to create Razorpay order');
-
-                const { orderId, amount, currency, keyId } = orderRes.data.data;
-
-                const options = {
-                    key: keyId,
-                    amount: amount,
-                    currency: currency,
-                    name: 'Wapixo Salon CMS',
-                    description: `Subscription for ${selectedPlan.name} Plan`,
-                    order_id: orderId,
-                    handler: async (response) => {
-                        try {
-                            const verifyRes = await api.post('/billing/razorpay/verify-payment', {
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature
-                            });
-
-                            if (verifyRes.data.success) {
-                                await register({
-                                    ...signupForm,
-                                    subscriptionPlan: selectedPlan.name.toLowerCase(),
-                                    paymentId: response.razorpay_payment_id,
-                                    orderId: response.razorpay_order_id
-                                });
-                                navigate('/admin');
-                            }
-                        } catch (err) {
-                            setError('Payment verification failed. Please contact support.');
-                            setLoading(false);
-                        }
-                    },
-                    prefill: {
-                        name: signupForm.fullName,
-                        email: signupForm.email,
-                        contact: signupForm.phone
-                    },
-                    theme: { color: '#B4912B' },
-                    modal: { ondismiss: () => setLoading(false) }
-                };
-
-                if (!window.Razorpay) throw new Error('Razorpay SDK failed to load.');
-
-                const rzp = new window.Razorpay(options);
-                rzp.open();
-            } else {
-                await register({
-                    ...signupForm,
-                    subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'free'
-                });
-                setRegistrationSuccess(true);
-            }
+            // NEW: All public registrations are PENDING, so we skip upfront payment
+            // and let them pay after approval if needed.
+            await register({
+                ...signupForm,
+                subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'free'
+            });
+            setRegistrationSuccess(true);
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed.');
             setLoading(false);
@@ -431,14 +367,14 @@ export default function AuthPage() {
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Salon Name *</label>
                                                         <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
                                                             <Store className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                            <input type="text" name="salonName" value={signupForm.salonName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="My Premium Salon" />
+                                                            <input type="text" name="name" value={signupForm.name} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="My Premium Salon" />
                                                         </div>
                                                     </div>
                                                     <div className="group space-y-1">
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Owner Full Name *</label>
                                                         <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
                                                             <User className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                            <input type="text" name="fullName" value={signupForm.fullName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Your Name" />
+                                                            <input type="text" name="ownerName" value={signupForm.ownerName} onChange={handleSignupChange} required className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Your Name" />
                                                         </div>
                                                     </div>
                                                     <div className="group space-y-1">
@@ -471,38 +407,19 @@ export default function AuthPage() {
                                                     </div>
 
                                                     <div className="col-span-2 group space-y-1">
+                                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Salon Description</label>
+                                                        <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
+                                                            <textarea name="description" value={signupForm.description} onChange={handleSignupChange} className="w-full pl-0 py-3 bg-transparent text-sm focus:outline-none font-medium min-h-[60px] resize-none" style={{ color: 'var(--wapixo-text)' }} placeholder="Briefly describe your salon services..." />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="col-span-2 group space-y-1">
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Street Address</label>
                                                         <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
                                                             <input type="text" name="address" value={signupForm.address} onChange={handleSignupChange} className="w-full pl-0 py-3 bg-transparent text-sm focus:outline-none font-medium" style={{ color: 'var(--wapixo-text)' }} placeholder="Shop no, Building, Area..." />
                                                         </div>
                                                     </div>
 
-                                                    <div className="group space-y-1">
-                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Password *</label>
-                                                        <PasswordField 
-                                                            name="password" value={signupForm.password} onChange={handleSignupChange} required placeholder="Create Password"
-                                                            containerClassName="border-b-2 transition-all duration-300"
-                                                            style={{ borderColor: 'var(--wapixo-border)' }}
-                                                            inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                            buttonClassName="hover:text-[#B85C5C]"
-                                                            inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
-                                                        >
-                                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        </PasswordField>
-                                                    </div>
-                                                    <div className="group space-y-1">
-                                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Confirm Password *</label>
-                                                        <PasswordField 
-                                                            name="confirmPassword" value={signupForm.confirmPassword} onChange={handleSignupChange} required placeholder="Repeat Password"
-                                                            containerClassName="border-b-2 transition-all duration-300"
-                                                            style={{ borderColor: 'var(--wapixo-border)' }}
-                                                            inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
-                                                            buttonClassName="hover:text-[#B85C5C]"
-                                                            inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
-                                                        >
-                                                            <Lock className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 ml-0.5" style={{ color: 'var(--wapixo-text-muted)', opacity: 0.4 }} />
-                                                        </PasswordField>
-                                                    </div>
                                                 </div>
                                                 <div className="pt-4 space-y-6">
                                                     <button type="submit" disabled={loading} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/10 active:scale-95 disabled:opacity-50">

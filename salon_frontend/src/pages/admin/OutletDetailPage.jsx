@@ -35,16 +35,18 @@ export default function OutletDetailPage() {
     const [activeTab, setActiveTab] = useState('overview');
 
     useEffect(() => {
+        if (!outlets || outlets.length === 0) return;
         const found = outlets.find(o => o._id === id);
         if (found) {
             setOutlet(found);
+            setLoading(false);
         } else {
-            console.error('Failed to fetch outlet');
+            console.error('Failed to find outlet with ID:', id);
+            setLoading(false);
         }
-        setLoading(false);
     }, [id, outlets]);
 
-    if (loading) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
+    if (loading || (outlets.length === 0 && !outlet)) return <div className="flex justify-center py-20"><div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-none animate-spin" /></div>;
     if (!outlet) return <div className="text-center py-20 text-text-muted font-black uppercase tracking-widest text-[10px]">Salon details not found</div>;
 
     const outletStaff = staff.filter(s => s.outletId === outlet._id || (s.assignedSalon === outlet.name));
@@ -60,7 +62,7 @@ export default function OutletDetailPage() {
 
     const handleViewOnMap = () => {
         if (!outlet) return;
-        const fullAddress = `${outlet.address}, ${outlet.city}, ${outlet.state} ${outlet.pincode || ''}`;
+        const fullAddress = `${outlet.address?.street || ''}, ${outlet.address?.city || outlet.city || ''}, ${outlet.address?.state || outlet.state || ''} ${outlet.address?.pincode || outlet.pincode || ''}`;
         const encodedAddress = encodeURIComponent(fullAddress.trim());
         const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
         window.open(mapUrl, '_blank', 'noopener,noreferrer');
@@ -80,13 +82,13 @@ export default function OutletDetailPage() {
                     <div>
                         <div className="flex items-center gap-3">
                             <h1 className="text-2xl font-black text-text uppercase tracking-tight">{outlet.name || 'Unnamed Salon'}</h1>
-                            <span className={`px-2.5 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border ${outlet.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
+                            <span className={`px-2.5 py-1 rounded-none text-[9px] font-black uppercase tracking-widest border ${outlet.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-100'
                                 }`}>
-                                {outlet.status || 'inactive'}
+                                {outlet.isActive !== false ? 'active' : 'inactive'}
                             </span>
                         </div>
                         <p className="text-[10px] font-black text-text-muted mt-1 flex items-center gap-2 uppercase tracking-[0.2em]">
-                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.city || 'Location Unknown'}, {outlet.state || 'Location'}
+                            <MapPin className="w-3.5 h-3.5 opacity-40" /> {outlet.address?.city || outlet.city || 'Location Unknown'}, {outlet.address?.state || outlet.state || 'Location'}
                         </p>
                     </div>
                 </div>
@@ -147,8 +149,10 @@ export default function OutletDetailPage() {
                                 <div className="space-y-6">
                                     <div>
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Salon Address</p>
-                                        <p className="text-sm font-black text-text leading-relaxed uppercase tracking-tight">{outlet.address}</p>
-                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">{outlet.city || 'Unknown City'}, {outlet.state || 'Location'} - {outlet.pincode || '000000'}</p>
+                                        <p className="text-sm font-black text-text leading-relaxed uppercase tracking-tight">{outlet.address?.street || outlet.address}</p>
+                                        <p className="text-[10px] font-extrabold text-text-muted mt-1 uppercase tracking-widest opacity-60">
+                                            {outlet.address?.city || outlet.city || 'Unknown City'}, {outlet.address?.state || outlet.state || 'Location'} - {outlet.address?.pincode || outlet.pincode || '000000'}
+                                        </p>
                                     </div>
                                     <div>
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2.5">Contact Details</p>
@@ -168,9 +172,9 @@ export default function OutletDetailPage() {
                                             <Clock className="w-3.5 h-3.5 text-primary/40" /> Opening Hours
                                         </p>
                                         <p className="text-xl font-black text-text uppercase tracking-tight">09:00 - 21:00 HRS</p>
-                                        <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center gap-1.5">
+                                        <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 rounded-none bg-emerald-500 animate-pulse" /> SALON OPEN
-                                        </p>
+                                        </div>
                                     </div>
                                     <button 
                                         onClick={handleViewOnMap}

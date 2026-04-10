@@ -38,18 +38,18 @@ export default function OutletsPage() {
     const [filteredOutlets, setFilteredOutlets] = useState(outlets);
 
     // Get unique cities for filter
-    const cities = ['all', ...new Set(outlets.map(o => o.city).filter(Boolean))];
+    const cities = ['all', ...new Set(outlets.map(o => o.address?.city || o.city).filter(Boolean))];
 
     useEffect(() => {
         let result = outlets;
         if (search) {
             result = result.filter(o =>
                 o.name?.toLowerCase().includes(search.toLowerCase()) ||
-                o.city?.toLowerCase().includes(search.toLowerCase())
+                (o.address?.city || o.city)?.toLowerCase().includes(search.toLowerCase())
             );
         }
         if (cityFilter !== 'all') {
-            result = result.filter(o => o.city === cityFilter);
+            result = result.filter(o => (o.address?.city || o.city) === cityFilter);
         }
         setFilteredOutlets(result);
     }, [search, cityFilter, outlets]);
@@ -57,7 +57,8 @@ export default function OutletsPage() {
     const cityData = useMemo(() => {
         const counts = {};
         outlets.forEach(o => {
-            counts[o.city] = (counts[o.city] || 0) + 1;
+            const cityName = o.address?.city || o.city || 'UNKNOWN';
+            counts[cityName] = (counts[cityName] || 0) + 1;
         });
         return Object.keys(counts).map((city, i) => ({
             name: (city || 'UNKNOWN').toUpperCase(),
@@ -128,8 +129,8 @@ export default function OutletsPage() {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Branches by City</span>
                         <PieIcon className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[80px] w-full z-10">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[80px] w-full z-10 min-h-[80px]">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={80}>
                             <PieChart>
                                 <Pie data={cityData} innerRadius={18} outerRadius={35} paddingAngle={4} dataKey="value" stroke="transparent">
                                     {cityData.map((entry, index) => (
@@ -151,8 +152,8 @@ export default function OutletsPage() {
                         <span className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Staffing Details</span>
                         <BarChart3 className="w-4 h-4 text-primary" />
                     </div>
-                    <div className="h-[80px] w-full z-10">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[80px] w-full z-10 min-h-[80px]">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={80}>
                             <BarChart data={staffingData}>
                                 <Bar dataKey="staff" radius={0}>
                                     {staffingData.map((entry, index) => (
@@ -210,55 +211,57 @@ export default function OutletsPage() {
                             className="group bg-white border border-border p-4 hover:border-text transition-all duration-300 relative overflow-hidden flex flex-col h-full"
                         >
                             <div className="flex justify-between items-start mb-4">
-                                {outlet.image ? (
-                                    <div className="w-12 h-12 rounded-xl overflow-hidden border border-border shadow-sm">
-                                        <img src={outlet.image} alt={outlet.name} className="w-full h-full object-cover" />
+                                {outlet.images?.length > 0 ? (
+                                    <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-slate-50 flex-shrink-0">
+                                        <img src={outlet.images[0]} alt={outlet.name} className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
-                                    <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black group-hover:bg-text group-hover:text-white transition-all">
+                                    <div className="w-10 h-10 bg-slate-900 flex items-center justify-center text-white flex-shrink-0">
                                         <Store className="w-4 h-4" />
                                     </div>
                                 )}
-                                <div className="flex gap-1.5">
+                                <div className="flex gap-1">
                                     <button
                                         onClick={() => navigate(`/admin/outlets/edit/${outlet._id}`)}
-                                        className="p-1.5 text-text-muted hover:text-primary transition-colors"
+                                        className="p-1.5 text-text-muted hover:text-primary transition-colors hover:bg-slate-50 border border-transparent hover:border-border"
                                     >
-                                        <Edit className="w-3.5 h-3.5" />
+                                        <Edit className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(outlet._id)}
-                                        className="p-1.5 text-text-muted hover:text-rose-600 transition-colors"
+                                        className="p-1.5 text-text-muted hover:text-rose-500 transition-colors hover:bg-slate-50 border border-transparent hover:border-border"
                                     >
-                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="flex-1 space-y-1 mb-4">
+                            <div className="flex-1 space-y-1 mb-6">
                                 <div className="flex items-center gap-2">
                                     <h3 className="text-sm font-black text-text uppercase italic tracking-tight font-mono leading-none truncate">
                                         {outlet.name}
                                     </h3>
-                                    <div className={`w-1.5 h-1.5 shrink-0 ${outlet.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                                    <div className={`w-1.5 h-1.5 rounded-full ${outlet.isActive !== false ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-rose-500'}`} />
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] opacity-60 leading-none">
                                     <MapPin className="w-3.5 h-3.5" />
-                                    CITY: {(outlet.city || 'N/A').toUpperCase()}
+                                    {(outlet.address?.city || outlet.city || 'N/A').toUpperCase()}
                                 </div>
                             </div>
-
-                            <div className="grid grid-cols-2 gap-4 mb-10 text-left font-black">
-                                <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
-                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Staff Strength</div>
-                                    <div className="flex items-center gap-3">
-                                        <Users className="w-4 h-4 text-primary" />
-                                        <span className="text-sm font-black text-text">{outlet.staffCount} STAFF</span>
+ 
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <div className="bg-slate-50 p-4 border border-border/50">
+                                    <div className="text-[8px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60 leading-none">Our Team</div>
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-3.5 h-3.5 text-primary" />
+                                        <span className="text-[11px] font-black text-text uppercase italic">{outlet.staffCount || 0} STAFF</span>
                                     </div>
                                 </div>
-                                <div className="bg-background rounded-none p-5 border border-border/50 text-left font-black">
-                                    <div className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60">Operations</div>
-                                    <div className="text-sm font-black text-emerald-500 uppercase tracking-tighter">OPEN FOR BUSINESS</div>
+                                <div className="bg-slate-50 p-4 border border-border/50">
+                                    <div className="text-[8px] font-black text-text-muted uppercase tracking-widest mb-1.5 opacity-60 leading-none">Operations</div>
+                                    <div className={`text-[9px] font-black uppercase tracking-tighter ${outlet.isActive !== false ? 'text-emerald-500' : 'text-rose-500'} italic`}>
+                                        {outlet.isActive !== false ? 'OPEN FOR BUSINESS' : 'OUTLET STANDBY'}
+                                    </div>
                                 </div>
                             </div>
 

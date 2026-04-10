@@ -109,6 +109,8 @@ import InquiryPage from './pages/admin/InquiryPage';
 import RemindersPage from './pages/admin/RemindersPage';
 import PublicCataloguePage from './pages/catalogue/PublicCataloguePage';
 import SubscriptionPage from './pages/admin/SubscriptionPage';
+import RolesPage from './pages/admin/RolesPage';
+import NewBookingPage from './pages/admin/NewBookingPage';
 import SupportPage from './pages/admin/SupportPage';
 import FeatureLockedPage from './pages/admin/FeatureLockedPage';
 
@@ -271,11 +273,11 @@ function App() {
                             <Route path="/admin/outlets/new" element={<OutletForm />} />
                             <Route path="/admin/outlets/edit/:id" element={<OutletForm />} />
                             <Route path="/admin/outlets/:id" element={<OutletDetailPage />} />
+                            <Route path="/admin/setup/roles" element={<RolesPage />} />
                             <Route path="/admin/staff" element={<StaffPage />} />
                             
-                            <Route element={<ProtectedRoute feature="appointments" />}>
-                                <Route path="/admin/bookings" element={<BookingsPage />} />
-                            </Route>
+                            <Route path="/admin/bookings" element={<BookingsPage />} />
+                            <Route path="/admin/bookings/new" element={<NewBookingPage />} />
 
                             {/* CRM Routes */}
                             <Route element={<ProtectedRoute feature="crm" />}>

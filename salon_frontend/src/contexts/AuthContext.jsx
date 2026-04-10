@@ -74,16 +74,7 @@ export function AuthProvider({ children }) {
         logout,
         register: async (formData) => {
             const response = await api.post('/salons/register', {
-                name: formData.salonName,
-                ownerName: formData.fullName,
-                email: formData.email,
-                phone: formData.phone,
-                password: formData.password,
-                gstNumber: formData.gstNumber,
-                address: formData.address,
-                city: formData.city,
-                description: formData.description,
-                subscriptionPlan: formData.subscriptionPlan
+                ...formData
             });
             return response.data;
         },

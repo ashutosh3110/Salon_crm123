@@ -1,27 +1,13 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-    ChevronRight, Zap, TrendingUp, PieChart as PieIcon, Layers, BarChart3, Settings2
+    ChevronRight, Zap, TrendingUp, Layers, Settings2, Plus, Scissors, XCircle
 } from 'lucide-react';
-import {
-    PieChart,
-    Pie,
-    Cell,
-    ResponsiveContainer,
-    Tooltip,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid
-} from 'recharts';
 import ServiceList from '../../components/admin/services/ServiceList';
 import ServiceForm from '../../components/admin/services/ServiceForm';
 import ServiceCategories from '../../components/admin/services/ServiceCategories';
 import ServiceSettings from '../../components/admin/services/ServiceSettings';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
 export default function ServicesPage({ tab = 'list' }) {
     const activeTab = tab;
@@ -36,153 +22,101 @@ export default function ServicesPage({ tab = 'list' }) {
         updateCategory,
         deleteCategory,
         toggleCategoryStatus,
-        servicesLoading,
-        categoriesLoading,
-        fetchServices
+        fetchServices,
+        fetchCategories
     } = useBusiness();
+
+    const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+    const [editingService, setEditingService] = useState(null);
 
     React.useEffect(() => {
         fetchServices();
-    }, [fetchServices]);
-
-    const categoryStats = useMemo(() => {
-        return categories.map((cat, i) => ({
-            name: cat.name.toUpperCase(),
-            value: services.filter(s => s.category === cat.name).length,
-            color: CHART_COLORS[i % CHART_COLORS.length]
-        }));
-    }, [categories, services]);
-
-    const valueMatrix = useMemo(() => {
-        return services.slice(0, 6).map((s, i) => ({
-            name: s.name.split(' ')[0],
-            price: s.price,
-            time: s.duration,
-            color: CHART_COLORS[i % CHART_COLORS.length]
-        }));
-    }, [services]);
+        fetchCategories();
+    }, [fetchServices, fetchCategories]);
 
     const stats = useMemo(() => ([
-        { label: 'Active Services', value: services.length, icon: Zap, color: 'blue', trend: 'Live' },
-        { label: 'Catalog Value', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald', trend: 'Total Value' },
-        { label: 'Service Categories', value: categories.length, icon: Layers, color: 'orange', trend: 'Groups' },
-        { label: 'Avg. Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}m`, icon: Settings2, color: 'violet', trend: 'Average Time' }
+        { label: 'Active Services', value: services.length, icon: Zap, color: 'primary' },
+        { label: 'Catalog Value', value: `₹${services.reduce((s, p) => s + p.price, 0).toLocaleString()}`, icon: TrendingUp, color: 'emerald' },
+        { label: 'Service Categories', value: categories.length, icon: Layers, color: 'orange' },
+        { label: 'Avg. Duration', value: `${Math.round(services.reduce((s, p) => s + p.duration, 0) / (services.length || 1))}m`, icon: Settings2, color: 'violet' }
     ]), [services, categories]);
+
+    const handleAddClick = () => {
+        setEditingService(null);
+        setIsFormModalOpen(true);
+    };
+
+    const handleEditClick = (service) => {
+        setEditingService(service);
+        setIsFormModalOpen(true);
+    };
+
+    const handleSaveService = async (data) => {
+        if (editingService) {
+            await updateService(editingService._id, data);
+        } else {
+            await addService(data);
+        }
+        setIsFormModalOpen(false);
+        setEditingService(null);
+    };
 
     return (
         <div className="space-y-6 animate-reveal text-left font-black">
-            {/* Header / Breadcrumb */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
-                <div className="text-left font-black leading-none">
+            {/* Header */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div>
                     <div className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3">
                         <span className="opacity-60">Operations</span>
                         <ChevronRight className="w-3.5 h-3.5 opacity-40" />
-                        <span className="text-primary">Service Details</span>
+                        <span className="text-primary">Catalog Management</span>
                     </div>
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">Manage Services</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none text-left">Manage and organize your salon services</p>
+                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Global Services</h1>
+                    <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Architect and manage your salon service portfolio</p>
                 </div>
+                {activeTab === 'list' && (
+                    <button
+                        onClick={handleAddClick}
+                        className="flex items-center justify-center gap-3 px-8 py-4 bg-text text-white text-[11px] font-black uppercase tracking-widest shadow-2xl hover:bg-primary transition-all active:scale-95 italic"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Initialize New Service
+                    </button>
+                )}
             </div>
 
-            {/* Analytics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 text-left font-black">
-                <div className="sm:col-span-2 grid grid-cols-1 xs:grid-cols-2 gap-3 sm:gap-4 text-left">
+            {/* Stats Row - Always Visible in List */}
+            {activeTab === 'list' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {stats.map((stat, i) => (
-                        <div key={i} className="bg-surface py-4 sm:py-6 px-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all group overflow-hidden relative text-left">
-                            <div className="absolute -right-6 -top-6 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rotate-12 transition-all group-hover:bg-primary/10" />
-                            <div className="relative z-10 flex flex-col justify-between h-full text-left font-black">
-                                <div className="flex items-center justify-between mb-2 sm:mb-4 text-left">
-                                    <div className="flex items-center gap-2 sm:gap-3 text-left">
-                                        <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-text-muted group-hover:text-primary transition-colors" />
-                                        <p className="text-[8px] sm:text-[10px] font-black text-text-secondary uppercase tracking-[0.2em] leading-none text-left">{stat.label}</p>
-                                    </div>
-                                    <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">{stat.trend}</span>
+                        <div key={i} className="bg-white p-6 border border-border shadow-sm group hover:shadow-xl transition-all relative overflow-hidden">
+                            <div className={`absolute -right-4 -top-4 w-16 h-16 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all`} />
+                            <div className="relative z-10 flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <stat.icon className="w-5 h-5 text-text-muted group-hover:text-primary transition-colors" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-primary/20 group-hover:bg-primary animate-pulse" />
                                 </div>
-                                <div className="flex items-end justify-between text-left">
-                                    <h3 className="text-2xl sm:text-3xl font-black text-text tracking-tighter uppercase leading-none text-left">
+                                <div>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-widest leading-none mb-1">{stat.label}</p>
+                                    <h3 className="text-2xl font-black text-text tracking-tighter uppercase">
                                         {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                                     </h3>
-                                    <div className="opacity-20 group-hover:opacity-100 transition-opacity stroke-[2px] hidden xs:block">
-                                        <svg width="40" height="12" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-primary">
-                                            <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
-
-                {/* Logic Group Distribution */}
-                <div className="bg-surface p-4 sm:p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between min-h-[180px]">
-                    <div className="flex items-center justify-between mb-3 text-left">
-                        <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Service Categories</span>
-                        <PieIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                    </div>
-                    <div className="h-[90px] sm:h-[120px] w-full text-left">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie data={categoryStats} innerRadius={20} outerRadius={35} paddingAngle={5} dataKey="value" stroke="transparent">
-                                    {categoryStats.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2 text-left">
-                        {categoryStats.slice(0, 4).map(d => (
-                            <div key={d.name} className="flex items-center gap-1.5 text-left">
-                                <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-none" style={{ backgroundColor: d.color }} />
-                                <span className="text-[6px] sm:text-[7px] font-black uppercase text-text-muted leading-none">{d.name}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Magnitude Vector Chart */}
-                <div className="bg-surface p-4 sm:p-6 rounded-none border border-border shadow-sm text-left font-black flex flex-col justify-between min-h-[180px]">
-                    <div className="flex items-center justify-between mb-3 text-left">
-                        <span className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Price comparison</span>
-                        <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-                    </div>
-                    <div className="h-[90px] sm:h-[120px] w-full text-left">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={valueMatrix}>
-                                <Bar dataKey="price" radius={0}>
-                                    {valueMatrix.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Bar>
-                                <Tooltip contentStyle={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0px', fontSize: '8px', fontWeight: '900', textTransform: 'uppercase' }} cursor={{ fill: 'transparent' }} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                    <div className="mt-3 text-[6px] sm:text-[7px] font-black uppercase text-text-muted tracking-[0.1em] text-center italic opacity-40">Price / Duration Ratio</div>
-                </div>
-            </div>
+            )}
 
             {/* Content Area */}
-            <div className="min-h-[700px] border-t border-border pt-6 text-left font-black">
+            <div className={`border-t border-border pt-6 ${activeTab === 'list' ? '' : 'min-h-[600px]'}`}>
                 {activeTab === 'list' && (
                     <ServiceList
                         services={services}
                         onDelete={deleteService}
                         onToggleStatus={toggleServiceStatus}
-                    />
-                )}
-                {activeTab === 'add-service' && (
-                    <ServiceForm
-                        onSave={addService}
-                        categories={categories}
-                    />
-                )}
-                {activeTab === 'edit-service' && (
-                    <ServiceForm
-                        onSave={updateService}
-                        categories={categories}
-                        initialData={services.find(s => s._id === window.location.pathname.split('/').pop())}
+                        onEdit={handleEditClick}
+                        onAdd={handleAddClick}
                     />
                 )}
                 {activeTab === 'categories' && (
@@ -199,6 +133,43 @@ export default function ServicesPage({ tab = 'list' }) {
                 )}
                 {activeTab === 'settings' && <ServiceSettings />}
             </div>
+
+            {/* Service Form Modal */}
+            {isFormModalOpen && (
+                <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 sm:p-8 overflow-y-auto">
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsFormModalOpen(false)} />
+                    <div className="relative bg-white w-full max-w-4xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] animate-reveal flex flex-col max-h-[90vh] mt-10 md:mt-20">
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-slate-50/50">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20">
+                                    <Scissors className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">
+                                        {editingService ? `Edit Service: ${editingService.name}` : 'Initialize New Entry'}
+                                    </h2>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic">Define catalog service protocols</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsFormModalOpen(false)}
+                                className="p-2 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            <ServiceForm
+                                onSave={handleSaveService}
+                                onCancel={() => setIsFormModalOpen(false)}
+                                categories={categories}
+                                initialData={editingService}
+                                isModal={true}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

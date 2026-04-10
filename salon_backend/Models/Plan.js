@@ -13,7 +13,15 @@ const planSchema = new mongoose.Schema({
     },
     price: {
         type: Number,
-        required: [true, 'Please add a price']
+        default: 0
+    },
+    monthlyPrice: {
+        type: Number,
+        default: 0
+    },
+    yearlyPrice: {
+        type: Number,
+        default: 0
     },
     billingCycle: {
         type: String,

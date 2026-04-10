@@ -27,6 +27,32 @@ exports.login = async (req, res) => {
             });
         }
 
+        // 3. SECURE CHECK: Block login if account is inactive or Salon is suspended
+        if (userData.isActive === false) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Your account is currently inactive. Please contact support.' 
+            });
+        }
+
+        if (role === 'admin' && userData.status === 'suspended') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'This salon has been suspended. Please contact Super Admin.' 
+            });
+        }
+
+        // If staff member, check if their salon is active
+        if (role !== 'superadmin' && role !== 'admin' && userData.salonId) {
+            const parentSalon = await Salon.findById(userData.salonId);
+            if (parentSalon && (parentSalon.status === 'suspended' || !parentSalon.isActive)) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Your salon access has been paused. Please contact your manager.' 
+                });
+            }
+        }
+
         // Check password
         const isMatch = await userData.comparePassword(password);
         if (!isMatch) {

@@ -419,11 +419,15 @@ export default function SAPlansPage() {
     const handleSave = async (form) => {
         setSaving(true);
         try {
+            const dataToSave = {
+                ...form,
+                price: parseFloat(form.monthlyPrice) || 0
+            };
             if (form._id) {
-                await api.put(`/plans/${form._id}`, form);
+                await api.put(`/plans/${form._id}`, dataToSave);
                 showToast(`Plan "${form.name}" updated!`);
             } else {
-                await api.post('/plans', form);
+                await api.post('/plans', dataToSave);
                 showToast(`Plan "${form.name}" created!`);
             }
             await fetchData();
