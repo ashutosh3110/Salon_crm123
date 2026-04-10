@@ -30,7 +30,6 @@ export default function AuthPage() {
         confirmPassword: '',
     });
     const [selectedPlan, setSelectedPlan] = useState(null);
-    const [plans, setPlans] = useState([]);
 
     // Sync view with URL and handle auto-fill role from Launchpad
     useEffect(() => {
@@ -59,17 +58,6 @@ export default function AuthPage() {
             }
         }
 
-        const fetchPlans = async () => {
-            try {
-                const res = await api.get('/subscriptions?active=true&limit=100');
-                if (res.data.success) {
-                    setPlans(res.data.data?.results || []);
-                }
-            } catch (err) {
-                console.error('Error fetching plans:', err);
-            }
-        };
-        fetchPlans();
 
         if (!window.Razorpay && view === 'signup') {
             const script = document.createElement('script');
@@ -80,19 +68,6 @@ export default function AuthPage() {
 
     }, [location.pathname, location.search, view]);
 
-    // Handle selected plan from URL
-    useEffect(() => {
-        if (plans && plans.length > 0) {
-            const params = new URLSearchParams(location.search);
-            const planParam = params.get('plan');
-            if (planParam) {
-                const plan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
-                if (plan) {
-                    setSelectedPlan(plan);
-                }
-            }
-        }
-    }, [plans, location.search]);
 
     const handleSigninChange = (e) => {
         setSigninForm({ ...signinForm, [e.target.name]: e.target.value });
@@ -140,9 +115,6 @@ export default function AuthPage() {
             const planParam = params.get('plan');
             
             let currentPlan = selectedPlan;
-            if (!currentPlan && plans && plans.length > 0 && planParam) {
-                currentPlan = plans.find(p => p.name.toLowerCase() === planParam.toLowerCase());
-            }
 
             if (currentPlan && currentPlan.monthlyPrice > 0 && Number(currentPlan.trialDays) === 0) {
                 const orderRes = await api.post('/billing/razorpay/create-order', {

@@ -15,6 +15,10 @@ export default function ProtectedRoute({ allowedRoles, feature }) {
     }
 
     if (!isAuthenticated) {
+        // If trying to access superadmin and not logged in, go to superadmin login
+        if (window.location.pathname.startsWith('/superadmin')) {
+            return <Navigate to="/superadmin/login" replace />;
+        }
         return <Navigate to="/login" replace />;
     }
 

@@ -4,6 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import mockApi from '../services/mock/mockApi';
 import authData from '../data/authMockData.json';
 
+import api from '../services/api';
+
 const AuthContext = createContext(null);
 
 const ROLE_REDIRECT_MAP = authData.redirect_map || {};
@@ -35,21 +37,44 @@ export function AuthProvider({ children }) {
 
     const login = useCallback(async (email, password) => {
         try {
-            const response = await mockApi.post('/auth/login', { email, password });
+            // 1. Try Real Backend First
+            const response = await api.post('/auth/login', { email, password });
             if (response.data.success) {
                 const { accessToken, user: userData } = response.data.data;
                 const role = userData.role || 'admin';
+                
                 localStorage.setItem(`auth_token_${role}`, accessToken);
                 localStorage.setItem(`auth_user_${role}`, JSON.stringify(userData));
                 localStorage.setItem('active_auth_role', role);
                 localStorage.setItem('token', accessToken);
+                
                 setUser(userData);
                 return { accessToken, user: userData };
             }
-            throw new Error('Login failed');
-        } catch (err) {
-            console.error('[AuthContext] Login failed:', err);
-            throw err;
+            throw new Error('Real login failed');
+        } catch (realErr) {
+            console.warn('[AuthContext] Real API login failed, checking mock data...', realErr.message);
+            
+            // 2. Fallback to Mock API for trial/demo roles
+            try {
+                const response = await mockApi.post('/auth/login', { email, password });
+                if (response.data.success) {
+                    const { accessToken, user: userData } = response.data.data;
+                    const role = userData.role || 'admin';
+                    
+                    localStorage.setItem(`auth_token_${role}`, accessToken);
+                    localStorage.setItem(`auth_user_${role}`, JSON.stringify(userData));
+                    localStorage.setItem('active_auth_role', role);
+                    localStorage.setItem('token', accessToken);
+                    
+                    setUser(userData);
+                    return { accessToken, user: userData };
+                }
+            } catch (mockErr) {
+                console.error('[AuthContext] Both Real and Mock login failed');
+                throw mockErr;
+            }
+            throw realErr;
         }
     }, []);
 

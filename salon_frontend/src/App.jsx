@@ -451,6 +451,7 @@ function App() {
                         <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
                           <Route element={<SuperAdminLayout />}>
                             <Route path="/superadmin" element={<SADashboardPage />} />
+                            <Route path="/superadminpanel" element={<SADashboardPage />} />
                             <Route path="/superadmin/tenants" element={<SATenantsPage />} />
                             <Route path="/superadmin/tenants/:id" element={<SATenantDetailPage />} />
                             <Route path="/superadmin/subscriptions" element={<SASubscriptionsPage />} />
