@@ -198,3 +198,66 @@ exports.resetPassword = async (req, res) => {
         });
     }
 };
+
+// @desc    Get current logged in user
+// @route   GET /api/auth/me
+// @access  Private
+exports.getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Update user details
+// @route   PATCH /api/auth/updatedetails
+// @access  Private
+exports.updateDetails = async (req, res) => {
+    try {
+        const fieldsToUpdate = {
+            name: req.body.name,
+            email: req.body.email
+        };
+
+        const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+            new: true,
+            runValidators: true
+        });
+
+        res.json({
+            success: true,
+            data: user
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Update password
+// @route   PUT /api/auth/updatepassword
+// @access  Private
+exports.updatePassword = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('+password');
+
+        // Check current password
+        if (!(await user.comparePassword(req.body.currentPassword))) {
+            return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+        }
+
+        user.password = req.body.newPassword;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Password updated successfully'
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
