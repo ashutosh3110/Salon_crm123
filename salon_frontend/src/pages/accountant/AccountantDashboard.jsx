@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     TrendingUp, TrendingDown, DollarSign, Wallet, FileText,
     ArrowUpRight, ArrowDownRight, PieChart as LucidePieChart, Calendar, ChevronRight,
     Search, Filter, Download, Calculator, CheckCircle2, Clock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useFinance } from '../../contexts/FinanceContext';
+import mockApi from '../../services/mock/mockApi';
 import {
     BarChart,
     Bar,
@@ -20,38 +20,26 @@ import {
     Legend
 } from 'recharts';
 
-
-
 export default function AccountantDashboard() {
-    const { totalRevenue, totalExpenses, netProfit, revenue, expenses, trendData, expenseSplits, loading } = useFinance();
+    const [summary, setSummary] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const stats = [
-        { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+0%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-        { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+0%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
-        { label: 'Account Payables', value: '₹0', change: '0%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+0%', isPositive: true, icon: () => <span className="text-xl font-black">₹</span>, color: 'text-primary', bg: 'bg-primary/10' },
-    ];
+    useEffect(() => {
+        const loadDashboard = async () => {
+            try {
+                setLoading(true);
+                const res = await mockApi.get('/finance/dashboard-summary');
+                setSummary(res.data.data);
+            } catch (e) {
+                console.error('Failed to load dashboard');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadDashboard();
+    }, []);
 
-    const recentTransactions = [
-        ...revenue.map(r => ({ 
-            id: r.invoiceNumber || `INV-${String(r._id).slice(-6).toUpperCase()}`, 
-            desc: r.clientId?.name || 'Walk-in Guest', 
-            type: 'Credit', 
-            amount: `₹${Math.round(r.total).toLocaleString()}`, 
-            date: new Date(r.createdAt).toLocaleDateString(), 
-            status: r.paymentStatus === 'paid' ? 'Completed' : 'Pending' 
-        })),
-        ...expenses.map(e => ({ 
-            id: `EXP-${String(e._id).slice(-6).toUpperCase()}`, 
-            desc: e.description || e.category || 'Expense', 
-            type: 'Debit', 
-            amount: `₹${Math.round(e.amount).toLocaleString()}`, 
-            date: new Date(e.date || e.createdAt).toLocaleDateString(), 
-            status: 'Completed' 
-        }))
-    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
-
-    if (loading) {
+    if (loading || !summary) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-4">
@@ -61,6 +49,15 @@ export default function AccountantDashboard() {
             </div>
         );
     }
+
+    const { totalRevenue, totalExpenses, netProfit, recentTransactions, trendData, expenseSplits } = summary;
+
+    const stats = [
+        { label: 'Net Revenue', value: `₹${totalRevenue.toLocaleString()}`, change: '+12%', isPositive: true, icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+        { label: 'Operational Expenses', value: `₹${totalExpenses.toLocaleString()}`, change: '+2%', isPositive: false, icon: TrendingDown, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+        { label: 'Account Payables', value: '₹15,400', change: '-5%', isPositive: true, icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
+        { label: 'Net Profit', value: `₹${netProfit.toLocaleString()}`, change: '+18%', isPositive: true, icon: () => <span className="text-xl font-black">₹</span>, color: 'text-primary', bg: 'bg-primary/10' },
+    ];
 
     return (
         <div className="space-y-6 text-left font-black">

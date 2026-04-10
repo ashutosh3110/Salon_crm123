@@ -2,15 +2,54 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save, Scissors, Zap, X, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as XLSX from 'xlsx';
-import { useFinance } from '../../contexts/FinanceContext';
 import { useAuth } from '../../contexts/AuthContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+import mockApi from '../../services/mock/mockApi';
+
 export default function ReconciliationPage() {
     const { user } = useAuth();
-    const { revenue, expenses, cashBankSummary, fetchCashBankSummary, saveCashBankReconciliation, fetchRazorpaySettlements, updateBankDetails } = useFinance();
+    const [loading, setLoading] = useState(true);
+    const [cashBankSummary, setCashBankSummary] = useState(null);
+    const [revenue, setRevenue] = useState([]);
+    const [expenses, setExpenses] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+    const fetchCashBankSummary = async (date) => {
+        try {
+            setLoading(true);
+            const [sumRes, revRes, expRes] = await Promise.all([
+                mockApi.get(`/finance/cash-bank-summary?date=${date}`),
+                mockApi.get('/finance/revenue'),
+                mockApi.get('/finance/expenses')
+            ]);
+            setCashBankSummary(sumRes.data.data);
+            setRevenue(revRes.data.data || []);
+            setExpenses(expRes.data.data || []);
+        } catch (e) {
+            console.error('Failed to fetch summary');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveCashBankReconciliation = async (data) => {
+        return await mockApi.post('/finance/reconcile', data);
+    };
+
+    const fetchRazorpaySettlements = async (from, to) => {
+        const res = await mockApi.get(`/finance/razorpay/settlements?from=${from}&to=${to}`);
+        return res.data.data || [];
+    };
+
+    const updateBankDetails = async (id, data) => {
+        return await mockApi.post(`/finance/bank-details`, data);
+    };
+
+    useEffect(() => {
+        fetchCashBankSummary(selectedDate);
+    }, [selectedDate]);
     
     const [reconItems, setReconItems] = useState([]);
     const [isMatching, setIsMatching] = useState(false);
@@ -33,11 +72,6 @@ export default function ReconciliationPage() {
     // Split modal state
     const [splitModal, setSplitModal] = useState(null);
     const [splitValue, setSplitValue] = useState('');
-
-    // Initial Fetch
-    useEffect(() => {
-        fetchCashBankSummary(selectedDate);
-    }, [selectedDate, fetchCashBankSummary]);
 
     // Track active outlet's bank info
     useEffect(() => {
@@ -342,6 +376,17 @@ export default function ReconciliationPage() {
             showToast('Failed to update bank info.', 'error');
         }
     };
+
+    if (loading || !cashBankSummary) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Synchronizing Audit Records...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6 text-left">

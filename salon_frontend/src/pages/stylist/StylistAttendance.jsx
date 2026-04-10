@@ -4,7 +4,7 @@ import {
     Activity, Zap, Navigation, RefreshCw, Smartphone, Building2,
 } from 'lucide-react';
 
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { haversineMeters } from '../../utils/geo';
 
@@ -45,7 +45,7 @@ export default function StylistAttendance() {
     const refreshWorksite = useCallback(async () => {
         setWorksiteLoading(true);
         try {
-            const res = await api.get('/attendance/worksite');
+            const res = await mockApi.get('/attendance/worksite');
             const data = res.data?.data ?? res.data;
             setWorksite(data || null);
         } catch {
@@ -59,7 +59,7 @@ export default function StylistAttendance() {
         const date = todayLocalYmd();
         setFetching(true);
         try {
-            const res = await api.get('/attendance/me', { params: { date } });
+            const res = await mockApi.get('/attendance/me', { params: { date } });
             const data = res.data?.data ?? res.data;
             setTodayRecord(data || null);
             if (data?.checkInAt && !data?.checkOutAt) setStatus('ACTIVE_RUN');
@@ -149,39 +149,15 @@ export default function StylistAttendance() {
     const fetchLocationName = async (lat, lon) => {
         if (!lat || !lon) return;
         setIsResolvingName(true);
-        try {
-            // Priority 1: Check if already within geofence of an outlet
+        // Mock Address Resolution (Offline)
+        setTimeout(() => {
             if (withinGeofence && worksite?.outlet?.name) {
                 setLocationName(worksite.outlet.name);
-                setIsResolvingName(false);
-                return;
-            }
-
-            // Priority 2: Reverse Geocode via Google Maps (More accurate)
-            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30";
-            const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`);
-            const data = await res.json();
-            
-            if (data.status === 'OK' && data.results.length > 0) {
-                // Focus on more granular address: e.g. locality + area
-                const result = data.results[0];
-                const area = result.address_components.find(c => c.types.includes('sublocality'))?.long_name;
-                const city = result.address_components.find(c => c.types.includes('locality'))?.long_name;
-                const formatted = area && city ? `${area}, ${city}` : result.formatted_address;
-                
-                // Cleanup: take first 3 segments if too long
-                const parts = formatted.split(',');
-                const simplified = parts.slice(0, 3).join(',').trim();
-                setLocationName(simplified);
             } else {
-                setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
+                setLocationName("Mock Office Complex, Sector 12, Delhi");
             }
-        } catch (err) {
-            console.error('Failed to resolve location name:', err);
-            setLocationName(`${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-        } finally {
             setIsResolvingName(false);
-        }
+        }, 800);
     };
 
     const fetchLocation = () => {
@@ -226,7 +202,7 @@ export default function StylistAttendance() {
             // Use the resolved locationName if available, otherwise fallback to coordinates
             const locStr = locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
             
-            await api.post('/attendance/punch', {
+            await mockApi.post('/attendance/punch', {
                 type: type === 'IN' ? 'in' : 'out',
                 date: todayLocalYmd(),
                 location: locStr,

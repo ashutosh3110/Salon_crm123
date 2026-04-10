@@ -1,13 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign, Calendar, Filter, Download, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useFinance } from '../../contexts/FinanceContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+import mockApi from '../../services/mock/mockApi';
+
 export default function RevenuePage() {
-    const { revenue } = useFinance();
+    const [revenue, setRevenue] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState('All Revenue');
+
+    useEffect(() => {
+        const loadRevenue = async () => {
+            try {
+                setLoading(true);
+                const res = await mockApi.get('/finance/revenue');
+                setRevenue(res.data.data || []);
+            } catch (e) {
+                console.error('Failed to load revenue');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadRevenue();
+    }, []);
 
     const totalRevenueSum = revenue.reduce((acc, curr) => acc + (curr.total || 0), 0);
     const totalTaxSum = revenue.reduce((acc, curr) => acc + (curr.tax || 0), 0);
@@ -38,6 +55,19 @@ export default function RevenuePage() {
             return true; 
         });
     }, [revenue, activeFilter]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Analyzing Revenue Stream...</p>
+                </div>
+            </div>
+        );
+    }
+
+
 
     const handleExport = () => {
         const doc = new jsPDF();

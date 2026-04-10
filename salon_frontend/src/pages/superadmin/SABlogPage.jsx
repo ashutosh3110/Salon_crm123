@@ -7,7 +7,7 @@ import {
     MousePointer2, Share2, SearchCode, Megaphone, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 const CATEGORIES = ["Growth", "Marketing", "Operations", "Insights", "Product"];
 
@@ -73,7 +73,7 @@ export default function SABlogPage() {
     const fetchPosts = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/blogs');
+            const { data } = await mockApi.get('/blogs');
             setPosts(data);
         } catch (err) {
             console.error('Failed to fetch posts:', err);
@@ -93,7 +93,7 @@ export default function SABlogPage() {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to decommission this editorial? This action is irreversible.")) {
             try {
-                await api.delete(`/blogs/${id}`);
+                await mockApi.delete(`/blogs/${id}`);
                 setPosts(posts.filter(p => p._id !== id));
                 showToast("Article deleted.");
             } catch (err) {
@@ -122,7 +122,7 @@ export default function SABlogPage() {
             if (selectedImage) {
                 const imageFormData = new FormData();
                 imageFormData.append('image', selectedImage);
-                const { data: uploadRes } = await api.post('/blogs/upload-image', imageFormData, {
+                const { data: uploadRes } = await mockApi.post('/blogs/upload-image', imageFormData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 imageUrl = uploadRes.url;
@@ -141,10 +141,10 @@ export default function SABlogPage() {
             };
 
             if (editingPost) {
-                const { data: updated } = await api.patch(`/blogs/${editingPost._id}`, postData);
+                const { data: updated } = await mockApi.patch(`/blogs/${editingPost._id}`, postData);
                 setPosts(posts.map(p => p._id === editingPost._id ? updated : p));
             } else {
-                const { data: created } = await api.post('/blogs', postData);
+                const { data: created } = await mockApi.post('/blogs', postData);
                 setPosts([created, ...posts]);
             }
 

@@ -7,7 +7,7 @@ import {
     Loader2, AlertCircle, Clock, CheckCircle2, X
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const FAQ_ITEMS = [
     { question: "How do I book an appointment?", answer: "You can book an appointment by selecting a service, choosing your preferred expert, and picking a time slot that works for you." },

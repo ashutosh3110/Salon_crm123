@@ -15,7 +15,7 @@ import { useWallet } from '../../contexts/WalletContext';
 import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
 import mockServicesPageData from '../../data/mockServicesPageData.json';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import logoLightMode from '/new black wapixo logo .png';
 import logoDarkMode from '/new wapixo logo .png';
 import boyIcon from '/gender/boy.png';

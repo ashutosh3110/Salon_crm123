@@ -22,7 +22,7 @@ import {
     ChevronDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { AnimatePresence } from 'framer-motion';
 
@@ -54,10 +54,10 @@ export default function QueuePage() {
         try {
             const today = new Date().toISOString().split('T')[0];
             const [queueRes, bookingsRes, staffRes, servicesRes] = await Promise.all([
-                api.get(`/bookings?status=arrived&date=${today}&outletId=${user?.outletId}`),
-                api.get(`/bookings?date=${today}&limit=100&outletId=${user?.outletId}`),
-                api.get(`/users?role=stylist&outletId=${user?.outletId}`),
-                api.get('/services?limit=100')
+                mockApi.get(`/bookings?status=arrived&date=${today}&outletId=${user?.outletId}`),
+                mockApi.get(`/bookings?date=${today}&limit=100&outletId=${user?.outletId}`),
+                mockApi.get(`/users?role=stylist&outletId=${user?.outletId}`),
+                mockApi.get('/services?limit=100')
             ]);
 
             // Robustly handle queue data
@@ -118,7 +118,7 @@ export default function QueuePage() {
     const handleAllocate = async (guestId) => {
         setAllocating(guestId);
         try {
-            await api.patch(`/bookings/${guestId}`, { status: 'in-progress' });
+            await mockApi.patch(`/bookings/${guestId}`, { status: 'in-progress' });
             alert(`Allocation Successful: Guest is now in service.`);
             fetchData();
         } catch (err) {
@@ -138,7 +138,7 @@ export default function QueuePage() {
     const handleAddGuest = async (guest) => {
         try {
             const now = new Date();
-            await api.post('/bookings', {
+            await mockApi.post('/bookings', {
                 ...guest,
                 outletId: user?.outletId,
                 appointmentDate: now.toISOString(),

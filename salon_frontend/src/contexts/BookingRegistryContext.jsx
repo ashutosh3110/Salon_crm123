@@ -5,7 +5,7 @@
  * Now fetches from the backend API for live data.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import api from '../services/api';
+import api from '../services/mock/mockApi';
 import { useCustomerAuth } from './CustomerAuthContext';
 
 const STORAGE_KEY = 'WAPIXO_BOOKING_REGISTRY';

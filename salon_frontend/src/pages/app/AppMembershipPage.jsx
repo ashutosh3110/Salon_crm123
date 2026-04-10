@@ -12,7 +12,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const AppMembershipPage = () => {
     const navigate = useNavigate();

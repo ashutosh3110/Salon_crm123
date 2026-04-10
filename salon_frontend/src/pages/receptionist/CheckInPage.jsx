@@ -14,7 +14,7 @@ import {
     Loader2,
     RefreshCw
 } from 'lucide-react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 export default function CheckInPage() {
     const [checkinList, setCheckinList] = useState([]);
@@ -32,11 +32,11 @@ export default function CheckInPage() {
             const today = new Date().toISOString().split('T')[0];
             
             // 1. Fetch Incoming Clearances (Confirmed for today)
-            const incomingRes = await api.get(`/bookings?status=confirmed&date=${today}`);
+            const incomingRes = await mockApi.get(`/bookings?status=confirmed&date=${today}`);
             setCheckinList(incomingRes.data.results || []);
 
             // 2. Fetch Outgoing Protocols (Completed but Unpaid)
-            const outgoingRes = await api.get(`/bookings?status=completed&paymentStatus=unpaid&date=${today}`);
+            const outgoingRes = await mockApi.get(`/bookings?status=completed&paymentStatus=unpaid&date=${today}`);
             setCheckoutList(outgoingRes.data.results || []);
         } catch (error) {
             console.error('[PROTOCOL] Data synchronization failed:', error);
@@ -55,7 +55,7 @@ export default function CheckInPage() {
 
     const handleCheckIn = async (id) => {
         try {
-            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            await mockApi.patch(`/bookings/${id}`, { status: 'arrived' });
             // Optimistic update
             setCheckinList(prev => prev.filter(i => i._id !== id));
             alert('ACCESS PROTOCOL AUTHORIZED: Identity verified and check-in logged.');
@@ -66,7 +66,7 @@ export default function CheckInPage() {
 
     const handleSettle = async (id) => {
         try {
-            await api.patch(`/bookings/${id}`, { paymentStatus: 'paid' });
+            await mockApi.patch(`/bookings/${id}`, { paymentStatus: 'paid' });
             // Optimistic update
             setCheckoutList(prev => prev.filter(i => i._id !== id));
             alert('SETTLEMENT PROTOCOL COMPLETE: Invoice cleared and transaction finalized.');

@@ -8,7 +8,7 @@ import {
     Plus, Trash2, Save, FileEdit, HelpCircle
 } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportUtils';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 /* ─── Constants ────────────────────────────────────────────────────── */
 
@@ -43,7 +43,7 @@ export default function SASupportPage() {
     const fetchFAQs = async () => {
         try {
             setLoadingFaqs(true);
-            const response = await api.get('/cms');
+            const response = await mockApi.get('/cms');
             if (response.data && response.data.support_faqs) {
                 setFaqs(response.data.support_faqs);
             } else {
@@ -64,8 +64,8 @@ export default function SASupportPage() {
     const handleSaveFAQs = async () => {
         try {
             setSavingFaqs(true);
-            const response = await api.patch('/cms/support_faqs', { content: faqs });
-            if (response.status === 200 || response.status === 204) {
+            const response = await mockApi.patch('/cms/support_faqs', { content: faqs });
+            if (response.status === 200 || response.status === 204 || response.data?.success) {
                 showToast('FAQs updated successfully!');
             }
         } catch (error) {
@@ -93,7 +93,7 @@ export default function SASupportPage() {
     const fetchTickets = async () => {
         try {
             setLoadingTickets(true);
-            const response = await api.get('/support/tickets');
+            const response = await mockApi.get('/support/tickets');
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -106,7 +106,7 @@ export default function SASupportPage() {
 
     const updateStatus = async (id, status) => {
         try {
-            const response = await api.patch(`/support/tickets/${id}`, { status });
+            const response = await mockApi.patch(`/support/tickets/${id}`, { status });
             if (response.data.success) {
                 setTickets(tickets.map(t => t._id === id ? response.data.data : t));
                 showToast(`Ticket status updated to ${status}`);

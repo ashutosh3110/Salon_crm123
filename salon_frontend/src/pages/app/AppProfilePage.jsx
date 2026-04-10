@@ -15,7 +15,7 @@ import {
     MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
 } from '../../data/appMockData';
 import { useWallet } from '../../contexts/WalletContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout } = useCustomerAuth();

@@ -25,7 +25,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 
 export default function ReceptionistDashboard() {
@@ -72,10 +72,10 @@ export default function ReceptionistDashboard() {
                 const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                 
                 const [statsRes, bookingsRes, servicesRes, staffRes] = await Promise.all([
-                    api.get('/dashboard/receptionist'),
-                    api.get(`/bookings?date=${today}&limit=100`),
-                    api.get('/services?limit=100'),
-                    api.get('/users?role=stylist')
+                    mockApi.get('/dashboard/receptionist'),
+                    mockApi.get(`/bookings?date=${today}&limit=100`),
+                    mockApi.get('/services?limit=100'),
+                    mockApi.get('/users?role=stylist')
                 ]);
 
                 if (statsRes.data?.success) {
@@ -160,11 +160,11 @@ export default function ReceptionistDashboard() {
 
     const handleCheckIn = async (id) => {
         try {
-            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            await mockApi.patch(`/bookings/${id}`, { status: 'arrived' });
             // Refresh feed
             const d = new Date();
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-            const feedRes = await api.get(`/bookings?date=${today}&limit=5`);
+            const feedRes = await mockApi.get(`/bookings?date=${today}&limit=5`);
             if (feedRes.data.results) {
                 setLiveFeed(feedRes.data.results.map(b => ({
                     id: b.id || b._id,
@@ -185,7 +185,7 @@ export default function ReceptionistDashboard() {
     const handleRegistrationSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/users', {
+            await mockApi.post('/users', {
                 ...newClient,
                 role: 'client',
                 tenantId: user?.tenantId
@@ -195,7 +195,7 @@ export default function ReceptionistDashboard() {
             alert('Registration Successful: Guest added to database.');
             
             // Refresh stats
-            const statsRes = await api.get('/dashboard/receptionist');
+            const statsRes = await mockApi.get('/dashboard/receptionist');
             if (statsRes.data.success) {
                 const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};
                 setStats(statsRes.data.data.stats.map(s => ({ ...s, icon: iconMap[s.label] || AlertCircle })));
@@ -226,14 +226,14 @@ export default function ReceptionistDashboard() {
                 source: 'RECEPTION'
             };
 
-            await api.post('/bookings', bookingData);
+            await mockApi.post('/bookings', bookingData);
             
             // Refresh feed and stats
             const d = new Date();
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const [statsRes, feedRes] = await Promise.all([
-                api.get('/dashboard/receptionist'),
-                api.get(`/bookings?date=${today}&limit=5`)
+                mockApi.get('/dashboard/receptionist'),
+                mockApi.get(`/bookings?date=${today}&limit=5`)
             ]);
 
             if (statsRes.data.success) {
@@ -703,7 +703,7 @@ export default function ReceptionistDashboard() {
                                     status: 'arrived',
                                     source: 'WALKIN'
                                 };
-                                await api.post('/bookings', bookingData);
+                                await mockApi.post('/bookings', bookingData);
                                 setIsWalkinOpen(false);
                                 alert('Walk-in Successful: Guest registered and checked-in.');
                                 
@@ -711,8 +711,8 @@ export default function ReceptionistDashboard() {
                                 const d = new Date();
                                 const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                                 const [sR, fR] = await Promise.all([
-                                    api.get('/dashboard/receptionist'),
-                                    api.get(`/bookings?date=${today}&limit=5`)
+                                    mockApi.get('/dashboard/receptionist'),
+                                    mockApi.get(`/bookings?date=${today}&limit=5`)
                                 ]);
                                 if (sR.data.success) {
                                     const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};

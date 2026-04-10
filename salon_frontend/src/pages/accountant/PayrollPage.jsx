@@ -1,26 +1,17 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp, Zap, RefreshCcw, AlertCircle, X, Info, Plus, Minus, CreditCard, Banknote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useFinance } from '../../contexts/FinanceContext';
+import mockApi from '../../services/mock/mockApi';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export default function PayrollPage() {
-    const { 
-        payroll, 
-        fetchPayroll, 
-        generatePayroll, 
-        syncCommissions, 
-        syncAttendance, 
-        processPayouts, 
-        updatePayrollEntry,
-        payrollPeriod 
-    } = useFinance();
-
+    const [payroll, setPayroll] = useState([]);
+    const [payrollPeriod, setPayrollPeriod] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [editModal, setEditModal] = useState(null); // { entryId, data }
+    const [editModal, setEditModal] = useState(null);
     const [salarySlip, setSalarySlip] = useState(null);
 
     const now = new Date();
@@ -35,17 +26,31 @@ export default function PayrollPage() {
         toastTimer.current = setTimeout(() => setToast(null), 4000);
     }, []);
 
+    const loadPayroll = useCallback(async () => {
+        try {
+            const [payRes, metaRes] = await Promise.all([
+                mockApi.get(`/payroll/entries?year=${selectedPeriod.year}&month=${selectedPeriod.month}`),
+                mockApi.get(`/payroll/period?year=${selectedPeriod.year}&month=${selectedPeriod.month}`)
+            ]);
+            setPayroll(payRes.data.results || []);
+            setPayrollPeriod(payRes.data.period || metaRes.data.data);
+        } catch (e) {
+            console.error('Failed to load payroll');
+        }
+    }, [selectedPeriod]);
+
     useEffect(() => {
-        fetchPayroll(selectedPeriod.year, selectedPeriod.month);
-    }, [fetchPayroll, selectedPeriod]);
+        loadPayroll();
+    }, [loadPayroll]);
 
     const handleGenerate = async () => {
         setIsProcessing(true);
         try {
-            await generatePayroll(selectedPeriod.year, selectedPeriod.month);
+            await mockApi.post('/payroll/generate', { year: selectedPeriod.year, month: selectedPeriod.month });
             showToast(`Payroll entries generated for ${selectedPeriod.month}/${selectedPeriod.year}`);
+            loadPayroll();
         } catch (error) {
-            showToast('Failed to generate payroll. Check staff status.', 'error');
+            showToast('Failed to generate payroll.', 'error');
         } finally {
             setIsProcessing(false);
         }
@@ -54,8 +59,9 @@ export default function PayrollPage() {
     const handleSyncCommissions = async () => {
         setIsProcessing(true);
         try {
-            const res = await syncCommissions(selectedPeriod.year, selectedPeriod.month);
-            showToast(`Synced commissions for ${res.synced} staff members!`);
+            const res = await mockApi.post('/payroll/sync-commissions', { year: selectedPeriod.year, month: selectedPeriod.month });
+            showToast(`Synced commissions for ${res.data.synced || 0} staff members!`);
+            loadPayroll();
         } catch (error) {
             showToast('Failed to sync commissions.', 'error');
         } finally {
@@ -66,8 +72,9 @@ export default function PayrollPage() {
     const handleSyncAttendance = async () => {
         setIsProcessing(true);
         try {
-            const res = await syncAttendance(selectedPeriod.year, selectedPeriod.month);
-            showToast(`Synced attendance for ${res.synced} staff members!`);
+            const res = await mockApi.post('/payroll/sync-attendance', { year: selectedPeriod.year, month: selectedPeriod.month });
+            showToast(`Synced attendance for ${res.data.synced || 0} staff members!`);
+            loadPayroll();
         } catch (error) {
             showToast('Failed to sync attendance.', 'error');
         } finally {
@@ -81,8 +88,9 @@ export default function PayrollPage() {
         
         setIsProcessing(true);
         try {
-            await processPayouts(selectedPeriod.year, selectedPeriod.month);
+            await mockApi.post('/payroll/payouts', { year: selectedPeriod.year, month: selectedPeriod.month });
             showToast('All payouts processed and recorded in Finance!', 'success');
+            loadPayroll();
         } catch (error) {
             showToast('Processing failed. Please try again.', 'error');
         } finally {
@@ -92,9 +100,10 @@ export default function PayrollPage() {
 
     const handleUpdateEntry = async (id, data) => {
         try {
-            await updatePayrollEntry(id, data);
+            await mockApi.patch(`/payroll/entries/${id}`, data);
             showToast('Updated successfully');
             setEditModal(null);
+            loadPayroll();
         } catch (error) {
             showToast('Update failed', 'error');
         }

@@ -4,7 +4,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import mockApi from '../../services/mock/mockApi';
 import { useBusiness } from '../../contexts/BusinessContext';
 import subscriptionData from '../../data/subscriptionPlans.json';

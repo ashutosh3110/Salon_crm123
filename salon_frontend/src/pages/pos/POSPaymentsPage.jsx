@@ -3,7 +3,7 @@ import {
     CreditCard, Smartphone, Banknote, Ban,
     Clock, CheckCircle2
 } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 export default function POSPaymentsPage() {
     const [invoices, setInvoices] = useState([]);

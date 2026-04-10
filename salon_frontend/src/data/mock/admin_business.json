@@ -28,8 +28,8 @@
     "outlets": {
         "success": true,
         "data": [
-            { "_id": "out_1", "name": "Main Branch - Mumbai", "status": "active", "totalStaff": 12 },
-            { "_id": "out_2", "name": "Express Branch - Pune", "status": "active", "totalStaff": 8 }
+            { "_id": "out_1", "name": "Main Branch - Mumbai", "status": "active", "totalStaff": 12, "tenantId": "mock_tenant_id" },
+            { "_id": "out_2", "name": "Express Branch - Pune", "status": "active", "totalStaff": 8, "tenantId": "mock_tenant_id" }
         ]
     },
     "staff": [

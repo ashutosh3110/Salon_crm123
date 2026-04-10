@@ -9,7 +9,8 @@ import {
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import { useState, useEffect, useCallback } from 'react';
-import api from '../../services/api';
+;
+import mockApi from '../../services/mock/mockApi';
 
 export default function PerformancePage() {
     const [timeRange, setTimeRange] = useState('7d');
@@ -21,7 +22,7 @@ export default function PerformancePage() {
         setLoading(true);
         setError(null);
         try {
-            const { data: res } = await api.get('/dashboard/manager');
+            const { data: res } = await mockApi.get('/dashboard/manager');
             setData(res?.data || res);
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Failed to load performance data');

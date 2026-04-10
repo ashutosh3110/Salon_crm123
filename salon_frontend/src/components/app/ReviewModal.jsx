@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, X, Send, CheckCircle2 } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 export default function ReviewModal({ isOpen, onClose, booking, onSuccess }) {
     const [rating, setRating] = useState(0);

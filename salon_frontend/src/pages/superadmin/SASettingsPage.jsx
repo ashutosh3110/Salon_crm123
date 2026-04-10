@@ -4,7 +4,7 @@ import {
     CheckCircle, Shield, Edit3, KeyRound,
     BadgeCheck, AlertCircle, Loader2
 } from 'lucide-react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 /* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
@@ -83,7 +83,7 @@ export default function SASettingsPage() {
     const fetchProfile = async () => {
         try {
             setLoading(true);
-            const { data } = await api.get('/users/me');
+            const { data } = await mockApi.get('/users/me');
             setProfile({
                 name: data.name,
                 email: data.email,
@@ -120,7 +120,7 @@ export default function SASettingsPage() {
         if (!profile.name || !profile.email) return showToast('Name and Email are required.', 'error');
         setSavingProfile(true);
         try {
-            await api.patch('/users/me', {
+            await mockApi.patch('/users/me', {
                 name: profile.name,
                 email: profile.email,
                 phone: profile.phone
@@ -141,7 +141,7 @@ export default function SASettingsPage() {
         
         setSavingPassword(true);
         try {
-            await api.post('/users/change-password', {
+            await mockApi.post('/users/change-password', {
                 currentPassword: pwd.current,
                 newPassword: pwd.newPwd
             });

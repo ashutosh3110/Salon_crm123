@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
     CheckCircle, EyeIcon, ArrowUpRight, Trash2, LogIn,
@@ -420,7 +420,7 @@ export default function SATenantsPage() {
 
     const fetchStats = async () => {
         try {
-            const response = await api.get('/tenants/stats');
+            const response = await mockApi.get('/tenants/stats');
             setStats(response.data.data);
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -469,7 +469,7 @@ export default function SATenantsPage() {
                 page,
                 limit: 10
             };
-            const response = await api.get('/tenants', { params });
+            const response = await mockApi.get('/tenants', { params });
             const data = response.data.data;
             if (data && data.results) {
                 setTenants(data.results);
@@ -585,10 +585,10 @@ export default function SATenantsPage() {
         setSaving(true);
         try {
             if (modal.mode === 'create') {
-                await api.post('/tenants', form);
+                await mockApi.post('/tenants', form);
                 showToast(`Salon "${form.name}" created!`);
             } else {
-                await api.put(`/tenants/${modal.tenant._id}`, form);
+                await mockApi.put(`/tenants/${modal.tenant._id}`, form);
                 showToast(`"${form.name}" updated!`);
             }
             await fetchTenants();
@@ -609,7 +609,7 @@ export default function SATenantsPage() {
 
     const handleQuickPlanUpdate = async (tenantId, newPlan) => {
         try {
-            await api.put(`/tenants/${tenantId}`, { subscriptionPlan: newPlan });
+            await mockApi.put(`/tenants/${tenantId}`, { subscriptionPlan: newPlan });
             showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
             fetchTenants();
             setModal(null);
@@ -625,7 +625,7 @@ export default function SATenantsPage() {
         
         try {
             const newStatus = tenant.status === 'suspended' ? 'active' : 'suspended';
-            await api.put(`/tenants/${tenant._id}`, { status: newStatus });
+            await mockApi.put(`/tenants/${tenant._id}`, { status: newStatus });
             showToast(`Salon ${action}d successfully.`);
             fetchTenants();
         } catch (error) {
@@ -637,7 +637,7 @@ export default function SATenantsPage() {
     const handleDelete = async (tenant) => {
         if (!confirm(`Permanently delete "${tenant.name}"? This cannot be undone.`)) return;
         try {
-            await api.delete(`/tenants/${tenant._id}`);
+            await mockApi.delete(`/tenants/${tenant._id}`);
             showToast(`Salon deleted.`, 'error');
             fetchTenants();
         } catch (error) {
@@ -650,7 +650,7 @@ export default function SATenantsPage() {
         if (!confirm(`This will reset the password of "${tenant.name}" owner to "123456" and send them an email. Continue?`)) return;
         
         try {
-            const res = await api.post(`/tenants/${tenant._id}/resend-credentials`);
+            const res = await mockApi.post(`/tenants/${tenant._id}/resend-credentials`);
             showToast(res.data.message);
         } catch (error) {
             console.error('Error resending credentials:', error);

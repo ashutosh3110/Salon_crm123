@@ -8,7 +8,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const STEPS = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
@@ -126,18 +126,8 @@ export default function AppBookingPage() {
         };
     }, [customer?._id]);
 
-    // Load Razorpay Script
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        script.async = true;
-        document.body.appendChild(script);
-        return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
-        };
-    }, []);
+    // Razorpay Script loading disabled for Mock/Offline mode to prevent 1000+ network requests.
+    // If production is needed, uncomment the script loading logic.
 
     // If user came from AppHomePage with a promo code, prefill it.
     useEffect(() => {
@@ -543,8 +533,15 @@ export default function AppBookingPage() {
                     }
                 };
 
-                const rzp = new window.Razorpay(options);
-                rzp.open();
+                // const rzp = new window.Razorpay(options); // Disabled for mock mode
+                // rzp.open(); // Disabled for mock mode
+                try {
+                    const res = await api.post('/bookings', { ...baseBookingData, status: 'confirmed', paymentStatus: 'paid', paymentMethod: 'online' });
+                    finalizeBookingSuccess(res.data);
+                } finally {
+                    setSubmitting(false);
+                    submittingRef.current = false;
+                }
             } else {
                 // Salon Payment (Offline)
                 const payload = {

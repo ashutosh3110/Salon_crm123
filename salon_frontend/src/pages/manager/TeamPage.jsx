@@ -19,7 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomDropdown from '../../components/common/CustomDropdown';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 const ROLE_OPTIONS_ADD = [
     { label: 'Senior Stylist', value: 'stylist:Senior Stylist' },
@@ -108,7 +108,7 @@ export default function TeamPage() {
         setLoading(true);
         setLoadError('');
         try {
-            const { data: res } = await api.get('/dashboard/team');
+            const { data: res } = await mockApi.get('/dashboard/team');
             const payload = res?.data ?? res;
             setStats(payload?.stats || defaultStats);
             setRevenueGrowth(Array.isArray(payload?.revenueGrowth) ? payload.revenueGrowth : []);
@@ -153,7 +153,7 @@ export default function TeamPage() {
         }
         if (!window.confirm('Are you sure you want to remove this team member?')) return;
         try {
-            await api.delete(`/users/${id}`);
+            await mockApi.delete(`/users/${id}`);
             await fetchTeam();
         } catch (e) {
             window.alert(e.response?.data?.message || e.message || 'Delete failed');
@@ -165,7 +165,7 @@ export default function TeamPage() {
         const { role, specialist } = parseRoleSelect(newMember.roleSelect);
         setSaving(true);
         try {
-            await api.post('/users', {
+            await mockApi.post('/users', {
                 name: newMember.name.trim(),
                 email: newMember.email.trim(),
                 phone: newMember.phone.trim(),
@@ -198,7 +198,7 @@ export default function TeamPage() {
         const { role, specialist } = parseRoleSelect(editingMember.roleSelect);
         setSaving(true);
         try {
-            await api.patch(`/users/${editingMember.id}`, {
+            await mockApi.patch(`/users/${editingMember.id}`, {
                 name: editingMember.name.trim(),
                 email: editingMember.email?.trim(),
                 phone: editingMember.phone.trim(),

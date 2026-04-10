@@ -22,7 +22,7 @@ import {
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {

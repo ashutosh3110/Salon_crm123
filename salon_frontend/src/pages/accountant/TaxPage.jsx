@@ -1,16 +1,37 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ClipboardList, Filter, Download, Calendar, ArrowUpRight, CheckCircle2, AlertCircle, FileText, PieChart, TrendingUp, ShieldCheck, FileDown, FileJson } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useFinance } from '../../contexts/FinanceContext';
+import mockApi from '../../services/mock/mockApi';
 
 export default function TaxPage() {
-    const { gstSummary, expenses } = useFinance();
+    const [gstSummary, setGstSummary] = useState({ totals: {}, monthly: [] });
+    const [expenses, setExpenses] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [periodFilter, setPeriodFilter] = useState('All');
     const [typeFilter, setTypeFilter] = useState('All');
-    const [exportFormat, setExportFormat] = useState('excel'); // 'excel' or 'pdf'
+    const [exportFormat, setExportFormat] = useState('excel');
+
+    useEffect(() => {
+        const loadTaxData = async () => {
+            try {
+                setLoading(true);
+                const [taxRes, expRes] = await Promise.all([
+                    mockApi.get('/finance/tax-summary'),
+                    mockApi.get('/finance/expenses')
+                ]);
+                setGstSummary(taxRes.data.data || { totals: {}, monthly: [] });
+                setExpenses(expRes.data.data || []);
+            } catch (e) {
+                console.error('Failed to load tax data');
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadTaxData();
+    }, []);
 
     // Calculate GST Input (ITC) from Expenses (Estimate 18% on Inventory/Supplies)
     const itcStats = useMemo(() => {
@@ -23,11 +44,11 @@ export default function TaxPage() {
         return { total: estimatedITC, count: taxableExpenses.length };
     }, [expenses]);
 
-    const taxStats = [
+    const taxStats = useMemo(() => [
         { label: 'GST Output (Sales)', value: `₹${(gstSummary.totals?.gstTotal || 0).toLocaleString()}`, sub: 'From Salon Invoices' },
         { label: 'GST Input (Purchase)', value: `₹${itcStats.total.toLocaleString()}`, sub: `${itcStats.count} Taxable Expenses` },
         { label: 'Net Liability', value: `₹${Math.max(0, (gstSummary.totals?.gstTotal || 0) - itcStats.total).toLocaleString()}`, sub: 'Estimated Payable' },
-    ];
+    ], [gstSummary, itcStats]);
 
     const filingsHistory = useMemo(() => {
         return (gstSummary.monthly || []).map(m => ({
@@ -39,6 +60,17 @@ export default function TaxPage() {
             status: 'Draft'
         }));
     }, [gstSummary.monthly]);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Calculating Tax Liability...</p>
+                </div>
+            </div>
+        );
+    }
 
     const filteredFilings = filingsHistory.filter(file => {
         const matchesPeriod = periodFilter === 'All' || file.period.includes(periodFilter);

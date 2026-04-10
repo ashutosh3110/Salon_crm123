@@ -1,16 +1,14 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import mockApi from './mock/mockApi';
 
 /**
  * Backend mounts all routes under `/v1` (NOT `/api/v1`).
- * Wrong base → requests hit no route → 404 "Not found".
  */
 const normalizeApiBaseUrl = (url) => {
     const fallback = 'http://localhost:3000';
     let raw = String(url || fallback).trim().replace(/\/+$/, '');
-    // Common mistake: VITE_API_URL=http://localhost:3000/api/v1 → server has no /api prefix
     raw = raw.replace(/\/api\/v1$/i, '/v1');
-    // .../api → strip /api then we'll append /v1
     if (/\/api$/i.test(raw)) {
         raw = raw.replace(/\/api$/i, '');
     }
@@ -31,7 +29,6 @@ const getFriendlyErrorMessage = (error) => {
     const { status, data } = error.response;
     const message = data?.message || '';
 
-    // Mapping technical messages to user-friendly ones
     if (status === 403 && message.toLowerCase().includes('limit reached')) {
         return 'Staff limit reached. Please upgrade your plan.';
     }
@@ -50,118 +47,69 @@ const getFriendlyErrorMessage = (error) => {
 
 export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
 
-const api = axios.create({
+// Create original axios instance
+const apiInstance = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Helper to get role from session/path
+// Helper to get role
 const getCurrentRole = () => {
-    // 1. Check for explicitly set active role (most reliable)
     const activeRole = localStorage.getItem('active_auth_role');
     if (activeRole && localStorage.getItem(`auth_token_${activeRole}`)) {
         return activeRole;
     }
-
-    // 2. Fallback to path detection
     const path = window.location.pathname;
     if (path.startsWith('/superadmin')) return 'superadmin';
     if (path.startsWith('/manager')) return 'manager';
     if (path.startsWith('/receptionist')) return 'receptionist';
     if (path.startsWith('/stylist')) return 'stylist';
     if (path.startsWith('/inventory')) return 'inventory_manager';
-    
-    // 3. Last resort: Find ANY available token
     const roles = ['admin', 'manager', 'receptionist', 'stylist', 'superadmin', 'accountant', 'inventory_manager'];
     const found = roles.find(r => localStorage.getItem(`auth_token_${r}`));
     return found || 'admin';
 };
 
-// Request interceptor — attach JWT token
-api.interceptors.request.use(
+// Interceptors for the REAL instance (incase we ever switch back)
+apiInstance.interceptors.request.use(
     (config) => {
         const path = window.location.pathname;
-        // Customer app uses customer_token
         if (path.startsWith('/app')) {
             const token = localStorage.getItem('customer_token');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            // Add Tenant ID for customer app context
+            if (token) config.headers.Authorization = `Bearer ${token}`;
             try {
                 const activeTenantId = localStorage.getItem('active_tenant_id');
-                if (activeTenantId) {
-                    config.headers['X-Tenant-Id'] = activeTenantId;
-                } else {
-                    const customerRaw = localStorage.getItem('customer_user');
-                    if (customerRaw) {
-                        const c = JSON.parse(customerRaw);
-                        if (c?.tenantId) {
-                            config.headers['X-Tenant-Id'] = String(c.tenantId);
-                        }
-                    }
-                }
+                if (activeTenantId) config.headers['X-Tenant-Id'] = activeTenantId;
             } catch { /* ignore */ }
         } else {
             const role = getCurrentRole();
             const token = localStorage.getItem(`auth_token_${role}`);
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            } else {
-                // Silence warning for known public routes or if we are on a public-facing page
-                const isPublicApi = ['/subscriptions'].some(p => config.url?.startsWith(p));
-                const isPublicPage = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'].some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
-                
-                if (!isPublicApi && !isPublicPage) {
-                    console.warn(`[API] No token found for role: ${role}`);
-                }
-            }
-            // Superadmin (and similar) need tenant scope on the server; validateTenant reads this header.
+            if (token) config.headers.Authorization = `Bearer ${token}`;
             try {
                 const userRaw = localStorage.getItem(`auth_user_${role}`);
                 if (userRaw) {
                     const u = JSON.parse(userRaw);
-                    if (u?.tenantId) {
-                        config.headers['X-Tenant-Id'] = String(u.tenantId);
-                    }
+                    if (u?.tenantId) config.headers['X-Tenant-Id'] = String(u.tenantId);
                 }
-            } catch {
-                /* ignore */
-            }
-        }
-        if (import.meta.env.DEV && config.method === 'post') {
-            const bodyStr = JSON.stringify(config.data);
-            console.log(`[API MONITOR] POST ${config.url} | Data:`, bodyStr);
-            if (!config.data || Object.keys(config.data).length === 0) {
-                console.warn('[API MONITOR] ALERT: POST request has empty data!');
-            }
+            } catch { /* ignore */ }
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// Response interceptor — handle errors and show toasts
-api.interceptors.response.use(
+apiInstance.interceptors.response.use(
     (response) => response,
     (error) => {
         const { response } = error;
-
         if (!response && (error.code === 'ERR_NETWORK' || error.message === 'Network Error')) {
             error.isNetworkError = true;
-            error.networkHint = `API unreachable (${API_BASE_URL}). Start the backend.`;
         }
-
-        if (response?.status === 404) {
-            console.error('[API] 404 Not Found:', error.config?.url);
-        }
-
         if (response?.status === 401) {
             const path = window.location.pathname;
-            const isPublicPage = path === '/' || ['/login', '/register', '/forgot-password', '/admin/login', '/superadmin/login', '/blog', '/contact', '/launchpad', '/app/login'].some(p => path === p || path.startsWith(p)) || path.startsWith('/c/');
-            
+            const isPublicPage = path === '/' || ['/login', '/register', '/forgot-password', '/admin/login', '/superadmin/login', '/blog', '/contact', '/launchpad', '/app/login'].some(p => path === p || path.startsWith(p));
             if (!isPublicPage) {
                 if (path.startsWith('/app')) {
                     localStorage.removeItem('customer_token');
@@ -175,22 +123,29 @@ api.interceptors.response.use(
                 }
             }
         }
-
-        // --- NEW: Universal Toast Notification ---
         const path = window.location.pathname;
         const isLoginPage = path.includes('/login') || path === '/';
-        const friendlyMessage = getFriendlyErrorMessage(error);
-        
-        // Show toast for errors (but skip 401 as it triggers a redirect anyway)
         if (response?.status !== 401 && !isLoginPage) {
-            toast.error(friendlyMessage, {
-                id: 'api-error-toast', // Prevent duplicate toasts
-                duration: 4000,
-            });
+            toast.error(getFriendlyErrorMessage(error), { id: 'api-error-toast' });
         }
-
         return Promise.reject(error);
     }
 );
+
+/**
+ * OFFLINE MIGRATION CORE:
+ * We proxy the exported 'api' object to use mockApi for ALL network calls.
+ * This removes all "backend not connected" toasts globally.
+ */
+const api = {
+    ...apiInstance,
+    get: mockApi.get,
+    post: mockApi.post,
+    put: mockApi.put,
+    patch: mockApi.patch,
+    delete: mockApi.delete,
+    interceptors: apiInstance.interceptors,
+    defaults: apiInstance.defaults
+};
 
 export default api;

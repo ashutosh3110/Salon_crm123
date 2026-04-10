@@ -19,7 +19,7 @@ import {
     Cell
 } from 'recharts';
 import { useBusiness } from '../../contexts/BusinessContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 export default function POSDashboardPage() {
     const navigate = useNavigate();

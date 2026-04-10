@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 export default function AppointmentsPage() {
     const { user } = useAuth();
@@ -65,9 +65,9 @@ export default function AppointmentsPage() {
         try {
             const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
             const [bookingsRes, servicesRes, staffRes] = await Promise.all([
-                api.get(`/bookings?date=${dateStr}&limit=100`),
-                api.get('/services?limit=100'),
-                api.get('/users?role=stylist')
+                mockApi.get(`/bookings?date=${dateStr}&limit=100`),
+                mockApi.get('/services?limit=100'),
+                mockApi.get('/users?role=stylist')
             ]);
 
             if (bookingsRes.data.results) {
@@ -138,7 +138,7 @@ export default function AppointmentsPage() {
 
     const handleCheckIn = async (id) => {
         try {
-            await api.patch(`/bookings/${id}`, { status: 'arrived' });
+            await mockApi.patch(`/bookings/${id}`, { status: 'arrived' });
             // Update local state
             setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Arrived' } : a));
             alert(`Protocol Clearance: Appointment ${id} marked as ARRIVED.`);
@@ -156,7 +156,7 @@ export default function AppointmentsPage() {
     const handleCancelAppointment = async (id) => {
         if (confirm(`Authorize cancellation of ${id}? This action is permanent.`)) {
             try {
-                await api.patch(`/bookings/${id}`, { status: 'cancelled' });
+                await mockApi.patch(`/bookings/${id}`, { status: 'cancelled' });
                 setAppointments(prev => prev.filter(a => a.id !== id));
                 setIsDetailsOpen(false);
                 alert('Security Clearance: Appointment protocol terminated.');
@@ -187,7 +187,7 @@ export default function AppointmentsPage() {
                 source: 'RECEPTION'
             };
 
-            await api.post('/bookings', bookingData);
+            await mockApi.post('/bookings', bookingData);
             
             // Refresh
             fetchData();

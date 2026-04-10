@@ -24,7 +24,7 @@ import {
     Document, Page, Text, View, StyleSheet, pdf, Font 
 } from '@react-pdf/renderer';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 // Register Fonts
 Font.register({
@@ -174,7 +174,7 @@ export default function InvoicesPage() {
 
         try {
             // 1. Fetch Dashboard Stats
-            const statsRes = await api.get('/invoices/stats');
+            const statsRes = await mockApi.get('/invoices/stats');
             setInvoiceStats({
                 totalRevenue: statsRes.data.totalRevenue || 0,
                 invoiceCount: statsRes.data.invoiceCount || 0,
@@ -188,7 +188,7 @@ export default function InvoicesPage() {
                 search: searchQuery || undefined,
                 paymentStatus: statusFilter !== 'All' ? statusFilter.toLowerCase() : undefined
             };
-            const invoicesRes = await api.get('/invoices', { params });
+            const invoicesRes = await mockApi.get('/invoices', { params });
             setInvoices(invoicesRes.data.results || []);
             setTotalPages(invoicesRes.data.totalPages || 1);
             setTotalResults(invoicesRes.data.totalResults || 0);
@@ -245,7 +245,7 @@ export default function InvoicesPage() {
     const handleAction = async (type, id) => {
         if (type === 'View') {
             try {
-                const res = await api.get(`/invoices/${id}`);
+                const res = await mockApi.get(`/invoices/${id}`);
                 setSelectedInvoice(res.data);
                 setIsPreviewOpen(true);
             } catch (error) {
@@ -253,7 +253,7 @@ export default function InvoicesPage() {
             }
         } else if (type === 'Download') {
             try {
-                const res = await api.get(`/invoices/${id}`);
+                const res = await mockApi.get(`/invoices/${id}`);
                 const inv = res.data;
                 const blob = await pdf(<SingleInvoicePDF invoice={inv} />).toBlob();
                 const url = URL.createObjectURL(blob);

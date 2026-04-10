@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function PaymentsPage() {
@@ -45,9 +45,9 @@ export default function PaymentsPage() {
         try {
             const today = new Date().toISOString().split('T')[0];
             const [invoiceRes, serviceRes, staffRes] = await Promise.all([
-                api.get(`/invoices?date=today&outletId=${user?.outletId || ''}`),
-                api.get('/services?limit=100'),
-                api.get(`/users?role=stylist&outletId=${user?.outletId}`)
+                mockApi.get(`/invoices?date=today&outletId=${user?.outletId || ''}`),
+                mockApi.get('/services?limit=100'),
+                mockApi.get(`/users?role=stylist&outletId=${user?.outletId}`)
             ]);
 
             console.log('[TERMINAL] Raw Results:', invoiceRes.data.results);
@@ -113,11 +113,11 @@ export default function PaymentsPage() {
         try {
             // 1. Ensure Client exists
             let clientId;
-            const clientRes = await api.get(`/client?phone=${data.phone}`);
+            const clientRes = await mockApi.get(`/client?phone=${data.phone}`);
             if (clientRes.data.results && clientRes.data.results.length > 0) {
                 clientId = clientRes.data.results[0]._id;
             } else {
-                const newClient = await api.post('/client', {
+                const newClient = await mockApi.post('/client', {
                     name: data.name || 'Quick Guest',
                     phone: data.phone,
                     tenantId: user?.tenantId
@@ -143,7 +143,7 @@ export default function PaymentsPage() {
                 performedBy: user?._id
             };
 
-            await api.post('/pos/checkout', checkoutData);
+            await mockApi.post('/pos/checkout', checkoutData);
             
             setIsQuickBillOpen(false);
             alert('Quick bill finalized and invoice generated.');
@@ -171,7 +171,7 @@ export default function PaymentsPage() {
                 'Ref': 'refund'
             };
 
-            await api.patch(`/invoices/${selectedInvoice._id}/settle`, {
+            await mockApi.patch(`/invoices/${selectedInvoice._id}/settle`, {
                 paymentMethod: methodMap[selectedMethod] || 'cash'
             });
 

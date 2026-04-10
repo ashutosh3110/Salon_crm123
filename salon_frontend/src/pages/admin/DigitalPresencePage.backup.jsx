@@ -10,7 +10,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { MOCK_SERVICES } from '../../data/appMockData';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 

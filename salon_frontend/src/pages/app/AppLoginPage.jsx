@@ -6,7 +6,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useGender } from '../../contexts/GenderContext.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, User, MapPin, MapPinned, Star, ChevronRight, Search, Navigation, Scan } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import PasswordField from '../../components/common/PasswordField';
 
 const slideVariants = {

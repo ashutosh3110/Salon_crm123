@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api from '../services/mock/mockApi';
 import { registerToken as requestForToken } from '../services/firebase';
 
 const CustomerAuthContext = createContext(null);

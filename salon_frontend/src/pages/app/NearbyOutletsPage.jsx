@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, MapPin, Navigation, Star, Search, ChevronRight, Globe, Sparkles } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 const RADIUS_OPTIONS = [3, 5, 10, 25];

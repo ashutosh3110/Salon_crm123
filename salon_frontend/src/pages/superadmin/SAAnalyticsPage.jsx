@@ -90,7 +90,7 @@ function CohortCell({ value }) {
 
 /* ══════════════════════════════════════════════════════════════════════ */
 import { useEffect } from 'react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 export default function SAAnalyticsPage() {
     const [range, setRange] = useState('6m');
@@ -102,7 +102,7 @@ export default function SAAnalyticsPage() {
         const fetchAnalytics = async () => {
             try {
                 setLoading(true);
-                const res = await api.get('/analytics/stats');
+                const res = await mockApi.get('/analytics/stats');
                 setData(res.data);
             } catch (err) {
                 console.error('Failed to fetch analytics:', err);

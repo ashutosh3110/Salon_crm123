@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 import superAdminData from '../../data/superAdminMockData.json';
 
@@ -63,7 +63,7 @@ function InvoiceModal({ onClose, onSend }) {
 
     useEffect(() => {
         setFetching(true);
-        api.get('/tenants', { params: { limit: 100 } })
+        mockApi.get('/tenants', { params: { limit: 100 } })
             .then(res => setTenants(res.data.data.results || []))
             .catch(err => console.error('Error fetching tenants:', err))
             .finally(() => setFetching(false));
@@ -221,8 +221,8 @@ export default function SABillingPage() {
         try {
             setLoading(true);
             const [statsRes, transRes] = await Promise.all([
-                api.get(`/billing/stats?t=${Date.now()}`),
-                api.get(`/billing/transactions?limit=100&t=${Date.now()}`)
+                mockApi.get(`/billing/stats?t=${Date.now()}`),
+                mockApi.get(`/billing/transactions?limit=100&t=${Date.now()}`)
             ]);
 
             console.log('[Billing] Stats received:', statsRes.data);
@@ -287,7 +287,7 @@ export default function SABillingPage() {
 
     const handleInvoiceSend = async (form) => {
         try {
-            const res = await api.post('/billing/manual-invoice', {
+            const res = await mockApi.post('/billing/manual-invoice', {
                 tenantId: form.tenantId, // Assuming we add tenant picking logic
                 amount: form.amount,
                 notes: form.note,

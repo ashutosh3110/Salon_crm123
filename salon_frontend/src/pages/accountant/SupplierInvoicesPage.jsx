@@ -3,18 +3,13 @@ import { FileText, Search, Filter, Download, Plus, Clock, CheckCircle2, AlertCir
 import { motion, AnimatePresence } from 'framer-motion';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useInventory } from '../../contexts/InventoryContext';
+import mockApi from '../../services/mock/mockApi';
 
 export default function SupplierInvoicesPage() {
-    const { 
-        supplierInvoices, 
-        fetchSupplierInvoices, 
-        recordSupplierPayment, 
-        fetchSupplierLedger, 
-        supplierLedger,
-        addStockIn, 
-        suppliers 
-    } = useInventory();
+    const [supplierInvoices, setSupplierInvoices] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [supplierLedger, setSupplierLedger] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -117,12 +112,28 @@ export default function SupplierInvoicesPage() {
         e.target.value = null;
     };
 
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const [invRes, supRes] = await Promise.all([
+                mockApi.get('/suppliers/invoices'),
+                mockApi.get('/suppliers')
+            ]);
+            setSupplierInvoices(invRes.data.results || []);
+            setSuppliers(supRes.data.data || []);
+        } catch (e) {
+            console.error('Failed to load supplier data');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handlePaymentSubmit = async (e) => {
         e.preventDefault();
         if (!selectedInvoice) return;
         setIsSubmitting(true);
         try {
-            await recordSupplierPayment({
+            await mockApi.post('/suppliers/invoices/payments', {
                 invoiceKey: selectedInvoice.invoiceKey,
                 amount: Number(paymentForm.amount),
                 note: paymentForm.note,
@@ -130,9 +141,10 @@ export default function SupplierInvoicesPage() {
             });
             setIsPaymentModalOpen(false);
             setPaymentForm({ amount: '', note: '', method: 'online' });
+            loadData();
             alert('Payment recorded successfully!');
         } catch (error) {
-            alert(error?.response?.data?.message || 'Payment failed');
+            alert('Payment failed');
         } finally {
             setIsSubmitting(false);
         }
@@ -141,7 +153,8 @@ export default function SupplierInvoicesPage() {
     const openLedger = async (invoice) => {
         const sup = suppliers.find(s => s.name === invoice.supplierName);
         if (sup) {
-            await fetchSupplierLedger(sup.id);
+            const res = await mockApi.get(`/suppliers/${sup.id}/ledger`);
+            setSupplierLedger(res.data.data);
             setIsLedgerModalOpen(true);
         } else {
             alert('Supplier details not found for ledger');
@@ -152,7 +165,7 @@ export default function SupplierInvoicesPage() {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await addStockIn({
+            await mockApi.post('/products/stock-in', {
                 supplierName: newVoucher.supplier,
                 invoiceRef: newVoucher.invoiceRef,
                 amount: Number(newVoucher.amount),
@@ -174,6 +187,7 @@ export default function SupplierInvoicesPage() {
                 type: 'Credit', 
                 attachmentUrl: '' 
             });
+            loadData();
             alert('Voucher added and synced with Finance!');
         } catch (error) {
             alert('Failed to save voucher.');
@@ -184,9 +198,8 @@ export default function SupplierInvoicesPage() {
 
     // Fetch data on mount
     useEffect(() => {
-        fetchSupplierInvoices();
-        // context doesn't expose fetchSuppliers directly in the same way, but it's part of context
-    }, [fetchSupplierInvoices]);
+        loadData();
+    }, []);
 
     // Auto-calculate tax amount when base amount or rate changes
     useEffect(() => {
@@ -297,8 +310,8 @@ export default function SupplierInvoicesPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex flex-col text-[10px]">
-                                            <span>Subt: ₹{inv.subtotal.toLocaleString()}</span>
-                                            <span>Tax: ₹{inv.taxTotal.toLocaleString()}</span>
+                                            <span>Subt: ₹{(inv.subtotal || 0).toLocaleString()}</span>
+                                            <span>Tax: ₹{(inv.taxTotal || 0).toLocaleString()}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
@@ -311,7 +324,7 @@ export default function SupplierInvoicesPage() {
                                             {inv.status}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-black text-text">₹{inv.outstanding.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-right font-black text-text">₹{(inv.outstanding || 0).toLocaleString()}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-1">
                                             <button 

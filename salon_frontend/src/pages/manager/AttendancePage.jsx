@@ -11,7 +11,8 @@ import {
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import { useBusiness } from '../../contexts/BusinessContext';
-import api from '../../services/api';
+;
+import mockApi from '../../services/mock/mockApi';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -65,7 +66,7 @@ export default function AttendancePage() {
     const fetchAttendance = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get('/attendance', { params: { date: selectedDate } });
+            const res = await mockApi.get('/attendance', { params: { date: selectedDate } });
             const payload = res.data?.data ?? res.data;
             const records = payload?.records ?? [];
             setRawAttendance(records);
@@ -79,7 +80,7 @@ export default function AttendancePage() {
     const loadLeaves = useCallback(async () => {
         setLeavesLoading(true);
         try {
-            const res = await api.get('/attendance/leaves', { params: { status: 'PENDING' } });
+            const res = await mockApi.get('/attendance/leaves', { params: { status: 'PENDING' } });
             setLeaveRequests(res.data?.data || []);
         } catch (e) {
             console.error('Failed to load leaves', e);
@@ -161,7 +162,7 @@ export default function AttendancePage() {
         e.preventDefault();
         if (!editModal) return;
         try {
-            await api.post('/attendance', {
+            await mockApi.post('/attendance', {
                 userId: editModal.id,
                 date: selectedDate,
                 status: newStatus,
@@ -170,7 +171,7 @@ export default function AttendancePage() {
             });
             showToast(`Updated: ${editModal.name}`);
             setEditModal(null);
-            loadDay();
+            fetchAttendance();
         } catch (err) {
             showToast('Update failed');
         }
@@ -178,13 +179,13 @@ export default function AttendancePage() {
 
     const handleBulkAction = async (status) => {
         try {
-            await api.post('/attendance/bulk', {
+            await mockApi.post('/attendance/bulk', {
                 date: selectedDate,
                 status,
                 defaultCheckIn: status === 'present' ? '09:00' : undefined
             });
             showToast(`All staff marked as ${status}`);
-            loadDay();
+            fetchAttendance();
         } catch (err) {
             showToast('Bulk action failed');
         }
@@ -192,10 +193,10 @@ export default function AttendancePage() {
 
     const handleLeaveAction = async (id, status) => {
         try {
-            await api.patch(`/attendance/leaves/${id}`, { status });
+            await mockApi.patch(`/attendance/leaves/${id}`, { status });
             showToast(`Leave ${status.toLowerCase()}ed`);
             loadLeaves();
-            loadDay(); // Refresh registry as status might change
+            fetchAttendance(); // Refresh registry as status might change
         } catch (err) {
             showToast('Action failed');
         }

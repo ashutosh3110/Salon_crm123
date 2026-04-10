@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DollarSign, Plus, Search, Filter, Download, Calendar, ArrowUpRight, ArrowDownRight, MoreHorizontal, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useFinance } from '../../contexts/FinanceContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+import mockApi from '../../services/mock/mockApi';
+
 export default function ExpensesPage() {
-    const { expenses, addExpense } = useFinance();
+    const [expenses, setExpenses] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('All Categories');
@@ -18,6 +20,50 @@ export default function ExpensesPage() {
         date: new Date().toISOString().split('T')[0],
         description: ''
     });
+
+    const loadExpenses = async () => {
+        try {
+            setLoading(true);
+            const res = await mockApi.get('/finance/expenses');
+            setExpenses(res.data.data || []);
+        } catch (e) {
+            console.error('Failed to load expenses');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadExpenses();
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await mockApi.post('/finance/expenses', {
+                ...formState,
+                type: 'expense',
+                amount: parseFloat(formState.amount),
+                paymentMethod: 'cash'
+            });
+            setIsAddModalOpen(false);
+            setFormState({ category: 'inventory', amount: '', vendor: '', date: new Date().toISOString().split('T')[0], description: '' });
+            loadExpenses();
+        } catch (error) {
+            alert('Failed to save expense');
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted">Loading Operating Costs...</p>
+                </div>
+            </div>
+        );
+    }
 
     const categories = [
         { name: 'Inventory', key: 'inventory', color: 'bg-primary' },
@@ -94,18 +140,6 @@ export default function ExpensesPage() {
         });
 
         doc.save(`Expense_Report_${filterCategory.replace(' ', '_')}.pdf`);
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        addExpense({
-            ...formState,
-            type: 'expense',
-            amount: parseFloat(formState.amount),
-            paymentMethod: 'cash' // Default for manual entry
-        });
-        setIsAddModalOpen(false);
-        setFormState({ category: 'inventory', amount: '', vendor: '', date: new Date().toISOString().split('T')[0], description: '' });
     };
 
     return (

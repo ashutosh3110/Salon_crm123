@@ -26,6 +26,7 @@
         },
         "neha@gmail.com": { "role": "stylist", "name": "Neha Stylist" },
         "prachi@gmail.com": { "role": "accountant", "name": "Prachi Accountant" },
+        "accountant@gmail.com": { "role": "accountant", "name": "Mock Accountant" },
         "aditya@gmail.com": { "role": "manager", "name": "Aditya Manager" },
         "aman@gmail.com": { "role": "receptionist", "name": "Aman Receptionist" }
     },

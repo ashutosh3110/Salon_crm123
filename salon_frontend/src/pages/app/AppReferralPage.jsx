@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Copy, Share2, Gift, Check, UserPlus } from 'lucide-react';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 export default function AppReferralPage() {
     const { customer } = useCustomerAuth();

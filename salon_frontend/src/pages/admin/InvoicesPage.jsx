@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, FileText, IndianRupee, Download } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const statusColors = {
     paid: 'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400 border-green-100/50 dark:border-green-900/50',

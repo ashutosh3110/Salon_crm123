@@ -7,7 +7,7 @@ import {
     ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import subscriptionData from '../../data/subscriptionPlans.json';
 
 /* ─── Feature definitions ─────────────────────────────────────────────── */
@@ -407,14 +407,14 @@ export default function SAPlansPage() {
     };
 
     const fetchPlans = async () => {
-        const response = await api.get('/subscriptions');
+        const response = await mockApi.get('/subscriptions');
         const data = response.data.data;
         setPlans(Array.isArray(data) ? data : data.results || []);
     };
 
     const fetchStats = async () => {
         try {
-            const response = await api.get('/subscriptions/stats');
+            const response = await mockApi.get('/subscriptions/stats');
             setStatsData(response.data.data);
         } catch (error) {
             console.error('Error fetching subscription stats:', error);
@@ -425,10 +425,10 @@ export default function SAPlansPage() {
         setSaving(true);
         try {
             if (form._id) {
-                await api.patch(`/subscriptions/${form._id}`, form);
+                await mockApi.patch(`/subscriptions/${form._id}`, form);
                 showToast(`Plan "${form.name}" updated!`);
             } else {
-                await api.post('/subscriptions', form);
+                await mockApi.post('/subscriptions', form);
                 showToast(`Plan "${form.name}" created!`);
             }
             await fetchData();
@@ -450,7 +450,7 @@ export default function SAPlansPage() {
             delete cloned.createdAt;
             delete cloned.updatedAt;
 
-            await api.post('/subscriptions', cloned);
+            await mockApi.post('/subscriptions', cloned);
             showToast(`Plan "${plan.name}" cloned!`);
             await fetchData();
         } catch (error) {
@@ -463,7 +463,7 @@ export default function SAPlansPage() {
 
     const handleToggleActive = async (plan) => {
         try {
-            await api.patch(`/subscriptions/${plan._id}`, { active: !plan.active });
+            await mockApi.patch(`/subscriptions/${plan._id}`, { active: !plan.active });
             showToast(`Plan "${plan.name}" ${plan.active ? 'disabled' : 'enabled'}.`, plan.active ? 'error' : 'success');
             await fetchData();
         } catch (error) {
@@ -475,7 +475,7 @@ export default function SAPlansPage() {
     const handleDelete = async (plan) => {
         if (window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
             try {
-                await api.delete(`/subscriptions/${plan._id}`);
+                await mockApi.delete(`/subscriptions/${plan._id}`);
                 showToast(`Plan "${plan.name}" deleted.`, 'error');
                 await fetchData();
             } catch (error) {

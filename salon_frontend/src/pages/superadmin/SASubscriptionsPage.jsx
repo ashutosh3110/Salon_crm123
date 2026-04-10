@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import {
     CreditCard,
     Check,
@@ -62,11 +62,11 @@ export default function SASubscriptionsPage() {
         setLoading(true);
         try {
             const [plansRes, statsRes] = await Promise.all([
-                api.get('/subscriptions'),
-                api.get('/tenants/stats')
+                mockApi.get('/subscriptions'),
+                mockApi.get('/tenants/stats')
             ]);
             setPlans(plansRes.data?.results || plansRes.data || []);
-            setStats(statsRes.data);
+            setStats(statsRes.data.data);
         } catch (err) {
             console.error('Failed to fetch data:', err);
         } finally {
@@ -78,7 +78,7 @@ export default function SASubscriptionsPage() {
         e.preventDefault();
         setIsSaving(true);
         try {
-            await api.patch(`/subscriptions/${editingPlan._id}`, editingPlan);
+            await mockApi.patch(`/subscriptions/${editingPlan._id}`, editingPlan);
             setEditingPlan(null);
             fetchData();
         } catch (err) {
@@ -110,7 +110,7 @@ export default function SASubscriptionsPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {plans.map((plan) => {
                     const style = PLAN_STYLES[plan.tag] || PLAN_STYLES.basic;
-                    const count = stats?.byPlan?.[plan.tag] || 0;
+                    const count = stats?.countsByPlan?.find(v => v._id === plan.tag)?.count || 0;
                     const PlanIcon = style.icon;
 
                     return (
@@ -208,7 +208,7 @@ export default function SASubscriptionsPage() {
 
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
                             {plans.map((plan) => {
-                                const count = stats?.byPlan?.[plan.tag] || 0;
+                                const count = stats?.countsByPlan?.find(v => v._id === plan.tag)?.count || 0;
                                 const revenue = count * plan.monthlyPrice;
                                 return (
                                     <div key={plan._id} className="p-5 rounded-3xl bg-surface border border-border/50 transition-colors hover:border-primary/20">
@@ -228,7 +228,7 @@ export default function SASubscriptionsPage() {
                         <div className="text-xs font-bold text-white/60 uppercase tracking-widest mb-1">Total Estimated MRR</div>
                         <div className="text-4xl font-bold tracking-tighter mb-2">
                             ₹{plans.reduce((sum, plan) => {
-                                const count = stats?.byPlan?.[plan.tag] || 0;
+                                const count = stats?.countsByPlan?.find(v => v._id === plan.tag)?.count || 0;
                                 return sum + (count * plan.monthlyPrice);
                             }, 0).toLocaleString('en-IN')}
                         </div>

@@ -1,6 +1,6 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import api from './api';
+import mockApi from './mock/mockApi';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -44,7 +44,7 @@ export const registerToken = async () => {
     if (token) {
       console.log('[Firebase] FCM Token:', token);
       // Register token with backend
-      await api.post('/notifications/register-token', { fcmToken: token });
+      await mockApi.post('/notifications/register-token', { fcmToken: token });
       localStorage.setItem('fcm_token', token);
       return token;
     } else {

@@ -7,7 +7,7 @@ import {
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2
 } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import {
     MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS, MOCK_COMPANY_INFO
 } from '../../data/posData';
@@ -508,13 +508,15 @@ export default function POSBillingPage() {
     // ─── Filters & Search ────────────────────────────────────
     const categories = useMemo(() => {
         const items = activeTab === 'services' ? services : products;
-        return ['All', ...new Set(items.map(i => i.category))];
+        const itemsArray = Array.isArray(items) ? items : [];
+        return ['All', ...new Set(itemsArray.map(i => i.category).filter(Boolean))];
     }, [activeTab, services, products]);
 
     const filteredItems = useMemo(() => {
-        const itemsList = activeTab === 'services' ? services : products;
+        const items = activeTab === 'services' ? services : products;
+        const itemsList = Array.isArray(items) ? items : [];
         return itemsList.filter(item => {
-            const matchSearch = item.name.toLowerCase().includes(searchItem.toLowerCase()) ||
+            const matchSearch = item.name?.toLowerCase().includes(searchItem.toLowerCase()) ||
                 (item.sku && item.sku.toLowerCase().includes(searchItem.toLowerCase()));
             const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
             return matchSearch && matchCat;
@@ -522,19 +524,19 @@ export default function POSBillingPage() {
     }, [activeTab, searchItem, selectedCategory, services, products]);
 
     const filteredClients = useMemo(() => {
-        if (!searchClient) return businessCustomers.slice(0, 5);
+        const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
+        if (!searchClient) return clientsList.slice(0, 5);
         const q = searchClient.toLowerCase();
-        return businessCustomers.filter(c =>
-            c.name.toLowerCase().includes(q) ||
+        return clientsList.filter(c =>
+            c.name?.toLowerCase().includes(q) ||
             (c.phone && c.phone.replace(/\D/g, '').includes(q.replace(/\D/g, '')))
         );
     }, [searchClient, businessCustomers]);
 
     // ─── Staff Filtering & Availability ───
     const availableStaff = useMemo(() => {
-        // The user said "quick bill me to sare stylist aane chahiye" (all stylists should appear).
-        // So we revert the filtering and show all staff of the tenant.
-        return businessStaff.filter(s => s.status !== 'inactive');
+        const staffList = Array.isArray(businessStaff) ? businessStaff : [];
+        return staffList.filter(s => s.status !== 'inactive');
     }, [businessStaff]);
 
     // ─── Cart Logic ────────────────────────────────────────

@@ -4,7 +4,7 @@ import {
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2
 } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';

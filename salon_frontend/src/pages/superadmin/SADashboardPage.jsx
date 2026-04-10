@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 import { useAuth } from '../../contexts/AuthContext';
 import useFirebaseNotifications from '../../hooks/useFirebaseNotifications';
 import { registerToken } from '../../services/firebase';
@@ -121,8 +121,8 @@ export default function SADashboardPage() {
         if (isRefresh) setRefreshing(true);
         try {
             const [tenantRes, analyticsRes] = await Promise.all([
-                api.get('/tenants/stats'),
-                api.get('/analytics/stats')
+                mockApi.get('/tenants/stats'),
+                mockApi.get('/analytics/stats')
             ]);
             
             const tenantData = tenantRes.data.data;
@@ -217,7 +217,7 @@ export default function SADashboardPage() {
                                 toast.success('Device registered!', { id: 'fcm-reg' });
 
                                 // 3. Trigger the actual backend test push
-                                const res = await api.get('/notifications/test');
+                                const res = await mockApi.get('/notifications/test');
                                 console.log('[Dashboard] Test API Response:', res.data);
                                 toast.success(`🚀 Test sent! Check your notification.`);
                             } catch (e) {

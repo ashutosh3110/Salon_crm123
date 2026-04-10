@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const AppMembershipCheckoutPage = () => {
     const navigate = useNavigate();

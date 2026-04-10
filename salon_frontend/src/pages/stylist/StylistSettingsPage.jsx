@@ -5,6 +5,7 @@ import PasswordField from '../../components/common/PasswordField';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import mockApi from '../../services/mock/mockApi';
 
 const WEEK_DAYS = [
     { key: 'monday', label: 'Monday' },
@@ -106,7 +107,8 @@ export default function StylistSettingsPage() {
         (async () => {
             try {
                 setLoadError(null);
-                const u = await refreshUser();
+                const res = await mockApi.get('/users/me');
+                const u = res.data?.data ?? res.data;
                 if (!cancelled) hydrateFromUser(u);
             } catch (e) {
                 if (!cancelled) {
@@ -139,7 +141,7 @@ export default function StylistSettingsPage() {
                 .split(',')
                 .map((s) => s.trim())
                 .filter(Boolean);
-            await updateProfile({
+            const res = await mockApi.patch('/users/me', {
                 name: profileForm.name.trim(),
                 email: profileForm.email.trim(),
                 phone: profileForm.phone.trim(),
@@ -151,6 +153,8 @@ export default function StylistSettingsPage() {
                 stylistClientsLabel: profileForm.stylistClientsLabel.trim(),
                 stylistSpecializations: specs,
             });
+            const updated = res.data?.data ?? res.data;
+            hydrateFromUser(updated);
             showToast('Profile saved');
         } catch (e) {
             showToast(e.message || 'Save failed', true);
@@ -181,13 +185,14 @@ export default function StylistSettingsPage() {
     const saveSkills = async () => {
         setIsSaving(true);
         try {
-            const updated = await updateProfile({
+            const res = await mockApi.patch('/users/me', {
                 stylistSkills: skills.map((s) => ({
                     name: s.name.trim(),
                     level: s.level,
                     icon: (s.icon || '✂️').slice(0, 8),
                 })),
             });
+            const updated = res.data?.data ?? res.data;
             hydrateFromUser(updated);
             showToast('Skills saved');
             setShowAddSkill(false);
@@ -211,7 +216,8 @@ export default function StylistSettingsPage() {
     const saveAvailability = async () => {
         setIsSaving(true);
         try {
-            const updated = await updateProfile({ stylistWeeklyAvailability: weekly });
+            const res = await mockApi.patch('/users/me', { stylistWeeklyAvailability: weekly });
+            const updated = res.data?.data ?? res.data;
             hydrateFromUser(updated);
             showToast('Availability saved');
         } catch (e) {
@@ -228,7 +234,7 @@ export default function StylistSettingsPage() {
         }
         setIsSaving(true);
         try {
-            await changePassword(pwd.current, pwd.next);
+            await mockApi.post('/users/change-password', { currentPassword: pwd.current, newPassword: pwd.next });
             showToast('Password updated');
             setPwd({ current: '', next: '', confirm: '' });
         } catch (e) {

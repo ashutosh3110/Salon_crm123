@@ -12,7 +12,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, Cell,
 } from 'recharts';
-import api from '../../services/api';
+import mockApi from '../../services/mock/mockApi';
 
 const STATUS_MAP = {
     completed: { label: 'COMPLETED', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
@@ -57,7 +57,7 @@ export default function StylistDashboard() {
         setError(null);
         setLoading(true);
         try {
-            const res = await api.get('/stylist/overview', { params: { date: scheduleDate } });
+            const res = await mockApi.get('/stylist/overview', { params: { date: scheduleDate } });
             const data = res.data?.data ?? res.data;
             setOverview(data || null);
         } catch (e) {
@@ -76,7 +76,7 @@ export default function StylistDashboard() {
         setBookingsError(null);
         setBookingsLoading(true);
         try {
-            const res = await api.get('/bookings', { params: { staffId: user?._id || user?.id, limit: 100 } });
+            const res = await mockApi.get('/bookings', { params: { staffId: user?._id || user?.id, limit: 100 } });
             // The API might return { data: [...] } or just [...]
             const data = res.data?.data ?? res.data ?? [];
             setAllBookings(Array.isArray(data) ? data : data.results || []);
@@ -120,7 +120,7 @@ export default function StylistDashboard() {
 
     const updateBooking = async (id, nextStatus) => {
         try {
-            await api.patch(`/bookings/${id}`, { status: nextStatus });
+            await mockApi.patch(`/bookings/${id}`, { status: nextStatus });
             showToast('Booking updated');
             await loadOverview();
         } catch (e) {

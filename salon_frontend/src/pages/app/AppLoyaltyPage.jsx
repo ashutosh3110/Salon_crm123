@@ -14,7 +14,7 @@ import {
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
-import api from '../../services/api';
+import api from '../../services/mock/mockApi';
 
 const AppLoyaltyPage = () => {
     const navigate = useNavigate();
