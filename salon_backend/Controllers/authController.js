@@ -198,4 +198,3 @@ exports.resetPassword = async (req, res) => {
         });
     }
 };
-v
