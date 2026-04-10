@@ -30,6 +30,10 @@ const salonSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    defaultPassword: {
+        type: String,
+        default: '123456'
+    },
     address: {
         street: String,
         city: String,

@@ -380,6 +380,12 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                                 </div>
                             </div>
                             <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
+                            {mode === 'create' && (
+                                <div>
+                                    <label className={labelCls}>Admin Password</label>
+                                    <input type="text" className={inputCls} value={form.password || ''} onChange={e => set('password', e.target.value)} placeholder="Default: 123456" />
+                                </div>
+                            )}
                         </div>
                     </div>
 

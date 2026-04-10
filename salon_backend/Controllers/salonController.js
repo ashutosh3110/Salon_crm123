@@ -1,6 +1,7 @@
 const Salon = require('../Models/Salon');
 const User = require('../Models/User');
 const sendEmail = require('../Utils/sendEmail');
+const bcrypt = require('bcryptjs');
 
 // @desc    Create a new salon and its admin
 // @route   POST /api/salons
@@ -19,7 +20,14 @@ exports.createSalon = async (req, res) => {
             password 
         } = req.body;
 
+        console.log('Incoming Create Salon Request:', { name, email, password });
         const adminPassword = password || '123456';
+        console.log('Using Admin Password:', adminPassword);
+        
+        // Hash the password manually for the User
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(adminPassword, salt);
+        console.log('Hashed Password Generated:', hashedPassword);
 
         // 1. Check if salon or admin already exists
         const existingSalon = await Salon.findOne({ email });
@@ -40,6 +48,7 @@ exports.createSalon = async (req, res) => {
             email,
             phone,
             gstNumber,
+            defaultPassword: hashedPassword, // Store as hash for user visibility
             address: {
                 street: address,
                 city: city
@@ -47,16 +56,18 @@ exports.createSalon = async (req, res) => {
             status: 'active', // Direct approved
             isActive: true
         });
+        console.log('Salon Record Created:', salon);
 
         // 3. Create Admin User for this salon
         const user = await User.create({
             name: ownerName,
             email,
-            password: adminPassword,
+            password: hashedPassword, // Use the manually hashed password
             role: 'admin',
             salonId: salon._id,
             isActive: true // Direct approved
         });
+        console.log('User Record Created:', user);
 
         // 4. Send Onboarding Email
         try {
