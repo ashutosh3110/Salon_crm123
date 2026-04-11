@@ -37,28 +37,28 @@ const cart = require('./Routers/cartRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
-app.use('/api/auth', auth);
-app.use('/api/auth', customerAuth);
-app.use('/api/salons', salons);
-app.use('/api/outlets', outlets);
-app.use('/api/roles', roles);
-app.use('/api/inquiries', inquiries);
-app.use('/api/plans', plans);
-app.use('/api/settings', settings);
-app.use('/api/payments', payments);
-app.use('/api/tickets', tickets);
-app.use('/api/blogs', blogs);
-app.use('/api/cms', cms);
-app.use('/api/users', users);
-app.use('/api/services', services);
-app.use('/api/categories', categories);
-app.use('/api/bookings', bookings);
-app.use('/api/product-categories', productCategories);
-app.use('/api/products', products);
-app.use('/api/feedbacks', feedbacks);
-app.use('/api/loyalty', loyalty);
-app.use('/api/promotions', promotions);
-app.use('/api/cart', cart);
+app.use('/auth', auth);
+app.use('/auth', customerAuth);
+app.use('/salons', salons);
+app.use('/outlets', outlets);
+app.use('/roles', roles);
+app.use('/inquiries', inquiries);
+app.use('/plans', plans);
+app.use('/settings', settings);
+app.use('/payments', payments);
+app.use('/tickets', tickets);
+app.use('/blogs', blogs);
+app.use('/cms', cms);
+app.use('/users', users);
+app.use('/services', services);
+app.use('/categories', categories);
+app.use('/bookings', bookings);
+app.use('/product-categories', productCategories);
+app.use('/products', products);
+app.use('/feedbacks', feedbacks);
+app.use('/loyalty', loyalty);
+app.use('/promotions', promotions);
+app.use('/cart', cart);
 
 
 // Initialize Cron Jobs
