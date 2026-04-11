@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
-import mockApi from '../services/mock/mockApi';
+import api from '../services/api'; 
 import { useAuth } from './AuthContext';
 
 /** Admin CMS reads/writes need tenant scope; superadmin has no tenantId on user — pass salon id from /tenants/me */
@@ -42,12 +42,24 @@ export function CMSProvider({ children }) {
         setLoading(true);
         const path = location.pathname || '';
         const isCustomerApp = path.startsWith('/app');
+        
         let tenantId = customer?.tenantId || null;
         if (!tenantId && isCustomerApp) {
-            tenantId = readStoredCustomerTenantId();
-            // Fallback for Guest users who have selected an outlet
+            // First check if a salon context exists (most reliable for app view)
+            tenantId = salon?._id || null;
+            
+            // Fallbacks — check all possible storage keys
+            if (!tenantId) tenantId = readStoredCustomerTenantId();
+            if (!tenantId) tenantId = localStorage.getItem('active_tenant_id');
             if (!tenantId) {
-                tenantId = localStorage.getItem('active_tenant_id');
+                // Also check wapixo_selected_outlet (set during outlet selection on login page)
+                try {
+                    const raw = localStorage.getItem('wapixo_selected_outlet');
+                    if (raw) {
+                        const outlet = JSON.parse(raw);
+                        tenantId = outlet?.salonId || outlet?.tenantId || null;
+                    }
+                } catch {}
             }
         }
 
@@ -62,16 +74,16 @@ export function CMSProvider({ children }) {
                     setLoading(false);
                     return;
                 }
-                res = await mockApi.get(`/cms/app/tenant/${tenantId}`);
+                res = await api.get(`/cms?tenantId=${tenantId}`);
             } else {
                 // If not in customer app, only fetch if salon ID and proper role are present
-                const isManagerOrAdmin = ['admin', 'manager'].includes(user?.role);
-                if (!salon?._id || !isManagerOrAdmin) {
+                const isManagerOrAdmin = ['admin', 'manager', 'superadmin'].includes(user?.role);
+                if (!salon?._id && !isManagerOrAdmin) {
                     setLoading(false);
                     return;
                 }
-                const qs = adminCmsQuery(salon?._id);
-                res = await mockApi.get(`/cms/app${qs}`);
+                const qs = adminCmsQuery(salon?._id || user?.tenantId);
+                res = await api.get(`/cms${qs}`);
             }
             const d = res.data?.data || {};
             setBanners((d.banners || []).map(ensureId));
@@ -86,7 +98,7 @@ export function CMSProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }, [location.pathname, customer?.tenantId, salon?._id, user?.role]);
+    }, [location.pathname, customer?.tenantId, salon?._id, user?.role, user?.tenantId]);
 
     useEffect(() => {
         fetchAppCMS();
@@ -96,8 +108,8 @@ export function CMSProvider({ children }) {
         try {
             const path = location.pathname || '';
             const isCustomerApp = path.startsWith('/app');
-            const qs = !isCustomerApp ? adminCmsQuery(salon?._id) : '';
-            await mockApi.patch(`/cms/app/${section}${qs}`, { content: Array.isArray(content) ? content : [] });
+            const qs = !isCustomerApp ? adminCmsQuery(salon?._id || user?.tenantId) : '';
+            await api.patch(`/cms/${section}${qs}`, { content: Array.isArray(content) ? content : [] });
         } catch (e) {
             console.error('[CMS] Save failed:', e);
             throw e;

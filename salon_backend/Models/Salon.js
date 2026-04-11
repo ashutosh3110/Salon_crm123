@@ -65,6 +65,12 @@ const salonSchema = new mongoose.Schema({
     },
     subscriptionExpiry: {
         type: Date
+    },
+    loyaltySetting: {
+        pointsRate: { type: Number, default: 100 }, // Amount per 1 point (e.g., 100 = 100 Rs per 1 pt)
+        redeemValue: { type: Number, default: 1 }, // Value of 1 point in currency (e.g., 1 pt = 1 Rupee)
+        minRedeemPoints: { type: Number, default: 0 },
+        active: { type: Boolean, default: true }
     }
 }, {
     timestamps: true

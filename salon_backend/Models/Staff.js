@@ -1,0 +1,84 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const staffSchema = new mongoose.Schema({
+    salonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Salon',
+        required: true
+    },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    email: {
+        type: String,
+        unique: true,
+        trim: true,
+        lowercase: true,
+        sparse: true // Allow null if phone is primary
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    password: {
+        type: String,
+        required: true,
+        minlength: 6,
+        default: '123456'
+    },
+    role: {
+        type: String,
+        enum: ['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager'],
+        default: 'stylist'
+    },
+    dob: String,
+    gender: {
+        type: String,
+        enum: ['male', 'female', 'other']
+    },
+    address: String,
+    avatar: String,
+    status: {
+        type: String,
+        enum: ['active', 'inactive', 'pending'],
+        default: 'active'
+    },
+    // Stylist Specific Fields
+    bio: String,
+    experience: String,
+    specializations: [String],
+    profileStatus: {
+        type: String,
+        enum: ['Pending', 'Approved', 'Rejected'],
+        default: 'Approved'
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    }
+}, {
+    timestamps: true
+});
+
+// Hash password before saving
+staffSchema.pre('save', async function(next) {
+    if (!this.isModified('password')) return next();
+    if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+// Compare password method
+staffSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
+};
+
+const Staff = mongoose.model('Staff', staffSchema);
+module.exports = Staff;

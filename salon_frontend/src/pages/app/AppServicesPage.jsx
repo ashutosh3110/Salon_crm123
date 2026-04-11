@@ -1,74 +1,61 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
-import mockData from '../../data/mockServicesPageData.json';
 
-const ServiceCard = ({ service, onBook, colors, isLight }) => {
+const ServiceCard = ({ service, onBook, colors, isLight, categories }) => {
+    const categoryName = useMemo(() => {
+        if (!categories || categories.length === 0) return service.category;
+        const cat = categories.find(c => String(c._id) === String(service.category) || c.name === service.category);
+        return cat ? cat.name : service.category;
+    }, [service.category, categories]);
+
     const fallbackImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop";
-    
+
     return (
         <motion.div
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.97 }}
             style={{
                 background: colors.card,
-                borderRadius: '24px',
+                borderRadius: '16px',
                 border: `1.5px solid ${colors.border}`,
-                boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.02)' : '0 10px 30px rgba(0,0,0,0.2)'
+                boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.2)'
             }}
             className="group overflow-hidden flex flex-col h-full"
         >
-            <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+            <div className="relative aspect-square overflow-hidden bg-slate-100">
                 <img
                     src={service.image || fallbackImage}
                     alt={service.name}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
-                <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-                    <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
-                        <Clock size={10} className="text-[#C8956C]" />
+                <div className="absolute bottom-2 left-2">
+                    <div className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md flex items-center gap-1 text-white text-[8px] font-black uppercase tracking-tighter">
+                        <Clock size={8} className="text-[#C8956C]" />
                         <span>{service.duration}m</span>
                     </div>
-                    {service.resourceType && (
-                        <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
-                            {service.resourceType === 'room' ? <DoorClosed size={10} className="text-[#C8956C]" /> : <Armchair size={10} className="text-[#C8956C]" />}
-                            <span>{service.resourceType}</span>
-                        </div>
-                    )}
                 </div>
             </div>
 
-            <div className="p-3 flex flex-col flex-1">
-                <div className="flex justify-between items-start gap-2 mb-0.5">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{service.category}</span>
-                    <div className="flex items-center gap-0.5">
-                        <Star size={8} fill="#C8956C" color="#C8956C" />
-                        <span className="text-[9px] font-bold">4.9</span>
-                    </div>
-                </div>
-
-                <h3 className="text-[13px] font-bold mb-0.5 line-clamp-1" style={{ color: colors.text }}>{service.name}</h3>
-                <p className="text-[10px] mb-3 line-clamp-2 leading-tight" style={{ color: colors.textMuted }}>{service.description || "Premium salon service for your beauty and wellness."}</p>
+            <div className="p-2.5 flex flex-col flex-1">
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#C8956C] mb-0.5">{categoryName}</span>
+                <h3 className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight" style={{ color: colors.text }}>{service.name}</h3>
+                <p className="text-[10px] mb-3 line-clamp-1 opacity-60 leading-tight" style={{ color: colors.text }}>{service.description || "Premium service."}</p>
 
                 <div className="mt-auto flex items-center justify-between pt-1">
-                    <div className="flex flex-col">
-                        <span className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">Starts from</span>
-                        <span className="text-sm font-black text-[#C8956C]">₹{service.price}</span>
-                    </div>
-
+                    <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span>
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => onBook(service._id || service.id)}
                         style={{
                             background: '#C8956C',
-                            borderRadius: '12px 4px 12px 4px',
-                            boxShadow: '0 6px 12px rgba(200,149,108,0.2)'
+                            borderRadius: '8px 2px 8px 2px',
                         }}
-                        className="px-3.5 py-1.5 text-white text-[9px] font-black uppercase tracking-wider"
+                        className="px-3 py-1.5 text-white text-[9px] font-black uppercase tracking-tighter"
                     >
                         Book
                     </motion.button>
@@ -84,38 +71,53 @@ export default function AppServicesPage() {
     const { 
         activeOutlet, 
         activeOutletId,
-        services: contextServices,
-        categories: contextCategories,
-        isInitializing
+        services: businessServices,
+        categories: businessCategories,
+        isInitializing,
+        fetchServices,
+        fetchCategories,
+        activeSalonId
     } = useBusiness();
     
     const { gender: appGender } = useGender();
     const isLight = theme === 'light';
 
-    const businessServices = contextServices.length > 0 ? contextServices : mockData.services;
-    const businessCategories = contextCategories.length > 0 ? contextCategories : mockData.categories;
+    useEffect(() => {
+        const tid = activeSalonId || localStorage.getItem('active_salon_id');
+        if (tid) {
+            // Re-fetch only if empty to avoid loops, but ensure we have data
+            if (!businessServices || businessServices.length === 0) fetchServices(tid);
+            if (!businessCategories || businessCategories.length === 0) fetchCategories(tid);
+        }
+    }, [activeSalonId, businessServices?.length, businessCategories?.length, fetchServices, fetchCategories]);
+
+
+    const colors = {
+        bg: isLight ? '#FCF9F6' : '#0F0F0F',
+        card: isLight ? '#FFFFFF' : '#1A1A1A',
+        text: isLight ? '#1A1A1A' : '#FFFFFF',
+        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
+        input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+    };
 
     if (isInitializing && businessServices.length === 0) {
         return (
-            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center">
-                <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                    className="w-10 h-10 border-4 border-[#C8956C] border-t-transparent rounded-full mb-4"
-                />
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Loading Experience...</p>
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center text-white">
+                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
+                <h2 className="text-lg font-black uppercase tracking-widest mb-2">Initializing</h2>
+                <p className="text-xs opacity-40 max-w-[200px]">Preparing your premium grooming experience...</p>
             </div>
         );
     }
-    
+
     // Get unique active categories that have at least one active service AND match gender
     const dynamicCategories = useMemo(() => {
-        const activeCats = businessCategories
+        const activeCats = (businessCategories || [])
             .filter(c => {
-                if (c.status !== 'active') return false;
-                if (!appGender) return true;
-                // Match gender: 'both', or matches current gender choice
-                return c.gender === 'both' || c.gender === appGender;
+                const cG = (c.gender || 'both').toLowerCase();
+                const currentG = appGender ? appGender.toLowerCase() : null;
+                return cG === 'both' || !currentG || cG === currentG;
             })
             .map(c => c.name);
         return ['All', ...activeCats];
@@ -131,73 +133,68 @@ export default function AppServicesPage() {
     const [activeCategory, setActiveCategory] = useState(isCanonical ? categoryParam : 'All');
     const [isFocused, setIsFocused] = useState(false);
 
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-        input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-    };
-
     const filteredServices = useMemo(() => {
-        let result = businessServices.filter(s => s.status === 'active');
 
-        // Filter by Outlet if outletIds or outletId is present on service
-        result = result.filter(s => {
-            // Priority: Check the outletIds array (modern multi-outlet assignment)
-            if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
-                // Use .map(String) to ensure we're comparing string IDs (handles ObjectId objects)
-                return s.outletIds.map(id => String(id)).includes(String(activeOutletId));
-            }
+        let result = businessServices.filter(s => {
+            // 1. Service Gender Match
+            const sG = (s.gender || 'both').toLowerCase();
+            const serviceGenderMatch = sG === 'both' || !appGender || sG === appGender.toLowerCase();
+            if (!serviceGenderMatch) return false;
 
-            // Fallback 1: Check the singular outletId (legacy single-outlet assignment)
-            if (s.outletId && s.outletId !== 'all') {
-                return String(s.outletId) === String(activeOutletId);
-            }
-
-            // Fallback 2: Check the "All Outlets" marker or absence of specific assignment
-            return !s.outletId || s.outlet === 'All Outlets' || (Array.isArray(s.outletIds) && s.outletIds.length === 0);
+            // 2. Category Gender Match
+            const cat = businessCategories.find(c => c.name === s.category || String(c._id) === String(s.category));
+            if (!cat) return true; 
+            const cG = (cat.gender || 'both').toLowerCase();
+            return cG === 'both' || !appGender || cG === appGender.toLowerCase();
         });
 
-        // Filter by Gender (via Category)
-        result = result.filter(s => {
-            const cat = businessCategories.find(c => c.name === s.category);
-            if (!cat) return true; // Show if no category found (edge case)
-            if (!appGender) return true;
-            return cat.gender === 'both' || cat.gender === appGender;
-        });
-
-        if (activeCategory !== 'All') {
-            result = result.filter(s => s.category === activeCategory);
+        // Filter by Outlet
+        if (activeOutletId) {
+            result = result.filter(s => {
+                const oIds = Array.isArray(s.outletIds) ? s.outletIds : [];
+                if (oIds.length > 0) {
+                    return oIds.map(id => String(id)).includes(String(activeOutletId));
+                }
+                return true;
+            });
         }
+
+
+        // Filter by Category
+        if (activeCategory !== 'All') {
+            result = result.filter(s => {
+                const catObj = businessCategories.find(c => c.name === activeCategory);
+                return s.category === activeCategory || (catObj && String(s.category) === String(catObj._id));
+            });
+        }
+
+        // Search Query
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            result = result.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+            result = result.filter(s => s.name.toLowerCase().includes(q));
         }
         return result;
     }, [businessServices, activeCategory, searchQuery, activeOutletId, appGender, businessCategories]);
 
     const groupedServices = useMemo(() => {
-        if (activeCategory !== 'All') return { [activeCategory]: filteredServices };
-
         const groups = {};
+        
         filteredServices.forEach(s => {
-            if (!groups[s.category]) groups[s.category] = [];
-            groups[s.category].push(s);
+            // Find category name
+            const cat = businessCategories.find(c => String(c._id) === String(s.category) || c.name === s.category);
+            const catName = cat ? cat.name : (s.category || 'Other');
+            
+            if (!groups[catName]) groups[catName] = [];
+            groups[catName].push(s);
         });
 
-        // Filter groups based on search
-        if (searchQuery.trim()) {
-            const q = searchQuery.toLowerCase();
-            Object.keys(groups).forEach(cat => {
-                groups[cat] = groups[cat].filter(s => s.name.toLowerCase().includes(q));
-                if (groups[cat].length === 0) delete groups[cat];
-            });
+        if (activeCategory !== 'All') {
+            // If specific category active, only return that group
+            return groups[activeCategory] ? { [activeCategory]: groups[activeCategory] } : {};
         }
 
         return groups;
-    }, [filteredServices, activeCategory, searchQuery]);
+    }, [filteredServices, activeCategory, businessCategories]);
 
     const handleBook = (id) => {
         navigate(`/app/book?serviceId=${id}`);
@@ -213,6 +210,14 @@ export default function AppServicesPage() {
                 {/* Salon Info & Gender Badge */}
                 <div className="flex items-center justify-between mb-4 px-1">
                     <div className="flex items-center gap-3">
+                        <motion.button
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => navigate(-1)}
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center border"
+                            style={{ borderColor: colors.border, background: colors.card, color: colors.text }}
+                        >
+                            <ArrowLeft size={18} />
+                        </motion.button>
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-lg shadow-[#C8956C]/20">
                             <ShoppingBag className="text-white" size={18} />
                         </div>
@@ -271,24 +276,37 @@ export default function AppServicesPage() {
                     <SlidersHorizontal size={16} style={{ color: colors.textMuted }} />
                 </div>
 
-                {/* Categories */}
-                <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4">
-                    {dynamicCategories.map(cat => (
-                        <motion.button
-                            key={cat}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setActiveCategory(cat)}
-                            style={{
-                                background: activeCategory === cat ? '#C8956C' : colors.card,
-                                color: activeCategory === cat ? '#FFFFFF' : colors.text,
-                                border: activeCategory === cat ? 'none' : `1.5px solid ${colors.border}`,
-                                borderRadius: '14px 4px 14px 4px',
-                            }}
-                            className="px-4 py-2 text-[10px] font-black uppercase tracking-wider whitespace-nowrap"
-                        >
-                            {cat}
-                        </motion.button>
-                    ))}
+                {/* Categories - Text Pills */}
+                <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4 pb-2">
+                    {dynamicCategories.map(catName => {
+                        const isActive = activeCategory === catName;
+                        
+                        return (
+                            <motion.button
+                                key={catName}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setActiveCategory(catName)}
+                                style={{
+                                    padding: '10px 20px',
+                                    borderRadius: '12px',
+                                    background: isActive ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : colors.card,
+                                    border: `1.5px solid ${isActive ? 'transparent' : colors.border}`,
+                                    color: isActive ? '#fff' : colors.textMuted,
+                                    boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.25)' : 'none',
+                                    transition: 'all 0.3s ease',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    whiteSpace: 'nowrap'
+                                }}
+                                className="shrink-0"
+                            >
+                                <span style={{ fontSize: '11px', fontWeight: isActive ? 800 : 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {catName}
+                                </span>
+                            </motion.button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -297,39 +315,43 @@ export default function AppServicesPage() {
                 variants={stagger}
                 initial="hidden"
                 animate="show"
-                className="px-4 mt-4 space-y-8"
+                className="px-4 mt-6"
             >
-                {Object.keys(groupedServices).map((categoryName) => (
-                    <motion.div key={categoryName} variants={fadeUp} className="space-y-3">
-                        <div className="flex items-center justify-between px-1">
-                            <h2 className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>
-                                {appGender === 'men' ? "Gentlemen's " : "Ladies' "}{categoryName}
-                            </h2>
-                            <span className="text-[9px] font-black text-[#C8956C] bg-[#C8956C]/10 px-2 py-0.5 rounded-full">{groupedServices[categoryName].length} items</span>
-                        </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+                    {filteredServices.map((service, index) => (
+                        <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
+                            <ServiceCard
+                                service={service}
+                                onBook={handleBook}
+                                colors={colors}
+                                isLight={isLight}
+                                categories={businessCategories}
+                            />
+                        </motion.div>
+                    ))}
+                </div>
 
-                        <div className="grid grid-cols-2 gap-3 pb-2">
-                            {groupedServices[categoryName].map((service) => (
-                                <div key={service._id || service.id} className="w-full">
-                                    <ServiceCard
-                                        service={service}
-                                        onBook={handleBook}
-                                        colors={colors}
-                                        isLight={isLight}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                ))}
 
-                {Object.keys(groupedServices).length === 0 && (
+                {filteredServices.length === 0 && (
                     <div className="py-20 text-center">
                         <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">
                             <Search size={32} className="text-[#C8956C] opacity-40" />
                         </div>
-                        <h3 className="text-lg font-bold mb-1">No services found</h3>
-                        <p className="text-xs opacity-50 px-10">Try searching with a different keyword or browse through categories.</p>
+                        <h3 className="text-lg font-bold mb-1" style={{ color: colors.text }}>No services found</h3>
+                        <p className="text-xs opacity-50 px-10 mb-6" style={{ color: colors.text }}>Try searching with a different keyword or browse through categories.</p>
+                        <motion.button
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                const tid = activeSalonId || localStorage.getItem('active_salon_id');
+                                if (tid) {
+                                    fetchServices(tid);
+                                    fetchCategories(tid);
+                                }
+                            }}
+                            className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
+                        >
+                            Refresh Services
+                        </motion.button>
                     </div>
                 )}
             </motion.div>

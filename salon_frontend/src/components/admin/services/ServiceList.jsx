@@ -317,9 +317,14 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
-                                                    <Scissors className="w-5 h-5" />
+                                                <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 overflow-hidden">
+                                                    {service.image ? (
+                                                        <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Scissors className="w-5 h-5" />
+                                                    )}
                                                 </div>
+
                                                 <div className="flex flex-col">
                                                     <p className="text-sm font-bold text-text group-hover:text-primary transition-colors">{service.name}</p>
                                                     <div className="lg:hidden mt-1">
@@ -459,9 +464,14 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             checked={selectedServiceIds.includes(service._id)}
                                             onChange={() => toggleSelectService(service._id)}
                                         />
-                                        <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0">
-                                            <Scissors className="w-5 h-5" />
+                                        <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0 overflow-hidden">
+                                            {service.image ? (
+                                                <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <Scissors className="w-5 h-5" />
+                                            )}
                                         </div>
+
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h3 className="text-sm font-bold text-text">{service.name}</h3>

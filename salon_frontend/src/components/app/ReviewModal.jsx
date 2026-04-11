@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, X, Send, CheckCircle2 } from 'lucide-react';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
-export default function ReviewModal({ isOpen, onClose, booking, onSuccess }) {
+export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targetType = 'service', targetId = null, targetName = null }) {
+    const { salon } = useBusiness();
+    const { customer } = useCustomerAuth();
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -17,11 +21,13 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }) {
         setIsSubmitting(true);
         try {
             await api.post('/feedbacks', {
+                salonId: salon?._id,
+                customerName: customer?.name || 'Customer',
                 rating,
                 comment,
-                service: booking.service?.name || 'Service',
-                staffName: booking.staff?.name || 'Staff',
-                // images: [], // Future: Add image upload support
+                targetType,
+                targetId: targetId || (booking?.service?._id || booking?.service?.id),
+                targetName: targetName || booking?.service?.name || 'Service',
             });
             setIsSuccess(true);
             setTimeout(() => {
@@ -75,7 +81,7 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess }) {
                                 <div>
                                     <h3 className="text-lg font-black text-white uppercase tracking-tight">Rate Your Experience</h3>
                                     <p className="text-[10px] text-[#C8956C] font-bold uppercase tracking-widest mt-1">
-                                        {booking?.service?.name || 'Service'} • {booking?.staff?.name || 'Staff'}
+                                        {targetName || booking?.service?.name || 'Service'}
                                     </p>
                                 </div>
                                 <button onClick={onClose} className="p-2 text-white/40 hover:text-white transition-all">

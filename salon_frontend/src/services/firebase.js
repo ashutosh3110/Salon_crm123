@@ -33,7 +33,8 @@ export const registerToken = async () => {
     const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
       scope: '/'
     });
-    console.log('[Firebase] SW Registered:', registration.scope);
+    await navigator.serviceWorker.ready;
+    console.log('[Firebase] SW Registered and Ready:', registration.scope);
 
     // 2. Get the FCM token
     const token = await getToken(messaging, { 

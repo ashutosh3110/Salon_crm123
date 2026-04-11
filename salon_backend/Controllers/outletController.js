@@ -1,5 +1,6 @@
 const Outlet = require('../Models/Outlet');
 const Salon = require('../Models/Salon');
+const { getIO } = require('../Utils/socket');
 
 // @desc    Get all outlets for a salon
 // @route   GET /api/outlets
@@ -113,33 +114,47 @@ exports.deleteOutlet = async (req, res) => {
 // @access  Public
 exports.getNearbyOutlets = async (req, res) => {
     try {
-        const { lat, lng, radius = 5 } = req.query; // radius in km
-
-        let query = { isActive: true };
+        const { lat, lng, radius = 50 } = req.query; // radius in km, default 50
         let outlets;
 
         if (lat && lng) {
-            // Geospatial query
-            outlets = await Outlet.find({
-                isActive: true,
-                location: {
-                    $near: {
-                        $geometry: {
-                            type: 'Point',
-                            coordinates: [parseFloat(lng), parseFloat(lat)]
-                        },
-                        $maxDistance: parseFloat(radius) * 1000 // Convert km to meters
+            const latitude = parseFloat(lat);
+            const longitude = parseFloat(lng);
+
+            outlets = await Outlet.aggregate([
+                {
+                    $geoNear: {
+                        near: { type: "Point", coordinates: [longitude, latitude] },
+                        distanceField: "distance",
+                        spherical: true,
+                        maxDistance: parseFloat(radius) * 1000, // km to meters
+                        distanceMultiplier: 0.001, // meters to km
+                        query: { isActive: true }
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'salons',
+                        localField: 'salonId',
+                        foreignField: '_id',
+                        as: 'salon'
+                    }
+                },
+                { $unwind: { path: '$salon', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        name: 1,
+                        address: 1,
+                        location: 1,
+                        images: 1,
+                        phone: 1,
+                        isActive: 1,
+                        distance: 1,
+                        salonId: 1,
+                        salonName: '$salon.name'
                     }
                 }
-            }).lean();
-
-            // Calculate distance for each outlet manually for the frontend if needed
-            // Or use $geoNear aggregation for better distance info
-            outlets = outlets.map(o => {
-                // If using $near, order is already closest to farthest
-                // We'll just add a distanceKm indicator (mock for now if not using aggregation)
-                return { ...o, distanceKm: null }; 
-            });
+            ]);
         } else {
             // No coordinates provided, just return all active outlets
             outlets = await Outlet.find({ isActive: true }).lean();
@@ -156,3 +171,52 @@ exports.getNearbyOutlets = async (req, res) => {
 exports.reverseGeocode = async (req, res) => {
     res.json({ status: 'OK', displayAddress: 'Current Location', formattedAddress: 'Detecting...' });
 };
+// Core toggle like logic (reusable for API and Socket handler)
+const handleOutletLikeToggle = async (outletId, customerId) => {
+    const outlet = await Outlet.findById(outletId);
+    if (!outlet) return null;
+
+    const idStr = customerId.toString();
+    const index = outlet.likedBy.findIndex(id => id.toString() === idStr);
+
+    if (index === -1) {
+        outlet.likedBy.push(customerId);
+        outlet.likes += 1;
+    } else {
+        outlet.likedBy.splice(index, 1);
+        outlet.likes = Math.max(0, outlet.likes - 1);
+    }
+
+    await outlet.save();
+
+    // Broadcast update via socket
+    try {
+        const io = require('../Utils/socket').getIO();
+        io.to(outlet.salonId.toString()).emit('outlet_liked', {
+            outletId: outlet._id,
+            likes: outlet.likes,
+            likedBy: outlet.likedBy
+        });
+    } catch (socketError) {
+        console.error('Socket broadcast failed:', socketError);
+    }
+
+    return { 
+        likes: outlet.likes, 
+        isLiked: index === -1,
+        likedBy: outlet.likedBy
+    };
+};
+
+exports.toggleLike = async (req, res) => {
+    try {
+        const result = await handleOutletLikeToggle(req.params.id, req.user._id);
+        if (!result) return res.status(404).json({ success: false, message: 'Outlet not found' });
+        
+        res.status(200).json({ success: true, ...result });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.handleOutletLikeToggle = handleOutletLikeToggle;

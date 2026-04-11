@@ -18,6 +18,7 @@ const BusinessContext = createContext({
 
 export function BusinessProvider({ children }) {
     const { isAuthenticated, user } = useAuth();
+    const { isCustomerAuthenticated, customer } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [outlets, setOutlets] = useState([]);
     const [staff, setStaff] = useState([]);
@@ -36,9 +37,14 @@ export function BusinessProvider({ children }) {
     const [segmentsLoading, setSegmentsLoading] = useState(false);
     const [feedbacksLoading, setFeedbacksLoading] = useState(false);
     const [outletsLoading, setOutletsLoading] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
+
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
+    const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
+    
     const activeOutlet = useMemo(() => (outlets || []).find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null, [outlets, activeOutletId]);
+
 
     const fetchCustomers = useCallback(async () => {
         setCustomersLoading(true);
@@ -69,12 +75,28 @@ export function BusinessProvider({ children }) {
 
     const initializationRef = useRef(false);
 
-    const fetchServices = useCallback(async () => {
+    const fetchServices = useCallback(async (sId) => {
         try {
-            const r = await api.get('/services');
+            const sid = sId || activeSalonId || salon?._id;
+            if (!sid) return;
+            const r = await api.get(`/services?salonId=${sid}`);
             setServices(r.data?.data || r.data?.results || r.data || []);
-        } catch { setServices([]); }
-    }, []);
+        } catch (error) { 
+            console.error("Fetch services failed:", error);
+            setServices([]); 
+        }
+    }, [activeSalonId, salon?._id]);
+    
+    const fetchCategories = useCallback(async (sId) => {
+        try {
+            const sid = sId || activeSalonId || salon?._id;
+            if (!sid) return;
+            const r = await api.get(`/categories?salonId=${sid}`);
+            setCategories(r.data?.data || []);
+        } catch { setCategories([]); }
+    }, [activeSalonId, salon?._id]);
+
+
 
     const fetchBookings = useCallback(async () => {
         try {
@@ -97,6 +119,18 @@ export function BusinessProvider({ children }) {
         } catch { setSuppliers([]); }
     }, []);
 
+    const fetchOutlets = useCallback(async () => {
+        setOutletsLoading(true);
+        try {
+            const res = await api.get('/outlets');
+            const data = res.data?.data || [];
+            setOutlets(data);
+            return data;
+        } finally {
+            setOutletsLoading(false);
+        }
+    }, []);
+
     const fetchCustomerInitialData = useCallback(async (force = false) => {
         if (initializationRef.current && !force) return;
         initializationRef.current = true;
@@ -104,22 +138,67 @@ export function BusinessProvider({ children }) {
             // Core Salon & Outlets
             const t = await api.get('/salons/me');
             if (t.data.success) {
-                setSalon(t.data.data);
-                // Fetch outlets for this salon
-                const o = await api.get('/outlets');
-                setOutlets(o.data?.data || []);
+                const sData = t.data.data;
+                setSalon(sData);
+                const sid = sData._id;
+                // Parallel fetch for speed
+                await Promise.all([
+                   fetchOutlets(),
+                   fetchServices(sid),
+                   fetchCategories(sid),
+                   fetchFeedbacks()
+                ]);
             }
-        } catch (err) {
-            console.error("[BusinessContext] Failed to fetch initial data", err);
-            initializationRef.current = false;
+        } finally {
+            setIsInitializing(false);
         }
-    }, []);
+    }, [fetchOutlets, fetchServices, fetchCategories]);
+
+
 
     useEffect(() => {
-        if (isAuthenticated && user?.role !== 'superadmin') {
-            fetchCustomerInitialData();
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlId = searchParams.get('tenantId');
+        if (urlId && urlId !== activeSalonId) {
+            localStorage.setItem('active_salon_id', urlId);
+            setActiveSalonId(urlId);
         }
-    }, [isAuthenticated, user?.role, fetchCustomerInitialData]);
+
+        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
+
+        if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
+            fetchCustomerInitialData();
+        } else {
+            // Guest mode: fetch basic salon data if effectiveTid exists
+            if (effectiveTid) {
+                const initGuest = async () => {
+                    try {
+                        const initTasks = [];
+                        if (!salon) {
+                            initTasks.push(api.get(`/salons/${effectiveTid}`).then(res => {
+                                if (res.data.success) setSalon(res.data.data);
+                            }));
+                        }
+                        
+                        // Always ensure services, categories, and feedbacks are fetched if we have an ID
+                        initTasks.push(fetchServices(effectiveTid));
+                        initTasks.push(fetchCategories(effectiveTid));
+                        initTasks.push(fetchFeedbacks());
+
+                        await Promise.all(initTasks);
+                    } catch (err) {
+                        console.error("Guest initialization failed:", err);
+                    } finally {
+                        setIsInitializing(false);
+                    }
+                };
+                initGuest();
+            } else {
+                setIsInitializing(false);
+            }
+        }
+    }, [isAuthenticated, isCustomerAuthenticated, user?.role, fetchCustomerInitialData, salon, activeSalonId, fetchServices, fetchCategories, fetchFeedbacks]);
+
 
     const addCustomer = useCallback(async (d) => { const r = await api.post('/clients', d); setCustomers(p => [r.data, ...p]); return r.data; }, []);
     const deleteCustomer = useCallback(async (id) => { await api.delete(`/clients/${id}`); setCustomers(p => p.filter(c => (c._id !== id && c.id !== id))); }, []);
@@ -128,6 +207,13 @@ export function BusinessProvider({ children }) {
     const addSegment = useCallback(async (d) => { const r = await api.post('/segments', d); setSegments(p => [r.data, ...p]); return r.data; }, []);
     const deleteSegment = useCallback(async (id) => { await api.delete(`/segments/${id}`); setSegments(p => p.filter(s => (s._id !== id && s.id !== id))); }, []);
     const fetchSegmentCustomers = useCallback(async (sid) => (await api.get(`/clients?segmentId=${sid}`)).data?.results || [], []);
+
+    const addFeedback = useCallback(async (d) => {
+        const r = await api.post('/feedbacks', d);
+        const newFb = r.data.data || r.data;
+        setFeedbacks(p => [newFb, ...p]);
+        return newFb;
+    }, []);
 
     const updateFeedback = useCallback(async (id, d) => { await api.patch(`/feedbacks/${id}`, d); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, ...d } : f)); }, []);
     const archiveFeedback = useCallback(async (id) => { await api.patch(`/feedbacks/${id}`, { status: 'Archived' }); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, status: 'Archived' } : f)); }, []);
@@ -147,17 +233,6 @@ export function BusinessProvider({ children }) {
         return r.data; 
     }, []);
 
-    const fetchOutlets = useCallback(async () => {
-        setOutletsLoading(true);
-        try {
-            const res = await api.get('/outlets');
-            const data = res.data?.data || [];
-            setOutlets(data);
-            return data;
-        } finally {
-            setOutletsLoading(false);
-        }
-    }, []);
 
     const addOutlet = useCallback(async (d) => {
         const payload = {
@@ -252,12 +327,8 @@ export function BusinessProvider({ children }) {
         setServices(p => p.map(s => s._id === id ? { ...s, status: newStatus } : s));
     }, []);
 
-    const fetchCategories = useCallback(async () => {
-        try {
-            const r = await api.get('/categories');
-            setCategories(r.data?.data || []);
-        } catch { setCategories([]); }
-    }, []);
+
+
 
     const addCategory = useCallback(async (d) => {
         const r = await api.post('/categories', d);
@@ -302,8 +373,12 @@ export function BusinessProvider({ children }) {
 
     const value = useMemo(() => ({
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, updateCustomer, deleteCustomer,
-        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, suppliers, segments, segmentsLoading, fetchSegments, 
-        addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets,
+        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, 
+        addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue, 
+        activeOutletId, setActiveOutletId,
+        activeSalonId, setActiveSalonId,
+        setOutlets, activeOutlet, fetchOutlets,
+
         addSupplier, updateSupplier, deleteSupplier,
         addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
@@ -314,11 +389,12 @@ export function BusinessProvider({ children }) {
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
         addBooking, updateBookingStatus,
         fetchShifts, addShift, updateShift,
-        shiftsLoading: false
+        isInitializing
     }), [
+
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
-        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
-        shifts, catalogue, activeOutletId, setActiveOutletId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
+        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
+        shifts, catalogue, activeOutletId, setActiveOutletId, activeSalonId, setActiveSalonId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
         fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
@@ -326,8 +402,11 @@ export function BusinessProvider({ children }) {
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
         addBooking, updateBookingStatus,
-        fetchShifts, addShift, updateShift
+        fetchShifts, addShift, updateShift,
+        isInitializing
     ]);
+
+
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

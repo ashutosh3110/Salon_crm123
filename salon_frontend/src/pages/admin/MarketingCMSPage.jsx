@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../services/api';
 import {
     Layout,
     Image as ImageIcon,
@@ -174,17 +175,39 @@ export default function MarketingCMSPage() {
         }
     };
 
+    const [isUploading, setIsUploading] = useState(false);
+
     const handleFileUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Validation: Max 5MB
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File size exceeds 5MB limit.");
+            return;
+        }
+
+        setIsUploading(true);
         try {
-            const dataUrl = await compressImageFile(file);
-            setFormData((prev) => ({ ...prev, image: dataUrl }));
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Upload to Cloudinary via backend
+            const res = await api.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            if (res.data.success) {
+                setFormData((prev) => ({ ...prev, image: res.data.url }));
+            } else {
+                throw new Error(res.data.message || 'Upload failed');
+            }
         } catch (err) {
-            console.error(err);
-            alert(err?.message || 'Could not process image.');
+            console.error('[Cloudinary Upload Error]:', err);
+            alert(err?.response?.data?.message || err?.message || 'Could not upload image to Cloudinary.');
         } finally {
-            e.target.value = '';
+            setIsUploading(false);
+            if (e.target) e.target.value = '';
         }
     };
 
@@ -702,7 +725,12 @@ export default function MarketingCMSPage() {
                                                     htmlFor="banner-upload"
                                                     className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
                                                 >
-                                                    {formData.image ? (
+                                                    {isUploading ? (
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                            <p className="text-[10px] font-black text-primary uppercase tracking-widest">Uploading...</p>
+                                                        </div>
+                                                    ) : formData.image ? (
                                                         <>
                                                             <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
                                                             <div className="relative z-10 flex flex-col items-center">
@@ -714,7 +742,7 @@ export default function MarketingCMSPage() {
                                                         <>
                                                             <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload banner</p>
-                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max 2MB)</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max 5MB)</p>
                                                         </>
                                                     )}
                                                 </label>
@@ -770,7 +798,12 @@ export default function MarketingCMSPage() {
                                                     htmlFor="lookbook-upload"
                                                     className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
                                                 >
-                                                    {formData.image ? (
+                                                    {isUploading ? (
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                                            <p className="text-[10px] font-black text-primary uppercase tracking-widest">Uploading...</p>
+                                                        </div>
+                                                    ) : formData.image ? (
                                                         <>
                                                             <img src={formData.image} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 transition-transform duration-700" alt="Preview" />
                                                             <div className="relative z-10 flex flex-col items-center">
@@ -782,7 +815,7 @@ export default function MarketingCMSPage() {
                                                         <>
                                                             <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload look</p>
-                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Portrait orientation preferred</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Portrait orientation preferred (Max 5MB)</p>
                                                         </>
                                                     )}
                                                 </label>

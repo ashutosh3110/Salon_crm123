@@ -56,7 +56,15 @@ const outletSchema = new mongoose.Schema({
     config: {
         bookingSms: { type: Boolean, default: true },
         whatsappNotifications: { type: Boolean, default: true }
-    }
+    },
+    likes: {
+        type: Number,
+        default: 0
+    },
+    likedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer'
+    }]
 }, {
     timestamps: true
 });

@@ -8,16 +8,14 @@ const {
 } = require('../Controllers/categoryController');
 const { protect, authorize } = require('../Middleware/auth');
 
-router.use(protect);
-
 router
     .route('/')
     .get(getCategories)
-    .post(authorize('admin', 'manager'), createCategory);
+    .post(protect, authorize('admin', 'manager'), createCategory);
 
 router
     .route('/:id')
-    .put(authorize('admin', 'manager'), updateCategory)
-    .delete(authorize('admin', 'manager'), deleteCategory);
+    .put(protect, authorize('admin', 'manager'), updateCategory)
+    .delete(protect, authorize('admin', 'manager'), deleteCategory);
 
 module.exports = router;

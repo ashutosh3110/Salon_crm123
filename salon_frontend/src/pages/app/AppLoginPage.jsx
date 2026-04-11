@@ -34,12 +34,20 @@ export default function AppLoginPage() {
     const [step, setStep] = useState(0);
     const [direction, setDir] = useState(1);
     const [userCoords, setUserCoords] = useState(null);
-    const [selectedOutlet, setSelectedOutlet] = useState(null);
-    const [tenantId, setTenantId] = useState(tenantIdFromUrl || storedSelectedOutlet?.tenantId || '');
+    const [selectedOutlet, setSelectedOutlet] = useState(storedSelectedOutlet);
+    const [tenantId, setTenantId] = useState(
+        tenantIdFromUrl || 
+        localStorage.getItem('active_salon_id') || 
+        storedSelectedOutlet?.salonId || 
+        storedSelectedOutlet?.tenantId || 
+        localStorage.getItem('active_outlet_id') || 
+        ''
+    );
+
     const [locationLoading, setLocationLoading] = useState(false);
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
     const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [otp, setOtp] = useState(['', '', '', '']);
     const [name, setName] = useState('');
     const [selectedGender, setSelectedGender] = useState('');
     const [loading, setLoading] = useState(false);
@@ -48,6 +56,7 @@ export default function AppLoginPage() {
     const [countdown, setCd] = useState(0);
     const [showRegisterModal, setShowRegisterModal] = useState(false);
     const [registerError, setRegisterError] = useState('');
+    const [isRegistering, setIsRegistering] = useState(false);
     const [registerForm, setRegisterForm] = useState({
         name: '',
         email: '',
@@ -57,14 +66,23 @@ export default function AppLoginPage() {
         anniversary: '',
     });
     const [otpDebug, setOtpDebug] = useState('');
-    const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const otpRefs = [useRef(), useRef(), useRef(), useRef()];
     const submittingRef = useRef(false);
     const navigate = useNavigate();
-    const { requestOtp, customerLogin, completeProfile } = useCustomerAuth();
-    const { setActiveOutletId, setOutlets } = useBusiness();
+    const { requestOtp, customerLogin, completeProfile, isCustomerAuthenticated, loading: authLoading } = useCustomerAuth();
+    const { setActiveOutletId, setActiveSalonId, setOutlets } = useBusiness();
+
     const { setGender: setGlobalGender } = useGender();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+
+    useEffect(() => {
+        if (!authLoading && isCustomerAuthenticated) {
+            navigate('/app', { replace: true });
+        }
+    }, [isCustomerAuthenticated, authLoading, navigate]);
+
 
     useEffect(() => {
         if (countdown > 0) {
@@ -89,13 +107,6 @@ export default function AppLoginPage() {
             const res = await api.get(url, { timeout: 30000 });
             let data = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
             
-            // Auto-expand radius if no outlets found near
-            if (data.length === 0 && lat != null && radiusKm < 25) {
-                const nextRadius = radiusKm === 3 ? 10 : 25;
-                setSearchRadiusKm(nextRadius);
-                return fetchOutlets(lat, lng, nextRadius);
-            }
-
             setNearbyOutlets(data);
         } catch (err) {
             console.error('Fetch error:', err);
@@ -170,67 +181,65 @@ export default function AppLoginPage() {
     };
 
     useEffect(() => {
-        if (tenantIdFromUrl) {
-            setTenantId(tenantIdFromUrl);
-            setStep(1);
-            return;
-        }
-
         const saved = localStorage.getItem('wapixo_user_coords');
+        let initialLat = null;
+        let initialLng = null;
+
         if (saved) {
             try {
                 const coords = JSON.parse(saved);
+                initialLat = coords.lat;
+                initialLng = coords.lng;
                 setUserCoords(coords);
-                setLocationLoading(false);
-                fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
                 reverseGeocode(coords.lat, coords.lng);
-                return;
-            } catch (e) { 
-                // Fall through to auto-detect
-            }
+            } catch (e) { }
         }
 
-        // Auto-detect location on mount (instead of showing all outlets without coords)
-        if (navigator.geolocation) {
-            setLocationLoading(true);
-            setDetectedAddress('Detecting your location...');
-            navigator.geolocation.getCurrentPosition(
-                async (pos) => {
-                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    setUserCoords(coords);
-                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
-                    await reverseGeocode(coords.lat, coords.lng);
-                    setLocationLoading(false);
-                    fetchOutlets(coords.lat, coords.lng, searchRadiusKm);
-                },
-                (err) => {
-                    console.warn('[AppLogin] Geolocation denied/failed:', err.message);
-                    setLocationLoading(false);
-                    fetchOutlets(null, null, searchRadiusKm); // Fallback to all outlets
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-            );
+        // Trigger fetch immediately in background
+        if (tenantIdFromUrl) {
+            setTenantId(tenantIdFromUrl);
+            setStep(1);
+        } else if (storedSelectedOutlet) {
+            // If user has a previously selected outlet, skip to login step
+            setSelectedOutlet(storedSelectedOutlet);
+            setStep(1);
         } else {
-            fetchOutlets(null, null, searchRadiusKm);
+            // Only show location discovery modal if no coords and no outlet selected
+            fetchOutlets(initialLat, initialLng, searchRadiusKm);
+            if (!initialLat) {
+                setShowLocationModal(true);
+            }
         }
     }, [tenantIdFromUrl]);
+
+    const handleAllowLocation = () => {
+        setShowLocationModal(false);
+        fetchLocationAndNearby();
+    };
+
+    const handleDenyLocation = () => {
+        setShowLocationModal(false);
+        setUserCoords(null);
+        fetchOutlets(null, null, searchRadiusKm); // Shows all outlets
+    };
 
 
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
-        setTenantId(outlet.tenantId);
-        setStep(1);
+        localStorage.setItem('wapixo_selected_outlet', JSON.stringify(outlet));
+        localStorage.setItem('active_outlet_id', outlet._id || outlet.id);
+        const tId = outlet.salonId || outlet.tenantId;
+        localStorage.setItem('active_salon_id', tId);
+        setTenantId(tId);
+        setActiveOutletId(outlet._id || outlet.id); 
+        setActiveSalonId(tId);
+        goTo(1);
     };
+
+
 
     const goTo = (s) => { setDir(s > step ? 1 : -1); setError(''); setStep(s); };
 
-    useEffect(() => {
-        if (phone.length === 10 && step === 1 && !loading) handleSendOtp();
-    }, [phone, step, loading]);
-
-    useEffect(() => {
-        if (otp.join('').length === 6 && step === 2 && !loading) handleVerifyOtp();
-    }, [otp, step, loading]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -245,9 +254,6 @@ export default function AppLoginPage() {
         if (!tenantId) { setError('Please select an outlet first'); return; }
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
 
-        if (submittingRef.current) return;
-        submittingRef.current = true;
-
         setLoading(true); setError('');
         try {
             const res = await requestOtp(phone, tenantId);
@@ -256,7 +262,6 @@ export default function AppLoginPage() {
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
         finally {
             setLoading(false);
-            submittingRef.current = false;
         }
     };
 
@@ -305,7 +310,7 @@ export default function AppLoginPage() {
         if (v.length > 1) v = v.slice(-1);
         if (!/^\d*$/.test(v)) return;
         const n = [...otp]; n[i] = v; setOtp(n);
-        if (v && i < 5) otpRefs[i + 1].current?.focus();
+        if (v && i < 3) otpRefs[i + 1].current?.focus();
     };
 
     const handleOtpKey = (i, e) => {
@@ -314,34 +319,27 @@ export default function AppLoginPage() {
 
     const handleVerifyOtp = async () => {
         const code = otp.join('');
-        if (code.length !== 6) { setError('Enter the 6-digit OTP'); return; }
-
-        if (submittingRef.current) return;
-        submittingRef.current = true;
+        if (code.length !== 4) { setError('Enter the 4-digit OTP'); return; }
 
         setLoading(true); setError('');
         try {
-            const c = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
+            const cust = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
+            if (cust?.gender) setGlobalGender(cust.gender);
+            
+            // Ensure active_outlet_id is persistent
             if (selectedOutlet) {
-                setActiveOutletId(selectedOutlet._id);
-                localStorage.setItem('active_outlet_id', selectedOutlet._id);
-                setOutlets([selectedOutlet]);
+                const oId = selectedOutlet._id || selectedOutlet.id;
+                localStorage.setItem('active_outlet_id', oId);
+                setActiveOutletId(oId);
             }
-            if (c.isNewUser && (!c.name || !c.gender)) {
-                if (c.name) setName(c.name);
-                if (c.gender) setSelectedGender(c.gender);
-                goTo(3);
-            } else {
-                if (c.gender) setGlobalGender(c.gender === 'male' ? 'men' : 'women');
-                navigate(selectedOutlet ? '/app' : '/app/salon-selection', { replace: true });
-            }
+            
+            navigate('/app', { replace: true });
         } catch (e) {
-            setError(e.message || 'Invalid OTP');
-            setOtp(['', '', '', '', '', '']);
+            setError(e.message || 'Verification failed');
+            setOtp(['', '', '', '']);
             otpRefs[0].current?.focus();
         } finally {
             setLoading(false);
-            submittingRef.current = false;
         }
     };
 
@@ -360,7 +358,7 @@ export default function AppLoginPage() {
                 localStorage.setItem('active_outlet_id', selectedOutlet._id);
                 setOutlets([selectedOutlet]);
             }
-            navigate(selectedOutlet ? '/app' : '/app/salon-selection', { replace: true });
+            navigate('/app', { replace: true });
         } catch (e) { setError(e.message || 'Something went wrong'); }
         finally {
             setLoading(false);
@@ -371,11 +369,19 @@ export default function AppLoginPage() {
     const fmtPhone = (p) => p.length > 5 ? `+91 ${p.slice(0, 5)} ${p.slice(5)}` : `+91 ${p}`;
 
     const S = {
-        page: { minHeight: '100svh', width: '100%', background: colors.bg, color: colors.text, fontFamily: "'SF Pro Text', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', transition: 'background 0.3s ease', overflowX: 'hidden', boxSizing: 'border-box' },
+        page: { minHeight: '100svh', width: '100%', background: colors.bg, color: colors.text, fontFamily: "'SF Pro Text', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', padding: '8px 16px 40px', transition: 'background 0.3s ease', overflowX: 'hidden', boxSizing: 'border-box' },
         input: { width: '100%', background: colors.inputBg, border: `1.5px solid ${colors.border}`, borderRadius: '14px', padding: '14px 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif" },
         btn: { width: '100%', background: '#C8956C', border: 'none', borderRadius: '14px', padding: '15px', fontSize: '16px', fontWeight: 700, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', letterSpacing: '0.02em', transition: 'opacity 0.2s', boxShadow: '0 4px 12px rgba(200,149,108,0.2)' },
         ghost: { background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, fontFamily: "'Inter', sans-serif" },
     };
+
+    if (authLoading || isCustomerAuthenticated) {
+        return (
+            <div style={{ minHeight: '100svh', background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 size={40} className="animate-spin text-[#C8956C]" />
+            </div>
+        );
+    }
 
     return (
         <div style={S.page}>
@@ -390,16 +396,16 @@ export default function AppLoginPage() {
                         exit={{ opacity: 0 }}
                         style={{ width: '100%', maxWidth: '420px' }}
                     >
-                        <div className="flex flex-col items-center mb-8">
+                        <div className="flex flex-col items-center mb-2">
                             <img
                                 src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'}
                                 alt="Wapixo"
-                                className="w-14 h-auto opacity-80 mb-6 drop-shadow-2xl"
+                                className="w-24 h-auto opacity-90 mb-4 drop-shadow-2xl"
                             />
-                            <h1 className={`text-3xl sm:text-4xl font-serif italic mb-2 text-center leading-tight ${isLight ? 'text-neutral-900' : 'text-white'}`}>
+                            <h1 className={`text-3xl sm:text-4xl font-serif italic mb-1 text-center leading-tight ${isLight ? 'text-neutral-900' : 'text-white'}`}>
                                 Precision <span className="font-normal text-[#C8956C]">Meets</span> Style
                             </h1>
-                            <p className={`text-[10px] font-black tracking-[0.3em] uppercase text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>Find your signature sanctuary</p>
+                            <p className={`text-[9px] font-black tracking-[0.3em] uppercase text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>Find your signature sanctuary</p>
                         </div>
 
                         {locationLoading ? (
@@ -431,141 +437,150 @@ export default function AppLoginPage() {
                                             />
                                         </div>
                                     </div>
-                                     <div className={`p-4 rounded-3xl border space-y-4 ${isLight ? 'bg-neutral-50 border-neutral-200 shadow-sm' : 'bg-black/40 border-white/[0.03]'}`}>
-                                         <div className="flex items-center justify-between">
-                                             <div>
-                                                 <h2 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isLight ? 'text-neutral-400' : 'text-white/40'}`}>Search Radius</h2>
-                                                 <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
+                                     {userCoords && (
+                                         <div className={`p-4 rounded-3xl border space-y-4 ${isLight ? 'bg-neutral-50 border-neutral-200 shadow-sm' : 'bg-black/40 border-white/[0.03]'}`}>
+                                             <div className="flex items-center justify-between">
+                                                 <div>
+                                                     <h2 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isLight ? 'text-neutral-400' : 'text-white/40'}`}>Search Radius</h2>
+                                                     <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
+                                                 </div>
                                              </div>
-                                             <button 
-                                                 onClick={() => fetchLocationAndNearby()}
-                                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#C8956C]/10 text-[#C8956C] border border-[#C8956C]/20 hover:bg-[#C8956C]/20 transition-all"
-                                             >
-                                                 <Navigation size={12} fill="currentColor" />
-                                                 <span className="text-[10px] font-bold uppercase tracking-tight">Auto Detect</span>
-                                             </button>
-                                         </div>
 
-                                        <div className="grid grid-cols-4 gap-2">
-                                            {RADIUS_OPTIONS.map((km) => (
-                                                <button
-                                                    key={km}
-                                                    onClick={() => {
-                                                        setSearchRadiusKm(km);
-                                                        if (userCoords) fetchOutlets(userCoords.lat, userCoords.lng, km);
-                                                    }}
-                                                    className={`h-10 rounded-xl text-xs font-bold transition-all relative ${
-                                                        searchRadiusKm === km 
-                                                        ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]' 
-                                                        : isLight 
-                                                            ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
-                                                            : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
-                                                    }`}
-                                                >
-                                                    {km} km
-                                                </button>
-                                            ))}
+                                            <div className="grid grid-cols-4 gap-2">
+                                                {RADIUS_OPTIONS.map((km) => (
+                                                    <button
+                                                        key={km}
+                                                        onClick={() => {
+                                                            setSearchRadiusKm(km);
+                                                            fetchOutlets(userCoords?.lat, userCoords?.lng, km);
+                                                        }}
+                                                        className={`h-10 rounded-xl text-xs font-bold transition-all relative ${
+                                                            searchRadiusKm === km 
+                                                            ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]' 
+                                                            : isLight 
+                                                                ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
+                                                                : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
+                                                        }`}
+                                                    >
+                                                        {km} km
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                     )}
+                                </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-neutral-300' : 'text-white/20'}`}>Discovery Results</span>
+                                            <button 
+                                                onClick={() => setShowLocationModal(true)}
+                                                className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
+                                            >
+                                                <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
+                                                    {detectedAddress ? `Near ${detectedAddress}` : 'Current Location'}
+                                                </span>
+                                                <MapPin size={10} className="text-[#C8956C]" />
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-3 max-h-[380px] overflow-y-auto px-1 custom-scrollbar pb-2">
+                                            {isFetchingOutlets ? (
+                                                [1, 2, 3].map(i => (
+                                                    <div key={`skeleton-${i}`} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
+                                                        <div className="w-20 h-20 rounded-2xl bg-white/[0.02]" />
+                                                        <div className="flex-1 space-y-2">
+                                                            <div className="h-4 w-1/2 bg-white/[0.02] rounded" />
+                                                            <div className="h-3 w-3/4 bg-white/[0.02] rounded" />
+                                                            <div className="h-3 w-1/4 bg-white/[0.02] rounded" />
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div key="discovery-results-container" className="space-y-3">
+                                                    {(() => {
+                                                        const q = searchQuery.toLowerCase();
+                                                        const filteredOutlets = nearbyOutlets.filter(o => {
+                                                            const nameMatch = (o.name || "").toLowerCase().includes(q);
+                                                            const cityMatch = (o.city || "").toLowerCase().includes(q);
+                                                            
+                                                            let addrStr = "";
+                                                            if (typeof o.address === 'string') {
+                                                                addrStr = o.address;
+                                                            } else if (o.address && typeof o.address === 'object') {
+                                                                addrStr = `${o.address.street || ""} ${o.address.city || ""} ${o.address.pincode || ""}`;
+                                                            }
+                                                            const addrMatch = addrStr.toLowerCase().includes(q);
+                                                            
+                                                            return !searchQuery || nameMatch || cityMatch || addrMatch;
+                                                        });
+
+                                                        if (filteredOutlets.length === 0) {
+                                                            return (
+                                                                <div key="no-results" className="py-12 flex flex-col items-center text-center px-6">
+                                                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${isLight ? 'bg-neutral-50 border-neutral-100' : 'bg-white/[0.02] border-white/5'}`}>
+                                                                        <Search size={24} className={isLight ? 'text-neutral-300' : 'text-white/10'} />
+                                                                    </div>
+                                                                    <h3 className={`text-sm font-serif italic mb-2 ${isLight ? 'text-neutral-900' : 'text-white/60'}`}>No Sanctuaries Nearby</h3>
+                                                                    <p className={`text-[10px] font-medium leading-relaxed uppercase tracking-widest text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>
+                                                                        Expand your perimeter or search <br/>for a specific destination
+                                                                    </p>
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        return filteredOutlets.map((o) => {
+                                                            const displayAddr = typeof o.address === 'string' 
+                                                                ? (o.address || o.city || 'Signature Sanctuary')
+                                                                : (o.address ? `${o.address.street || ""}, ${o.address.city || ""}` : (o.city || 'Signature Sanctuary'));
+
+                                                            return (
+                                                                <motion.button
+                                                                    key={o._id || o.id}
+                                                                    initial={{ opacity: 0, y: 10 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    onClick={() => handleSelectOutlet(o)}
+                                                                    className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
+                                                                >
+                                                                    <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                    <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
+                                                                        <img
+                                                                            src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                            alt={o.name}
+                                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0 relative z-10">
+                                                                        <div className="flex items-center justify-between mb-1">
+                                                                            <h4 className={`text-lg font-serif italic truncate drop-shadow-sm ${isLight ? 'text-neutral-900' : 'text-white'}`}>{o.name}</h4>
+                                                                            <ChevronRight size={16} className={`${isLight ? 'text-neutral-200' : 'text-white/10'} group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all`} />
+                                                                        </div>
+                                                                        <p className={`text-[11px] truncate mb-3 font-medium tracking-tight ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
+                                                                            {displayAddr}
+                                                                        </p>
+
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-black/40 border-white/5'}`}>
+                                                                                <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
+                                                                                <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
+                                                                                    {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-1 opacity-40">
+                                                                                <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
+                                                                                <span className={`text-[9px] font-bold uppercase tracking-tighter ${isLight ? 'text-neutral-900' : 'text-white'}`}>4.8</span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </motion.button>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between px-1">
-                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-neutral-300' : 'text-white/20'}`}>Discovery Results</span>
-                                        {detectedAddress && (
-                                            <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
-                                                Near {detectedAddress}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-3 max-h-[380px] overflow-y-auto px-1 custom-scrollbar pb-2">
-                                        {isFetchingOutlets ? (
-                                            [1, 2, 3].map(i => (
-                                                <div key={i} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
-                                                    <div className="w-20 h-20 rounded-2xl bg-white/[0.02]" />
-                                                    <div className="flex-1 space-y-2">
-                                                        <div className="h-4 w-1/2 bg-white/[0.02] rounded" />
-                                                        <div className="h-3 w-3/4 bg-white/[0.02] rounded" />
-                                                        <div className="h-3 w-1/4 bg-white/[0.02] rounded" />
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : nearbyOutlets.length > 0 ? (
-                                            nearbyOutlets
-                                                .filter(o => 
-                                                    !searchQuery || 
-                                                    o.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                                    o.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                    o.address?.toLowerCase().includes(searchQuery.toLowerCase())
-                                                )
-                                                .map((o) => (
-                                                    <motion.button
-                                                        key={o._id}
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        onClick={() => handleSelectOutlet(o)}                                                         className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
-                                                    >
-                                                        <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                        <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
-                                                            <img
-                                                                src={o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
-                                                                alt={o.name}
-                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                            />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0 relative z-10">
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <h4 className={`text-lg font-serif italic truncate drop-shadow-sm ${isLight ? 'text-neutral-900' : 'text-white'}`}>{o.name}</h4>
-                                                                <ChevronRight size={16} className={`${isLight ? 'text-neutral-200' : 'text-white/10'} group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all`} />
-                                                            </div>
-                                                            <p className={`text-[11px] truncate mb-3 font-medium tracking-tight ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
-                                                                {o.address || o.city || 'Signature Sanctuary'}
-                                                            </p>
-
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-black/40 border-white/5'}`}>
-                                                                    <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
-                                                                    <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
-                                                                        {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex items-center gap-1 opacity-40">
-                                                                    <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
-                                                                    <span className={`text-[9px] font-bold uppercase tracking-tighter ${isLight ? 'text-neutral-900' : 'text-white'}`}>4.8</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </motion.button>
-                                                ))
-                                        ) : (
-                                            <div className="py-12 flex flex-col items-center text-center px-6">
-                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${isLight ? 'bg-neutral-50 border-neutral-100' : 'bg-white/[0.02] border-white/5'}`}>
-                                                    <Search size={24} className={isLight ? 'text-neutral-300' : 'text-white/10'} />
-                                                </div>
-                                                <h3 className={`text-sm font-serif italic mb-2 ${isLight ? 'text-neutral-900' : 'text-white/60'}`}>No Sanctuaries Nearby</h3>
-                                                <p className={`text-[10px] font-medium leading-relaxed uppercase tracking-widest text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>
-                                                    Expand your perimeter or search <br/>for a specific destination
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="pt-2">
-                                    <p className="text-[10px] text-center text-white/10 font-bold uppercase tracking-[0.2em] mb-4">— OR —</p>
-                                    <button
-                                        onClick={() => setStep(1)}
-                                        className={`w-full h-14 rounded-2xl border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 ${
-                                            isLight 
-                                            ? 'border-neutral-200 text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900' 
-                                            : 'border-white/10 text-white/40 hover:bg-white/5 hover:text-white'
-                                        }`}
-                                    >
-                                        <Scan size={14} />
-                                        Manual Identification
-                                    </button>
-                                </div>
                             </div>
                         )}
 
@@ -583,13 +598,14 @@ export default function AppLoginPage() {
 
                 {/* STEP 1: Phone */}
                 {step === 1 && (
-                    <motion.div key="phone" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px' }}>
-                        <button onClick={() => goTo(0)} style={{ ...S.ghost, marginBottom: '24px' }}><ArrowLeft size={18} /> Back</button>
+                    <motion.div key="phone" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', minHeight: '80svh' }}>
+                        <button onClick={() => goTo(0)} style={{ ...S.ghost, padding: '12px 0' }}><ArrowLeft size={18} /> Back</button>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                             <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
-                            <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>Welcome Back</h1>
+                            <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
                             {selectedOutlet && <p style={{ fontSize: '13px', color: '#C8956C', marginTop: '8px' }}>{selectedOutlet.name}</p>}
-                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Sign in to continue</p>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>{isRegistering ? 'Join our luxury network' : 'Sign in to continue'}</p>
                         </div>
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Phone Number</label>
@@ -600,46 +616,32 @@ export default function AppLoginPage() {
                         </div>
                         {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
                         <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendOtp} disabled={loading || phone.length !== 10 || !tenantId} style={{ ...S.btn, opacity: (loading || phone.length !== 10 || !tenantId) ? 0.5 : 1 }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}</motion.button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowRegisterModal(true);
-                                setRegisterError('');
-                            }}
-                            disabled={loading}
-                            style={{ ...S.ghost, display: 'block', margin: '14px auto 0', color: '#C8956C', fontWeight: 700 }}
-                        >
-                            Register instead
-                        </button>
                         
                         <button
                             type="button"
-                            onClick={() => setPhone('6263510091')}
-                            className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/20 text-[#C8956C] font-black uppercase tracking-widest text-[10px] hover:bg-[#C8956C]/10 transition-all"
+                            onClick={() => setIsRegistering(!isRegistering)}
+                            style={{ ...S.ghost, display: 'block', margin: '20px auto 0', color: '#C8956C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '11px' }}
                         >
-                            <User size={14} />
-                            Customer Demo Account
+                            {isRegistering ? 'Existing User? Login' : 'New User? Register'}
                         </button>
+                        
+                      
 
                         <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> & <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a></p>
+                        </div>
                     </motion.div>
                 )}
 
                 {/* STEP 2: OTP */}
                 {step === 2 && (
-                    <motion.div key="otp" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px' }}>
-                        <button onClick={() => goTo(1)} style={{ ...S.ghost, marginBottom: '32px', color: isLight ? '#1A1A1A' : 'rgba(255,255,255,0.4)' }}><ArrowLeft size={18} /> Back</button>
+                    <motion.div key="otp" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', minHeight: '80svh' }}>
+                        <button onClick={() => goTo(1)} style={{ ...S.ghost, padding: '12px 0', color: isLight ? '#1A1A1A' : 'rgba(255,255,255,0.4)' }}><ArrowLeft size={18} /> Back</button>
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                             <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>Phone Verification</h2>
-                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 6-digit OTP sent to your phone</p>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 4-digit OTP sent to your phone</p>
                             <p style={{ fontSize: '13px', color: colors.textMuted, margin: '6px 0 0' }}>Sent to <span style={{ color: '#C8956C', fontWeight: 700 }}>{fmtPhone(phone)}</span></p>
-                            {otpDebug && (
-                                <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(200,149,108,0.1)', border: '1px dashed #C8956C', borderRadius: '12px' }}>
-                                    <p style={{ fontSize: '11px', fontWeight: 900, color: '#C8956C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                                        DEBUG OTP: <span style={{ fontSize: '16px', letterSpacing: '0.2em', marginLeft: '8px' }}>{otpDebug}</span>
-                                    </p>
-                                </div>
-                            )}
+                          
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '28px' }}>
                             {otp.map((digit, i) => (
@@ -651,8 +653,9 @@ export default function AppLoginPage() {
                         </div>
                         <p style={{ textAlign: 'center', fontSize: '14px', color: colors.textMuted, marginBottom: '24px' }}>{countdown > 0 ? <span style={{ fontFamily: 'monospace', fontSize: '16px', color: colors.text, fontWeight: 700 }}>{String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}</span> : null}</p>
                         {error && <p style={{ fontSize: '13px', color: '#ff4757', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleVerifyOtp} disabled={loading || otp.join('').length !== 6} style={{ ...S.btn, opacity: (loading || otp.join('').length !== 6) ? 0.5 : 1, marginBottom: '16px' }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Verify'}</motion.button>
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleVerifyOtp} disabled={loading || otp.join('').length !== 4} style={{ ...S.btn, opacity: (loading || otp.join('').length !== 4) ? 0.5 : 1, marginBottom: '16px' }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Verify'}</motion.button>
                         <p style={{ textAlign: 'center', fontSize: '13px', color: colors.textMuted }}>Didn't receive? {countdown > 0 ? <span>Wait {countdown}s</span> : <button onClick={handleSendOtp} style={{ ...S.ghost, display: 'inline', color: '#C8956C', fontWeight: 600 }}>Resend</button>}</p>
+                        </div>
                     </motion.div>
                 )}
 
@@ -687,117 +690,73 @@ export default function AppLoginPage() {
                 )}
 
             </AnimatePresence>
-            {showRegisterModal && (
-                <div className="fixed inset-0 z-[1002] flex items-end sm:items-center justify-center p-0 sm:p-4">
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setShowRegisterModal(false)}
-                    />
-                    <motion.div
-                        initial={{ y: '100%', opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: '100%', opacity: 0 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        style={{ background: colors.bg, borderTop: `1px solid ${colors.border}` }}
-                        className="relative w-full max-w-md p-6 rounded-t-[32px] sm:rounded-b-[32px] overflow-hidden"
-                    >
-                        <div className="flex items-start justify-between gap-4 mb-4">
-                            <div>
-                                <h3 className="text-xl font-black" style={{ color: colors.text }}>Customer Register</h3>
-                                <p className="text-xs font-medium opacity-60" style={{ color: colors.textMuted }}>
-                                    Optional — registration ke baad OTP flow continue hoga
+
+            <AnimatePresence>
+                {showLocationModal && (
+                    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={handleDenyLocation}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className={`relative w-full max-w-[380px] overflow-hidden rounded-[32px] border ${isLight ? 'bg-white border-neutral-100 shadow-2xl' : 'bg-[#1A1A1A] border-white/5 shadow-2xl'}`}
+                        >
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#C8956C] to-transparent opacity-50" />
+                            
+                            <div className="p-8 flex flex-col items-center text-center">
+                                <div className="relative mb-8">
+                                    <div className="absolute inset-0 bg-[#C8956C]/20 blur-2xl rounded-full animate-pulse" />
+                                    <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center border rotation-12 transition-transform hover:rotate-0 duration-500 ${isLight ? 'bg-white border-neutral-100 shadow-xl' : 'bg-white/[0.03] border-white/10'}`}>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-[#C8956C]/10 to-transparent rounded-3xl" />
+                                        <Navigation size={32} className="text-[#C8956C] animate-bounce-slow" />
+                                    </div>
+                                    <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-[#C8956C] flex items-center justify-center border-4 border-[#1A1A1A] shadow-lg">
+                                        <MapPin size={12} className="text-white" />
+                                    </div>
+                                </div>
+
+                                <h2 className={`text-2xl font-serif italic mb-3 leading-tight ${isLight ? 'text-neutral-900' : 'text-white'}`}>
+                                    Discover Nearby <span className="text-[#C8956C]">Sanctuaries</span>
+                                </h2>
+                                
+                                <p className={`text-sm leading-relaxed mb-8 px-2 font-medium ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
+                                    To provide a curated experience, we'd like to find the finest boutiques in your immediate vicinity.
+                                </p>
+
+                                <div className="w-full space-y-3">
+                                    <motion.button 
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleAllowLocation}
+                                        className="w-full h-14 rounded-2xl bg-[#C8956C] text-white font-black uppercase tracking-[0.2em] text-[11px] shadow-[0_8px_20px_rgba(200,149,108,0.3)] hover:shadow-[0_12px_25px_rgba(200,149,108,0.4)] transition-all flex items-center justify-center gap-3 group"
+                                    >
+                                        Enable Precision Access
+                                        <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                                    </motion.button>
+
+                                    <button 
+                                        onClick={handleDenyLocation}
+                                        className={`w-full h-14 rounded-2xl border text-[10px] font-black uppercase tracking-[0.15em] transition-all ${isLight ? 'border-neutral-200 text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900' : 'border-white/5 text-white/30 hover:bg-white/5 hover:text-white'}`}
+                                    >
+                                        Browse All Salons
+                                    </button>
+                                </div>
+
+                                <p className="mt-8 text-[9px] font-black uppercase tracking-[0.3em] opacity-20">
+                                    Wapixo Luxury Network
                                 </p>
                             </div>
-                            <button type="button" onClick={() => setShowRegisterModal(false)} disabled={loading} style={{ ...S.ghost }}>
-                                Close
-                            </button>
-                        </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
-                        <div className="space-y-3">
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Name</label>
-                            <input
-                                type="text"
-                                value={registerForm.name}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, name: e.target.value }))}
-                                placeholder="Your name"
-                                style={{ ...S.input, width: '100%' }}
-                                disabled={loading}
-                            />
-
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Email</label>
-                            <input
-                                type="email"
-                                value={registerForm.email}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, email: e.target.value }))}
-                                placeholder="you@example.com"
-                                style={{ ...S.input, width: '100%' }}
-                                disabled={loading}
-                            />
-
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Mobile Number</label>
-                            <input
-                                type="tel"
-                                inputMode="numeric"
-                                maxLength={10}
-                                value={registerForm.mobile}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, mobile: e.target.value.replace(/\D/g, '') }))}
-                                placeholder="98765 43210"
-                                style={{ ...S.input, width: '100%' }}
-                                disabled={loading}
-                            />
-
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Password</label>
-                            <PasswordField
-                                value={registerForm.password}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, password: e.target.value }))}
-                                placeholder="Minimum 8 chars"
-                                inputClassName="w-full bg-surface border border-border rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-primary transition-all pr-12"
-                                buttonClassName="text-text-muted hover:text-primary mr-2"
-                                disabled={loading}
-                            />
-
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>DOB</label>
-                            <input
-                                type="date"
-                                value={registerForm.dob}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, dob: e.target.value }))}
-                                style={{ ...S.input, width: '100%' }}
-                                disabled={loading}
-                            />
-
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '4px' }}>Anniversary Date (optional)</label>
-                            <input
-                                type="date"
-                                value={registerForm.anniversary}
-                                onChange={(e) => setRegisterForm(prev => ({ ...prev, anniversary: e.target.value }))}
-                                style={{ ...S.input, width: '100%' }}
-                                disabled={loading}
-                            />
-
-                            {registerError && (
-                                <p style={{ fontSize: '12px', color: '#ff4757', marginTop: 6 }}>
-                                    {registerError}
-                                </p>
-                            )}
-
-                            <motion.button
-                                whileTap={{ scale: 0.98 }}
-                                onClick={handleCustomerRegister}
-                                disabled={loading}
-                                style={{
-                                    ...S.btn,
-                                    borderRadius: '16px',
-                                    height: '52px',
-                                    opacity: loading ? 0.6 : 1,
-                                    marginTop: 6,
-                                }}
-                            >
-                                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Register & Continue'}
-                            </motion.button>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
         </div>
     );
 }

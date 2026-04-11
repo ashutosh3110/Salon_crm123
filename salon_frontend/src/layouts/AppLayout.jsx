@@ -7,6 +7,8 @@ import { useGender } from '../contexts/GenderContext';
 import { useCustomerAuth } from '../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../contexts/CustomerThemeContext';
 import { useBusiness } from '../contexts/BusinessContext';
+import { useCart } from '../contexts/CartContext';
+import CartDrawer from '../components/app/CartDrawer';
 
 const pageVariants = {
     initial: { opacity: 0, y: 15 },
@@ -18,16 +20,16 @@ export default function AppLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const { gender } = useGender();
-    const { customer } = useCustomerAuth();
+    const { customer, loading: authLoading } = useCustomerAuth();
     const { theme } = useCustomerTheme();
     const { activeOutletId } = useBusiness();
+    const { cart, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
 
     const isLight = theme === 'light';
 
-    // Check authentication and gender selection
-    // Check authentication and required setup
     useEffect(() => {
-        // 1. Must be logged in
+        if (authLoading) return;
+        
         if (!customer) {
             if (location.pathname !== '/app/login') {
                 navigate('/app/login', { replace: true });
@@ -43,14 +45,7 @@ export default function AppLayout() {
             return;
         }
 
-        // 3. Must have a salon selected
-        if (!activeOutletId) {
-            if (location.pathname !== '/app/salon-selection') {
-                navigate('/app/salon-selection', { replace: true });
-            }
-            return;
-        }
-    }, [customer, gender, activeOutletId, navigate, location.pathname]);
+    }, [authLoading, customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications'];
     const hideHeaderPaths = ['/app/product'];
@@ -68,7 +63,7 @@ export default function AppLayout() {
             : 'linear-gradient(to bottom, #1A1A1A 0%, #0F0F0F 100%) fixed';
     }, [isLight]);
 
-    if (!customer || (!gender && location.pathname !== '/app/gender')) return null;
+    if (authLoading || !customer || (!gender && location.pathname !== '/app/gender')) return null;
 
     return (
         <div style={{
@@ -247,6 +242,25 @@ export default function AppLayout() {
                 </AnimatePresence>
 
                 {!shouldHideNav && <AppBottomNav />}
+
+                <CartDrawer 
+                    isOpen={isCartOpen}
+                    onClose={() => setIsCartOpen(false)}
+                    cart={cart.items}
+                    total={cartTotal}
+                    onUpdateQuantity={(id, delta) => {
+                        const item = cart.items.find(i => (i.productId._id || i.productId.id) === id);
+                        if (item) updateQuantity(id, item.quantity + delta);
+                    }}
+                    onRemove={removeFromCart}
+                    colors={{
+                        bg: isLight ? '#FCF9F6' : '#0F0F0F',
+                        card: isLight ? '#FFFFFF' : '#1A1A1A',
+                        text: isLight ? '#1A1A1A' : '#ffffff',
+                        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
+                    }}
+                    isLight={isLight}
+                />
 
                 {/* Modal Root for Portals */}
                 <div id="app-portal-root" />

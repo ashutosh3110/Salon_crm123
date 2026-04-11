@@ -1,3 +1,4 @@
+// Updated at 22:45 for stability
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
@@ -9,83 +10,102 @@ import {
     Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useInventory } from '../../contexts/InventoryContext';
-import { useWallet } from '../../contexts/WalletContext';
 import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
-import mockServicesPageData from '../../data/mockServicesPageData.json';
-import api from '../../services/mock/mockApi';
-import logoLightMode from '/new black wapixo logo .png';
+import api from '../../services/api';
 import logoDarkMode from '/new wapixo logo .png';
 import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
 import SalonMapView from '../../components/app/SalonMapView';
 
+
 const { PLACEHOLDERS } = homeData;
 
+const getAddressString = (addr) => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+        const { street, city, state, pincode } = addr;
+        return [street, city, state, pincode].filter(Boolean).join(', ');
+    }
+    return '';
+};
+
 const ServiceCard = ({ service, onBook, colors, isLight }) => {
-    const fallbackImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1000&auto=format&fit=crop";
+    const fallbackImage = "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1000&auto=format&fit=crop";
     
     return (
         <motion.div
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.97 }}
             style={{
                 background: colors.card,
-                borderRadius: '24px',
-                border: `1.5px solid ${colors.border}`,
-                boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.02)' : '0 10px 30px rgba(0,0,0,0.2)'
+                borderRadius: '28px',
+                border: `1px solid ${colors.border}`,
+                boxShadow: isLight ? '0 10px 30px rgba(0,0,0,0.03)' : '0 10px 40px rgba(0,0,0,0.25)',
+                overflow: 'hidden',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
             }}
-            className="group overflow-hidden flex flex-col h-full"
+            className="group"
         >
-            <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+            <div style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
                 <img
                     src={service.image || fallbackImage}
                     alt={service.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    className="group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-                    <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
-                        <Clock size={10} className="text-[#C8956C]" />
-                        <span>{service.duration}m</span>
-                    </div>
-                    {service.resourceType && (
-                        <div className="bg-white/90 dark:bg-black/60 backdrop-blur-md px-2 py-1 rounded-lg flex items-center gap-1 shadow-sm font-black uppercase text-[8px] tracking-tighter">
-                            {service.resourceType === 'room' ? <DoorClosed size={10} className="text-[#C8956C]" /> : <Armchair size={10} className="text-[#C8956C]" />}
-                            <span>{service.resourceType}</span>
-                        </div>
-                    )}
+                <div style={{
+                    position: 'absolute', top: '12px', right: '12px',
+                    background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)',
+                    padding: '4px 10px', borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    color: '#FFF', fontSize: '10px', fontWeight: 800
+                }}>
+                    <Clock size={10} color="#C8956C" />
+                    <span>{service.duration || 30}m</span>
                 </div>
             </div>
 
-            <div className="p-3 flex flex-col flex-1">
-                <div className="flex justify-between items-start gap-2 mb-0.5">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-[#C8956C]">{service.category}</span>
-                    <div className="flex items-center gap-0.5">
-                        <Star size={8} fill="#C8956C" color="#C8956C" />
-                        <span className="text-[9px] font-bold">4.9</span>
+            <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 900, color: '#C8956C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                        {service.category || 'Specialist'}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <Star size={10} fill="#C8956C" color="#C8956C" />
+                        <span style={{ fontSize: '10px', fontWeight: 800, color: colors.text }}>4.9</span>
                     </div>
                 </div>
 
-                <h3 className="text-[13px] font-bold mb-0.5 line-clamp-1" style={{ color: colors.text }}>{service.name}</h3>
-                <p className="text-[10px] mb-3 line-clamp-2 leading-tight" style={{ color: colors.textMuted }}>{service.description || "Premium salon service for your beauty and wellness."}</p>
+                <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                    {service.name}
+                </h3>
+                <p style={{ fontSize: '11px', color: colors.textMuted, lineHeight: '1.4', margin: '0 0 16px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>
+                    {service.description || "Indulge in our premium salon service designed for your wellness."}
+                </p>
 
-                <div className="mt-auto flex items-center justify-between pt-1">
-                    <div className="flex flex-col">
-                        <span className="text-[8px] opacity-40 font-bold uppercase tracking-tighter">Starts from</span>
-                        <span className="text-sm font-black text-[#C8956C]">₹{service.price}</span>
+                <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                        <p style={{ fontSize: '8px', color: colors.textMuted, fontWeight: 700, textTransform: 'uppercase', margin: 0 }}>Starts from</p>
+                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text, margin: 0 }}>₹{service.price || 499}</p>
                     </div>
-
                     <motion.button
-                        whileTap={{ scale: 0.9 }}
+                        whileTap={{ scale: 0.92 }}
                         onClick={() => onBook(service._id || service.id)}
                         style={{
-                            background: '#C8956C',
+                            background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
+                            color: '#FFF',
+                            border: 'none',
+                            padding: '8px 20px',
                             borderRadius: '12px 4px 12px 4px',
-                            boxShadow: '0 6px 12px rgba(200,149,108,0.2)'
+                            fontSize: '11px',
+                            fontWeight: 900,
+                            textTransform: 'uppercase',
+                            boxShadow: '0 4px 12px rgba(200,149,108,0.2)'
                         }}
-                        className="px-3.5 py-1.5 text-white text-[9px] font-black uppercase tracking-wider"
                     >
                         Book
                     </motion.button>
@@ -159,13 +179,55 @@ export default function AppHomePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { gender, setGender } = useGender();
+    // Fallback if gender is null
+    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
+
     const { theme, colors, isLight } = useCustomerTheme();
-    const { activeOutlet, activeOutletId, outlets, setActiveOutletId, services, categories: businessCategories } = useBusiness();
-    const { bookings } = useBookingRegistry();
-    const { shopCategories, products } = useInventory();
-    const { balance, initializeWallet } = useWallet();
-    const { banners, lookbook: cmsLookbook, experts } = useCMS();
-    const { isInitializing, fetchCustomerInitialData } = useBusiness();
+    const { 
+        activeOutlet, 
+        activeOutletId, 
+        outlets, 
+        setActiveOutletId, 
+        services, 
+        categories,
+        isInitializing,
+        fetchCustomerInitialData,
+        feedbacks: reviews = []
+    } = useBusiness();
+    const { productCategories } = useInventory();
+    const { banners } = useCMS();
+
+    const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
+
+    // Pre-select first category when categories load
+    useEffect(() => {
+        if (!selectedServiceCategory && categories?.length > 0) {
+            const firstCat = (categories || []).find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
+            if (firstCat) setSelectedServiceCategory(firstCat.name);
+        }
+    }, [categories, gender, selectedServiceCategory]);
+
+    // ── GEOLOCATION LOGIC ──
+    const [userLocation, setUserLocation] = useState(null);
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                (err) => console.log('Location access denied or error')
+            );
+        }
+    }, []);
+
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    };
 
     // ── PULL TO REFRESH LOGIC ──
     const [pullDistance, setPullDistance] = useState(0);
@@ -227,197 +289,60 @@ export default function AppHomePage() {
         };
     }, [isPulling, pullDistance, fetchCustomerInitialData]);
 
-    const [reviews, setReviews] = useState([]);
-    const [couponOffers, setCouponOffers] = useState([]);
-    const [membershipPlans, setMembershipPlans] = useState([]);
-    const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+    const [nearestOutlets, setNearestOutlets] = useState([]);
+    const [nearestOutletsLoading, setNearestOutletsLoading] = useState(false);
 
-    // ── FETCH DYNAMIC REVIEWS ──
+    // Static Data as fallbacks (User said keep static)
+    const staticMembershipPlans = [
+        { id: 'plat', name: 'Platinum Membership', price: 5000, duration: 365, benefits: ['Unlimited Haircuts', 'Private Cabin', 'Priority Booking'], gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', icon: 'crown', isPopular: true },
+        { id: 'gold', name: 'Gold Ritual', price: 2000, duration: 180, benefits: ['10% Off Services', 'Free Facial Monthly', 'Expert Stylists'], gradient: 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)', icon: 'gem', isPopular: false }
+    ];
+
+    const staticCouponOffers = [
+        { id: 'st1', subtitle: 'On your first service', discount: '₹200 Cashback', code: 'WELCOME200', hasCouponCode: true },
+        { id: 'st2', subtitle: 'Festive special', discount: 'Flat 20% OFF', code: 'FESTIVE20', hasCouponCode: true }
+    ];
+
+    const [membershipPlans] = useState(staticMembershipPlans);
+    const [couponOffers] = useState(staticCouponOffers);
+    const [referralReward] = useState(200);
+
+    // ── 2. FETCH NEAREST SALONS (OUTLETS) ──
+
     useEffect(() => {
-        const fetchReviews = async () => {
+        const fetchNearby = async () => {
+            if (!userLocation) return;
+            setNearestOutletsLoading(true);
             try {
-                const res = await api.get('/feedbacks?status=Approved');
-                if (res.data?.success) {
-                    setReviews(res.data.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch reviews:', error);
-            }
-        };
-        fetchReviews();
-    }, []);
-
-    // Fallback if gender is null
-    const g = (gender === 'men' || gender === 'women') ? gender : 'women';
-
-    // Only show approved experts for this outlet
-    // Only show approved STYLISTS for this particular outlet
-    const approvedExperts = experts.filter(e => 
-        e.status === 'Approved' && 
-        (e.role === 'stylist' || !e.role || e.role === 'Hair Stylist') && // Filter out admin/manager etc.
-        e.outletId === activeOutletId
-    );
-
-    const displayExperts = approvedExperts;
-
-    const lastBooking = bookings.length > 0 ? bookings[0] : null;
-
-    const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
-    const [placeholderIndex, setPlaceholderIndex] = useState(0);
-    const [isFocused, setIsFocused] = useState(false);
-    const [selectedExpert, setSelectedExpert] = useState(null);
-    const [showExpertModal, setShowExpertModal] = useState(false);
-
-    const [isMapView, setIsMapView] = useState(false);
-    const [referralReward, setReferralReward] = useState(200);
-    const [rotations, setRotations] = useState({});
-
-    // Loyalty card is backend-driven via WalletContext balance.
-    const nextRewardPoints = 3000;
-    const currentPoints = Math.max(0, Number(balance || 0));
-    const rewardProgressPct = Math.max(0, Math.min(100, Math.round((currentPoints / nextRewardPoints) * 100)));
-
-
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setPlaceholderIndex((prev) => (prev + 1) % (PLACEHOLDERS?.length || 1));
-        }, 2000);
-        return () => clearInterval(timer);
-    }, []);
-
-    // Exclusive offers (Promo Codes) should come from backend (activationMode=COUPON)
-    useEffect(() => {
-        let cancelled = false;
-        const loadOffers = async () => {
-            const fallbackOffers = [
-                { id: 'mock1', subtitle: 'On your first service', discount: '₹200 Cashback', code: 'WELCOME200', hasCouponCode: true },
-                { id: 'mock2', subtitle: 'Treat yourself!', discount: 'Gift Voucher Worth ₹500', code: 'BDAYLOVE', hasCouponCode: true }
-            ];
-
-            if (!customer?._id) {
-                setCouponOffers(fallbackOffers);
-                return;
-            }
-            try {
-                const res = await api.get('/promotions/active', {
-                    params: { _t: Date.now() },
+                const res = await api.get('/outlets/nearby', {
+                    params: {
+                        lat: userLocation.lat,
+                        lng: userLocation.lng,
+                        radius: 50 // 50km
+                    }
                 });
-                const list = Array.isArray(res?.data)
-                    ? res.data
-                    : Array.isArray(res?.data?.data)
-                        ? res.data.data
-                        : Array.isArray(res?.data?.results)
-                            ? res.data.results
-                            : [];
-
-                const coupons = list
-                    .slice(0, 6)
-                    .map((p) => {
-                        const couponRaw = p.couponCode ?? p.coupon_code ?? p.code;
-                        const hasCouponCode = Boolean(couponRaw);
-                        const code = hasCouponCode
-                            ? String(couponRaw).trim().toUpperCase().replace(/\s+/g, '')
-                            : 'AUTO';
-                        let discount = p.name || code;
-                        const promoType = String(p.type ?? '').toUpperCase();
-                        if (promoType === 'PERCENTAGE') discount = `Flat ${p.value}% OFF`;
-                        else if (promoType === 'FLAT') discount = `₹${p.value} OFF`;
-                        else if (promoType === 'COMBO') discount = 'Combo Deal';
-
-                        let subtitle = 'Limited time offer';
-                        if (p.startTime && p.endTime) {
-                            subtitle = `${p.startTime} - ${p.endTime}`;
-                        } else if (p.startDate && p.endDate) {
-                            const s = new Date(p.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-                            const e = new Date(p.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
-                            subtitle = `Valid ${s} - ${e}`;
-                        }
-
-                        return {
-                            id: String(p._id || code),
-                            subtitle,
-                            discount,
-                            code,
-                            hasCouponCode,
-                        };
-                    });
-
-                if (!cancelled) {
-                    setCouponOffers(coupons.length > 0 ? coupons : fallbackOffers);
-                }
-            } catch {
-                if (!cancelled) setCouponOffers(fallbackOffers);
-            }
-        };
-
-        loadOffers();
-        return () => {
-            cancelled = true;
-        };
-    }, [customer?._id]);
-
-    useEffect(() => {
-        if (showWelcome) {
-            const timer = setTimeout(() => setShowWelcome(false), 3500);
-            return () => clearTimeout(timer);
-        }
-    }, [showWelcome]);
-
-    useEffect(() => {
-        if (customer?._id) {
-            initializeWallet(customer._id);
-        }
-    }, [customer?._id]);
-
-    useEffect(() => {
-        let cancelled = false;
-        const loadMembershipPlans = async () => {
-            try {
-                const res = await api.get('/loyalty/membership-plans');
-                const list = res?.data?.data || res?.data || [];
-                const rows = Array.isArray(list) ? list : [];
-                const mapped = rows
-                    .filter((p) => p?.isActive !== false)
-                    .map((p) => ({
-                        id: p._id || p.id,
-                        name: p.name || 'Membership',
-                        price: Number(p.price || 0),
-                        duration: Number(p.duration || 30),
-                        benefits: Array.isArray(p.benefits) ? p.benefits : [],
-                        gradient: p.gradient || '',
-                        icon: p.icon || 'star',
-                        isPopular: !!p.isPopular,
-                    }));
-                if (!cancelled) setMembershipPlans(mapped);
-            } catch {
-                if (!cancelled) setMembershipPlans([]);
-            }
-        };
-
-        loadMembershipPlans();
-
-        const loadReferralSettings = async () => {
-            if (!customer?._id) return;
-            try {
-                const res = await api.get('/loyalty/referral-settings');
-                if (!cancelled && res?.data?.success) {
-                    setReferralReward(res.data.data.referrerReward || 200);
+                if (res.data?.success) {
+                    setNearestOutlets(res.data.data);
                 }
             } catch (err) {
-                console.error('Error loading referral settings:', err);
+                console.error('Nearby API Error:', err);
+            } finally {
+                setNearestOutletsLoading(false);
             }
         };
+        fetchNearby();
+    }, [userLocation]);
 
-        loadReferralSettings();
 
-        return () => {
-            cancelled = true;
-        };
-    }, [customer?._id]);
+
+    // Banners, categories, and inventory are already handled by BusinessContext, InventoryContext, and CMSContext
+    // No other API calls here to keep things smooth
+
+
 
 
     const filteredPopularServices = useMemo(() => {
+
         return (services || []).filter(s => {
             // Filter by outlet (Multi-outlet support)
             if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
@@ -428,47 +353,18 @@ export default function AppHomePage() {
             }
 
             // Filter by gender
-            const cat = businessCategories.find(c => c.name === s.category);
-            if (!cat) return true;
-            if (!g) return true;
-            return cat.gender === 'both' || cat.gender === g;
+            const cat = categories?.find(c => c.name === s.category);
+            if (!cat) return true;  
+            if (!gender) return true;
+            return cat.gender === 'both' || cat.gender === gender;
         }).slice(0, 6);
-    }, [activeOutletId, services, g, businessCategories]);
+    }, [activeOutletId, services, gender, categories]);
 
-    const filteredMembershipPlans = useMemo(() => {
-        return membershipPlans;
-    }, [membershipPlans]);
-
-    const filteredShopCategories = useMemo(() => {
-        if (!shopCategories || shopCategories.length === 0) return [];
-        
-        // Debugging logs (User can see this in console if they look)
-        console.log(`[AppHomePage] Categories: ${shopCategories.length}, Products: ${products.length}, Gender: ${g}`);
-
-        // If products are not yet loaded, show all categories for that tenant as a fallback
-        if (!products || products.length === 0) return shopCategories;
-
-        return shopCategories.filter(cat => {
-            const catNameLower = String(cat.name || '').toLowerCase().trim();
-            const catIdStr = String(cat.id || '');
-
-            // A category should show if it has at least one product matching the gender
-            const matchingProducts = products.filter(p => {
-                const pCatLower = String(p.category || '').toLowerCase().trim();
-                const pAppCatStr = String(p.appCategory || '');
-                
-                const isMatch = (pAppCatStr === catIdStr || pCatLower === catNameLower);
-                return isMatch && (p.gender === 'all' || p.gender === g);
-            });
-            
-            return matchingProducts.length > 0;
-        });
-    }, [shopCategories, products, g]);
 
     /** Hero carousel = App CMS **Banners** tab only (no POS/coupon promos, no lookbook — those have their own UI below). */
     const filteredPromos = useMemo(() => {
         return banners
-            .filter((p) => p.status === 'Active' && (p.gender === 'all' || p.gender === g))
+            .filter((p) => p.status === 'Active' && (!p.gender || p.gender === 'all' || p.gender === g))
             .map((p) => {
                 const validity = (p.validityText && String(p.validityText).trim())
                     || (p.tag && String(p.tag).trim())
@@ -485,17 +381,27 @@ export default function AppHomePage() {
             });
     }, [banners, g]);
 
+    const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+    const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
+    const [isMapView, setIsMapView] = useState(false);
+
+    useEffect(() => {
+        if (showWelcome) {
+            const timer = setTimeout(() => setShowWelcome(false), 3500);
+            return () => clearTimeout(timer);
+        }
+    }, [showWelcome]);
+
     useEffect(() => {
         const timer = setInterval(() => {
-            setCurrentPromoIndex(prev => (filteredPromos.length > 0 ? (prev + 1) % filteredPromos.length : 0));
-        }, 5000);
+            setPlaceholderIndex((prev) => (prev + 1) % (PLACEHOLDERS?.length || 1));
+        }, 2000);
         return () => clearInterval(timer);
-    }, [filteredPromos.length, g]);
+    }, []);
 
-    // Reset index when gender changes
-    useEffect(() => {
-        setCurrentPromoIndex(0);
-    }, [g]);
+
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -911,87 +817,6 @@ export default function AppHomePage() {
                     </div>
                 </motion.div>
 
-                {/* ── ONE-TAP REBOOK (NEW) ── */}
-                {lastBooking && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                        <div style={{
-                            background: isLight ? 'linear-gradient(135deg, #FDFCFB 0%, #F5EEE6 100%)' : 'linear-gradient(135deg, #1A1614 0%, #120E0C 100%)',
-                            borderRadius: '24px',
-                            padding: '18px',
-                            border: `1.5px solid ${colors.border}`,
-                            position: 'relative',
-                            overflow: 'hidden'
-                        }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px', position: 'relative', zIndex: 1 }}>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <div style={{
-                                        width: '44px', height: '44px', borderRadius: '14px',
-                                        background: isLight ? '#FFF' : '#2A2A2A',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                                    }}>
-                                        <RefreshCw size={20} color={colors.accent} />
-                                    </div>
-                                    <div>
-                                        <h4 style={{ fontSize: '15px', fontWeight: 800, color: colors.text, margin: 0 }}>One-Tap Rebook</h4>
-                                        <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0 }}>Re-live your last ritual</p>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                                    <div style={{ background: `${colors.accent}15`, color: colors.accent, padding: '4px 10px', borderRadius: '100px', fontSize: '10px', fontWeight: 900 }}>
-                                        LAST: {new Date(lastBooking.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                                    </div>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => navigate(`/app/salon/${lastBooking.outletId || activeOutletId}`)}
-                                        style={{ background: 'none', border: 'none', color: colors.accent, fontSize: '10px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
-                                    >
-                                        Visit Salon <ExternalLink size={12} />
-                                    </motion.button>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-                                {lastBooking.services?.map((s, idx) => (
-                                    <span key={idx} style={{ fontSize: '11px', fontWeight: 600, background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)', padding: '6px 12px', borderRadius: '10px', color: colors.text }}>
-                                        {s.name}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <motion.button
-                                whileTap={{ scale: 0.97 }}
-                                onClick={() => navigate(`/app/book?serviceId=${lastBooking.services?.[0]?._id || ''}&outletId=${lastBooking.outletId || ''}`)}
-                                style={{
-                                    width: '100%',
-                                    padding: '12px',
-                                    background: colors.text,
-                                    color: colors.card,
-                                    border: 'none',
-                                    borderRadius: '14px',
-                                    fontSize: '13px',
-                                    fontWeight: 800,
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '8px',
-                                    position: 'relative',
-                                    zIndex: 1
-                                }}
-                            >
-                                Re-Book Services <ArrowRight size={16} />
-                            </motion.button>
-
-                            <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', fontSize: '120px', opacity: 0.03, color: colors.accent, pointerEvents: 'none' }}>
-                                <RefreshCw size={120} />
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-
-
-
                 {/* ── MAP VIEW (NEW) ── */}
                 <AnimatePresence>
                     {isMapView && (
@@ -1027,7 +852,23 @@ export default function AppHomePage() {
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {(() => {
-                                const otherOutlets = outlets.filter(o => o._id !== activeOutletId);
+                                const otherOutlets = outlets
+                                    .filter(o => o._id !== activeOutletId)
+                                    .map(o => {
+                                        const dist = userLocation && o.location?.coordinates?.length === 2 
+                                            ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
+                                            : null;
+                                        return { ...o, calculatedDist: dist };
+                                    });
+
+                                // Sort real salons by distance if available
+                                const sortedReal = [...otherOutlets].sort((a, b) => {
+                                    if (a.calculatedDist !== null && b.calculatedDist !== null) return a.calculatedDist - b.calculatedDist;
+                                    if (a.calculatedDist !== null) return -1;
+                                    if (b.calculatedDist !== null) return 1;
+                                    return 0;
+                                });
+
                                 const mockSalons = (homeData.GENDER_DATA[gender]?.salons || []).map(s => ({
                                     ...s,
                                     _id: `mock-${s.id}`,
@@ -1036,8 +877,8 @@ export default function AppHomePage() {
                                     isMock: true
                                 }));
                                 
-                                // Show real salons first, then mocks if we have fewer than 3
-                                const displaySalons = otherOutlets.length >= 3 ? otherOutlets : [...otherOutlets, ...mockSalons];
+                                // Show sorted real salons first, then mocks if we have fewer than 3
+                                const displaySalons = sortedReal.length >= 3 ? sortedReal : [...sortedReal, ...mockSalons];
 
                                 return displaySalons.map(outlet => (
                                     <motion.div
@@ -1061,7 +902,11 @@ export default function AppHomePage() {
                                     }}
                                 >
                                     <div style={{ height: '120px', width: '100%', position: 'relative' }}>
-                                        <img src={outlet.image} alt={outlet.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img 
+                                            src={outlet.images?.[0] || outlet.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} 
+                                            alt={outlet.name} 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
                                         <div style={{
                                             position: 'absolute',
                                             top: '12px',
@@ -1084,7 +929,11 @@ export default function AppHomePage() {
                                         </h4>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
                                             <MapPin size={12} color={colors.textMuted} />
-                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>{outlet.distance} · {outlet.address.split(',')[0]}</span>
+                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>
+                                                {outlet.calculatedDist !== undefined && outlet.calculatedDist !== null 
+                                                    ? `${outlet.calculatedDist.toFixed(1)} km` 
+                                                    : (outlet.distance || '0.5 km')} · {getAddressString(outlet.address).split(',')[0]}
+                                            </span>
                                         </div>
                                         <div style={{ display: 'flex', gap: '4px' }}>
                                             {['Luxury', 'Top Rated'].map(tag => (
@@ -1101,131 +950,156 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-                {/* ── EXCLUSIVE OFFERS (live promotions only — no JSON mock) ── */}
-                {couponOffers.length > 0 && (
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Ticket size={18} color="#C8956C" />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Exclusive Offers</span>
-                        </div>
-                    </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {couponOffers.map(offer => (
-                            <motion.div
-                                key={offer.id}
-                                whileTap={{ scale: 0.97 }}
-                                style={{
-                                    flexShrink: 0,
-                                    width: '220px',
-                                    background: isLight ? '#FFFBF8' : 'rgba(20, 15, 10, 0.4)',
-                                    borderRadius: '24px',
-                                    padding: '16px',
-                                    border: `1.5px dashed ${isLight ? '#C8956C' : '#C8956C'}`,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: '6px',
-                                    position: 'relative',
-                                    justifyContent: 'center'
-                                }}
-                                onClick={() => {
-                                    // Send user to booking page with prefilled promo code.
-                                    if (offer.hasCouponCode) {
-                                        navigate('/app/book', { state: { promoCode: offer.code } });
-                                    } else {
-                                        navigate('/app/book');
-                                    }
-                                }}
-                            >
-                                <p style={{ fontSize: '11px', color: isLight ? '#777' : colors.textMuted, margin: 0, fontWeight: 500 }}>
-                                    {offer.subtitle}
-                                </p>
-                                <h3 style={{
-                                    fontSize: '20px',
-                                    fontWeight: 900,
-                                    color: isLight ? '#2D2D2A' : '#FFF',
-                                    margin: 0,
-                                    fontFamily: "'Playfair Display', serif",
-                                    letterSpacing: '-0.01em'
-                                }}>
-                                    {offer.discount}
-                                </h3>
-                                <div style={{
-                                    background: isLight ? '#EDF1F4' : 'rgba(255,255,255,0.05)',
-                                    padding: '5px 12px',
-                                    borderRadius: '10px',
-                                    fontSize: '11px',
-                                    fontWeight: 800,
-                                    color: '#C8956C',
-                                    width: 'max-content',
-                                    marginTop: '2px',
-                                    letterSpacing: '0.02em'
-                                }}>
-                                    {offer.code}
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-                )}
 
-                {/* ── STYLIST LOOKBOOK (CMS only, no mock) ── */}
-                {!isMapView && cmsLookbook.filter((l) => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).length > 0 && (
-                    <motion.div variants={fadeUp} style={{ padding: '32px 16px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Camera size={20} color={colors.accent} />
-                                <div>
-                                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Stylist Lookbook</h3>
-                                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Trending rituals of the week</p>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px', background: isLight ? '#F1F3F5' : '#2A2A2A', padding: '4px', borderRadius: '12px' }}>
-                                <button style={{ fontSize: '10px', fontWeight: 800, color: '#8B4513', background: '#F8EDE3', border: 'none', padding: '6px 14px', borderRadius: '10px', cursor: 'pointer' }}>Trending</button>
-                                <button style={{ fontSize: '10px', fontWeight: 800, color: colors.textMuted, background: 'none', border: 'none', padding: '6px 14px', borderRadius: '10px', cursor: 'pointer' }}>Classics</button>
-                            </div>
+                {/* ── SERVICE CATEGORIES EXPLORER ── */}
+                <motion.div variants={fadeUp} style={{ padding: '32px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <LayoutGrid size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Service Categories</span>
                         </div>
-                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '14px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {cmsLookbook.filter((l) => l.status === 'Active' && (l.gender === 'all' || l.gender === g)).map((item) => (
+                        <button
+                            style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
+                            onClick={() => navigate('/app/services')}
+                        >
+                            View All
+                        </button>
+                    </div>
+
+                    {/* Category Bubbles */}
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                        {(categories || []).filter(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender)).map(c => c.name).map((catName) => {
+                            const isActive = selectedServiceCategory === catName;
+                            const catObj = (categories || []).find(c => c.name === catName);
+                            const iconMap = {
+                                'Haircuts': 'https://cdn-icons-png.flaticon.com/512/2916/2916035.png',
+                                'Styling': 'https://cdn-icons-png.flaticon.com/512/3228/3228741.png',
+                                'Coloring': 'https://cdn-icons-png.flaticon.com/512/2916/2916086.png',
+                                'Facial': 'https://cdn-icons-png.flaticon.com/512/3228/3228741.png',
+                                'All': 'https://cdn-icons-png.flaticon.com/512/10410/10410884.png'
+                            };
+
+                            return (
                                 <motion.div
-                                    key={item.id}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={() => navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook', lookId: item.id } })}
+                                    key={catName}
                                     style={{
                                         flexShrink: 0,
-                                        width: '200px',
-                                        height: '260px',
-                                        borderRadius: '24px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                    onClick={() => setSelectedServiceCategory(catName)}
+                                >
+                                    <div style={{
+                                        width: '64px',
+                                        height: '64px',
+                                        borderRadius: '20px',
+                                        background: colors.card,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: `1.5px solid ${isActive ? colors.accent : colors.border}`,
+                                        transition: 'all 0.3s ease'
+                                    }}>
+                                        <img
+                                            src={catObj?.image || iconMap[catName] || iconMap['All']}
+                                            style={{ width: '32px', height: '32px' }}
+                                            alt={catName}
+                                        />
+                                    </div>
+                                    <span style={{
+                                        fontSize: '11px',
+                                        fontWeight: 600,
+                                        color: isActive ? colors.accent : colors.textMuted,
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.02em'
+                                    }}>
+                                        {catName}
+                                    </span>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Filtered Services List */}
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={selectedServiceCategory}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="app-scroll-y"
+                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px', marginTop: '8px' }}
+                        >
+                            {(() => {
+                                const sourceServices = services || [];
+
+                                const filtered = sourceServices.filter(s =>
+                                    s.status === 'active' &&
+                                    (selectedServiceCategory === 'All' || !selectedServiceCategory || s.category === selectedServiceCategory)
+                                );
+
+                                if (filtered.length === 0) return null;
+
+                                return filtered.map(service => (
+                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
+                                        <ServiceCard
+                                            service={service}
+                                            onBook={(id) => navigate(`/app/book?serviceId=${id}`)}
+                                            colors={colors}
+                                            isLight={isLight}
+                                        />
+                                    </div>
+                                ));
+                            })()}
+                        </motion.div>
+                    </AnimatePresence>
+                </motion.div>
+
+                {/* ── PRODUCT CATEGORIES (Vectors Horizontal Scroll) ── */}
+                {productCategories.length > 0 && (
+                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Tag size={18} color="#C8956C" />
+                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Product Categories</span>
+                            </div>
+                        </div>
+                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                            {productCategories.filter(c => c.status === 'active').map((cat) => (
+                                <motion.div
+                                    key={cat._id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate('/app/shop', { state: { category: cat.name } })}
+                                    style={{
+                                        flexShrink: 0,
+                                        width: '160px',
+                                        height: '100px',
+                                        borderRadius: '20px',
                                         overflow: 'hidden',
                                         position: 'relative',
-                                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                        cursor: 'pointer',
-                                        background: isLight ? '#F1F3F5' : '#2A2A2A'
+                                        border: `1px solid ${colors.border}`,
+                                        cursor: 'pointer'
                                     }}
                                 >
-                                    <img
-                                        src={item.image}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        alt={item.title}
-                                        onError={(e) => {
-                                            e.target.style.visibility = 'hidden';
-                                        }}
+                                    <img 
+                                        src={cat.image || "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800"} 
+                                        alt={cat.name} 
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                                     />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 50%, rgba(0,0,0,0.8))' }} />
-                                    <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px' }}>
-                                        <div style={{ display: 'flex', gap: '4px', marginBottom: '6px' }}>
-                                            <span style={{ fontSize: '8px', fontWeight: 900, color: '#FFF', background: 'rgba(200,149,108,0.8)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase' }}>{item.tag}</span>
-                                        </div>
-                                        <p style={{ fontSize: '13px', fontWeight: 800, color: '#FFF', margin: 0 }}>{item.title}</p>
-                                        <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', margin: 0 }}>by Wapixo Studio</p>
-                                    </div>
+                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }} />
+                                    <span style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', fontSize: '12px', fontWeight: 900, color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {cat.name}
+                                    </span>
                                 </motion.div>
                             ))}
                         </div>
                     </motion.div>
                 )}
 
-                {/* ── TOP CUSTOMER REVIEWS (NEW PANELS) ── */}
+                {/* ── TOP CUSTOMER REVIEWS ── */}
                 {!isMapView && (
                     <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
@@ -1250,11 +1124,11 @@ export default function AppHomePage() {
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 {[1, 2, 3, 4, 5].map(s => (
-                                                    <Star 
-                                                        key={s} 
-                                                        size={10} 
-                                                        fill={s <= rev.rating ? colors.accent : 'none'} 
-                                                        color={s <= rev.rating ? colors.accent : colors.textMuted} 
+                                                    <Star
+                                                        key={s}
+                                                        size={10}
+                                                        fill={s <= rev.rating ? colors.accent : 'none'}
+                                                        color={s <= rev.rating ? colors.accent : colors.textMuted}
                                                     />
                                                 ))}
                                             </div>
@@ -1271,15 +1145,15 @@ export default function AppHomePage() {
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
                                                 <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0, truncate: 'true' }}>{rev.customerName}</p>
-                                                <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>for {rev.service}</p>
+                                                <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>for {rev.targetName || 'Service'}</p>
                                             </div>
                                         </div>
 
                                         {rev.response && (
-                                            <div style={{ 
-                                                marginTop: '12px', 
-                                                padding: '10px', 
-                                                background: isLight ? '#FDF8F3' : 'rgba(200, 149, 108, 0.05)', 
+                                            <div style={{
+                                                marginTop: '12px',
+                                                padding: '10px',
+                                                background: isLight ? '#FDF8F3' : 'rgba(200, 149, 108, 0.05)',
                                                 borderRadius: '12px',
                                                 border: `1px solid ${isLight ? '#F3E5D8' : 'rgba(200, 149, 108, 0.2)'}`
                                             }}>
@@ -1293,555 +1167,69 @@ export default function AppHomePage() {
                         </div>
                     </motion.div>
                 )}
-
-                {/* ── CATEGORIES (SHOP-STYLE UI) ── */}
-                {filteredShopCategories.length > 0 && (
-                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Categories</span>
-                        <button style={{ fontSize: '12px', color: '#C8956C', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.02em' }} onClick={() => navigate('/app/categories')}>See All</button>
-                    </div>
-                    <div className="app-scroll no-scrollbar" style={{ 
-                        display: 'flex', 
-                        gap: '8px', 
-                        overflowX: 'auto', 
-                        paddingBottom: '24px', 
-                        marginLeft: '-16px', 
-                        paddingLeft: '16px', 
-                        marginRight: '-16px', 
-                        paddingRight: '16px',
-                        marginTop: '12px'
-                    }}>
-                        {filteredShopCategories.map((cat) => (
-                            <motion.div
-                                key={cat.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setRotations(prev => ({ ...prev, [cat.name]: (prev[cat.name] || 0) + 360 }));
-                                    setTimeout(() => navigate(`/app/shop?category=${cat.name}`), 100);
-                                }}
-                                style={{
-                                    flexShrink: 0, 
-                                    width: '90px',
-                                    padding: '12px 4px', 
-                                    textAlign: 'center', 
-                                    cursor: 'pointer',
-                                    position: 'relative'
-                                }}
-                            >
+                {/* ── 2. OTHER NEAREST SALONS ── */}
+                {!isMapView && nearestOutlets.length > 0 && (
+                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Crown size={20} color={colors.accent} />
+                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Other Nearest Salons</span>
+                            </div>
+                        </div>
+                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                            {nearestOutlets.map(outlet => (
                                 <motion.div
-                                    animate={{ rotateY: rotations[cat.name] || 0 }}
-                                    transition={{ duration: 0.6, type: 'spring', damping: 20, stiffness: 100 }}
-                                    style={{
-                                        width: '64px', 
-                                        height: '64px', 
-                                        borderRadius: '50%',
-                                        overflow: 'hidden', 
-                                        margin: '0 auto 0',
-                                        border: isLight ? '2.5px solid rgba(0,0,0,0.05)' : '2.5px solid rgba(255,255,255,0.1)',
-                                        boxShadow: isLight ? '0 6px 15px rgba(0,0,0,0.08)' : '0 6px 15px rgba(0,0,0,0.4)',
-                                        padding: '2px',
-                                        perspective: '1000px',
-                                        background: colors.card
-                                    }}>
-                                    <img 
-                                        src={cat.image || cat.img} 
-                                        alt={cat.name} 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} 
-                                    />
-                                </motion.div>
-                                <div style={{
-                                    padding: '5px 14px',
-                                    borderRadius: '16px 4px 16px 4px',
-                                    background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
-                                    position: 'absolute',
-                                    bottom: '-4px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    zIndex: 2,
-                                    width: 'max-content',
-                                    border: 'none',
-                                    boxShadow: '0 6px 15px rgba(200,149,108,0.4)'
-                                }}>
-                                    <p style={{
-                                        fontSize: '9px',
-                                        fontWeight: 800,
-                                        color: '#FFFFFF',
-                                        margin: 0,
-                                        whiteSpace: 'nowrap',
-                                        letterSpacing: '0.01em',
-                                        textTransform: 'uppercase'
-                                    }}>
-                                        {cat.name}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-                )}
-
-
-
-
-
-
-
-                {/* ── SERVICE CATEGORIES ── */}
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <LayoutGrid size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Service Categories</span>
-                        </div>
-                        <button
-                            style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
-                            onClick={() => navigate('/app/services')}
-                        >
-                            View All
-                        </button>
-                    </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '12px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {(() => {
-                            const sourceServices = services?.length > 0 ? services : mockServicesPageData.services;
-                            return (sourceServices || [])
-                                .filter(s => s.status === 'active')
-                                .slice(0, 4)
-                                .map(service => (
-                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '220px' }}>
-                                        <ServiceCard
-                                            service={service}
-                                            onBook={(id) => navigate(`/app/book?serviceId=${id}`)}
-                                            colors={colors}
-                                            isLight={isLight}
-                                        />
-                                    </div>
-                                ));
-                        })()}
-                    </div>
-                </motion.div>
-
-                {/* ── MEMBERSHIP PLANS (NEW) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Crown size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Membership Hub</span>
-                        </div>
-                    </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {filteredMembershipPlans.length > 0 ? filteredMembershipPlans.map(plan => {
-                            const isPlatinum = plan.name.toLowerCase().includes('platinum');
-                            const isGold = plan.name.toLowerCase().includes('gold');
-                            const isSilver = plan.name.toLowerCase().includes('silver');
-                            const badgeIcon = plan.icon === 'crown' ? '👑' : (plan.icon === 'gem' ? '💎' : '⭐');
-
-                            const planGradient = isPlatinum
-                                ? 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)'
-                                : isGold
-                                    ? 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)'
-                                    : 'linear-gradient(135deg, #E0E0E0 0%, #B0B0B0 100%)';
-
-                            const textColor = (isGold || isSilver) ? '#000' : '#FFF';
-                            const mutedColor = (isGold || isSilver) ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
-
-                            return (
-                                <motion.div
-                                    key={plan.id}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={() => navigate('/app/membership')}
-                                    style={{
-                                        cursor: 'pointer',
-                                        flexShrink: 0, width: '210px',
-                                        background: plan.gradient || planGradient,
-                                        borderRadius: '20px', padding: '14px 14px 12px',
-                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.1)' : '0 10px 20px rgba(0,0,0,0.4)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    {/* Subtle Overlay Glow */}
-                                    <div style={{
-                                        position: 'absolute', top: '-10%', right: '-10%',
-                                        width: '80px', height: '80px',
-                                        background: 'rgba(255,255,255,0.2)',
-                                        filter: 'blur(25px)', borderRadius: '50%'
-                                    }} />
-
-                                    {plan.isPopular && (
-                                        <span style={{
-                                            position: 'absolute',
-                                            top: '10px',
-                                            right: '10px',
-                                            background: 'rgba(0,0,0,0.7)',
-                                            color: '#FFD700',
-                                            fontSize: '9px',
-                                            padding: '3px 7px',
-                                            borderRadius: '999px',
-                                            fontWeight: 800,
-                                            textTransform: 'uppercase',
-                                        }}>
-                                            Popular
-                                        </span>
-                                    )}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
-                                        <span style={{ fontSize: '14px' }}>{badgeIcon}</span>
-                                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: textColor, margin: 0, fontFamily: "'Playfair Display', serif" }}>{plan.name}</h3>
-                                    </div>
-                                    <div style={{ color: isPlatinum ? colors.accent : (isGold ? '#6B4F00' : '#444'), fontWeight: 900, fontSize: '18px', marginBottom: '8px' }}>
-                                        ₹{Number(plan.price || 0).toLocaleString('en-IN')}
-                                    </div>
-                                    <p style={{ fontSize: '10px', fontWeight: 700, color: mutedColor, margin: '0 0 8px' }}>
-                                        Valid for {plan.duration || 30} days
-                                    </p>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        {plan.benefits.slice(0, 3).map((b, i) => (
-                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                                <div style={{ width: '3.5px', height: '3.5px', borderRadius: '50%', background: textColor }} />
-                                                <p style={{ fontSize: '10px', color: mutedColor, margin: 0, fontWeight: 500 }}>{b}</p>
-                                            </div>
-                                        ))}
-                                        {plan.benefits.length === 0 && (
-                                            <p style={{ fontSize: '10px', color: mutedColor, margin: 0, fontWeight: 500 }}>Premium member benefits included</p>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            );
-                        }) : (
-                            <div style={{ width: '100%', padding: '20px', textAlign: 'center', background: colors.card, borderRadius: '24px', border: `1px solid ${colors.border}` }}>
-                                <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600 }}>No membership plans found for this location.</p>
-                            </div>
-                        )}
-                    </div>
-                </motion.div>
-
-                {/* ── LOYALTY POINTS SUMMARY CARD (MOVED BELOW MEMBERSHIP) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                    <motion.div
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate('/app/loyalty')}
-                        style={{
-                            cursor: 'pointer',
-                            background: 'linear-gradient(135deg, #1e1e1e, #333)',
-                            borderRadius: '24px', padding: '20px', position: 'relative', overflow: 'hidden',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: `1px solid ${colors.border}`
-                        }}
-                    >
-                        <motion.div
-                            animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.2, 1] }}
-                            transition={{ duration: 5, repeat: Infinity }}
-                            style={{ position: 'absolute', top: -40, right: -40, width: 120, height: 120, background: colors.accent, borderRadius: '50%', filter: 'blur(40px)', opacity: 0.3 }}
-                        />
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                                <div>
-                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, margin: '0 0 4px' }}>Gold Loyalty Member</p>
-                                    <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: 800, margin: 0 }}>
-                                        {currentPoints.toLocaleString()} <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', fontWeight: 400 }}>Points</span>
-                                    </h2>
-                                </div>
-                            </div>
-                            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>Next reward at {nextRewardPoints} pts</span>
-                                    <span style={{ color: colors.accent, fontSize: '12px', fontWeight: 700 }}>{rewardProgressPct}%</span>
-                                </div>
-                                <div style={{ height: '6px', width: '100%', background: 'rgba(255,255,255,0.1)', borderRadius: '3px', overflow: 'hidden' }}>
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${rewardProgressPct}%` }}
-                                        transition={{ duration: 1.5, ease: 'easeOut' }}
-                                        style={{ height: '100%', background: colors.accent, borderRadius: '3px' }}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
-
-                {/* ── WALLET HUB (Quick Access - MOVED BELOW LOYALTY) ── */}
-                {customer && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 8px' }}>
-                        <div
-                            onClick={() => navigate('/app/wallet')}
-                            style={{
-                                background: '#1A1A1A',
-                                borderRadius: '24px',
-                                padding: '20px 24px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                color: '#FFF',
-                                position: 'relative',
-                                overflow: 'hidden',
-                                boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            {/* Decorative Background */}
-                            <div style={{
-                                position: 'absolute', top: '-50%', right: '-10%',
-                                width: '120px', height: '120px',
-                                background: 'radial-gradient(circle, rgba(200,149,108,0.2) 0%, transparent 70%)',
-                                borderRadius: '50%'
-                            }} />
-
-                            <div style={{ position: 'relative', zIndex: 1 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                    <Wallet size={14} color="#C8956C" />
-                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>
-                                        Wapixo Wallet
-                                    </p>
-                                </div>
-                                <h2 style={{ fontSize: '24px', fontWeight: 900, margin: 0 }}>
-                                    ₹{balance.toLocaleString()}
-                                </h2>
-                            </div>
-
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                style={{
-                                    background: '#C8956C',
-                                    color: '#FFF',
-                                    border: 'none',
-                                    padding: '8px 16px',
-                                    borderRadius: '12px 4px 12px 4px',
-                                    fontSize: '11px',
-                                    fontWeight: 900,
-                                    zIndex: 1
-                                }}
-                            >
-                                Manage
-                            </motion.button>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* ── POPULAR EXPERTS (CMS / staff only, no mock) ── */}
-                {displayExperts.length > 0 && (
-                <motion.div variants={fadeUp} style={{ padding: '20px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <span style={{ fontSize: '16px', fontWeight: 700, color: colors.text }}>Popular Experts</span>
-                        <button
-                            style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
-                            onClick={() => navigate('/app/experts')}
-                        >
-                            View All
-                        </button>
-                    </div>
-                    <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6" style={{ margin: '0 -16px', padding: '0 16px' }}>
-                        {displayExperts.map((expert) => (
-                            <motion.div
-                                key={expert.id}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setSelectedExpert(expert);
-                                    setShowExpertModal(true);
-                                }}
-                                style={{
-                                    flexShrink: 0,
-                                    width: '120px',
-                                    background: isLight ? '#FFF' : '#1A1A1A',
-                                    borderRadius: '24px',
-                                    padding: '16px 8px',
-                                    textAlign: 'center',
-                                    border: `1px solid ${isLight ? '#F3F4F6' : '#262626'}`,
-                                    boxShadow: isLight ? '0 6px 20px rgba(0,0,0,0.03)' : 'none'
-                                }}
-                            >
-                                <div style={{
-                                    width: '70px',
-                                    height: '70px',
-                                    margin: '0 auto 12px',
-                                    position: 'relative'
-                                }}>
-                                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
-                                        <img
-                                            src={expert.img}
-                                            alt={expert.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                        />
-                                    </div>
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: '-4px',
-                                        right: '-8px',
-                                        background: '#C8956C',
-                                        padding: '2px 6px',
-                                        borderRadius: '20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '2px',
-                                        color: '#FFF',
-                                        fontSize: '9px',
-                                        fontWeight: 800,
-                                        boxShadow: '0 2px 6px rgba(200, 149, 108, 0.3)'
-                                    }}>
-                                        <Star size={8} fill="#FFF" color="#FFF" />
-                                        <span>{expert.rating || '4.9'}</span>
-                                    </div>
-                                </div>
-                                <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{expert.name}</h4>
-                                <p style={{ fontSize: '11px', color: colors.textMuted, fontWeight: 500 }}>{expert.role || 'Hair Stylist'}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-                )}
-
-                {/* ── LOYALTY + REFERRAL (ORIGINAL BOTTOM STYLE) ── */}
-                <motion.div variants={fadeUp} style={{ padding: '20px 16px 32px' }}>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                        <motion.div
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => navigate('/app/loyalty')}
-                            style={{
-                                flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
-                                border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
-                            }}
-                        >
-                            <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>⭐</div>
-                            <div>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Loyalty</p>
-                                <p style={{ fontSize: '16px', fontWeight: 800, color: '#C8956C', margin: 0 }}>{currentPoints.toLocaleString()} pts</p>
-                            </div>
-                        </motion.div>
-                        <motion.div
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => navigate('/app/referrals')}
-                            style={{
-                                flex: 1, background: colors.card, borderRadius: '16px', padding: '16px', cursor: 'pointer',
-                                border: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', gap: '10px',
-                            }}
-                        >
-                            <div style={{ width: 38, height: 38, borderRadius: '12px', background: 'rgba(200,149,108,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '18px' }}>🎁</div>
-                            <div>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Refer</p>
-                                <p style={{ fontSize: '13px', fontWeight: 700, color: colors.text, margin: 0 }}>Earn ₹{referralReward}</p>
-                            </div>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            </motion.div>
-
-            {/* ── EXPERT DETAIL MODAL ── */}
-            < AnimatePresence >
-                {selectedExpert && showExpertModal && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setShowExpertModal(false)}
-                            style={{ position: 'absolute', inset: 0, background: isLight ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)' }}
-                        />
-                        <motion.div
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            style={{
-                                width: '100%',
-                                maxWidth: '430px',
-                                background: colors.card,
-                                borderRadius: '32px 32px 0 0',
-                                position: 'relative',
-                                zIndex: 10001,
-                                paddingTop: '12px',
-                                paddingBottom: '30px',
-                                px: '20px',
-                                border: `1px solid ${colors.border}`
-                            }}
-                        >
-                            {/* Drawer Handle */}
-                            <div style={{ width: '40px', height: '4px', background: isLight ? '#DDD' : '#333', borderRadius: '2px', margin: '0 auto 20px' }} />
-
-                            <div style={{ padding: '0 24px' }}>
-                                <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
-                                    <img
-                                        src={selectedExpert.img}
-                                        alt={selectedExpert.name}
-                                        style={{ width: '100px', height: '100px', borderRadius: '24px', objectFit: 'cover' }}
-                                    />
-                                    <div style={{ flex: 1, pt: '10px' }}>
-                                        <h3 style={{ fontSize: '22px', fontWeight: 900, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{selectedExpert.name}</h3>
-                                        <p style={{ fontSize: '14px', color: colors.accent, fontWeight: 800, textTransform: 'uppercase', margin: '0 0 8px', letterSpacing: '0.05em' }}>{selectedExpert.role}</p>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Star size={14} fill={colors.accent} color={colors.accent} />
-                                            <span style={{ fontSize: '14px', fontWeight: 700 }}>{selectedExpert.rating}</span>
-                                            <span style={{ fontSize: '12px', color: colors.textMuted, ml: '4px' }}>(120+ Reviews)</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-                                    <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Experience</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.experience || '5 Years'}</p>
-                                    </div>
-                                    <div style={{ flex: 1, background: isLight ? '#F9FAFB' : '#1A1A1A', padding: '12px', borderRadius: '12px', textAlign: 'center' }}>
-                                        <p style={{ fontSize: '10px', color: isLight ? '#6B7280' : '#888', textTransform: 'uppercase', fontWeight: 700, marginBottom: '4px' }}>Clients</p>
-                                        <p style={{ fontSize: '16px', fontWeight: 900, color: colors.text }}>{selectedExpert.clients || '500+'}</p>
-                                    </div>
-                                </div>
-
-                                <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '8px', textTransform: 'uppercase' }}>Profile Bio</h5>
-                                <p style={{ fontSize: '14px', color: colors.textMuted, lineHeight: '1.6', marginBottom: '24px' }}>
-                                    {selectedExpert.bio || 'A dedicated professional committed to delivering excellence.'}
-                                </p>
-
-                                <h5 style={{ fontSize: '12px', fontWeight: 800, color: colors.text, marginBottom: '12px', textTransform: 'uppercase' }}>Specializations</h5>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '32px' }}>
-                                    {(selectedExpert.specializations || ["Precision Cut", "Style Master"]).map((spec, idx) => (
-                                        <span key={idx} style={{
-                                            padding: '6px 12px',
-                                            background: isLight ? '#FFF7ED' : '#2A1F14',
-                                            color: '#C8956C',
-                                            borderRadius: '8px',
-                                            fontSize: '11px',
-                                            fontWeight: 700,
-                                            textTransform: 'uppercase',
-                                            letterSpacing: '0.02em'
-                                        }}>
-                                            {spec}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <motion.button
+                                    key={outlet._id}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => {
-                                        setShowExpertModal(false);
-                                        navigate(`/app/book?expertId=${selectedExpert.id}`);
+                                        setActiveOutletId(outlet._id);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
                                     }}
                                     style={{
-                                        width: '100%',
-                                        height: '56px',
-                                        background: colors.accent,
-                                        color: '#FFF',
-                                        borderRadius: '16px',
-                                        border: 'none',
-                                        fontSize: '14px',
-                                        fontWeight: 900,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.1em',
-                                        boxShadow: `0 10px 20px ${colors.accent}40`,
-                                        mt: '10px'
+                                        flexShrink: 0,
+                                        width: '240px',
+                                        background: colors.card,
+                                        borderRadius: '24px',
+                                        overflow: 'hidden',
+                                        border: `1px solid ${colors.border}`,
+                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.05)' : '0 10px 20px rgba(0,0,0,0.2)',
+                                        position: 'relative',
+                                        cursor: 'pointer'
                                     }}
                                 >
-                                    Book Appointment
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    </div>
+                                    <div style={{ height: '120px', width: '100%', position: 'relative' }}>
+                                        <img 
+                                            src={outlet.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} 
+                                            alt={outlet.name} 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                        <div style={{
+                                            position: 'absolute', top: '12px', right: '12px',
+                                            background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)',
+                                            padding: '4px 8px', borderRadius: '8px',
+                                            display: 'flex', alignItems: 'center', gap: '4px'
+                                        }}>
+                                            <Star size={12} fill="#C8956C" color="#C8956C" />
+                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating || 4.5}</span>
+                                        </div>
+                                    </div>
+                                    <div style={{ padding: '14px' }}>
+                                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px' }}>{outlet.name}</h4>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
+                                            <MapPin size={12} color={colors.textMuted} />
+                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>
+                                                {outlet.dist ? `${outlet.dist.toFixed(1)} km` : 'Near you'} · {outlet.city || 'Salon'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
                 )}
-            </AnimatePresence>
+
+            </motion.div>
+
         </div >
     );
 }

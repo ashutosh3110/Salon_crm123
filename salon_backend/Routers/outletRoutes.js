@@ -7,7 +7,8 @@ const {
     updateOutlet,
     deleteOutlet,
     getNearbyOutlets,
-    reverseGeocode
+    reverseGeocode,
+    toggleLike
 } = require('../Controllers/outletController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -17,6 +18,8 @@ router.get('/reverse-geocode', reverseGeocode);
 
 // Protected routes
 router.use(protect);
+
+router.post('/:id/like', toggleLike);
 
 router.route('/')
     .get(getOutlets)

@@ -33,5 +33,7 @@ export function mapInventoryProductToShopProduct(p, shopCategories = []) {
         appVendorDetails: p.appVendorDetails,
         appReturnPolicy: p.appReturnPolicy,
         appKnowMore: p.appKnowMore,
+        likes: p.likes || 0,
+        likedBy: p.likedBy || []
     };
 }

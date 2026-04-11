@@ -12,16 +12,24 @@ export default function ServiceDetailsModal({ isOpen, onClose, service, outlets 
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-surface w-full max-w-lg rounded-3xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="relative h-32 bg-primary/5 flex items-center justify-center border-b border-border">
+                <div className="relative h-48 bg-primary/5 flex items-center justify-center border-b border-border overflow-hidden">
+                    {service.image ? (
+                        <>
+                            <img src={service.image} alt={service.name} className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        </>
+                    ) : (
+                        <div className="w-20 h-20 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
+                            <Scissors className="w-10 h-10" />
+                        </div>
+                    )}
                     <div className="absolute top-4 right-4 z-10">
                         <button onClick={onClose} className="p-2 rounded-xl bg-surface/80 backdrop-blur shadow-sm hover:bg-surface transition-all">
                             <X className="w-5 h-5 text-text-muted" />
                         </button>
                     </div>
-                    <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/20">
-                        <Scissors className="w-8 h-8" />
-                    </div>
                 </div>
+
 
                 <div className="p-8 pt-6 space-y-6">
                     <div className="text-center">

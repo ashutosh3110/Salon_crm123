@@ -15,7 +15,7 @@ import {
     MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
 } from '../../data/appMockData';
 import { useWallet } from '../../contexts/WalletContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout } = useCustomerAuth();
@@ -32,6 +32,8 @@ export default function AppProfilePage() {
     const [review, setReview] = useState({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
     const [reviewImages, setReviewImages] = useState([]);
     const fileInputRef = useRef(null);
+    const avatarInputRef = useRef(null);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
@@ -40,6 +42,30 @@ export default function AppProfilePage() {
     };
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingAvatar(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await api.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (res.data?.success) {
+                const avatarUrl = res.data.url;
+                await updateCustomer({ avatar: avatarUrl });
+            }
+        } catch (err) {
+            console.error('Avatar upload failed:', err);
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
     const [form, setForm] = useState({
         name: customer?.name || '',
         email: customer?.email || '',
@@ -224,8 +250,29 @@ export default function AppProfilePage() {
             {/* Profile Card */}
             <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '8px' }} className="rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20">
-                        <span className="text-xl font-black text-[#C8956C]">{getInitials(customer?.name)}</span>
+                    <div className="relative group">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20 overflow-hidden">
+                            {uploadingAvatar ? (
+                                <Loader2 className="w-6 h-6 animate-spin text-[#C8956C]" />
+                            ) : customer?.avatar ? (
+                                <img src={customer.avatar} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xl font-black text-[#C8956C]">{getInitials(customer?.name)}</span>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => avatarInputRef.current.click()}
+                            className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#C8956C] rounded-full border-2 border-white dark:border-[#1A1A1A] flex items-center justify-center text-white"
+                        >
+                            <Camera size={12} />
+                        </button>
+                        <input
+                            type="file"
+                            ref={avatarInputRef}
+                            onChange={handleAvatarChange}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                        />
                     </div>
                     <div className="flex-1 min-w-0">
                         <h2 className="text-base font-bold truncate" style={{ color: colors.text }}>{customer?.name || 'Customer'}</h2>

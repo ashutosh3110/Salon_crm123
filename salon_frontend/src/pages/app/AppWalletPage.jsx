@@ -34,14 +34,18 @@ export default function AppWalletPage() {
         if (!addAmount || isNaN(addAmount) || addAmount <= 0) return;
         setAdding(true);
         try {
-            await new Promise(r => setTimeout(r, 1500)); // Premium delay
-            await addMoney(addAmount);
-            setSuccess(true);
-            setTimeout(() => {
-                setSuccess(false);
-                setShowAddModal(false);
-                setAddAmount('');
-            }, 2000);
+            const res = await addMoney(addAmount);
+            if (res.success) {
+                setSuccess(true);
+                setTimeout(() => {
+                    setSuccess(false);
+                    setShowAddModal(false);
+                    setAddAmount('');
+                }, 2000);
+            }
+        } catch (err) {
+            console.error('Wallet recharge failed:', err);
+            alert(err.message || 'Payment failed. Please try again.');
         } finally {
             setAdding(false);
         }

@@ -1,56 +1,116 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
+import { useCustomerAuth } from './CustomerAuthContext';
+import { useBusiness } from './BusinessContext';
 
-const CartContext = createContext();
+const CartContext = createContext(null);
 
-export function CartProvider({ children }) {
-    const [cart, setCart] = useState(() => {
-        const saved = localStorage.getItem('app_cart');
-        return saved ? JSON.parse(saved) : [];
-    });
+export const CartProvider = ({ children }) => {
+    const { customer } = useCustomerAuth();
+    const { activeSalonId } = useBusiness();
+    const [cart, setCart] = useState({ items: [] });
+    const [loading, setLoading] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
+    const fetchCart = useCallback(async () => {
+        if (!customer) return;
+        setLoading(true);
+        try {
+            const res = await api.get('/cart');
+            if (res.data.success) {
+                setCart(res.data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch cart:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [customer]);
 
     useEffect(() => {
-        localStorage.setItem('app_cart', JSON.stringify(cart));
-    }, [cart]);
+        fetchCart();
+    }, [fetchCart]);
 
-    const addToCart = (product) => {
-        setCart(prev => {
-            const exists = prev.find(item => item._id === product._id);
-            if (exists) {
-                return prev.map(item =>
-                    item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
-                );
+    const addToCart = async (productId, quantity = 1) => {
+        if (!customer) {
+            // Optional: handle guest cart in localStorage
+            return;
+        }
+
+        const pId = typeof productId === 'object' ? (productId._id || productId.id) : productId;
+        try {
+            const res = await api.post('/cart', {
+                productId: pId,
+                quantity,
+                salonId: activeSalonId || localStorage.getItem('active_salon_id')
+            });
+            if (res.data.success) {
+                setCart(res.data.data);
+                setIsCartOpen(true);
+                return true;
             }
-            return [...prev, { ...product, quantity: 1 }];
-        });
+        } catch (error) {
+            console.error('Failed to add to cart:', error);
+            return false;
+        }
     };
 
-    const updateQuantity = (productId, delta) => {
-        setCart(prev => prev.map(item => {
-            if (item._id === productId) {
-                const newQty = Math.max(0, item.quantity + delta);
-                return { ...item, quantity: newQty };
+    const updateQuantity = async (productId, quantity) => {
+        if (quantity < 1) {
+            return removeFromCart(productId);
+        }
+        return addToCart(productId, quantity);
+    };
+
+    const removeFromCart = async (productId) => {
+        try {
+            const res = await api.delete(`/cart/${productId}`);
+            if (res.data.success) {
+                setCart(res.data.data);
+                return true;
             }
-            return item;
-        }).filter(item => item.quantity > 0));
+        } catch (error) {
+            console.error('Failed to remove from cart:', error);
+            return false;
+        }
     };
 
-    const removeFromCart = (productId) => {
-        setCart(prev => prev.filter(item => item._id !== productId));
+    const clearCart = async () => {
+        try {
+            await api.delete('/cart');
+            setCart({ items: [] });
+        } catch (error) {
+            console.error('Failed to clear cart:', error);
+        }
     };
 
-    const clearCart = () => setCart([]);
-
-    const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const cartCount = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+    const cartTotal = cart.items.reduce((acc, item) => {
+        const price = item.productId?.sellingPrice || 0;
+        return acc + (price * item.quantity);
+    }, 0);
 
     return (
         <CartContext.Provider value={{
-            cart, addToCart, updateQuantity, removeFromCart, clearCart,
-            cartTotal, cartCount
+            cart,
+            loading,
+            isCartOpen,
+            setIsCartOpen,
+            addToCart,
+            updateQuantity,
+            removeFromCart,
+            clearCart,
+            cartCount,
+            cartTotal,
+            refreshCart: fetchCart
         }}>
             {children}
         </CartContext.Provider>
     );
-}
+};
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+    const context = useContext(CartContext);
+    if (!context) throw new Error('useCart must be used within a CartProvider');
+    return context;
+};

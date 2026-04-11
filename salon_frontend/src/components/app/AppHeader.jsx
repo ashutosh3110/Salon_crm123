@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, Bell, Wallet, LogOut } from 'lucide-react';
+import { Sun, Moon, Bell, Wallet, LogOut, ShoppingBag, MapPin } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import logoLightMode from '/new black wapixo logo .png';
@@ -9,7 +9,8 @@ import { useState, useEffect } from 'react';
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useNotifications } from '../../contexts/NotificationContext';
-import { MapPin } from 'lucide-react';
+import { useCart } from '../../contexts/CartContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 const SALON_THOUGHTS = [
     "Your hair is your crown ✨",
@@ -28,6 +29,7 @@ export default function AppHeader() {
     const { balance } = useWallet();
     const { activeOutlet } = useBusiness();
     const { unreadCount } = useNotifications();
+    const { cartCount, setIsCartOpen } = useCart();
 
     const [currentThoughtIndex, setCurrentThoughtIndex] = useState(0);
     const [showThought, setShowThought] = useState(false);
@@ -269,6 +271,48 @@ export default function AppHeader() {
                             boxShadow: '0 2px 4px rgba(255, 71, 87, 0.3)'
                         }}>
                             {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                    )}
+                </motion.button>
+                
+                {/* Cart Icon */}
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setIsCartOpen(true)}
+                    style={{
+                        width: '32px',
+                        height: '38px',
+                        background: 'none',
+                        border: 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        color: isLight ? '#000000' : '#FFFFFF',
+                        position: 'relative',
+                        marginLeft: '2px'
+                    }}
+                >
+                    <ShoppingBag size={20} strokeWidth={2.2} />
+                    {cartCount > 0 && (
+                        <span style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '4px',
+                            minWidth: '14px',
+                            height: '14px',
+                            background: '#C8956C',
+                            color: 'white',
+                            fontSize: '8px',
+                            fontWeight: 900,
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: isLight ? '1.5px solid #fff' : '1.5px solid #141414',
+                            boxShadow: '0 2px 4px rgba(200, 149, 108, 0.3)'
+                        }}>
+                            {cartCount > 9 ? '9+' : cartCount}
                         </span>
                     )}
                 </motion.button>

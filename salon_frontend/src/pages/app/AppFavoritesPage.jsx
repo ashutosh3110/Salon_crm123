@@ -7,7 +7,6 @@ import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
-import { MOCK_OUTLETS } from '../../data/appMockData';
 
 export default function AppFavoritesPage() {
     const navigate = useNavigate();
@@ -17,16 +16,11 @@ export default function AppFavoritesPage() {
     const { products: inventoryProducts, shopCategories } = useInventory();
     const [activeTab, setActiveTab] = useState('Salons');
 
-    const likedSalonsData = useMemo(() => {
-        return MOCK_OUTLETS.filter(salon => favoriteSalons.includes(salon._id));
-    }, [favoriteSalons]);
+    const likedSalonsData = useMemo(() => favoriteSalons, [favoriteSalons]);
 
     const likedProductsData = useMemo(() => {
-        return inventoryProducts
-            .filter((p) => p.isShopProduct && favoriteProducts.includes(String(p.id ?? p._id)))
-            .map((p) => mapInventoryProductToShopProduct(p, shopCategories))
-            .filter(Boolean);
-    }, [favoriteProducts, inventoryProducts, shopCategories]);
+        return favoriteProducts.map((p) => mapInventoryProductToShopProduct(p, shopCategories)).filter(Boolean);
+    }, [favoriteProducts, shopCategories]);
 
     const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1 } };
 
@@ -98,16 +92,16 @@ export default function AppFavoritesPage() {
                                         onClick={() => navigate(`/app/salon/${salon._id}`)}
                                     >
                                         <div className="w-20 h-20 rounded-2xl overflow-hidden shrink-0">
-                                            <img src={salon.image} className="w-full h-full object-cover" alt="" />
+                                            <img src={salon.images?.[0] || salon.image} className="w-full h-full object-cover" alt="" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1.5 mb-1">
                                                 <Star size={10} fill="#C8956C" color="#C8956C" />
-                                                <span className="text-[10px] font-black">{salon.rating}</span>
+                                                <span className="text-[10px] font-black">{salon.rating || 4.5}</span>
                                             </div>
                                             <h3 className="text-sm font-black truncate mb-1" style={{ color: colors.text }}>{salon.name}</h3>
                                             <p className="text-[10px] opacity-40 font-bold flex items-center gap-1">
-                                                <MapPin size={10} /> {salon.address}
+                                                <MapPin size={10} /> {typeof salon.address === 'object' ? `${salon.address.street}, ${salon.address.city}` : salon.address}
                                             </p>
                                         </div>
                                         <button

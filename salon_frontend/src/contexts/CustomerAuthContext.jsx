@@ -101,21 +101,23 @@ export function CustomerAuthProvider({ children }) {
 
 
     const updateCustomer = async (data) => {
-        const updated = { ...customer, ...data };
-        const payload = {};
-        if (data.name !== undefined) payload.name = data.name;
-        if (data.email !== undefined) payload.email = data.email || '';
-        if (data.gender !== undefined) payload.gender = data.gender || '';
-        if (data.birthday !== undefined) payload.birthday = data.birthday || null;
-        if (Object.keys(payload).length > 0) {
-            try {
-                await api.patch(`/clients/${customer._id}`, payload);
-            } catch (e) {
-                console.warn('[CustomerAuth] Profile update failed, saving locally:', e);
+        const payload = { ...data };
+        try {
+            const res = await api.patch('/auth/profile', payload);
+            if (res.data?.success) {
+                const updated = { ...customer, ...res.data.data };
+                localStorage.setItem('customer_user', JSON.stringify(updated));
+                setCustomer(updated);
+                return updated;
             }
+        } catch (e) {
+            console.error('[CustomerAuth] Profile update failed:', e);
+            // Fallback for offline/development if needed, but better to fail if API is required
+            const updated = { ...customer, ...data };
+            localStorage.setItem('customer_user', JSON.stringify(updated));
+            setCustomer(updated);
+            return updated;
         }
-        localStorage.setItem('customer_user', JSON.stringify(updated));
-        setCustomer(updated);
     };
 
     const value = useMemo(() => ({

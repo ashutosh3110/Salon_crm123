@@ -9,17 +9,15 @@ const {
 } = require('../Controllers/serviceController');
 const { protect, authorize } = require('../Middleware/auth');
 
-router.use(protect);
-
 router
     .route('/')
     .get(getServices)
-    .post(authorize('admin', 'manager'), createService);
+    .post(protect, authorize('admin', 'manager'), createService);
 
 router
     .route('/:id')
     .get(getService)
-    .put(authorize('admin', 'manager'), updateService)
-    .delete(authorize('admin', 'manager'), deleteService);
+    .put(protect, authorize('admin', 'manager'), updateService)
+    .delete(protect, authorize('admin', 'manager'), deleteService);
 
 module.exports = router;

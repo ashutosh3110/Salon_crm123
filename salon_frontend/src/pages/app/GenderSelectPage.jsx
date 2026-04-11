@@ -15,7 +15,7 @@ export default function GenderSelectPage() {
 
     const pick = (g) => {
         setGender(g);
-        navigate('/app/salon-selection', { replace: true });
+        navigate('/app', { replace: true });
     };
 
     const colors = {

@@ -24,65 +24,6 @@ import TermsOfService from './pages/legal/TermsOfService';
 import CookiePolicy from './pages/legal/CookiePolicy';
 import PanelLaunchpad from './pages/PanelLaunchpad';
 
-function ScrollToHash() {
-  const { pathname, hash, state } = useLocation();
-
-  useEffect(() => {
-    if (state?.noScroll) return;
-
-    if (hash) {
-      const element = document.getElementById(hash.replace('#', ''));
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      window.scrollTo(0, 0);
-    }
-  }, [hash, pathname, state]);
-
-  return null;
-}
-
-/**
- * Sub-component used inside AuthProvider to access auth state
- * and initialize push notifications via custom hook.
- */
-function NotificationHandler() {
-  const { isAuthenticated } = useAuth();
-  const { isAuthenticated: isCustomerAuthenticated } = useCustomerAuth();
-  
-  // Initialize notifications for both dashboard users and customer app users
-  useFirebaseNotifications(isAuthenticated || isCustomerAuthenticated);
-  
-  return (
-    <Toaster 
-      position="top-center" 
-      reverseOrder={false}
-      toastOptions={{
-        duration: 4000,
-        style: {
-          background: '#333',
-          color: '#fff',
-          borderRadius: '8px',
-          fontSize: '14px',
-        },
-        success: {
-          duration: 3000,
-          theme: {
-            primary: '#4ade80',
-          },
-        },
-        error: {
-          duration: 4000,
-          theme: {
-            primary: '#ef4444',
-          },
-        },
-      }}
-    />
-  );
-}
-
 // Admin layout & pages
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminLayout from './layouts/AdminLayout';
@@ -156,6 +97,8 @@ import AppProfilePage from './pages/app/AppProfilePage';
 import AppShopPage from './pages/app/AppShopPage';
 import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
 import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
+import AppCheckoutPage from './pages/app/AppCheckoutPage';
+import AppServiceInquiryPage from './pages/app/AppServiceInquiryPage';
 import AppNotificationPage from './pages/app/AppNotificationPage';
 import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
 import AppMembershipPage from './pages/app/AppMembershipPage';
@@ -174,8 +117,38 @@ import CustomerAppWrapper from './layouts/CustomerAppWrapper';
 import { InventoryProvider } from './contexts/InventoryContext';
 import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
-import { AttendanceProvider } from './contexts/AttendanceContext';
 import { CMSProvider } from './contexts/CMSContext';
+import { AttendanceProvider } from './contexts/AttendanceContext';
+import { SocketProvider } from './contexts/SocketContext';
+
+function ScrollToHash() {
+  const { pathname, hash, state } = useLocation();
+
+  useEffect(() => {
+    if (state?.noScroll) return;
+
+    if (hash) {
+      const element = document.getElementById(hash.replace('#', ''));
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [hash, pathname, state]);
+
+  return null;
+}
+
+function NotificationHandler() {
+  const { isAuthenticated } = useAuth();
+  const { isAuthenticated: isCustomerAuthenticated } = useCustomerAuth();
+  
+  // Initialize notifications for both dashboard users and customer app users
+  useFirebaseNotifications(isAuthenticated || isCustomerAuthenticated);
+  
+  return null;
+}
 
 // Role-Specific Layouts & Dashboards
 import ReceptionistLayout from './layouts/ReceptionistLayout';
@@ -233,10 +206,22 @@ function App() {
   return (
     <Router>
       <ScrollToHash />
+      <Toaster 
+        position="top-center" 
+        reverseOrder={false} 
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+        }}
+      />
+      <SocketProvider>
       <AuthProvider>
         <CustomerAuthProvider>
+          <NotificationHandler />
           <BusinessProvider>
-            <NotificationHandler />
             <WalletProvider>
               <NotificationProvider>
                 <CMSProvider>
@@ -246,6 +231,7 @@ function App() {
                       <AttendanceProvider>
                         <FinanceProvider>
                           <InventoryProvider>
+                            <CartProvider>
                             <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<LandingPage />} />
@@ -266,7 +252,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  ADMIN — Salon Owner Panel
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                        <Route element={<ProtectedRoute allowedRoles={['admin', 'manager']} />}>
                           <Route element={<AdminLayout />}>
                             <Route path="/admin" element={<DashboardPage />} />
                             <Route path="/admin/outlets" element={<OutletsPage />} />
@@ -308,6 +294,7 @@ function App() {
                                 <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
                                 <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
                                 <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
+                                <Route path="/admin/inventory/product-categories" element={<InventoryPage tab="product-categories" />} />
                             </Route>
 
                             {/* Finance Routes */}
@@ -337,15 +324,13 @@ function App() {
 
                             <Route path="/admin/promotions" element={<PromotionsPage />} />
                             
-                            <Route element={<ProtectedRoute feature="marketing" />}>
-                                <Route path="/admin/marketing" element={<MarketingHubPage />} />
-                                <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
-                            </Route>
+                            <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                            <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
 
                             <Route path="/admin/inquiries" element={<InquiryPage />} />
                             <Route path="/admin/reminders" element={<RemindersPage />} />
                             
-                            <Route element={<ProtectedRoute feature="loyalty" />}>
+                            <Route element={<ProtectedRoute />}>
                                 <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
@@ -468,9 +453,6 @@ function App() {
                           </Route>
                         </Route>
 
-                        {/* ═══════════════════════════════════════════════════════════
-                 POS — Point of Sale (shared by admin, manager, receptionist)
-                 ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} feature="pos" />}>
                           <Route element={<POSLayout />}>
                             <Route path="/pos" element={<POSDashboardPage />} />
@@ -488,9 +470,8 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
-                          <Route path="/app/salon-selection" element={<SalonSelectionPage />} />
-                          <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
+                          <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
@@ -507,6 +488,7 @@ function App() {
                             <Route path="/app/shop" element={<AppShopPage />} />
                             <Route path="/app/categories" element={<AppProductCategoriesPage />} />
                             <Route path="/app/product/:id" element={<AppProductDetailsPage />} />
+                            <Route path="/app/checkout" element={<AppCheckoutPage />} />
                             <Route path="/app/notifications" element={<AppNotificationPage />} />
                             <Route path="/app/loyalty" element={<AppLoyaltyPage />} />
                             <Route path="/app/membership" element={<AppMembershipPage />} />
@@ -554,6 +536,7 @@ function App() {
                               </div>
                             } />
                           </Routes>
+                          </CartProvider>
                           </InventoryProvider>
                         </FinanceProvider>
                       </AttendanceProvider>
@@ -566,7 +549,8 @@ function App() {
           </BusinessProvider>
         </CustomerAuthProvider>
       </AuthProvider>
-    </Router >
+      </SocketProvider>
+    </Router>
   );
 }
 

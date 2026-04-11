@@ -192,39 +192,38 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         </div>
                     )}
 
-                    {!isModal && (
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
-                            <div className="relative group">
-                                {formData.image ? (
-                                    <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
-                                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                            <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
-                                                <Upload className="w-4 h-4" />
-                                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                            </label>
-                                            <button 
-                                                onClick={() => setFormData({ ...formData, image: '' })}
-                                                className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
+                    <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Service Image</label>
+                        <div className="relative group">
+                            {formData.image ? (
+                                <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
+                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                        <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
+                                            <Upload className="w-4 h-4" />
+                                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                        </label>
+                                        <button 
+                                            onClick={() => setFormData({ ...formData, image: '' })}
+                                            className="p-2 bg-white rounded-full text-rose-500 hover:scale-110 transition-transform"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                ) : (
-                                    <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
-                                        <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
-                                            <ImageIcon className="w-6 h-6" />
-                                        </div>
-                                        <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2">Click to Upload Image</p>
-                                        <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
-                                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                    </label>
-                                )}
-                            </div>
+                                </div>
+                            ) : (
+                                <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
+                                    <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                        <ImageIcon className="w-6 h-6" />
+                                    </div>
+                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2">Click to Upload Image</p>
+                                    <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
+                                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                </label>
+                            )}
                         </div>
-                    )}
+                    </div>
+
 
                     <div className="space-y-1">
                         <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>

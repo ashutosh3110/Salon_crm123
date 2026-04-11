@@ -8,12 +8,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { isVisibleInCustomerShop, stockQtyForOutlet } from '../../utils/shopVisibility';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 
-const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock }) => {
-    const { isProductLiked, toggleProductLike } = useFavorites();
-    const isLiked = isProductLiked(product._id);
+const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock, onToggleLike }) => {
+    const { customer } = useCustomerAuth();
+    const isLiked = product.likedBy?.includes(customer?._id);
 
     return (
         <motion.div
@@ -44,13 +45,20 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
                 </div>
             )}
 
-            <button
-                onClick={() => toggleProductLike(product._id)}
-                className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
-                style={{ color: isLiked ? '#e53e3e' : '#fff' }}
-            >
-                <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-            </button>
+            <div className="absolute top-2 right-2 z-20 flex flex-col items-center gap-1">
+                <button
+                    onClick={() => onToggleLike(product._id)}
+                    className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
+                    style={{ color: isLiked ? '#e53e3e' : '#fff' }}
+                >
+                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                </button>
+                {product.likes > 0 && (
+                    <span className="text-[10px] font-bold text-white bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+                        {product.likes}
+                    </span>
+                )}
+            </div>
             
             <div className="absolute bottom-[100px] left-2 z-20 px-2 py-1 rounded-md bg-[#C8956C] text-white text-[8px] font-bold tracking-widest uppercase">
                 {product.brand}
@@ -95,87 +103,6 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
     );
 });
 
-const CartDrawer = ({ isOpen, onClose, cart, total, onUpdateQuantity, onRemove, onCheckout, colors, isLight }) => {
-    const drawerContent = (
-        <AnimatePresence>
-            {isOpen && (
-                <div className="absolute inset-0 z-[6000]">
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={onClose}
-                        className={`absolute inset-0 ${isLight ? 'bg-white/20' : 'bg-black/30'} backdrop-blur-xl`}
-                    />
-                    <motion.div
-                        initial={{ x: '100%' }}
-                        animate={{ x: 0 }}
-                        exit={{ x: '100%' }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        style={{ background: colors.card, borderLeft: `1px solid ${colors.border}` }}
-                        className="absolute top-0 right-0 h-full w-full max-w-sm shadow-2xl flex flex-col"
-                    >
-                        <div className="p-10 border-b border-white/5 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-2xl font-black uppercase tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Your Bag</h3>
-                                <p className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.3em]">{cart.length} Selections</p>
-                            </div>
-                            <button onClick={onClose} className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-10 space-y-8 custom-scrollbar">
-                            {cart.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
-                                    <ShoppingBag size={80} className="mb-6" />
-                                    <p className="font-black uppercase tracking-[0.5em] text-xs" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>Empty Selection</p>
-                                </div>
-                            ) : (
-                                cart.map((item) => (
-                                    <div key={item._id} className="flex gap-6 group">
-                                        <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/5 overflow-hidden shrink-0">
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-black text-[11px] uppercase tracking-widest leading-relaxed mb-1 line-clamp-1">{item.name}</h4>
-                                            <p className="text-[10px] font-black text-[#C8956C] mb-4 uppercase tracking-[0.2em]">₹{item.price}</p>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center bg-white/5 rounded-xl border border-white/5">
-                                                    <button onClick={() => onUpdateQuantity(item._id, -1)} className="w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"><Minus size={12} /></button>
-                                                    <span className="w-8 text-center text-[10px] font-black tabular-nums">{item.quantity}</span>
-                                                    <button onClick={() => onUpdateQuantity(item._id, 1)} className="w-8 h-8 flex items-center justify-center opacity-40 hover:opacity-100 transition-opacity"><Plus size={12} /></button>
-                                                </div>
-                                                <button onClick={() => onRemove(item._id)} className="text-[9px] font-black text-rose-500 uppercase tracking-widest hover:underline px-2">Remove</button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        <div className="p-10 bg-white/5 border-t border-white/5 space-y-6">
-                            <div className="flex items-center justify-between" style={{ fontFamily: "'SF Pro Display', sans-serif" }}>
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Subtotal</span>
-                                <span className="text-3xl font-black italic tracking-tighter">₹{total}</span>
-                            </div>
-                            <button
-                                onClick={onCheckout}
-                                disabled={cart.length === 0}
-                                className="w-full h-18 bg-[#C8956C] text-white font-black uppercase tracking-[0.4em] text-[11px] hover:bg-[#C8956C]/90 rounded-2xl flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl shadow-[#C8956C]/20"
-                            >
-                                PROCEED TO CHECKOUT <ArrowRight size={18} />
-                            </button>
-                        </div>
-                    </motion.div>
-                </div>
-            )}
-        </AnimatePresence>
-    );
-
-    const portalRoot = document.getElementById('app-portal-root');
-    return portalRoot ? createPortal(drawerContent, portalRoot) : null;
-};
 
 export default function AppShopPage() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -183,10 +110,10 @@ export default function AppShopPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState(initialCategory);
     const [flyingItems, setFlyingItems] = useState([]);
-    const [isCartOpen, setIsCartOpen] = useState(false);
     const cartIconRef = useRef(null);
-    const { cart, cartTotal, cartCount, addToCart, updateQuantity, removeFromCart } = useCart();
+    const { cart, cartTotal, cartCount, addToCart, setIsCartOpen } = useCart();
     const { products: inventoryProducts, shopCategories } = useInventory();
+    const { toggleProductLike, isProductLiked } = useFavorites();
     const { activeOutletId } = useBusiness();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
@@ -210,20 +137,28 @@ export default function AppShopPage() {
         return () => clearInterval(timer);
     }, []);
 
-    const MOCK_PRODUCTS = useMemo(() => {
+    const shopProducts = useMemo(() => {
         return inventoryProducts
             .filter((p) => p.isShopProduct)
             .map((p) => ({
-                _id: String(p.id),
+                _id: String(p.id || p._id),
                 name: p.name,
                 brand: p.brand || 'Premium',
                 price: p.sellingPrice || 0,
                 image: p.appImage || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
                 rating: p.rating || '4.5',
-                category: shopCategories.find((c) => c.id === p.appCategory)?.name || 'General',
+                likes: p.likes || 0,
+                likedBy: p.likedBy || [],
+                category: (() => {
+                    const cat = shopCategories.find(c => 
+                        String(c.id) === String(p.categoryId) || 
+                        String(c.id) === String(p.appCategory) || 
+                        c.name === p.appCategory
+                    );
+                    return cat ? cat.name : 'General';
+                })(),
                 description: p.shopDescription || p.description || '',
                 outletIds: p.outletIds || [],
-                // Required for isVisibleInCustomerShop (map previously dropped these → empty shop)
                 isShopProduct: true,
                 availability: p.availability || 'all',
                 stock: p.stock,
@@ -231,16 +166,28 @@ export default function AppShopPage() {
             }));
     }, [inventoryProducts, shopCategories]);
 
-    const categories = useMemo(() => ([
-        { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
-        ...shopCategories.map(c => ({ name: c.name, img: c.image }))
-    ]), [shopCategories]);
+    const categories = useMemo(() => {
+        // Count products for each category to determine popularity
+        const counts = {};
+        shopProducts.forEach(p => {
+            counts[p.category] = (counts[p.category] || 0) + 1;
+        });
 
-    const handleSendToPOS = () => {
-        const orderData = { items: cart, total: cartTotal, timestamp: new Date().toISOString() };
-        localStorage.setItem('pending_pos_cart', JSON.stringify(orderData));
-        alert('Selection sent to checkout!');
-    };
+        const catList = shopCategories.map(c => ({ 
+            name: c.name, 
+            img: c.image,
+            count: counts[c.name] || 0
+        }));
+
+        // Sort by count descending
+        catList.sort((a, b) => b.count - a.count);
+
+        return [
+            { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
+            ...catList.map(c => ({ name: c.name, img: c.img }))
+        ];
+    }, [shopCategories, shopProducts]);
+
 
     // Sync state with URL params for external navigation
     useEffect(() => {
@@ -282,7 +229,7 @@ export default function AppShopPage() {
     }, [selectedProduct]);
 
     const filteredProducts = useMemo(() => {
-        let result = MOCK_PRODUCTS.filter((p) => isVisibleInCustomerShop(p, activeOutletId));
+        let result = shopProducts.filter((p) => isVisibleInCustomerShop(p, activeOutletId));
 
         if (activeCategory !== 'All') {
             result = result.filter((p) => p.category === activeCategory);
@@ -297,12 +244,11 @@ export default function AppShopPage() {
             );
         }
         return result;
-    }, [activeCategory, searchQuery, activeOutletId, MOCK_PRODUCTS]);
+    }, [activeCategory, searchQuery, activeOutletId, shopProducts]);
 
-    const handleAddToCart = (product, event) => {
-        // Map back to the format addToCart expects if needed, or unify.
-        addToCart(product);
-        if (event && cartIconRef.current) {
+    const handleAddToCart = async (product, event) => {
+        const success = await addToCart(product._id, 1);
+        if (success && event && cartIconRef.current) {
             const btnRect = event.currentTarget.getBoundingClientRect();
             const cartRect = cartIconRef.current.getBoundingClientRect();
             const newItem = {
@@ -382,62 +328,42 @@ export default function AppShopPage() {
                 </div>
             </div>
 
-            <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', overflowY: 'hidden', paddingBottom: '20px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px', marginTop: '-35px' }}>
-                {categories.map((cat) => (
-                    <motion.div
-                        key={cat.name}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleCategoryChange(cat.name)}
-                        style={{
-                            flexShrink: 0, width: '90px',
-                            padding: '12px 4px', textAlign: 'center', cursor: 'pointer',
-                            position: 'relative'
-                        }}
-                    >
-                        <motion.div
-                            animate={{ rotateY: rotations[cat.name] || 0 }}
-                            transition={{ duration: 0.6, type: 'spring', damping: 20, stiffness: 100 }}
-                            style={{
-                                width: '64px', height: '64px', borderRadius: '50%',
-                                overflow: 'hidden', margin: '0 auto 0',
-                                border: activeCategory === cat.name ? '2.5px solid #C8956C' : (isLight ? '2.5px solid rgba(0,0,0,0.05)' : '2.5px solid rgba(255,255,255,0.1)'),
-                                boxShadow: isLight ? '0 6px 15px rgba(0,0,0,0.08)' : '0 6px 15px rgba(0,0,0,0.4)',
-                                padding: '2px',
-                                perspective: '1000px'
-                            }}>
-                            <img src={cat.img} alt={cat.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-                        </motion.div>
-                        <div style={{
-                            padding: '5px 14px',
-                            borderRadius: '16px 4px 16px 4px',
-                            background: activeCategory === cat.name ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : (isLight ? '#FDF6F0' : 'rgba(200, 149, 108, 0.15)'),
-                            position: 'absolute',
-                            bottom: '-4px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            zIndex: 2,
-                            boxShadow: activeCategory === cat.name ? '0 6px 15px rgba(200,149,108,0.4)' : 'none',
-                            width: 'max-content',
-                            border: activeCategory === cat.name ? 'none' : `1px solid ${colors.border}`
-                        }}>
-                            <p style={{
-                                fontSize: '9px',
-                                fontWeight: 800,
-                                color: activeCategory === cat.name ? '#FFFFFF' : (isLight ? '#8B6B54' : '#C8956C'),
-                                margin: 0,
-                                whiteSpace: 'nowrap',
-                                letterSpacing: '0.01em',
-                                textTransform: 'uppercase'
-                            }}>
-                                {cat.name}
-                            </p>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
+                {/* Categories - Matching Services Style */}
+                <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 -mt-4">
+                    {categories.map(cat => {
+                        const isActive = activeCategory === cat.name;
+                        return (
+                            <motion.button
+                                key={cat.name}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleCategoryChange(cat.name)}
+                                style={{
+                                    background: isActive ? '#C8956C' : colors.card,
+                                    color: isActive ? '#FFFFFF' : colors.text,
+                                    border: isActive ? 'none' : `1.5px solid ${colors.border}`,
+                                    borderRadius: '12px 4px 12px 4px',
+                                    transition: 'all 0.3s ease',
+                                    padding: '10px 18px',
+                                    flexShrink: 0
+                                }}
+                            >
+                                <span 
+                                    style={{ 
+                                        fontSize: '11px', 
+                                        fontWeight: 800,
+                                        letterSpacing: '0.05em',
+                                        textTransform: 'uppercase'
+                                    }}
+                                >
+                                    {cat.name}
+                                </span>
+                            </motion.button>
+                        );
+                    })}
+                </div>
 
-            <div className="space-y-6 px-1">
-                <div className="grid grid-cols-2 gap-6 px-1">
+            <div className="space-y-6 px-4">
+                <div className="grid grid-cols-2 gap-3">
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, i) => {
                             const hasStock = stockQtyForOutlet(product, activeOutletId) > 0;
@@ -448,6 +374,7 @@ export default function AppShopPage() {
                                     index={i} 
                                     onOpenProduct={handleOpenProduct} 
                                     onAddToCart={handleAddToCart} 
+                                    onToggleLike={toggleProductLike}
                                     colors={colors} 
                                     isLight={isLight} 
                                     hasStock={hasStock}
@@ -458,7 +385,6 @@ export default function AppShopPage() {
                 </div>
             </div>
 
-            <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} total={cartTotal} onUpdateQuantity={updateQuantity} onRemove={removeFromCart} onCheckout={() => { handleSendToPOS(); setIsCartOpen(false); }} colors={colors} isLight={isLight} />
 
             <div className="fixed inset-0 pointer-events-none z-[10000]">
                 <AnimatePresence>

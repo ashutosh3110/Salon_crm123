@@ -1,23 +1,26 @@
 const User = require('../Models/User');
 const Salon = require('../Models/Salon');
+const Staff = require('../Models/Staff');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Try to find in User collection (SuperAdmin, Staff, etc.)
-        let user = await User.findOne({ email });
-        let role = user ? user.role : null;
-        let userData = user;
+        // 1. Try to find in SuperAdmin (User)
+        let userData = await User.findOne({ email }).select('+password');
+        let role = userData ? 'superadmin' : null;
 
-        // 2. If not found, try to find in Salon collection (Salon Owners)
-        if (!user) {
-            const salon = await Salon.findOne({ email });
-            if (salon) {
-                userData = salon;
-                role = 'admin'; // Salons are treated as admins
-            }
+        // 2. Try to find in Staff (Salon employees/managers)
+        if (!userData) {
+            userData = await Staff.findOne({ email }).select('+password');
+            if (userData) role = userData.role;
+        }
+
+        // 3. Try specifically for Salon Owner
+        if (!userData) {
+            userData = await Salon.findOne({ email }).select('+password');
+            if (userData) role = 'admin'; // Owner is treated as admin
         }
 
         if (!userData) {
@@ -27,7 +30,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        // 3. SECURE CHECK: Block login if account is inactive or Salon is suspended
+        // 4. Status Checks
         if (userData.isActive === false) {
             return res.status(403).json({ 
                 success: false, 
@@ -35,22 +38,11 @@ exports.login = async (req, res) => {
             });
         }
 
-        if (role === 'admin' && userData.status === 'suspended') {
+        if (userData.status === 'suspended') {
             return res.status(403).json({ 
                 success: false, 
-                message: 'This salon has been suspended. Please contact Super Admin.' 
+                message: 'Access is suspended. Please contact Admin.' 
             });
-        }
-
-        // If staff member, check if their salon is active
-        if (role !== 'superadmin' && role !== 'admin' && userData.salonId) {
-            const parentSalon = await Salon.findById(userData.salonId);
-            if (parentSalon && (parentSalon.status === 'suspended' || !parentSalon.isActive)) {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: 'Your salon access has been paused. Please contact your manager.' 
-                });
-            }
         }
 
         // Check password
@@ -62,9 +54,12 @@ exports.login = async (req, res) => {
             });
         }
 
+        // Determine Salon ID
+        const salonId = userData.salonId || (role === 'admin' ? userData._id : null);
+
         // Generate JWT
         const token = jwt.sign(
-            { id: userData._id, role: role, salonId: userData.salonId || (role === 'admin' ? userData._id : null) },
+            { id: userData._id, role: role, salonId: salonId },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -78,8 +73,7 @@ exports.login = async (req, res) => {
                     name: userData.name || userData.ownerName,
                     email: userData.email,
                     role: role,
-                    salonId: userData.salonId || (role === 'admin' ? userData._id : null),
-                    planStatus: userData.planStatus || 'none',
+                    salonId: salonId,
                     status: userData.status || 'active'
                 }
             }
@@ -94,19 +88,14 @@ exports.login = async (req, res) => {
     }
 };
 
-
-
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
 
-        // 1. Check User collection
+        // Check across all 3 admin-tier collections
         let userData = await User.findOne({ email });
-        
-        // 2. Check Salon collection if not found
-        if (!userData) {
-            userData = await Salon.findOne({ email });
-        }
+        if (!userData) userData = await Staff.findOne({ email });
+        if (!userData) userData = await Salon.findOne({ email });
 
         if (!userData) {
             return res.status(404).json({
@@ -116,7 +105,7 @@ exports.forgotPassword = async (req, res) => {
         }
 
         const sendEmail = require('../Utils/sendEmail');
-        const otp = '123456'; // As requested: "otp bhejo 6 digit ka 123456"
+        const otp = '123456'; 
 
         await sendEmail({
             email: userData.email,
@@ -125,52 +114,31 @@ exports.forgotPassword = async (req, res) => {
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                     <h2 style="color: #333; text-align: center;">Forgot Password?</h2>
                     <p>Hello <strong>${userData.name || userData.ownerName}</strong>,</p>
-                    <p>You requested a password reset. Please use the following 6-digit OTP to verify your identity:</p>
+                    <p>You requested a password reset. Please use the following 6-digit OTP:</p>
                     <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
                         <h1 style="letter-spacing: 5px; color: #D32F2F; margin: 0;">${otp}</h1>
                     </div>
-                    <p>This OTP is valid for 10 minutes. If you didn't request this, please ignore this email.</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 11px; color: #777; text-align: center;">Team Wapixo</p>
                 </div>
             `
         });
 
-        res.json({
-            success: true,
-            message: 'OTP sent to your email address'
-        });
-
+        res.json({ success: true, message: 'OTP sent to your email' });
     } catch (err) {
-        console.error('Forgot password error:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { email, otp } = req.body;
+        const { otp } = req.body;
 
         if (otp === '123456') {
-            res.json({
-                success: true,
-                message: 'OTP verified successfully'
-            });
+            res.json({ success: true, message: 'OTP verified successfully' });
         } else {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid OTP'
-            });
+            res.status(400).json({ success: false, message: 'Invalid OTP' });
         }
     } catch (err) {
-        console.error('Verify OTP error:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
@@ -179,68 +147,47 @@ exports.resetPassword = async (req, res) => {
         const { email, otp, password } = req.body;
 
         if (otp !== '123456') {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid or expired OTP'
-            });
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 
-        if (!password) {
-            return res.status(400).json({
-                success: false,
-                message: 'Password is required'
-            });
-        }
-
-        // 1. Check User collection
+        // Find across collections
+        let Model = User;
         let userData = await User.findOne({ email });
         
-        // 2. Check Salon collection if not found
+        if (!userData) { 
+            userData = await Staff.findOne({ email });
+            Model = Staff;
+        }
         if (!userData) {
             userData = await Salon.findOne({ email });
+            Model = Salon;
         }
 
         if (!userData) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        // Update password (pre-save hook will hash it)
         userData.password = password;
         await userData.save();
 
-        res.json({
-            success: true,
-            message: 'Password reset successful. You can now login with your new password.'
-        });
-
+        res.json({ success: true, message: 'Password reset successful.' });
     } catch (err) {
-        console.error('Reset password error:', err);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
-        });
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
-    
 exports.getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id);
+        // req.user is set by protect middleware
         res.json({
             success: true,
-            data: user
+            data: req.user
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
-// @desc    Update user details
-// @route   PATCH /api/auth/updatedetails
-// @access  Private
 exports.updateDetails = async (req, res) => {
     try {
         const fieldsToUpdate = {
@@ -248,7 +195,17 @@ exports.updateDetails = async (req, res) => {
             email: req.body.email
         };
 
-        const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+        let Model;
+        if (req.user.role === 'superadmin') Model = User;
+        else if (req.user.role === 'admin' && !req.user.salonId) Model = Salon;
+        else if (req.user.role === 'customer') {
+            const Customer = require('../Models/Customer');
+            Model = Customer;
+        } else {
+            Model = Staff;
+        }
+
+        const user = await Model.findByIdAndUpdate(req.user._id, fieldsToUpdate, {
             new: true,
             runValidators: true
         });
@@ -262,14 +219,20 @@ exports.updateDetails = async (req, res) => {
     }
 };
 
-// @desc    Update password
-// @route   PUT /api/auth/updatepassword
-// @access  Private
 exports.updatePassword = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('+password');
+        let Model;
+        if (req.user.role === 'superadmin') Model = User;
+        else if (req.user.role === 'admin' && !req.user.ownerName) Model = Salon; 
+        else if (req.user.role === 'customer') {
+            const Customer = require('../Models/Customer');
+            Model = Customer;
+        } else {
+            Model = Staff;
+        }
 
-        // Check current password
+        const user = await Model.findById(req.user._id).select('+password');
+
         if (!(await user.comparePassword(req.body.currentPassword))) {
             return res.status(401).json({ success: false, message: 'Current password is incorrect' });
         }
@@ -282,6 +245,7 @@ exports.updatePassword = async (req, res) => {
             message: 'Password updated successfully'
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

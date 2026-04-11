@@ -4,7 +4,9 @@ const cors = require('cors');
 const app = express();
 
 // Body parser
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 
 // Enable CORS
 app.use(cors());
@@ -26,6 +28,12 @@ const users = require('./Routers/userRoutes');
 const services = require('./Routers/serviceRoutes');
 const categories = require('./Routers/categoryRoutes');
 const bookings = require('./Routers/bookingRoutes');
+const productCategories = require('./Routers/productCategoryRoutes');
+const products = require('./Routers/productRoutes');
+const feedbacks = require('./Routers/feedbackRoutes');
+const loyalty = require('./Routers/loyaltyRoutes');
+const promotions = require('./Routers/promotionRoutes');
+const cart = require('./Routers/cartRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -45,13 +53,19 @@ app.use('/api/users', users);
 app.use('/api/services', services);
 app.use('/api/categories', categories);
 app.use('/api/bookings', bookings);
+app.use('/api/product-categories', productCategories);
+app.use('/api/products', products);
+app.use('/api/feedbacks', feedbacks);
+app.use('/api/loyalty', loyalty);
+app.use('/api/promotions', promotions);
+app.use('/api/cart', cart);
+
 
 // Initialize Cron Jobs
 initCronJobs();
 
 // Root route
-app.get('/', (req, res) => {
-    res.json({ success: true, message: 'Salon CRM API v1' });
-});
+const uploads = require('./Routers/uploadRoutes');
+app.use('/api/uploads', uploads);
 
 module.exports = app;

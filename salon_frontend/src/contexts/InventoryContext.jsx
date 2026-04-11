@@ -4,7 +4,9 @@ import { useFinance } from './FinanceContext';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useAuth } from './AuthContext';
+import { useSocket } from './SocketContext';
 import mockApi from '../services/mock/mockApi';
+import api from '../services/api';
 
 const InventoryContext = createContext();
 
@@ -64,7 +66,22 @@ const normalizeProduct = (p) => {
     const minStock = Number(p?.minStock ?? ext.threshold ?? p?.threshold ?? 5);
     const stockByOutlet = p?.stockByOutlet || { main: Number(p?.stock || 0) };
     const { extended: _dropExtended, ...base } = p || {};
-    return enrichProduct({ ...base, ...ext, id, _id: id, sellingPrice: Number(p?.sellingPrice ?? p?.price ?? ext.sellingPrice ?? 0), price: Number(p?.price ?? p?.sellingPrice ?? ext.price ?? 0), threshold: ext.threshold != null ? ext.threshold : minStock, minStock, stockByOutlet, gender: String(p?.gender ?? ext.gender ?? 'all').toLowerCase(), appCategory: p?.appCategory ?? ext.appCategory, outletIds: (Array.isArray(p?.outletIds) ? p.outletIds : (Array.isArray(ext.outletIds) ? ext.outletIds : [])).map((x) => String(x)) });
+    return enrichProduct({ 
+        ...base, 
+        ...ext, 
+        id, 
+        _id: id, 
+        sellingPrice: Number(p?.sellingPrice ?? p?.price ?? ext.sellingPrice ?? 0), 
+        price: Number(p?.price ?? p?.sellingPrice ?? ext.price ?? 0), 
+        threshold: ext.threshold != null ? ext.threshold : minStock, 
+        minStock, 
+        stockByOutlet, 
+        gender: String(p?.gender ?? ext.gender ?? 'all').toLowerCase(), 
+        appCategory: p?.appCategory ?? ext.appCategory, 
+        outletIds: (Array.isArray(p?.outletIds) ? p.outletIds : (Array.isArray(ext.outletIds) ? ext.outletIds : [])).map((x) => String(x)),
+        likes: Number(p?.likes || 0),
+        likedBy: p?.likedBy || []
+    });
 };
 
 const normalizeShopCat = (c) => {
@@ -74,8 +91,10 @@ const normalizeShopCat = (c) => {
 
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
-    const { outletsSnapshot = [] } = useBusiness();
+    const { outletsSnapshot = [], salon } = useBusiness();
     const { user: dashboardUser, isPlanActive } = useAuth();
+    const { isCustomerAuthenticated } = useCustomerAuth();
+    const socket = useSocket();
     const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
@@ -84,26 +103,42 @@ export const InventoryProvider = ({ children }) => {
     const [saleRecords, setSaleRecords] = useState(() => getInitialState('inv_sale_records', []));
     const [stockInHistory, setStockInHistory] = useState([]);
     const [shopCategories, setShopCategories] = useState([]);
+    const [productCategories, setProductCategories] = useState([]);
     const [supplierInvoices, setSupplierInvoices] = useState([]);
     const [loading, setLoading] = useState(false);
     const initializationRef = useRef(false);
 
     const fetchProducts = useCallback(async () => {
         try {
-            const res = await mockApi.get('/products');
-            const rows = res?.data?.results || res?.data?.data || res?.data || [];
+            const salonId = dashboardUser?.salonId || salon?._id;
+            const res = await api.get('/products', { params: { salonId } });
+            const rows = res?.data?.data || [];
             setProducts(rows.map(normalizeProduct));
         } catch { setProducts([]); }
-    }, []);
+    }, [dashboardUser, salon]);
 
     const fetchShopCategories = useCallback(async () => {
         try {
-            const res = await mockApi.get('/shop-categories');
-            const rows = res?.data?.results || res?.data?.data || res?.data || [];
-            if (Array.isArray(rows)) setShopCategories(rows.map(normalizeShopCat));
-            else setShopCategories([]);
+            const salonId = dashboardUser?.salonId || salon?._id;
+            // Fetch real product categories and map them to the shop categories format
+            const res = await api.get('/product-categories', { params: { salonId } });
+            const rows = res?.data?.data || [];
+            if (Array.isArray(rows)) {
+                setShopCategories(rows.filter(c => c.status === 'active').map(normalizeShopCat));
+            } else {
+                setShopCategories([]);
+            }
         } catch { setShopCategories([]); }
-    }, []);
+    }, [dashboardUser, salon]);
+
+    const fetchProductCategories = useCallback(async () => {
+        try {
+            const salonId = dashboardUser?.salonId || salon?._id;
+            const res = await api.get('/product-categories', { params: { salonId } });
+            const rows = res?.data?.data || [];
+            setProductCategories(rows);
+        } catch { setProductCategories([]); }
+    }, [dashboardUser, salon]);
 
     const fetchStockInHistory = useCallback(async () => {
         try {
@@ -122,21 +157,75 @@ export const InventoryProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        if (dashboardUser && isPlanActive) {
+        const isCustomerPath = window.location.pathname.startsWith('/app');
+        const canFetchPublic = isCustomerPath && (salon?._id || localStorage.getItem('active_salon_id'));
+        const canFetchPrivate = (dashboardUser && isPlanActive);
+
+        if (canFetchPrivate || canFetchPublic || isCustomerAuthenticated) {
             fetchProducts();
             fetchShopCategories();
-            fetchStockInHistory();
-            fetchSupplierInvoices();
+            fetchProductCategories();
+            
+            if (canFetchPrivate) {
+                fetchStockInHistory();
+                fetchSupplierInvoices();
+            }
         }
-    }, [dashboardUser, isPlanActive, fetchProducts, fetchShopCategories, fetchStockInHistory, fetchSupplierInvoices]);
+    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockInHistory, fetchSupplierInvoices]);
 
-    const addProduct = async (d) => { try { const r = await mockApi.post('/products', d); setProducts(p => [normalizeProduct(r.data), ...p]); return r.data; } catch (e) { throw e; } };
-    const updateProduct = async (id, d) => { try { const r = await mockApi.patch(`/products/${id}`, d); setProducts(p => p.map(x => (x.id === id || x._id === id) ? normalizeProduct({ ...x, ...d }) : x)); return r.data; } catch (e) { throw e; } };
-    const deleteProduct = async (id) => { try { await mockApi.delete(`/products/${id}`); setProducts(p => p.filter(x => (x.id !== id && x._id !== id))); } catch (e) { throw e; } };
+    useEffect(() => {
+        if (!socket || !salon?._id) return;
+        
+        socket.emit('join_salon', salon._id);
+
+        socket.on('product_liked', ({ productId, likes, likedBy }) => {
+            setProducts(prev => prev.map(p => 
+                (p._id === productId || p.id === productId) 
+                    ? { ...p, likes, likedBy } 
+                    : p
+            ));
+        });
+
+        return () => {
+            socket.off('product_liked');
+        };
+    }, [socket, salon?._id]);
+
+    const toggleProductLike = async (productId) => {
+        if (!isCustomerAuthenticated) return;
+        
+        const currentSalonId = salon?._id || localStorage.getItem('active_salon_id');
+
+        if (socket?.connected) {
+            socket.emit('product_like_toggle', { 
+                productId, 
+                customerId: dashboardUser?._id || localStorage.getItem('customer_user') ? JSON.parse(localStorage.getItem('customer_user'))._id : null,
+                salonId: currentSalonId
+            });
+            return;
+        }
+
+        try {
+            const res = await api.post(`/products/${productId}/like`);
+            // Handled by socket listener
+        } catch (error) {
+            console.error('Failed to toggle like:', error);
+        }
+    };
+
+    const addProductCategory = async (d) => { try { const r = await api.post('/product-categories', d); setProductCategories(p => [r.data.data, ...p]); return r.data.data; } catch (e) { throw e; } };
+    const updateProductCategory = async (id, d) => { try { const r = await api.put(`/product-categories/${id}`, d); setProductCategories(p => p.map(x => (x._id === id) ? r.data.data : x)); return r.data.data; } catch (e) { throw e; } };
+    const deleteProductCategory = async (id) => { try { await api.delete(`/product-categories/${id}`); setProductCategories(p => p.filter(x => (x._id !== id))); } catch (e) { throw e; } };
+
+    const addProduct = async (d) => { try { const r = await api.post('/products', d); setProducts(p => [normalizeProduct(r.data.data), ...p]); return r.data.data; } catch (e) { throw e; } };
+    const updateProduct = async (id, d) => { try { const r = await api.put(`/products/${id}`, d); setProducts(p => p.map(x => (x.id === id || x._id === id) ? normalizeProduct(r.data.data) : x)); return r.data.data; } catch (e) { throw e; } };
+    const deleteProduct = async (id) => { try { await api.delete(`/products/${id}`); setProducts(p => p.filter(x => (x.id !== id && x._id !== id))); } catch (e) { throw e; } };
 
     const value = {
-        products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, shopCategories, supplierInvoices, loading,
+        products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, shopCategories, productCategories, supplierInvoices, loading,
         fetchProducts, addProduct, updateProduct, deleteProduct, fetchShopCategories,
+        fetchProductCategories, addProductCategory, updateProductCategory, deleteProductCategory,
+        toggleProductLike,
         lowStockItems: products.filter(p => p.stock <= p.minStock),
         stats: { totalProducts: products.length, lowStockCount: products.filter(p => p.stock <= p.minStock).length, totalValue: products.reduce((acc, p) => acc + (p.stock * (p.costPrice || 0)), 0) }
     };

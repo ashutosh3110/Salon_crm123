@@ -21,22 +21,14 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['superadmin', 'admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager', 'customer'],
-        default: 'customer'
-    },
-    salonId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Salon',
-        required: function() { return !['superadmin', 'customer'].includes(this.role); }
-    },
-    outletId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Outlet'
+        enum: ['superadmin'],
+        default: 'superadmin'
     },
     phone: {
         type: String,
         trim: true
     },
+    // No salonId or outletId in Users collection as it's only for Superadmin
     dob: String,
     pan: {
         type: String,

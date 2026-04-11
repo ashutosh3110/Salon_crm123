@@ -10,6 +10,7 @@ import {
     PieChart as PieIcon,
     Smartphone,
     ClipboardList,
+    LayoutGrid as LayoutGridIcon,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -32,6 +33,7 @@ import LowStockAlerts from '../../components/admin/inventory/LowStockAlerts';
 import ProductManager from '../../components/admin/inventory/ProductManager';
 import AddProductForm from '../../components/admin/inventory/AddProductForm';
 import ShopCategoriesManager from '../../components/admin/inventory/ShopCategoriesManager';
+import ProductCategoryManager from '../../components/admin/inventory/ProductCategoryManager';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useNavigate } from 'react-router-dom'; // Added useNavigate for AddProductForm
 
@@ -89,6 +91,7 @@ export default function InventoryPage({ tab = 'products' }) {
                 {[
                     { id: 'overview', label: 'Scan', icon: TrendingUp },
                     { id: 'products', label: 'Master', icon: Package },
+                    { id: 'product-categories', label: 'Vectors', icon: LayoutGridIcon },
                     { id: 'shop-categories', label: 'App shop', icon: Smartphone },
                     { id: 'stock-in', label: 'Inbound', icon: Download },
                     { id: 'adjustment', label: 'Adjust', icon: ArrowDownRight },
@@ -209,6 +212,7 @@ export default function InventoryPage({ tab = 'products' }) {
                 {activeTab === 'adjustment' && <StockAdjustment />}
                 {activeTab === 'alerts' && <LowStockAlerts />}
                 {activeTab === 'shop-categories' && <ShopCategoriesManager />}
+                {activeTab === 'product-categories' && <ProductCategoryManager />}
             </div>
         </div>
     );

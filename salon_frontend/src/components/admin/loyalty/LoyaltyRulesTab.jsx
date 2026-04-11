@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Save, RefreshCcw, Info, Zap } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 import { motion } from 'framer-motion';
 
 export default function LoyaltyRulesTab() {
     const [rules, setRules] = useState({
-        earnRate: 1,
-        redeemRate: 1,
-        minRedeemPoints: 100,
-        maxEarnPerInvoice: 500,
+        pointsRate: 100,
+        redeemValue: 1,
+        minRedeemPoints: 0,
+        maxPointsPerOrder: 0,
         expiryDays: 365,
-        isActive: true,
+        active: true,
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -18,14 +18,9 @@ export default function LoyaltyRulesTab() {
     useEffect(() => {
         const fetchRules = async () => {
             try {
-                const { data } = await mockApi.get('/loyalty/rules');
-                const server = data?.data || data || {};
-                if (server) {
-                    setRules(prev => ({
-                        ...prev,
-                        ...server,
-                        minRedeemPoints: Number(server.minRedeemPoints ?? prev.minRedeemPoints),
-                    }));
+                const { data } = await api.get('/loyalty/settings');
+                if (data.success && data.data) {
+                    setRules(data.data);
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -40,17 +35,17 @@ export default function LoyaltyRulesTab() {
         try {
             setSaving(true);
             const payload = {
-                earnRate: Number(rules.earnRate || 0),
-                redeemRate: Number(rules.redeemRate || 0),
+                pointsRate: Number(rules.pointsRate || 100),
+                redeemValue: Number(rules.redeemValue || 1),
                 minRedeemPoints: Number(rules.minRedeemPoints || 0),
-                maxEarnPerInvoice: Number(rules.maxEarnPerInvoice || 0),
-                expiryDays: Number(rules.expiryDays || 1),
-                isActive: !!rules.isActive,
+                maxPointsPerOrder: Number(rules.maxPointsPerOrder || 0),
+                expiryDays: Number(rules.expiryDays || 365),
+                active: !!rules.active,
             };
-            await mockApi.put('/loyalty/rules', payload);
+            await api.put('/loyalty/settings', payload);
             alert('Loyalty Rules Saved Successfully!');
         } catch (err) {
-            alert('Configuration Sync Error');
+            alert('Error saving settings: ' + (err.response?.data?.message || err.message));
         } finally {
             setSaving(false);
         }
@@ -78,66 +73,35 @@ export default function LoyaltyRulesTab() {
 
                     <div className="grid sm:grid-cols-2 gap-8">
                         <RuleInput
-                            label="Points Per Rupee"
-                            sub="Customer gets points for every ₹1 spent"
-                            value={rules.earnRate}
-                            onChange={v => setRules({ ...rules, earnRate: parseFloat(v) })}
+                            label="Rupees Per Point"
+                            sub="User gets 1 point for every X rupees spent"
+                            value={rules.pointsRate}
+                            onChange={v => setRules({ ...rules, pointsRate: parseFloat(v) })}
                         />
                         <RuleInput
-                            label="Point Value (₹)"
-                            sub="1 point is worth this much in ₹"
-                            value={rules.redeemRate}
-                            onChange={v => setRules({ ...rules, redeemRate: parseFloat(v) })}
+                            label="Value of 1 Point (₹)"
+                            sub="1 point is worth this much when redeeming"
+                            value={rules.redeemValue}
+                            onChange={v => setRules({ ...rules, redeemValue: parseFloat(v) })}
                         />
                         <RuleInput
-                            label="Minimum Points to Use"
-                            sub="Customer needs at least these points to redeem"
+                            label="Minimum Points to Redeem"
+                            sub="Customer needs at least these points to use them"
                             value={rules.minRedeemPoints}
                             onChange={v => setRules({ ...rules, minRedeemPoints: parseInt(v) })}
                         />
-                        <RuleInput
-                            label="Max Points Per Order"
-                            sub="Upper limit of points earned in one invoice"
-                            value={rules.maxEarnPerInvoice}
-                            onChange={v => setRules({ ...rules, maxEarnPerInvoice: parseInt(v) })}
-                        />
                     </div>
                 </div>
 
-                <div className="bg-surface p-8 border border-border/40">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="w-1.5 h-6 bg-primary" />
-                        <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">Expiry & Program Status</h2>
-                    </div>
 
-                    <div className="grid sm:grid-cols-2 gap-8">
-                        <RuleInput
-                            label="Points Expiry (Days)"
-                            sub="After how many days points expire"
-                            value={rules.expiryDays}
-                            onChange={v => setRules({ ...rules, expiryDays: parseInt(v) })}
-                        />
-                        <div className="flex flex-col justify-center">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">Loyalty Program Status</label>
-                            <button
-                                onClick={() => setRules({ ...rules, isActive: !rules.isActive })}
-                                className={`px-6 py-3 font-black text-xs uppercase tracking-widest border transition-all ${rules.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'
-                                    }`}
-                            >
-                                {rules.isActive ? 'Program Status: Active' : 'Program Status: Paused'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div className="space-y-6">
                 <div className="bg-primary p-8 border border-white/10 shadow-2xl shadow-primary/20">
                     <h3 className="text-sm font-black text-white/80 uppercase tracking-widest mb-6 border-b border-white/20 pb-2">Current Summary</h3>
                     <div className="space-y-4">
-                        <SummaryItem label="Points on ₹1000 bill" value={`+${rules.earnRate * 1000} PTS`} />
-                        <SummaryItem label="Value of 500 points" value={`₹${(rules.redeemRate * 500).toFixed(0)}`} />
-                        <SummaryItem label="Points validity" value={`${rules.expiryDays} DAYS`} />
+                        <SummaryItem label="Points on ₹1000 bill" value={`+${Math.floor(1000 / rules.pointsRate)} PTS`} />
+                        <SummaryItem label="Value of 500 points" value={`₹${(rules.redeemValue * 500).toFixed(0)}`} />
                     </div>
 
                     <button

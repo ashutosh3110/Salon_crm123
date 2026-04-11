@@ -5,6 +5,6 @@ const { protect, authorize } = require('../Middleware/auth');
 const router = express.Router();
 
 router.get('/', getCmsData);
-router.patch('/:section', protect, authorize('superadmin'), updateCmsSection);
+router.patch('/:section', protect, authorize('superadmin', 'admin', 'manager'), updateCmsSection);
 
 module.exports = router;

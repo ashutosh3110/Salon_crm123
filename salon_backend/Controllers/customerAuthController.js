@@ -1,5 +1,38 @@
-const User = require('../Models/User');
+const Customer = require('../Models/Customer');
+const Product = require('../Models/Product');
+const Outlet = require('../Models/Outlet');
 const jwt = require('jsonwebtoken');
+
+
+
+// @desc    Get customer favorites (products & salons)
+// @route   GET /api/auth/favorites
+// @access  Private (Customer)
+exports.getFavorites = async (req, res) => {
+    try {
+        const customerId = req.user._id;
+        console.log(`[Favorites] Fetching for customer: ${customerId}`);
+
+        const [products, outlets] = await Promise.all([
+            Product.find({ likedBy: customerId }).populate('categoryId', 'name'),
+            Outlet.find({ likedBy: customerId })
+        ]);
+
+        console.log(`[Favorites] Found ${products.length} products, ${outlets.length} outlets`);
+
+        res.json({
+            success: true,
+            data: {
+                products,
+                outlets
+            }
+        });
+
+    } catch (err) {
+        console.error('Get favorites error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
 
 // @desc    Request OTP for customer login
 // @route   POST /api/auth/request-otp
@@ -12,17 +45,13 @@ exports.requestOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phone number is required' });
         }
 
-        // In a real app, send OTP via SMS. Here we return 123456 for testing/demo.
-        const otp = '123456';
-
-        // Check if user exists, if not, we can still "send OTP" 
-        // and handle registration during verify-otp or in a separate step.
-        // Frontend handles step 3 (profile completion) if user is new.
+        // Return a fixed OTP for demo/testing as requested
+        const otp = '1234';
 
         res.json({
             success: true,
             message: 'OTP sent successfully',
-            otp: otp // Returning for demo purposes
+            otp: otp 
         });
 
     } catch (err) {
@@ -36,35 +65,39 @@ exports.requestOtp = async (req, res) => {
 // @access  Public
 exports.customerLoginOtp = async (req, res) => {
     try {
-        const { phone, otp, tenantId, referralCode } = req.body;
+        const { phone, otp, tenantId } = req.body;
 
         if (!phone || !otp) {
             return res.status(400).json({ success: false, message: 'Phone and OTP are required' });
         }
 
-        if (otp !== '123456') {
+        if (otp !== '1234') {
             return res.status(400).json({ success: false, message: 'Invalid OTP' });
         }
 
-        // Find or create customer
-        let user = await User.findOne({ phone, role: 'customer' });
+        if (!tenantId) {
+            return res.status(400).json({ success: false, message: 'Salon context (tenantId) is required' });
+        }
+
+        // Find or create customer for this specific salon
+        let customer = await Customer.findOne({ phone, salonId: tenantId });
         let isNewUser = false;
 
-        if (!user) {
+        if (!customer) {
             isNewUser = true;
-            user = await User.create({
-                name: 'New Customer', // Placeholder, updated in profile completion
-                email: `cust_${Date.now()}@wapixo.com`, // Placeholder
+            customer = await Customer.create({
+                name: 'New Customer',
                 phone,
-                password: Math.random().toString(36).slice(-8), // Dummy password
-                role: 'customer',
-                salonId: tenantId, // Optional: link to the salon where they first login
+                salonId: tenantId,
                 status: 'active'
             });
         }
 
+        customer.lastLogin = new Date();
+        await customer.save();
+
         const token = jwt.sign(
-            { id: user._id, role: user.role, salonId: user.salonId },
+            { id: customer._id, role: 'customer', salonId: customer.salonId },
             process.env.JWT_SECRET,
             { expiresIn: '30d' }
         );
@@ -74,12 +107,12 @@ exports.customerLoginOtp = async (req, res) => {
             data: {
                 accessToken: token,
                 client: {
-                    _id: user._id,
-                    name: user.name,
-                    phone: user.phone,
-                    email: user.email,
-                    role: user.role,
-                    isNewUser: isNewUser || user.name === 'New Customer'
+                    _id: customer._id,
+                    name: customer.name,
+                    phone: customer.phone,
+                    email: customer.email,
+                    role: 'customer',
+                    isNewUser: isNewUser || customer.name === 'New Customer'
                 }
             }
         });
@@ -90,37 +123,96 @@ exports.customerLoginOtp = async (req, res) => {
     }
 };
 
-// @desc    Register a new customer (optional, prior to OTP)
+// @desc    Register a new customer (Advanced profile)
 // @route   POST /api/auth/register-customer
 // @access  Public
 exports.registerCustomer = async (req, res) => {
     try {
-        const { phone, name, email, password, tenantId, dob, anniversary } = req.body;
+        const { phone, name, email, tenantId, dob, anniversary, gender } = req.body;
 
-        let user = await User.findOne({ phone, role: 'customer' });
-        if (user) {
-            return res.status(400).json({ success: false, message: 'Customer already exists. Please login.' });
+        if (!tenantId) {
+            return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
 
-        user = await User.create({
+        let customer = await Customer.findOne({ phone, salonId: tenantId });
+        if (customer) {
+            return res.status(400).json({ success: false, message: 'Customer already exists for this salon.' });
+        }
+
+        customer = await Customer.create({
             phone,
             name,
             email,
-            password: password || '123456',
-            role: 'customer',
             salonId: tenantId,
             dob,
-            address: anniversary, // Using address field for anniversary for now if not in model
+            anniversary,
+            gender: gender || 'women',
             status: 'active'
         });
 
         res.status(201).json({
             success: true,
             message: 'Registration successful',
-            data: user
+            data: customer
         });
     } catch (err) {
         console.error('Register customer error:', err);
         res.status(500).json({ success: false, message: err.message || 'Server error' });
+    }
+};
+
+// @desc    Update customer profile
+// @route   PATCH /api/auth/profile
+// @access  Private (Customer)
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, email, gender, avatar, birthday } = req.body;
+        
+        const customer = await Customer.findById(req.user.id);
+        
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        // Update fields if provided
+        if (name) customer.name = name;
+        if (email) customer.email = email;
+        if (gender) customer.gender = gender;
+        if (avatar) customer.avatar = avatar;
+        if (birthday) customer.dob = birthday; // Birthday mapped to dob in model
+
+        await customer.save();
+
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: customer
+        });
+
+    } catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+// @desc    Get customer profile
+// @route   GET /api/auth/profile
+// @access  Private (Customer)
+exports.getProfile = async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.user.id);
+        
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        res.json({
+            success: true,
+            data: customer
+        });
+
+    } catch (err) {
+        console.error('Get profile error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };

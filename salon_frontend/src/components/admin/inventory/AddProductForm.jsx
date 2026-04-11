@@ -39,7 +39,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
     const defaultFormData = {
         name: '',
         brand: '',
-        category: '',
+        categoryId: '',
         description: '',
         sellingPrice: '',
         gstPercent: '18',
@@ -88,14 +88,28 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         appReturnPolicy: initialData?.appReturnPolicy ?? defaultFormData.appReturnPolicy
     });
 
-    const handleAppImageUpload = (e) => {
+    const [uploading, setUploading] = useState(false);
+    const handleAppImageUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData({ ...formData, appImage: reader.result });
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        setUploading(true);
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', file);
+
+        try {
+            // using api interceptor for auth
+            const { data: resData } = await api.post('/uploads', formDataUpload, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (resData.success) {
+                setFormData(prev => ({ ...prev, appImage: resData.url || resData.data?.url }));
+            }
+        } catch (err) {
+            console.error("Image upload failed", err);
+            alert("Image upload failed. Please try again.");
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -107,7 +121,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         ])
     );
 
-    const isFormValid = formData.name && formData.sellingPrice && formData.sku;
+    const isFormValid = formData.name && formData.sellingPrice && formData.sku && formData.categoryId;
 
     const handleBack = () => {
         if (onCancel) onCancel();
@@ -116,7 +130,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
 
     const handleSave = () => {
         if (!isFormValid) {
-            alert('Please fill in Name, Selling Price, and SKU.');
+            alert('Please fill in Name, Selling Price, SKU, and Category.');
             return;
         }
         onSave?.({
@@ -209,20 +223,16 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category</label>
-                            <input
-                                list="product-categories-list"
-                                type="text"
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
-                                placeholder="Type category (e.g. Hair Care)"
-                                value={formData.category}
-                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category <span className="text-rose-500">*</span></label>
+                            <CustomSelect
+                                value={productCategories.find(c => c._id === formData.categoryId)?.name || 'Select Category'}
+                                onChange={(val) => {
+                                    const cat = productCategories.find(c => c.name === val);
+                                    setFormData({ ...formData, categoryId: cat?._id || '' });
+                                }}
+                                options={productCategories.map(c => c.name)}
+                                placeholder="Select Category..."
                             />
-                            <datalist id="product-categories-list">
-                                {existingCategories.map((cat) => (
-                                    <option key={cat} value={cat} />
-                                ))}
-                            </datalist>
                         </div>
                     </div>
 

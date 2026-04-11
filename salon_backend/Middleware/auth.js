@@ -18,10 +18,31 @@ exports.protect = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
+        // 1. Check SuperAdmin (User)
         let account = await User.findById(decoded.id);
+        
+        // 2. Check Staff (Salon Employees)
+        if (!account) {
+            const Staff = require('../Models/Staff');
+            account = await Staff.findById(decoded.id);
+        }
+
+        // 3. Check Salon Owner
         if (!account) {
             const Salon = require('../Models/Salon');
             account = await Salon.findById(decoded.id);
+        }
+
+        // 4. Check Customer
+        if (!account) {
+            const Customer = require('../Models/Customer');
+            account = await Customer.findById(decoded.id);
+            if (account) {
+                // If found in Customer collection, ensure they have the 'customer' role
+                const custObj = account.toObject();
+                custObj.role = 'customer';
+                account = custObj;
+            }
         }
 
         if (!account) {
@@ -29,12 +50,17 @@ exports.protect = async (req, res, next) => {
         }
 
         // Transform to plain object to allow adding virtual properties
-        const userObj = account.toObject();
+        const userObj = account.toObject ? account.toObject() : account;
 
         // Add virtual role and salonId if it's a Salon document (owner)
         if (!userObj.role && userObj.ownerName) {
             userObj.role = 'admin';
             userObj.salonId = userObj._id;
+        }
+
+        // Standardize customer role
+        if (!userObj.role && userObj.phone && !userObj.ownerName) {
+            userObj.role = 'customer';
         }
 
         // Security check: Block if inactive or salon is suspended
@@ -43,13 +69,13 @@ exports.protect = async (req, res, next) => {
         }
 
         if (userObj.status === 'suspended') {
-            return res.status(403).json({ success: false, message: 'Salon is suspended' });
+            return res.status(403).json({ success: false, message: 'Access is suspended' });
         }
 
         // If staff, check parent salon
-        if (account.role && account.role !== 'superadmin' && account.role !== 'admin' && account.salonId) {
+        if (userObj.role && !['superadmin', 'admin', 'customer'].includes(userObj.role) && userObj.salonId) {
             const Salon = require('../Models/Salon');
-            const parent = await Salon.findById(account.salonId);
+            const parent = await Salon.findById(userObj.salonId);
             if (parent && (parent.status === 'suspended' || !parent.isActive)) {
                 return res.status(403).json({ success: false, message: 'Salon access is paused' });
             }

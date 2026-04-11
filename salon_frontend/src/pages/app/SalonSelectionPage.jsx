@@ -17,6 +17,16 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
     return R * c;
 };
 
+const getAddressString = (addr) => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+        const { street, city, state, pincode } = addr;
+        return [street, city, state, pincode].filter(Boolean).join(', ');
+    }
+    return '';
+};
+
 export default function SalonSelectionPage() {
     const { outlets, outletsLoading, fetchOutlets, setActiveOutletId } = useBusiness();
     const { theme } = useCustomerTheme();
@@ -204,7 +214,7 @@ export default function SalonSelectionPage() {
 
     const filteredOutlets = processedOutlets.filter(o =>
         o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.address?.toLowerCase().includes(searchQuery.toLowerCase())
+        getAddressString(o.address).toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const otherOutlets = useMemo(() => {
@@ -212,7 +222,7 @@ export default function SalonSelectionPage() {
             return outlets.filter(o => {
                 const isNearby = filteredOutlets.some(f => f._id === o._id);
                 const matchesSearch = o.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                     o.address?.toLowerCase().includes(searchQuery.toLowerCase());
+                                     getAddressString(o.address).toLowerCase().includes(searchQuery.toLowerCase());
                 return !isNearby && matchesSearch;
             });
         }
@@ -393,7 +403,7 @@ export default function SalonSelectionPage() {
                                                         <span className="text-[10px] font-mask text-white/40">4.9</span>
                                                     </div>
                                                 </div>
-                                                <p className="text-[10px] font-medium opacity-30 truncate mb-1">{outlet.address || 'Premium Hub'}</p>
+                                                <p className="text-[10px] font-medium opacity-30 truncate mb-1">{getAddressString(outlet.address) || 'Premium Hub'}</p>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[9px] font-bold tracking-[0.2em] uppercase px-3 py-1.5 rounded-full bg-white/5" style={{ color: colors.accent }}>

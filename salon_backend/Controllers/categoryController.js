@@ -5,7 +5,10 @@ const Category = require('../Models/Category');
 // @access  Private
 exports.getCategories = async (req, res) => {
     try {
-        const salonId = req.user.salonId;
+        const salonId = req.user?.salonId || req.query.salonId || req.query.tenantId;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon ID is required' });
+        }
         const categories = await Category.find({ salonId })
             .populate('serviceCount')
             .sort({ createdAt: -1 });

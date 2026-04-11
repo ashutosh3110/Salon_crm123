@@ -161,6 +161,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             feature: 'inventory',
             subItems: [
                 { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
+                { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories', roles: ['admin'] },
                 { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
                 { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
                 { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },

@@ -1,6 +1,8 @@
 const Booking = require('../Models/Booking');
 const User = require('../Models/User');
 const Service = require('../Models/Service');
+const Customer = require('../Models/Customer');
+const Salon = require('../Models/Salon');
 
 // @desc    Get all bookings for salon
 // @route   GET /api/bookings
@@ -89,8 +91,28 @@ exports.updateStatus = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
+        const oldStatus = booking.status;
         booking.status = req.body.status;
         await booking.save();
+
+        // If status changed to completed, award loyalty points
+        if (booking.status === 'completed' && oldStatus !== 'completed') {
+            try {
+                const salon = await Salon.findById(booking.salonId);
+                if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
+                    const rate = salon.loyaltySetting.pointsRate || 100;
+                    const points = Math.floor(booking.totalPrice / rate);
+                    
+                    if (points > 0) {
+                        await Customer.findByIdAndUpdate(booking.clientId, {
+                            $inc: { loyaltyPoints: points }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error awarding loyalty points:', error);
+            }
+        }
 
         res.json({
             success: true,
