@@ -10,7 +10,6 @@ import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useCart } from '../../contexts/CartContext';
-import { useNotifications } from '../../contexts/NotificationContext';
 
 const SALON_THOUGHTS = [
     "Your hair is your crown ✨",

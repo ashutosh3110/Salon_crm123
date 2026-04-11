@@ -98,7 +98,6 @@ import AppShopPage from './pages/app/AppShopPage';
 import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
 import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
 import AppCheckoutPage from './pages/app/AppCheckoutPage';
-import AppServiceInquiryPage from './pages/app/AppServiceInquiryPage';
 import AppNotificationPage from './pages/app/AppNotificationPage';
 import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
 import AppMembershipPage from './pages/app/AppMembershipPage';
