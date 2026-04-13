@@ -313,7 +313,7 @@ export default function AppHomePage() {
     useEffect(() => {
         if (!selectedServiceCategory && categories?.length > 0) {
             const firstCat = (categories || []).find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
-            if (firstCat) setSelectedServiceCategory(firstCat.name);
+            setSelectedServiceCategory('All');
         }
     }, [categories, gender, selectedServiceCategory]);
 
@@ -1061,7 +1061,7 @@ export default function AppHomePage() {
                     </div>
 
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {(categories || []).filter(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender)).map(c => c.name).map((catName) => {
+                        {['All', ...(categories || []).filter(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender)).map(c => c.name)].map((catName) => {
                             const isActive = selectedServiceCategory === catName;
                             const catObj = (categories || []).find(c => c.name === catName);
                             const iconMap = {
@@ -1161,7 +1161,7 @@ export default function AppHomePage() {
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                         <Scissors size={20} color={colors.accent} />
-                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Top Rituals for {selectedServiceCategory || 'You'}</span>
+                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Trending Rituals</span>
                     </div>
                     <AnimatePresence mode="wait">
                         <motion.div
