@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import {
@@ -67,12 +68,22 @@ export default function MarketingCMSPage() {
     } = useCMS();
     const { outlets } = useBusiness();
 
-    const [activeTab, setActiveTab] = useState('banners');
+    const { user } = useAuth();
+    const isSuperAdmin = user?.role === 'superadmin';
+
+    const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'banners' : 'experts');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState('banner'); // 'banner', 'offer', or 'lookbook'
     const [selectedGender, setSelectedGender] = useState('all'); // 'all', 'men', 'women'
     const [editingId, setEditingId] = useState(null);
     const [showPreviewInfo, setShowPreviewInfo] = useState(false);
+
+    const availableTabs = [
+        { id: 'banners', label: 'App Banners', icon: ImageIcon, roles: ['superadmin'] },
+        { id: 'offers', label: 'Exclusive Offers', icon: Tag, roles: ['superadmin'] },
+        { id: 'lookbook', label: 'Stylist Lookbook', icon: Camera, roles: ['superadmin'] },
+        { id: 'experts', label: 'Expert Profiles', icon: UserCircle, roles: ['admin', 'manager'] },
+    ].filter(t => !t.roles || t.roles.includes(user?.role));
 
     // Form states
     const [formData, setFormData] = useState({
@@ -264,12 +275,7 @@ export default function MarketingCMSPage() {
             {/* Navigation & Filters */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-border/40 pb-4">
                 <div className="flex gap-8 overflow-x-auto no-scrollbar pb-2">
-                    {[
-                        { id: 'banners', label: 'App Banners', icon: ImageIcon },
-                        { id: 'offers', label: 'Exclusive Offers', icon: Tag },
-                        { id: 'lookbook', label: 'Stylist Lookbook', icon: Camera },
-                        { id: 'experts', label: 'Expert Profiles', icon: UserCircle },
-                    ].map((tab) => (
+                    {availableTabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}

@@ -511,6 +511,20 @@ export default function AppHomePage() {
         return () => clearInterval(timer);
     }, []);
 
+    // ── AUTO-SCROLL BANNER ──
+    useEffect(() => {
+        if (filteredPromos.length <= 1) return;
+        const timer = setInterval(() => {
+            setCurrentPromoIndex((prev) => (prev + 1) % filteredPromos.length);
+        }, 4000); 
+        return () => clearInterval(timer);
+    }, [filteredPromos.length]);
+
+    // Reset banner index when gender changes
+    useEffect(() => {
+        setCurrentPromoIndex(0);
+    }, [g]);
+
 
 
     return (

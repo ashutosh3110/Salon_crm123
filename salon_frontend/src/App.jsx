@@ -454,6 +454,7 @@ function App() {
                             <Route path="/superadmin/settings" element={<SASettingsPage />} />
                             <Route path="/superadmin/support" element={<SASupportPage />} />
                             <Route path="/superadmin/inquiries" element={<SAInquiriesPage />} />
+                            <Route path="/superadmin/marketing/cms" element={<MarketingCMSPage />} />
                           </Route>
                         </Route>
 

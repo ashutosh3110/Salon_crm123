@@ -6,8 +6,13 @@ const Cms = require('../Models/Cms');
 exports.getCmsData = async (req, res) => {
     try {
         const tenantId = req.query.tenantId || null;
-        const query = tenantId ? { tenantId } : { tenantId: null };
-        const cmsItems = await Cms.find(query);
+        let cmsItems = await Cms.find({ tenantId });
+
+        // If no tenant-specific data, fallback to global (null)
+        if (tenantId && cmsItems.length === 0) {
+            cmsItems = await Cms.find({ tenantId: null });
+        }
+
         const data = {};
         cmsItems.forEach(item => {
             data[item.section] = item.content;

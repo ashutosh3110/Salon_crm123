@@ -5,7 +5,7 @@ import logoFull from '/new black wapixo logo .png';
 import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
-    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout
+    BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout, Smartphone
 } from 'lucide-react';
 
 const menuItems = [
@@ -55,6 +55,12 @@ const menuItems = [
         path: '/superadmin/inquiries',
         badge: 1,
         badgeColor: 'bg-primary/10 text-primary',
+    },
+    {
+        label: 'Banners',
+        icon: Smartphone,
+        path: '/superadmin/marketing/cms',
+        badge: null,
     },
     {
         label: 'Settings',
