@@ -9,7 +9,6 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         const newSocket = io(API_URL.replace('/api', ''), {
-            transports: ['websocket'],
             autoConnect: true
         });
 

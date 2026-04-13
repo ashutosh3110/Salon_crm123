@@ -40,11 +40,14 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
 
             {/* ── MARKERS ── */}
             {outlets.map((outlet, index) => {
-                if (!outlet.location || !outlet.location.lat || !outlet.location.lng) return null;
+                const lat = outlet.location?.coordinates?.[1] || outlet.location?.lat;
+                const lng = outlet.location?.coordinates?.[0] || outlet.location?.lng;
+                
+                if (!lat || !lng) return null;
 
                 // Optimized positions for Indore center (75.9035, 22.7814)
-                const left = 50 + (outlet.location.lng - 75.9035) * 800; // Increased scale for precision
-                const top = 50 - (outlet.location.lat - 22.7814) * 1000;
+                const left = 50 + (lng - 75.9035) * 800; // Increased scale for precision
+                const top = 50 - (lat - 22.7814) * 1000;
 
                 // Clamp to stay within circle/bounds for mock UI
                 const clampedLeft = Math.max(5, Math.min(95, left));
@@ -305,7 +308,8 @@ export default function SalonMapView({ outlets, selectedOutlet, onSelect, onView
                                     <motion.button
                                         whileTap={{ scale: 0.95 }}
                                         onClick={() => {
-                                            const { lat, lng } = selectedOutlet.location;
+                                            const lat = selectedOutlet.location?.coordinates?.[1] || selectedOutlet.location?.lat;
+                                            const lng = selectedOutlet.location?.coordinates?.[0] || selectedOutlet.location?.lng;
                                             if (lat && lng) {
                                                 window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
                                             }

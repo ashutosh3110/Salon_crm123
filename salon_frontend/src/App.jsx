@@ -91,6 +91,7 @@ import SalonProfilePage from './pages/app/SalonProfilePage';
 
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
+import AppMyOrdersPage from './pages/app/AppMyOrdersPage';
 import AppBookingDetailsPage from './pages/app/AppBookingDetailsPage';
 import AppServicesPage from './pages/app/AppServicesPage';
 import AppReferralPage from './pages/app/AppReferralPage';
@@ -486,6 +487,7 @@ function App() {
                             <Route path="/app/service/:id" element={<AppServiceDetailsPage />} />
                             <Route path="/app/bookings" element={<AppMyBookingsPage />} />
                             <Route path="/app/bookings/:id" element={<AppBookingDetailsPage />} />
+                            <Route path="/app/orders" element={<AppMyOrdersPage />} />
                             <Route path="/app/referrals" element={<AppReferralPage />} />
                             <Route path="/app/profile" element={<AppProfilePage />} />
                             <Route path="/app/shop" element={<AppShopPage />} />

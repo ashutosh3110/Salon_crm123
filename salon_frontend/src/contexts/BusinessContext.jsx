@@ -13,7 +13,8 @@ const BusinessContext = createContext({
     updateFeedback: async () => {}, archiveFeedback: async () => {}, fetchSegmentCustomers: async () => [],
     fetchStaff: async () => {}, addStaff: async () => {}, updateStaff: async () => {}, deleteStaff: async () => {},
     roles: [], fetchRoles: async () => {},
-    setOutlets: () => {}, fetchOutlets: async () => {}, outletsLoading: false
+    setOutlets: () => {}, fetchOutlets: async () => {}, outletsLoading: false,
+    loyaltySettings: null, fetchLoyaltySettings: async () => {}
 });
 
 export function BusinessProvider({ children }) {
@@ -39,6 +40,7 @@ export function BusinessProvider({ children }) {
     const [feedbacksLoading, setFeedbacksLoading] = useState(false);
     const [outletsLoading, setOutletsLoading] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
+    const [loyaltySettings, setLoyaltySettings] = useState(null);
 
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
@@ -145,9 +147,42 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const fetchCustomerInitialData = useCallback(async (force = false) => {
-        if (initializationRef.current && !force) return;
+    const fetchStaff = useCallback(async (sId) => { 
+        try {
+            const sid = sId || activeSalonId || salon?._id;
+            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`); 
+            setStaff(r.data?.data || r.data?.results || r.data || []); 
+        } catch (error) {
+            console.error("Fetch staff failed:", error);
+            setStaff([]);
+        }
+    }, [activeSalonId, salon?._id]);
+
+    const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
+    
+    const fetchRoles = useCallback(async () => {
+        try {
+            const r = await api.get('/roles');
+            setRoles(r.data?.data || []);
+        } catch { setRoles([]); }
+    }, []);
+
+    const fetchLoyaltySettings = useCallback(async (sId) => {
+        try {
+            const sid = sId || activeSalonId || salon?._id || localStorage.getItem('active_salon_id');
+            if (!sid) return;
+            const r = await api.get(`/loyalty/settings/public?salonId=${sid}`);
+            if (r.data?.success) setLoyaltySettings(r.data.data);
+        } catch (err) {
+            console.error('Failed to fetch loyalty settings:', err);
+        }
+    }, [activeSalonId, salon?._id]);
+
+    const lastInitializedId = useRef(null);
+    const fetchCustomerInitialData = useCallback(async () => {
+        if (initializationRef.current && lastInitializedId.current === activeSalonId) return;
         initializationRef.current = true;
+        lastInitializedId.current = activeSalonId;
         try {
             // Core Salon & Outlets
             const t = await api.get('/salons/me');
@@ -161,59 +196,18 @@ export function BusinessProvider({ children }) {
                     fetchServices(sid),
                     fetchCategories(sid),
                     fetchFeedbacks(),
-                    fetchStaff(sid)
+                    fetchStaff(sid),
+                    fetchLoyaltySettings(sid)
                  ]);
             }
         } finally {
             setIsInitializing(false);
         }
-    }, [fetchOutlets, fetchServices, fetchCategories]);
+    }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, activeSalonId]);
 
 
 
-    useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
-        const urlId = searchParams.get('tenantId');
-        if (urlId && urlId !== activeSalonId) {
-            localStorage.setItem('active_salon_id', urlId);
-            setActiveSalonId(urlId);
-        }
 
-        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
-
-        if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
-            fetchCustomerInitialData();
-        } else {
-            // Guest mode: fetch basic salon data if effectiveTid exists
-            if (effectiveTid) {
-                const initGuest = async () => {
-                    try {
-                        const initTasks = [];
-                        if (!salon) {
-                            initTasks.push(api.get(`/salons/${effectiveTid}`).then(res => {
-                                if (res.data.success) setSalon(res.data.data);
-                            }));
-                        }
-                        
-                        // Always ensure services, categories, and feedbacks are fetched if we have an ID
-                        initTasks.push(fetchServices(effectiveTid));
-                        initTasks.push(fetchCategories(effectiveTid));
-                        initTasks.push(fetchFeedbacks());
-                        initTasks.push(fetchStaff(effectiveTid));
-
-                        await Promise.all(initTasks);
-                    } catch (err) {
-                        console.error("Guest initialization failed:", err);
-                    } finally {
-                        setIsInitializing(false);
-                    }
-                };
-                initGuest();
-            } else {
-                setIsInitializing(false);
-            }
-        }
-    }, [isAuthenticated, isCustomerAuthenticated, user?.role, fetchCustomerInitialData, salon, activeSalonId, fetchServices, fetchCategories, fetchFeedbacks]);
 
 
     const addCustomer = useCallback(async (d) => { const r = await api.post('/clients', d); setCustomers(p => [r.data, ...p]); return r.data; }, []);
@@ -307,25 +301,10 @@ export function BusinessProvider({ children }) {
 
     const updateStaff = useCallback(async (id, d) => { const r = await api.patch(`/users/${id}`, d); const updated = r.data.data; setStaff(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s)); return updated; }, []);
     const deleteStaff = useCallback(async (id) => { await api.delete(`/users/${id}`); setStaff(p => p.filter(s => (s._id !== id && s.id !== id))); }, []);
-    const fetchStaff = useCallback(async (sId) => { 
-        try {
-            const sid = sId || activeSalonId || salon?._id;
-            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`); 
-            setStaff(r.data?.data || r.data?.results || r.data || []); 
-        } catch (error) {
-            console.error("Fetch staff failed:", error);
-            setStaff([]);
-        }
-    }, [activeSalonId, salon?._id]);
-    const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
+
     const addShift = useCallback(async (d) => { const r = await api.post('/shifts', d); setShifts(p => [r.data, ...p]); return r.data; }, []);
     const updateShift = useCallback(async (id, d) => { const r = await api.patch(`/shifts/${id}`, d); setShifts(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s)); return r.data; }, []);
-    const fetchRoles = useCallback(async () => {
-        try {
-            const r = await api.get('/roles');
-            setRoles(r.data?.data || []);
-        } catch { setRoles([]); }
-    }, []);
+
 
     const addService = useCallback(async (d) => {
         const r = await api.post('/services', d);
@@ -414,7 +393,8 @@ export function BusinessProvider({ children }) {
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
         addBooking, updateBookingStatus,
         fetchShifts, addShift, updateShift,
-        isInitializing
+        isInitializing,
+        loyaltySettings, fetchLoyaltySettings
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
@@ -428,10 +408,52 @@ export function BusinessProvider({ children }) {
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
         addBooking, updateBookingStatus,
         fetchShifts, addShift, updateShift,
-        isInitializing
+        isInitializing,
+        loyaltySettings, fetchLoyaltySettings
     ]);
 
 
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlId = searchParams.get('tenantId');
+        if (urlId && urlId !== activeSalonId) {
+            localStorage.setItem('active_salon_id', urlId);
+            setActiveSalonId(urlId);
+        }
+
+        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
+
+        if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
+            fetchCustomerInitialData();
+        } else if (effectiveTid) {
+            if (lastInitializedId.current === effectiveTid) return;
+            lastInitializedId.current = effectiveTid;
+
+            const initGuest = async () => {
+                try {
+                    const initTasks = [];
+                    if (!salon) {
+                        initTasks.push(api.get(`/salons/${effectiveTid}`).then(res => {
+                            if (res.data.success) setSalon(res.data.data);
+                        }));
+                    }
+                    initTasks.push(fetchServices(effectiveTid));
+                    initTasks.push(fetchCategories(effectiveTid));
+                    initTasks.push(fetchFeedbacks(effectiveTid));
+                    initTasks.push(fetchStaff(effectiveTid));
+                    await Promise.all(initTasks);
+                } catch (err) {
+                    console.error("Guest initialization failed:", err);
+                } finally {
+                    setIsInitializing(false);
+                }
+            };
+            initGuest();
+        } else {
+            setIsInitializing(false);
+        }
+    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

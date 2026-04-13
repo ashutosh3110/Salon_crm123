@@ -11,7 +11,10 @@ const {
     getMembershipPlan,
     createMembershipPlan,
     updateMembershipPlan,
-    deleteMembershipPlan
+    deleteMembershipPlan,
+    createMembershipOrder,
+    verifyMembershipPayment,
+    getActiveMembership
 } = require('../Controllers/membershipPlanController');
 
 const { protect, authorize } = require('../Middleware/auth');
@@ -42,6 +45,10 @@ router
 router.get('/rules', authorize('admin', 'manager', 'customer'), getLoyaltySettings);
 
 router.get('/history', getLoyaltyHistory);
+
+router.get('/membership/active', getActiveMembership);
+router.post('/membership/order', createMembershipOrder);
+router.post('/membership/verify', verifyMembershipPayment);
 
 router.get('/referral-settings', (req, res) => {
     res.json({ success: true, data: { referrerReward: 200 } });

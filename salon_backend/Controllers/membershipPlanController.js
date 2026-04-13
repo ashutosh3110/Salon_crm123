@@ -1,4 +1,12 @@
 const MembershipPlan = require('../Models/MembershipPlan');
+const CustomerMembership = require('../Models/CustomerMembership');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+    key_secret: process.env.RAZORPAY_KEY_SECRET || 'YOUR_SECRET'
+});
 
 // @desc    Get all membership plans for a salon
 // @route   GET /api/membership-plans
@@ -149,5 +157,93 @@ exports.deleteMembershipPlan = async (req, res) => {
             success: false,
             message: err.message
         });
+    }
+};
+
+// @desc    Create Razorpay order for membership
+// @route   POST /api/loyalty/membership/order
+// @access  Private (Customer)
+exports.createMembershipOrder = async (req, res) => {
+    try {
+        const { planId } = req.body;
+        const plan = await MembershipPlan.findById(planId);
+        if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+
+        const options = {
+            amount: plan.price * 100, // in paise
+            currency: 'INR',
+            receipt: `mem_${req.user._id}_${Date.now()}`
+        };
+
+        const order = await razorpay.orders.create(options);
+        res.json({
+            success: true,
+            orderId: order.id,
+            amount: order.amount,
+            currency: order.currency
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Verify membership payment and activate
+// @route   POST /api/loyalty/membership/verify
+// @access  Private (Customer)
+exports.verifyMembershipPayment = async (req, res) => {
+    try {
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, planId } = req.body;
+
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'YOUR_SECRET')
+            .update(body.toString())
+            .digest("hex");
+
+        if (expectedSignature !== razorpay_signature) {
+            return res.status(400).json({ success: false, message: 'Invalid signature' });
+        }
+
+        const plan = await MembershipPlan.findById(planId);
+        if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+
+        // Calculate expiry
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
+
+        // Create or Update membership
+        const membership = await CustomerMembership.findOneAndUpdate(
+            { customerId: req.user._id, salonId: plan.salonId },
+            {
+                planId,
+                status: 'active',
+                expiryDate,
+                orderId: razorpay_order_id,
+                paymentId: razorpay_payment_id,
+                amount: plan.price
+            },
+            { upsert: true, new: true }
+        );
+
+        res.json({ success: true, data: membership });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get active membership for customer
+// @route   GET /api/loyalty/membership/active
+// @access  Private (Customer)
+exports.getActiveMembership = async (req, res) => {
+    try {
+        const membership = await CustomerMembership.findOne({
+            customerId: req.user._id,
+            status: 'active',
+            expiryDate: { $gt: new Date() }
+        }).populate('planId');
+
+        res.json({ success: true, data: membership });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 };

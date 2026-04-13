@@ -2,12 +2,14 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useSocket } from './SocketContext';
+import { useBusiness } from './BusinessContext';
 
 const FavoritesContext = createContext();
 
 export function FavoritesProvider({ children }) {
     const { customer, isCustomerAuthenticated } = useCustomerAuth();
     const socket = useSocket();
+    const { activeSalonId } = useBusiness();
     const [favoriteSalons, setFavoriteSalons] = useState([]);
     const [favoriteProducts, setFavoriteProducts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -40,7 +42,22 @@ export function FavoritesProvider({ children }) {
     useEffect(() => {
         if (!socket || !isCustomerAuthenticated) return;
 
+        const joinRoom = () => {
+            const sid = activeSalonId || localStorage.getItem('active_salon_id');
+            if (sid) {
+                socket.emit('join_salon', sid);
+                console.log(`[Socket] Joined salon room: ${sid}`);
+            }
+        };
+
+        if (socket.connected) {
+            joinRoom();
+        }
+
+        socket.on('connect', joinRoom);
+
         socket.on('product_liked', () => {
+            console.log('[Socket] Product like update received');
             fetchFavorites(); // Refresh list when anyone likes/unlikes
         });
 
@@ -49,10 +66,11 @@ export function FavoritesProvider({ children }) {
         });
 
         return () => {
+            socket.off('connect', joinRoom);
             socket.off('product_liked');
             socket.off('outlet_liked');
         };
-    }, [socket, isCustomerAuthenticated, fetchFavorites]);
+    }, [socket, isCustomerAuthenticated, fetchFavorites, activeSalonId]);
 
     const toggleSalonLike = async (salonId) => {
         if (!isCustomerAuthenticated) return;
@@ -82,8 +100,7 @@ export function FavoritesProvider({ children }) {
             socket.emit('product_like_toggle', { 
                 productId, 
                 customerId: customer._id,
-                salonId 
-            });
+                salonId: salonId || activeSalonId || localStorage.getItem('active_salon_id')            });
             return;
         }
 

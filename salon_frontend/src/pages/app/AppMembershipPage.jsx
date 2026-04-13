@@ -12,7 +12,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const AppMembershipPage = () => {
     const navigate = useNavigate();
@@ -36,7 +36,8 @@ const AppMembershipPage = () => {
         const loadPlans = async () => {
             setLoading(true);
             try {
-                const res = await api.get('/loyalty/membership-plans');
+                const salonId = localStorage.getItem('active_salon_id');
+                const res = await api.get('/loyalty/membership-plans/public', { params: { salonId } });
                 const list = res?.data?.data || res?.data || [];
                 const rows = Array.isArray(list) ? list : [];
                 const mapped = rows

@@ -91,7 +91,7 @@ export function WalletProvider({ children }) {
                 if (!orderData?.success) return reject(new Error('Failed to create order'));
 
                 const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SatrrxFwKXJX8e',
                     amount: orderData.order.amount,
                     currency: orderData.order.currency,
                     name: 'Salon Wallet Top-up',

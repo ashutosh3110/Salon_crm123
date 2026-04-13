@@ -2,6 +2,8 @@ const Customer = require('../Models/Customer');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const Salon = require('../Models/Salon');
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
@@ -98,6 +100,25 @@ exports.verifyTopup = async (req, res) => {
                 orderId: razorpayOrderId,
                 status: 'COMPLETED'
             });
+            
+            // Award Loyalty Points
+            try {
+                const salon = await Salon.findById(customer.salonId);
+                if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
+                    const rate = salon.loyaltySetting.pointsRate || 100;
+                    const points = Math.floor(Number(amount) / rate);
+                    if (points > 0) {
+                        await Customer.findByIdAndUpdate(req.user._id, { $inc: { loyaltyPoints: points } });
+                        await LoyaltyTransaction.create({
+                            customerId: req.user._id,
+                            salonId: customer.salonId,
+                            amount: points,
+                            type: 'EARNED',
+                            description: `Points earned on Wallet Top-up (₹${amount})`
+                        });
+                    }
+                }
+            } catch (le) { console.error('Loyalty Error:', le); }
 
             res.json({
                 success: true,

@@ -113,15 +113,6 @@ export default function AppServicesPage() {
         input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
     };
 
-    if (isInitializing && (!groupedServices || groupedServices.length === 0)) {
-        return (
-            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center text-white">
-                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
-                <h2 className="text-lg font-black uppercase tracking-widest mb-2">Initializing</h2>
-                <p className="text-xs opacity-40 max-w-[200px]">Preparing your premium grooming experience...</p>
-            </div>
-        );
-    }
 
     // Filter categories & services by gender on client side too for safety
     const displayGroups = useMemo(() => {
@@ -152,12 +143,20 @@ export default function AppServicesPage() {
     }, [displayGroups]);
 
     const [searchParams] = useSearchParams();
-    const categoryParam = searchParams.get('category');
-    const isCanonical = dynamicCategories.includes(categoryParam);
 
-    const [searchQuery, setSearchQuery] = useState(isCanonical ? '' : (categoryParam || ''));
-    const [activeCategory, setActiveCategory] = useState(isCanonical ? categoryParam : 'All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All');
     const [isFocused, setIsFocused] = useState(false);
+
+    // Synchronize active category with URL parameter
+    useEffect(() => {
+        const cat = searchParams.get('category');
+        if (cat) {
+            setActiveCategory(cat);
+        } else {
+            setActiveCategory('All');
+        }
+    }, [searchParams]);
 
     const finalGroups = useMemo(() => {
         let result = displayGroups;
@@ -178,11 +177,21 @@ export default function AppServicesPage() {
     }, [displayGroups, activeCategory, searchQuery]);
 
     const handleBook = (id) => {
-        navigate(`/app/book?serviceId=${id}`);
+        navigate(`/app/booking?serviceId=${id}`);
     };
 
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
     const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
+
+    if (isInitializing && (!groupedServices || groupedServices.length === 0)) {
+        return (
+            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center text-white">
+                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
+                <h2 className="text-lg font-black uppercase tracking-widest mb-2">Initializing</h2>
+                <p className="text-xs opacity-40 max-w-[200px]">Preparing your premium grooming experience...</p>
+            </div>
+        );
+    }
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">

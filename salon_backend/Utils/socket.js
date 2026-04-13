@@ -20,15 +20,23 @@ const init = (server) => {
 
         // Real-time Like/Unlike Handlers
         socket.on('product_like_toggle', async ({ productId, customerId, salonId }) => {
-            if (!productId || !customerId) return;
-            const { handleProductLikeToggle } = require('../Controllers/productController');
-            await handleProductLikeToggle(productId, customerId, salonId);
+            try {
+                if (!productId || !customerId) return;
+                const { handleProductLikeToggle } = require('../Controllers/productController');
+                await handleProductLikeToggle(productId, customerId, salonId);
+            } catch (err) {
+                console.error('[Socket] Product like toggle error:', err);
+            }
         });
 
         socket.on('outlet_like_toggle', async ({ outletId, customerId }) => {
-            if (!outletId || !customerId) return;
-            const { handleOutletLikeToggle } = require('../Controllers/outletController');
-            await handleOutletLikeToggle(outletId, customerId);
+            try {
+                if (!outletId || !customerId) return;
+                const { handleOutletLikeToggle } = require('../Controllers/outletController');
+                await handleOutletLikeToggle(outletId, customerId);
+            } catch (err) {
+                console.error('[Socket] Outlet like toggle error:', err);
+            }
         });
 
         socket.on('disconnect', () => {

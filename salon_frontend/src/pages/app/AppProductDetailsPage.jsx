@@ -87,7 +87,10 @@ export default function AppProductDetailsPage() {
     }, [id]);
 
     const isLiked = isProductLiked(id);
-    const inCart = cart.find((item) => item._id === id);
+    const inCart = (cart?.items || []).find((item) => {
+        const pId = item.productId?._id || item.productId?.id || item.productId;
+        return String(pId) === String(id);
+    });
 
     if (!rawRow || !product) {
         return (
@@ -282,7 +285,7 @@ export default function AppProductDetailsPage() {
                         >
                             <ShoppingBag className="w-5 h-5" />
                             <span className="text-[11px] font-black uppercase tracking-[0.3em]">
-                                {rawRow.stock <= 0 ? 'OUT OF STOCK' : (inCart ? 'ADD TO CART' : 'CLAIM NOW')}
+                                {rawRow.stock <= 0 ? 'OUT OF STOCK' : (inCart ? 'ADD TO CART' : 'ORDER NOW')}
                             </span>
                         </motion.button>
                     </div>

@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight } from 'lucide-react';
+import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function AppCheckoutPage() {
     const navigate = useNavigate();
@@ -14,9 +15,10 @@ export default function AppCheckoutPage() {
     const { cart, cartTotal, clearCart } = useCart();
     const { customer } = useCustomerAuth();
     const { balance, fetchBalance } = useWallet();
+    const { loyaltySettings } = useBusiness();
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('wallet'); // 'wallet', 'online', 'cod'
+    const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' is the only method now
 
     // Mock Address for now
     const [address, setAddress] = useState({
@@ -133,6 +135,15 @@ export default function AppCheckoutPage() {
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Total Amount</span>
                         <span className="text-2xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{cartTotal}</span>
                     </div>
+                    {loyaltySettings?.active && (
+                        <div className="flex items-center justify-between py-2 px-3 mb-4 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/10">
+                            <div className="flex items-center gap-2">
+                                <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
+                                <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Loyalty Earned</span>
+                            </div>
+                            <span className="text-[12px] font-black text-[#C8956C]">{Math.floor(cartTotal / (loyaltySettings.pointsRate || 100))} Points</span>
+                        </div>
+                    )}
                     <div className="space-y-2">
                         {cart.items.map((item, i) => (
                             <div key={i} className="flex justify-between text-[11px] font-bold opacity-60 uppercase tracking-widest">
@@ -203,9 +214,7 @@ export default function AppCheckoutPage() {
                         
                         <div className="space-y-3">
                             {[
-                                { id: 'wallet', name: 'Wapixo Wallet', icon: Wallet, subtitle: `Balance: ₹${balance}` },
-                                { id: 'online', name: 'Credit/Debit/UPI', icon: CreditCard, subtitle: 'Secure Online Payment' },
-                                { id: 'cod', name: 'Cash on Delivery', icon: Truck, subtitle: 'Pay when you receive' }
+                                { id: 'cod', name: 'Pay at Salon', icon: Truck, subtitle: 'Pay when you receive' }
                             ].map((method) => (
                                 <button
                                     key={method.id}

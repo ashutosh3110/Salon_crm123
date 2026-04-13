@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -37,7 +37,8 @@ export default function AppBookingPage() {
         groupedServices,
         staff: businessStaff,
         fetchGroupedServices,
-        fetchStaff
+        fetchStaff,
+        loyaltySettings
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
@@ -538,7 +539,7 @@ export default function AppBookingPage() {
                 const order = orderRes.data;
 
                 const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SatrrxFwKXJX8e',
                     amount: order.amount,currency: order.currency,
                     name: 'Salon App',
                     description: `Booking for ${primaryService.name}`,
@@ -772,7 +773,7 @@ export default function AppBookingPage() {
     }
 
     return (
-        <div className="space-y-6 px-4 pb-12" style={{ background: colors.bg, minHeight: '100svh' }}>
+        <div className="space-y-6 px-4 pb-32" style={{ background: colors.bg, minHeight: '100svh' }}>
             {/* Back Button */}
             <div className="pt-4 flex items-center justify-between">
                 <button onClick={() => step > 0 ? goTo(step - 1) : navigate(-1)} style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
@@ -1100,46 +1101,18 @@ export default function AppBookingPage() {
                             {/* Payment Method Section */}
                             <div className="pt-2">
                                 <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPaymentMethod('salon')}
-                                        className={`p-4 rounded-2xl border transition-all text-left relative overflow-hidden ${
-                                            paymentMethod === 'salon' 
-                                            ? 'border-[#C8956C] bg-[#C8956C]/5' 
-                                            : 'border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5'
-                                        }`}
+                                <div className="space-y-3">
+                                    <div
+                                        className="p-5 rounded-2xl border border-[#C8956C] bg-[#C8956C]/5 transition-all text-left relative overflow-hidden"
                                     >
                                         <div className="relative z-10">
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'salon' ? 'text-[#C8956C]' : 'opacity-60'}`} style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.text }}>Pay at Salon</p>
-                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Cash or Card</p>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">Pay at Salon</p>
+                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Cash or Card payment at the counter</p>
                                         </div>
-                                        {paymentMethod === 'salon' && (
-                                            <motion.div layoutId="active-pay" className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={10} color="white" strokeWidth={4} />
-                                            </motion.div>
-                                        )}
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setPaymentMethod('online')}
-                                        className={`p-4 rounded-2xl border transition-all text-left relative overflow-hidden ${
-                                            paymentMethod === 'online' 
-                                            ? 'border-[#C8956C] bg-[#C8956C]/5' 
-                                            : 'border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5'
-                                        }`}
-                                    >
-                                        <div className="relative z-10">
-                                            <p className={`text-[10px] font-black uppercase tracking-widest ${paymentMethod === 'online' ? 'text-[#C8956C]' : 'opacity-60'}`} style={{ color: paymentMethod === 'online' ? '#C8956C' : colors.text }}>Pay Online</p>
-                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Razorpay Secure</p>
+                                        <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                            <Check size={10} color="white" strokeWidth={4} />
                                         </div>
-                                        {paymentMethod === 'online' && (
-                                            <motion.div layoutId="active-pay" className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={10} color="white" strokeWidth={4} />
-                                            </motion.div>
-                                        )}
-                                    </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1164,6 +1137,15 @@ export default function AppBookingPage() {
                                     <span style={{ color: colors.textMuted }}>Total</span>
                                     <span className="text-[#C8956C]">₹{finalPrice.toLocaleString()}</span>
                                 </div>
+                                {loyaltySettings?.active && (
+                                    <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
+                                        <div className="flex items-center gap-2">
+                                            <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
+                                            <span style={{ color: colors.text, fontSize: '10px' }} className="font-bold uppercase tracking-widest">Loyalty Earned</span>
+                                        </div>
+                                        <span className="text-[#C8956C] font-black">{Math.floor(finalPrice / (loyaltySettings.pointsRate || 100))} Points</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

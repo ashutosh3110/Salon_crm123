@@ -1,6 +1,8 @@
 const Order = require('../Models/Order');
 const Customer = require('../Models/Customer');
 const WalletTransaction = require('../Models/WalletTransaction');
+const Salon = require('../Models/Salon');
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -45,6 +47,28 @@ exports.createOrder = async (req, res) => {
             address,
             paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending'
         });
+        
+        // Award Loyalty Points if payment is paid (wallet) or otherwise based on business logic
+        // For simplicity, we award on creation if it's wallet/cod as initial status is 'pending' for cod
+        if (paymentMethod === 'wallet') {
+            try {
+                const salon = await Salon.findById(salonId);
+                if (salon && salon.loyaltySetting && salon.loyaltySetting.active) {
+                    const rate = salon.loyaltySetting.pointsRate || 100;
+                    const points = Math.floor(totalAmount / rate);
+                    if (points > 0) {
+                        await Customer.findByIdAndUpdate(customerId, { $inc: { loyaltyPoints: points } });
+                        await LoyaltyTransaction.create({
+                            customerId,
+                            salonId,
+                            amount: points,
+                            type: 'EARNED',
+                            description: `Points earned on Order #${order._id.toString().slice(-6)}`
+                        });
+                    }
+                }
+            } catch (le) { console.error('Loyalty Error:', le); }
+        }
 
         res.status(201).json({
             success: true,

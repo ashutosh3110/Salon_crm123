@@ -7,7 +7,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useInventory } from '../../contexts/InventoryContext';
@@ -32,12 +32,13 @@ const getAddressString = (addr) => {
     return '';
 };
 
-const ServiceCard = ({ service, onBook, colors, isLight }) => {
+const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
     const fallbackImage = "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1000&auto=format&fit=crop";
     
     return (
         <motion.div
             whileTap={{ scale: 0.97 }}
+            onClick={() => onClick && onClick(service._id || service.id)}
             style={{
                 background: colors.card,
                 borderRadius: '28px',
@@ -274,7 +275,7 @@ export default function AppHomePage() {
         fetchCustomerInitialData,
         feedbacks: reviews = []
     } = useBusiness();
-    const { productCategories } = useInventory();
+    const { products, productCategories } = useInventory();
     const { banners } = useCMS();
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
@@ -283,12 +284,16 @@ export default function AppHomePage() {
     const [loadingPlans, setLoadingPlans] = useState(false);
     const [dynamicReviews, setDynamicReviews] = useState([]);
 
+    const lastFetchedSid = useRef(null);
     useEffect(() => {
         const fetchPlans = async () => {
-            const sid = activeOutlet?.salonId || activeSalonId || localStorage.getItem('active_salon_id');
+            const sid = activeSalonId || activeOutlet?.salonId || localStorage.getItem('active_salon_id');
             if (!sid) {
                 return;
             }
+            if (lastFetchedSid.current === sid) return;
+            lastFetchedSid.current = sid;
+
             setLoadingPlans(true);
             try {
                 const [mRes, lRes, fRes] = await Promise.all([
@@ -297,17 +302,24 @@ export default function AppHomePage() {
                     api.get(`/feedbacks?salonId=${sid}&status=Approved`)
                 ]);
                 
-                if (mRes.data?.success) setMembershipPlans(mRes.data.data);
-                if (lRes.data?.success) setLoyaltyRule(lRes.data.data);
-                if (fRes.data?.success) setDynamicReviews(fRes.data.data);
+                if (mRes.data?.success) {
+                    console.log(`[Home] Salon: ${sid}, Plans: ${mRes.data.data?.length}`);
+                    setMembershipPlans(mRes.data.data);
+                }
+                if (lRes.data?.success) {
+                    setLoyaltyRule(lRes.data.data);
+                }
+                if (fRes.data?.success) {
+                    setDynamicReviews(fRes.data.data);
+                }
             } catch (err) {
-                console.error('Failed to fetch loyalty and review data', err);
+                console.error('[Home] Failed to fetch loyalty/review data', err);
             } finally {
                 setLoadingPlans(false);
             }
         };
         fetchPlans();
-    }, [activeOutlet?.salonId, activeSalonId]);
+    }, [activeSalonId, activeOutlet?.salonId]);
 
     // Pre-select first category when categories load
     useEffect(() => {
@@ -481,6 +493,11 @@ export default function AppHomePage() {
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
     const [isMapView, setIsMapView] = useState(false);
+    const [selectedMapOutlet, setSelectedMapOutlet] = useState(null);
+
+    useEffect(() => {
+        if (activeOutlet && !selectedMapOutlet) setSelectedMapOutlet(activeOutlet);
+    }, [activeOutlet]);
 
     useEffect(() => {
         if (showWelcome) {
@@ -924,8 +941,8 @@ export default function AppHomePage() {
                         >
                             <SalonMapView
                                 outlets={outlets}
-                                selectedOutlet={activeOutlet || outlets[0]}
-                                onSelect={(o) => navigate(`/app/salon-selection`)}
+                                selectedOutlet={selectedMapOutlet || activeOutlet || outlets[0]}
+                                onSelect={(o) => setSelectedMapOutlet(o)}
                                 onViewProfile={(outlet) => {
                                     navigate(`/app/salon/${outlet._id}`);
                                 }}
@@ -1082,7 +1099,7 @@ export default function AppHomePage() {
                                         alignItems: 'center',
                                         gap: '8px'
                                     }}
-                                    onClick={() => setSelectedServiceCategory(catName)}
+                                    onClick={() => navigate(`/app/services?category=${encodeURIComponent(catName)}`)}
                                 >
                                     <div style={{
                                         width: '64px',
@@ -1130,7 +1147,7 @@ export default function AppHomePage() {
                                 <motion.div
                                     key={cat._id}
                                     whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate('/app/shop', { state: { category: cat.name } })}
+                                    onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
                                     style={{
                                         flexShrink: 0,
                                         width: '160px',
@@ -1184,7 +1201,8 @@ export default function AppHomePage() {
                                     <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
                                         <ServiceCard
                                             service={service}
-                                            onBook={(id) => navigate(`/app/book?serviceId=${id}`)}
+                                            onBook={(id) => navigate(`/app/booking?serviceId=${id}`)}
+                                            onClick={(id) => navigate(`/app/service/${id}`)}
                                             colors={colors}
                                             isLight={isLight}
                                         />
@@ -1194,6 +1212,60 @@ export default function AppHomePage() {
                         </motion.div>
                     </AnimatePresence>
                 </motion.div>
+
+                {/* ── 5.5 PRODUCTS (Luxe Essentials) ── */}
+                {products.length > 0 && (
+                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <ShoppingBag size={20} color={colors.accent} />
+                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Luxe Essentials</span>
+                            </div>
+                            <button 
+                                onClick={() => navigate('/app/shop')}
+                                style={{ fontSize: '11px', fontWeight: 700, color: colors.accent, background: 'none', border: 'none' }}
+                            >
+                                Shop All
+                            </button>
+                        </div>
+                        <div 
+                            className="app-scroll no-scrollbar"
+                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}
+                        >
+                            {products.filter(p => p.isShopProduct).slice(0, 6).map(product => (
+                                <motion.div
+                                    key={product._id || product.id}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => navigate(`/app/product/${product._id || product.id}`)}
+                                    style={{
+                                        flexShrink: 0, width: '160px', background: colors.card,
+                                        borderRadius: '24px', border: `1px solid ${colors.border}`,
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    <div style={{ height: '120px', position: 'relative' }}>
+                                        <img 
+                                            src={product.appImage || product.image || "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=400"} 
+                                            alt={product.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                        <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.4)', padding: '2px 6px', borderRadius: '6px', color: '#FFF', fontSize: '8px', fontWeight: 900 }}>
+                                            {product.brand}
+                                        </div>
+                                    </div>
+                                    <div style={{ padding: '12px' }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                            {product.name}
+                                        </p>
+                                        <p style={{ fontSize: '13px', fontWeight: 900, color: colors.accent, margin: 0 }}>
+                                            ₹{product.sellingPrice || product.price}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* ── 6. TRUSTED REVIEWS ── */}
                 {!isMapView && (

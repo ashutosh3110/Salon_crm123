@@ -240,7 +240,7 @@ export default function AppDiscoveryPage() {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    navigate(`/app/book?outletId=${salon._id}&serviceId=${serviceIdParam}`);
+                                                    navigate(`/app/booking?outletId=${salon._id}&serviceId=${serviceIdParam}`);
                                                 }}
                                                 className="bg-[#C8956C] text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
                                             >

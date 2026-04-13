@@ -4,14 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import {
     ArrowLeft, Plus, History, TrendingUp,
     TrendingDown, CreditCard, Wallet,
-    CheckCircle2, ChevronRight, X
+    CheckCircle2, ChevronRight, X, Zap
 } from 'lucide-react';
 import { useWallet } from '../../contexts/WalletContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function AppWalletPage() {
     const navigate = useNavigate();
     const { balance, transactions, addMoney, spentThisMonth } = useWallet();
+    const { loyaltySettings } = useBusiness();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -116,77 +118,6 @@ export default function AppWalletPage() {
                 </div>
             </motion.div>
 
-            {/* Quick Actions / Stats */}
-            <div className="grid grid-cols-2 gap-3 mb-8">
-                <div style={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '20px', padding: '16px' }}>
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp size={14} color="#10B981" />
-                        <span style={{ color: colors.textMuted, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>Spent this month</span>
-                    </div>
-                    <p style={{ color: colors.text, fontSize: '18px', fontWeight: 900 }}>₹{spentThisMonth.toLocaleString()}</p>
-                </div>
-                <div style={{ background: colors.card, border: `1px solid ${colors.border}`, borderRadius: '20px', padding: '16px' }}>
-                    <div className="flex items-center gap-2 mb-2">
-                        <CreditCard size={14} color="#C8956C" />
-                        <span style={{ color: colors.textMuted, fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' }}>Refundable</span>
-                    </div>
-                    <p style={{ color: colors.text, fontSize: '18px', fontWeight: 900 }}>₹1,500</p>
-                </div>
-            </div>
-
-            {/* Transaction History */}
-            <section>
-                <div className="flex items-center justify-between mb-4 px-1">
-                    <div className="flex items-center gap-2">
-                        <History size={18} style={{ color: colors.accent }} />
-                        <h3 style={{ color: colors.text, fontSize: '16px', fontWeight: 900 }}>Activity History</h3>
-                    </div>
-                    <button style={{ color: colors.accent, fontSize: '12px', fontWeight: 800 }}>View All</button>
-                </div>
-
-                <div className="space-y-3">
-                    {transactions.length > 0 ? transactions.map((tx, idx) => (
-                        <motion.div
-                            key={tx.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05 }}
-                            style={{
-                                background: colors.card, border: `1px solid ${colors.border}`,
-                                borderRadius: '16px', padding: '14px',
-                                display: 'flex', alignItems: 'center', gap: '12px',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                            }}
-                        >
-                            <div style={{
-                                width: '40px', height: '40px', borderRadius: '12px',
-                                background: tx.type === 'CREDIT' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: tx.type === 'CREDIT' ? '#10B981' : '#EF4444'
-                            }}>
-                                {tx.type === 'CREDIT' ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
-                            </div>
-                            <div className="flex-1">
-                                <h4 style={{ color: colors.text, fontSize: '14px', fontWeight: 700, margin: 0 }}>{tx.description}</h4>
-                                <p style={{ color: colors.textMuted, fontSize: '10px', fontWeight: 600 }}>{new Date(tx.date).toLocaleDateString()}</p>
-                            </div>
-                            <div className="text-right">
-                                <p style={{
-                                    fontSize: '15px', fontWeight: 900,
-                                    color: tx.type === 'CREDIT' ? '#10B981' : colors.text
-                                }}>
-                                    {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount}
-                                </p>
-                                <p style={{ fontSize: '9px', fontWeight: 800, color: 'rgba(16, 185, 129, 0.6)' }}>Completed</p>
-                            </div>
-                        </motion.div>
-                    )) : (
-                        <div style={{ padding: '40px', textAlign: 'center' }}>
-                            <p style={{ color: colors.textMuted, fontSize: '13px', fontWeight: 700 }}>No transactions yet.</p>
-                        </div>
-                    )}
-                </div>
-            </section>
 
             {/* Add Money Modal */}
             <AnimatePresence>
@@ -207,7 +138,7 @@ export default function AppWalletPage() {
                             style={{
                                 background: colors.card, width: '100%', maxWidth: '430px',
                                 borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-                                padding: '32px 24px 48px', position: 'relative'
+                                padding: '32px 24px 96px', position: 'relative'
                             }}
                         >
                             {!success ? (
@@ -234,14 +165,17 @@ export default function AppWalletPage() {
                                                 }}
                                             />
                                         </div>
-                                        {addAmount >= 500 && (
-                                            <motion.p 
+                                        {loyaltySettings?.active && addAmount > 0 && (
+                                            <motion.div 
                                                 initial={{ opacity: 0, y: -10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                style={{ color: '#10B981', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', marginTop: '8px', letterSpacing: '0.05em' }}
+                                                className="flex items-center gap-2 mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10"
                                             >
-                                                + ₹{addAmount >= 2000 ? 300 : addAmount >= 1000 ? 100 : 50} Loyalty Bonus will be added
-                                            </motion.p>
+                                                <Zap size={14} className="text-emerald-500" fill="currentColor" />
+                                                <p style={{ color: '#10B981', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+                                                    + {Math.floor(addAmount / (loyaltySettings.pointsRate || 100))} Loyalty Points will be added
+                                                </p>
+                                            </motion.div>
                                         )}
                                     </div>
 

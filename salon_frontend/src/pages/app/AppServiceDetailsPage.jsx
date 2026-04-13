@@ -56,7 +56,6 @@ export default function AppServiceDetailsPage() {
     const navigate = useNavigate();
     const { colors, isLight } = useCustomerTheme();
     const { services, categories: businessCategories, fetchServices } = useBusiness();
-    const { isProductLiked, toggleProductLike } = useFavorites(); // Note: Favorites context handles both services and products usually
     
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -87,7 +86,7 @@ export default function AppServiceDetailsPage() {
         fetchReviews();
     }, [id]);
 
-    const isLiked = isProductLiked(id);
+
 
     if (!service) {
         return (
@@ -111,15 +110,7 @@ export default function AppServiceDetailsPage() {
                 <ChevronLeft size={22} />
             </button>
 
-            <div className="fixed top-6 right-6 flex gap-3 z-[70]">
-                <button
-                    type="button"
-                    onClick={() => toggleProductLike(id)}
-                    className={`w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 ${isLiked ? 'text-rose-500' : ''}`}
-                >
-                    <Heart size={20} className={isLiked ? 'fill-current' : ''} />
-                </button>
-            </div>
+
 
             <div className="flex-1 overflow-y-auto custom-scrollbar h-[100dvh]" style={{ overflowX: 'hidden' }}>
                 {/* Hero Image */}

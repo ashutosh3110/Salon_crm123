@@ -7,7 +7,7 @@ import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
     TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera,
-    Crown, Gem, History
+    Crown, Gem, History, ShoppingBag, Zap
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
@@ -112,7 +112,7 @@ export default function AppProfilePage() {
             setLoadingMembership(true);
             try {
                 const res = await api.get('/loyalty/membership/active');
-                if (!cancelled) setActiveMembership(res.data || null);
+                if (!cancelled) setActiveMembership(res.data?.data || null);
             } catch (e) {
                 console.error('Failed to load membership', e);
             } finally {
@@ -198,6 +198,7 @@ export default function AppProfilePage() {
 
     const quickLinks = [
         { icon: Calendar, label: 'My Bookings', path: '/app/bookings', color: isLight ? 'text-blue-600' : 'text-blue-400' },
+        { icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400' },
         { icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
         { icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
         { icon: History, label: 'Transaction History', path: '/app/wallet', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
@@ -209,43 +210,14 @@ export default function AppProfilePage() {
 
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="px-4 pb-32">
-            {/* Header */}
             <div className="pt-6 pb-4">
-                <h1 className="text-2xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
-                <p className="text-xs" style={{ color: colors.textMuted }}>Manage your account and rewards</p>
+                <h1 className="text-3xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
+                <p className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: colors.textMuted }}>Account & Privileges</p>
             </div>
 
-            {/* Active Membership Hero */}
-            {activeMembership && (
-                <motion.div
-                    variants={fadeUp}
-                    onClick={() => navigate('/app/membership')}
-                    style={{
-                        background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #C8956C 0%, #A67C52 100%)',
-                        boxShadow: '0 12px 24px rgba(200,149,108,0.25)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}
-                    className="rounded-2xl p-5 text-white flex items-center justify-between cursor-pointer"
-                >
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-1">
-                            <Crown size={14} className="text-white" />
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Active Member</span>
-                        </div>
-                        <h3 className="text-lg font-black">{activeMembership.planId?.name || 'Pro Member'}</h3>
-                        <p className="text-[10px] opacity-70 mt-1 font-bold">Valid until {formatDate(activeMembership.expiryDate)}</p>
-                    </div>
-                    <div className="relative z-10 bg-white/20 p-2 rounded-xl backdrop-blur-md">
-                        <ChevronRight className="w-5 h-5 text-white" />
-                    </div>
-                    {/* Decorative Background Gem */}
-                    <Star size={120} className="absolute -right-8 -bottom-8 opacity-10 rotate-12 text-white" />
-                </motion.div>
-            )}
 
             {/* Profile Card */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '8px' }} className="rounded-2xl p-5 shadow-sm">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '4px' }} className="rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="relative group">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20 overflow-hidden">
@@ -436,55 +408,99 @@ export default function AppProfilePage() {
                 )}
             </motion.div>
 
-            <div className="h-4" />
-
-            {/* Loyalty Section */}
-            <motion.div variants={fadeUp} className="space-y-4">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Loyalty Rewards</h3>
-                </div>
-
-                <LoyaltyCard points={Number(balance || 0)} redeemRate={rules.redeemRate} />
-
-                <div className="h-2" />
-
-                <div className="grid grid-cols-2 gap-2.5">
-                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Earn Rate</p>
-                        <p className="text-xl font-black text-emerald-500">{rules.earnRate}x</p>
-                        <p className="text-[9px] italic mt-1" style={{ color: colors.textMuted }}>point per ₹1</p>
-                    </div>
-                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Redeem Value</p>
-                        <p className="text-xl font-black text-[#C8956C]">₹{rules.redeemRate}</p>
-                        <p className="text-[9px] italic mt-1" style={{ color: colors.textMuted }}>per point</p>
-                    </div>
-                </div>
-
-                {/* How It Works */}
-                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl overflow-hidden shadow-sm">
-                    <button
-                        onClick={() => setShowHowItWorks(!showHowItWorks)}
-                        className="w-full flex items-center justify-between p-4"
+            {/* Membership Section - Moved here after details */}
+            <motion.div variants={fadeUp} className="mt-4">
+                {activeMembership ? (
+                    <div
+                        onClick={() => navigate('/app/membership')}
+                        style={{
+                            background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)',
+                            borderRadius: '24px',
+                            padding: '20px',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            color: activeMembership.planId?.id === 'gold' ? '#000' : '#FFF',
+                            boxShadow: '0 10px 20px rgba(0,0,0,0.1)',
+                            cursor: 'pointer'
+                        }}
                     >
-                        <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider" style={{ color: colors.text }}>
-                            <Info className="w-4 h-4 text-[#C8956C]" /> How It Works
-                        </span>
-                        {showHowItWorks ? <ChevronUp className="w-4 h-4 opacity-40" /> : <ChevronDown className="w-4 h-4 opacity-40" />}
-                    </button>
-
-                    {showHowItWorks && (
-                        <div className="px-4 pb-5 space-y-3.5 border-t border-black/5 dark:border-white/5 pt-4">
-                            <div className="flex gap-3 items-start">
-                                <span className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0 text-[10px] font-black text-emerald-500 border border-emerald-500/20">1</span>
-                                <p className="text-[11px] leading-relaxed" style={{ color: colors.textMuted }}>Earn <span className="font-bold" style={{ color: colors.text }}>{rules.earnRate} point</span> for every ₹1 spent</p>
+                        {/* Digital Card Chip/Logo */}
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="w-10 h-8 bg-white/20 rounded-lg backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                                <Crown size={20} className={activeMembership.planId?.id === 'gold' ? 'text-black' : 'text-white'} />
                             </div>
-                            <div className="flex gap-3 items-start">
-                                <span className="w-6 h-6 rounded-full bg-[#C8956C]/10 flex items-center justify-center shrink-0 text-[10px] font-black text-[#C8956C] border border-[#C8956C]/20">2</span>
-                                <p className="text-[11px] leading-relaxed" style={{ color: colors.textMuted }}>Redeem at <span className="font-bold" style={{ color: colors.text }}>₹{rules.redeemRate}/point</span>. Min <span className="font-bold" style={{ color: colors.text }}>{rules.minRedeemPoints} pts</span></p>
+                            <div className="text-right">
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-60">Membership Status</p>
+                                <p className="text-xs font-black uppercase tracking-widest leading-none">ACTIVE</p>
                             </div>
                         </div>
-                    )}
+
+                        <div className="relative z-10">
+                            <h3 className="text-xl font-black italic tracking-tighter mb-1 uppercase">{activeMembership.planId?.name || 'Tier Plan'}</h3>
+                            <div className="flex items-center gap-2">
+                                <Calendar size={12} className="opacity-60" />
+                                <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Valid Thru: {formatDate(activeMembership.expiryDate)}</p>
+                            </div>
+                        </div>
+
+                        {/* Card Number Lookalike/Member ID */}
+                        <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-end">
+                            <div className="space-y-1">
+                                <p className="text-[8px] font-black uppercase tracking-[0.3em] opacity-40">Member ID</p>
+                                <p className="text-[10px] font-mono font-bold tracking-widest">WAP-{(customer?._id || '000').slice(-6).toUpperCase()}</p>
+                            </div>
+                            <button className={`p-2 rounded-lg ${activeMembership.planId?.id === 'gold' ? 'bg-black/5' : 'bg-white/10'}`}>
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+
+                        {/* Geometric Pattern */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16 blur-3xl pointer-events-none" />
+                        <Gem size={100} className="absolute -right-4 -bottom-4 opacity-5 rotate-12 pointer-events-none" />
+                    </div>
+                ) : (
+                    <div
+                        onClick={() => navigate('/app/membership')}
+                        style={{ 
+                            background: colors.card,
+                            border: `1.5px dashed ${colors.border}`,
+                            cursor: 'pointer'
+                        }}
+                        className="rounded-2xl p-6 flex items-center justify-between group hover:border-[#C8956C] transition-colors"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-[#C8956C]/10 flex items-center justify-center group-hover:bg-[#C8956C] transition-colors">
+                                <Crown size={24} className="text-[#C8956C] group-hover:text-white transition-colors" />
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Unlock Benefits</h4>
+                                <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Join our Membership Hub</p>
+                            </div>
+                        </div>
+                        <ChevronRight size={20} className="opacity-20 group-hover:opacity-100 group-hover:text-[#C8956C] transition-all" />
+                    </div>
+                )}
+            </motion.div>
+
+            {/* Loyalty Section - Moved slightly up */}
+            <motion.div variants={fadeUp} className="mt-6 space-y-4">
+                <div className="flex items-center justify-between px-1">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Rewards Balance</h3>
+                </div>
+
+                <LoyaltyCard points={Number(customer?.loyaltyPoints || 0)} redeemRate={rules.redeemRate} />
+
+                <div className="grid grid-cols-2 gap-2.5 mt-4">
+                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Point Value</p>
+                        <p className="text-xl font-black text-[#C8956C]">₹{rules.redeemRate}</p>
+                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>per point</p>
+                    </div>
+                    <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Min. Redeem</p>
+                        <p className="text-xl font-black text-emerald-500">{rules.minRedeemPoints}</p>
+                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>PTS required</p>
+                    </div>
                 </div>
             </motion.div>
 

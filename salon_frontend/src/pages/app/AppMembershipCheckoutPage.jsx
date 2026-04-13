@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const AppMembershipCheckoutPage = () => {
     const navigate = useNavigate();
@@ -90,7 +90,7 @@ const AppMembershipCheckoutPage = () => {
             const orderData = orderRes.data;
 
             const options = {
-                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SatrrxFwKXJX8e',
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: 'Wapixo Membership',
@@ -153,7 +153,7 @@ const AppMembershipCheckoutPage = () => {
             background: colors.bg,
             color: colors.text,
             fontFamily: "'Inter', sans-serif",
-            paddingBottom: '40px'
+            paddingBottom: '120px'
         }}>
             {/* ── HEADER ── */}
             <div style={{

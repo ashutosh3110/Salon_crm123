@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
@@ -37,6 +37,7 @@ export function CMSProvider({ children }) {
     const [lookbook, setLookbook] = useState([]);
     const [experts, setExperts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const lastFetchedTenantId = useRef(null);
 
     const fetchAppCMS = useCallback(async () => {
         setLoading(true);
@@ -74,6 +75,9 @@ export function CMSProvider({ children }) {
                     setLoading(false);
                     return;
                 }
+                if (lastFetchedTenantId.current === tenantId) return;
+                lastFetchedTenantId.current = tenantId;
+                
                 res = await api.get(`/cms?tenantId=${tenantId}`);
             } else {
                 // If not in customer app, only fetch if salon ID and proper role are present
