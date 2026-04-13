@@ -18,12 +18,12 @@ const bookingSchema = new mongoose.Schema({
     },
     clientId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Customers are stored in User model with 'customer' role
+        ref: 'Customer', 
         required: true
     },
     staffId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Staff'
     },
     appointmentDate: {
         type: Date,
@@ -36,7 +36,7 @@ const bookingSchema = new mongoose.Schema({
     },
     source: {
         type: String,
-        enum: ['app', 'admin', 'pos', 'web'],
+        enum: ['app', 'admin', 'pos', 'web', 'APP', 'ADMIN', 'POS', 'WEB'],
         default: 'admin'
     },
     totalPrice: {

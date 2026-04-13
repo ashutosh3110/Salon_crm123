@@ -10,17 +10,17 @@ const {
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
-router.use(authorize('admin', 'manager'));
+// No global authorize to allow customer access to some routes
 
 router
     .route('/')
-    .get(getUsers)
-    .post(createUser);
+    .get(authorize('admin', 'manager', 'customer'), getUsers)
+    .post(authorize('admin', 'manager'), createUser);
 
 router
     .route('/:id')
-    .get(getUser)
-    .patch(updateUser)
-    .delete(deleteUser);
+    .get(authorize('admin', 'manager'), getUser)
+    .patch(authorize('admin', 'manager'), updateUser)
+    .delete(authorize('admin', 'manager'), deleteUser);
 
 module.exports = router;

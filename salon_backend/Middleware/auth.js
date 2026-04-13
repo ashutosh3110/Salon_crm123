@@ -81,6 +81,9 @@ exports.protect = async (req, res, next) => {
             }
         }
 
+        // Standardize ID property
+        userObj.id = userObj._id;
+
         req.user = userObj;
         next();
     } catch (err) {

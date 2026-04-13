@@ -104,7 +104,7 @@ export default function AppMyBookingsPage() {
                             </p>
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/app/book')}
+                                onClick={() => navigate('/app/booking')}
                                 className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-[#C8956C]/20"
                             >
                                 Book Now
@@ -119,6 +119,7 @@ export default function AppMyBookingsPage() {
                                     onRate: () => setSelectedReviewBooking(booking)
                                 }}
                                 index={i}
+                                onTap={(b) => navigate(`/app/bookings/${b._id}`)}
                             />
                         ))
                     )}

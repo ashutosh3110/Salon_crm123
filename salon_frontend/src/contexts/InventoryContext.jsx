@@ -91,7 +91,7 @@ const normalizeShopCat = (c) => {
 
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
-    const { outletsSnapshot = [], salon } = useBusiness();
+    const { outletsSnapshot = [], salon, activeSalonId } = useBusiness();
     const { user: dashboardUser, isPlanActive } = useAuth();
     const { isCustomerAuthenticated } = useCustomerAuth();
     const socket = useSocket();
@@ -108,18 +108,30 @@ export const InventoryProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const initializationRef = useRef(false);
 
+
+    
+    // Standardize salonId resolution for customer side
+    const getEffectiveSalonId = useCallback(() => {
+        return activeSalonId || salon?._id || localStorage.getItem('active_salon_id');
+    }, [activeSalonId, salon?._id]);
+
     const fetchProducts = useCallback(async () => {
         try {
-            const salonId = dashboardUser?.salonId || salon?._id;
+            const salonId = dashboardUser?.salonId || getEffectiveSalonId();
+            if (!salonId) return;
             const res = await api.get('/products', { params: { salonId } });
             const rows = res?.data?.data || [];
             setProducts(rows.map(normalizeProduct));
-        } catch { setProducts([]); }
-    }, [dashboardUser, salon]);
+        } catch (err) { 
+            console.error('Fetch products failed:', err);
+            setProducts([]); 
+        }
+    }, [dashboardUser, getEffectiveSalonId]);
 
     const fetchShopCategories = useCallback(async () => {
         try {
-            const salonId = dashboardUser?.salonId || salon?._id;
+            const salonId = dashboardUser?.salonId || getEffectiveSalonId();
+            if (!salonId) return;
             // Fetch real product categories and map them to the shop categories format
             const res = await api.get('/product-categories', { params: { salonId } });
             const rows = res?.data?.data || [];
@@ -128,17 +140,24 @@ export const InventoryProvider = ({ children }) => {
             } else {
                 setShopCategories([]);
             }
-        } catch { setShopCategories([]); }
-    }, [dashboardUser, salon]);
+        } catch (err) { 
+            console.error('Fetch shop categories failed:', err);
+            setShopCategories([]); 
+        }
+    }, [dashboardUser, getEffectiveSalonId]);
 
     const fetchProductCategories = useCallback(async () => {
         try {
-            const salonId = dashboardUser?.salonId || salon?._id;
+            const salonId = dashboardUser?.salonId || getEffectiveSalonId();
+            if (!salonId) return;
             const res = await api.get('/product-categories', { params: { salonId } });
             const rows = res?.data?.data || [];
             setProductCategories(rows);
-        } catch { setProductCategories([]); }
-    }, [dashboardUser, salon]);
+        } catch (err) { 
+            console.error('Fetch product categories failed:', err);
+            setProductCategories([]); 
+        }
+    }, [dashboardUser, getEffectiveSalonId]);
 
     const fetchStockInHistory = useCallback(async () => {
         try {
@@ -158,7 +177,7 @@ export const InventoryProvider = ({ children }) => {
 
     useEffect(() => {
         const isCustomerPath = window.location.pathname.startsWith('/app');
-        const canFetchPublic = isCustomerPath && (salon?._id || localStorage.getItem('active_salon_id'));
+        const canFetchPublic = isCustomerPath && (salon?._id || activeSalonId || localStorage.getItem('active_salon_id'));
         const canFetchPrivate = (dashboardUser && isPlanActive);
 
         if (canFetchPrivate || canFetchPublic || isCustomerAuthenticated) {
@@ -171,7 +190,7 @@ export const InventoryProvider = ({ children }) => {
                 fetchSupplierInvoices();
             }
         }
-    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockInHistory, fetchSupplierInvoices]);
+    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockInHistory, fetchSupplierInvoices]);
 
     useEffect(() => {
         if (!socket || !salon?._id) return;

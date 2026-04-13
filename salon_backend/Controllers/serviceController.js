@@ -1,4 +1,5 @@
 const Service = require('../Models/Service');
+const Category = require('../Models/Category');
 
 // @desc    Get all services for salon
 // @route   GET /api/services
@@ -116,6 +117,42 @@ exports.deleteService = async (req, res) => {
             data: {}
         });
     } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get services grouped by category
+// @route   GET /api/services/grouped
+// @access  Public
+exports.getServicesGrouped = async (req, res) => {
+    try {
+        const salonId = req.query.salonId || req.query.tenantId;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon ID is required' });
+        }
+
+        // Fetch all categories for this salon
+        const categories = await Category.find({ salonId, status: 'active' }).lean();
+        
+        // Fetch all active services for this salon
+        const services = await Service.find({ salonId, status: 'active' }).lean();
+
+        // Group services by category
+        const grouped = categories.map(cat => {
+            return {
+                ...cat,
+                services: services.filter(s => 
+                    s.category === cat.name || String(s.category) === String(cat._id)
+                )
+            };
+        }).filter(group => group.services.length > 0);
+
+        res.json({
+            success: true,
+            data: grouped
+        });
+    } catch (err) {
+        console.error('Get Grouped Services Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

@@ -41,22 +41,13 @@ export function WalletProvider({ children }) {
         if (!customer?._id) return;
         setLoading(true);
         try {
-            // Get balance from customer profile or dedicated endpoint
-            const profileRes = await api.get('/auth/profile');
-            if (profileRes.data.success) {
-                setBalance(profileRes.data.data.loyaltyPoints || 0);
-            }
-
-            // Get transaction history
-            const historyRes = await api.get('/loyalty/history');
-            if (historyRes.data.success) {
-                setTransactions(historyRes.data.data.map(tx => ({
+            const res = await api.get('/wallet');
+            if (res.data.success) {
+                setBalance(res.data.balance || 0);
+                setTransactions((res.data.transactions || []).map(tx => ({
+                    ...tx,
                     id: tx._id,
-                    type: tx.type,
-                    amount: tx.amount,
-                    description: tx.description,
-                    date: tx.createdAt,
-                    status: 'COMPLETED'
+                    date: tx.createdAt
                 })));
             }
         } catch (err) {
@@ -73,12 +64,12 @@ export function WalletProvider({ children }) {
     }, [customer?._id, refreshWallet]);
 
     const createWalletOrder = async (amount) => {
-        const res = await api.post('/payments/create-wallet-order', { amount });
+        const res = await api.post('/wallet/topup/order', { amount });
         return res.data;
     };
 
     const verifyWalletPayment = async (paymentData) => {
-        const res = await api.post('/payments/verify-wallet-payment', paymentData);
+        const res = await api.post('/wallet/topup/verify', paymentData);
         if (res.data.success) {
             await refreshWallet();
         }
@@ -100,20 +91,25 @@ export function WalletProvider({ children }) {
                 if (!orderData?.success) return reject(new Error('Failed to create order'));
 
                 const options = {
-                    key: orderData.data.key,
-                    amount: orderData.data.amount,
-                    currency: orderData.data.currency,
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
+                    amount: orderData.order.amount,
+                    currency: orderData.order.currency,
                     name: 'Salon Wallet Top-up',
                     description: `Recharge ₹${amount}`,
-                    order_id: orderData.data.orderId,
+                    order_id: orderData.order.id,
                     handler: async (response) => {
                         try {
                             const verifyRes = await verifyWalletPayment({
-                                ...response,
+                                razorpayOrderId: response.razorpay_order_id,
+                                razorpayPaymentId: response.razorpay_payment_id,
+                                razorpaySignature: response.razorpay_signature,
                                 amount: amount
                             });
-                            if (verifyRes.success) resolve(verifyRes);
-                            else reject(new Error('Verification failed'));
+                            if (verifyRes.success) {
+                                resolve(verifyRes);
+                            } else {
+                                reject(new Error('Verification failed'));
+                            }
                         } catch (err) {
                             reject(err);
                         }

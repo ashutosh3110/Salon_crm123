@@ -6,7 +6,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
 export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targetType = 'service', targetId = null, targetName = null }) {
-    const { salon } = useBusiness();
+    const { salon, activeSalonId } = useBusiness();
     const { customer } = useCustomerAuth();
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
@@ -20,8 +20,13 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
 
         setIsSubmitting(true);
         try {
+            const sid = salon?._id || activeSalonId || localStorage.getItem('active_salon_id');
+            if (!sid) {
+                throw new Error('Salon context missing');
+            }
+
             await api.post('/feedbacks', {
-                salonId: salon?._id,
+                salonId: sid,
                 customerName: customer?.name || 'Customer',
                 rating,
                 comment,

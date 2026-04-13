@@ -1,3 +1,4 @@
+// Backend Application Core
 const express = require('express');
 const cors = require('cors');
 
@@ -34,11 +35,13 @@ const feedbacks = require('./Routers/feedbackRoutes');
 const loyalty = require('./Routers/loyaltyRoutes');
 const promotions = require('./Routers/promotionRoutes');
 const cart = require('./Routers/cartRoutes');
+const wallet = require('./Routers/walletRoutes');
+const orders = require('./Routers/orderRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
-app.use('/auth', auth);
 app.use('/auth', customerAuth);
+app.use('/auth', auth);
 app.use('/salons', salons);
 app.use('/outlets', outlets);
 app.use('/roles', roles);
@@ -59,6 +62,8 @@ app.use('/feedbacks', feedbacks);
 app.use('/loyalty', loyalty);
 app.use('/promotions', promotions);
 app.use('/cart', cart);
+app.use('/wallet', wallet);
+app.use('/orders', orders);
 
 
 // Initialize Cron Jobs

@@ -5,7 +5,12 @@ const Staff = require('../Models/Staff');
 // @access  Private/Admin
 exports.getUsers = async (req, res) => {
     try {
-        const salonId = req.user.salonId;
+        const salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
+        
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon ID is required' });
+        }
+
         const staff = await Staff.find({ salonId }).sort({ createdAt: -1 });
 
         res.json({

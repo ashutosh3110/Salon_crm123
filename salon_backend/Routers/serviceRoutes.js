@@ -5,9 +5,12 @@ const {
     getService,
     createService,
     updateService,
-    deleteService
+    deleteService,
+    getServicesGrouped
 } = require('../Controllers/serviceController');
 const { protect, authorize } = require('../Middleware/auth');
+
+router.get('/grouped', getServicesGrouped);
 
 router
     .route('/')

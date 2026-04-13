@@ -6,9 +6,10 @@ const Salon = require('../Models/Salon');
 // @access  Public
 exports.getFeedbacks = async (req, res) => {
     try {
-        const { targetId, targetType, status } = req.query;
+        const { targetId, targetType, status, salonId } = req.query;
         let query = { status: status || 'Approved' };
         
+        if (salonId) query.salonId = salonId;
         if (targetId) query.targetId = targetId;
         if (targetType) query.targetType = targetType;
         

@@ -17,7 +17,8 @@ import {
     Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
+import toast from 'react-hot-toast';
 
 export default function MembershipPlansTab() {
     const [plans, setPlans] = useState([]);
@@ -29,8 +30,8 @@ export default function MembershipPlansTab() {
     const loadPlans = async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/loyalty/membership-plans');
-            const list = res?.data?.data || res?.data || [];
+            const res = await api.get('/loyalty/membership-plans');
+            const list = res.data?.data || [];
             if (Array.isArray(list)) {
                 setPlans(list.map((p) => ({
                     id: p._id || p.id,
@@ -38,7 +39,10 @@ export default function MembershipPlansTab() {
                     price: Number(p.price || 0),
                     duration: Number(p.duration || 30),
                     benefits: Array.isArray(p.benefits) ? p.benefits : [],
-                    includedServices: Array.isArray(p.includedServices) ? p.includedServices : [],
+                    serviceDiscountValue: p.serviceDiscountValue || 0,
+                    serviceDiscountType: p.serviceDiscountType || 'percentage',
+                    productDiscountValue: p.productDiscountValue || 0,
+                    productDiscountType: p.productDiscountType || 'percentage',
                     color: p.color || '#A0A0A0',
                     gradient: p.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
                     isActive: p.isActive !== false,
@@ -46,15 +50,18 @@ export default function MembershipPlansTab() {
                     icon: p.icon || 'star',
                 })));
             } else { setPlans([]); }
-        } catch { setPlans([]); } finally { setLoading(false); }
+        } catch (err) { 
+            console.error('Failed to load plans', err);
+            setPlans([]); 
+        } finally { setLoading(false); }
     };
 
     useEffect(() => {
         loadPlans();
         const loadServices = async () => {
             try {
-                const res = await mockApi.get('/services');
-                const rows = res?.data?.results || res?.data?.data || [];
+                const res = await api.get('/services');
+                const rows = res.data?.data || [];
                 setServiceOptions(rows.map(s => s.name).filter(Boolean));
             } catch { setServiceOptions([]); }
         };
@@ -63,14 +70,20 @@ export default function MembershipPlansTab() {
 
     const handleDelete = (id) => {
         if (confirm('Verify protocol termination? This plan will be archived.')) {
-            mockApi.delete(`/loyalty/membership-plans/${id}`).then(() => loadPlans());
+            api.delete(`/loyalty/membership-plans/${id}`).then(() => {
+                toast.success('Plan deleted');
+                loadPlans();
+            }).catch(e => toast.error('Failed to delete'));
         }
     };
 
     const handleToggleActive = (id) => {
         const item = plans.find(p => p.id === id);
         if (!item) return;
-        mockApi.patch(`/loyalty/membership-plans/${id}`, { isActive: !item.isActive }).then(() => loadPlans());
+        api.patch(`/loyalty/membership-plans/${id}`, { isActive: !item.isActive }).then(() => {
+            toast.success(`Plan ${item.isActive ? 'Paused' : 'Activated'}`);
+            loadPlans();
+        }).catch(e => toast.error('Failed to update status'));
     };
 
     return (
@@ -114,13 +127,20 @@ export default function MembershipPlansTab() {
                         serviceOptions={serviceOptions}
                         onClose={() => setShowModal(false)}
                         onSave={async (data) => {
-                            if (editingPlan) {
-                                await mockApi.patch(`/loyalty/membership-plans/${editingPlan.id}`, data);
-                            } else {
-                                await mockApi.post('/loyalty/membership-plans', { ...data, isActive: true });
+                            try {
+                                if (editingPlan) {
+                                    await api.patch(`/loyalty/membership-plans/${editingPlan.id}`, data);
+                                    toast.success('Plan updated');
+                                } else {
+                                    await api.post('/loyalty/membership-plans', { ...data, isActive: true });
+                                    toast.success('Plan created');
+                                }
+                                await loadPlans();
+                                setShowModal(false);
+                            } catch (err) {
+                                console.error('Save failed', err);
+                                toast.error(err.response?.data?.message || 'Failed to save plan');
                             }
-                            await loadPlans();
-                            setShowModal(false);
                         }}
                     />
                 )}
@@ -156,16 +176,20 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                             {benefit}
                         </div>
                     ))}
-                    {plan.includedServices.length > 0 && (
-                        <div className="pt-2 border-t border-border/30">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1.5">Provisioned Services</p>
-                            <div className="flex flex-wrap gap-1.5">
-                                {plan.includedServices.slice(0, 3).map((s, i) => (
-                                    <span key={i} className="px-2 py-0.5 text-[8px] font-black border border-border/40 bg-surface-alt text-foreground uppercase tracking-wider">{s}</span>
-                                ))}
-                            </div>
+                    <div className="pt-4 mt-2 border-t border-border/30 space-y-3">
+                        <div className="flex justify-between items-center">
+                            <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none">All Services</p>
+                            <span className="px-2 py-1 text-[9px] font-black bg-primary/10 text-primary uppercase tracking-tighter italic">
+                                {plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
+                            </span>
                         </div>
-                    )}
+                        <div className="flex justify-between items-center">
+                            <p className="text-[9px] font-black text-primary uppercase tracking-widest leading-none">All Products</p>
+                            <span className="px-2 py-1 text-[9px] font-black bg-primary/10 text-primary uppercase tracking-tighter italic">
+                                {plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '%' : '₹'} OFF
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <button onClick={onToggle} className={`w-full py-3 border font-black text-[10px] uppercase tracking-[0.2em] transition-all ${plan.isActive ? 'bg-transparent text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/5' : 'bg-rose-500/10 text-rose-500 border-rose-500/30 hover:bg-rose-500/20'}`}>
                     {plan.isActive ? 'Status: Active' : 'Status: Paused'}
@@ -176,7 +200,19 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
 }
 
 function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
-    const [formData, setFormData] = useState(plan || { name: '', price: '', duration: 30, benefits: [''], includedServices: [], icon: 'star', gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', isPopular: false });
+    const [formData, setFormData] = useState(plan || { 
+        name: '', 
+        price: '', 
+        duration: 30, 
+        benefits: [''], 
+        serviceDiscountValue: 0,
+        serviceDiscountType: 'percentage',
+        productDiscountValue: 0,
+        productDiscountType: 'percentage',
+        icon: 'star', 
+        gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', 
+        isPopular: false 
+    });
 
     const handleBenefitChange = (index, value) => {
         const newBenefits = [...formData.benefits];
@@ -217,19 +253,50 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                         </div>
                     </div>
 
-                    <div className="space-y-4">
-                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">INCLUDED SERVICES</label>
-                         <div className="grid grid-cols-2 gap-2 border border-border/40 p-4 bg-surface-alt max-h-40 overflow-y-auto">
-                            {serviceOptions.map(s => (
-                                <label key={s} className="flex items-center gap-2 text-[10px] font-black uppercase cursor-pointer">
-                                    <input type="checkbox" checked={formData.includedServices.includes(s)} onChange={e => {
-                                        const next = e.target.checked ? [...formData.includedServices, s] : formData.includedServices.filter(x => x !== s);
-                                        setFormData({ ...formData, includedServices: next });
-                                    }} />
-                                    {s}
-                                </label>
-                            ))}
-                         </div>
+                    <div className="grid md:grid-cols-2 gap-8 pt-4 border-t border-border/20">
+                        {/* Service Discount */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Benefits (All Services)</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="number" 
+                                    className="flex-1 h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" 
+                                    placeholder="Value"
+                                    value={formData.serviceDiscountValue} 
+                                    onChange={e => setFormData({ ...formData, serviceDiscountValue: e.target.value })} 
+                                />
+                                <select 
+                                    className="w-24 h-12 bg-surface-alt border border-border/60 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    value={formData.serviceDiscountType}
+                                    onChange={e => setFormData({ ...formData, serviceDiscountType: e.target.value })}
+                                >
+                                    <option value="percentage">% OFF</option>
+                                    <option value="flat">₹ FLAT</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Product Discount */}
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Product Benefits</label>
+                            <div className="flex gap-2">
+                                <input 
+                                    type="number" 
+                                    className="flex-1 h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" 
+                                    placeholder="Value"
+                                    value={formData.productDiscountValue} 
+                                    onChange={e => setFormData({ ...formData, productDiscountValue: e.target.value })} 
+                                />
+                                <select 
+                                    className="w-24 h-12 bg-surface-alt border border-border/60 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    value={formData.productDiscountType}
+                                    onChange={e => setFormData({ ...formData, productDiscountType: e.target.value })}
+                                >
+                                    <option value="percentage">% OFF</option>
+                                    <option value="flat">₹ FLAT</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

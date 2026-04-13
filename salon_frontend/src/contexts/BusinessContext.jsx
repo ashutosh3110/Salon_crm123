@@ -23,6 +23,7 @@ export function BusinessProvider({ children }) {
     const [outlets, setOutlets] = useState([]);
     const [staff, setStaff] = useState([]);
     const [services, setServices] = useState([]);
+    const [groupedServices, setGroupedServices] = useState([]);
     const [categories, setCategories] = useState([]);
     const [roles, setRoles] = useState([]);
     const [products, setProducts] = useState([]);
@@ -64,14 +65,15 @@ export function BusinessProvider({ children }) {
         } catch { setSegments([]); } finally { setSegmentsLoading(false); }
     }, []);
 
-    const fetchFeedbacks = useCallback(async () => {
+    const fetchFeedbacks = useCallback(async (sId) => {
         setFeedbacksLoading(true);
         try {
-            const r = await api.get('/feedbacks');
+            const sid = sId || activeSalonId || salon?._id;
+            const r = await api.get(`/feedbacks${sid ? `?salonId=${sid}` : ''}`);
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setFeedbacks(Array.isArray(list) ? list : []);
         } catch { setFeedbacks([]); } finally { setFeedbacksLoading(false); }
-    }, []);
+    }, [activeSalonId, salon?._id]);
 
     const initializationRef = useRef(false);
 
@@ -84,6 +86,18 @@ export function BusinessProvider({ children }) {
         } catch (error) { 
             console.error("Fetch services failed:", error);
             setServices([]); 
+        }
+    }, [activeSalonId, salon?._id]);
+    
+    const fetchGroupedServices = useCallback(async (sId) => {
+        try {
+            const sid = sId || activeSalonId || salon?._id;
+            if (!sid) return;
+            const r = await api.get(`/services/grouped?salonId=${sid}`);
+            setGroupedServices(r.data?.data || []);
+        } catch (error) {
+            console.error("Fetch grouped services failed:", error);
+            setGroupedServices([]);
         }
     }, [activeSalonId, salon?._id]);
     
@@ -144,10 +158,11 @@ export function BusinessProvider({ children }) {
                 // Parallel fetch for speed
                 await Promise.all([
                    fetchOutlets(),
-                   fetchServices(sid),
-                   fetchCategories(sid),
-                   fetchFeedbacks()
-                ]);
+                    fetchServices(sid),
+                    fetchCategories(sid),
+                    fetchFeedbacks(),
+                    fetchStaff(sid)
+                 ]);
             }
         } finally {
             setIsInitializing(false);
@@ -184,6 +199,7 @@ export function BusinessProvider({ children }) {
                         initTasks.push(fetchServices(effectiveTid));
                         initTasks.push(fetchCategories(effectiveTid));
                         initTasks.push(fetchFeedbacks());
+                        initTasks.push(fetchStaff(effectiveTid));
 
                         await Promise.all(initTasks);
                     } catch (err) {
@@ -291,7 +307,16 @@ export function BusinessProvider({ children }) {
 
     const updateStaff = useCallback(async (id, d) => { const r = await api.patch(`/users/${id}`, d); const updated = r.data.data; setStaff(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s)); return updated; }, []);
     const deleteStaff = useCallback(async (id) => { await api.delete(`/users/${id}`); setStaff(p => p.filter(s => (s._id !== id && s.id !== id))); }, []);
-    const fetchStaff = useCallback(async () => { const r = await api.get('/users'); setStaff(r.data?.data || r.data?.results || r.data || []); }, []);
+    const fetchStaff = useCallback(async (sId) => { 
+        try {
+            const sid = sId || activeSalonId || salon?._id;
+            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`); 
+            setStaff(r.data?.data || r.data?.results || r.data || []); 
+        } catch (error) {
+            console.error("Fetch staff failed:", error);
+            setStaff([]);
+        }
+    }, [activeSalonId, salon?._id]);
     const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
     const addShift = useCallback(async (d) => { const r = await api.post('/shifts', d); setShifts(p => [r.data, ...p]); return r.data; }, []);
     const updateShift = useCallback(async (id, d) => { const r = await api.patch(`/shifts/${id}`, d); setShifts(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s)); return r.data; }, []);
@@ -372,7 +397,7 @@ export function BusinessProvider({ children }) {
     }, []);
 
     const value = useMemo(() => ({
-        salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, updateCustomer, deleteCustomer,
+        salon, outlets, outletsLoading, staff, services, groupedServices, categories, products, customers, customersLoading, fetchCustomers, addCustomer, updateCustomer, deleteCustomer,
         bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, 
         addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue, 
         activeOutletId, setActiveOutletId,
@@ -383,7 +408,7 @@ export function BusinessProvider({ children }) {
         addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchProducts, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
@@ -397,7 +422,7 @@ export function BusinessProvider({ children }) {
         shifts, catalogue, activeOutletId, setActiveOutletId, activeSalonId, setActiveSalonId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchBookings, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchProducts, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,

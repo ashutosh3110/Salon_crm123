@@ -140,6 +140,85 @@ function StarRow({ rating }) {
     );
 }
 
+const MembershipPlanCard = ({ plan, colors, isLight }) => {
+    return (
+        <motion.div
+            whileTap={{ scale: 0.98 }}
+            style={{
+                flexShrink: 0,
+                width: '280px',
+                background: plan.gradient || colors.card,
+                borderRadius: '32px',
+                padding: '24px',
+                position: 'relative',
+                overflow: 'hidden',
+                color: '#FFF',
+                boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
+                border: plan.isPopular ? `2px solid #C8956C` : 'none'
+            }}
+        >
+            {plan.isPopular && (
+                <div style={{
+                    position: 'absolute', top: '16px', right: '16px',
+                    background: '#C8956C', padding: '4px 12px',
+                    borderRadius: '20px', fontSize: '9px', fontWeight: 900,
+                    textTransform: 'uppercase', letterSpacing: '0.1em'
+                }}>Most Popular</div>
+            )}
+            
+            <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '0 0 4px', textTransform: 'uppercase', italic: 'italic' }}>{plan.name}</h3>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                    <span style={{ fontSize: '24px', fontWeight: 900 }}>₹{plan.price}</span>
+                    <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 700 }}>/ {plan.duration} DAYS</span>
+                </div>
+            </div>
+
+            <div style={{ spaceY: '10px', marginBottom: '24px' }}>
+                {(plan.benefits || []).slice(0, 3).map((benefit, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <ShieldCheck size={10} color="#FFF" />
+                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: 700, opacity: 0.9 }}>{benefit}</span>
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ 
+                    flex: 1, background: 'rgba(255,255,255,0.1)', 
+                    padding: '8px', borderRadius: '16px', textAlign: 'center',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    <p style={{ fontSize: '8px', fontWeight: 900, margin: '0 0 2px', opacity: 0.6 }}>SERVICES</p>
+                    <p style={{ fontSize: '12px', fontWeight: 900 }}>{plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF</p>
+                </div>
+                <div style={{ 
+                    flex: 1, background: 'rgba(255,255,255,0.1)', 
+                    padding: '8px', borderRadius: '16px', textAlign: 'center',
+                    border: '1px solid rgba(255,255,255,0.1)'
+                }}>
+                    <p style={{ fontSize: '8px', fontWeight: 900, margin: '0 0 2px', opacity: 0.6 }}>PRODUCTS</p>
+                    <p style={{ fontSize: '12px', fontWeight: 900 }}>{plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '%' : '₹'} OFF</p>
+                </div>
+            </div>
+            
+            <motion.button 
+                whileTap={{ scale: 0.95 }}
+                style={{
+                    marginTop: '24px', width: '100%', py: '12px',
+                    height: '48px', background: '#FFF', color: '#000',
+                    border: 'none', borderRadius: '16px', fontSize: '11px',
+                    fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em'
+                }}
+            >
+                Get Started
+            </motion.button>
+        </motion.div>
+    );
+};
+
 const Particle = ({ i }) => {
     const size = Math.random() * 3 + 1;
     return (
@@ -186,6 +265,7 @@ export default function AppHomePage() {
     const { 
         activeOutlet, 
         activeOutletId, 
+        activeSalonId,
         outlets, 
         setActiveOutletId, 
         services, 
@@ -198,6 +278,36 @@ export default function AppHomePage() {
     const { banners } = useCMS();
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
+    const [membershipPlans, setMembershipPlans] = useState([]);
+    const [loyaltyRule, setLoyaltyRule] = useState(null);
+    const [loadingPlans, setLoadingPlans] = useState(false);
+    const [dynamicReviews, setDynamicReviews] = useState([]);
+
+    useEffect(() => {
+        const fetchPlans = async () => {
+            const sid = activeOutlet?.salonId || activeSalonId || localStorage.getItem('active_salon_id');
+            if (!sid) {
+                return;
+            }
+            setLoadingPlans(true);
+            try {
+                const [mRes, lRes, fRes] = await Promise.all([
+                    api.get(`/loyalty/membership-plans/public?salonId=${sid}`),
+                    api.get(`/loyalty/settings/public?salonId=${sid}`),
+                    api.get(`/feedbacks?salonId=${sid}&status=Approved`)
+                ]);
+                
+                if (mRes.data?.success) setMembershipPlans(mRes.data.data);
+                if (lRes.data?.success) setLoyaltyRule(lRes.data.data);
+                if (fRes.data?.success) setDynamicReviews(fRes.data.data);
+            } catch (err) {
+                console.error('Failed to fetch loyalty and review data', err);
+            } finally {
+                setLoadingPlans(false);
+            }
+        };
+        fetchPlans();
+    }, [activeOutlet?.salonId, activeSalonId]);
 
     // Pre-select first category when categories load
     useEffect(() => {
@@ -292,21 +402,6 @@ export default function AppHomePage() {
     const [nearestOutlets, setNearestOutlets] = useState([]);
     const [nearestOutletsLoading, setNearestOutletsLoading] = useState(false);
 
-    // Static Data as fallbacks (User said keep static)
-    const staticMembershipPlans = [
-        { id: 'plat', name: 'Platinum Membership', price: 5000, duration: 365, benefits: ['Unlimited Haircuts', 'Private Cabin', 'Priority Booking'], gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', icon: 'crown', isPopular: true },
-        { id: 'gold', name: 'Gold Ritual', price: 2000, duration: 180, benefits: ['10% Off Services', 'Free Facial Monthly', 'Expert Stylists'], gradient: 'linear-gradient(135deg, #FFD700 0%, #D4AF37 100%)', icon: 'gem', isPopular: false }
-    ];
-
-    const staticCouponOffers = [
-        { id: 'st1', subtitle: 'On your first service', discount: '₹200 Cashback', code: 'WELCOME200', hasCouponCode: true },
-        { id: 'st2', subtitle: 'Festive special', discount: 'Flat 20% OFF', code: 'FESTIVE20', hasCouponCode: true }
-    ];
-
-    const [membershipPlans] = useState(staticMembershipPlans);
-    const [couponOffers] = useState(staticCouponOffers);
-    const [referralReward] = useState(200);
-
     // ── 2. FETCH NEAREST SALONS (OUTLETS) ──
 
     useEffect(() => {
@@ -375,7 +470,7 @@ export default function AppHomePage() {
                     subtitle: validity ? validity.toUpperCase() : 'EXCLUSIVE OFFER',
                     img: p.image,
                     btnText: (p.btnText && String(p.btnText).trim()) || 'Apply',
-                    link: p.link || '/app/book',
+                    link: p.link || '/app/booking',
                     isCmsBanner: true,
                 };
             });
@@ -770,9 +865,9 @@ export default function AppHomePage() {
                                         if (current?.isLookbook) {
                                             navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook' } });
                                         } else if (current?.couponCode) {
-                                            navigate('/app/book', { state: { promoCode: current.couponCode } });
+                                            navigate('/app/booking', { state: { promoCode: current.couponCode } });
                                         } else {
-                                            navigate(current?.link || '/app/book');
+                                            navigate(current?.link || '/app/booking');
                                         }
                                     }}
                                     style={{
@@ -950,8 +1045,7 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-
-                {/* ── SERVICE CATEGORIES EXPLORER ── */}
+                {/* ── 3. SERVICE CATEGORIES EXPLORER ── */}
                 <motion.div variants={fadeUp} style={{ padding: '32px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -966,7 +1060,6 @@ export default function AppHomePage() {
                         </button>
                     </div>
 
-                    {/* Category Bubbles */}
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                         {(categories || []).filter(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender)).map(c => c.name).map((catName) => {
                             const isActive = selectedServiceCategory === catName;
@@ -1021,44 +1114,9 @@ export default function AppHomePage() {
                             );
                         })}
                     </div>
-
-                    {/* Filtered Services List */}
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={selectedServiceCategory}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            className="app-scroll-y"
-                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px', marginTop: '8px' }}
-                        >
-                            {(() => {
-                                const sourceServices = services || [];
-
-                                const filtered = sourceServices.filter(s =>
-                                    s.status === 'active' &&
-                                    (selectedServiceCategory === 'All' || !selectedServiceCategory || s.category === selectedServiceCategory)
-                                );
-
-                                if (filtered.length === 0) return null;
-
-                                return filtered.map(service => (
-                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
-                                        <ServiceCard
-                                            service={service}
-                                            onBook={(id) => navigate(`/app/book?serviceId=${id}`)}
-                                            colors={colors}
-                                            isLight={isLight}
-                                        />
-                                    </div>
-                                ));
-                            })()}
-                        </motion.div>
-                    </AnimatePresence>
                 </motion.div>
 
-                {/* ── PRODUCT CATEGORIES (Vectors Horizontal Scroll) ── */}
+                {/* ── 4. PRODUCT CATEGORIES ── */}
                 {productCategories.length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
@@ -1099,7 +1157,45 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-                {/* ── TOP CUSTOMER REVIEWS ── */}
+                {/* ── 5. SERVICES (Filtered list) ── */}
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                        <Scissors size={20} color={colors.accent} />
+                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Top Rituals for {selectedServiceCategory || 'You'}</span>
+                    </div>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={selectedServiceCategory}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.3 }}
+                            className="app-scroll-y no-scrollbar"
+                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}
+                        >
+                            {(() => {
+                                const sourceServices = services || [];
+                                const filtered = sourceServices.filter(s =>
+                                    s.status === 'active' &&
+                                    (selectedServiceCategory === 'All' || !selectedServiceCategory || s.category === selectedServiceCategory)
+                                );
+                                if (filtered.length === 0) return null;
+                                return filtered.map(service => (
+                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
+                                        <ServiceCard
+                                            service={service}
+                                            onBook={(id) => navigate(`/app/book?serviceId=${id}`)}
+                                            colors={colors}
+                                            isLight={isLight}
+                                        />
+                                    </div>
+                                ));
+                            })()}
+                        </motion.div>
+                    </AnimatePresence>
+                </motion.div>
+
+                {/* ── 6. TRUSTED REVIEWS ── */}
                 {!isMapView && (
                     <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
@@ -1111,7 +1207,7 @@ export default function AppHomePage() {
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {(() => {
-                                const displayReviews = reviews.length > 0 ? reviews : homeData.REVIEWS;
+                                const displayReviews = dynamicReviews.length > 0 ? dynamicReviews : homeData.REVIEWS;
                                 return displayReviews.map((rev) => (
                                     <div
                                         key={rev._id || rev.id}
@@ -1133,7 +1229,7 @@ export default function AppHomePage() {
                                                 ))}
                                             </div>
                                             <span style={{ fontSize: '10px', color: colors.textMuted }}>
-                                                {new Date(rev.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                                                {new Date(rev.createdAt || Date.now()).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
                                             </span>
                                         </div>
                                         <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
@@ -1148,88 +1244,81 @@ export default function AppHomePage() {
                                                 <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>for {rev.targetName || 'Service'}</p>
                                             </div>
                                         </div>
-
-                                        {rev.response && (
-                                            <div style={{
-                                                marginTop: '12px',
-                                                padding: '10px',
-                                                background: isLight ? '#FDF8F3' : 'rgba(200, 149, 108, 0.05)',
-                                                borderRadius: '12px',
-                                                border: `1px solid ${isLight ? '#F3E5D8' : 'rgba(200, 149, 108, 0.2)'}`
-                                            }}>
-                                                <p style={{ fontSize: '9px', fontWeight: 900, color: '#C8956C', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salon Response</p>
-                                                <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0, fontStyle: 'italic' }}>{rev.response}</p>
-                                            </div>
-                                        )}
                                     </div>
                                 ));
                             })()}
                         </div>
                     </motion.div>
                 )}
-                {/* ── 2. OTHER NEAREST SALONS ── */}
-                {!isMapView && nearestOutlets.length > 0 && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+                {/* ── 7. MEMBERSHIP PLANS ── */}
+                {!isMapView && membershipPlans.length > 0 && (
+                    <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                        <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                            Membership Rituals
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <Crown size={20} color={colors.accent} />
-                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Other Nearest Salons</span>
+                                <div>
+                                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Exclusive Rituals</h3>
+                                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Elevate your status with our tiered privileges</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {nearestOutlets.map(outlet => (
-                                <motion.div
-                                    key={outlet._id}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => {
-                                        setActiveOutletId(outlet._id);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    style={{
-                                        flexShrink: 0,
-                                        width: '240px',
-                                        background: colors.card,
-                                        borderRadius: '24px',
-                                        overflow: 'hidden',
-                                        border: `1px solid ${colors.border}`,
-                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.05)' : '0 10px 20px rgba(0,0,0,0.2)',
-                                        position: 'relative',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <div style={{ height: '120px', width: '100%', position: 'relative' }}>
-                                        <img 
-                                            src={outlet.images?.[0] || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"} 
-                                            alt={outlet.name} 
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                        />
-                                        <div style={{
-                                            position: 'absolute', top: '12px', right: '12px',
-                                            background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(4px)',
-                                            padding: '4px 8px', borderRadius: '8px',
-                                            display: 'flex', alignItems: 'center', gap: '4px'
-                                        }}>
-                                            <Star size={12} fill="#C8956C" color="#C8956C" />
-                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating || 4.5}</span>
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '14px' }}>
-                                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px' }}>{outlet.name}</h4>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
-                                            <MapPin size={12} color={colors.textMuted} />
-                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>
-                                                {outlet.dist ? `${outlet.dist.toFixed(1)} km` : 'Near you'} · {outlet.city || 'Salon'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </motion.div>
+                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                            {membershipPlans.filter(p => p.isActive !== false).map((plan) => (
+                                <MembershipPlanCard 
+                                    key={plan._id || plan.id} 
+                                    plan={plan} 
+                                    colors={colors} 
+                                    isLight={isLight} 
+                                />
                             ))}
                         </div>
                     </motion.div>
                 )}
 
-            </motion.div>
+                {/* ── 8. LOYALTY RULES ── */}
+                {!isMapView && loyaltyRule && loyaltyRule.active && (
+                    <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                        <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                            Loyalty Protocol
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+                            <Gift size={20} color={colors.accent} />
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Point Redemption</h3>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Turn your visits into rewards</p>
+                            </div>
+                        </div>
+                        
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                             <div style={{ background: colors.card, border: `1px solid ${colors.border}`, padding: '20px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                 <div style={{ width: '32px', height: '32px', borderRadius: '12px', background: `${colors.accent}10`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <Zap size={16} color={colors.accent} />
+                                 </div>
+                                 <div>
+                                     <p style={{ fontSize: '8px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>Earn Rate</p>
+                                     <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>₹{loyaltyRule.pointsRate} = 1 PT</h4>
+                                 </div>
+                             </div>
 
-        </div >
+                             <div style={{ background: colors.card, border: `1px solid ${colors.border}`, padding: '20px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                 <div style={{ width: '32px', height: '32px', borderRadius: '12px', background: `${colors.accent}10`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                      <Star size={16} color={colors.accent} fill={colors.accent} />
+                                 </div>
+                                 <div>
+                                     <p style={{ fontSize: '8px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>Value</p>
+                                     <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>1 PT = ₹{loyaltyRule.redeemValue}</h4>
+                                 </div>
+                             </div>
+                        </div>
+                    </motion.div>
+                )}
+
+            </motion.div>
+        </div>
     );
+    
 }

@@ -91,12 +91,14 @@ import SalonProfilePage from './pages/app/SalonProfilePage';
 
 import AppBookingPage from './pages/app/AppBookingPage';
 import AppMyBookingsPage from './pages/app/AppMyBookingsPage';
+import AppBookingDetailsPage from './pages/app/AppBookingDetailsPage';
 import AppServicesPage from './pages/app/AppServicesPage';
 import AppReferralPage from './pages/app/AppReferralPage';
 import AppProfilePage from './pages/app/AppProfilePage';
 import AppShopPage from './pages/app/AppShopPage';
 import AppProductCategoriesPage from './pages/app/AppProductCategoriesPage';
 import AppProductDetailsPage from './pages/app/AppProductDetailsPage';
+import AppServiceDetailsPage from './pages/app/AppServiceDetailsPage';
 import AppCheckoutPage from './pages/app/AppCheckoutPage';
 import AppNotificationPage from './pages/app/AppNotificationPage';
 import AppLoyaltyPage from './pages/app/AppLoyaltyPage';
@@ -478,10 +480,12 @@ function App() {
                             <Route path="/app/wallet" element={<AppWalletPage />} />
                             <Route path="/app/likes" element={<AppFavoritesPage />} />
 
-                            <Route path="/app/book" element={<AppBookingPage />} />
+                            <Route path="/app/booking" element={<AppBookingPage />} />
                             <Route path="/app/experts" element={<AppExpertsPage />} />
                             <Route path="/app/services" element={<AppServicesPage />} />
+                            <Route path="/app/service/:id" element={<AppServiceDetailsPage />} />
                             <Route path="/app/bookings" element={<AppMyBookingsPage />} />
+                            <Route path="/app/bookings/:id" element={<AppBookingDetailsPage />} />
                             <Route path="/app/referrals" element={<AppReferralPage />} />
                             <Route path="/app/profile" element={<AppProfilePage />} />
                             <Route path="/app/shop" element={<AppShopPage />} />

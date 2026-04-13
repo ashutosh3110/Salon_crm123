@@ -6,7 +6,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
 
-const ServiceCard = ({ service, onBook, colors, isLight, categories }) => {
+const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate }) => {
     const categoryName = useMemo(() => {
         if (!categories || categories.length === 0) return service.category;
         const cat = categories.find(c => String(c._id) === String(service.category) || c.name === service.category);
@@ -26,7 +26,10 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories }) => {
             }}
             className="group overflow-hidden flex flex-col h-full"
         >
-            <div className="relative aspect-square overflow-hidden bg-slate-100">
+            <div 
+                className="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer"
+                onClick={() => navigate(`/app/service/${service._id || service.id}`)}
+            >
                 <img
                     src={service.image || fallbackImage}
                     alt={service.name}
@@ -43,7 +46,13 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories }) => {
 
             <div className="p-2.5 flex flex-col flex-1">
                 <span className="text-[8px] font-black uppercase tracking-widest text-[#C8956C] mb-0.5">{categoryName}</span>
-                <h3 className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight" style={{ color: colors.text }}>{service.name}</h3>
+                <h3 
+                    className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight cursor-pointer hover:underline underline-offset-2 decoration-[#C8956C]" 
+                    style={{ color: colors.text }}
+                    onClick={() => navigate(`/app/service/${service._id || service.id}`)}
+                >
+                    {service.name}
+                </h3>
                 <p className="text-[10px] mb-3 line-clamp-1 opacity-60 leading-tight" style={{ color: colors.text }}>{service.description || "Premium service."}</p>
 
                 <div className="mt-auto flex items-center justify-between pt-1">
@@ -73,9 +82,11 @@ export default function AppServicesPage() {
         activeOutletId,
         services: businessServices,
         categories: businessCategories,
+        groupedServices,
         isInitializing,
         fetchServices,
         fetchCategories,
+        fetchGroupedServices,
         activeSalonId
     } = useBusiness();
     
@@ -85,11 +96,12 @@ export default function AppServicesPage() {
     useEffect(() => {
         const tid = activeSalonId || localStorage.getItem('active_salon_id');
         if (tid) {
-            // Re-fetch only if empty to avoid loops, but ensure we have data
-            if (!businessServices || businessServices.length === 0) fetchServices(tid);
-            if (!businessCategories || businessCategories.length === 0) fetchCategories(tid);
+            // Fetch everything we need
+            fetchServices(tid);
+            fetchCategories(tid);
+            fetchGroupedServices(tid);
         }
-    }, [activeSalonId, businessServices?.length, businessCategories?.length, fetchServices, fetchCategories]);
+    }, [activeSalonId, fetchServices, fetchCategories, fetchGroupedServices]);
 
 
     const colors = {
@@ -101,7 +113,7 @@ export default function AppServicesPage() {
         input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
     };
 
-    if (isInitializing && businessServices.length === 0) {
+    if (isInitializing && (!groupedServices || groupedServices.length === 0)) {
         return (
             <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center text-white">
                 <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
@@ -111,90 +123,59 @@ export default function AppServicesPage() {
         );
     }
 
-    // Get unique active categories that have at least one active service AND match gender
+    // Filter categories & services by gender on client side too for safety
+    const displayGroups = useMemo(() => {
+        let groups = (groupedServices || []).map(group => {
+            // Filter services in group
+            const filteredGroupServices = group.services.filter(s => {
+                // Gender match
+                const sG = (s.gender || 'both').toLowerCase();
+                if (appGender && sG !== 'both' && sG !== appGender.toLowerCase()) return false;
+
+                // Outlet match
+                if (activeOutletId) {
+                    const oIds = Array.isArray(s.outletIds) ? s.outletIds : [];
+                    if (oIds.length > 0 && !oIds.map(id => String(id)).includes(String(activeOutletId))) return false;
+                }
+                return true;
+            });
+
+            return { ...group, services: filteredGroupServices };
+        }).filter(group => group.services.length > 0);
+
+        return groups;
+    }, [groupedServices, appGender, activeOutletId]);
+
     const dynamicCategories = useMemo(() => {
-        const activeCats = (businessCategories || [])
-            .filter(c => {
-                const cG = (c.gender || 'both').toLowerCase();
-                const currentG = appGender ? appGender.toLowerCase() : null;
-                return cG === 'both' || !currentG || cG === currentG;
-            })
-            .map(c => c.name);
-        return ['All', ...activeCats];
-    }, [businessCategories, appGender]);
+        const names = displayGroups.map(g => g.name);
+        return ['All', ...names];
+    }, [displayGroups]);
 
     const [searchParams] = useSearchParams();
     const categoryParam = searchParams.get('category');
-
-    // Check if category exists in canonical list, else use as search
     const isCanonical = dynamicCategories.includes(categoryParam);
 
     const [searchQuery, setSearchQuery] = useState(isCanonical ? '' : (categoryParam || ''));
     const [activeCategory, setActiveCategory] = useState(isCanonical ? categoryParam : 'All');
     const [isFocused, setIsFocused] = useState(false);
 
-    const filteredServices = useMemo(() => {
+    const finalGroups = useMemo(() => {
+        let result = displayGroups;
 
-        let result = businessServices.filter(s => {
-            // 1. Service Gender Match
-            const sG = (s.gender || 'both').toLowerCase();
-            const serviceGenderMatch = sG === 'both' || !appGender || sG === appGender.toLowerCase();
-            if (!serviceGenderMatch) return false;
-
-            // 2. Category Gender Match
-            const cat = businessCategories.find(c => c.name === s.category || String(c._id) === String(s.category));
-            if (!cat) return true; 
-            const cG = (cat.gender || 'both').toLowerCase();
-            return cG === 'both' || !appGender || cG === appGender.toLowerCase();
-        });
-
-        // Filter by Outlet
-        if (activeOutletId) {
-            result = result.filter(s => {
-                const oIds = Array.isArray(s.outletIds) ? s.outletIds : [];
-                if (oIds.length > 0) {
-                    return oIds.map(id => String(id)).includes(String(activeOutletId));
-                }
-                return true;
-            });
-        }
-
-
-        // Filter by Category
         if (activeCategory !== 'All') {
-            result = result.filter(s => {
-                const catObj = businessCategories.find(c => c.name === activeCategory);
-                return s.category === activeCategory || (catObj && String(s.category) === String(catObj._id));
-            });
+            result = result.filter(g => g.name === activeCategory);
         }
 
-        // Search Query
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            result = result.filter(s => s.name.toLowerCase().includes(q));
+            result = result.map(g => ({
+                ...g,
+                services: g.services.filter(s => s.name.toLowerCase().includes(q))
+            })).filter(g => g.services.length > 0);
         }
+
         return result;
-    }, [businessServices, activeCategory, searchQuery, activeOutletId, appGender, businessCategories]);
-
-    const groupedServices = useMemo(() => {
-        const groups = {};
-        
-        filteredServices.forEach(s => {
-            // Find category name
-            const cat = businessCategories.find(c => String(c._id) === String(s.category) || c.name === s.category);
-            const catName = cat ? cat.name : (s.category || 'Other');
-            
-            if (!groups[catName]) groups[catName] = [];
-            groups[catName].push(s);
-        });
-
-        if (activeCategory !== 'All') {
-            // If specific category active, only return that group
-            return groups[activeCategory] ? { [activeCategory]: groups[activeCategory] } : {};
-        }
-
-        return groups;
-    }, [filteredServices, activeCategory, businessCategories]);
+    }, [displayGroups, activeCategory, searchQuery]);
 
     const handleBook = (id) => {
         navigate(`/app/book?serviceId=${id}`);
@@ -310,29 +291,40 @@ export default function AppServicesPage() {
                 </div>
             </div>
 
-            {/* Services Content */}
+            {/* Services Content Grouped by Category */}
             <motion.div
                 variants={stagger}
                 initial="hidden"
                 animate="show"
-                className="px-4 mt-6"
+                className="px-4 mt-6 space-y-10"
             >
-                <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-                    {filteredServices.map((service, index) => (
-                        <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
-                            <ServiceCard
-                                service={service}
-                                onBook={handleBook}
-                                colors={colors}
-                                isLight={isLight}
-                                categories={businessCategories}
-                            />
-                        </motion.div>
-                    ))}
-                </div>
+                {finalGroups.map((group) => (
+                    <div key={group._id || group.id} className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <h3 className="text-sm font-black uppercase tracking-widest text-[#C8956C]">{group.name}</h3>
+                            <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/30 to-transparent" />
+                            <span className="text-[10px] font-bold opacity-30">{group.services.length} Items</span>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+                            {group.services.map((service, index) => (
+                                <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
+                                    <ServiceCard
+                                        service={service}
+                                        onBook={handleBook}
+                                        colors={colors}
+                                        isLight={isLight}
+                                        categories={businessCategories}
+                                        navigate={navigate}
+                                    />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
 
 
-                {filteredServices.length === 0 && (
+                {finalGroups.length === 0 && (
                     <div className="py-20 text-center">
                         <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">
                             <Search size={32} className="text-[#C8956C] opacity-40" />
@@ -346,6 +338,7 @@ export default function AppServicesPage() {
                                 if (tid) {
                                     fetchServices(tid);
                                     fetchCategories(tid);
+                                    fetchGroupedServices(tid);
                                 }
                             }}
                             className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"

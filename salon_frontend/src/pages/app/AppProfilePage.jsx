@@ -11,9 +11,6 @@ import {
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
-import {
-    MOCK_LOYALTY_WALLET, MOCK_LOYALTY_RULES, MOCK_LOYALTY_TRANSACTIONS
-} from '../../data/appMockData';
 import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 
@@ -105,7 +102,7 @@ export default function AppProfilePage() {
 
     useEffect(() => {
         if (customer?._id) {
-            initializeWallet(customer._id).catch(() => {});
+            initializeWallet().catch(() => {});
         }
     }, [customer?._id, initializeWallet]);
 
@@ -497,7 +494,7 @@ export default function AppProfilePage() {
             <motion.div variants={fadeUp} className="space-y-3">
                 {quickLinks.map((link) => (
                     <motion.button
-                        key={link.path}
+                        key={link.label}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate(link.path)}
                         style={{ background: colors.card, border: `1px solid ${colors.border}` }}

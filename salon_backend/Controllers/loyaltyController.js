@@ -69,3 +69,27 @@ exports.updateLoyaltySettings = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// @desc    Get public loyalty settings by salonId
+// @route   GET /api/loyalty/settings/public
+// @access  Public
+exports.getPublicLoyaltySettings = async (req, res) => {
+    try {
+        const { salonId } = req.query;
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'salonId is required' });
+        }
+
+        const salon = await Salon.findById(salonId).select('loyaltySetting name');
+        
+        if (!salon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        res.json({
+            success: true,
+            data: salon.loyaltySetting
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};

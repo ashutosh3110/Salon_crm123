@@ -5,7 +5,7 @@
  * Now fetches from the backend API for live data.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import api from '../services/mock/mockApi';
+import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 
 const STORAGE_KEY = 'WAPIXO_BOOKING_REGISTRY';
@@ -25,7 +25,7 @@ export function BookingRegistryProvider({ children }) {
         setLoading(true);
         try {
             const res = await api.get('/bookings?limit=50');
-            const data = res.data?.results || res.data || [];
+            const data = res.data?.data || res.data?.results || (Array.isArray(res.data) ? res.data : []);
             
             // Format for components
             const formatted = data.map(b => {
