@@ -29,16 +29,18 @@ exports.getBookings = async (req, res) => {
             .populate('clientId', 'name phone email')
             .populate('serviceId', 'name price duration')
             .populate('staffId', 'name profileImage')
-            .populate('outletId', 'name')
+            .populate('outletId', 'name address city')
+            .populate('salonId', 'name logo')
             .sort({ appointmentDate: -1 });
 
-        // Rename client to match frontend expectation if needed, or fix frontend
+        // Transform for frontend compatibility
         const result = bookings.map(b => ({
             ...b._doc,
-            client: b.clientId, // Frontend expects .client
-            service: b.serviceId, // Frontend expects .service
-            staff: b.staffId, // Frontend expects .staff
-            outlet: b.outletId // Frontend expects .outlet
+            client: b.clientId, 
+            service: b.serviceId, 
+            staff: b.staffId, 
+            outlet: b.outletId,
+            tenantId: b.salonId // Mapping salonId to tenantId as expected by frontend
         }));
 
         res.json({
@@ -104,7 +106,8 @@ exports.createBooking = async (req, res) => {
             .populate('clientId', 'name phone email')
             .populate('serviceId', 'name price duration')
             .populate('staffId', 'name profileImage')
-            .populate('outletId', 'name');
+            .populate('outletId', 'name address city')
+            .populate('salonId', 'name logo');
 
         res.status(201).json({
             success: true,
@@ -113,7 +116,8 @@ exports.createBooking = async (req, res) => {
                 client: populated.clientId,
                 service: populated.serviceId,
                 staff: populated.staffId,
-                outlet: populated.outletId
+                outlet: populated.outletId,
+                tenantId: populated.salonId
             }
         });
     } catch (err) {

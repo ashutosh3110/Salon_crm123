@@ -55,7 +55,10 @@ const outletSchema = new mongoose.Schema({
     }],
     config: {
         bookingSms: { type: Boolean, default: true },
-        whatsappNotifications: { type: Boolean, default: true }
+        whatsappNotifications: { type: Boolean, default: true },
+        enableDelivery: { type: Boolean, default: false },
+        deliveryCharge: { type: Number, default: 0 },
+        freeDeliveryAbove: { type: Number, default: 0 }
     },
     likes: {
         type: Number,

@@ -40,7 +40,7 @@ exports.createFeedback = async (req, res) => {
             targetType,
             targetId,
             targetName,
-            status: 'Approved'
+            status: 'Pending'
         });
 
         res.status(201).json({

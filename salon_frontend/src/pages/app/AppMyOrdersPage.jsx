@@ -96,6 +96,7 @@ export default function AppMyOrdersPage() {
                             key={order._id}
                             order={order}
                             index={i}
+                            onTap={(o) => navigate(`/app/orders/${o._id}`)}
                         />
                     ))
                 )}

@@ -11,6 +11,15 @@ const orderSchema = new mongoose.Schema({
         ref: 'Salon',
         required: true
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
+    deliveryPreference: {
+        type: String,
+        enum: ['home', 'salon'],
+        default: 'home'
+    },
     items: [{
         productId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -30,6 +39,10 @@ const orderSchema = new mongoose.Schema({
     totalAmount: {
         type: Number,
         required: true
+    },
+    deliveryCharge: {
+        type: Number,
+        default: 0
     },
     paymentMethod: {
         type: String,

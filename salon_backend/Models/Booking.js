@@ -43,9 +43,21 @@ const bookingSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    paymentMethod: {
+        type: String,
+        default: 'salon'
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['pending', 'paid', 'failed', 'refunded', 'unpaid'],
+        default: 'pending'
+    },
     commissionApplied: {
         type: Boolean,
         default: false
+    },
+    notes: {
+        type: String
     }
 }, {
     timestamps: true

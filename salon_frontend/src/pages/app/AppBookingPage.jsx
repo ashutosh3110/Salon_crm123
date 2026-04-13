@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Clock, Sparkles, Loader2, Search, SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Crown, Star, Armchair, DoorClosed, Zap, Wallet, CreditCard } from 'lucide-react';
 import StepIndicator from '../../components/app/StepIndicator';
 import { MOCK_SERVICES, MOCK_STAFF, MOCK_OUTLET, MOCK_OUTLETS, generateTimeSlots } from '../../data/appMockData';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -9,6 +9,7 @@ import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
+import { useWallet } from '../../contexts/WalletContext';
 import api from '../../services/api';
 
 const STEPS = ['Service', 'Stylist', 'Date & Time', 'Confirm'];
@@ -38,7 +39,9 @@ export default function AppBookingPage() {
         staff: businessStaff,
         fetchGroupedServices,
         fetchStaff,
-        loyaltySettings
+        loyaltySettings,
+        activeSalonId,
+        salon
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
@@ -84,8 +87,9 @@ export default function AppBookingPage() {
     const [isPromoApplied, setIsPromoApplied] = useState(false);
     const [promoDiscount, setPromoDiscount] = useState(0);
     const [availableCoupons, setAvailableCoupons] = useState([]);
-    const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon' or 'online'
-    const { customer, activeSalonId } = useCustomerAuth();
+    const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon', 'online' or 'wallet'
+    const { balance, refreshWallet } = useWallet();
+    const { customer } = useCustomerAuth();
 
     // Initial load for membership from backend
     useEffect(() => {
@@ -522,79 +526,33 @@ export default function AppBookingPage() {
                 time: selectedTime,
                 duration: Number(totalDuration || primaryService.duration || 30),
                 price: Number(finalPrice || 0),
-                tenantId: currentOutlet?.tenantId || currentOutlet?.tenant_id || localStorage.getItem('active_tenant_id'),
+                tenantId: currentOutlet?.tenantId || currentOutlet?.tenant_id || activeSalonId || localStorage.getItem('active_salon_id'),
                 source: 'APP'
             };
 
             if (!baseBookingData.tenantId) {
                 console.error('[AppBookingPage] CRITICAL: tenantId is missing from baseBookingData');
             }
-
-            if (paymentMethod === 'online') {
-                // 1. Create Razorpay Order
-                const orderRes = await api.post('/bookings/payment/order', {
-                    amount: finalPrice,
-                    receipt: `bk_${customerId}_${Date.now().toString().slice(-8)}`
-                });
-                const order = orderRes.data;
-
-                const options = {
-                    key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SatrrxFwKXJX8e',
-                    amount: order.amount,currency: order.currency,
-                    name: 'Salon App',
-                    description: `Booking for ${primaryService.name}`,
-                    order_id: order.id,
-                    handler: async function (response) {
-                        try {
-                            // Verify Payment
-                            await api.post('/bookings/payment/verify', {
-                                razorpayOrderId: response.razorpay_order_id,
-                                razorpayPaymentId: response.razorpay_payment_id,
-                                razorpaySignature: response.razorpay_signature
-                            });
-
-                            // Finalize Booking
-                            const res = await api.post('/bookings', {
-                                ...baseBookingData,
-                                status: 'confirmed',
-                                paymentStatus: 'paid',
-                                paymentMethod: 'online',
-                                razorpayOrderId: response.razorpay_order_id,
-                                razorpayPaymentId: response.razorpay_payment_id
-                            });
-
-                            finalizeBookingSuccess(res.data);
-                        } catch (err) {
-                            console.error('[AppBookingPage] Payment verification failed', err);
-                            alert('Payment verification failed. Please contact support.');
-                        } finally {
-                            setSubmitting(false);
-                            submittingRef.current = false;
-                        }
-                    },
-                    prefill: {
-                        name: customer?.name || '',
-                        email: customer?.email || '',
-                        contact: customer?.phone || ''
-                    },
-                    theme: { color: '#C8956C' },
-                    modal: {
-                        ondismiss: function() {
-                            setSubmitting(false);
-                            submittingRef.current = false;
-                        }
-                    }
-                };
-
-                // const rzp = new window.Razorpay(options); // Disabled for mock mode
-                // rzp.open(); // Disabled for mock mode
-                try {
-                    const res = await api.post('/bookings', { ...baseBookingData, status: 'confirmed', paymentStatus: 'paid', paymentMethod: 'online' });
-                    finalizeBookingSuccess(res.data);
-                } finally {
+            if (paymentMethod === 'wallet') {
+                // Wallet Payment
+                if (balance < finalPrice) {
+                    alert('Insufficient wallet balance. Please add money or choose another method.');
                     setSubmitting(false);
                     submittingRef.current = false;
+                    return;
                 }
+
+                const payload = {
+                    ...baseBookingData,
+                    status: 'confirmed',
+                    paymentMethod: 'wallet',
+                    paymentStatus: 'paid',
+                    notes: `Paid via Wallet${selectedTime ? ` at ${selectedTime}` : ''}`
+                };
+
+                const res = await api.post('/bookings', payload);
+                await refreshWallet(); // Refresh balance
+                finalizeBookingSuccess(res.data.data || res.data);
             } else {
                 // Salon Payment (Offline)
                 const payload = {
@@ -604,42 +562,11 @@ export default function AppBookingPage() {
                     paymentMethod: 'salon',
                     paymentStatus: 'unpaid'
                 };
-
-                console.group('[AppBookingPage] SALON BOOKING AUDIT');
-                console.log('Final Payload:', payload);
-                console.log('Payload Type:', typeof payload);
-                console.log('Endpoint: POST /v1/bookings');
-                Object.keys(payload).forEach(key => {
-                    console.log(`- ${key}:`, payload[key], `(${typeof payload[key]})`);
-                });
-                console.groupEnd();
-
-                if (!payload.tenantId || payload.tenantId === 'undefined') {
-                    console.error('[AppBookingPage] CRITICAL: tenantId is invalid in SALON payload');
-                }
-
-                const finalPayload = {
-                    tenantId: payload.tenantId,
-                    clientId: payload.clientId,
-                    serviceId: payload.serviceId,
-                    staffId: payload.staffId,
-                    outletId: payload.outletId,
-                    appointmentDate: payload.appointmentDate,
-                    time: payload.time,
-                    duration: payload.duration,
-                    price: payload.price,
-                    status: payload.status,
-                    notes: payload.notes,
-                    paymentMethod: payload.paymentMethod,
-                    paymentStatus: payload.paymentStatus,
-                    source: payload.source
-                };
-
-                console.log('[AppBookingPage] FINAL FINAL PAYLOAD:', JSON.stringify(finalPayload));
-
-                const res = await api.post('/bookings', finalPayload);
-                finalizeBookingSuccess(res.data);
+                
+                const res = await api.post('/bookings', payload);
+                finalizeBookingSuccess(res.data.data || res.data);
             }
+
         } catch (err) {
             console.error('[AppBookingPage] Booking submission failed:', err);
             alert(err.response?.data?.message || 'Booking failed. Please try again.');
@@ -1101,18 +1028,44 @@ export default function AppBookingPage() {
                             {/* Payment Method Section */}
                             <div className="pt-2">
                                 <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-3 opacity-50" style={{ color: colors.text }}>Payment Method</p>
-                                <div className="space-y-3">
-                                    <div
-                                        className="p-5 rounded-2xl border border-[#C8956C] bg-[#C8956C]/5 transition-all text-left relative overflow-hidden"
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => setPaymentMethod('salon')}
+                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                        style={{ 
+                                            borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
+                                            background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
+                                        }}
                                     >
                                         <div className="relative z-10">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">Pay at Salon</p>
-                                            <p className="text-[8px] font-medium mt-1 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Cash or Card payment at the counter</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
+                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
                                         </div>
-                                        <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                            <Check size={10} color="white" strokeWidth={4} />
+                                        {paymentMethod === 'salon' && (
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={8} color="white" strokeWidth={4} />
+                                            </div>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => setPaymentMethod('wallet')}
+                                        className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
+                                        style={{ 
+                                            borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
+                                            background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
+                                        }}
+                                    >
+                                        <div className="relative z-10">
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
+                                            <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
                                         </div>
-                                    </div>
+                                        {paymentMethod === 'wallet' && (
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
+                                                <Check size={8} color="white" strokeWidth={4} />
+                                            </div>
+                                        )}
+                                    </button>
                                 </div>
                             </div>
 

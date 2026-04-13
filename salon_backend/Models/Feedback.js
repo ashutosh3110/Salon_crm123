@@ -40,7 +40,7 @@ const feedbackSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: ['Pending', 'Approved', 'Rejected'],
-        default: 'Approved' // Auto-approve for now as per user preference for simplicity
+        default: 'Pending'
     }
 }, {
     timestamps: true

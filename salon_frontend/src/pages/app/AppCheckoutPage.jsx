@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap } from 'lucide-react';
+import { ChevronLeft, CreditCard, Wallet, MapPin, Truck, CheckCircle, ArrowRight, Zap, Info, BellRing } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
@@ -14,13 +14,22 @@ export default function AppCheckoutPage() {
     const { colors, isLight } = useCustomerTheme();
     const { cart, cartTotal, clearCart } = useCart();
     const { customer } = useCustomerAuth();
-    const { balance, fetchBalance } = useWallet();
-    const { loyaltySettings } = useBusiness();
+    const { balance, refreshWallet } = useWallet();
+    const { loyaltySettings, activeOutlet } = useBusiness();
+    
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Success
     const [loading, setLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' is the only method now
+    const [paymentMethod, setPaymentMethod] = useState('cod');
+    const [homeDelivery, setHomeDelivery] = useState(true);
 
-    // Mock Address for now
+    // Calculate Delivery Charge
+    const isDeliveryAvailable = activeOutlet?.config?.enableDelivery || false;
+    const deliveryFee = (homeDelivery && isDeliveryAvailable) 
+        ? (activeOutlet?.config?.deliveryCharge || 0)
+        : 0;
+    
+    const finalTotal = cartTotal + deliveryFee;
+
     const [address, setAddress] = useState({
         street: '123 Beauty Lane',
         city: 'Mumbai',
@@ -50,16 +59,19 @@ export default function AppCheckoutPage() {
                     quantity: item.quantity,
                     price: item.productId.sellingPrice || item.productId.price
                 })),
-                totalAmount: cartTotal,
+                totalAmount: finalTotal,
+                deliveryCharge: deliveryFee,
                 paymentMethod,
-                address,
-                salonId: localStorage.getItem('active_salon_id')
+                address: homeDelivery ? address : { type: 'salon_pickup' },
+                deliveryPreference: homeDelivery ? 'home' : 'salon',
+                salonId: localStorage.getItem('active_salon_id'),
+                outletId: localStorage.getItem('active_outlet_id')
             };
 
             const res = await api.post('/orders', payload);
             if (res.data.success) {
                 if (paymentMethod === 'wallet') {
-                    await fetchBalance(); // Refresh balance after deduction
+                    await refreshWallet(); // Refresh balance after deduction
                 }
                 setStep(3);
                 clearCart();
@@ -131,9 +143,19 @@ export default function AppCheckoutPage() {
                     className="p-6 rounded-3xl"
                     style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}
                 >
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Items Total</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>₹{cartTotal}</span>
+                    </div>
                     <div className="flex justify-between items-center mb-4">
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Total Amount</span>
-                        <span className="text-2xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{cartTotal}</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Delivery Fee</span>
+                        <span className="text-sm font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
+                            {deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE'}
+                        </span>
+                    </div>
+                    <div className="flex justify-between items-center mb-6 pt-4 border-t border-dashed" style={{ borderTopColor: colors.border }}>
+                        <span className="text-[11px] font-black uppercase tracking-[0.2em] opacity-100" style={{ color: colors.text }}>Grand Total</span>
+                        <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{finalTotal}</span>
                     </div>
                     {loyaltySettings?.active && (
                         <div className="flex items-center justify-between py-2 px-3 mb-4 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/10">
@@ -162,40 +184,84 @@ export default function AppCheckoutPage() {
                             </div>
                             <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Shipping Address</h2>
                         </div>
-                        <div className="p-6 rounded-3xl space-y-4" style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}>
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Street Address</label>
-                                <input 
-                                    type="text" 
-                                    value={address.street} 
-                                    onChange={(e) => setAddress({...address, street: e.target.value})}
-                                    className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
-                                    style={{ color: colors.text }}
-                                />
+                        {/* Home Delivery Toggle */}
+                        {isDeliveryAvailable ? (
+                            <div 
+                                className="p-6 rounded-3xl flex items-center justify-between transition-all"
+                                style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-[#C8956C]/10 flex items-center justify-center">
+                                        <Truck size={24} className="text-[#C8956C]" />
+                                    </div>
+                                    <div className="text-left">
+                                        <p className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Home Delivery</p>
+                                        <p className="text-[10px] font-bold opacity-40 uppercase">Ship to your doorstep</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setHomeDelivery(!homeDelivery)}
+                                    className={`w-14 h-8 rounded-full relative transition-all ${homeDelivery ? 'bg-[#C8956C]' : 'bg-black/10'}`}
+                                >
+                                    <motion.div 
+                                        animate={{ x: homeDelivery ? 26 : 4 }}
+                                        className="absolute top-1 left-0 w-6 h-6 rounded-full bg-white shadow-md cursor-pointer"
+                                    />
+                                </button>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                        ) : (
+                            <div className="p-6 rounded-3xl flex items-start gap-4" style={{ background: colors.card, border: `1.5px solid ${colors.border}`, opacity: 0.6 }}>
+                                <Truck size={24} className="text-[#C8956C] mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-xs font-black uppercase tracking-widest" style={{ color: colors.text }}>Home Delivery Unavailable</p>
+                                    <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest mt-1">This outlet only supports in-salon collection.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {homeDelivery ? (
+                            <div className="p-6 rounded-3xl space-y-4" style={{ background: colors.card, border: `1.5px solid ${colors.border}` }}>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">City</label>
+                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Street Address</label>
                                     <input 
                                         type="text" 
-                                        value={address.city} 
-                                        onChange={(e) => setAddress({...address, city: e.target.value})}
+                                        value={address.street} 
+                                        onChange={(e) => setAddress({...address, street: e.target.value})}
                                         className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
                                         style={{ color: colors.text }}
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Zip Code</label>
-                                    <input 
-                                        type="text" 
-                                        value={address.zip} 
-                                        onChange={(e) => setAddress({...address, zip: e.target.value})}
-                                        className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
-                                        style={{ color: colors.text }}
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">City</label>
+                                        <input 
+                                            type="text" 
+                                            value={address.city} 
+                                            onChange={(e) => setAddress({...address, city: e.target.value})}
+                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
+                                            style={{ color: colors.text }}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40">Zip Code</label>
+                                        <input 
+                                            type="text" 
+                                            value={address.zip} 
+                                            onChange={(e) => setAddress({...address, zip: e.target.value})}
+                                            className="w-full bg-transparent border-b border-white/10 py-2 font-bold text-sm focus:border-[#C8956C] outline-none transition-colors"
+                                            style={{ color: colors.text }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="p-6 rounded-3xl flex items-start gap-4" style={{ background: '#C8956C08', border: `1.5px dashed #C8956C33` }}>
+                                <Info size={18} className="text-[#C8956C] mt-1 shrink-0" />
+                                <p className="text-[11px] font-bold uppercase tracking-widest leading-relaxed opacity-60" style={{ color: colors.text }}>
+                                    Note: Since Home Delivery is opted out, you will need to collect your items directly from the salon.
+                                </p>
+                            </div>
+                        )}
                         <button
                             onClick={() => setStep(2)}
                             className="w-full h-16 bg-[#C8956C] text-white font-black uppercase tracking-[0.4em] text-[11px] rounded-2xl flex items-center justify-center gap-4 shadow-xl shadow-[#C8956C]/20"
@@ -214,7 +280,8 @@ export default function AppCheckoutPage() {
                         
                         <div className="space-y-3">
                             {[
-                                { id: 'cod', name: 'Pay at Salon', icon: Truck, subtitle: 'Pay when you receive' }
+                                { id: 'cod', name: 'Pay at Salon', icon: Truck, subtitle: 'In-store payment' },
+                                { id: 'wallet', name: 'Digital Wallet', icon: Wallet, subtitle: `Balance: ₹${balance?.toFixed(2) || '0.00'}` }
                             ].map((method) => (
                                 <button
                                     key={method.id}
@@ -243,7 +310,7 @@ export default function AppCheckoutPage() {
                             disabled={loading}
                             className="w-full h-16 bg-[#C8956C] text-white font-black uppercase tracking-[0.4em] text-[11px] rounded-2xl flex items-center justify-center gap-4 shadow-xl shadow-[#C8956C]/20 disabled:opacity-50"
                         >
-                            {loading ? 'PROCESSING...' : `PAY ₹${cartTotal} & PLACE ORDER`}
+                            {loading ? 'PROCESSING...' : `PAY ₹${finalTotal} & PLACE ORDER`}
                         </button>
                     </motion.div>
                 )}

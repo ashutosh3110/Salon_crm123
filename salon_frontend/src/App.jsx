@@ -113,6 +113,8 @@ import AppFavoritesPage from './pages/app/AppFavoritesPage';
 import SalonSelectionPage from './pages/app/SalonSelectionPage';
 import AppExpertsPage from './pages/app/AppExpertsPage';
 import NearbyOutletsPage from './pages/app/NearbyOutletsPage';
+import AppOrderDetailsPage from './pages/app/AppOrderDetailsPage';
+import AppTransactionHistoryPage from './pages/app/AppTransactionHistoryPage';
 import { CartProvider } from './contexts/CartContext';
 import { GenderProvider } from './contexts/GenderContext';
 import CustomerAppWrapper from './layouts/CustomerAppWrapper';
@@ -479,6 +481,7 @@ function App() {
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
                             <Route path="/app/discovery" element={<AppDiscoveryPage />} />
                             <Route path="/app/wallet" element={<AppWalletPage />} />
+                            <Route path="/app/transactions" element={<AppTransactionHistoryPage />} />
                             <Route path="/app/likes" element={<AppFavoritesPage />} />
 
                             <Route path="/app/booking" element={<AppBookingPage />} />
@@ -488,6 +491,7 @@ function App() {
                             <Route path="/app/bookings" element={<AppMyBookingsPage />} />
                             <Route path="/app/bookings/:id" element={<AppBookingDetailsPage />} />
                             <Route path="/app/orders" element={<AppMyOrdersPage />} />
+                            <Route path="/app/orders/:id" element={<AppOrderDetailsPage />} />
                             <Route path="/app/referrals" element={<AppReferralPage />} />
                             <Route path="/app/profile" element={<AppProfilePage />} />
                             <Route path="/app/shop" element={<AppShopPage />} />

@@ -47,8 +47,8 @@ export default function AppLayout() {
 
     }, [authLoading, customer, gender, activeOutletId, navigate, location.pathname]);
 
-    const hideNavPaths = ['/app/product', '/app/notifications'];
-    const hideHeaderPaths = ['/app/product'];
+    const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];
+    const hideHeaderPaths = ['/app/product', '/app/bookings/', '/app/orders/'];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
     const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;

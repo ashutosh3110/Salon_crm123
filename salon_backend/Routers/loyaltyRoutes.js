@@ -4,7 +4,8 @@ const {
     getLoyaltySettings,
     updateLoyaltySettings,
     getLoyaltyHistory,
-    getPublicLoyaltySettings
+    getPublicLoyaltySettings,
+    redeemLoyaltyPoints
 } = require('../Controllers/loyaltyController');
 const {
     getMembershipPlans,
@@ -45,6 +46,7 @@ router
 router.get('/rules', authorize('admin', 'manager', 'customer'), getLoyaltySettings);
 
 router.get('/history', getLoyaltyHistory);
+router.post('/redeem', redeemLoyaltyPoints);
 
 router.get('/membership/active', getActiveMembership);
 router.post('/membership/order', createMembershipOrder);

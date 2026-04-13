@@ -14,7 +14,8 @@ import {
     Users,
     Upload,
     Image as ImageIcon,
-    X
+    X,
+    Truck
 } from 'lucide-react';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import { GoogleMap, MarkerF, useJsApiLoader } from '@react-google-maps/api';
@@ -149,7 +150,13 @@ export default function OutletForm() {
         images: [],
         chairs: [],
         latitude: null,
-        longitude: null
+        longitude: null,
+        config: {
+            bookingSms: true,
+            whatsappNotifications: true,
+            enableDelivery: false,
+            deliveryCharge: 0
+        }
     });
 
     useEffect(() => {
@@ -166,7 +173,13 @@ export default function OutletForm() {
                     longitude: found.location?.coordinates?.[0] || found.longitude || null,
                     images: found.images || (found.image ? [found.image] : []),
                     chairs: found.chairs || [],
-                    workingDays: found.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+                    workingDays: found.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+                    config: found.config || {
+                        bookingSms: true,
+                        whatsappNotifications: true,
+                        enableDelivery: false,
+                        deliveryCharge: 0
+                    }
                 });
             }
         }
@@ -501,6 +514,58 @@ export default function OutletForm() {
                                 </p>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Delivery Settings */}
+                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6 md:col-span-2">
+                        <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                            <div className="p-2 rounded-xl bg-blue-50 text-blue-500">
+                                <Truck className="w-4 h-4" />
+                            </div>
+                            <h2 className="text-xs font-bold text-text uppercase tracking-widest">Delivery Settings</h2>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Enable Home Delivery</label>
+                                <div className="flex p-1 bg-slate-50 rounded-2xl border border-border w-fit">
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: true } })}
+                                        className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${form.config?.enableDelivery ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'text-text-muted hover:text-text'}`}
+                                    >
+                                        On
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setForm({ ...form, config: { ...form.config, enableDelivery: false } })}
+                                        className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${!form.config?.enableDelivery ? 'bg-slate-300 text-white' : 'text-text-muted hover:text-text'}`}
+                                    >
+                                        Off
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className={`space-y-1.5 transition-all ${!form.config?.enableDelivery ? 'opacity-30 pointer-events-none' : ''}`}>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Delivery Charge (₹)</label>
+                                <input
+                                    type="number"
+                                    value={form.config?.deliveryCharge || 0}
+                                    onChange={(e) => setForm({ ...form, config: { ...form.config, deliveryCharge: Number(e.target.value) } })}
+                                    placeholder="e.g. 50"
+                                    className="w-full px-4 py-2.5 rounded-2xl bg-slate-50 border border-border text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        {form.config?.enableDelivery && (
+                            <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-start gap-3">
+                                <AlertCircle size={16} className="text-blue-500 mt-0.5 shrink-0" />
+                                <p className="text-[10px] text-blue-800 font-bold leading-relaxed">
+                                    Customers will be charged a flat fee of ₹{form.config.deliveryCharge} for home delivery.
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Chair Management */}

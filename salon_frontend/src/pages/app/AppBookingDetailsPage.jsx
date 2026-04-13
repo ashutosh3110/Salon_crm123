@@ -15,18 +15,21 @@ import {
     HelpCircle,
     Copy,
     Share2,
-    Download
+    Download,
+    CreditCard
 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function AppBookingDetailsPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { bookings } = useBookingRegistry();
     const { theme } = useCustomerTheme();
+    const { salon: activeSalon } = useBusiness();
     const isLight = theme === 'light';
 
     const [booking, setBooking] = useState(null);
@@ -120,17 +123,19 @@ export default function AppBookingDetailsPage() {
             style={{ background: colors.bg }}
         >
             {/* Header */}
-            <header className="fixed top-0 inset-x-0 z-50 h-20 px-6 flex items-center justify-between" style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(10px)' }}>
-                <button onClick={() => navigate(-1)} className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-black/5 dark:border-white/5">
+            <header className="fixed top-0 inset-x-0 z-[100] h-16 px-6 flex items-center justify-between" style={{ background: `${colors.bg}`, borderBottom: `1px solid ${colors.border}` }}>
+                <button 
+                    onClick={() => navigate(-1)} 
+                    style={{ color: colors.text }}
+                    className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center border border-black/5 dark:border-white/5 active:scale-90 transition-all shadow-sm"
+                >
                     <ChevronLeft size={20} />
                 </button>
                 <h1 className="text-[10px] font-black uppercase tracking-[0.3em]">Session <span className="text-[#C8956C]">Details</span></h1>
-                <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-black/5 dark:border-white/5">
-                    <Share2 size={18} />
-                </button>
+                <div className="w-10" /> {/* Spacer */}
             </header>
 
-            <main className="pt-24 px-6 space-y-6">
+            <main className="pt-20 px-6 space-y-6">
                 {/* Status Card */}
                 <motion.div 
                     initial={{ y: 20, opacity: 0 }}
@@ -191,11 +196,39 @@ export default function AppBookingDetailsPage() {
                             </p>
                             <p className="text-sm font-bold uppercase tracking-tight">{booking.staff?.name}</p>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 col-span-2">
                             <p className="text-[9px] font-black uppercase tracking-widest opacity-40 flex items-center gap-1.5">
-                                <MapPin size={10} className="text-[#C8956C]" /> Location
+                                <MapPin size={10} className="text-[#C8956C]" /> Branch & Salon
                             </p>
-                            <p className="text-sm font-bold uppercase tracking-tight">{booking.outlet?.name || 'Main Outlet'}</p>
+                            <div>
+                                <p className="text-base font-black uppercase tracking-tight leading-tight" style={{ color: colors.text }}>
+                                    {booking.outlet?.name || 'Main Outlet'}
+                                </p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mt-1">
+                                    {booking.tenantId?.name || activeSalon?.name || 'Elite Salon'}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 col-span-2">
+                            <div className="p-4 rounded-2xl border border-dashed border-black/10 dark:border-white/10 flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-40 flex items-center gap-1.5">
+                                        <CreditCard size={10} className="text-[#C8956C]" /> Payment Protocol
+                                    </p>
+                                    <p className="text-sm font-black uppercase tracking-tight" style={{ color: colors.text }}>
+                                        {booking.paymentMethod === 'wallet' ? 'Paid via Wallet' : 
+                                         booking.paymentMethod === 'salon' || booking.paymentMethod === 'offline' ? 'Pay at Salon' : 
+                                         booking.paymentMethod === 'online' ? 'Paid Online' : 'Pay at Counter'}
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Status</p>
+                                    <p className="text-[10px] font-bold uppercase text-green-500">
+                                        {booking.paymentStatus === 'paid' ? 'Completed' : 'Pending'}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

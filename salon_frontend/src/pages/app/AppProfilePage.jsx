@@ -7,11 +7,12 @@ import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
     TrendingUp, TrendingDown, Info, ChevronDown, ChevronUp, Star, MessageSquare, Wallet, Heart, Camera,
-    Crown, Gem, History, ShoppingBag, Zap
+    Crown, Gem, History, ShoppingBag, Zap, X
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import LoyaltyCard from '../../components/app/LoyaltyCard';
 import { useWallet } from '../../contexts/WalletContext';
+import { AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 
 export default function AppProfilePage() {
@@ -39,6 +40,7 @@ export default function AppProfilePage() {
     };
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [reviewSubmitted, setReviewSubmitted] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
 
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
@@ -67,7 +69,8 @@ export default function AppProfilePage() {
         name: customer?.name || '',
         email: customer?.email || '',
         gender: customer?.gender || '',
-        birthday: customer?.birthday || '',
+        dob: customer?.dob || '',
+        anniversary: customer?.anniversary || ''
     });
     const [focusedField, setFocusedField] = useState(null);
     const [activeMembership, setActiveMembership] = useState(null);
@@ -80,7 +83,8 @@ export default function AppProfilePage() {
                 name: customer.name || '',
                 email: customer.email || '',
                 gender: customer.gender || '',
-                birthday: customer.birthday || '',
+                dob: customer.dob || '',
+                anniversary: customer.anniversary || ''
             });
         }
     }, [customer?._id]);
@@ -201,7 +205,8 @@ export default function AppProfilePage() {
         { icon: ShoppingBag, label: 'My Orders', path: '/app/orders', color: isLight ? 'text-orange-600' : 'text-orange-400' },
         { icon: Heart, label: 'Liked Items', path: '/app/likes', color: isLight ? 'text-rose-500' : 'text-rose-400' },
         { icon: Wallet, label: `My Wallet (₹${balance.toLocaleString()})`, path: '/app/wallet', color: isLight ? 'text-[#C8956C]' : 'text-[#C8956C]' },
-        { icon: History, label: 'Transaction History', path: '/app/wallet', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
+        { icon: History, label: 'Transaction History', path: '/app/transactions', color: isLight ? 'text-indigo-600' : 'text-indigo-400' },
+        { icon: Star, label: 'Post a Review', onClick: () => setShowReviewModal(true), color: isLight ? 'text-amber-500' : 'text-amber-400' },
         { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
     ];
 
@@ -256,7 +261,8 @@ export default function AppProfilePage() {
                                     name: customer?.name || '',
                                     email: customer?.email || '',
                                     gender: customer?.gender || '',
-                                    birthday: customer?.birthday || '',
+                                    dob: customer?.dob || '',
+                                    anniversary: customer?.anniversary || ''
                                 });
                             }
                             setEditing(!editing);
@@ -359,9 +365,59 @@ export default function AppProfilePage() {
                                             transition: 'all 0.3s'
                                         }}
                                     >
-                                        {g}
+                                        {g.charAt(0).toUpperCase() + g.slice(1)}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] font-black uppercase mb-1.5 block tracking-widest" style={{ color: colors.textMuted }}>Birthday</label>
+                                <div
+                                    style={{
+                                        background: isLight ? '#FFF9F5' : '#141414',
+                                        borderRadius: '16px 4px 16px 4px',
+                                        border: focusedField === 'dob' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
+                                        padding: '0 12px',
+                                        height: '44px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <input
+                                        type="date"
+                                        value={form.dob}
+                                        onFocus={() => setFocusedField('dob')}
+                                        onBlur={() => setFocusedField(null)}
+                                        onChange={(e) => setForm({ ...form, dob: e.target.value })}
+                                        className="w-full bg-transparent border-none outline-none text-xs font-bold"
+                                        style={{ color: colors.text }}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase mb-1.5 block tracking-widest" style={{ color: colors.textMuted }}>Anniversary</label>
+                                <div
+                                    style={{
+                                        background: isLight ? '#FFF9F5' : '#141414',
+                                        borderRadius: '16px 4px 16px 4px',
+                                        border: focusedField === 'anniversary' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
+                                        padding: '0 12px',
+                                        height: '44px',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <input
+                                        type="date"
+                                        value={form.anniversary}
+                                        onFocus={() => setFocusedField('anniversary')}
+                                        onBlur={() => setFocusedField(null)}
+                                        onChange={(e) => setForm({ ...form, anniversary: e.target.value })}
+                                        className="w-full bg-transparent border-none outline-none text-xs font-bold"
+                                        style={{ color: colors.text }}
+                                    />
+                                </div>
                             </div>
                         </div>
                         <div className="flex gap-3 pt-2">
@@ -503,16 +559,13 @@ export default function AppProfilePage() {
                     </div>
                 </div>
             </motion.div>
-
-            <div className="h-6" />
-
             {/* Quick Links */}
             <motion.div variants={fadeUp} className="space-y-3">
                 {quickLinks.map((link) => (
                     <motion.button
                         key={link.label}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate(link.path)}
+                        onClick={link.onClick || (() => navigate(link.path))}
                         style={{ background: colors.card, border: `1px solid ${colors.border}` }}
                         className="w-full flex items-center gap-4 rounded-xl p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-all shadow-sm"
                     >
@@ -520,156 +573,144 @@ export default function AppProfilePage() {
                             <link.icon className={`w-6 h-6 ${link.color}`} />
                         </div>
                         <span className="text-sm font-bold tracking-tight flex-1 text-left" style={{ color: colors.text }}>{link.label}</span>
-                                        <ChevronRight className="w-4 h-4 opacity-20" />
+                        <ChevronRight className="w-4 h-4 opacity-20" />
                     </motion.button>
                 ))}
             </motion.div>
 
-            <div className="h-10" />
+            <AnimatePresence>
+                {showReviewModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => !isSubmittingReview && setShowReviewModal(false)}
+                            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)' }}
+                        />
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            style={{
+                                background: colors.card, width: '100%', maxWidth: '500px',
+                                borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
+                                padding: '32px 24px 96px', position: 'relative',
+                                maxHeight: '90vh', overflowY: 'auto'
+                            }}
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <div>
+                                    <h3 style={{ color: colors.text, fontSize: '20px', fontWeight: 900 }}>Post a Review</h3>
+                                    <p style={{ color: colors.accent, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}>{activeOutlet?.name || 'Wapixo Salon'}</p>
+                                </div>
+                                <button onClick={() => setShowReviewModal(false)}><X size={24} style={{ color: colors.textMuted }} /></button>
+                            </div>
 
-            {/* Review Section */}
-            <motion.div variants={fadeUp} className="space-y-4 pt-16 pb-4">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Share Your Experience</h3>
-                </div>
-
-                <div style={{
-                    background: colors.card,
-                    border: `1px solid ${colors.border}`,
-                    position: 'relative',
-                    overflow: 'hidden'
-                }} className="rounded-2xl p-6 shadow-sm">
-                    {/* Decorative Background Icon */}
-                    <MessageSquare style={{
-                        position: 'absolute',
-                        top: '-10px',
-                        right: '-10px',
-                        width: '80px',
-                        height: '80px',
-                        opacity: 0.03,
-                        transform: 'rotate(-15deg)',
-                        color: colors.accent
-                    }} />
-
-                    <div className="relative z-10">
-                        <h4 style={{ color: colors.text }} className="text-sm font-black uppercase tracking-wider mb-1">Review Active Salon</h4>
-                        <p style={{ color: colors.accent }} className="text-[11px] font-bold mb-4">{activeOutlet?.name || 'Wapixo Salon'} · {activeOutlet?.city || 'India'}</p>
-
-                        <form onSubmit={handleReviewSubmit} className="space-y-4">
-                            {/* Star Rating */}
-                            <div className="flex gap-3 justify-center py-6">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <motion.button
-                                        key={star}
-                                        type="button"
-                                        whileTap={{ scale: 0.8 }}
-                                        onClick={() => setReview({ ...review, rating: star })}
-                                        style={{ color: review.rating >= star ? '#C8956C' : colors.textMuted }}
-                                        disabled={isSubmittingReview}
+                            {reviewSubmitted ? (
+                                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="py-12 text-center">
+                                    <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <TrendingUp size={40} className="text-emerald-500" />
+                                    </div>
+                                    <h3 style={{ color: colors.text, fontSize: '24px', fontWeight: 900, marginBottom: '8px' }}>Review Received!</h3>
+                                    <p style={{ color: colors.textMuted, fontSize: '14px', fontWeight: 600 }}>Your feedback will be visible once approved by the admin.</p>
+                                    <button 
+                                        onClick={() => setShowReviewModal(false)}
+                                        className="mt-8 px-8 py-3 bg-[#C8956C] text-white rounded-xl font-black uppercase text-[11px]"
                                     >
-                                        <Star size={32} fill={review.rating >= star ? "#C8956C" : "none"} />
-                                    </motion.button>
-                                ))}
-                            </div>
+                                        Close
+                                    </button>
+                                </motion.div>
+                            ) : (
+                                <form onSubmit={handleReviewSubmit} className="space-y-6">
+                                    <div className="flex gap-3 justify-center py-4">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <motion.button
+                                                key={star}
+                                                type="button"
+                                                whileTap={{ scale: 0.8 }}
+                                                onClick={() => setReview({ ...review, rating: star })}
+                                                style={{ color: review.rating >= star ? '#C8956C' : colors.textMuted }}
+                                                disabled={isSubmittingReview}
+                                            >
+                                                <Star size={40} fill={review.rating >= star ? "#C8956C" : "none"} />
+                                            </motion.button>
+                                        ))}
+                                    </div>
 
-                            {/* Comment Box */}
-                            <div
-                                style={{
-                                    background: isLight ? '#FFF9F5' : '#141414',
-                                    borderRadius: '16px 4px 16px 4px',
-                                    border: focusedField === 'comment' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
-                                    padding: '12px',
-                                    transition: 'all 0.3s'
-                                }}
-                            >
-                                <textarea
-                                    onFocus={() => setFocusedField('comment')}
-                                    onBlur={() => setFocusedField(null)}
-                                    value={review.comment}
-                                    onChange={(e) => setReview({ ...review, comment: e.target.value })}
-                                    placeholder="Tell us how we did..."
-                                    disabled={isSubmittingReview}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        outline: 'none',
-                                        width: '100%',
-                                        color: colors.text,
-                                        fontSize: '13px',
-                                        minHeight: '80px',
-                                        resize: 'none'
-                                    }}
-                                />
-                            </div>
+                                    <div
+                                        style={{
+                                            background: colors.input,
+                                            borderRadius: '20px 6px 20px 6px',
+                                            border: focusedField === 'comment' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
+                                            padding: '16px',
+                                            transition: 'all 0.3s'
+                                        }}
+                                    >
+                                        <textarea
+                                            onFocus={() => setFocusedField('comment')}
+                                            onBlur={() => setFocusedField(null)}
+                                            value={review.comment}
+                                            onChange={(e) => setReview({ ...review, comment: e.target.value })}
+                                            placeholder="Sharing your ritual experience helps others..."
+                                            disabled={isSubmittingReview}
+                                            style={{
+                                                background: 'transparent', border: 'none', outline: 'none', width: '100%',
+                                                color: colors.text, fontSize: '14px', minHeight: '120px', resize: 'none', fontWeight: 600
+                                            }}
+                                        />
+                                    </div>
 
-                            {/* Photo Upload Container */}
-                            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    ref={fileInputRef}
-                                    onChange={handleFileChange}
-                                    style={{ display: 'none' }}
-                                />
-                                <motion.button
-                                    type="button"
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => fileInputRef.current.click()}
-                                    style={{
-                                        width: '56px', height: '56px', borderRadius: '12px', border: `1px dashed ${colors.accent}`,
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                                        gap: '4px', background: 'none', color: colors.accent, flexShrink: 0, cursor: 'pointer'
-                                    }}
-                                >
-                                    <Camera size={16} />
-                                    <span style={{ fontSize: '8px', fontWeight: 800 }}>Add</span>
-                                </motion.button>
-                                {reviewImages.map((imgUrl, index) => (
-                                    <div key={index} style={{ position: 'relative', width: '56px', height: '56px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                                        <img src={imgUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <div className="flex gap-2 pb-2">
+                                        <input type="file" multiple accept="image/*" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
                                         <button
                                             type="button"
-                                            onClick={() => setReviewImages(reviewImages.filter((_, i) => i !== index))}
-                                            style={{ position: 'absolute', top: '2px', right: '2px', width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', color: '#FFF', border: 'none', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer' }}
+                                            onClick={() => fileInputRef.current.click()}
+                                            className="w-16 h-16 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 shrink-0"
+                                            style={{ borderColor: colors.accent, color: colors.accent }}
                                         >
-                                            ×
+                                            <Camera size={20} />
+                                            <span className="text-[9px] font-black uppercase">Add Photo</span>
                                         </button>
+                                        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                                            {reviewImages.map((img, i) => (
+                                                <div key={i} className="w-16 h-16 rounded-xl overflow-hidden relative group shrink-0">
+                                                    <img src={img} className="w-full h-full object-cover" />
+                                                    <button 
+                                                        onClick={() => setReviewImages(reviewImages.filter((_, idx) => idx !== i))}
+                                                        className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-[10px]"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                ))}
-                            </div>
 
-                            <motion.button
-                                whileTap={{ scale: 0.96 }}
-                                disabled={isSubmittingReview || !review.comment.trim()}
-                                style={{
-                                    width: '100%',
-                                    padding: '16px',
-                                    background: reviewSubmitted ? '#22C55E' : '#C8956C',
-                                    color: '#FFF',
-                                    borderRadius: '16px 4px 16px 4px',
-                                    fontSize: '11px',
-                                    fontWeight: 900,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.1em',
-                                    boxShadow: reviewSubmitted ? '0 8px 20px rgba(34,197,94,0.3)' : '0 8px 20px rgba(200,149,108,0.3)',
-                                    border: 'none',
-                                    opacity: (!review.comment.trim() && !reviewSubmitted) ? 0.5 : 1
-                                }}
-                                className="flex items-center justify-center gap-2"
-                            >
-                                {isSubmittingReview ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : reviewSubmitted ? (
-                                    <>Submitted ✨</>
-                                ) : (
-                                    <>Submit Review</>
-                                )}
-                            </motion.button>
-                        </form>
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmittingReview || !review.comment.trim()}
+                                        style={{
+                                            width: '100%', padding: '18px', background: '#C8956C', color: '#FFF',
+                                            borderRadius: '18px 6px 18px 6px', fontSize: '13px', fontWeight: 900,
+                                            textTransform: 'uppercase', letterSpacing: '0.1em',
+                                            boxShadow: '0 8px 24px rgba(200,149,108,0.3)',
+                                            opacity: (!review.comment.trim() ? 0.5 : 1)
+                                        }}
+                                        className="flex items-center justify-center gap-2"
+                                    >
+                                        {isSubmittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publish Ritual Experience"}
+                                    </button>
+                                </form>
+                            )}
+                        </motion.div>
                     </div>
-                </div>
-            </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div className="h-10" />
+
 
             {/* Support & Legal */}
             <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-8">

@@ -9,7 +9,7 @@ const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 // @access  Private
 exports.createOrder = async (req, res) => {
     try {
-        const { items, totalAmount, paymentMethod, address, salonId } = req.body;
+        const { items, totalAmount, paymentMethod, address, salonId, outletId, deliveryPreference } = req.body;
         const customerId = req.user._id;
 
         // Handle Wallet Deduction
@@ -45,6 +45,8 @@ exports.createOrder = async (req, res) => {
             totalAmount,
             paymentMethod,
             address,
+            outletId,
+            deliveryPreference,
             paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending'
         });
         
@@ -86,11 +88,40 @@ exports.getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ customerId: req.user._id })
             .populate('items.productId', 'name image')
+            .populate('salonId', 'name logo')
+            .populate('outletId', 'name')
             .sort({ createdAt: -1 });
         
         res.json({
             success: true,
             data: orders
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+// @desc    Get order by ID
+// @route   GET /api/orders/:id
+// @access  Private
+exports.getOrderById = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id)
+            .populate('items.productId', 'name image price sellingPrice')
+            .populate('salonId', 'name logo')
+            .populate('outletId', 'name city');
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        // Security check: ensure order belongs to current customer
+        if (order.customerId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        res.json({
+            success: true,
+            data: order
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

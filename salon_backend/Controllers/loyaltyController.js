@@ -1,5 +1,77 @@
+const Customer = require('../Models/Customer');
+const WalletTransaction = require('../Models/WalletTransaction');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Salon = require('../Models/Salon');
+
+// @desc    Redeem loyalty points to wallet balance
+// @route   POST /api/loyalty/redeem
+// @access  Private (Customer)
+exports.redeemLoyaltyPoints = async (req, res) => {
+    try {
+        const { points } = req.body;
+        const customer = await Customer.findById(req.user.id || req.user._id);
+
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        const salon = await Salon.findById(customer.salonId);
+        if (!salon || !salon.loyaltySetting || !salon.loyaltySetting.active) {
+            return res.status(400).json({ success: false, message: 'Loyalty program is not active' });
+        }
+
+        const settings = salon.loyaltySetting;
+
+        if (points < (settings.minRedeemPoints || 0)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Minimum ${settings.minRedeemPoints} points required to redeem` 
+            });
+        }
+
+        if (customer.loyaltyPoints < points) {
+            return res.status(400).json({ success: false, message: 'Insufficient loyalty points' });
+        }
+
+        const redeemValue = settings.redeemValue || 1;
+        const walletAmount = points * redeemValue;
+
+        // Deduct points and Add to wallet
+        customer.loyaltyPoints -= points;
+        customer.walletBalance = (customer.walletBalance || 0) + walletAmount;
+        await customer.save();
+
+        // Log Loyalty Transaction
+        await LoyaltyTransaction.create({
+            customerId: customer._id,
+            salonId: customer.salonId,
+            amount: points,
+            type: 'REDEEMED',
+            description: `Redeemed ${points} points to Wallet (₹${walletAmount})`
+        });
+
+        // Log Wallet Transaction
+        await WalletTransaction.create({
+            customerId: customer._id,
+            salonId: customer.salonId,
+            amount: walletAmount,
+            type: 'CREDIT',
+            description: `Received ₹${walletAmount} from Loyalty Points Redemption`,
+            status: 'COMPLETED'
+        });
+
+        res.json({
+            success: true,
+            message: 'Points redeemed successfully',
+            walletBalance: customer.walletBalance,
+            loyaltyPoints: customer.loyaltyPoints
+        });
+
+    } catch (err) {
+        console.error('Redeem error:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
 
 // @desc    Get loyalty history for customer
 // @route   GET /api/loyalty/history

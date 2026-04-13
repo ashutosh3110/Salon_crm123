@@ -166,20 +166,26 @@ exports.registerCustomer = async (req, res) => {
 // @access  Private (Customer)
 exports.updateProfile = async (req, res) => {
     try {
-        const { name, email, gender, avatar, birthday } = req.body;
+        const { name, email, gender, avatar, birthday, dob, anniversary } = req.body;
         
-        const customer = await Customer.findById(req.user.id);
+        const userId = req.user.id || req.user._id;
+        const customer = await Customer.findById(userId);
         
         if (!customer) {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }
 
         // Update fields if provided
-        if (name) customer.name = name;
-        if (email) customer.email = email;
-        if (gender) customer.gender = gender;
-        if (avatar) customer.avatar = avatar;
-        if (birthday) customer.dob = birthday; // Birthday mapped to dob in model
+        if (name !== undefined) customer.name = name;
+        if (email !== undefined) customer.email = email;
+        if (gender !== undefined) customer.gender = gender;
+        if (avatar !== undefined) customer.avatar = avatar;
+        
+        // Handle both 'birthday' (legacy) and 'dob' (new)
+        if (dob !== undefined) customer.dob = dob;
+        else if (birthday !== undefined) customer.dob = birthday;
+
+        if (anniversary !== undefined) customer.anniversary = anniversary;
 
         await customer.save();
 
@@ -191,7 +197,7 @@ exports.updateProfile = async (req, res) => {
 
     } catch (err) {
         console.error('Update profile error:', err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({ success: false, message: 'Server error: ' + err.message });
     }
 };
 

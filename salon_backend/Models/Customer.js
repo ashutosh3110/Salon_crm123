@@ -23,7 +23,7 @@ const customerSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ['men', 'women', 'all', 'other'],
+        enum: ['men', 'women', 'male', 'female', 'all', 'other'],
         default: 'women'
     },
     password: {

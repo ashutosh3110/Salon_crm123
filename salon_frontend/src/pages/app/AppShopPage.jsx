@@ -245,9 +245,9 @@ export default function AppShopPage() {
     }, [activeCategory, searchQuery, activeOutletId, shopProducts]);
 
     const handleAddToCart = async (product, event) => {
+        const btnRect = event?.currentTarget?.getBoundingClientRect();
         const success = await addToCart(product._id, 1);
-        if (success && event && cartIconRef.current) {
-            const btnRect = event.currentTarget.getBoundingClientRect();
+        if (success && btnRect && cartIconRef.current) {
             const cartRect = cartIconRef.current.getBoundingClientRect();
             const newItem = {
                 id: Date.now(),
