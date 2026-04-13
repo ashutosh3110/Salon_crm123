@@ -142,79 +142,77 @@ function StarRow({ rating }) {
 }
 
 const MembershipPlanCard = ({ plan, colors, isLight }) => {
+    const isPlatinum = plan.name.toLowerCase().includes('platinum');
+    const isGold = plan.name.toLowerCase().includes('gold') || plan.name.toLowerCase().includes('royale');
+    
+    const bgColor = isPlatinum ? 'linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%)' : 
+                    isGold ? 'linear-gradient(135deg, #F9D423 0%, #FFB703 100%)' :
+                    plan.gradient || colors.card;
+    
+    const textColor = isGold ? '#000' : '#FFF';
+    const mutedColor = isGold ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
+    const bulletColor = isGold ? '#000' : colors.accent;
+
     return (
         <motion.div
             whileTap={{ scale: 0.98 }}
             style={{
                 flexShrink: 0,
-                width: '280px',
-                background: plan.gradient || colors.card,
-                borderRadius: '32px',
+                width: '260px',
+                background: bgColor,
+                borderRadius: '24px',
                 padding: '24px',
                 position: 'relative',
                 overflow: 'hidden',
-                color: '#FFF',
-                boxShadow: '0 15px 35px rgba(0,0,0,0.2)',
-                border: plan.isPopular ? `2px solid #C8956C` : 'none'
+                color: textColor,
+                boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
             }}
         >
-            {plan.isPopular && (
-                <div style={{
-                    position: 'absolute', top: '16px', right: '16px',
-                    background: '#C8956C', padding: '4px 12px',
-                    borderRadius: '20px', fontSize: '9px', fontWeight: 900,
-                    textTransform: 'uppercase', letterSpacing: '0.1em'
-                }}>Most Popular</div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>{isPlatinum ? '💎' : '👑'}</span>
+                <h3 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>{plan.name}</h3>
+            </div>
             
-            <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '20px', fontWeight: 900, margin: '0 0 4px', textTransform: 'uppercase', italic: 'italic' }}>{plan.name}</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                    <span style={{ fontSize: '24px', fontWeight: 900 }}>₹{plan.price}</span>
-                    <span style={{ fontSize: '10px', opacity: 0.7, fontWeight: 700 }}>/ {plan.duration} DAYS</span>
-                </div>
+            <div>
+                <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 2px 0' }}>₹{plan.price}</h2>
+                <p style={{ fontSize: '11px', fontWeight: 700, color: mutedColor, margin: 0 }}>Valid for {plan.duration} days</p>
             </div>
 
-            <div style={{ spaceY: '10px', marginBottom: '24px' }}>
-                {(plan.benefits || []).slice(0, 3).map((benefit, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <ShieldCheck size={10} color="#FFF" />
-                        </div>
-                        <span style={{ fontSize: '11px', fontWeight: 700, opacity: 0.9 }}>{benefit}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+                {/* Custom discount bullets */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '14px', color: bulletColor }}>•</span>
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF on All Services</span>
+                </div>
+                {/* Benefits bullets */}
+                {(plan.benefits || []).slice(0, 2).map((benefit, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '14px', color: bulletColor }}>•</span>
+                        <span style={{ fontSize: '11px', fontWeight: 700 }}>{benefit}</span>
                     </div>
                 ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
-                <div style={{ 
-                    flex: 1, background: 'rgba(255,255,255,0.1)', 
-                    padding: '8px', borderRadius: '16px', textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                }}>
-                    <p style={{ fontSize: '8px', fontWeight: 900, margin: '0 0 2px', opacity: 0.6 }}>SERVICES</p>
-                    <p style={{ fontSize: '12px', fontWeight: 900 }}>{plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF</p>
-                </div>
-                <div style={{ 
-                    flex: 1, background: 'rgba(255,255,255,0.1)', 
-                    padding: '8px', borderRadius: '16px', textAlign: 'center',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                }}>
-                    <p style={{ fontSize: '8px', fontWeight: 900, margin: '0 0 2px', opacity: 0.6 }}>PRODUCTS</p>
-                    <p style={{ fontSize: '12px', fontWeight: 900 }}>{plan.productDiscountValue}{plan.productDiscountType === 'percentage' ? '%' : '₹'} OFF</p>
-                </div>
-            </div>
-            
             <motion.button 
                 whileTap={{ scale: 0.95 }}
                 style={{
-                    marginTop: '24px', width: '100%', py: '12px',
-                    height: '48px', background: '#FFF', color: '#000',
-                    border: 'none', borderRadius: '16px', fontSize: '11px',
-                    fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em'
+                    marginTop: '8px',
+                    width: '100%',
+                    height: '42px',
+                    background: isGold ? '#000' : '#FFF',
+                    color: isGold ? '#FFF' : '#000',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontSize: '11px',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
                 }}
             >
-                Get Started
+                Join Now
             </motion.button>
         </motion.div>
     );
@@ -325,7 +323,7 @@ export default function AppHomePage() {
     useEffect(() => {
         if (!selectedServiceCategory && categories?.length > 0) {
             const firstCat = (categories || []).find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
-            setSelectedServiceCategory('All');
+            if (firstCat) setSelectedServiceCategory(firstCat.name);
         }
     }, [categories, gender, selectedServiceCategory]);
 
@@ -877,18 +875,8 @@ export default function AppHomePage() {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.5, ease: "easeOut" }}
-                                    onClick={() => {
-                                        const current = filteredPromos[currentPromoIndex];
-                                        if (current?.isLookbook) {
-                                            navigate(`/app/salon/${activeOutletId}`, { state: { activeTab: 'Lookbook' } });
-                                        } else if (current?.couponCode) {
-                                            navigate('/app/booking', { state: { promoCode: current.couponCode } });
-                                        } else {
-                                            navigate(current?.link || '/app/booking');
-                                        }
-                                    }}
                                     style={{
-                                        position: 'absolute', inset: 0, cursor: 'pointer',
+                                        position: 'absolute', inset: 0,
                                         background: 'linear-gradient(135deg, #1a120c 0%, #2d2118 50%, #0d0805 100%)',
                                         display: 'flex', alignItems: 'flex-end',
                                     }}
@@ -996,12 +984,7 @@ export default function AppHomePage() {
                                     <motion.div
                                         key={outlet._id}
                                         whileTap={{ scale: 0.98 }}
-                                        onClick={() => {
-                                            if (outlet.isMock) return;
-                                            setActiveOutletId(outlet._id);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                    style={{
+                                        style={{
                                         flexShrink: 0,
                                         width: '240px',
                                         background: colors.card,
@@ -1010,7 +993,6 @@ export default function AppHomePage() {
                                         border: `1px solid ${colors.border}`,
                                         boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.05)' : '0 10px 20px rgba(0,0,0,0.2)',
                                         position: 'relative',
-                                        cursor: 'pointer'
                                     }}
                                 >
                                     <div style={{ height: '120px', width: '100%', position: 'relative' }}>
@@ -1062,76 +1044,7 @@ export default function AppHomePage() {
                     </motion.div>
                 )}
 
-                {/* ── 3. SERVICE CATEGORIES EXPLORER ── */}
-                <motion.div variants={fadeUp} style={{ padding: '32px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <LayoutGrid size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Service Categories</span>
-                        </div>
-                        <button
-                            style={{ fontSize: '12px', color: colors.accent, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}
-                            onClick={() => navigate('/app/services')}
-                        >
-                            View All
-                        </button>
-                    </div>
-
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                        {['All', ...(categories || []).filter(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender)).map(c => c.name)].map((catName) => {
-                            const isActive = selectedServiceCategory === catName;
-                            const catObj = (categories || []).find(c => c.name === catName);
-                            const iconMap = {
-                                'Haircuts': 'https://cdn-icons-png.flaticon.com/512/2916/2916035.png',
-                                'Styling': 'https://cdn-icons-png.flaticon.com/512/3228/3228741.png',
-                                'Coloring': 'https://cdn-icons-png.flaticon.com/512/2916/2916086.png',
-                                'Facial': 'https://cdn-icons-png.flaticon.com/512/3228/3228741.png',
-                                'All': 'https://cdn-icons-png.flaticon.com/512/10410/10410884.png'
-                            };
-
-                            return (
-                                <motion.div
-                                    key={catName}
-                                    style={{
-                                        flexShrink: 0,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: '8px'
-                                    }}
-                                    onClick={() => navigate(`/app/services?category=${encodeURIComponent(catName)}`)}
-                                >
-                                    <div style={{
-                                        width: '64px',
-                                        height: '64px',
-                                        borderRadius: '20px',
-                                        background: colors.card,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        border: `1.5px solid ${isActive ? colors.accent : colors.border}`,
-                                        transition: 'all 0.3s ease'
-                                    }}>
-                                        <img
-                                            src={catObj?.image || iconMap[catName] || iconMap['All']}
-                                            style={{ width: '32px', height: '32px' }}
-                                            alt={catName}
-                                        />
-                                    </div>
-                                    <span style={{
-                                        fontSize: '11px',
-                                        fontWeight: 600,
-                                        color: isActive ? colors.accent : colors.textMuted,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.02em'
-                                    }}>
-                                        {catName}
-                                    </span>
-                                </motion.div>
-                            );
-                        })}
-                    </div>
-                </motion.div>
+                {/* ── 3. (REMOVED) SERVICE CATEGORIES EXPLORER ── */}
 
                 {/* ── 4. PRODUCT CATEGORIES ── */}
                 {productCategories.length > 0 && (
@@ -1194,7 +1107,7 @@ export default function AppHomePage() {
                                 const sourceServices = services || [];
                                 const filtered = sourceServices.filter(s =>
                                     s.status === 'active' &&
-                                    (selectedServiceCategory === 'All' || !selectedServiceCategory || s.category === selectedServiceCategory)
+                                    (!selectedServiceCategory || s.category === selectedServiceCategory)
                                 );
                                 if (filtered.length === 0) return null;
                                 return filtered.map(service => (
@@ -1254,7 +1167,7 @@ export default function AppHomePage() {
                                         </div>
                                     </div>
                                     <div style={{ padding: '12px' }}>
-                                        <p style={{ fontSize: '12px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                        <p style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>
                                             {product.name}
                                         </p>
                                         <p style={{ fontSize: '13px', fontWeight: 900, color: colors.accent, margin: 0 }}>
@@ -1327,13 +1240,13 @@ export default function AppHomePage() {
                 {!isMapView && membershipPlans.length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
                         <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                            Membership Rituals
+                            Premium Memberships
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <Crown size={20} color={colors.accent} />
                                 <div>
-                                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Exclusive Rituals</h3>
+                                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Membership Hub</h3>
                                     <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Elevate your status with our tiered privileges</p>
                                 </div>
                             </div>

@@ -60,7 +60,7 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
                 )}
             </div>
             
-            <div className="absolute bottom-[100px] left-2 z-20 px-2 py-1 rounded-md bg-[#C8956C] text-white text-[8px] font-bold tracking-widest uppercase">
+            <div className="absolute top-2 left-2 z-20 px-2 py-1 rounded-md bg-[#C8956C]/90 backdrop-blur-sm text-white text-[8px] font-extrabold tracking-widest uppercase shadow-sm">
                 {product.brand}
             </div>
 
@@ -69,13 +69,13 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
                     <h3
                         onClick={() => onOpenProduct(product._id || product.id)}
                         style={{ color: colors.text }}
-                        className="font-bold text-[13px] leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-2 cursor-pointer flex-1 underline-offset-2 hover:underline decoration-[#C8956C]/30"
+                        className="font-bold text-[14px] leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-none cursor-pointer flex-1 underline-offset-2 hover:underline decoration-[#C8956C]/30"
                     >
                         {product.name}
                     </h3>
                     <div className="flex items-center gap-0.5 shrink-0 mt-0.5">
                         <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                        <span className="text-[10px] font-bold" style={{ color: colors.textMuted }}>{product.rating}</span>
+                        <span className="text-[10px] font-bold" style={{ color: colors.textMuted }}>{Number(product.rating || 0).toFixed(1)}</span>
                     </div>
                 </div>
                 <div className="mt-auto pt-2 flex items-center justify-between">
@@ -326,36 +326,77 @@ export default function AppShopPage() {
                 </div>
             </div>
 
-                {/* Categories - Matching Services Style */}
-                <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto px-4 pb-2 -mt-4">
+                {/* Categories - Premium Circular Style */}
+                <div className="app-scroll no-scrollbar flex gap-4 overflow-x-auto px-4 pb-4 -mt-4">
                     {categories.map(cat => {
                         const isActive = activeCategory === cat.name;
                         return (
-                            <motion.button
+                            <motion.div
                                 key={cat.name}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleCategoryChange(cat.name)}
                                 style={{
-                                    background: isActive ? '#C8956C' : colors.card,
-                                    color: isActive ? '#FFFFFF' : colors.text,
-                                    border: isActive ? 'none' : `1.5px solid ${colors.border}`,
-                                    borderRadius: '12px 4px 12px 4px',
-                                    transition: 'all 0.3s ease',
-                                    padding: '10px 18px',
-                                    flexShrink: 0
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    flexShrink: 0,
+                                    cursor: 'pointer'
                                 }}
                             >
-                                <span 
+                                <div style={{
+                                    width: '72px',
+                                    height: '72px',
+                                    borderRadius: '50%',
+                                    padding: '3px',
+                                    background: isActive ? '#C8956C' : 'transparent',
+                                    border: isActive ? 'none' : `1px solid ${colors.border}`,
+                                    transition: 'all 0.3s ease',
+                                    position: 'relative',
+                                    zIndex: 2
+                                }}>
+                                    <div style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        borderRadius: '50%',
+                                        overflow: 'hidden',
+                                        background: colors.card,
+                                        border: `2px solid ${isLight ? '#fff' : '#000'}`
+                                    }}>
+                                        <img 
+                                            src={cat.img} 
+                                            alt={cat.name}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div 
                                     style={{ 
-                                        fontSize: '11px', 
-                                        fontWeight: 800,
-                                        letterSpacing: '0.05em',
-                                        textTransform: 'uppercase'
+                                        background: isActive ? '#C8956C' : colors.card,
+                                        color: isActive ? '#FFFFFF' : colors.text,
+                                        borderRadius: '12px 4px 12px 4px',
+                                        padding: '4px 12px',
+                                        boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.2)' : 'none',
+                                        border: isActive ? 'none' : `1px solid ${colors.border}`,
+                                        marginTop: '-12px',
+                                        zIndex: 3,
+                                        minWidth: '60px',
+                                        textAlign: 'center'
                                     }}
                                 >
-                                    {cat.name}
-                                </span>
-                            </motion.button>
+                                    <span 
+                                        style={{ 
+                                            fontSize: '9px', 
+                                            fontWeight: 800,
+                                            letterSpacing: '0.05em',
+                                            textTransform: 'uppercase'
+                                        }}
+                                    >
+                                        {cat.name}
+                                    </span>
+                                </div>
+                            </motion.div>
                         );
                     })}
                 </div>
