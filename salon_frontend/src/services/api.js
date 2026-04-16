@@ -15,10 +15,15 @@ if (envUrl && envUrl.startsWith('http')) {
     try {
         const parsed = new URL(cleaned);
         // If hostname is just 'https' or 'http', it's a malformed config
-        if (parsed.hostname === 'https' || parsed.hostname === 'http' || !parsed.hostname.includes('.')) {
-            API_URL = '/api';
-        } else {
+        // Allow dots (domains) or 'localhost'
+        const isLocalhost = parsed.hostname === 'localhost';
+        const isProperDomain = parsed.hostname.includes('.');
+        const isInvalidProtocolHost = parsed.hostname === 'https' || parsed.hostname === 'http';
+
+        if (!isInvalidProtocolHost && (isProperDomain || isLocalhost)) {
             API_URL = cleaned;
+        } else {
+            API_URL = '/api';
         }
     } catch (e) {
         API_URL = '/api';

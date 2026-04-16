@@ -63,7 +63,8 @@ export default function AppBookingDetailsPage() {
                         ...b,
                         service: b.serviceId || b.service,
                         staff: b.staffId || b.staff,
-                        outlet: b.outletId || b.outlet
+                        outlet: b.outletId || b.outlet,
+                        time: b.time
                     });
                 }
             } catch (err) {
@@ -206,7 +207,7 @@ export default function AppBookingDetailsPage() {
                                 <Clock size={10} className="text-[#C8956C]" /> Time
                             </p>
                             <p className="text-sm font-bold uppercase tracking-tight">
-                                {new Date(booking.appointmentDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                {booking.time || new Date(booking.appointmentDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
                             </p>
                         </div>
                         <div className="space-y-2">

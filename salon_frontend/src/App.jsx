@@ -123,7 +123,7 @@ import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
 import { CMSProvider } from './contexts/CMSContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
-import { SocketProvider } from './contexts/SocketContext';
+
 
 function ScrollToHash() {
   const { pathname, hash, state } = useLocation();
@@ -221,7 +221,7 @@ function App() {
           },
         }}
       />
-      <SocketProvider>
+
       <AuthProvider>
         <CustomerAuthProvider>
           <NotificationHandler />
@@ -560,7 +560,7 @@ function App() {
           </BusinessProvider>
         </CustomerAuthProvider>
       </AuthProvider>
-      </SocketProvider>
+
     </Router>
   );
 }

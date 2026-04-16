@@ -4,7 +4,7 @@ import { useFinance } from './FinanceContext';
 import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useAuth } from './AuthContext';
-import { useSocket } from './SocketContext';
+
 import mockApi from '../services/mock/mockApi';
 import api from '../services/api';
 
@@ -94,7 +94,7 @@ export const InventoryProvider = ({ children }) => {
     const { outletsSnapshot = [], salon, activeSalonId } = useBusiness();
     const { user: dashboardUser, isPlanActive } = useAuth();
     const { isCustomerAuthenticated } = useCustomerAuth();
-    const socket = useSocket();
+
     const [products, setProducts] = useState([]);
     const [movements, setMovements] = useState(() => getInitialState('inv_movements', INITIAL_MOVEMENTS));
     const [purchases, setPurchases] = useState(() => getInitialState('inv_purchases', INITIAL_PURCHASES));
@@ -192,41 +192,14 @@ export const InventoryProvider = ({ children }) => {
         }
     }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockInHistory, fetchSupplierInvoices]);
 
-    useEffect(() => {
-        if (!socket || !salon?._id) return;
-        
-        socket.emit('join_salon', salon._id);
-
-        socket.on('product_liked', ({ productId, likes, likedBy }) => {
-            setProducts(prev => prev.map(p => 
-                (p._id === productId || p.id === productId) 
-                    ? { ...p, likes, likedBy } 
-                    : p
-            ));
-        });
-
-        return () => {
-            socket.off('product_liked');
-        };
-    }, [socket, salon?._id]);
-
     const toggleProductLike = async (productId) => {
         if (!isCustomerAuthenticated) return;
         
-        const currentSalonId = salon?._id || localStorage.getItem('active_salon_id');
-
-        if (socket?.connected) {
-            socket.emit('product_like_toggle', { 
-                productId, 
-                customerId: dashboardUser?._id || localStorage.getItem('customer_user') ? JSON.parse(localStorage.getItem('customer_user'))._id : null,
-                salonId: currentSalonId
-            });
-            return;
-        }
-
         try {
             const res = await api.post(`/products/${productId}/like`);
-            // Handled by socket listener
+            if (res.data.success) {
+                fetchProducts(); // Refresh to see updated likes
+            }
         } catch (error) {
             console.error('Failed to toggle like:', error);
         }

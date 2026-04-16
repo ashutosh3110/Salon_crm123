@@ -66,6 +66,9 @@ const bookingSchema = new mongoose.Schema({
     },
     notes: {
         type: String
+    },
+    time: {
+        type: String
     }
 }, {
     timestamps: true

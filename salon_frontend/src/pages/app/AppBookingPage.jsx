@@ -391,30 +391,45 @@ export default function AppBookingPage() {
     };
 
     // Helper to check if a specific stylist is free at a given time
-    const checkStylistAvailable = (staffId, timeStr, duration) => {
-        // While loading, assume unavailable to prevent double-booking during transit
-        if (loadingAvailability) return false;
-        
-        // If data fetch failed but we're not loading, default to true (optimistic)
-        if (!availabilityData || !selectedDate) return true;
-        
-        const [time, modifier] = timeStr.split(' ');
-        let [h, m] = time.split(':').map(Number);
-        if (h === 12) h = 0;
-        if (modifier === 'PM') h += 12;
+    const checkStylistAvailable = (staff, timeStr, duration) => {
+        if (loadingAvailability || !selectedDate) return false;
+        if (!staff) return false;
 
+        // 1. Check Staff Specific Availability (Working Hours for that staff)
+        const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        const staffAvailability = staff.availability?.days?.[dayName] || [];
+        
+        // Convert timeStr (e.g. "10:30") to minutes from midnight
+        const [h, m] = timeStr.split(':').map(Number);
+        const slotStartInMinutes = h * 60 + m;
+        const slotEndInMinutes = slotStartInMinutes + duration;
+
+        // If staff has defined availability, they MUST be within one of their shifts
+        if (staff.availability && staffAvailability.length > 0) {
+            const isInShift = staffAvailability.some(shift => {
+                const [sh, sm] = shift.start.split(':').map(Number);
+                const [eh, em] = shift.end.split(':').map(Number);
+                const shiftStart = sh * 60 + sm;
+                const shiftEnd = eh * 60 + em;
+                return slotStartInMinutes >= shiftStart && slotEndInMinutes <= shiftEnd;
+            });
+            if (!isInShift) return false;
+        }
+
+        // 2. Check overlap with existing bookings
+        if (!availabilityData) return true;
+        
         const start = new Date(selectedDate.date);
         start.setHours(h, m, 0, 0);
         const end = new Date(start.getTime() + duration * 60000);
 
         const isOverlap = availabilityData.bookings?.some(b => {
             const sid = b.staffId?._id || b.staffId?.id || b.staffId;
-            if (!sid || String(sid) !== String(staffId)) return false;
+            if (String(sid) !== String(staff._id || staff.id)) return false;
             
-            const bStart = new Date(b.start);
-            const bEnd = new Date(b.end);
+            const bStart = new Date(b.appointmentDate || b.start);
+            const bEnd = new Date(new Date(bStart).getTime() + (b.duration || 30) * 60000);
             
-            // Check for valid dates
             if (isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return false;
             
             return (start < bEnd && end > bStart);
@@ -426,34 +441,47 @@ export default function AppBookingPage() {
     // Calculate dynamic time slots based on totalDuration and staff availability
     const timeSlots = useMemo(() => {
         if (!selectedDate || !currentOutlet) return [];
-        const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' });
-        const rawSlots = generateTimeSlots(dayName, totalDuration || 30, currentOutlet);
+        const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         
-        // If still loading or no data yet, show slots as loading/disabled
-        if (loadingAvailability || !availabilityData) {
+        // If a specific staff is selected, use their EXACT availability blocks as slots
+        if (selectedStaff && selectedStaff.availability?.days?.[dayName]) {
+            const staffShifts = selectedStaff.availability.days[dayName];
+            return staffShifts.map(shift => {
+                const label = `${shift.start} - ${shift.end}`;
+                
+                // Check if this block is already fully booked or overlaps? 
+                // For now, we'll mark as available if the staff exists and shift is defined
+                return {
+                    time: label,
+                    start: shift.start,
+                    end: shift.end,
+                    available: true // In block mode, we show the whole block
+                };
+            });
+        }
+
+        // Fallback for "Any Stylist" or non-staff specific view
+        const dayNameFull = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' });
+        const rawSlots = generateTimeSlots(dayNameFull, totalDuration || 30, currentOutlet);
+        
+        if (loadingAvailability) {
             return rawSlots.map(s => ({ ...s, available: false }));
         }
 
         const salonStaff = outletStaff;
         if (salonStaff.length === 0) return rawSlots.map(s => ({ ...s, available: false }));
 
-        // Overlay actual availability: a slot is available if at least ONE stylist is free
-        const evaluated = rawSlots.map(slot => {
+        return rawSlots.map(slot => {
             const availableCount = salonStaff.filter(s => 
-                checkStylistAvailable(s._id || s.id, slot.time, totalDuration || 30)
+                checkStylistAvailable(s, slot.time, totalDuration || 30)
             ).length;
             
             return { 
                 ...slot, 
-                available: availableCount > 0,
-                availableCount // Useful for debugging
+                available: availableCount > 0
             };
         });
-
-        console.log(`[AVAILABILITY] Evaluated ${rawSlots.length} slots for ${selectedDate.date.toDateString()}. Staff count: ${salonStaff.length}. Bookings: ${availabilityData.bookings.length}`);
-        
-        return evaluated;
-    }, [selectedDate, totalDuration, currentOutlet, availabilityData, loadingAvailability, outletStaff]);
+    }, [selectedDate, totalDuration, currentOutlet, loadingAvailability, outletStaff, selectedStaff]);
 
     const finalGroups = useMemo(() => {
         const q = serviceSearch.toLowerCase().trim();
@@ -934,35 +962,40 @@ export default function AppBookingPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50" style={{ color: colors.text }}>Enter Manual Time</p>
-                            <div
-                                style={{
-                                    background: isLight
-                                        ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                                        : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                                    borderRadius: '20px 6px 20px 6px',
-                                    padding: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '12px',
-                                    border: `1px solid ${colors.border}`
-                                }}
-                            >
-                                <Clock size={18} style={{ color: '#C8956C' }} />
-                                <input
-                                    type="text"
-                                    value={selectedTime || ''}
-                                    onChange={(e) => setSelectedTime(e.target.value)}
-                                    placeholder="e.g. 10:30 AM"
-                                    style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '15px', fontWeight: 700, letterSpacing: '0.1em' }}
-                                />
-                            </div>
-                            <p className="text-[9px] font-bold opacity-30 uppercase tracking-widest pl-1">Format: HH:MM AM/PM (e.g., 11:00 AM)</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50" style={{ color: colors.text }}>Available Slots</p>
+                            
+                            {selectedDate ? (
+                                <div className="grid grid-cols-3 gap-3 max-h-[250px] overflow-y-auto pr-1 custom-scrollbar">
+                                    {timeSlots.filter(slot => slot.available).map((slot, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setSelectedTime(slot.time)}
+                                            style={{
+                                                background: selectedTime === slot.time ? '#C8956C' : colors.card,
+                                                borderColor: selectedTime === slot.time ? '#C8956C' : colors.border,
+                                                color: selectedTime === slot.time ? '#fff' : colors.text,
+                                            }}
+                                            className={`py-3 rounded-2xl border text-[11px] font-bold transition-all ${selectedTime === slot.time ? 'shadow-lg shadow-[#C8956C]/20' : ''}`}
+                                        >
+                                            {slot.time}
+                                        </button>
+                                    ))}
+                                    {timeSlots.filter(slot => slot.available).length === 0 && (
+                                        <div className="col-span-3 py-8 text-center opacity-40 text-[10px] font-bold uppercase tracking-widest">
+                                            No slots available for this day
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="py-10 text-center border-2 border-dashed rounded-3xl opacity-20" style={{ borderColor: colors.border }}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest">Select a date to view slots</p>
+                                </div>
+                            )}
                         </div>
 
                         <button
                             onClick={() => goTo(3)}
-                            disabled={!selectedDate || !selectedTime || selectedTime.length < 4}
+                            disabled={!selectedDate || !selectedTime}
                             className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl"
                         >
                             Next <ArrowRight size={16} />

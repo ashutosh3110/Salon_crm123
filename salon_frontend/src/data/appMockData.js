@@ -66,16 +66,19 @@ export function generateTimeSlots(dayOfWeek, serviceDuration = 30, outlet = null
     const targetOutlet = outlet || MOCK_OUTLET;
     const dayHours = targetOutlet.workingHours?.find(d => d.day === dayOfWeek);
 
-    // Fallback if working hours not found (common for outlets without explicit hours in mock)
+    const step = 15; // Granularity of 15 minutes for starting times
+    const duration = Math.max(15, serviceDuration);
+
+    // Fallback if working hours not found
     if (!dayHours || !dayHours.isOpen) {
-        // Provide default 10 AM - 8 PM if not specified
         if (!dayHours) {
             const slots = [];
-            for (let t = 600; t + serviceDuration <= 1200; t += 30) {
+            // Default 10 AM to 8 PM
+            for (let t = 600; t + duration <= 1200; t += step) {
                 const h = Math.floor(t / 60);
                 const m = t % 60;
                 const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-                slots.push({ time: label, available: Math.random() > 0.2, isPast: false });
+                slots.push({ time: label, available: true, isPast: false });
             }
             return slots;
         }
@@ -88,7 +91,7 @@ export function generateTimeSlots(dayOfWeek, serviceDuration = 30, outlet = null
     const closeMinutes = closeH * 60 + closeM;
 
     const slots = [];
-    for (let t = openMinutes; t + serviceDuration <= closeMinutes; t += 30) {
+    for (let t = openMinutes; t + duration <= closeMinutes; t += step) {
         const h = Math.floor(t / 60);
         const m = t % 60;
         const label = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
