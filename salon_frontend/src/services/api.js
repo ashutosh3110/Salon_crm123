@@ -1,7 +1,30 @@
 import axios from 'axios';
 
 const envUrl = import.meta.env.VITE_API_URL;
-const API_URL = (envUrl && envUrl.startsWith('http')) ? envUrl : '/api';
+let API_URL = '/api';
+
+if (envUrl && envUrl.startsWith('http')) {
+    let cleaned = envUrl;
+    // Fix accidental double protocol typos like https://https://domain.com
+    if (cleaned.toLowerCase().includes('://https://')) {
+        cleaned = cleaned.replace(/:\/\/https:\/\//i, '://');
+    } else if (cleaned.toLowerCase().includes('://http://')) {
+        cleaned = cleaned.replace(/:\/\/http:\/\//i, '://');
+    }
+
+    try {
+        const parsed = new URL(cleaned);
+        // If hostname is just 'https' or 'http', it's a malformed config
+        if (parsed.hostname === 'https' || parsed.hostname === 'http' || !parsed.hostname.includes('.')) {
+            API_URL = '/api';
+        } else {
+            API_URL = cleaned;
+        }
+    } catch (e) {
+        API_URL = '/api';
+    }
+}
+
 export const API_BASE_URL = API_URL;
 
 const api = axios.create({

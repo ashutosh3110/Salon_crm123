@@ -10,10 +10,27 @@ export const SocketProvider = ({ children }) => {
         const envUrl = import.meta.env.VITE_API_URL;
 
         if (envUrl && envUrl.startsWith('http')) {
-            // Use configured API URL, removing trailing slash and /api suffix
-            socketUrl = envUrl.replace('/api', '').replace(/\/$/, '');
+            let baseUrl = envUrl.replace('/api', '').replace(/\/$/, '');
+            
+            // Fix accidental double protocol typos like https://https://domain.com
+            if (baseUrl.toLowerCase().includes('://https://')) {
+                baseUrl = baseUrl.replace(/:\/\/https:\/\//i, '://');
+            } else if (baseUrl.toLowerCase().includes('://http://')) {
+                baseUrl = baseUrl.replace(/:\/\/http:\/\//i, '://');
+            }
+
+            try {
+                const parsed = new URL(baseUrl);
+                // If hostname is just 'https' or 'http', something is wrong
+                if (parsed.hostname === 'https' || parsed.hostname === 'http' || !parsed.hostname.includes('.')) {
+                    socketUrl = window.location.origin;
+                } else {
+                    socketUrl = baseUrl;
+                }
+            } catch (e) {
+                socketUrl = window.location.origin;
+            }
         } else {
-            // Fallback to current origin for production/same-host setups
             socketUrl = window.location.origin;
         }
 
