@@ -29,6 +29,13 @@ export default function AppOrderDetailsPage() {
         fetchOrderDetails();
     }, [id]);
 
+    // Derived values for robust breakdown display
+    const itemsTotal = order?.subtotal || order?.items?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+    const deliveryFee = order?.deliveryCharge || (order?.deliveryPreference === 'home' ? (order?.outletId?.config?.deliveryCharge || 0) : 0);
+    const totalAmount = order?.totalAmount || 0;
+    // Calculate discount if it's explicitly stored OR infer it from the difference
+    const membershipDiscount = order?.membershipDiscount || Math.max(0, (itemsTotal + deliveryFee) - totalAmount);
+
     const statusConfig = {
         pending: { color: '#F59E0B', label: 'Order Pending', icon: Clock, bg: 'rgba(245,158,11,0.1)' },
         processing: { color: '#3B82F6', label: 'Processing', icon: ShoppingBag, bg: 'rgba(59,130,246,0.1)' },
@@ -132,21 +139,37 @@ export default function AppOrderDetailsPage() {
                 </div>
 
                 {/* Summary & Payment Info */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="p-6 rounded-[32px] space-y-3" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
-                        <CreditCard size={18} className="text-[#C8956C]" />
-                        <div>
-                            <p className="text-[8px] font-black uppercase tracking-widest opacity-40">Payment Method</p>
-                            <p className="text-[10px] font-black uppercase tracking-tight mt-0.5" style={{ color: colors.text }}>
-                                {order.paymentMethod === 'cod' ? 'Pay at Salon' : order.paymentMethod?.toUpperCase()}
-                            </p>
-                        </div>
+                <div className="p-8 rounded-[40px] space-y-4" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2">Order Summary</h3>
+                    
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Items Total</span>
+                        <span className="font-black italic tracking-tighter" style={{ color: colors.text }}>₹{itemsTotal.toLocaleString()}</span>
                     </div>
-                    <div className="p-6 rounded-[32px] space-y-3" style={{ background: colors.card, border: `1.5px solid ${colors.border}`, borderColor: '#C8956C33' }}>
-                        <Zap size={18} className="text-[#C8956C]" fill="#C8956C" />
-                        <div>
-                            <p className="text-[8px] font-black uppercase tracking-widest" style={{ color: '#C8956C' }}>Total Bill</p>
-                            <p className="text-xl font-black italic tracking-tighter mt-0.5" style={{ color: '#C8956C' }}>₹{order.totalAmount}</p>
+
+                    {membershipDiscount > 0 && (
+                        <div className="flex justify-between items-center text-sm">
+                            <span className="font-black uppercase text-[10px] tracking-widest text-[#C8956C]">Membership Discount</span>
+                            <span className="font-black italic tracking-tighter text-[#C8956C]">- ₹{Number(membershipDiscount).toFixed(2)}</span>
+                        </div>
+                    )}
+
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="opacity-60 font-bold uppercase text-[10px] tracking-widest">Delivery Fee</span>
+                        <span className="font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
+                            {deliveryFee > 0 ? `₹${deliveryFee}` : 'FREE'}
+                        </span>
+                    </div>
+
+                    <div className="pt-4 mt-2 border-t border-dashed space-y-4" style={{ borderTopColor: colors.border }}>
+                        <div className="flex justify-between items-center overflow-hidden">
+                             <div className="flex flex-col">
+                                <span className="opacity-100 font-black uppercase text-[12px] tracking-widest" style={{ color: colors.text }}>Total Amount</span>
+                                <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest">
+                                    Paid via {order.paymentMethod === 'cod' ? 'In-Salon' : order.paymentMethod?.toUpperCase()}
+                                </p>
+                             </div>
+                             <span className="text-3xl font-black italic tracking-tighter" style={{ color: '#C8956C' }}>₹{totalAmount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>

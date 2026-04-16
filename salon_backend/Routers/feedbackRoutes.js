@@ -6,9 +6,11 @@ const {
     updateFeedbackStatus 
 } = require('../Controllers/feedbackController');
 
+const { protect } = require('../Middleware/auth');
+
 router.route('/')
     .get(getFeedbacks)
-    .post(createFeedback);
+    .post(protect, createFeedback);
 
 router.route('/:id')
     .patch(updateFeedbackStatus);

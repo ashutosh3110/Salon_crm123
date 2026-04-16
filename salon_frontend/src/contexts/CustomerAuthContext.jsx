@@ -52,6 +52,7 @@ export function CustomerAuthProvider({ children }) {
             gender: client.gender || '',
             birthday: client.birthday || null,
             loyaltyPoints: client.loyaltyPoints || 0,
+            referralCode: client.referralCode || '',
             tenantId: client.tenantId,
             role: 'customer',
             isNewUser: client.isNewUser ?? true,
@@ -83,15 +84,11 @@ export function CustomerAuthProvider({ children }) {
         return cust;
     };
 
- const customerLogout = async () => {
+    const customerLogout = async () => {
         const fcmToken = localStorage.getItem('fcm_token');
         if (fcmToken) {
-            try {
-                await api.post('/notifications/remove-token', { fcmToken });
-                localStorage.removeItem('fcm_token');
-            } catch (err) {
-                console.warn('[CustomerAuth] Failed to remove FCM token:', err.message);
-            }
+            // Cleanup FCM token from storage
+            localStorage.removeItem('fcm_token');
         }
         localStorage.removeItem('customer_token');
         localStorage.removeItem('customer_user');
@@ -120,6 +117,27 @@ export function CustomerAuthProvider({ children }) {
         }
     };
 
+    const refreshProfile = async () => {
+        if (!localStorage.getItem('customer_token')) return;
+        try {
+            const res = await api.get('/auth/profile');
+            if (res.data?.success) {
+                const refreshed = { ...customer, ...res.data.data };
+                localStorage.setItem('customer_user', JSON.stringify(refreshed));
+                setCustomer(refreshed);
+                return refreshed;
+            }
+        } catch (err) {
+            console.error('[CustomerAuth] Profile refresh failed:', err);
+        }
+    };
+
+    useEffect(() => {
+        if (customer?._id) {
+            refreshProfile();
+        }
+    }, [customer?._id]);
+
     const value = useMemo(() => ({
         customer,
         loading,
@@ -128,6 +146,7 @@ export function CustomerAuthProvider({ children }) {
         customerLogout,
         completeProfile,
         updateCustomer,
+        refreshProfile,
         isCustomerAuthenticated: !!customer,
     }), [customer, loading]);
 

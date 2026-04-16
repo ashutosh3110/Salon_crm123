@@ -49,6 +49,11 @@ const customerSchema = new mongoose.Schema({
     walletBalance: {
         type: Number,
         default: 0
+    },
+    referralCode: {
+        type: String,
+        unique: true,
+        sparse: true
     }
 }, {
     timestamps: true

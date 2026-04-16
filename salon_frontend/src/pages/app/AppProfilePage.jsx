@@ -41,6 +41,25 @@ export default function AppProfilePage() {
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
     const [reviewSubmitted, setReviewSubmitted] = useState(false);
     const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteAccount = async () => {
+        setIsDeleting(true);
+        try {
+            const res = await api.delete('/auth/profile');
+            if (res.data.success) {
+                customerLogout();
+                navigate('/app/login');
+            }
+        } catch (err) {
+            console.error('Delete account failed:', err);
+            alert('Failed to delete account. Please contact support.');
+        } finally {
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
+        }
+    };
 
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
@@ -99,8 +118,7 @@ export default function AppProfilePage() {
     };
 
     const [rules, setRules] = useState({
-        earnRate: 1,
-        redeemRate: 1,
+        pointsRate: 100,
         minRedeemPoints: 100,
     });
 
@@ -137,8 +155,7 @@ export default function AppProfilePage() {
                     setRules((prev) => ({
                         ...prev,
                         ...data,
-                        earnRate: Number(data?.earnRate ?? prev.earnRate ?? 1),
-                        redeemRate: Number(data?.redeemRate ?? prev.redeemRate ?? 1),
+                        pointsRate: Number(data?.pointsRate ?? prev.pointsRate ?? 100),
                         minRedeemPoints: Number(data?.minRedeemPoints ?? prev.minRedeemPoints ?? 100),
                     }));
                 }
@@ -210,11 +227,73 @@ export default function AppProfilePage() {
         { icon: Users, label: 'Refer Friends', path: '/app/referrals', color: isLight ? 'text-emerald-600' : 'text-emerald-400' },
     ];
 
+    const [redeemSuccess, setRedeemSuccess] = useState(false);
+
+    const handleRedeem = async (pts) => {
+        try {
+            const res = await api.post('/loyalty/redeem', { points: pts });
+            if (res.data?.success) {
+                setRedeemSuccess(true);
+                // Update customer state locally
+                if (updateCustomer) {
+                    updateCustomer({
+                        loyaltyPoints: res.data.loyaltyPoints,
+                        walletBalance: res.data.walletBalance
+                    });
+                }
+                // Refresh records
+                initializeWallet();
+                setTimeout(() => setRedeemSuccess(false), 4000);
+            }
+        } catch (err) {
+            console.error('Redemption failed:', err);
+            // Optional: toast error
+        }
+    };
+
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
     const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" style={{ background: colors.bg, minHeight: '100svh' }} className="px-4 pb-32">
+            
+            <AnimatePresence>
+                {redeemSuccess && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="fixed top-24 left-6 right-6 z-[999] p-5 rounded-3xl flex items-center gap-5 overflow-hidden"
+                        style={{ 
+                            background: 'rgba(20, 20, 20, 0.9)',
+                            backdropFilter: 'blur(20px)',
+                            border: '1px solid rgba(200, 149, 108, 0.3)',
+                            boxShadow: '0 25px 50px rgba(0,0,0,0.5), 0 0 20px rgba(200, 149, 108, 0.1)'
+                        }}
+                    >
+                        <div className="w-12 h-12 rounded-2xl bg-[#C8956C]/20 flex items-center justify-center shrink-0 border border-[#C8956C]/30">
+                            <motion.div
+                                initial={{ scale: 0.5 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: 'spring', damping: 12 }}
+                            >
+                                <Zap size={24} className="text-[#C8956C]" fill="#C8956C" />
+                            </motion.div>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-sm font-black uppercase tracking-widest text-[#C8956C] mb-0.5">Points Redeemed</h3>
+                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-white">Added to your salon wallet</p>
+                        </div>
+                        <motion.div 
+                            className="absolute bottom-0 left-0 h-1 bg-[#C8956C]/40"
+                            initial={{ width: '0%' }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: 4 }}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className="pt-6 pb-4">
                 <h1 className="text-3xl font-black" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>Profile</h1>
                 <p className="text-[10px] uppercase tracking-widest font-bold opacity-50" style={{ color: colors.textMuted }}>Account & Privileges</p>
@@ -222,7 +301,7 @@ export default function AppProfilePage() {
 
 
             {/* Profile Card */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '4px' }} className="rounded-2xl p-5 shadow-sm">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}`, marginTop: '12px' }} className="rounded-2xl p-5 shadow-sm">
                 <div className="flex items-center gap-4">
                     <div className="relative group">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C8956C]/20 to-[#C8956C]/10 flex items-center justify-center shrink-0 border border-[#C8956C]/20 overflow-hidden">
@@ -465,7 +544,7 @@ export default function AppProfilePage() {
             </motion.div>
 
             {/* Membership Section - Moved here after details */}
-            <motion.div variants={fadeUp} className="mt-4">
+            <motion.div variants={fadeUp} className="mt-10">
                 {activeMembership ? (
                     <div
                         onClick={() => navigate('/app/membership')}
@@ -493,10 +572,38 @@ export default function AppProfilePage() {
 
                         <div className="relative z-10">
                             <h3 className="text-xl font-black italic tracking-tighter mb-1 uppercase">{activeMembership.planId?.name || 'Tier Plan'}</h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 mb-4">
                                 <Calendar size={12} className="opacity-60" />
                                 <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">Valid Thru: {formatDate(activeMembership.expiryDate)}</p>
                             </div>
+
+                            {/* Member Privileges / Discounts */}
+                            {(activeMembership.planId?.serviceDiscountValue > 0 || activeMembership.planId?.productDiscountValue > 0) && (
+                                <div className="flex gap-2 mt-4">
+                                    {activeMembership.planId?.serviceDiscountValue > 0 && (
+                                        <div className={`px-3 py-2 rounded-xl border border-white/10 ${activeMembership.planId?.id === 'gold' ? 'bg-black/5' : 'bg-white/10'} flex flex-col`}>
+                                            <span className="text-[8px] font-black opacity-50 uppercase tracking-tighter">Service Discount</span>
+                                            <span className="text-sm font-black">
+                                                {activeMembership.planId?.serviceDiscountType === 'percentage' 
+                                                    ? `${activeMembership.planId.serviceDiscountValue}%` 
+                                                    : `₹${activeMembership.planId.serviceDiscountValue}`}
+                                                <span className="text-[9px] opacity-60 ml-0.5">OFF</span>
+                                            </span>
+                                        </div>
+                                    )}
+                                    {activeMembership.planId?.productDiscountValue > 0 && (
+                                        <div className={`px-3 py-2 rounded-xl border border-white/10 ${activeMembership.planId?.id === 'gold' ? 'bg-black/5' : 'bg-white/10'} flex flex-col`}>
+                                            <span className="text-[8px] font-black opacity-50 uppercase tracking-tighter">Product Discount</span>
+                                            <span className="text-sm font-black">
+                                                {activeMembership.planId?.productDiscountType === 'percentage' 
+                                                    ? `${activeMembership.planId.productDiscountValue}%` 
+                                                    : `₹${activeMembership.planId.productDiscountValue}`}
+                                                <span className="text-[9px] opacity-60 ml-0.5">OFF</span>
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Card Number Lookalike/Member ID */}
@@ -538,19 +645,24 @@ export default function AppProfilePage() {
                 )}
             </motion.div>
 
-            {/* Loyalty Section - Moved slightly up */}
-            <motion.div variants={fadeUp} className="mt-6 space-y-4">
+            {/* Loyalty Section */}
+            <motion.div variants={fadeUp} className="mt-10 space-y-4">
                 <div className="flex items-center justify-between px-1">
                     <h3 className="text-[10px] font-bold uppercase tracking-[0.2em]" style={{ color: colors.textMuted }}>Rewards Balance</h3>
                 </div>
 
-                <LoyaltyCard points={Number(customer?.loyaltyPoints || 0)} redeemRate={rules.redeemRate} />
+                <LoyaltyCard 
+                    points={Number(customer?.loyaltyPoints || 0)} 
+                    pointsRate={rules.pointsRate} 
+                    onRedeem={handleRedeem}
+                    minRedeem={rules.minRedeemPoints}
+                />
 
-                <div className="grid grid-cols-2 gap-2.5 mt-4">
+                <div className="grid grid-cols-2 gap-2.5 mt-6">
                     <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
-                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Point Value</p>
-                        <p className="text-xl font-black text-[#C8956C]">₹{rules.redeemRate}</p>
-                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>per point</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Redemption Rule</p>
+                        <p className="text-xl font-black text-[#C8956C]">{rules.pointsRate} Pts = ₹1</p>
+                        <p className="text-[9px] italic mt-1 font-bold" style={{ color: colors.textMuted }}>Exchange Rate</p>
                     </div>
                     <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-xl p-4 text-center shadow-sm">
                         <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: colors.textMuted }}>Min. Redeem</p>
@@ -560,7 +672,7 @@ export default function AppProfilePage() {
                 </div>
             </motion.div>
             {/* Quick Links */}
-            <motion.div variants={fadeUp} className="space-y-3">
+            <motion.div variants={fadeUp} className="mt-10 space-y-3">
                 {quickLinks.map((link) => (
                     <motion.button
                         key={link.label}
@@ -662,31 +774,6 @@ export default function AppProfilePage() {
                                         />
                                     </div>
 
-                                    <div className="flex gap-2 pb-2">
-                                        <input type="file" multiple accept="image/*" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current.click()}
-                                            className="w-16 h-16 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1 shrink-0"
-                                            style={{ borderColor: colors.accent, color: colors.accent }}
-                                        >
-                                            <Camera size={20} />
-                                            <span className="text-[9px] font-black uppercase">Add Photo</span>
-                                        </button>
-                                        <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                                            {reviewImages.map((img, i) => (
-                                                <div key={i} className="w-16 h-16 rounded-xl overflow-hidden relative group shrink-0">
-                                                    <img src={img} className="w-full h-full object-cover" />
-                                                    <button 
-                                                        onClick={() => setReviewImages(reviewImages.filter((_, idx) => idx !== i))}
-                                                        className="absolute top-1 right-1 w-5 h-5 bg-black/50 text-white rounded-full flex items-center justify-center text-[10px]"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
 
                                     <button
                                         type="submit"
@@ -713,7 +800,7 @@ export default function AppProfilePage() {
 
 
             {/* Support & Legal */}
-            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-8">
+            <motion.div variants={fadeUp} style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-2xl overflow-hidden shadow-sm mt-10">
                 <button
                     onClick={() => navigate('/app/help')}
                     className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -724,13 +811,54 @@ export default function AppProfilePage() {
                 </button>
                 <button
                     onClick={() => navigate('/app/privacy')}
-                    className="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                    className="w-full flex items-center gap-4 p-4 border-b border-black/5 dark:border-white/5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                 >
                     <Shield className="w-5 h-5 opacity-40" />
                     <span className="text-sm font-bold flex-1 text-left" style={{ color: colors.text }}>Privacy Policy</span>
                     <ChevronRight className="w-4 h-4 opacity-20" />
                 </button>
+                <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full flex items-center gap-4 p-4 hover:bg-red-500/5 transition-colors group"
+                >
+                    <Shield className="w-5 h-5 text-red-500 opacity-40 group-hover:opacity-100" />
+                    <span className="text-sm font-bold flex-1 text-left text-red-500 opacity-60 group-hover:opacity-100">Delete Account</span>
+                    <ChevronRight className="w-4 h-4 opacity-10" />
+                </button>
             </motion.div>
+
+            {/* Delete Confirmation */}
+            <AnimatePresence>
+                {showDeleteConfirm && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !isDeleting && setShowDeleteConfirm(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(8px)' }} />
+                        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} style={{ background: colors.card, width: '100%', maxWidth: '340px', borderRadius: '32px', padding: '32px', position: 'relative', border: `1px solid ${colors.border}` }}>
+                            <div className="w-16 h-16 bg-red-600/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Shield size={32} className="text-red-600" />
+                            </div>
+                            <h3 className="text-xl font-black text-center mb-2 text-red-600">Delete Account?</h3>
+                            <p className="text-center text-xs opacity-60 mb-8 font-bold uppercase tracking-tighter leading-relaxed underline decoration-red-600/30">Warning: This action is permanent. All your bookings, loyalty points, and wallet balance will be lost forever.</p>
+                            <div className="flex flex-col gap-3">
+                                <button 
+                                    disabled={isDeleting}
+                                    onClick={handleDeleteAccount} 
+                                    className="w-full py-4 rounded-xl bg-red-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg shadow-red-600/20"
+                                >
+                                    {isDeleting ? 'Deleting Forever...' : 'I Understand, Delete Now'}
+                                </button>
+                                <button 
+                                    disabled={isDeleting}
+                                    onClick={() => setShowDeleteConfirm(false)} 
+                                    className="w-full py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border border-white/10" 
+                                    style={{ color: colors.text }}
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Logout */}
             <motion.div variants={fadeUp} className="mt-8 mb-6">

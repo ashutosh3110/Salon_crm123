@@ -4,14 +4,21 @@ const Service = require('../Models/Service');
 const Customer = require('../Models/Customer');
 const Salon = require('../Models/Salon');
 const WalletTransaction = require('../Models/WalletTransaction');
+const CustomerMembership = require('../Models/CustomerMembership');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 // Initialize Razorpay
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+} else {
+    console.warn('Razorpay keys are missing. Payment features in bookingController will not work.');
+}
+
 
 // @desc    Get all bookings for salon
 // @route   GET /api/bookings
@@ -67,7 +74,25 @@ exports.createBooking = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Service not found' });
         }
 
-        const totalPrice = service.price;
+        // Fetch active membership to apply discount securely in backend
+        let totalPrice = service.price;
+        const activeMembership = await CustomerMembership.findOne({
+            customerId: req.user._id,
+            status: 'active',
+            expiryDate: { $gt: new Date() }
+        }).populate('planId');
+
+        if (activeMembership && activeMembership.planId) {
+            const plan = activeMembership.planId;
+            if (plan.serviceDiscountValue > 0) {
+                if (plan.serviceDiscountType === 'percentage') {
+                    totalPrice -= (totalPrice * plan.serviceDiscountValue) / 100;
+                } else {
+                    totalPrice -= plan.serviceDiscountValue;
+                }
+            }
+        }
+        totalPrice = Math.max(0, Math.floor(totalPrice));
 
         // Handle Wallet Payment
         if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
@@ -98,6 +123,8 @@ exports.createBooking = async (req, res) => {
         const booking = await Booking.create({
             ...req.body,
             salonId,
+            subtotal: service.price,
+            membershipDiscount: service.price - totalPrice,
             totalPrice: totalPrice,
             paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'pending'
         });
@@ -124,6 +151,8 @@ exports.createBooking = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
 // @desc    Update booking status
 // @route   PATCH /api/bookings/:id/status
@@ -155,6 +184,15 @@ exports.updateStatus = async (req, res) => {
                     if (points > 0) {
                         await Customer.findByIdAndUpdate(booking.clientId, {
                             $inc: { loyaltyPoints: points }
+                        });
+
+                        // Create Loyalty Transaction record
+                        await LoyaltyTransaction.create({
+                            customerId: booking.clientId,
+                            salonId: booking.salonId,
+                            amount: points,
+                            type: 'EARNED',
+                            description: `Earned from Booking #${booking._id.toString().slice(-6).toUpperCase()}`
                         });
                     }
                 }
@@ -228,6 +266,9 @@ exports.createPaymentOrder = async (req, res) => {
             receipt: receipt || `receipt_${Date.now()}`
         };
 
+        if (!razorpay) {
+            return res.status(500).json({ success: false, message: 'Razorpay is not configured' });
+        }
         const order = await razorpay.orders.create(options);
         res.status(200).json(order);
     } catch (err) {

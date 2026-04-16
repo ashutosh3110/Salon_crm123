@@ -31,7 +31,7 @@ export default function AppLoginPage() {
             return null;
         }
     })();
-    const [step, setStep] = useState(0);
+    const [step, setStep] = useState(1); // Start with Phone step
     const [direction, setDir] = useState(1);
     const [userCoords, setUserCoords] = useState(null);
     const [selectedOutlet, setSelectedOutlet] = useState(storedSelectedOutlet);
@@ -43,6 +43,7 @@ export default function AppLoginPage() {
         localStorage.getItem('active_outlet_id') || 
         ''
     );
+    const [otpVerified, setOtpVerified] = useState(false); // New state to track if phone is verified
 
     const [locationLoading, setLocationLoading] = useState(false);
     const [searchRadiusKm, setSearchRadiusKm] = useState(DEFAULT_RADIUS_KM);
@@ -66,6 +67,7 @@ export default function AppLoginPage() {
         anniversary: '',
     });
     const [otpDebug, setOtpDebug] = useState('');
+    const [appliedReferralCode, setAppliedReferralCode] = useState(referralCodeFromUrl);
     const [showLocationModal, setShowLocationModal] = useState(false);
     const otpRefs = [useRef(), useRef(), useRef(), useRef()];
     const submittingRef = useRef(false);
@@ -204,10 +206,11 @@ export default function AppLoginPage() {
             setSelectedOutlet(storedSelectedOutlet);
             setStep(1);
         } else {
-            // Only show location discovery modal if no coords and no outlet selected
+            // If no salon context, start with phone/login step (already set by default)
+            setStep(1);
             fetchOutlets(initialLat, initialLng, searchRadiusKm);
             if (!initialLat) {
-                setShowLocationModal(true);
+                // We'll show the location modal only when they reach the discovery step
             }
         }
     }, [tenantIdFromUrl]);
@@ -233,12 +236,23 @@ export default function AppLoginPage() {
         setTenantId(tId);
         setActiveOutletId(outlet._id || outlet.id); 
         setActiveSalonId(tId);
-        goTo(1);
+        
+        // If OTP was already verified during the new flow, proceed to login
+        if (otpVerified && phone) {
+            handleVerifyOtpWithTenant(tId, outlet);
+        } else {
+            goTo(1);
+        }
     };
 
 
 
-    const goTo = (s) => { setDir(s > step ? 1 : -1); setError(''); setStep(s); };
+    const goTo = (s) => { 
+        setDir(s > step ? 1 : -1); 
+        setError(''); 
+        setStep(s); 
+        if (s === 1) setOtpVerified(false); // Reset verification if going back to phone
+    };
 
 
     const colors = {
@@ -251,12 +265,13 @@ export default function AppLoginPage() {
     };
 
     const handleSendOtp = async () => {
-        if (!tenantId) { setError('Please select an outlet first'); return; }
+        // If no tenantId, we still allow sending OTP (to verify phone first)
         if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return; }
 
         setLoading(true); setError('');
         try {
-            const res = await requestOtp(phone, tenantId);
+            // Send OTP without tenantId if needed, backend currently doesn't strictly check for it for demo logic
+            const res = await requestOtp(phone, tenantId || 'system'); 
             if (res.otp) setOtpDebug(res.otp);
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
@@ -321,12 +336,29 @@ export default function AppLoginPage() {
         const code = otp.join('');
         if (code.length !== 4) { setError('Enter the 4-digit OTP'); return; }
 
+        // NEW FLOW: If no tenantId is selected yet, just verify phone and go to discovery
+        if (!tenantId) {
+            if (code === '1234') { // Using fixed OTP from backend controller
+                setOtpVerified(true);
+                setError('');
+                if (!userCoords) {
+                    setShowLocationModal(true);
+                }
+                goTo(0); // Discovery step
+                return;
+            } else {
+                setError('Invalid OTP');
+                setOtp(['', '', '', '']);
+                otpRefs[0].current?.focus();
+                return;
+            }
+        }
+
         setLoading(true); setError('');
         try {
-            const cust = await customerLogin(phone, code, tenantId, referralCodeFromUrl);
+            const cust = await customerLogin(phone, code, tenantId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
             
-            // Ensure active_outlet_id is persistent
             if (selectedOutlet) {
                 const oId = selectedOutlet._id || selectedOutlet.id;
                 localStorage.setItem('active_outlet_id', oId);
@@ -338,6 +370,26 @@ export default function AppLoginPage() {
             setError(e.message || 'Verification failed');
             setOtp(['', '', '', '']);
             otpRefs[0].current?.focus();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleVerifyOtpWithTenant = async (tId, outlet) => {
+        setLoading(true); setError('');
+        const code = otp.join('') || '1234';
+        try {
+            const cust = await customerLogin(phone, code, tId, appliedReferralCode);
+            if (cust?.gender) setGlobalGender(cust.gender);
+            
+            const oId = outlet._id || outlet.id;
+            localStorage.setItem('active_outlet_id', oId);
+            setActiveOutletId(oId);
+            
+            navigate('/app', { replace: true });
+        } catch (e) {
+            setError(e.message || 'Verification failed');
+            goTo(1); // Go back to login if it failed
         } finally {
             setLoading(false);
         }
@@ -599,7 +651,6 @@ export default function AppLoginPage() {
                 {/* STEP 1: Phone */}
                 {step === 1 && (
                     <motion.div key="phone" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', minHeight: '80svh' }}>
-                        <button onClick={() => goTo(0)} style={{ ...S.ghost, padding: '12px 0' }}><ArrowLeft size={18} /> Back</button>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
                             <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
@@ -611,11 +662,26 @@ export default function AppLoginPage() {
                             <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Phone Number</label>
                             <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: isFocused ? '1.5px solid #C8956C' : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
                                 <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`, flexShrink: 0, height: '60%' }}><span style={{ fontSize: '14px', color: isFocused ? '#C8956C' : colors.textMuted, fontWeight: 800 }}>+91</span></div>
-                                <input type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); }} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="98765 43210" autoFocus style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.1em', fontWeight: 600 }} />
+                                <input type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); setOtpVerified(false); }} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="98765 43210" autoFocus style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.1em', fontWeight: 600 }} />
                             </div>
                         </div>
+
+                        {isRegistering && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Referral Code (Optional)</label>
+                                <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
+                                    <input 
+                                        type="text" 
+                                        value={appliedReferralCode} 
+                                        onChange={e => setAppliedReferralCode(e.target.value.toUpperCase())} 
+                                        placeholder="E.G. WAP-C2B1D" 
+                                        style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '14px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em', fontWeight: 600 }} 
+                                    />
+                                </div>
+                            </div>
+                        )}
                         {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendOtp} disabled={loading || phone.length !== 10 || !tenantId} style={{ ...S.btn, opacity: (loading || phone.length !== 10 || !tenantId) ? 0.5 : 1 }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}</motion.button>
+                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendOtp} disabled={loading || phone.length !== 10} style={{ ...S.btn, opacity: (loading || phone.length !== 10) ? 0.5 : 1 }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}</motion.button>
                         
                         <button
                             type="button"

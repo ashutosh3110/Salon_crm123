@@ -163,13 +163,20 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
 
                         <section className="space-y-3">
                             <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Admin Actions</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                {(booking.status === 'upcoming' || booking.status === 'pending') && (
+                            <div className="grid grid-cols-2 gap-2">                                 {(booking.status === 'upcoming' || booking.status === 'pending') && (
                                     <button
                                         className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-primary-foreground transition-all col-span-2"
                                         onClick={() => onUpdateStatus?.(booking._id, 'confirmed')}
                                     >
                                         <CheckCircle2 className="w-3.5 h-3.5" /> CONFIRM APPOINTMENT
+                                    </button>
+                                )}
+                                {(booking.status === 'confirmed' || booking.status === 'upcoming') && (
+                                    <button
+                                        className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary/10 border border-primary/20 text-[11px] font-bold text-primary hover:bg-primary hover:text-primary-foreground transition-all col-span-2"
+                                        onClick={() => onUpdateStatus?.(booking._id, 'completed')}
+                                    >
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> MARK AS COMPLETED
                                     </button>
                                 )}
                                 <button
@@ -190,6 +197,7 @@ export default function BookingDetailModal({ booking, onClose, onUpdateStatus, o
                                 >
                                     <XCircle className="w-3.5 h-3.5" /> CANCEL BOOKING
                                 </button>
+
                             </div>
                         </section>
                     </div>

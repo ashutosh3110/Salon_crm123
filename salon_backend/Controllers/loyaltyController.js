@@ -33,8 +33,8 @@ exports.redeemLoyaltyPoints = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Insufficient loyalty points' });
         }
 
-        const redeemValue = settings.redeemValue || 1;
-        const walletAmount = points * redeemValue;
+        const pointsRate = settings.pointsRate || 1; // Default to 1 to avoid division by zero
+        const walletAmount = Math.floor(points / pointsRate);
 
         // Deduct points and Add to wallet
         customer.loyaltyPoints -= points;
@@ -116,7 +116,7 @@ exports.getLoyaltySettings = async (req, res) => {
 // @access  Private (Admin/Manager)
 exports.updateLoyaltySettings = async (req, res) => {
     try {
-        const { pointsRate, active, redeemValue, minRedeemPoints } = req.body;
+        const { pointsRate, active, redeemValue, minRedeemPoints, referralPoints, referredPoints } = req.body;
 
         const salon = await Salon.findById(req.user.salonId);
         
@@ -128,6 +128,8 @@ exports.updateLoyaltySettings = async (req, res) => {
             pointsRate: Number(pointsRate) || 100,
             redeemValue: Number(redeemValue) || 1,
             minRedeemPoints: Number(minRedeemPoints) || 0,
+            referralPoints: Number(referralPoints) || 200,
+            referredPoints: Number(referredPoints) || 100,
             active: active !== undefined ? active : salon.loyaltySetting.active
         };
 
@@ -160,6 +162,55 @@ exports.getPublicLoyaltySettings = async (req, res) => {
         res.json({
             success: true,
             data: salon.loyaltySetting
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+// @desc    Get referral settings for customer
+// @route   GET /api/loyalty/referral-settings
+// @access  Private (Customer)
+exports.getReferralSettings = async (req, res) => {
+    try {
+        const salon = await Salon.findById(req.user.salonId).select('loyaltySetting');
+        if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
+
+        const settings = salon.loyaltySetting || {};
+        res.json({
+            success: true,
+            data: {
+                enabled: settings.active ?? true,
+                referrerReward: settings.referralPoints || 200,
+                referredReward: settings.referredPoints || 100,
+                redeemRate: settings.redeemValue || 1,
+                minRedeemPoints: settings.minRedeemPoints || 0,
+                threshold: 'FIRST_SERVICE'
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get list of referrals made by current customer
+// @route   GET /api/loyalty/referrals/me
+// @access  Private (Customer)
+exports.getMyReferrals = async (req, res) => {
+    try {
+        const referrals = await LoyaltyTransaction.find({ 
+            referrerId: req.user._id,
+            source: 'REFERRAL'
+        }).sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            data: referrals.map(ref => ({
+                _id: ref._id,
+                referredName: ref.customerName || 'New User',
+                rewardPoints: ref.amount,
+                status: 'COMPLETED', // In this system, transactions are only created when completed
+                createdAt: ref.createdAt
+            }))
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });

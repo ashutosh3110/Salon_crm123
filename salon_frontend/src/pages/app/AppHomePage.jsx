@@ -17,7 +17,6 @@ import api from '../../services/api';
 import logoDarkMode from '/new wapixo logo .png';
 import boyIcon from '/gender/boy.png';
 import girlIcon from '/gender/girl.png';
-import SalonMapView from '../../components/app/SalonMapView';
 
 
 const { PLACEHOLDERS } = homeData;
@@ -490,12 +489,7 @@ export default function AppHomePage() {
     const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
-    const [isMapView, setIsMapView] = useState(false);
-    const [selectedMapOutlet, setSelectedMapOutlet] = useState(null);
 
-    useEffect(() => {
-        if (activeOutlet && !selectedMapOutlet) setSelectedMapOutlet(activeOutlet);
-    }, [activeOutlet]);
 
     useEffect(() => {
         if (showWelcome) {
@@ -779,25 +773,6 @@ export default function AppHomePage() {
                         </div>
                     </motion.div>
 
-                    <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setIsMapView(!isMapView)}
-                        style={{
-                            background: isMapView ? '#C8956C' : (isLight ? '#FFF' : '#242424'),
-                            color: isMapView ? '#FFF' : colors.text,
-                            padding: '8px 12px',
-                            borderRadius: '12px',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            border: `1.5px solid ${isMapView ? '#C8956C' : colors.border}`,
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                        }}
-                    >
-                        {isMapView ? 'List View' : 'Map View'}
-                    </motion.button>
                 </motion.div>
 
                 {/* ── SEARCH BAR ── */}
@@ -931,33 +906,9 @@ export default function AppHomePage() {
                     </div>
                 </motion.div>
 
-                {/* ── MAP VIEW (NEW) ── */}
-                <AnimatePresence>
-                    {isMapView && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                            style={{ padding: '0 16px' }}
-                        >
-                            <SalonMapView
-                                outlets={outlets}
-                                selectedOutlet={selectedMapOutlet || activeOutlet || outlets[0]}
-                                onSelect={(o) => setSelectedMapOutlet(o)}
-                                onViewProfile={(outlet) => {
-                                    navigate(`/app/salon/${outlet._id}`);
-                                }}
-                                colors={colors}
-                                isLight={isLight}
-                            />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
 
                 {/* ── OTHER NEAREST SALONS ── */}
-                {!isMapView && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <Crown size={20} color={colors.accent} />
@@ -1056,11 +1007,7 @@ export default function AppHomePage() {
                             })()}
                         </div>
                     </motion.div>
-                )}
 
-                {/* ── 3. (REMOVED) SERVICE CATEGORIES EXPLORER ── */}
-
-                {/* ── 4. PRODUCT CATEGORIES ── */}
                 {productCategories.length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
@@ -1070,33 +1017,48 @@ export default function AppHomePage() {
                             </div>
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {productCategories.filter(c => c.status === 'active').map((cat) => (
-                                <motion.div
-                                    key={cat._id}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
-                                    style={{
-                                        flexShrink: 0,
-                                        width: '160px',
-                                        height: '100px',
-                                        borderRadius: '20px',
-                                        overflow: 'hidden',
-                                        position: 'relative',
-                                        border: `1px solid ${colors.border}`,
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    <img 
-                                        src={cat.image || "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800"} 
-                                        alt={cat.name} 
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                                    />
-                                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }} />
-                                    <span style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px', fontSize: '12px', fontWeight: 900, color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                        {cat.name}
-                                    </span>
-                                </motion.div>
-                            ))}
+                            {(() => {
+                                const activeCats = productCategories.filter(c => c.status === 'active');
+                                // Sort by number of products in each category
+                                const sortedCats = [...activeCats].sort((a, b) => {
+                                    const countA = products.filter(p => p.category === a.name).length;
+                                    const countB = products.filter(p => p.category === b.name).length;
+                                    return countB - countA;
+                                });
+
+                                return sortedCats.map((cat) => (
+                                    <motion.div
+                                        key={cat._id}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
+                                        style={{
+                                            flexShrink: 0,
+                                            width: '160px',
+                                            height: '100px',
+                                            borderRadius: '20px',
+                                            overflow: 'hidden',
+                                            position: 'relative',
+                                            border: `1px solid ${colors.border}`,
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <img 
+                                            src={cat.image || "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800"} 
+                                            alt={cat.name} 
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                                        />
+                                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }} />
+                                        <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px' }}>
+                                            <span style={{ display: 'block', fontSize: '12px', fontWeight: 900, color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                {cat.name}
+                                            </span>
+                                            <span style={{ fontSize: '8px', fontWeight: 700, color: '#C8956C', textTransform: 'uppercase' }}>
+                                                {products.filter(p => p.category === cat.name).length} Products
+                                            </span>
+                                        </div>
+                                    </motion.div>
+                                ));
+                            })()}
                         </div>
                     </motion.div>
                 )}
@@ -1195,8 +1157,7 @@ export default function AppHomePage() {
                 )}
 
                 {/* ── 6. TRUSTED REVIEWS ── */}
-                {!isMapView && (
-                    <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
+                <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
                             <MessageSquare size={20} color={colors.accent} />
                             <div>
@@ -1248,10 +1209,9 @@ export default function AppHomePage() {
                             })()}
                         </div>
                     </motion.div>
-                )}
 
                 {/* ── 7. MEMBERSHIP PLANS ── */}
-                {!isMapView && membershipPlans.length > 0 && (
+                {membershipPlans.length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
                         <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                             Premium Memberships
@@ -1279,7 +1239,7 @@ export default function AppHomePage() {
                 )}
 
                 {/* ── 8. LOYALTY RULES ── */}
-                {!isMapView && loyaltyRule && loyaltyRule.active && (
+                {loyaltyRule && loyaltyRule.active && (
                     <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
                         <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                             Loyalty Protocol

@@ -18,7 +18,7 @@ const server = app.listen(PORT, () => {
 // Initialize Socket.io
 init(server);
 
-// Handle unhandled promise rejections
+// Handle unhandled romi rejections
 process.on('unhandledRejection', (err, promise) => {
     console.log(`Error: ${err.message}`);
     // Close server & exit process

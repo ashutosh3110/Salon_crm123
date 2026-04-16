@@ -70,6 +70,8 @@ const salonSchema = new mongoose.Schema({
         pointsRate: { type: Number, default: 100 }, // Amount per 1 point (e.g., 100 = 100 Rs per 1 pt)
         redeemValue: { type: Number, default: 1 }, // Value of 1 point in currency (e.g., 1 pt = 1 Rupee)
         minRedeemPoints: { type: Number, default: 0 },
+        referralPoints: { type: Number, default: 200 },
+        referredPoints: { type: Number, default: 100 },
         active: { type: Boolean, default: true }
     }
 }, {

@@ -55,6 +55,21 @@ export default function AppWalletPage() {
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh', padding: '16px' }}>
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6 pt-4 px-2">
+                <button 
+                    onClick={() => navigate(-1)} 
+                    style={{ color: colors.text }}
+                    className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center border border-black/5 dark:border-white/5 active:scale-90 transition-all shadow-sm"
+                >
+                    <ArrowLeft size={20} />
+                </button>
+                <div>
+                    <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Financial</h1>
+                    <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: colors.text }}>Wallet <span className="text-[#C8956C]">Pass</span></h2>
+                </div>
+            </div>
+
             {/* Premium Wallet Card */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

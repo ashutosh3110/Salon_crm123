@@ -22,19 +22,58 @@ export default function AppCheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('cod');
     const [homeDelivery, setHomeDelivery] = useState(true);
 
-    // Calculate Delivery Charge
+    const [activeMembership, setActiveMembership] = useState(null);
+    const [membershipDiscount, setMembershipDiscount] = useState(0);
+    const [fetchingMembership, setFetchingMembership] = useState(false);
+
+    useEffect(() => {
+        const fetchMembership = async () => {
+            setFetchingMembership(true);
+            try {
+                const res = await api.get('/loyalty/membership/active');
+                if (res.data.success) {
+                    setActiveMembership(res.data.data || res.data.membership || null);
+                }
+            } catch (err) {
+                console.error('Error fetching membership:', err);
+            } finally {
+                setFetchingMembership(false);
+            }
+        };
+        fetchMembership();
+    }, []);
+
+    useEffect(() => {
+        // Use planId as it is the field name for the populated plan object
+        const plan = activeMembership?.planId || activeMembership?.plan;
+        if (plan) {
+            let discount = 0;
+            if (plan.productDiscountValue > 0) {
+                if (plan.productDiscountType === 'percentage') {
+                    discount = (cartTotal * plan.productDiscountValue) / 100;
+                } else {
+                    discount = plan.productDiscountValue;
+                }
+            }
+            // Cap discount at cart total
+            setMembershipDiscount(Math.min(discount, cartTotal));
+        } else {
+            setMembershipDiscount(0);
+        }
+    }, [activeMembership, cartTotal]);
+
     const isDeliveryAvailable = activeOutlet?.config?.enableDelivery || false;
     const deliveryFee = (homeDelivery && isDeliveryAvailable) 
         ? (activeOutlet?.config?.deliveryCharge || 0)
         : 0;
     
-    const finalTotal = cartTotal + deliveryFee;
+    const finalTotal = Math.max(0, cartTotal - membershipDiscount + deliveryFee);
 
     const [address, setAddress] = useState({
-        street: '123 Beauty Lane',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        zip: '400001'
+        street: '',
+        city: '',
+        state: '',
+        zip: ''
     });
 
     useEffect(() => {
@@ -59,6 +98,8 @@ export default function AppCheckoutPage() {
                     quantity: item.quantity,
                     price: item.productId.sellingPrice || item.productId.price
                 })),
+                subtotal: cartTotal,
+                membershipDiscount: membershipDiscount,
                 totalAmount: finalTotal,
                 deliveryCharge: deliveryFee,
                 paymentMethod,
@@ -147,6 +188,18 @@ export default function AppCheckoutPage() {
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Items Total</span>
                         <span className="text-sm font-black italic tracking-tighter" style={{ color: colors.text }}>₹{cartTotal}</span>
                     </div>
+                    {membershipDiscount > 0 && (
+                        <div className="flex justify-between items-center mb-1">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[#C8956C]">
+                                Membership ({activeMembership?.planId?.name || activeMembership?.plan?.name})
+                                <span className="ml-2 px-1.5 py-0.5 rounded-md bg-[#C8956C]/10 border border-[#C8956C]/20">
+                                    {(activeMembership?.planId || activeMembership?.plan)?.productDiscountValue}
+                                    {(activeMembership?.planId || activeMembership?.plan)?.productDiscountType === 'percentage' ? '%' : '₹'} OFF
+                                </span>
+                            </span>
+                            <span className="text-sm font-black italic tracking-tighter text-[#C8956C]">- ₹{membershipDiscount.toFixed(2)}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between items-center mb-4">
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-40">Delivery Fee</span>
                         <span className="text-sm font-black italic tracking-tighter" style={{ color: deliveryFee > 0 ? colors.text : '#10B981' }}>
@@ -163,7 +216,7 @@ export default function AppCheckoutPage() {
                                 <Zap size={14} className="text-[#C8956C]" fill="#C8956C" />
                                 <span className="text-[9px] font-black uppercase tracking-widest opacity-60">Loyalty Earned</span>
                             </div>
-                            <span className="text-[12px] font-black text-[#C8956C]">{Math.floor(cartTotal / (loyaltySettings.pointsRate || 100))} Points</span>
+                            <span className="text-[12px] font-black text-[#C8956C]">{Math.floor((cartTotal - membershipDiscount) / (loyaltySettings.pointsRate || 100))} Points</span>
                         </div>
                     )}
                     <div className="space-y-2">

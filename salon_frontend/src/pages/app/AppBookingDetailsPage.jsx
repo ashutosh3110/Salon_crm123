@@ -115,6 +115,12 @@ export default function AppBookingDetailsPage() {
     const currentStatus = statusConfig[booking.status] || statusConfig.pending;
     const StatusIcon = currentStatus.icon;
 
+    // Derived values for robust breakdown display
+    const itemsTotal = booking?.subtotal || booking?.service?.price || 0;
+    const totalAmount = booking?.totalPrice || booking?.price || 0;
+    // Calculate discount if it's explicitly stored OR infer it from the difference
+    const membershipDiscount = booking?.membershipDiscount || Math.max(0, itemsTotal - totalAmount);
+
     return (
         <motion.div 
             initial={{ opacity: 0 }}
@@ -154,7 +160,7 @@ export default function AppBookingDetailsPage() {
 
                 {/* Main Content */}
                 <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2.5rem] p-8 space-y-8 shadow-sm">
-                    {/* Service Info */}
+                    {/* Price Breakdown Summary */}
                     <div className="space-y-4">
                         <div className="flex items-start justify-between">
                             <div className="space-y-1">
@@ -163,10 +169,23 @@ export default function AppBookingDetailsPage() {
                                     <Clock size={12} /> {booking.service?.duration || 30} Minutes
                                 </p>
                             </div>
-                            <div className="text-right">
-                                <p className="text-2xl font-black text-[#C8956C] tracking-tighter">₹{(booking.totalPrice || booking.price || 0).toLocaleString()}</p>
-                                <p className="text-[9px] font-black uppercase tracking-widest opacity-40">Amount Paid</p>
-                            </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-dashed border-black/5 dark:border-white/5 space-y-2">
+                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
+                                 <span>Subtotal</span>
+                                 <span>₹{itemsTotal.toLocaleString()}</span>
+                             </div>
+                             {membershipDiscount > 0 && (
+                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#C8956C]">
+                                     <span>Membership Discount</span>
+                                     <span>- ₹{membershipDiscount.toLocaleString()}</span>
+                                 </div>
+                             )}
+                             <div className="flex justify-between items-center pt-2">
+                                 <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: colors.text }}>Total Paid</span>
+                                 <span className="text-2xl font-black text-[#C8956C] tracking-tighter">₹{totalAmount.toLocaleString()}</span>
+                             </div>
                         </div>
                     </div>
 

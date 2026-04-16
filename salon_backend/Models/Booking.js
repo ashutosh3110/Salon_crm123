@@ -43,6 +43,14 @@ const bookingSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    subtotal: {
+        type: Number,
+        default: 0
+    },
+    membershipDiscount: {
+        type: Number,
+        default: 0
+    },
     paymentMethod: {
         type: String,
         default: 'salon'

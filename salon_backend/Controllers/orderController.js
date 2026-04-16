@@ -9,7 +9,18 @@ const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 // @access  Private
 exports.createOrder = async (req, res) => {
     try {
-        const { items, totalAmount, paymentMethod, address, salonId, outletId, deliveryPreference } = req.body;
+        const { 
+            items, 
+            totalAmount, 
+            paymentMethod, 
+            address, 
+            salonId, 
+            outletId, 
+            deliveryPreference,
+            deliveryCharge,
+            subtotal,
+            membershipDiscount
+        } = req.body;
         const customerId = req.user._id;
 
         // Handle Wallet Deduction
@@ -47,6 +58,9 @@ exports.createOrder = async (req, res) => {
             address,
             outletId,
             deliveryPreference,
+            deliveryCharge: deliveryCharge || 0,
+            subtotal: subtotal || totalAmount,
+            membershipDiscount: membershipDiscount || 0,
             paymentStatus: paymentMethod === 'wallet' ? 'paid' : 'pending'
         });
         

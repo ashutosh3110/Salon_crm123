@@ -30,11 +30,18 @@ exports.getFeedbacks = async (req, res) => {
 // @access  Public (should ideally be auth required, but keeping open for simplicity)
 exports.createFeedback = async (req, res) => {
     try {
-        const { customerName, rating, comment, targetType, targetId, salonId, targetName } = req.body;
+        let { customerName, rating, comment, targetType, targetId, salonId, targetName } = req.body;
+
+        // If user is logged in, use their details
+        const customerId = req.user ? req.user._id : null;
+        if (req.user && !customerName) {
+            customerName = req.user.name || 'Anonymous';
+        }
 
         const feedback = await Feedback.create({
-            salonId,
-            customerName,
+            salonId: salonId || null,
+            customerId,
+            customerName: customerName || 'Anonymous',
             rating,
             comment,
             targetType,

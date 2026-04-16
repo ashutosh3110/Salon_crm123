@@ -5,7 +5,9 @@ const {
     updateLoyaltySettings,
     getLoyaltyHistory,
     getPublicLoyaltySettings,
-    redeemLoyaltyPoints
+    redeemLoyaltyPoints,
+    getReferralSettings,
+    getMyReferrals
 } = require('../Controllers/loyaltyController');
 const {
     getMembershipPlans,
@@ -15,7 +17,8 @@ const {
     deleteMembershipPlan,
     createMembershipOrder,
     verifyMembershipPayment,
-    getActiveMembership
+    getActiveMembership,
+    buyMembershipWithWallet
 } = require('../Controllers/membershipPlanController');
 
 const { protect, authorize } = require('../Middleware/auth');
@@ -51,9 +54,9 @@ router.post('/redeem', redeemLoyaltyPoints);
 router.get('/membership/active', getActiveMembership);
 router.post('/membership/order', createMembershipOrder);
 router.post('/membership/verify', verifyMembershipPayment);
+router.post('/membership/wallet-pay', buyMembershipWithWallet);
 
-router.get('/referral-settings', (req, res) => {
-    res.json({ success: true, data: { referrerReward: 200 } });
-});
+router.get('/referral-settings', getReferralSettings);
+router.get('/referrals/me', getMyReferrals);
 
 module.exports = router;

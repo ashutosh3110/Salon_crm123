@@ -89,7 +89,12 @@ export default function BookingCard({ booking, onTap, index = 0 }) {
                     <Clock className="w-3 h-3 text-[#C8956C]" />
                     {formatTime(booking.appointmentDate)}
                 </span>
-                <span className="ml-auto text-sm font-black text-[#C8956C] tracking-tighter">₹{(booking.totalPrice || booking.price || 0).toLocaleString()}</span>
+                <div className="ml-auto text-right">
+                    {booking.membershipDiscount > 0 && (
+                        <p className="text-[9px] line-through opacity-30 font-bold mb-0.5">₹{booking.subtotal?.toLocaleString()}</p>
+                    )}
+                    <p className="text-sm font-black text-[#C8956C] tracking-tighter">₹{(booking.totalPrice || booking.price || 0).toLocaleString()}</p>
+                </div>
             </div>
 
             {booking.status === 'completed' && (

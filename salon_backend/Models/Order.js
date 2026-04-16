@@ -59,6 +59,15 @@ const orderSchema = new mongoose.Schema({
         enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
         default: 'pending'
     },
+    subtotal: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    membershipDiscount: {
+        type: Number,
+        default: 0
+    },
     address: {
         street: String,
         city: String,

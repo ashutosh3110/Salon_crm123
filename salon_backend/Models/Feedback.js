@@ -4,7 +4,7 @@ const feedbackSchema = new mongoose.Schema({
     salonId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Salon',
-        required: true
+        required: false
     },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,

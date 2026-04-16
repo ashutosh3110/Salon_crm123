@@ -476,9 +476,9 @@ function App() {
                         <Route element={<CustomerAppWrapper />}>
                           <Route path="/app/login" element={<AppLoginPage />} />
                           <Route path="/app/gender" element={<GenderSelectPage />} />
-                          <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
+                            <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
                             <Route path="/app/discovery" element={<AppDiscoveryPage />} />
                             <Route path="/app/wallet" element={<AppWalletPage />} />

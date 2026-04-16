@@ -1,9 +1,14 @@
 const Customer = require('../Models/Customer');
 const Product = require('../Models/Product');
 const Outlet = require('../Models/Outlet');
+const Salon = require('../Models/Salon');
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
-
+const generateReferralCode = () => {
+    return 'WAP-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+};
 
 // @desc    Get customer favorites (products & salons)
 // @route   GET /api/auth/favorites
@@ -65,7 +70,7 @@ exports.requestOtp = async (req, res) => {
 // @access  Public
 exports.customerLoginOtp = async (req, res) => {
     try {
-        const { phone, otp, tenantId } = req.body;
+        const { phone, otp, tenantId, referralCode: appliedReferralCode } = req.body;
 
         if (!phone || !otp) {
             return res.status(400).json({ success: false, message: 'Phone and OTP are required' });
@@ -85,12 +90,57 @@ exports.customerLoginOtp = async (req, res) => {
 
         if (!customer) {
             isNewUser = true;
+            console.log(`[Referral] New customer ${phone} registering in salon ${tenantId}. Code applied: ${appliedReferralCode}`);
+            
             customer = await Customer.create({
                 name: 'New Customer',
                 phone,
                 salonId: tenantId,
+                referralCode: generateReferralCode(),
                 status: 'active'
             });
+
+            // Handle Referral Logic if new user
+            if (appliedReferralCode) {
+                const referrer = await Customer.findOne({ referralCode: appliedReferralCode, salonId: tenantId });
+                console.log(`[Referral] Referrer lookup for code ${appliedReferralCode}: ${referrer ? 'Found (' + referrer.name + ')' : 'Not Found'}`);
+                
+                if (referrer && referrer._id.toString() !== customer._id.toString()) {
+                    const salon = await Salon.findById(tenantId).select('loyaltySetting');
+                    const rewards = salon?.loyaltySetting || {};
+                    const pointsReferrer = rewards.referralPoints || 200;
+                    const pointsReferred = rewards.referredPoints || 100;
+
+                    // Award points to Referrer
+                    referrer.loyaltyPoints = (referrer.loyaltyPoints || 0) + pointsReferrer;
+                    await referrer.save();
+                    
+                    await LoyaltyTransaction.create({
+                        customerId: referrer._id,
+                        salonId: tenantId,
+                        type: 'CREDIT',
+                        amount: pointsReferrer,
+                        source: 'REFERRAL',
+                        description: `Referral bonus for inviting ${customer.phone}`
+                    });
+
+                    // Award points to New Customer
+                    customer.loyaltyPoints = (customer.loyaltyPoints || 0) + pointsReferred;
+                    // We will save customer at the end of the controller
+                    
+                    await LoyaltyTransaction.create({
+                        customerId: customer._id,
+                        salonId: tenantId,
+                        type: 'CREDIT',
+                        amount: pointsReferred,
+                        source: 'REFERRAL',
+                        description: `Welcome bonus using referral code ${appliedReferralCode}`
+                    });
+                    console.log(`[Referral] Points awarded: Referrer(+${pointsReferrer}), New(+${pointsReferred})`);
+                }
+            }
+        } else if (!customer.referralCode) {
+            customer.referralCode = generateReferralCode();
         }
 
         customer.lastLogin = new Date();
@@ -111,6 +161,8 @@ exports.customerLoginOtp = async (req, res) => {
                     name: customer.name,
                     phone: customer.phone,
                     email: customer.email,
+                    referralCode: customer.referralCode,
+                    loyaltyPoints: customer.loyaltyPoints || 0,
                     role: 'customer',
                     isNewUser: isNewUser || customer.name === 'New Customer'
                 }
@@ -128,7 +180,7 @@ exports.customerLoginOtp = async (req, res) => {
 // @access  Public
 exports.registerCustomer = async (req, res) => {
     try {
-        const { phone, name, email, tenantId, dob, anniversary, gender } = req.body;
+        const { phone, name, email, tenantId, dob, anniversary, gender, referralCode: appliedReferralCode } = req.body;
 
         if (!tenantId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
@@ -147,8 +199,46 @@ exports.registerCustomer = async (req, res) => {
             dob,
             anniversary,
             gender: gender || 'women',
+            referralCode: generateReferralCode(),
             status: 'active'
         });
+
+        // Handle Referral Logic
+        if (appliedReferralCode) {
+            const referrer = await Customer.findOne({ referralCode: appliedReferralCode });
+            if (referrer && referrer._id.toString() !== customer._id.toString()) {
+                const salon = await Salon.findById(tenantId).select('loyaltySetting');
+                const rewards = salon?.loyaltySetting || {};
+                const pointsReferrer = rewards.referralPoints || 200;
+                const pointsReferred = rewards.referredPoints || 100;
+
+                // Award points to Referrer
+                referrer.loyaltyPoints = (referrer.loyaltyPoints || 0) + pointsReferrer;
+                await referrer.save();
+                
+                await LoyaltyTransaction.create({
+                    customerId: referrer._id,
+                    salonId: tenantId,
+                    type: 'CREDIT',
+                    amount: pointsReferrer,
+                    source: 'REFERRAL',
+                    description: `Referral bonus for inviting ${customer.phone}`
+                });
+
+                // Award points to New Customer
+                customer.loyaltyPoints = (customer.loyaltyPoints || 0) + pointsReferred;
+                await customer.save(); // Save the points to customer
+                
+                await LoyaltyTransaction.create({
+                    customerId: customer._id,
+                    salonId: tenantId,
+                    type: 'CREDIT',
+                    amount: pointsReferred,
+                    source: 'REFERRAL',
+                    description: `Welcome bonus using referral code ${appliedReferralCode}`
+                });
+            }
+        }
 
         res.status(201).json({
             success: true,
@@ -219,6 +309,27 @@ exports.getProfile = async (req, res) => {
 
     } catch (err) {
         console.error('Get profile error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+// @desc    Delete customer profile
+// @route   DELETE /api/auth/profile
+// @access  Private (Customer)
+exports.deleteAccount = async (req, res) => {
+    try {
+        const customer = await Customer.findByIdAndDelete(req.user._id);
+        
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Account deleted successfully'
+        });
+
+    } catch (err) {
+        console.error('Delete account error:', err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

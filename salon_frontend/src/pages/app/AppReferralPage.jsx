@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Share2, Gift, Check, UserPlus } from 'lucide-react';
+import { Copy, Share2, Gift, Check, UserPlus, MapPin } from 'lucide-react';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import api from '../../services/api';
 
 export default function AppReferralPage() {
     const { customer } = useCustomerAuth();
     const { theme } = useCustomerTheme();
+    const { activeOutlet } = useBusiness();
     const isLight = theme === 'light';
     const [copied, setCopied] = useState(false);
     const [referrals, setReferrals] = useState([]);
@@ -15,39 +17,43 @@ export default function AppReferralPage() {
         enabled: true,
         referrerReward: 200,
         referredReward: 100,
+        redeemRate: 1,
+        minRedeemPoints: 0,
         threshold: 'FIRST_SERVICE',
         expiryDays: 90,
     });
 
     useEffect(() => {
-        let cancelled = false;
-        const loadReferralData = async () => {
+        const fetchReferralData = async () => {
             try {
-                const [settingsRes, refsRes] = await Promise.all([
-                    api.get('/loyalty/referral-settings'),
+                const [settingsRes, referralsRes] = await Promise.all([
+                    api.get('/loyalty/rules'),
                     api.get('/loyalty/referrals/me'),
                 ]);
-                if (cancelled) return;
-                const s = settingsRes?.data?.data || {};
-                const list = refsRes?.data?.data || [];
-                setSettings({
-                    enabled: s.enabled ?? true,
-                    referrerReward: Number(s.referrerReward ?? 200),
-                    referredReward: Number(s.referredReward ?? 100),
-                    threshold: s.threshold || 'FIRST_SERVICE',
-                    expiryDays: Number(s.expiryDays ?? 90),
-                });
-                setReferrals(Array.isArray(list) ? list : []);
-            } catch {
-                if (!cancelled) {
-                    setReferrals([]);
+
+                if (settingsRes.data?.success) {
+                    const data = settingsRes.data.data;
+                    setSettings({
+                        enabled: data.active ?? true,
+                        referrerReward: data.referralPoints || 200,
+                        referredReward: data.referredPoints || 100,
+                        pointsRate: data.pointsRate || 10,
+                        redeemValue: data.redeemValue || 1,
+                        redeemRate: data.redeemValue || 1,
+                        minRedeemPoints: data.minRedeemPoints || 0,
+                        threshold: 'FIRST_SERVICE',
+                        expiryDays: 90,
+                    });
                 }
+                if (referralsRes.data?.success) {
+                    setReferrals(referralsRes.data.data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch referral data:', err);
             }
         };
-        loadReferralData();
-        return () => {
-            cancelled = true;
-        };
+
+        fetchReferralData();
     }, []);
 
     const triggerLabel = useMemo(() => {
@@ -66,8 +72,8 @@ export default function AppReferralPage() {
         accent: '#C8956C',
     };
 
-    // Generate a referral code from customer id
-    const referralCode = `WAPIXO${(customer?.phone || '0000').slice(-4)}`;
+    // Use the real referral code from customer data
+    const referralCode = customer?.referralCode || `WAP-XXXX`;
     const referralLink = `${window.location.origin}/app/login?ref=${referralCode}`;
 
     const completedCount = referrals.filter(r => r.status === 'COMPLETED').length;
@@ -92,11 +98,12 @@ export default function AppReferralPage() {
     };
 
     const handleShare = async () => {
+        const salonName = activeOutlet?.name || 'Wapixo Signature';
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'Join Wapixo Signature',
-                    text: `Use my referral code ${referralCode} to get rewards when you book your first appointment!`,
+                    title: `Join ${salonName}`,
+                    text: `Use my referral code ${referralCode} to get ${settings.referredReward} points when you sign up at ${salonName}!`,
                     url: referralLink,
                 });
             } catch { /* cancelled */ }
@@ -109,7 +116,37 @@ export default function AppReferralPage() {
     const fadeUp = { hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } } };
 
     return (
-        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-6 px-4">
+        <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-10 px-4">
+            
+            {/* Dynamic Outlet Header */}
+            <motion.div
+                variants={fadeUp}
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '4px 0'
+                }}
+            >
+                <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '10px',
+                    background: isLight ? '#FFF' : '#242424',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    border: `1.5px solid ${colors.border}`
+                }}>
+                    <MapPin size={16} color="#C8956C" />
+                </div>
+                <div>
+                  <p style={{ fontSize: '9px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Exclusive Referral Program</p>
+                  <h2 style={{ fontSize: '15px', fontWeight: 800, color: colors.text, margin: 0 }}>{activeOutlet?.name || 'Wapixo Boutique'}</h2>
+                </div>
+            </motion.div>
+
             <h1 className="text-2xl font-black tracking-tight" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
                 Refer & <span className="text-[#C8956C]">Earn</span>
             </h1>
@@ -128,12 +165,24 @@ export default function AppReferralPage() {
             >
                 <div className="relative z-10">
                     <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 4px', fontWeight: 500 }}>Premium Rewards</p>
-                    <h3 className="text-lg font-black mb-4" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif", lineHeight: 1.3 }}>
+                    <h3 className="text-lg font-black mb-1" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif", lineHeight: 1.3 }}>
                         Earn {settings.referrerReward} Points<br />
                         <span style={{ color: colors.accent }}>per successful referral</span>
                     </h3>
-                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: '0 0 10px', fontWeight: 600 }}>
-                        Friend gets {settings.referredReward} points {triggerLabel}. Reward valid for {settings.expiryDays} days.
+                    
+                    <div className="flex gap-4 mb-4">
+                        <div className="flex flex-col">
+                            <span style={{ fontSize: '8px', fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase' }}>Value</span>
+                            <span style={{ fontSize: '12px', fontWeight: 900, color: colors.text }}>{settings.pointsRate} PT = ₹{settings.redeemValue}</span>
+                        </div>
+                        <div className="flex flex-col">
+                            <span style={{ fontSize: '8px', fontWeight: 900, color: colors.textMuted, textTransform: 'uppercase' }}>Min. Redeem</span>
+                            <span style={{ fontSize: '12px', fontWeight: 900, color: colors.text }}>{settings.minRedeemPoints} PTS</span>
+                        </div>
+                    </div>
+
+                    <p style={{ fontSize: '10px', color: colors.textMuted, opacity: 0.8 }}>
+                        Friend gets {settings.referredReward} points {triggerLabel}. Reward valid for {settings.expiryDays || 90} days.
                     </p>
 
                     <div className="flex items-center justify-between">

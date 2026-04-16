@@ -14,7 +14,9 @@ const BusinessContext = createContext({
     fetchStaff: async () => {}, addStaff: async () => {}, updateStaff: async () => {}, deleteStaff: async () => {},
     roles: [], fetchRoles: async () => {},
     setOutlets: () => {}, fetchOutlets: async () => {}, outletsLoading: false,
-    loyaltySettings: null, fetchLoyaltySettings: async () => {}
+    loyaltySettings: null, fetchLoyaltySettings: async () => {},
+    updateSalon: async () => {}, fetchSalon: async () => {},
+    salonLoading: false
 });
 
 export function BusinessProvider({ children }) {
@@ -204,11 +206,31 @@ export function BusinessProvider({ children }) {
             setIsInitializing(false);
         }
     }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, activeSalonId]);
+    const fetchSalon = useCallback(async () => {
+        try {
+            const res = await api.get('/salons/me');
+            if (res.data.success) {
+                setSalon(res.data.data);
+                return res.data.data;
+            }
+        } catch (err) {
+            console.error('Failed to fetch salon:', err);
+        }
+    }, []);
 
-
-
-
-
+    const updateSalon = useCallback(async (data) => {
+        try {
+            const res = await api.patch('/salons/me', data);
+            if (res.data.success) {
+                setSalon(res.data.data);
+                return res.data.data;
+            }
+            throw new Error(res.data.message || 'Failed to update salon');
+        } catch (err) {
+            console.error('Update salon failed:', err);
+            throw err;
+        }
+    }, []);
 
     const addCustomer = useCallback(async (d) => { const r = await api.post('/clients', d); setCustomers(p => [r.data, ...p]); return r.data; }, []);
     const deleteCustomer = useCallback(async (id) => { await api.delete(`/clients/${id}`); setCustomers(p => p.filter(c => (c._id !== id && c.id !== id))); }, []);
@@ -394,7 +416,9 @@ export function BusinessProvider({ children }) {
         addBooking, updateBookingStatus,
         fetchShifts, addShift, updateShift,
         isInitializing,
-        loyaltySettings, fetchLoyaltySettings
+        loyaltySettings, fetchLoyaltySettings,
+        updateSalon, fetchSalon,
+        salonLoading: isInitializing
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
@@ -409,7 +433,8 @@ export function BusinessProvider({ children }) {
         addBooking, updateBookingStatus,
         fetchShifts, addShift, updateShift,
         isInitializing,
-        loyaltySettings, fetchLoyaltySettings
+        loyaltySettings, fetchLoyaltySettings,
+        updateSalon, fetchSalon
     ]);
 
 

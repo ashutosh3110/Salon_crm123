@@ -98,7 +98,7 @@ export default function AppBookingPage() {
             try {
                 const res = await api.get('/loyalty/membership/active');
                 if (!cancelled) {
-                    setActiveMembership(res.data || null);
+                    setActiveMembership(res.data?.data || res.data || null);
                 }
             } catch (e) {
                 console.error("Failed to fetch active membership from backend", e);
@@ -248,15 +248,18 @@ export default function AppBookingPage() {
 
     const membershipDiscount = useMemo(() => {
         if (!activeMembership || !totalPrice) return 0;
-        const benefit = activeMembership.benefits?.find(b => b.toLowerCase().includes('off'));
-        if (benefit) {
-            const match = benefit.match(/\d+/);
-            if (match) {
-                const percent = parseInt(match[0]);
-                return Math.floor((totalPrice * percent) / 100);
+        const plan = activeMembership.planId || activeMembership.plan;
+        if (!plan) return 0;
+
+        let discount = 0;
+        if (plan.serviceDiscountValue > 0) {
+            if (plan.serviceDiscountType === 'percentage') {
+                discount = (totalPrice * plan.serviceDiscountValue) / 100;
+            } else {
+                discount = plan.serviceDiscountValue;
             }
         }
-        return 0;
+        return Math.floor(discount);
     }, [activeMembership, totalPrice]);
 
     const outletStaff = useMemo(() => {
@@ -668,9 +671,21 @@ export default function AppBookingPage() {
                         <span style={{ color: colors.textMuted }}>Duration</span>
                         <span style={{ color: colors.text }}>{totalDuration} min</span>
                     </div>
-                    <div className="flex justify-between text-base pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tighter">
-                        <span style={{ color: colors.textMuted }}>Total</span>
-                        <span className="text-[#C8956C]">₹{totalPrice.toLocaleString()}</span>
+                    <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 italic">
+                        <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest opacity-40">
+                            <span>Subtotal</span>
+                            <span>₹{totalPrice.toLocaleString()}</span>
+                        </div>
+                        {membershipDiscount > 0 && (
+                            <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-[#C8956C]">
+                                <span>Discount</span>
+                                <span>- ₹{membershipDiscount.toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-base pt-2 uppercase font-black tracking-tighter">
+                            <span style={{ color: colors.textMuted }}>Total Payable</span>
+                            <span className="text-[#C8956C]">₹{finalPrice.toLocaleString()}</span>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -1076,7 +1091,13 @@ export default function AppBookingPage() {
                                 </div>
                                 {membershipDiscount > 0 && (
                                     <div className="flex justify-between items-center text-xs">
-                                        <span className="text-[#C8956C]">Membership Discount</span>
+                                        <span className="text-[#C8956C]">
+                                            Membership ({(activeMembership?.planId || activeMembership?.plan)?.name})
+                                            <span className="ml-2 px-1 py-0.5 rounded bg-[#C8956C]/10 border border-[#C8956C]/20 text-[8px] font-black">
+                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountValue}
+                                                {(activeMembership?.planId || activeMembership?.plan)?.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF
+                                            </span>
+                                        </span>
                                         <span className="text-[#C8956C]">- ₹{membershipDiscount.toLocaleString()}</span>
                                     </div>
                                 )}

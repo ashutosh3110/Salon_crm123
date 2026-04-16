@@ -9,12 +9,14 @@ const {
     getSalonStats,
     registerSalon,
     getMe,
+    updateMe,
     resendCredentials
 } = require('../Controllers/salonController');
 const { protect, authorize } = require('../Middleware/auth');
 
 router.post('/register', registerSalon);
 router.get('/me', protect, getMe);
+router.patch('/me', protect, updateMe);
 router.get('/stats', protect, authorize('superadmin'), getSalonStats);
 router.post('/:id/resend-credentials', protect, authorize('superadmin'), resendCredentials);
 

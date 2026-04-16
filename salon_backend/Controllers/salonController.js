@@ -290,6 +290,36 @@ exports.getMe = async (req, res) => {
     }
 };
 
+// @desc    Update current salon details
+// @route   PATCH /api/salons/me
+// @access  Private
+exports.updateMe = async (req, res) => {
+    try {
+        if (!req.user || !req.user.salonId) {
+            return res.status(400).json({ success: false, message: 'User is not associated with any salon' });
+        }
+
+        // Prevent updating sensitive fields via /me
+        const forbiddenFields = ['_id', 'id', 'email', 'subscriptionPlan', 'features', 'limits', 'isActive', 'password'];
+        const updateData = { ...req.body };
+        forbiddenFields.forEach(field => delete updateData[field]);
+
+        const salon = await Salon.findByIdAndUpdate(req.user.salonId, updateData, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!salon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        res.json({ success: true, data: salon });
+    } catch (err) {
+        console.error('UpdateMe Error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 // @desc    Register a new salon (Public)
 // @route   POST /api/salons/register
 // @access  Public

@@ -6,10 +6,17 @@ const Plan = require('../Models/Plan');
 const Customer = require('../Models/Customer');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
-const razorpayInstance = () => new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+const razorpayInstance = () => {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        console.warn('Razorpay keys are missing in paymentController.');
+        return null;
+    }
+    return new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+};
+
 
 // @desc    Create Razorpay Order
 // @route   POST /api/payments/create-order
@@ -47,6 +54,9 @@ exports.createOrder = async (req, res) => {
         };
 
         const razorpay = razorpayInstance();
+        if (!razorpay) {
+            return res.status(500).json({ success: false, message: 'Razorpay is not configured' });
+        }
         const order = await razorpay.orders.create(options);
 
         // Store payment attempt
@@ -154,6 +164,9 @@ exports.createWalletOrder = async (req, res) => {
         };
 
         const razorpay = razorpayInstance();
+        if (!razorpay) {
+            return res.status(500).json({ success: false, message: 'Razorpay is not configured' });
+        }
         const order = await razorpay.orders.create(options);
 
         res.json({

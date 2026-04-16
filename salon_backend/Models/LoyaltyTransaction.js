@@ -13,7 +13,7 @@ const loyaltyTransactionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['CREDIT', 'DEBIT', 'REDEEM', 'EARN', 'REVERSE'],
+        enum: ['CREDIT', 'DEBIT', 'REDEEM', 'EARN', 'REVERSE', 'REDEEMED'],
         required: true
     },
     amount: {
@@ -29,7 +29,7 @@ const loyaltyTransactionSchema = new mongoose.Schema({
     },
     source: {
         type: String,
-        enum: ['WALLET_TOPUP', 'BOOKING', 'REFUND', 'MANUAL'],
+        enum: ['WALLET_TOPUP', 'BOOKING', 'REFUND', 'MANUAL', 'REFERRAL'],
         default: 'MANUAL'
     }
 }, {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Trophy, Star, Gift, Users, Save, Info, Zap, Share2, X } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import { Trophy, Star, Gift, Users, Save, Info, Zap, Share2 } from 'lucide-react';
+import api from '../../../services/api';
 
 export default function ReferralSettingsTab() {
     const [config, setConfig] = useState({
@@ -22,23 +22,25 @@ export default function ReferralSettingsTab() {
         const load = async () => {
             setLoading(true);
             try {
-                const res = await mockApi.get('/loyalty/referral-settings');
+                const res = await api.get('/loyalty/settings');
                 const data = res?.data?.data || {};
-                const st = res?.data?.stats || {};
+                
                 setConfig({
-                    enabled: data.enabled ?? true,
-                    referrerReward: Number(data.referrerReward ?? 200),
-                    referredReward: Number(data.referredReward ?? 100),
-                    threshold: data.threshold || 'FIRST_SERVICE',
-                    expiryDays: Number(data.expiryDays ?? 90),
+                    enabled: data.active ?? true,
+                    referrerReward: Number(data.referralPoints ?? 200),
+                    referredReward: Number(data.referredPoints ?? 100),
+                    threshold: 'FIRST_SERVICE', // Static for now in schema
+                    expiryDays: 90,
                 });
+                
+                // Stats could come from a separate endpoint if needed
                 setStats({
-                    totalReferrals: Number(st.totalReferrals || 0),
-                    conversionRate: Number(st.conversionRate || 0),
-                    pointsIssued: Number(st.pointsIssued || 0),
+                    totalReferrals: 0,
+                    conversionRate: 0,
+                    pointsIssued: 0,
                 });
-            } catch {
-                // keep defaults on failure
+            } catch (err) {
+                console.error('Failed to load referral config:', err);
             } finally {
                 setLoading(false);
             }
@@ -49,15 +51,21 @@ export default function ReferralSettingsTab() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await mockApi.put('/loyalty/referral-settings', {
-                enabled: !!config.enabled,
-                referrerReward: Number(config.referrerReward || 0),
-                referredReward: Number(config.referredReward || 0),
-                threshold: config.threshold,
-                expiryDays: Number(config.expiryDays || 1),
-            });
-            alert('Referral settings saved locally!');
+            // We fetch the current loyalty settings first to avoid overwriting other fields
+            const { data: currentRes } = await api.get('/loyalty/settings');
+            const current = currentRes.data || {};
+
+            const payload = {
+                ...current,
+                active: config.enabled,
+                referralPoints: Number(config.referrerReward),
+                referredPoints: Number(config.referredReward)
+            };
+
+            await api.put('/loyalty/settings', payload);
+            alert('Referral settings updated successfully!');
         } catch (err) {
+            console.error('Save error:', err);
             alert('Failed to save referral settings');
         } finally {
             setSaving(false);

@@ -47,7 +47,10 @@ export default function AppTransactionHistoryPage() {
     };
 
     const formatDate = (date) => {
+        if (!date) return 'Just now';
         const d = new Date(date);
+        if (isNaN(d.getTime())) return 'Recently';
+
         const now = new Date();
         const diff = now - d;
         

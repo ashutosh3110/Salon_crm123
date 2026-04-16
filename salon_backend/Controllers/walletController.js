@@ -5,10 +5,17 @@ const crypto = require('crypto');
 const Salon = require('../Models/Salon');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'lW6qHLoV7I0qXW8S0S8S0S8S'
-});
+// Initialize Razorpay
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+} else {
+    console.warn('Razorpay keys are missing in walletController.');
+}
+
 
 // @desc    Get wallet balance and transactions
 // @route   GET /api/wallet
@@ -57,6 +64,9 @@ exports.createTopupOrder = async (req, res) => {
             receipt: `topup_${Date.now()}`
         };
 
+        if (!razorpay) {
+            return res.status(500).json({ success: false, message: 'Razorpay is not configured' });
+        }
         const order = await razorpay.orders.create(options);
 
         res.json({

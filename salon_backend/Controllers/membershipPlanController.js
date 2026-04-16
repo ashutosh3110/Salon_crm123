@@ -3,10 +3,21 @@ const CustomerMembership = require('../Models/CustomerMembership');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_8sYbzHWidwe5Zw',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || 'YOUR_SECRET'
-});
+// Initialize Razorpay
+let razorpay;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    try {
+        razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+    } catch (e) {
+        console.error('Razorpay Init Error:', e);
+    }
+} else {
+    console.warn('Razorpay keys are missing in membershipPlanController.');
+}
+
 
 // @desc    Get all membership plans for a salon
 // @route   GET /api/membership-plans
@@ -166,16 +177,29 @@ exports.deleteMembershipPlan = async (req, res) => {
 exports.createMembershipOrder = async (req, res) => {
     try {
         const { planId } = req.body;
+        console.log('Creating Membership Order for planId:', planId);
+
         const plan = await MembershipPlan.findById(planId);
-        if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+        if (!plan) {
+            console.error('Plan not found:', planId);
+            return res.status(404).json({ success: false, message: 'Plan not found' });
+        }
 
         const options = {
-            amount: plan.price * 100, // in paise
+            amount: Math.round(plan.price * 100), // in paise
             currency: 'INR',
-            receipt: `mem_${req.user._id}_${Date.now()}`
+            receipt: `mem_${req.user._id.toString().slice(-14)}_${Date.now().toString().slice(-10)}`
         };
 
+        if (!razorpay) {
+            console.error('Razorpay instance is missing');
+            return res.status(500).json({ success: false, message: 'Razorpay is not configured on server' });
+        }
+
+        console.log('Calling Razorpay API with options:', options);
         const order = await razorpay.orders.create(options);
+        
+        console.log('Razorpay Order Created:', order.id);
         res.json({
             success: true,
             orderId: order.id,
@@ -183,7 +207,12 @@ exports.createMembershipOrder = async (req, res) => {
             currency: order.currency
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Membership Order Exception:', err);
+        res.status(500).json({ 
+            success: false, 
+            message: err.message || 'Fatal error during order creation',
+            error: process.env.NODE_ENV === 'development' ? err : undefined
+        });
     }
 };
 
@@ -227,9 +256,14 @@ exports.verifyMembershipPayment = async (req, res) => {
 
         res.json({ success: true, data: membership });
     } catch (err) {
+        console.error('Membership Verify Error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+const WalletTransaction = require('../Models/WalletTransaction');
+const Customer = require('../Models/Customer');
+
 
 // @desc    Get active membership for customer
 // @route   GET /api/loyalty/membership/active
@@ -244,6 +278,59 @@ exports.getActiveMembership = async (req, res) => {
 
         res.json({ success: true, data: membership });
     } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Buy membership using wallet balance
+// @route   POST /api/loyalty/membership/wallet-pay
+// @access  Private (Customer)
+exports.buyMembershipWithWallet = async (req, res) => {
+    try {
+        const { planId } = req.body;
+        const plan = await MembershipPlan.findById(planId);
+        if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+
+        const customer = await Customer.findById(req.user._id);
+        if (!customer) return res.status(404).json({ success: false, message: 'Customer not found' });
+
+        if ((customer.walletBalance || 0) < plan.price) {
+            return res.status(400).json({ success: false, message: 'Insufficient wallet balance' });
+        }
+
+        // Deduct balance
+        customer.walletBalance -= plan.price;
+        await customer.save();
+
+        // Create wallet transaction
+        await WalletTransaction.create({
+            customerId: req.user._id,
+            salonId: plan.salonId,
+            amount: plan.price,
+            type: 'DEBIT',
+            description: `Membership Purchase: ${plan.name}`,
+            status: 'COMPLETED'
+        });
+
+        // Activate membership
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + (plan.duration || 30));
+
+        const membership = await CustomerMembership.findOneAndUpdate(
+            { customerId: req.user._id, salonId: plan.salonId },
+            {
+                planId,
+                status: 'active',
+                expiryDate,
+                amount: plan.price,
+                paymentId: `wallet_${Date.now()}`
+            },
+            { upsert: true, new: true }
+        );
+
+        res.json({ success: true, data: membership });
+    } catch (err) {
+        console.error('Membership Wallet Pay Error:', err);
         res.status(500).json({ success: false, message: err.message });
     }
 };
