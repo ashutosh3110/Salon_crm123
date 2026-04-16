@@ -27,7 +27,7 @@ export const SocketProvider = ({ children }) => {
         return () => {
             newSocket.close();
         };
-    }, [API_URL]);
+    }, []);
 
     return (
         <SocketContext.Provider value={socket}>
