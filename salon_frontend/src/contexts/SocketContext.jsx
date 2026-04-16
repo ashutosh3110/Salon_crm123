@@ -12,7 +12,7 @@ export const SocketProvider = ({ children }) => {
         if (envUrl && envUrl.startsWith('http')) {
             let baseUrl = envUrl.replace('/api', '').replace(/\/$/, '');
             
-            // Fix accidental double protocol typos like https://https://domain.com
+            // Fix accidental double protocol typos
             if (baseUrl.toLowerCase().includes('://https://')) {
                 baseUrl = baseUrl.replace(/:\/\/https:\/\//i, '://');
             } else if (baseUrl.toLowerCase().includes('://http://')) {
@@ -21,8 +21,14 @@ export const SocketProvider = ({ children }) => {
 
             try {
                 const parsed = new URL(baseUrl);
-                // If hostname is just 'https' or 'http', something is wrong
-                if (parsed.hostname === 'https' || parsed.hostname === 'http' || !parsed.hostname.includes('.')) {
+                // Hostname must contain at least one dot (e.g. localhost or domain.com)
+                // and cannot be just 'https' or 'http'
+                const isValidHost = parsed.hostname && 
+                                   parsed.hostname !== 'https' && 
+                                   parsed.hostname !== 'http' && 
+                                   (parsed.hostname.includes('.') || parsed.hostname === 'localhost');
+
+                if (!isValidHost) {
                     socketUrl = window.location.origin;
                 } else {
                     socketUrl = baseUrl;
@@ -34,9 +40,11 @@ export const SocketProvider = ({ children }) => {
             socketUrl = window.location.origin;
         }
 
+        console.log('[Socket] Connecting to:', socketUrl, '(Original VITE_API_URL:', envUrl, ')');
+
         const newSocket = io(socketUrl, {
             autoConnect: true,
-            transports: ['polling', 'websocket'] // Ensure fallback support
+            transports: ['polling', 'websocket']
         });
 
         setSocket(newSocket);
