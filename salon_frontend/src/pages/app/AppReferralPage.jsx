@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Share2, Gift, Check, UserPlus, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Copy, Share2, Gift, Check, UserPlus, MapPin, ArrowLeft } from 'lucide-react';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import api from '../../services/api';
 
 export default function AppReferralPage() {
+    const navigate = useNavigate();
     const { customer } = useCustomerAuth();
     const { theme } = useCustomerTheme();
     const { activeOutlet } = useBusiness();
@@ -118,16 +120,34 @@ export default function AppReferralPage() {
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-10 px-4">
             
-            {/* Dynamic Outlet Header */}
             <motion.div
                 variants={fadeUp}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    padding: '4px 0'
+                    gap: '12px',
+                    padding: '8px 0'
                 }}
             >
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        background: colors.card,
+                        border: `1.5px solid ${colors.border}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: colors.text,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
+                    }}
+                    className="active:scale-90 transition-transform"
+                >
+                    <ArrowLeft size={18} />
+                </button>
+
                 <div style={{
                     width: '32px',
                     height: '32px',

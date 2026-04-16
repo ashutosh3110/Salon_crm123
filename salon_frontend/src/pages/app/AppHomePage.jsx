@@ -293,30 +293,37 @@ export default function AppHomePage() {
 
             setLoadingPlans(true);
             try {
+                // Fetch all approved reviews for the salon for general social proof on home page
+                let fbUrl = `/feedbacks?salonId=${sid}&status=Approved`;
+                // if (activeOutletId) fbUrl += `&outletId=${activeOutletId}`; // Removed to show global reviews
+
                 const [mRes, lRes, fRes] = await Promise.all([
                     api.get(`/loyalty/membership-plans/public?salonId=${sid}`),
                     api.get(`/loyalty/settings/public?salonId=${sid}`),
-                    api.get(`/feedbacks?salonId=${sid}&status=Approved`)
+                    api.get(fbUrl)
                 ]);
                 
                 if (mRes.data?.success) {
-                    console.log(`[Home] Salon: ${sid}, Plans: ${mRes.data.data?.length}`);
                     setMembershipPlans(mRes.data.data);
                 }
                 if (lRes.data?.success) {
                     setLoyaltyRule(lRes.data.data);
                 }
                 if (fRes.data?.success) {
-                    setDynamicReviews(fRes.data.data);
+                    const list = fRes.data.data || [];
+                    setDynamicReviews(list);
+                    console.log(`[Home] Dynamic reviews loaded: ${list.length} for salon: ${sid}`);
+                } else if (Array.isArray(fRes.data)) {
+                    setDynamicReviews(fRes.data);
                 }
             } catch (err) {
-                console.error('[Home] Failed to fetch loyalty/review data', err);
+                console.error('[Home] Failed to fetch data', err);
             } finally {
                 setLoadingPlans(false);
             }
         };
         fetchPlans();
-    }, [activeSalonId, activeOutlet?.salonId]);
+    }, [activeSalonId, activeOutlet?.salonId, activeOutletId]);
 
     // Pre-select first category when categories load
     useEffect(() => {
@@ -468,7 +475,11 @@ export default function AppHomePage() {
     /** Hero carousel = App CMS **Banners** tab only (no POS/coupon promos, no lookbook — those have their own UI below). */
     const filteredPromos = useMemo(() => {
         return banners
-            .filter((p) => p.status === 'Active' && (!p.gender || p.gender === 'all' || p.gender === g))
+            .filter((p) => {
+                const isActive = p.status?.toLowerCase() === 'active';
+                const matchesGender = !p.gender || p.gender === 'all' || p.gender === g;
+                return isActive && matchesGender;
+            })
             .map((p) => {
                 const validity = (p.validityText && String(p.validityText).trim())
                     || (p.tag && String(p.tag).trim())
@@ -898,7 +909,7 @@ export default function AppHomePage() {
                                 </motion.div>
                             ) : (
                                 <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <p style={{ color: colors.textMuted, fontSize: '12px' }}>No exclusive offers available for this salon yet.</p>
+                                    <p style={{ color: colors.textMuted, fontSize: '12px' }}>No exclusive offers found ({banners?.length} banners total, g={g})</p>
                                 </div>
                             )}
                         </AnimatePresence>
@@ -1167,7 +1178,7 @@ export default function AppHomePage() {
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {(() => {
-                                const displayReviews = dynamicReviews.length > 0 ? dynamicReviews : homeData.REVIEWS;
+                                const displayReviews = (dynamicReviews && dynamicReviews.length > 0) ? dynamicReviews : (homeData.REVIEWS || []);
                                 return displayReviews.map((rev) => (
                                     <div
                                         key={rev._id || rev.id}
@@ -1177,20 +1188,24 @@ export default function AppHomePage() {
                                             boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
                                         }}
                                     >
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                                             <div style={{ display: 'flex', gap: '4px' }}>
                                                 {[1, 2, 3, 4, 5].map(s => (
                                                     <Star
                                                         key={s}
-                                                        size={10}
+                                                        size={12}
                                                         fill={s <= rev.rating ? colors.accent : 'none'}
                                                         color={s <= rev.rating ? colors.accent : colors.textMuted}
+                                                        strokeWidth={2.5}
                                                     />
                                                 ))}
                                             </div>
-                                            <span style={{ fontSize: '10px', color: colors.textMuted }}>
-                                                {new Date(rev.createdAt || Date.now()).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
-                                            </span>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: colors.accent, marginBottom: '2px', letterSpacing: '0.05em' }}>VERIFIED</span>
+                                                <span style={{ fontSize: '9px', color: colors.textMuted, fontWeight: 700, opacity: 0.6 }}>
+                                                    {new Date(rev.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase()}
+                                                </span>
+                                            </div>
                                         </div>
                                         <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
                                             "{rev.comment}"

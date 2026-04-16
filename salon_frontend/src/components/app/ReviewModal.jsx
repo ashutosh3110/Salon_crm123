@@ -8,6 +8,7 @@ import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targetType = 'service', targetId = null, targetName = null }) {
     const { salon, activeSalonId } = useBusiness();
     const { customer } = useCustomerAuth();
+    const [revName, setRevName] = useState(customer?.name || '');
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
     const [comment, setComment] = useState('');
@@ -25,14 +26,19 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                 throw new Error('Salon context missing');
             }
 
+            const oid = localStorage.getItem('active_outlet_id');
+
             await api.post('/feedbacks', {
                 salonId: sid,
-                customerName: customer?.name || 'Customer',
+                outletId: oid,
+                customerName: revName || customer?.name || 'Customer',
+                customer: revName || customer?.name || 'Customer',
                 rating,
                 comment,
                 targetType,
                 targetId: targetId || (booking?.service?._id || booking?.service?.id),
                 targetName: targetName || booking?.service?.name || 'Service',
+                status: 'Pending'
             });
             setIsSuccess(true);
             setTimeout(() => {
@@ -84,9 +90,9 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                         <>
                             <div className="p-6 border-b border-white/5 flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Rate Your Experience</h3>
+                                    <h3 className="text-lg font-black text-white uppercase tracking-tight">Post a Review</h3>
                                     <p className="text-[10px] text-[#C8956C] font-bold uppercase tracking-widest mt-1">
-                                        {targetName || booking?.service?.name || 'Service'}
+                                        {salon?.name || 'Signature Salon'}
                                     </p>
                                 </div>
                                 <button onClick={onClose} className="p-2 text-white/40 hover:text-white transition-all">
@@ -119,31 +125,45 @@ export default function ReviewModal({ isOpen, onClose, booking, onSuccess, targe
                                     ))}
                                 </div>
 
+                                {/* Name Input - High Visibility */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] ml-2">Your Name</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={revName}
+                                            onChange={(e) => setRevName(e.target.value)}
+                                            placeholder="Enter your public name..."
+                                            className="w-full h-14 bg-white/[0.06] border border-white/10 rounded-2xl px-5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:bg-white/[0.1] focus:border-[#C8956C]/50 transition-all font-medium"
+                                        />
+                                    </div>
+                                </div>
+
                                 {/* Comment Area */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-widest">Share more details (Optional)</label>
+                                    <label className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] ml-2">Ritual Experience</label>
                                     <textarea
                                         value={comment}
                                         onChange={(e) => setComment(e.target.value)}
-                                        placeholder="How was the service? Any specific highlights?"
-                                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-[#C8956C]/50 transition-all min-h-[120px] resize-none"
+                                        placeholder="Sharing your ritual experience helps others..."
+                                        className="w-full bg-white/[0.04] border border-white/5 rounded-3xl p-5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:bg-white/[0.08] focus:border-[#C8956C]/30 transition-all min-h-[120px] resize-none font-medium leading-relaxed"
                                     />
                                 </div>
 
                                 {/* Submit Button */}
                                 <button
                                     type="submit"
-                                    disabled={rating === 0 || isSubmitting}
-                                    className="w-full h-14 bg-[#C8956C] disabled:bg-white/5 disabled:text-white/20 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-xl shadow-[#C8956C]/20"
+                                    disabled={rating === 0 || !revName.trim() || isSubmitting}
+                                    className="w-full h-16 bg-[#C8956C] disabled:bg-white/5 disabled:text-white/20 text-white rounded-2xl font-black uppercase tracking-[0.3em] text-[11px] flex items-center justify-center gap-3 hover:brightness-110 active:scale-[0.98] transition-all shadow-2xl shadow-[#C8956C]/20 mt-2"
                                 >
                                     {isSubmitting ? (
                                         <motion.div
                                             animate={{ rotate: 360 }}
                                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                            className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                                            className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
                                         />
                                     ) : (
-                                        <><Send size={16} /> Submit Feedback</>
+                                        'PUBLISH RITUAL EXPERIENCE'
                                     )}
                                 </button>
                             </form>

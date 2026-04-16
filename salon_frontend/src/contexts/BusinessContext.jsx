@@ -49,6 +49,29 @@ export function BusinessProvider({ children }) {
     const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
     
     const activeOutlet = useMemo(() => (outlets || []).find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null, [outlets, activeOutletId]);
+    
+    // Sync activeOutletId to localStorage
+    useEffect(() => {
+        if (activeOutletId) {
+            localStorage.setItem('active_outlet_id', activeOutletId);
+        }
+    }, [activeOutletId]);
+
+    // Sync activeSalonId to localStorage and update from activeOutlet
+    useEffect(() => {
+        if (activeSalonId) {
+            localStorage.setItem('active_salon_id', activeSalonId);
+        }
+    }, [activeSalonId]);
+
+    useEffect(() => {
+        if (activeOutlet?.salonId) {
+            const sid = String(activeOutlet.salonId._id || activeOutlet.salonId);
+            if (sid !== activeSalonId) {
+                setActiveSalonId(sid);
+            }
+        }
+    }, [activeOutlet, activeSalonId]);
 
 
     const fetchCustomers = useCallback(async () => {
@@ -69,15 +92,22 @@ export function BusinessProvider({ children }) {
         } catch { setSegments([]); } finally { setSegmentsLoading(false); }
     }, []);
 
-    const fetchFeedbacks = useCallback(async (sId) => {
+    const fetchFeedbacks = useCallback(async (sId, oId, status) => {
         setFeedbacksLoading(true);
         try {
             const sid = sId || activeSalonId || salon?._id;
-            const r = await api.get(`/feedbacks${sid ? `?salonId=${sid}` : ''}`);
+            const oid = oId || activeOutletId;
+            
+            let url = `/feedbacks?`;
+            if (sid) url += `&salonId=${sid}`;
+            if (oid) url += `&outletId=${oid}`;
+            if (status) url += `&status=${status}`;
+            
+            const r = await api.get(url);
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setFeedbacks(Array.isArray(list) ? list : []);
         } catch { setFeedbacks([]); } finally { setFeedbacksLoading(false); }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId, activeOutletId, salon?._id]);
 
     const initializationRef = useRef(false);
 
@@ -137,13 +167,25 @@ export function BusinessProvider({ children }) {
         } catch { setSuppliers([]); }
     }, []);
 
-    const fetchOutlets = useCallback(async () => {
+    const fetchOutlets = useCallback(async (params = {}) => {
         setOutletsLoading(true);
         try {
-            const res = await api.get('/outlets');
+            const { lat, lng, radius } = params;
+            let url = '/outlets';
+            let query = {};
+            
+            if (lat && lng) {
+                url = '/outlets/nearby';
+                query = { lat, lng, radius: radius || 10 };
+            }
+            
+            const res = await api.get(url, { params: query });
             const data = res.data?.data || [];
             setOutlets(data);
             return data;
+        } catch (err) {
+            console.error('Fetch outlets failed:', err);
+            return [];
         } finally {
             setOutletsLoading(false);
         }
@@ -241,11 +283,16 @@ export function BusinessProvider({ children }) {
     const fetchSegmentCustomers = useCallback(async (sid) => (await api.get(`/clients?segmentId=${sid}`)).data?.results || [], []);
 
     const addFeedback = useCallback(async (d) => {
-        const r = await api.post('/feedbacks', d);
+        const payload = {
+            salonId: d.salonId || activeSalonId || salon?._id,
+            outletId: d.outletId || activeOutletId,
+            ...d
+        };
+        const r = await api.post('/feedbacks', payload);
         const newFb = r.data.data || r.data;
         setFeedbacks(p => [newFb, ...p]);
         return newFb;
-    }, []);
+    }, [activeSalonId, activeOutletId, salon?._id]);
 
     const updateFeedback = useCallback(async (id, d) => { await api.patch(`/feedbacks/${id}`, d); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, ...d } : f)); }, []);
     const archiveFeedback = useCallback(async (id) => { await api.patch(`/feedbacks/${id}`, { status: 'Archived' }); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, status: 'Archived' } : f)); }, []);

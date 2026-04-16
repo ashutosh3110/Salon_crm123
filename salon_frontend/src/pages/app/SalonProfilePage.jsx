@@ -27,11 +27,18 @@ export default function SalonProfilePage() {
     const { 
         feedbacks, 
         addFeedback, 
+        fetchFeedbacks,
         services: businessServices, 
         outlets: businessOutlets, 
         categories: businessCategories 
     } = useBusiness();
     const { user } = useAuth();
+
+    useEffect(() => {
+        if (id) {
+            fetchFeedbacks(null, id, 'Approved');
+        }
+    }, [id, fetchFeedbacks]);
 
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
     const isFavorite = isSalonLiked(id);
@@ -94,12 +101,14 @@ export default function SalonProfilePage() {
         if (reviewRating === 0 || reviewText.trim() === '') return;
 
         const created = await addFeedback({
+            outletId: id,
             customerName: reviewerName.trim() || user?.name || 'Anonymous User',
             rating: reviewRating,
             comment: reviewText.trim(),
             service: 'General Service', // Or dynamically set if booking found
             staffName: 'Unassigned',
             images: reviewImages,
+            status: 'Pending'
         });
 
         if (!created) {

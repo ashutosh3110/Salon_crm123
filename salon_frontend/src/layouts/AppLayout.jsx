@@ -45,6 +45,15 @@ export default function AppLayout() {
             return;
         }
 
+        // 3. Must have an active salon/outlet selected
+        if (!activeOutletId) {
+            const publicPaths = ['/app/login', '/app/gender', '/app/select-salon', '/app/discovery'];
+            if (!publicPaths.includes(location.pathname)) {
+                navigate('/app/select-salon', { replace: true });
+            }
+            return;
+        }
+
     }, [authLoading, customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];

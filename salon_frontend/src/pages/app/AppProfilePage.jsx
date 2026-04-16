@@ -200,7 +200,7 @@ export default function AppProfilePage() {
             await new Promise(r => setTimeout(r, 1200));
 
             addFeedback({
-                customer: customer?.name || 'Anonymous Customer',
+                customer: review.name || customer?.name || 'Anonymous Customer',
                 rating: review.rating,
                 comment: review.comment,
                 service: review.service,
@@ -208,7 +208,7 @@ export default function AppProfilePage() {
             });
 
             setReviewSubmitted(true);
-            setReview({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
+            setReview({ rating: 5, comment: '', service: 'General', staff: 'Salon Team', name: '' });
             setReviewImages([]);
         } finally {
             setIsSubmittingReview(false);
@@ -749,6 +749,36 @@ export default function AppProfilePage() {
                                                 <Star size={40} fill={review.rating >= star ? "#C8956C" : "none"} />
                                             </motion.button>
                                         ))}
+                                    </div>
+
+                                    {/* Name Input */}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] ml-2">Your Name</label>
+                                        <div
+                                            style={{
+                                                background: colors.input,
+                                                borderRadius: '20px 6px 20px 6px',
+                                                border: focusedField === 'revName' ? `1.5px solid #C8956C` : `1.5px solid ${colors.border}`,
+                                                padding: '0 16px',
+                                                height: '52px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                transition: 'all 0.3s'
+                                            }}
+                                        >
+                                            <input
+                                                onFocus={() => setFocusedField('revName')}
+                                                onBlur={() => setFocusedField(null)}
+                                                value={review.name || customer?.name || ''}
+                                                onChange={(e) => setReview({ ...review, name: e.target.value })}
+                                                placeholder="Enter your public name..."
+                                                disabled={isSubmittingReview}
+                                                style={{
+                                                    background: 'transparent', border: 'none', outline: 'none', width: '100%',
+                                                    color: colors.text, fontSize: '14px', fontWeight: 600
+                                                }}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div

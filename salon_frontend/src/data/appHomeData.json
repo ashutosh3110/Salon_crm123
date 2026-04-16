@@ -305,41 +305,6 @@
             "title": "Royal Ethereal"
         }
     ],
-    "REVIEWS": [
-        {
-            "id": "m1",
-            "customerName": "Arjun Malhotra",
-            "rating": 5,
-            "createdAt": "2026-04-07T10:00:00.000Z",
-            "comment": "The Signature Ritual was absolutely refreshing. Hands down the best salon experience I've had in years. The attention to detail is remarkable.",
-            "service": "Signature Ritual",
-            "response": "Thank you Arjun! We're thrilled you enjoyed the ritual. See you again soon!"
-        },
-        {
-            "id": "m2",
-            "customerName": "Priya Sharma",
-            "rating": 5,
-            "createdAt": "2026-04-05T14:30:00.000Z",
-            "comment": "Loved the Gold Glow Facial! My skin feels incredibly smooth and hydrated. Professional staff and beautiful ambiance.",
-            "service": "Gold Glow Facial"
-        },
-        {
-            "id": "m3",
-            "customerName": "Vikram Singh",
-            "rating": 4,
-            "createdAt": "2026-04-02T09:15:00.000Z",
-            "comment": "Great haircut and beard grooming. The specialist was very knowledgeable about style trends. Slightly long wait time but worth it.",
-            "service": "Executive Grooming"
-        },
-        {
-            "id": "m4",
-            "customerName": "Sanya Iyer",
-            "rating": 5,
-            "createdAt": "2026-03-30T16:45:00.000Z",
-            "comment": "The spa experience here is therapeutic. Perfect place to unwind after a long week. Highly recommend their aromatherapy sessions.",
-            "service": "Aromatherapy Spa"
-        }
-    ],
     "PLACEHOLDERS": [
         "Search categories...",
         "Search for salons...",

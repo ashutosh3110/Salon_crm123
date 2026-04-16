@@ -75,7 +75,11 @@ export default function AppProductDetailsPage() {
         const fetchReviews = async () => {
             if (!id) return;
             try {
-                const res = await api.get(`/feedbacks?targetId=${id}&targetType=product`);
+                const oid = localStorage.getItem('active_outlet_id');
+                let url = `/feedbacks?targetId=${id}&targetType=product&status=Approved`;
+                if (oid) url += `&outletId=${oid}`;
+                
+                const res = await api.get(url);
                 if (res.data?.success) {
                     setReviews(res.data.data);
                 }

@@ -44,7 +44,7 @@ router
 router
     .route('/settings')
     .get(authorize('admin', 'manager', 'customer'), getLoyaltySettings)
-    .put(authorize('admin', 'manager'), updateLoyaltySettings);
+    .put(authorize('superadmin'), updateLoyaltySettings);
 
 router.get('/rules', authorize('admin', 'manager', 'customer'), getLoyaltySettings);
 

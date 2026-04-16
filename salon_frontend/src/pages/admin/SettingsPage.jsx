@@ -5,7 +5,7 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { MapPin } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 
-const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business', 'referral'];
+const VALID_SECTIONS = ['profile', 'notifications', 'security', 'business'];
 
 const DEFAULT_NOTIFICATIONS = {
     bookingConfirmations: true,
@@ -64,14 +64,7 @@ export default function SettingsPage() {
         inclusiveTax: true,
     });
 
-    const [referralSettings, setReferralSettings] = useState({
-        referralPoints: 200,
-        referredPoints: 100,
-        pointsRate: 100,
-        redeemValue: 1,
-        minRedeemPoints: 0,
-        active: true,
-    });
+    /* Referral settings removed - managed globally by Super Admin */
 
     const [locationForm, setLocationForm] = useState({ latitude: '', longitude: '' });
     const [notifications, setNotifications] = useState({ ...DEFAULT_NOTIFICATIONS });
@@ -98,16 +91,7 @@ export default function SettingsPage() {
                 inclusiveTax: salon.settings?.inclusiveTax !== undefined ? salon.settings.inclusiveTax : true,
             });
 
-            if (salon.loyaltySetting) {
-                setReferralSettings({
-                    referralPoints: salon.loyaltySetting.referralPoints ?? 200,
-                    referredPoints: salon.loyaltySetting.referredPoints ?? 100,
-                    pointsRate: salon.loyaltySetting.pointsRate ?? 100,
-                    redeemValue: salon.loyaltySetting.redeemValue ?? 1,
-                    minRedeemPoints: salon.loyaltySetting.minRedeemPoints ?? 0,
-                    active: salon.loyaltySetting.active ?? true,
-                });
-            }
+            /* Loyalty settings removed - managed globally by Super Admin */
 
             const n = salon.settings?.notifications;
             if (n && typeof n === 'object') {
@@ -247,30 +231,7 @@ export default function SettingsPage() {
         }
     };
 
-    const handleReferralSubmit = async (e) => {
-        e.preventDefault();
-        setIsSaving(true);
-        try {
-            const payload = {
-                loyaltySetting: {
-                    ...salon.loyaltySetting,
-                    referralPoints: Number(referralSettings.referralPoints),
-                    referredPoints: Number(referralSettings.referredPoints),
-                    pointsRate: Number(referralSettings.pointsRate),
-                    redeemValue: Number(referralSettings.redeemValue),
-                    minRedeemPoints: Number(referralSettings.minRedeemPoints),
-                    active: !!referralSettings.active
-                }
-            };
-            await updateSalon(payload);
-            await fetchSalon?.();
-            alert('Referral rewards updated successfully.');
-        } catch (error) {
-            alert(error?.message || 'Failed to update referral settings');
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    /* handleReferralSubmit removed - managed globally by Super Admin */
 
     const useMyLocation = () => {
         if (!navigator.geolocation) {
@@ -309,7 +270,6 @@ export default function SettingsPage() {
                 {[
                     { id: 'profile', label: 'Profile' },
                     { id: 'business', label: 'Business Info' },
-                    { id: 'referral', label: 'Referral & Earn' },
                     { id: 'notifications', label: 'Notifications' },
                     { id: 'security', label: 'Security' },
                 ].map((t) => (
@@ -655,157 +615,8 @@ export default function SettingsPage() {
                         </div>
                     )}
 
-                    {activeTab === 'referral' && (
-                        <div className="space-y-10 max-w-2xl text-left">
-                            <div>
-                                <h2 className="text-lg font-bold text-text tracking-tight">Loyalty & Referral Rewards</h2>
-                                <p className="text-xs text-text-muted font-medium mt-1">
-                                    Configure how customers earn and redeem loyalty points.
-                                </p>
-                            </div>
+                    {/* Referral section removed - managed globally by Super Admin */}
 
-                            <form onSubmit={handleReferralSubmit} className="space-y-10">
-                                {/* Program Toggle */}
-                                <div className="p-6 rounded-2xl bg-surface-alt/5 border border-border flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <h4 className="text-sm font-bold text-text">Loyalty Program</h4>
-                                        <p className="text-xs text-text-muted">Enable or disable the entire loyalty system.</p>
-                                    </div>
-                                    <label className="relative inline-flex items-center cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            className="sr-only peer" 
-                                            checked={referralSettings.active}
-                                            onChange={(e) => setReferralSettings({...referralSettings, active: e.target.checked})}
-                                        />
-                                        <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-
-                                {/* Earning Rules */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <div className="w-1 h-3 bg-primary rounded-full" /> Earning Rules
-                                    </h3>
-                                    <div className="grid sm:grid-cols-1 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                                Spend Amount per 1 Point
-                                            </label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted">₹</span>
-                                                <input
-                                                    type="number"
-                                                    value={referralSettings.pointsRate}
-                                                    onChange={(e) => setReferralSettings({ ...referralSettings, pointsRate: e.target.value })}
-                                                    className="w-full pl-8 pr-12 py-3.5 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface focus:ring-4 focus:ring-primary/5"
-                                                    placeholder="e.g. 100"
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted uppercase">Amount</span>
-                                            </div>
-                                            <p className="text-[10px] text-text-muted italic px-1">Customer gets 1 point for every ₹{referralSettings.pointsRate || 0} spent.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Redemption Rules */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <div className="w-1 h-3 bg-primary rounded-full" /> Redemption Rules
-                                    </h3>
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                                Point Value (Rupees)
-                                            </label>
-                                            <div className="relative">
-                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-text-muted">₹</span>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={referralSettings.redeemValue}
-                                                    onChange={(e) => setReferralSettings({ ...referralSettings, redeemValue: e.target.value })}
-                                                    className="w-full pl-8 pr-12 py-3.5 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface focus:ring-4 focus:ring-primary/5"
-                                                    placeholder="e.g. 1"
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted uppercase">per pt</span>
-                                            </div>
-                                            <p className="text-[10px] text-text-muted italic px-1">1 Point = ₹{referralSettings.redeemValue || 0}. (e.g. 0.1 means 10 pts = ₹1)</p>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                                Min. Points to Redeem
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    value={referralSettings.minRedeemPoints}
-                                                    onChange={(e) => setReferralSettings({ ...referralSettings, minRedeemPoints: e.target.value })}
-                                                    className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface pr-12 focus:ring-4 focus:ring-primary/5"
-                                                    placeholder="e.g. 100"
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted uppercase">PTS</span>
-                                            </div>
-                                            <p className="text-[10px] text-text-muted italic px-1">Threshold required to start redeeming.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Referral Rules */}
-                                <div className="space-y-4">
-                                    <h3 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                        <div className="w-1 h-3 bg-primary rounded-full" /> Referral Rewards
-                                    </h3>
-                                    <div className="grid sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                                Referrer Reward (Points)
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    value={referralSettings.referralPoints}
-                                                    onChange={(e) => setReferralSettings({ ...referralSettings, referralPoints: e.target.value })}
-                                                    className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface pr-12 focus:ring-4 focus:ring-primary/5"
-                                                    placeholder="e.g. 200"
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted uppercase">PTS</span>
-                                            </div>
-                                            <p className="text-[10px] text-text-muted italic px-1">Awarded to the code owner.</p>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">
-                                                Referred User Reward (Points)
-                                            </label>
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    value={referralSettings.referredPoints}
-                                                    onChange={(e) => setReferralSettings({ ...referralSettings, referredPoints: e.target.value })}
-                                                    className="w-full px-5 py-3.5 rounded-xl border border-border text-sm font-bold focus:border-primary outline-none transition-all bg-surface pr-12 focus:ring-4 focus:ring-primary/5"
-                                                    placeholder="e.g. 100"
-                                                />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted uppercase">PTS</span>
-                                            </div>
-                                            <p className="text-[10px] text-text-muted italic px-1">Awarded to the new customer.</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-6 flex justify-end border-t border-border">
-                                    <button
-                                        type="submit"
-                                        disabled={isSaving || salonLoading}
-                                        className="px-8 py-3.5 bg-primary text-primary-foreground rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all disabled:opacity-50"
-                                    >
-                                        {isSaving ? 'Saving…' : 'Save Loyalty Settings'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

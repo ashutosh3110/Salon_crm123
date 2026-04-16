@@ -67,18 +67,11 @@ export function CMSProvider({ children }) {
         try {
             let res;
             if (isCustomerApp) {
-                if (!tenantId) {
-                    setBanners([]);
-                    setOffers([]);
-                    setLookbook([]);
-                    setExperts([]);
-                    setLoading(false);
-                    return;
-                }
-                if (lastFetchedTenantId.current === tenantId) return;
+                if (lastFetchedTenantId.current === tenantId && tenantId !== null) return;
                 lastFetchedTenantId.current = tenantId;
                 
-                res = await api.get(`/cms?tenantId=${tenantId}`);
+                const query = tenantId ? `?tenantId=${tenantId}` : '';
+                res = await api.get(`/cms${query}`);
             } else {
                 // If not in customer app, only fetch if salon ID and proper role are present
                 const isManagerOrAdmin = ['admin', 'manager', 'superadmin'].includes(user?.role);

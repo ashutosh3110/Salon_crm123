@@ -3,7 +3,7 @@ import {
     User, Mail, Phone, Lock, Eye, EyeOff, Save,
     CheckCircle, Shield, Edit3, KeyRound, Globe,
     BadgeCheck, AlertCircle, Loader2, DollarSign,
-    Info, MapPin, Share2
+    Info, MapPin, Share2, Gift, Star
 } from 'lucide-react';
 import api from '../../services/api';
 
@@ -61,6 +61,18 @@ export default function SASettingsPage() {
     const [savingProfile, setSavingProfile] = useState(false);
     const [savingPassword, setSavingPassword] = useState(false);
     const [savingPlatform, setSavingPlatform] = useState(false);
+    const [savingLoyalty, setSavingLoyalty] = useState(false);
+
+    /* Loyalty Settings */
+    const [loyaltyData, setLoyaltyData] = useState({
+        active: true,
+        pointsRate: 100,
+        redeemValue: 1,
+        minRedeemPoints: 0,
+        referralPoints: 200,
+        referredPoints: 100
+    });
+    const setLoyal = (k, v) => setLoyaltyData(p => ({ ...p, [k]: v }));
 
     /* Platform Settings */
     const [platform, setPlatform] = useState({
@@ -98,8 +110,17 @@ export default function SASettingsPage() {
 
     const fetchAll = async () => {
         setLoading(true);
-        await Promise.all([fetchProfile(), fetchSettings()]);
+        await Promise.all([fetchProfile(), fetchSettings(), fetchLoyalty()]);
         setLoading(false);
+    };
+
+    const fetchLoyalty = async () => {
+        try {
+            const { data } = await api.get('/loyalty/settings');
+            if (data.success) setLoyaltyData(data.data);
+        } catch (err) {
+            console.error('Failed to fetch loyalty settings:', err);
+        }
     };
 
     const fetchSettings = async () => {
@@ -172,6 +193,19 @@ export default function SASettingsPage() {
             showToast(err.response?.data?.message || 'Failed to update settings.', 'error');
         } finally {
             setSavingPlatform(false);
+        }
+    };
+
+    const handleSaveLoyalty = async () => {
+        setSavingLoyalty(true);
+        try {
+            await api.put('/loyalty/settings', loyaltyData);
+            showToast('Loyalty & Referral rules updated globally!');
+        } catch (err) {
+            console.error('Update failed:', err);
+            showToast(err.response?.data?.message || 'Failed to update loyalty rules.', 'error');
+        } finally {
+            setSavingLoyalty(false);
         }
     };
 
@@ -437,8 +471,76 @@ export default function SASettingsPage() {
                         </div>
                     </SectionCard>
                 </div>
-            </div>
 
+                {/* ── Loyalty & Referral Rules ── */}
+                <div className="lg:col-span-2">
+                    <SectionCard
+                        title="Global Rewards & Referrals"
+                        subtitle="Centralized loyalty points and referral incentive rules"
+                        icon={Gift}
+                        iconColor="bg-emerald-50 text-emerald-600"
+                    >
+                        <div className="space-y-6">
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Field 
+                                    label="Loyalty Points Rate" 
+                                    value={loyaltyData.pointsRate} 
+                                    onChange={e => setLoyal('pointsRate', e.target.value)} 
+                                    suffix={<span className="text-[10px] font-bold text-text-muted mr-3">PTS = ₹1</span>}
+                                />
+                                <Field 
+                                    label="Redeem Value" 
+                                    suffix={<span className="text-[10px] font-bold text-text-muted mr-3">₹ / Unit</span>}
+                                    value={loyaltyData.redeemValue} 
+                                    onChange={e => setLoyal('redeemValue', e.target.value)} 
+                                />
+                                <Field 
+                                    label="Min. Redemption Points" 
+                                    value={loyaltyData.minRedeemPoints} 
+                                    onChange={e => setLoyal('minRedeemPoints', e.target.value)} 
+                                />
+                            </div>
+
+                            <div className="pt-6 border-t border-border">
+                                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4 flex items-center gap-2 text-emerald-600">
+                                    <Star className="w-3 h-3" /> Referral Rewards
+                                </h4>
+                                <div className="grid sm:grid-cols-2 gap-6">
+                                    <Field 
+                                        label="Referrer Reward" 
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">PTS</span>}
+                                        value={loyaltyData.referralPoints} 
+                                        onChange={e => setLoyal('referralPoints', e.target.value)} 
+                                    />
+                                    <Field 
+                                        label="Referred User Reward" 
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">PTS</span>}
+                                        value={loyaltyData.referredPoints} 
+                                        onChange={e => setLoyal('referredPoints', e.target.value)} 
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-2">
+                                <button
+                                    onClick={() => setLoyal('active', !loyaltyData.active)}
+                                    className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${loyaltyData.active ? 'bg-emerald-50 border-emerald-200 text-emerald-600' : 'bg-red-50 border-red-200 text-red-600'}`}
+                                >
+                                    System Status: {loyaltyData.active ? 'Enabled' : 'Disabled'}
+                                </button>
+
+                                <button
+                                    onClick={handleSaveLoyalty}
+                                    disabled={savingLoyalty}
+                                    className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50 transition-all shadow-lg shadow-emerald-200 active:scale-[0.98]"
+                                >
+                                    {savingLoyalty ? 'Applying Rules...' : 'Apply Global Rules'}
+                                </button>
+                            </div>
+                        </div>
+                    </SectionCard>
+                </div>
+            </div>
         </div>
     );
 }

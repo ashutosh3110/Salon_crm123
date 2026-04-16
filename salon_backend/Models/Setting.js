@@ -46,6 +46,17 @@ const settingSchema = new mongoose.Schema({
     supportFaqs: {
         type: Array,
         default: []
+    },
+    loyaltySettings: {
+        active: { type: Boolean, default: true },
+        pointsRate: { type: Number, default: 100 }, // 100 points = 1 unit
+        redeemValue: { type: Number, default: 1 },  // 1 unit = 1 currency
+        minRedeemPoints: { type: Number, default: 0 }
+    },
+    referralSettings: {
+        enabled: { type: Boolean, default: true },
+        referralPoints: { type: Number, default: 200 },
+        referredPoints: { type: Number, default: 100 }
     }
 }, {
     timestamps: true

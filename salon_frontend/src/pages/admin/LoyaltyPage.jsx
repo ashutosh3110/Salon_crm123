@@ -24,16 +24,14 @@ import LoyaltyTransactionsTab from '../../components/admin/loyalty/LoyaltyTransa
 import ReferralSettingsTab from '../../components/admin/loyalty/ReferralSettingsTab';
 
 const TABS = [
-    { id: 'rules', label: 'Earning Rules', icon: Gift, description: 'Points earning & redemption' },
     { id: 'plans', label: 'Membership Plans', icon: CreditCard, description: 'Manage plans and benefits' },
     { id: 'members', label: 'Members List', icon: Users, description: 'Active members' },
-    { id: 'transactions', label: 'Points History', icon: ArrowDownUp, description: 'Transaction logs' },
-    { id: 'referral', label: 'Referral Program', icon: Star, description: 'Referral rewards' }
+    { id: 'transactions', label: 'Points History', icon: ArrowDownUp, description: 'Transaction logs' }
 ];
 
 export default function LoyaltyPage() {
     const navigate = useNavigate();
-    const { tabId = 'rules' } = useParams();
+    const { tabId = 'plans' } = useParams();
     const [activeTab, setActiveTab] = useState(tabId);
 
     useEffect(() => {
@@ -42,12 +40,10 @@ export default function LoyaltyPage() {
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'rules': return <LoyaltyRulesTab />;
             case 'plans': return <MembershipPlansTab />;
             case 'members': return <MembersListTab />;
             case 'transactions': return <LoyaltyTransactionsTab />;
-            case 'referral': return <ReferralSettingsTab />;
-            default: return <LoyaltyRulesTab />;
+            default: return <MembershipPlansTab />;
         }
     };
 

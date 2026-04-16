@@ -123,7 +123,7 @@ exports.verifyTopup = async (req, res) => {
                             customerId: req.user._id,
                             salonId: customer.salonId,
                             amount: points,
-                            type: 'EARNED',
+                            type: 'EARN',
                             description: `Points earned on Wallet Top-up (₹${amount})`
                         });
                     }

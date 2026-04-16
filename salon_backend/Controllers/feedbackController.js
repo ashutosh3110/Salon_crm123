@@ -6,10 +6,17 @@ const Salon = require('../Models/Salon');
 // @access  Public
 exports.getFeedbacks = async (req, res) => {
     try {
-        const { targetId, targetType, status, salonId } = req.query;
+        const { targetId, targetType, status, salonId, outletId } = req.query;
         let query = { status: status || 'Approved' };
         
         if (salonId) query.salonId = salonId;
+        if (outletId) {
+            query.$or = [
+                { outletId: outletId },
+                { outletId: { $exists: false } },
+                { outletId: null }
+            ];
+        }
         if (targetId) query.targetId = targetId;
         if (targetType) query.targetType = targetType;
         
@@ -30,7 +37,7 @@ exports.getFeedbacks = async (req, res) => {
 // @access  Public (should ideally be auth required, but keeping open for simplicity)
 exports.createFeedback = async (req, res) => {
     try {
-        let { customerName, rating, comment, targetType, targetId, salonId, targetName } = req.body;
+        let { customerName, rating, comment, targetType, targetId, salonId, outletId, targetName } = req.body;
 
         // If user is logged in, use their details
         const customerId = req.user ? req.user._id : null;
@@ -40,6 +47,7 @@ exports.createFeedback = async (req, res) => {
 
         const feedback = await Feedback.create({
             salonId: salonId || null,
+            outletId: outletId || null,
             customerId,
             customerName: customerName || 'Anonymous',
             rating,

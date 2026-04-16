@@ -2,6 +2,7 @@ const Customer = require('../Models/Customer');
 const WalletTransaction = require('../Models/WalletTransaction');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Salon = require('../Models/Salon');
+const Setting = require('../Models/Setting');
 
 // @desc    Redeem loyalty points to wallet balance
 // @route   POST /api/loyalty/redeem
@@ -15,12 +16,11 @@ exports.redeemLoyaltyPoints = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }
 
-        const salon = await Salon.findById(customer.salonId);
-        if (!salon || !salon.loyaltySetting || !salon.loyaltySetting.active) {
+        const globalSettings = await Setting.findOne();
+        if (!globalSettings || !globalSettings.loyaltySettings || !globalSettings.loyaltySettings.active) {
             return res.status(400).json({ success: false, message: 'Loyalty program is not active' });
         }
-
-        const settings = salon.loyaltySetting;
+        const settings = globalSettings.loyaltySettings;
 
         if (points < (settings.minRedeemPoints || 0)) {
             return res.status(400).json({ 
@@ -96,15 +96,31 @@ exports.getLoyaltyHistory = async (req, res) => {
 // @access  Private (Admin/Manager)
 exports.getLoyaltySettings = async (req, res) => {
     try {
-        const salon = await Salon.findById(req.user.salonId).select('loyaltySetting');
+        const settings = await Setting.findOne().select('loyaltySettings referralSettings');
         
-        if (!salon) {
-            return res.status(404).json({ success: false, message: 'Salon not found' });
+        if (!settings) {
+            return res.json({
+                success: true,
+                data: {
+                    active: true,
+                    pointsRate: 100,
+                    redeemValue: 1,
+                    minRedeemPoints: 0,
+                    referralPoints: 200,
+                    referredPoints: 100
+                }
+            });
         }
+
+        const data = {
+            ...settings.loyaltySettings.toObject(),
+            referralPoints: settings.referralSettings.referralPoints,
+            referredPoints: settings.referralSettings.referredPoints
+        };
 
         res.json({
             success: true,
-            data: salon.loyaltySetting
+            data
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -116,28 +132,39 @@ exports.getLoyaltySettings = async (req, res) => {
 // @access  Private (Admin/Manager)
 exports.updateLoyaltySettings = async (req, res) => {
     try {
-        const { pointsRate, active, redeemValue, minRedeemPoints, referralPoints, referredPoints } = req.body;
-
-        const salon = await Salon.findById(req.user.salonId);
-        
-        if (!salon) {
-            return res.status(404).json({ success: false, message: 'Salon not found' });
+        if (req.user.role !== 'superadmin') {
+            return res.status(403).json({ success: false, message: 'Unauthorized. Only superadmin can manage global rules.' });
         }
 
-        salon.loyaltySetting = {
+        const { pointsRate, active, redeemValue, minRedeemPoints, referralPoints, referredPoints } = req.body;
+
+        let settings = await Setting.findOne();
+        if (!settings) {
+            settings = new Setting();
+        }
+
+        settings.loyaltySettings = {
             pointsRate: Number(pointsRate) || 100,
             redeemValue: Number(redeemValue) || 1,
             minRedeemPoints: Number(minRedeemPoints) || 0,
-            referralPoints: Number(referralPoints) || 200,
-            referredPoints: Number(referredPoints) || 100,
-            active: active !== undefined ? active : salon.loyaltySetting.active
+            active: active !== undefined ? active : (settings.loyaltySettings?.active ?? true)
         };
 
-        await salon.save();
+        settings.referralSettings = {
+            enabled: active !== undefined ? active : (settings.referralSettings?.enabled ?? true),
+            referralPoints: Number(referralPoints) || 200,
+            referredPoints: Number(referredPoints) || 100
+        };
+
+        await settings.save();
 
         res.json({
             success: true,
-            data: salon.loyaltySetting
+            data: {
+                ...settings.loyaltySettings.toObject(),
+                referralPoints: settings.referralSettings.referralPoints,
+                referredPoints: settings.referralSettings.referredPoints
+            }
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -148,20 +175,27 @@ exports.updateLoyaltySettings = async (req, res) => {
 // @access  Public
 exports.getPublicLoyaltySettings = async (req, res) => {
     try {
-        const { salonId } = req.query;
-        if (!salonId) {
-            return res.status(400).json({ success: false, message: 'salonId is required' });
+        const settings = await Setting.findOne().select('loyaltySettings referralSettings');
+        if (!settings) {
+             return res.json({
+                success: true,
+                data: {
+                    active: true,
+                    pointsRate: 100,
+                    redeemValue: 1,
+                    minRedeemPoints: 0,
+                    referralPoints: 200,
+                    referredPoints: 100
+                }
+            });
         }
-
-        const salon = await Salon.findById(salonId).select('loyaltySetting name');
-        
-        if (!salon) {
-            return res.status(404).json({ success: false, message: 'Salon not found' });
-        }
-
         res.json({
             success: true,
-            data: salon.loyaltySetting
+            data: {
+                ...settings.loyaltySettings.toObject(),
+                referralPoints: settings.referralSettings.referralPoints,
+                referredPoints: settings.referralSettings.referredPoints
+            }
         });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });
@@ -172,18 +206,29 @@ exports.getPublicLoyaltySettings = async (req, res) => {
 // @access  Private (Customer)
 exports.getReferralSettings = async (req, res) => {
     try {
-        const salon = await Salon.findById(req.user.salonId).select('loyaltySetting');
-        if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
+        const settings = await Setting.findOne().select('loyaltySettings referralSettings');
+        if (!settings) {
+            return res.json({
+                success: true,
+                data: {
+                    enabled: true,
+                    referrerReward: 200,
+                    referredReward: 100,
+                    redeemRate: 1,
+                    minRedeemPoints: 0,
+                    threshold: 'FIRST_SERVICE'
+                }
+            });
+        }
 
-        const settings = salon.loyaltySetting || {};
         res.json({
             success: true,
             data: {
-                enabled: settings.active ?? true,
-                referrerReward: settings.referralPoints || 200,
-                referredReward: settings.referredPoints || 100,
-                redeemRate: settings.redeemValue || 1,
-                minRedeemPoints: settings.minRedeemPoints || 0,
+                enabled: settings.loyaltySettings.active ?? true,
+                referrerReward: settings.referralSettings.referralPoints || 200,
+                referredReward: settings.referralSettings.referredPoints || 100,
+                redeemRate: settings.loyaltySettings.redeemValue || 1,
+                minRedeemPoints: settings.loyaltySettings.minRedeemPoints || 0,
                 threshold: 'FIRST_SERVICE'
             }
         });

@@ -478,6 +478,7 @@ function App() {
                           <Route path="/app/gender" element={<GenderSelectPage />} />
                           <Route element={<AppLayout />}>
                             <Route path="/app" element={<AppHomePage />} />
+                            <Route path="/app/select-salon" element={<SalonSelectionPage />} />
                             <Route path="/app/nearby-outlets" element={<NearbyOutletsPage />} />
                             <Route path="/app/salon/:id" element={<SalonProfilePage />} />
                             <Route path="/app/discovery" element={<AppDiscoveryPage />} />

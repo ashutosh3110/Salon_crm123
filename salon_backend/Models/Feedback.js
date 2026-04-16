@@ -6,6 +6,11 @@ const feedbackSchema = new mongoose.Schema({
         ref: 'Salon',
         required: false
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet',
+        required: false
+    },
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer'

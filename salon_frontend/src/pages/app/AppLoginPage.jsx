@@ -81,7 +81,8 @@ export default function AppLoginPage() {
 
     useEffect(() => {
         if (!authLoading && isCustomerAuthenticated) {
-            navigate('/app', { replace: true });
+            setShowLocationModal(true);
+            goTo(0);
         }
     }, [isCustomerAuthenticated, authLoading, navigate]);
 
@@ -230,13 +231,20 @@ export default function AppLoginPage() {
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
         localStorage.setItem('wapixo_selected_outlet', JSON.stringify(outlet));
-        localStorage.setItem('active_outlet_id', outlet._id || outlet.id);
+        const oId = outlet._id || outlet.id;
+        localStorage.setItem('active_outlet_id', oId);
         const tId = outlet.salonId || outlet.tenantId;
         localStorage.setItem('active_salon_id', tId);
         setTenantId(tId);
-        setActiveOutletId(outlet._id || outlet.id); 
+        setActiveOutletId(oId); 
         setActiveSalonId(tId);
         
+        // If already authenticated and on discovery step, go home
+        if (isCustomerAuthenticated) {
+            navigate('/app', { replace: true });
+            return;
+        }
+
         // If OTP was already verified during the new flow, proceed to login
         if (otpVerified && phone) {
             handleVerifyOtpWithTenant(tId, outlet);
@@ -365,7 +373,12 @@ export default function AppLoginPage() {
                 setActiveOutletId(oId);
             }
             
-            navigate('/app', { replace: true });
+            if (selectedOutlet) {
+                navigate('/app', { replace: true });
+            } else {
+                setShowLocationModal(true);
+                goTo(0);
+            }
         } catch (e) {
             setError(e.message || 'Verification failed');
             setOtp(['', '', '', '']);
@@ -410,7 +423,12 @@ export default function AppLoginPage() {
                 localStorage.setItem('active_outlet_id', selectedOutlet._id);
                 setOutlets([selectedOutlet]);
             }
-            navigate('/app', { replace: true });
+            if (selectedOutlet) {
+                navigate('/app', { replace: true });
+            } else {
+                setShowLocationModal(true);
+                goTo(0);
+            }
         } catch (e) { setError(e.message || 'Something went wrong'); }
         finally {
             setLoading(false);

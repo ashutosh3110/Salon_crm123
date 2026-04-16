@@ -6,17 +6,30 @@ const Cms = require('../Models/Cms');
 exports.getCmsData = async (req, res) => {
     try {
         const tenantId = req.query.tenantId || null;
-        let cmsItems = await Cms.find({ tenantId });
-
-        // If no tenant-specific data, fallback to global (null)
-        if (tenantId && cmsItems.length === 0) {
-            cmsItems = await Cms.find({ tenantId: null });
+        console.log(`[CMS] Fetching data for tenantId: ${tenantId}`);
+        
+        // Fetch global items
+        const globalItems = await Cms.find({ tenantId: null });
+        console.log(`[CMS] Found ${globalItems.length} global items`);
+        
+        // Fetch tenant-specific items if tenantId is provided
+        let tenantItems = [];
+        if (tenantId) {
+            tenantItems = await Cms.find({ tenantId });
         }
 
         const data = {};
-        cmsItems.forEach(item => {
+        
+        // Populate with global items first
+        globalItems.forEach(item => {
             data[item.section] = item.content;
         });
+        
+        // Override with tenant-specific items
+        tenantItems.forEach(item => {
+            data[item.section] = item.content;
+        });
+
         res.status(200).json({ success: true, data });
     } catch (err) {
         res.status(500).json({ success: false, message: 'Server Error' });

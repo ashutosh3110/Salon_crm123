@@ -15,7 +15,7 @@ export default function FeedbackPage() {
 
     // Initial Fetch
     useEffect(() => {
-        fetchFeedbacks();
+        fetchFeedbacks(null, null, ''); // Fetch all for management
     }, []);
 
     
@@ -40,7 +40,7 @@ export default function FeedbackPage() {
     const [responseDraft, setResponseDraft] = useState('');
     
     // Filters
-    const [activeTab, setActiveTab] = useState('All'); // 'All', 'Pending', 'Critical'
+    const [activeTab, setActiveTab] = useState('Pending'); // 'Pending', 'Approved', 'Rejected', 'All'
     const [selectedRating, setSelectedRating] = useState('All');
     const [selectedSentiment, setSelectedSentiment] = useState('All');
     const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -57,17 +57,24 @@ export default function FeedbackPage() {
             
             const matchesTab = 
                 activeTab === 'All' || 
-                (activeTab === 'Pending' && !fb.response) ||
-                (activeTab === 'Critical' && fb.rating <= 2);
+                fb.status === activeTab;
 
             return matchesSearch && matchesRating && matchesSentiment && matchesTab;
         });
     }, [feedbacks, searchTerm, selectedRating, selectedSentiment, activeTab]);
 
     const handleSendResponse = (id) => {
-        updateFeedback(id, { response: responseDraft, status: 'Resolved' });
+        updateFeedback(id, { response: responseDraft, status: 'Approved' });
         setRespondingTo(null);
         setResponseDraft('');
+    };
+
+    const handleApprove = (id) => {
+        updateFeedback(id, { status: 'Approved' });
+    };
+
+    const handleReject = (id) => {
+        updateFeedback(id, { status: 'Rejected' });
     };
 
     const getSentimentColor = (sentiment) => {
@@ -184,7 +191,7 @@ export default function FeedbackPage() {
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Priority View</label>
                                 <div className="grid grid-cols-1 gap-2">
-                                    {['All', 'Pending', 'Critical'].map(tab => (
+                                    {['Pending', 'Approved', 'Rejected', 'All'].map(tab => (
                                         <button
                                             key={tab}
                                             onClick={() => setActiveTab(tab)}
@@ -194,7 +201,7 @@ export default function FeedbackPage() {
                                                 : 'bg-white text-text-muted border-border/60 hover:border-primary/40'
                                             } border`}
                                         >
-                                            {tab} Records
+                                            {tab === 'Approved' ? 'Public' : tab} Records
                                             {activeTab === tab && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
                                         </button>
                                     ))}
@@ -334,7 +341,9 @@ export default function FeedbackPage() {
                                                             </div>
                                                             <div className="flex items-center gap-2 sm:gap-3 sm:text-right">
                                                                 <div className="sm:text-right">
-                                                                    <p className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-widest sm:mb-1 italic">Staff Member</p>
+                                                                    <p className="text-[8px] sm:text-[9px] font-black text-text-muted uppercase tracking-widest sm:mb-1 italic">
+                                                                        {fb.outletId?.name ? `Outlet: ${fb.outletId.name}` : 'Staff Member'}
+                                                                    </p>
                                                                     <p className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-[0.1em]">{fb.staffName || 'Unassigned'}</p>
                                                                 </div>
                                                                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-primary/20 bg-primary/5 flex items-center justify-center shrink-0">
@@ -357,28 +366,47 @@ export default function FeedbackPage() {
                                                             </div>
                                                             <div className="w-px h-3 bg-border" />
                                                             <div className="flex items-center gap-2">
-                                                                <AlertCircle className={`w-3 h-3 ${fb.status === 'Urgent' ? 'text-rose-500' : 'text-text-muted'}`} />
-                                                                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${fb.status === 'Urgent' ? 'text-rose-500' : 'text-text-muted'}`}>Status: {fb.status}</span>
+                                                                <div className={`w-2 h-2 rounded-full ${fb.status === 'Approved' ? 'bg-emerald-500' : fb.status === 'Rejected' ? 'bg-rose-500' : 'bg-amber-500'}`} />
+                                                                <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${fb.status === 'Approved' ? 'text-emerald-500' : fb.status === 'Rejected' ? 'text-rose-500' : 'text-amber-500'}`}>
+                                                                    Status: {fb.status}
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     {/* Right Action Area */}
                                                     <div className="flex flex-row md:flex-col gap-2 shrink-0 sm:w-36">
+                                                        {fb.status === 'Pending' && (
+                                                            <div className="flex flex-col gap-2 w-full">
+                                                                <button 
+                                                                    onClick={() => handleApprove(fb.id || fb._id)}
+                                                                    className="w-full py-2 bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-600 transition-colors"
+                                                                >
+                                                                    <ThumbsUp className="w-3 h-3" /> Approve
+                                                                </button>
+                                                                <button 
+                                                                    onClick={() => handleReject(fb.id || fb._id)}
+                                                                    className="w-full py-2 bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-rose-600 transition-colors"
+                                                                >
+                                                                    <ThumbsDown className="w-3 h-3" /> Reject
+                                                                </button>
+                                                            </div>
+                                                        )}
+
                                                         {!fb.response ? (
                                                             <button 
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setRespondingTo(respondingTo === fb.id ? null : fb.id);
                                                                 }}
-                                                                className="flex-1 sm:w-full py-2.5 sm:py-2 bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                                                className="flex-1 sm:w-full py-2.5 bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                                             >
-                                                                <Send className="w-3 h-3" /> Respond
+                                                                <Send className="w-3 h-3" /> {fb.status === 'Pending' ? 'Reply & Share' : 'Respond'}
                                                             </button>
                                                         ) : (
-                                                            <div className="flex-1 sm:w-full py-2 sm:py-3 bg-emerald-500/10 border border-emerald-500/20 flex flex-row sm:flex-col items-center justify-center gap-1.5 sm:gap-1">
-                                                                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
-                                                                <span className="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-widest">Resolved</span>
+                                                            <div className="flex-1 sm:w-full py-2 bg-emerald-500/10 border border-emerald-500/20 flex flex-row sm:flex-col items-center justify-center gap-1">
+                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                                                <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest text-center">Responded</span>
                                                             </div>
                                                         )}
                                                         
