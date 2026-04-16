@@ -615,8 +615,6 @@ export default function SettingsPage() {
                         </div>
                     )}
 
-                    {/* Referral section removed - managed globally by Super Admin */}
-
                 </div>
             </div>
         </div>

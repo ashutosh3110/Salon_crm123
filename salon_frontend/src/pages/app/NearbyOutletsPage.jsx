@@ -4,6 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Loader2, MapPin, Navigation, Star, Search, ChevronRight, Globe, Sparkles } from 'lucide-react';
 import api from '../../services/mock/mockApi';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { useBusiness } from '../../contexts/BusinessContext';
+
+const getAddressString = (addr) => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+        const { street, city, state, pincode } = addr;
+        return [street, city, state, pincode].filter(Boolean).join(', ');
+    }
+    return '';
+};
 
 const RADIUS_OPTIONS = [3, 5, 10, 25];
 
@@ -364,7 +375,7 @@ export default function NearbyOutletsPage() {
                                                             <span className="text-[11px] font-bold text-white/50">4.9</span>
                                                         </div>
                                                     </div>
-                                                    <p className="text-[10px] font-medium opacity-30 truncate mb-4">{o.address || 'Select Hub'}</p>
+                                                    <p className="text-[10px] font-medium opacity-30 truncate mb-4">{getAddressString(o.address) || 'Select Hub'}</p>
                                                 </div>
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] font-bold tracking-[0.2em] uppercase px-3 py-1.5 rounded-full bg-white/5" style={{ color: colors.accent }}>

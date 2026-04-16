@@ -755,9 +755,7 @@ export default function AppHomePage() {
                     }}
                 >
                     <motion.div
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => navigate(`/app/salon/${activeOutletId}`)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}
                     >
                         <div style={{
                             width: '36px',
@@ -775,7 +773,6 @@ export default function AppHomePage() {
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Selection</p>
-                                <ExternalLink size={10} color={colors.textMuted} />
                             </div>
                             <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 {activeOutlet?.name || 'Wapixo Salon'}

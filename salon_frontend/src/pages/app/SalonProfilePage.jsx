@@ -15,6 +15,16 @@ import { useGender } from '../../contexts/GenderContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 
+const getAddressString = (addr) => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+        const { street, city, state, pincode } = addr;
+        return [street, city, state, pincode].filter(Boolean).join(', ');
+    }
+    return '';
+};
+
 export default function SalonProfilePage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -288,7 +298,7 @@ export default function SalonProfilePage() {
                     <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#FFF', margin: '0 0 6px' }}>{outlet.name}</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.8)' }}>
                         <MapPin size={14} />
-                        <span style={{ fontSize: '13px' }}>{outlet.address}</span>
+                        <span style={{ fontSize: '13px' }}>{getAddressString(outlet.address)}</span>
                     </div>
                 </div>
             </div>
@@ -302,7 +312,7 @@ export default function SalonProfilePage() {
                             if (outlet.location) {
                                 window.open(`https://www.google.com/maps/dir/?api=1&destination=${outlet.location.lat},${outlet.location.lng}`, '_blank');
                             } else {
-                                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(outlet.name + ' ' + outlet.address)}`, '_blank');
+                                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(outlet.name + ' ' + getAddressString(outlet.address))}`, '_blank');
                             }
                         }}
                         style={{
