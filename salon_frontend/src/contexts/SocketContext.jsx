@@ -5,11 +5,21 @@ const SocketContext = createContext(null);
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
     useEffect(() => {
-        const newSocket = io(API_URL.replace('/api', ''), {
-            autoConnect: true
+        let socketUrl = '';
+        const envUrl = import.meta.env.VITE_API_URL;
+
+        if (envUrl && envUrl.startsWith('http')) {
+            // Use configured API URL, removing trailing slash and /api suffix
+            socketUrl = envUrl.replace('/api', '').replace(/\/$/, '');
+        } else {
+            // Fallback to current origin for production/same-host setups
+            socketUrl = window.location.origin;
+        }
+
+        const newSocket = io(socketUrl, {
+            autoConnect: true,
+            transports: ['polling', 'websocket'] // Ensure fallback support
         });
 
         setSocket(newSocket);

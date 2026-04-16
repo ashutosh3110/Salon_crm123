@@ -457,7 +457,14 @@ export default function StaffPage() {
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
                                     <select 
                                         value={form.role} 
-                                        onChange={(e) => setForm({ ...form, role: e.target.value })}
+                                        onChange={(e) => {
+                                            const newRole = e.target.value;
+                                            const updates = { role: newRole };
+                                            if (newRole.toLowerCase() === 'stylist' && (!form.availability || !form.availability.days)) {
+                                                updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
+                                            }
+                                            setForm({ ...form, ...updates });
+                                        }}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
                                     >
                                         {roles.map(r => (
@@ -513,7 +520,7 @@ export default function StaffPage() {
                                     />
                                 </div>
 
-                                {form.role === 'stylist' && (
+                                {form.role?.toLowerCase() === 'stylist' && (
                                     <>
                                         <div className="col-span-2 pt-2 border-t border-border mt-2">
                                             <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Stylist Public Profile</p>

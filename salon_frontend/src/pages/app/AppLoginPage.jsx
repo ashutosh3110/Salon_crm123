@@ -447,7 +447,7 @@ export default function AppLoginPage() {
         ghost: { background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px', padding: 0, fontFamily: "'Inter', sans-serif" },
     };
 
-    if (authLoading || isCustomerAuthenticated) {
+    if (authLoading || (isCustomerAuthenticated && step !== 0)) {
         return (
             <div style={{ minHeight: '100svh', background: colors.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Loader2 size={40} className="animate-spin text-[#C8956C]" />
