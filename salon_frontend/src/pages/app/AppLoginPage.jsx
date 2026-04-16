@@ -79,6 +79,17 @@ export default function AppLoginPage() {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
+    // Force clear outlet selection every time user visits login page
+    useEffect(() => {
+        setTenantId('');
+        setSelectedOutlet(null);
+        localStorage.removeItem('active_outlet_id');
+        localStorage.removeItem('active_salon_id');
+        localStorage.removeItem('wapixo_selected_outlet');
+        setActiveOutletId(null);
+        setActiveSalonId(null);
+    }, []);
+
     useEffect(() => {
         if (!authLoading && isCustomerAuthenticated) {
             setShowLocationModal(true);
@@ -367,18 +378,9 @@ export default function AppLoginPage() {
             const cust = await customerLogin(phone, code, tenantId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
             
-            if (selectedOutlet) {
-                const oId = selectedOutlet._id || selectedOutlet.id;
-                localStorage.setItem('active_outlet_id', oId);
-                setActiveOutletId(oId);
-            }
-            
-            if (selectedOutlet) {
-                navigate('/app', { replace: true });
-            } else {
-                setShowLocationModal(true);
-                goTo(0);
-            }
+            // Always go to Discovery step (0) after login to force selection
+            setShowLocationModal(true);
+            goTo(0);
         } catch (e) {
             setError(e.message || 'Verification failed');
             setOtp(['', '', '', '']);

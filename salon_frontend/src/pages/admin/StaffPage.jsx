@@ -36,6 +36,19 @@ const roleColors = {
     inventory_manager: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400',
 };
 
+const DEFAULT_AVAILABILITY = {
+    mode: 'same',
+    days: {
+        monday: [{ start: '09:00', end: '18:00' }],
+        tuesday: [{ start: '09:00', end: '18:00' }],
+        wednesday: [{ start: '09:00', end: '18:00' }],
+        thursday: [{ start: '09:00', end: '18:00' }],
+        friday: [{ start: '09:00', end: '18:00' }],
+        saturday: [{ start: '09:00', end: '18:00' }],
+        sunday: [{ start: '09:00', end: '18:00' }]
+    }
+};
+
 const statusColors = {
     active: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
     inactive: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900',
@@ -71,7 +84,8 @@ export default function StaffPage() {
         avatar: '',
         stylistBio: '',
         stylistExperience: '',
-        stylistSpecializations: ''
+        stylistSpecializations: '',
+        availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY))
     });
 
     useEffect(() => {
@@ -118,7 +132,7 @@ export default function StaffPage() {
             }
             setShowModal(false);
             setEditing(null);
-            setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
+            setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
         } catch (error) {
             alert('Operation failed: ' + error.message);
         } finally {
@@ -157,9 +171,10 @@ export default function StaffPage() {
             pan: u.pan || '',
             address: u.address || '',
             avatar: u.avatar || '',
-            stylistBio: u.stylistBio || '',
-            stylistExperience: u.stylistExperience || '',
-            stylistSpecializations: Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations.join(', ') : (u.stylistSpecializations || '')
+            stylistBio: u.stylistBio || u.bio || '',
+            stylistExperience: u.stylistExperience || u.experience || '',
+            stylistSpecializations: Array.isArray(u.stylistSpecializations || u.specializations) ? (u.stylistSpecializations || u.specializations).join(', ') : (u.stylistSpecializations || u.specializations || ''),
+            availability: u.availability || JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY))
         });
         setShowModal(true);
     };
@@ -175,7 +190,7 @@ export default function StaffPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '' });
+                        setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
                     className="flex items-center gap-2 bg-text text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all italic active:scale-95"
@@ -532,6 +547,65 @@ export default function StaffPage() {
                                                 placeholder="A short summary about the expert..."
                                             />
                                         </div>
+
+                                        {/* Availability & Slots Section */}
+                                        <div className="col-span-2 pt-6 border-t border-border mt-4">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Work Schedule & Availability</p>
+                                                <div className="flex bg-surface-alt p-1 rounded-none border border-border">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'same' } })}
+                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all ${form.availability?.mode === 'same' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                                                    >
+                                                        Same for all
+                                                    </button>
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => setForm({ ...form, availability: { ...form.availability, mode: 'different' } })}
+                                                        className={`px-3 py-1 text-[8px] font-black uppercase tracking-tighter transition-all ${form.availability?.mode === 'different' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}
+                                                    >
+                                                        Different Days
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {form.availability?.mode === 'same' ? (
+                                                <div className="bg-surface p-4 border border-border space-y-4">
+                                                    <SlotInputGroup 
+                                                        day="All Days" 
+                                                        slots={form.availability?.days?.monday || []} 
+                                                        onChange={(newSlots) => {
+                                                            const newDays = { ...form.availability.days };
+                                                            Object.keys(newDays).forEach(d => {
+                                                                newDays[d] = newSlots;
+                                                            });
+                                                            setForm({ ...form, availability: { ...form.availability, days: newDays } });
+                                                        }}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-3">
+                                                    {Object.keys(form.availability?.days || {}).map((day) => (
+                                                        <div key={day} className="bg-surface p-3 border border-border">
+                                                            <SlotInputGroup 
+                                                                day={day.charAt(0).toUpperCase() + day.slice(1)} 
+                                                                slots={form.availability.days[day]} 
+                                                                onChange={(newSlots) => {
+                                                                    setForm({ 
+                                                                        ...form, 
+                                                                        availability: { 
+                                                                            ...form.availability, 
+                                                                            days: { ...form.availability.days, [day]: newSlots } 
+                                                                        } 
+                                                                    });
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </>
                                 )}
                             </div>
@@ -559,6 +633,75 @@ export default function StaffPage() {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function SlotInputGroup({ day, slots, onChange }) {
+    const addSlot = () => {
+        onChange([...slots, { start: '09:00', end: '18:00' }]);
+    };
+
+    const removeSlot = (index) => {
+        onChange(slots.filter((_, i) => i !== index));
+    };
+
+    const updateSlot = (index, field, value) => {
+        const newSlots = [...slots];
+        newSlots[index] = { ...newSlots[index], [field]: value };
+        onChange(newSlots);
+    };
+
+    return (
+        <div className="space-y-2 text-left">
+            <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text font-mono italic">{day}</span>
+                <button 
+                    type="button" 
+                    onClick={addSlot}
+                    className="text-[9px] font-black text-primary hover:text-primary-foreground hover:bg-primary px-2 py-1 transition-all border border-primary/20"
+                >
+                    + ADD SLOT
+                </button>
+            </div>
+            
+            {slots.length === 0 ? (
+                <div className="py-2 text-[9px] font-bold text-rose-500 uppercase tracking-widest italic opacity-60">Off Duty / Unavailable</div>
+            ) : (
+                <div className="space-y-2">
+                    {slots.map((slot, idx) => (
+                        <div key={idx} className="flex items-center gap-2 group/slot">
+                            <div className="flex-1 grid grid-cols-2 gap-2">
+                                <div className="relative">
+                                    <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
+                                    <input 
+                                        type="time" 
+                                        value={slot.start}
+                                        onChange={(e) => updateSlot(idx, 'start', e.target.value)}
+                                        className="w-full pl-7 pr-2 py-1.5 bg-white border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                    />
+                                </div>
+                                <div className="relative">
+                                    <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
+                                    <input 
+                                        type="time" 
+                                        value={slot.end}
+                                        onChange={(e) => updateSlot(idx, 'end', e.target.value)}
+                                        className="w-full pl-7 pr-2 py-1.5 bg-white border border-border text-[10px] font-black outline-none focus:border-text font-mono"
+                                    />
+                                </div>
+                            </div>
+                            <button 
+                                type="button" 
+                                onClick={() => removeSlot(idx)}
+                                className="p-1.5 text-text-muted hover:text-rose-600 hover:bg-rose-50 transition-all opacity-0 group-hover/slot:opacity-100"
+                            >
+                                <Trash2 size={12} />
+                            </button>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

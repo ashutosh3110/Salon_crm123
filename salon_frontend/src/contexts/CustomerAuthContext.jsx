@@ -92,6 +92,10 @@ export function CustomerAuthProvider({ children }) {
         }
         localStorage.removeItem('customer_token');
         localStorage.removeItem('customer_user');
+        localStorage.removeItem('active_outlet_id');
+        localStorage.removeItem('active_salon_id');
+        localStorage.removeItem('wapixo_selected_outlet');
+        
         setCustomer(null);
         navigate('/app/login');
     };
