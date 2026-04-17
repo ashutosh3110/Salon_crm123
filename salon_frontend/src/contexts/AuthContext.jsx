@@ -78,8 +78,7 @@ export function AuthProvider({ children }) {
             });
             return response.data;
         },
-        isAuthenticated: !!user,
-        isPlanActive: true
+        isAuthenticated: !!user
     }), [user, loading, login, logout]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,7 +5,7 @@ import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
     CheckCircle, EyeIcon, ArrowUpRight, Trash2, LogIn,
     ChevronDown, Filter, RefreshCw, MapPin, Users, Home,
-    Crown, Clock, AlertTriangle, XCircle, Layers, Calendar,
+    Crown, Clock, AlertTriangle, XCircle, Layers, Calendar, Package
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel } from '../../utils/exportUtils';
@@ -80,7 +80,7 @@ const FILTER_TABS = [
     { key: '', label: 'All', icon: Layers },
     { key: 'active', label: 'Active', icon: CheckCircle },
     { key: 'pending', label: 'Pending', icon: Clock },
-    { key: 'trial', label: 'On Trial', icon: Clock },
+    { key: 'trial', label: 'Free Plan', icon: Package },
     { key: 'expired', label: 'Ended', icon: AlertTriangle },
     { key: 'suspended', label: 'Paused', icon: XCircle },
 ];
@@ -300,7 +300,7 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
         address: typeof tenant?.address === 'object' ? tenant.address?.street : (tenant?.address || ''),
         description: tenant?.description || '',
         gstNumber: tenant?.gstNumber || '',
-        subscriptionPlan: tenant?.subscriptionPlan || 'free',
+        subscriptionPlan: tenant?.subscriptionPlan || 'none',
     });
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
@@ -741,37 +741,20 @@ export default function SATenantsPage() {
                 </div>
             </div>
 
-            {/* ── Status filter tabs ── */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                {FILTER_TABS.map(f => (
-                    <button key={f.key}
-                        onClick={() => setStatus(f.key)}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${statusFilter === f.key
-                            ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
-                            : 'bg-surface text-text-secondary border-border hover:border-primary/30 hover:text-primary'
-                            }`}>
-                        <f.icon className="w-3.5 h-3.5" />
-                        {f.label}
-                        <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] ${statusFilter === f.key ? 'bg-white/20 text-white' : 'bg-surface text-text-muted'
-                            }`}>{counts[f.key]}</span>
-                    </button>
-                ))}
-            </div>
-
-            {/* ── Date period filter ── */}
-
-            {/* ── Search + plan filter + filter toggle ── */}
+ 
+            {/* ── Search only ── */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input type="text" value={search} onChange={e => setSearch(e.target.value)}
-                        placeholder="Find a salon..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" />
+                    <input 
+                        type="text" 
+                        value={search} 
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search by salon name, owner, or email..."
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm" 
+                    />
                 </div>
-                {FilterToggleBtn}
             </div>
-            {/* Date filter panel */}
-            {DateFilterPanel}
 
             {/* ── Table ── */}
             <div className="bg-surface rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -786,7 +769,7 @@ export default function SATenantsPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-surface/60 border-b border-border">
-                                    {['Salon', 'Owner / Email', 'Phone', 'GST', 'City', 'Status', 'Joined', 'Actions'].map(h => (
+                                    {['Salon', 'Owner / Email', 'Phone', 'GST', 'City', 'Plan', 'Status', 'Joined', 'Actions'].map(h => (
                                         <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>
                                             {h}
                                         </th>
@@ -830,6 +813,20 @@ export default function SATenantsPage() {
                                                     {t.address?.city || t.city || '—'}
                                                 </div>
                                             </td>
+                                            {/* Plan */}
+                                            <td className="px-4 py-3.5">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1 rounded-lg border transition-all ${
+                                                        t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none'
+                                                        ? (planColors[t.subscriptionPlan.toLowerCase()] || 'bg-slate-100 text-slate-600 border-slate-200')
+                                                        : 'bg-rose-50 text-rose-600 border-rose-200 uppercase'
+                                                    }`}>
+                                                        {t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none' && (planIcons[t.subscriptionPlan.toLowerCase()] ? <Crown className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />)}
+                                                        {(t.subscriptionPlan && t.subscriptionPlan.toLowerCase() !== 'none') ? t.subscriptionPlan.toUpperCase() : 'Not Subscribed'}
+                                                    </span>
+                                                </div>
+                                            </td>
+
                                             {/* Status */}
                                             <td className="px-4 py-3.5">
                                                 <div className="flex items-center gap-2">

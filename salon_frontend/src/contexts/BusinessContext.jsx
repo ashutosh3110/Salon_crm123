@@ -6,16 +6,16 @@ import api from '../services/api';
 const BusinessContext = createContext({
     salon: null, outlets: [], staff: [], services: [], categories: [], products: [],
     customers: [], bookings: [], feedbacks: [], suppliers: [], segments: [], shifts: [], catalogue: null,
-    fetchCustomers: async () => {}, fetchSegments: async () => {}, fetchFeedbacks: async () => {},
-    fetchServices: async () => {}, fetchBookings: async () => {}, fetchProducts: async () => {}, fetchSuppliers: async () => {},
-    addCustomer: async () => {}, updateCustomer: async () => {}, deleteCustomer: async () => {},
-    addSegment: async () => {}, deleteSegment: async () => {},
-    updateFeedback: async () => {}, archiveFeedback: async () => {}, fetchSegmentCustomers: async () => [],
-    fetchStaff: async () => {}, addStaff: async () => {}, updateStaff: async () => {}, deleteStaff: async () => {},
-    roles: [], fetchRoles: async () => {},
-    setOutlets: () => {}, fetchOutlets: async () => {}, outletsLoading: false,
-    loyaltySettings: null, fetchLoyaltySettings: async () => {},
-    updateSalon: async () => {}, fetchSalon: async () => {},
+    fetchCustomers: async () => { }, fetchSegments: async () => { }, fetchFeedbacks: async () => { },
+    fetchServices: async () => { }, fetchBookings: async () => { }, fetchProducts: async () => { }, fetchSuppliers: async () => { },
+    addCustomer: async () => { }, updateCustomer: async () => { }, deleteCustomer: async () => { },
+    addSegment: async () => { }, deleteSegment: async () => { },
+    updateFeedback: async () => { }, archiveFeedback: async () => { }, fetchSegmentCustomers: async () => [],
+    fetchStaff: async () => { }, addStaff: async () => { }, updateStaff: async () => { }, deleteStaff: async () => { },
+    roles: [], fetchRoles: async () => { },
+    setOutlets: () => { }, fetchOutlets: async () => { }, outletsLoading: false,
+    loyaltySettings: null, fetchLoyaltySettings: async () => { },
+    updateSalon: async () => { }, fetchSalon: async () => { },
     salonLoading: false
 });
 
@@ -43,13 +43,14 @@ export function BusinessProvider({ children }) {
     const [outletsLoading, setOutletsLoading] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
     const [loyaltySettings, setLoyaltySettings] = useState(null);
+    const [loyaltyPlans, setLoyaltyPlans] = useState([]);
 
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
     const [activeSalonId, setActiveSalonId] = useState(() => localStorage.getItem('active_salon_id') || null);
-    
+
     const activeOutlet = useMemo(() => (outlets || []).find((o) => String(o._id || o.id) === String(activeOutletId || '')) || null, [outlets, activeOutletId]);
-    
+
     // Sync activeOutletId to localStorage
     useEffect(() => {
         if (activeOutletId) {
@@ -97,12 +98,12 @@ export function BusinessProvider({ children }) {
         try {
             const sid = sId || activeSalonId || salon?._id;
             const oid = oId || activeOutletId;
-            
+
             let url = `/feedbacks?`;
             if (sid) url += `&salonId=${sid}`;
             if (oid) url += `&outletId=${oid}`;
             if (status) url += `&status=${status}`;
-            
+
             const r = await api.get(url);
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setFeedbacks(Array.isArray(list) ? list : []);
@@ -117,12 +118,12 @@ export function BusinessProvider({ children }) {
             if (!sid) return;
             const r = await api.get(`/services?salonId=${sid}`);
             setServices(r.data?.data || r.data?.results || r.data || []);
-        } catch (error) { 
+        } catch (error) {
             console.error("Fetch services failed:", error);
-            setServices([]); 
+            setServices([]);
         }
     }, [activeSalonId, salon?._id]);
-    
+
     const fetchGroupedServices = useCallback(async (sId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
@@ -134,7 +135,7 @@ export function BusinessProvider({ children }) {
             setGroupedServices([]);
         }
     }, [activeSalonId, salon?._id]);
-    
+
     const fetchCategories = useCallback(async (sId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
@@ -173,12 +174,12 @@ export function BusinessProvider({ children }) {
             const { lat, lng, radius } = params;
             let url = '/outlets';
             let query = {};
-            
+
             if (lat && lng) {
                 url = '/outlets/nearby';
                 query = { lat, lng, radius: radius || 10 };
             }
-            
+
             const res = await api.get(url, { params: query });
             const data = res.data?.data || [];
             setOutlets(data);
@@ -191,11 +192,11 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const fetchStaff = useCallback(async (sId) => { 
+    const fetchStaff = useCallback(async (sId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
-            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`); 
-            setStaff(r.data?.data || r.data?.results || r.data || []); 
+            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`);
+            setStaff(r.data?.data || r.data?.results || r.data || []);
         } catch (error) {
             console.error("Fetch staff failed:", error);
             setStaff([]);
@@ -203,7 +204,7 @@ export function BusinessProvider({ children }) {
     }, [activeSalonId, salon?._id]);
 
     const fetchShifts = useCallback(async () => { const r = await api.get('/shifts'); setShifts(r.data?.data || r.data || []); }, []);
-    
+
     const fetchRoles = useCallback(async () => {
         try {
             const r = await api.get('/roles');
@@ -222,32 +223,48 @@ export function BusinessProvider({ children }) {
         }
     }, [activeSalonId, salon?._id]);
 
+    const fetchLoyaltyPlans = useCallback(async (sId) => {
+        try {
+            const sid = sId || activeSalonId || salon?._id || localStorage.getItem('active_salon_id');
+            if (!sid) return;
+            const r = await api.get(`/loyalty/membership-plans/public?salonId=${sid}`);
+            if (r.data?.success) setLoyaltyPlans(r.data.data);
+        } catch (err) {
+            console.error('Failed to fetch loyalty plans:', err);
+        }
+    }, [activeSalonId, salon?._id]);
+
     const lastInitializedId = useRef(null);
     const fetchCustomerInitialData = useCallback(async () => {
-        if (initializationRef.current && lastInitializedId.current === activeSalonId) return;
+        const sid = activeSalonId || localStorage.getItem('active_salon_id');
+        if (initializationRef.current && lastInitializedId.current === sid) return;
         initializationRef.current = true;
-        lastInitializedId.current = activeSalonId;
+        lastInitializedId.current = sid;
+
         try {
             // Core Salon & Outlets
             const t = await api.get('/salons/me');
             if (t.data.success) {
                 const sData = t.data.data;
                 setSalon(sData);
-                const sid = sData._id;
+                const salonId = sData._id;
                 // Parallel fetch for speed
                 await Promise.all([
-                   fetchOutlets(),
-                    fetchServices(sid),
-                    fetchCategories(sid),
-                    fetchFeedbacks(),
-                    fetchStaff(sid),
-                    fetchLoyaltySettings(sid)
-                 ]);
+                    fetchOutlets(),
+                    fetchServices(salonId),
+                    fetchCategories(salonId),
+                    fetchFeedbacks(salonId),
+                    fetchStaff(salonId),
+                    fetchLoyaltySettings(salonId),
+                    fetchLoyaltyPlans(salonId)
+                ]);
             }
+        } catch (err) {
+            console.error("Failed to initialize customer data:", err);
         } finally {
             setIsInitializing(false);
         }
-    }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, activeSalonId]);
+    }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, fetchLoyaltyPlans, activeSalonId]);
     const fetchSalon = useCallback(async () => {
         try {
             const res = await api.get('/salons/me');
@@ -277,7 +294,7 @@ export function BusinessProvider({ children }) {
     const addCustomer = useCallback(async (d) => { const r = await api.post('/clients', d); setCustomers(p => [r.data, ...p]); return r.data; }, []);
     const deleteCustomer = useCallback(async (id) => { await api.delete(`/clients/${id}`); setCustomers(p => p.filter(c => (c._id !== id && c.id !== id))); }, []);
     const updateCustomer = useCallback(async (id, d) => { const r = await api.patch(`/clients/${id}`, d); setCustomers(p => p.map(c => (c._id === id || c.id === id) ? { ...c, ...d } : c)); return r.data; }, []);
-    
+
     const addSegment = useCallback(async (d) => { const r = await api.post('/segments', d); setSegments(p => [r.data, ...p]); return r.data; }, []);
     const deleteSegment = useCallback(async (id) => { await api.delete(`/segments/${id}`); setSegments(p => p.filter(s => (s._id !== id && s.id !== id))); }, []);
     const fetchSegmentCustomers = useCallback(async (sid) => (await api.get(`/clients?segmentId=${sid}`)).data?.results || [], []);
@@ -297,19 +314,19 @@ export function BusinessProvider({ children }) {
     const updateFeedback = useCallback(async (id, d) => { await api.patch(`/feedbacks/${id}`, d); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, ...d } : f)); }, []);
     const archiveFeedback = useCallback(async (id) => { await api.patch(`/feedbacks/${id}`, { status: 'Archived' }); setFeedbacks(p => p.map(f => (f._id === id || f.id === id) ? { ...f, status: 'Archived' } : f)); }, []);
 
-    const addSupplier = useCallback(async (d) => { 
-        const r = await api.post('/suppliers', d); 
-        setSuppliers(p => [r.data, ...p]); 
-        return r.data; 
+    const addSupplier = useCallback(async (d) => {
+        const r = await api.post('/suppliers', d);
+        setSuppliers(p => [r.data, ...p]);
+        return r.data;
     }, []);
-    const deleteSupplier = useCallback(async (id) => { 
-        await api.delete(`/suppliers/${id}`); 
-        setSuppliers(p => p.filter(s => (s._id !== id && s.id !== id))); 
+    const deleteSupplier = useCallback(async (id) => {
+        await api.delete(`/suppliers/${id}`);
+        setSuppliers(p => p.filter(s => (s._id !== id && s.id !== id)));
     }, []);
-    const updateSupplier = useCallback(async (id, d) => { 
-        const r = await api.patch(`/suppliers/${id}`, d); 
-        setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s)); 
-        return r.data; 
+    const updateSupplier = useCallback(async (id, d) => {
+        const r = await api.patch(`/suppliers/${id}`, d);
+        setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s));
+        return r.data;
     }, []);
 
 
@@ -358,14 +375,14 @@ export function BusinessProvider({ children }) {
         setOutlets(p => p.filter(o => o._id !== id));
     }, []);
 
-    const addStaff = useCallback(async (d) => { 
+    const addStaff = useCallback(async (d) => {
         if (salon?.limits?.staffLimit > 0 && staff.length >= salon.limits.staffLimit && salon.limits.staffLimit !== 999) {
             throw new Error(`Plan Limit Reached: You can only have up to ${salon.limits.staffLimit} staff members on the ${salon.subscriptionPlan.toUpperCase()} plan.`);
         }
-        const r = await api.post('/users', d); 
+        const r = await api.post('/users', d);
         const newUser = r.data.data;
-        setStaff(p => [newUser, ...p]); 
-        return newUser; 
+        setStaff(p => [newUser, ...p]);
+        return newUser;
     }, [salon, staff.length]);
 
     const updateStaff = useCallback(async (id, d) => { const r = await api.patch(`/users/${id}`, d); const updated = r.data.data; setStaff(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s)); return updated; }, []);
@@ -446,8 +463,8 @@ export function BusinessProvider({ children }) {
 
     const value = useMemo(() => ({
         salon, outlets, outletsLoading, staff, services, groupedServices, categories, products, customers, customersLoading, fetchCustomers, addCustomer, updateCustomer, deleteCustomer,
-        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, 
-        addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue, 
+        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments,
+        addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue,
         activeOutletId, setActiveOutletId,
         activeSalonId, setActiveSalonId,
         setOutlets, activeOutlet, fetchOutlets,
@@ -464,6 +481,7 @@ export function BusinessProvider({ children }) {
         fetchShifts, addShift, updateShift,
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,
+        loyaltyPlans, fetchLoyaltyPlans,
         updateSalon, fetchSalon,
         salonLoading: isInitializing
     }), [
@@ -481,6 +499,7 @@ export function BusinessProvider({ children }) {
         fetchShifts, addShift, updateShift,
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,
+        loyaltyPlans, fetchLoyaltyPlans,
         updateSalon, fetchSalon
     ]);
 

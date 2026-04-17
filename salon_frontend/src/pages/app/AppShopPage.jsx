@@ -112,8 +112,8 @@ export default function AppShopPage() {
     const [flyingItems, setFlyingItems] = useState([]);
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, setIsCartOpen } = useCart();
-    const { products: inventoryProducts, shopCategories } = useInventory();
-    const { toggleProductLike, isProductLiked } = useFavorites();
+    const { products: inventoryProducts, shopCategories, toggleProductLike } = useInventory();
+    const { isProductLiked } = useFavorites();
     const { activeOutletId } = useBusiness();
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();

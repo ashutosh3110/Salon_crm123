@@ -172,31 +172,8 @@ const AppMembershipPage = () => {
                 <p style={{ fontSize: '15px', color: colors.textMuted, maxWidth: '280px', margin: '0 auto', lineHeight: 1.5 }}>
                     Discover the ultimate salon experience with curated benefits and prioritized care.
                 </p>
+                
             </motion.div>
-
-            {/* ── CORE BENEFITS GRID ── */}
-            <div style={{ padding: '0 20px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                {[
-                    { icon: <Sparkles size={20} />, title: 'Priority', color: '#6366F1' },
-                    { icon: <Gift size={20} />, title: 'Rewards', color: '#EC4899' },
-                    { icon: <Shield size={20} />, title: 'VIP Care', color: '#F59E0B' }
-                ].map((item, i) => (
-                    <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.4 + (i * 0.1) }}
-                        style={{
-                            background: colors.card, border: `1px solid ${colors.border}`,
-                            borderRadius: '20px', padding: '16px 8px', textAlign: 'center',
-                            boxShadow: '0 10px 20px rgba(0,0,0,0.02)'
-                        }}
-                    >
-                        <div style={{ color: item.color, marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>{item.icon}</div>
-                        <p style={{ fontSize: '11px', fontWeight: 800, margin: 0 }}>{item.title}</p>
-                    </motion.div>
-                ))}
-            </div>
 
             {/* ── MEMBERSHIP PLANS ── */}
             <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '32px', position: 'relative', zIndex: 1 }}>

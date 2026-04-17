@@ -5,47 +5,22 @@ import {
     HardDrive, Activity, BarChart2, Smartphone, Heart, Target,
     Star, Package, Flame, DollarSign, ArrowRight, Info,
     ToggleLeft, ToggleRight, Trash2, Calendar, CreditCard,
-    Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog
+    Megaphone, Briefcase, Layout, ClipboardList, Bell, UserCog,
+    Layers, ShieldCheck, Gem, RefreshCw
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import api from '../../services/api';
-import subscriptionData from '../../data/subscriptionPlans.json';
-
-/* ─── Feature Icon Mapping ────────────────────────────────────────────── */
-const GET_FEATURE_ICON = (key) => {
-    const icons = {
-        pos: Zap,
-        appointments: Calendar,
-        inventory: Package,
-        marketing: Megaphone,
-        payroll: Briefcase,
-        crm: Users,
-        loyalty: Crown,
-        finance: DollarSign,
-        mobileApp: Smartphone,
-        whatsapp: MessageSquare,
-        reports: BarChart2,
-        feedback: Star,
-        cms: Layout,
-        inquiries: ClipboardList,
-        reminders: Bell,
-        setup: UserCog
-    };
-    return icons[key] || CreditCard;
-};
-
-/* ─── Mock plan data ─────────────────────────────────────────────────── */
-const INITIAL_PLANS = subscriptionData.INITIAL_PLANS;
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ─── Color maps ─────────────────────────────────────────────────────── */
-const COLOR = {
-    slate: { badge: 'bg-slate-100 text-slate-600 border-slate-200', header: 'from-slate-500 to-slate-700', ring: 'ring-slate-200' },
-    blue: { badge: 'bg-blue-50   text-blue-600   border-blue-200', header: 'from-blue-500 to-indigo-600', ring: 'ring-blue-200' },
-    primary: { badge: 'bg-primary/10 text-primary border-primary/25', header: 'from-primary to-[#8B1A2D]', ring: 'ring-primary/30' },
-    amber: { badge: 'bg-amber-50  text-amber-600  border-amber-200', header: 'from-amber-500 to-orange-600', ring: 'ring-amber-200' },
+const planColors = {
+    free: 'bg-slate-100 text-slate-600 border-slate-200',
+    basic: 'bg-blue-50 text-blue-600 border-blue-200',
+    pro: 'bg-primary/10 text-primary border-primary/25',
+    premium: 'bg-primary/10 text-primary border-primary/25',
+    enterprise: 'bg-amber-50 text-amber-600 border-amber-200',
 };
 
-/* ─── Empty plan template ────────────────────────────────────────────── */
 const EMPTY_PLAN = {
     id: '', name: '', tag: '', color: 'blue', isActive: true, popular: false,
     price: 0, 
@@ -54,310 +29,213 @@ const EMPTY_PLAN = {
     features: {},
     limits: { staffLimit: 10, outletLimit: 1, whatsappLimit: 0 },
     salonsCount: 0,
+    billingCycle: 'monthly'
 };
 
 /* ─── Plan card ──────────────────────────────────────────────────────── */
-function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, allFeatures = [] }) {
-    const c = COLOR[plan.color] || COLOR.blue;
-    const featOn = Object.values(plan.features || {}).filter(Boolean).length;
-    const featOff = Object.values(plan.features).filter(v => !v).length;
-
+function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
+    const isFree = plan.price === 0 || plan.billingCycle === 'trial';
+    
     return (
-        <div className={`bg-white rounded-2xl border-2 ${plan.popular ? 'border-primary shadow-xl shadow-primary/10' : 'border-border'} overflow-hidden flex flex-col transition-all hover:shadow-md group`}>
-            {/* Popular ribbon */}
-            {plan.popular && (
-                <div className="bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-[10px] font-black text-center py-1.5 tracking-widest uppercase">
-                    ⚡ Most Popular
-                </div>
-            )}
-
-            {/* Header */}
-            <div className={`bg-gradient-to-br ${c.header} p-5 text-white relative overflow-hidden`}>
-                <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/10" />
-                <div className="absolute -right-2 top-8 w-12 h-12 rounded-full bg-white/5" />
-                <div className="flex items-start justify-between relative z-10">
-                    <div>
-                        <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xl font-black">{plan.name}</span>
-                            {!plan.isActive && (
-                                <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">Disabled</span>
-                            )}
+        <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`bg-surface rounded-2xl border transition-all ${plan.popular ? 'border-primary shadow-lg shadow-primary/5' : 'border-border shadow-sm'}`}
+        >
+            <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                             <h3 className="text-xl font-black text-text tracking-tight uppercase italic">{plan.name}</h3>
+                             {plan.popular && (
+                                <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                    Best Seller
+                                </span>
+                             )}
                         </div>
-                        <div className="text-white/70 text-xs font-medium">{plan.tag}</div>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{plan.billingCycle || 'Standard'} Plan</p>
                     </div>
-                    <div className="text-right">
-                        <div className="text-2xl font-black">
-                            {(plan.monthlyPrice === 0 || plan.price === 0) ? 'Free' : `₹${(plan.monthlyPrice || plan.price || 0).toLocaleString('en-IN')}`}
-                        </div>
-                        {(plan.monthlyPrice > 0 || plan.price > 0) && <div className="text-white/70 text-[11px]">/month</div>}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${plan.popular ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-alt border-border text-text-muted'}`}>
+                        {plan.popular ? <Crown className="w-5 h-5" /> : <Package className="w-5 h-5" />}
                     </div>
                 </div>
-                {plan.description && <p className="mt-3 text-[11px] text-white/60 line-clamp-2 italic">{plan.description}</p>}
-                {(plan.monthlyPrice > 0 || plan.price > 0) && (
-                    <div className="flex flex-col gap-0.5 mt-1 relative z-10">
-                        <div className="text-[11px] text-white/60">
-                            ₹{(plan.yearlyPrice || (plan.price * 12 * 0.8) || 0).toLocaleString('en-IN')}/yr · Save {Math.round((1 - (plan.yearlyPrice || (plan.price * 12 * 0.8)) / ((plan.monthlyPrice || plan.price || 1) * 12)) * 100)}%
-                        </div>
+
+                <div className="flex items-baseline gap-1 mb-6">
+                    <span className="text-3xl font-black text-text">₹{plan.price || 0}</span>
+                    <span className="text-xs font-bold text-text-muted uppercase tracking-widest">/ {plan.billingCycle === 'yearly' ? 'year' : 'mo'}</span>
+                </div>
+
+                <p className="text-xs text-text-secondary font-medium leading-relaxed mb-6 line-clamp-2 h-8">
+                    {plan.description || 'Flexible plan tailored for growing salons.'}
+                </p>
+
+                <div className="space-y-3 pt-6 border-t border-border">
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                        <span className="text-text-muted">Staff Quota</span>
+                        <span className="text-text">{plan.limits?.staffLimit > 100 ? 'Unlimited' : plan.limits?.staffLimit} seats</span>
                     </div>
-                )}
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                        <span className="text-text-muted">Outlet Limit</span>
+                        <span className="text-text">{plan.limits?.outletLimit > 100 ? 'Unlimited' : plan.limits?.outletLimit} active branch</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                        <span className="text-text-muted">WhatsApp Quota</span>
+                        <span className="text-text">{plan.limits?.whatsappLimit || 0} msgs</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-6 pt-4 border-t border-border">
+                    <div className={`w-2 h-2 rounded-full ${plan.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                        {plan.isActive ? 'Active on Store' : 'Hidden / Draft'}
+                    </span>
+                </div>
             </div>
 
-            {/* Stats strip */}
-            <div className="grid grid-cols-3 divide-x divide-border border-b border-border text-center">
-                {[
-                    { label: 'Salons', value: plan.salonsCount },
-                    { label: 'Staff ≤', value: plan.limits.staffLimit > 100 ? '∞' : plan.limits.staffLimit },
-                ].map(s => (
-                    <div key={s.label} className="py-2.5">
-                        <div className="text-sm font-black text-text">{s.value}</div>
-                        <div className="text-[10px] text-text-muted font-medium">{s.label === 'Staff ≤' ? 'Max Staff' : s.label}</div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Features */}
-            <div className="p-4 flex-1 space-y-1">
-                {allFeatures.map(f => (
-                    <div key={f.key} className={`flex items-center gap-2 text-xs py-0.5 ${plan.features?.[f.key] ? 'text-text-secondary' : 'text-text-muted line-through opacity-50'}`}>
-                        {plan.features?.[f.key]
-                            ? <CheckCircle className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            : <XCircle className="w-3.5 h-3.5 text-slate-300 shrink-0" />
-                        }
-                        {f.label}
-                    </div>
-                ))}
-            </div>
-
-            <div className="px-4 pb-3 grid grid-cols-2 gap-1.5">
-                {[
-                    { label: 'Outlets', value: plan.limits.outletLimit > 100 ? 'Unlimited' : plan.limits.outletLimit },
-                    { label: 'WhatsApp', value: plan.limits.whatsappLimit?.toLocaleString() || 0 },
-                ].map(l => (
-                    <div key={l.label} className="bg-surface rounded-lg px-2 py-1.5">
-                        <div className="text-[10px] text-text-muted font-medium">{l.label}</div>
-                        <div className="text-xs font-bold text-text">{l.value}</div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Actions */}
-            <div className="flex border-t border-border divide-x divide-border">
+            <div className="grid grid-cols-4 border-t border-border bg-surface-alt/30 overflow-hidden rounded-b-2xl">
                 <button onClick={() => onEdit(plan)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-text-secondary hover:text-primary hover:bg-primary/5 transition-all">
-                    <Edit3 className="w-3.5 h-3.5" /> Edit
+                    className="flex flex-col items-center justify-center gap-1.5 py-4 text-[9px] font-black text-text-muted hover:text-primary hover:bg-white transition-all uppercase tracking-widest border-r border-border">
+                    <Edit3 className="w-4 h-4" /> <span>Edit</span>
                 </button>
                 <button onClick={() => onClone(plan)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-text-secondary hover:text-blue-500 hover:bg-blue-50 transition-all">
-                    <Copy className="w-3.5 h-3.5" /> Clone
+                    className="flex flex-col items-center justify-center gap-1.5 py-4 text-[9px] font-black text-text-muted hover:text-blue-600 hover:bg-white transition-all uppercase tracking-widest border-r border-border">
+                    <Copy className="w-4 h-4" /> <span>Clone</span>
                 </button>
                 <button onClick={() => onToggleActive(plan)}
-                    className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold transition-all ${plan.isActive ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'}`}>
-                    {plan.isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
-                    {plan.isActive ? 'Disable' : 'Enable'}
+                    className={`flex flex-col items-center justify-center gap-1.5 py-4 text-[9px] font-black transition-all uppercase tracking-widest border-r border-border ${plan.isActive ? 'text-orange-500 hover:bg-white' : 'text-emerald-500 hover:bg-white' }`}>
+                    {plan.isActive ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />} <span>{plan.isActive ? 'Pause' : 'Start'}</span>
                 </button>
                 <button onClick={() => onDelete(plan)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 text-[10px] font-bold text-red-500 hover:bg-red-50 transition-all">
-                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                    className="flex flex-col items-center justify-center gap-1.5 py-4 text-[9px] font-black text-red-500 hover:bg-white transition-all uppercase tracking-widest">
+                    <Trash2 className="w-4 h-4" /> <span>Delete</span>
                 </button>
             </div>
-        </div>
+        </motion.div>
     );
 }
 
 /* ─── Plan modal ─────────────────────────────────────────────────────── */
-function PlanModal({ plan, onClose, onSave, saving, allFeatures = [] }) {
+function PlanModal({ plan, onClose, onSave, saving }) {
     const [form, setForm] = useState({ ...EMPTY_PLAN, ...plan });
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const setFeature = (k, v) => setForm(p => ({ ...p, features: { ...p.features, [k]: v } }));
     const setLimit = (k, v) => setForm(p => ({ ...p, limits: { ...p.limits, [k]: v } }));
-    const autoYearlyFromMonthly = (monthly) => {
-        const monthlyValue = Number(monthly) || 0;
-        if (monthlyValue <= 0) return 0;
-        // Keep yearly aligned with existing UI assumption: 20% off on annual billing
-        return Math.round(monthlyValue * 12 * 0.8);
-    };
 
-    const inputCls = 'w-full px-3 py-2 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all';
-    const labelCls = 'block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1';
+    const inputCls = 'w-full px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-bold';
+    const labelCls = 'block text-[11px] font-black text-text-muted uppercase tracking-wider mb-1.5 ml-1';
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white border border-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[92vh]">
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white border border-border rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+                {/* Modal Header */}
+                <div className="px-6 py-4 border-b border-border flex items-center justify-between shrink-0 bg-surface">
                     <div>
-                        <h3 className="text-base font-bold text-text">{plan?._id ? 'Edit Plan' : 'Create New Plan'}</h3>
-                        <p className="text-xs text-text-muted mt-0.5">Configure features, limits and pricing</p>
+                        <h3 className="text-xl font-black text-text tracking-tight uppercase italic">{plan?._id ? 'Edit Plan' : 'Create New Plan'}</h3>
+                        <p className="text-[10px] text-text-muted font-bold tracking-widest uppercase">Configure subscription tier details</p>
                     </div>
-                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface transition-colors">
-                        <X className="w-5 h-5 text-text-muted" />
+                    <button onClick={onClose} className="p-2 hover:bg-surface-alt rounded-xl transition-colors text-text-muted">
+                        <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="overflow-y-auto flex-1 p-6 space-y-6">
-
-                    {/* Basic info */}
-                    <section>
-                        <h4 className="text-xs font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <Package className="w-3.5 h-3.5" /> Plan Details
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
+                <div className="overflow-y-auto flex-1 p-6 space-y-8">
+                    {/* Basic Info Container */}
+                    <div className="space-y-5">
+                       <div className="flex items-center gap-2 mb-1">
+                            <div className="w-1.5 h-4 bg-primary rounded-full" />
+                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">General Information</h4>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="col-span-2">
                                 <label className={labelCls}>Plan Name *</label>
-                                <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Pro" required />
+                                <input className={inputCls} value={form.name} onChange={e => set('name', e.target.value)} placeholder="e.g. Pro Membership" required />
                             </div>
-                             <div>
-                                 <label className={labelCls}>Tag / Subtitle</label>
-                                 <input className={inputCls} value={form.tag} onChange={e => set('tag', e.target.value)} placeholder="e.g. Most Popular" />
-                             </div>
-                             <div className="col-span-2">
-                                 <label className={labelCls}>Description *</label>
+                            <div className="col-span-2">
+                                 <label className={labelCls}>Description</label>
                                  <textarea 
-                                     className={`${inputCls} min-h-[60px] py-2 resize-none`} 
+                                     className={`${inputCls} min-h-[80px] py-3 resize-none`} 
                                      value={form.description} 
                                      onChange={e => set('description', e.target.value)} 
-                                     placeholder="Describe the plan features and target audience..."
-                                     required
+                                     placeholder="What's included in this plan?"
                                  />
-                             </div>
-                            <div>
-                                <label className={labelCls}>Monthly Price (₹)</label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    className={inputCls}
-                                    value={form.monthlyPrice}
-                                    onChange={e => {
-                                        const monthly = +e.target.value;
-                                        setForm(prev => ({
-                                            ...prev,
-                                            monthlyPrice: monthly,
-                                            price: monthly, // Map to backend price field
-                                            yearlyPrice: autoYearlyFromMonthly(monthly),
-                                        }));
-                                    }}
-                                />
                             </div>
                             <div>
-                                <label className={labelCls}>Yearly Price (₹) - Auto</label>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    className={`${inputCls} bg-slate-50 text-text-muted`}
-                                    value={form.yearlyPrice}
-                                    readOnly
-                                />
-                            </div>
-                            <div>
-                                <label className={labelCls}>Card Color</label>
+                                <label className={labelCls}>Billing Cycle</label>
                                 <CustomDropdown
                                     variant="form"
-                                    value={form.color}
-                                    onChange={v => set('color', v)}
+                                    value={form.billingCycle || 'monthly'}
+                                    onChange={v => set('billingCycle', v)}
                                     options={[
-                                        { value: 'slate', label: 'Slate (Free)' },
-                                        { value: 'blue', label: 'Blue (Basic)' },
-                                        { value: 'primary', label: 'Red (Pro)' },
-                                        { value: 'amber', label: 'Amber (Enterprise)' },
+                                        { value: 'monthly', label: 'Monthly' },
+                                        { value: 'yearly', label: 'Yearly' },
+                                        { value: 'trial', label: 'Trial / Free' },
                                     ]}
                                 />
                             </div>
+                            <div>
+                                <label className={labelCls}>Base Price (₹) *</label>
+                                <input type="number" className={inputCls} value={form.price} onChange={e => set('price', +e.target.value)} />
+                            </div>
                         </div>
 
-
-                        <div className="flex items-center gap-4 mt-3">
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <div onClick={() => set('popular', !form.popular)}
-                                    className={`pill-toggle w-10 h-5.5 rounded-full transition-colors relative flex items-center px-0.5 ${form.popular ? 'bg-primary' : 'bg-slate-200'}`}
-                                    style={{ height: '22px', width: '40px' }}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.popular ? 'translate-x-[18px]' : 'translate-x-0'}`} />
-                                </div>
-                                <span className="text-sm text-text-secondary font-medium">Mark as Popular</span>
+                        <div className="grid grid-cols-2 gap-6 p-4 bg-surface rounded-xl border border-border">
+                            <label className="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="w-4 h-4 accent-primary" />
+                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Mark as Popular</span>
                             </label>
-                            <label className="flex items-center gap-2 cursor-pointer select-none">
-                                <div onClick={() => set('isActive', !form.isActive)}
-                                    className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors ${form.isActive ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                                    style={{ height: '22px', width: '40px' }}>
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${form.isActive ? 'translate-x-[18px]' : 'translate-x-0'}`} />
-                                </div>
-                                <span className="text-sm text-text-secondary font-medium">Active (visible to salons)</span>
+                            <label className="flex items-center gap-3 cursor-pointer select-none">
+                                <input type="checkbox" checked={form.isActive} onChange={e => set('isActive', e.target.checked)} className="w-4 h-4 accent-emerald-500" />
+                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Active Plan</span>
                             </label>
                         </div>
-                    </section>
+                    </div>
 
-                    <div className="border-t border-border" />
-
-                    {/* Feature toggles */}
-                    <section>
-                        <h4 className="text-xs font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <Zap className="w-3.5 h-3.5" /> Select Features
-                        </h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {allFeatures.map(f => {
-                                const Icon = GET_FEATURE_ICON(f.key);
-                                const isEnabled = !!form.features?.[f.key];
-                                return (
-                                    <label key={f.key}
-                                        className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-xl border cursor-pointer transition-all ${isEnabled
-                                            ? 'bg-emerald-50/70 border-emerald-200'
-                                            : 'bg-surface/50 border-border hover:border-slate-300'
-                                            }`}>
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${isEnabled ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-                                                <Icon className={`w-3.5 h-3.5 ${isEnabled ? 'text-emerald-600' : 'text-slate-400'}`} />
-                                            </div>
-                                            <div className="min-w-0">
-                                                <div className={`text-xs font-bold ${isEnabled ? 'text-emerald-700' : 'text-text-secondary'}`}>{f.label}</div>
-                                                <div className="text-[10px] text-text-muted truncate">{f.desc}</div>
-                                            </div>
-                                        </div>
-                                        <div onClick={() => setFeature(f.key, !isEnabled)}
-                                            className={`pill-toggle relative flex items-center px-0.5 rounded-full transition-colors shrink-0 ${isEnabled ? 'bg-emerald-500' : 'bg-slate-200'}`}
-                                            style={{ height: '22px', width: '40px' }}>
-                                            <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${isEnabled ? 'translate-x-[18px]' : 'translate-x-0'}`} />
-                                        </div>
-                                    </label>
-                                );
-                            })}
+                    {/* Limits Section */}
+                    <div className="space-y-5">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-1.5 h-4 bg-blue-500 rounded-full" />
+                            <h4 className="text-[11px] font-black text-text-muted uppercase tracking-wider">Operational Limits</h4>
                         </div>
-                    </section>
-
-                    <div className="border-t border-border" />
-
-                    {/* Limits */}
-                    <section>
-                        <h4 className="text-xs font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <Activity className="w-3.5 h-3.5" /> Usage Limits
-                        </h4>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        
+                        <div className="grid grid-cols-3 gap-4">
                             {[
-                                { key: 'staffLimit', label: 'Max Staff Members', hint: '999 = unlimited' },
-                                { key: 'outletLimit', label: 'Max Salon Branches', hint: '999 = unlimited' },
-                                { key: 'whatsappLimit', label: 'WhatsApp Msg Quota', hint: '0 = none' },
+                                { key: 'staffLimit', label: 'Staff Limit', icon: Users },
+                                { key: 'outletLimit', label: 'Outlet Limit', icon: Home },
+                                { key: 'whatsappLimit', label: 'Msg Quota', icon: MessageSquare },
                             ].map(l => (
-                                <div key={l.key}>
-                                    <label className={labelCls}>{l.label} <span className="normal-case font-normal opacity-60">({l.hint})</span></label>
+                                <div key={l.key} className="space-y-1.5">
+                                    <label className={labelCls}>{l.label}</label>
                                     <input type="number" min={0} className={inputCls}
                                         value={form.limits[l.key]}
                                         onChange={e => setLimit(l.key, +e.target.value)} />
                                 </div>
                             ))}
                         </div>
-                    </section>
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex gap-3 items-center">
+                             <Info className="w-4 h-4 text-blue-500 shrink-0" />
+                             <p className="text-[10px] text-blue-800 font-bold uppercase tracking-wide">
+                                 Values over 100 are treated as "Unlimited".
+                             </p>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border shrink-0">
+                {/* Footer Controls */}
+                <div className="px-6 py-4 border-t border-border flex items-center justify-end gap-3 bg-surface">
                     <button onClick={onClose}
-                        className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:bg-surface transition-all">
+                        className="px-4 py-2 text-[11px] font-black text-text-muted uppercase tracking-widest hover:text-text transition-all">
                         Cancel
                     </button>
-                    <button onClick={() => onSave({ ...form, price: form.monthlyPrice || form.price })} disabled={saving || !form.name || !form.description}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-primary/20">
-                        {saving ? 'Saving…' : plan?._id ? 'Save Changes' : 'Create Plan'}
+                    <button onClick={() => onSave(form)} disabled={saving || !form.name}
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
+                        {saving ? 'Saving...' : plan?._id ? 'Update Plan' : 'Create Plan'}
                     </button>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }
@@ -365,13 +243,10 @@ function PlanModal({ plan, onClose, onSave, saving, allFeatures = [] }) {
 /* ══════════════════════════════════════════════════════════════════════ */
 export default function SAPlansPage() {
     const [plans, setPlans] = useState([]);
-    const [statsData, setStatsData] = useState({ totalPlans: 0, activePlans: 0, totalSalons: 0, estimatedMRR: 0 });
     const [loading, setLoading] = useState(true);
-    const [featuresList, setFeaturesList] = useState([]);
-    const [modal, setModal] = useState(null);   // null | plan object (for edit) | 'new'
+    const [modal, setModal] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
-    const [view, setView] = useState('cards'); // 'cards' | 'list'
 
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
@@ -385,56 +260,33 @@ export default function SAPlansPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            await Promise.all([fetchPlans(), fetchStats(), fetchFeatures()]);
+            const response = await api.get('/plans');
+            const data = response.data.data;
+            const list = Array.isArray(data) ? data : data.results || [];
+            setPlans(list);
         } catch (error) {
-            console.error('Error fetching plans data:', error);
+            console.error('Error fetching plans:', error);
             showToast('Failed to load plans.', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchPlans = async () => {
-        const response = await api.get('/plans');
-        const data = response.data.data;
-        const list = Array.isArray(data) ? data : data.results || [];
-        // Normalize backend 'price' to frontend 'monthlyPrice' if needed
-        const normalized = list.map(p => ({
-            ...p,
-            monthlyPrice: p.monthlyPrice || p.price || 0,
-            yearlyPrice: p.yearlyPrice || (p.price * 12 * 0.8) || 0
-        }));
-        setPlans(normalized);
-    };
-
-    const fetchStats = async () => {
-        // Stats are now computed dynamically from plans
-    };
-
-    const fetchFeatures = async () => {
-        const response = await api.get('/plans/features/list');
-        setFeaturesList(response.data.data || []);
-    };
-
     const handleSave = async (form) => {
         setSaving(true);
         try {
-            const dataToSave = {
-                ...form,
-                price: parseFloat(form.monthlyPrice) || 0
-            };
             if (form._id) {
-                await api.put(`/plans/${form._id}`, dataToSave);
-                showToast(`Plan "${form.name}" updated!`);
+                await api.put(`/plans/${form._id}`, form);
+                showToast(`Plan updated successfully!`);
             } else {
-                await api.post('/plans', dataToSave);
-                showToast(`Plan "${form.name}" created!`);
+                await api.post('/plans', form);
+                showToast(`New plan created!`);
             }
             await fetchData();
             setModal(null);
         } catch (error) {
             console.error('Error saving plan:', error);
-            showToast('Failed to save plan.', 'error');
+            showToast('Error saving plan.', 'error');
         } finally {
             setSaving(false);
         }
@@ -443,14 +295,11 @@ export default function SAPlansPage() {
     const handleClone = async (plan) => {
         setSaving(true);
         try {
-            const cloned = { ...plan, name: plan.name + ' (Copy)', popular: false, salonsCount: 0 };
-            delete cloned._id;
-            delete cloned.id;
-            delete cloned.createdAt;
-            delete cloned.updatedAt;
+            const cloned = { ...plan, name: plan.name + ' - COPY', popular: false };
+            delete cloned._id; delete cloned.id; delete cloned.createdAt; delete cloned.updatedAt;
 
             await api.post('/plans', cloned);
-            showToast(`Plan "${plan.name}" cloned!`);
+            showToast(`Plan cloned successfully!`);
             await fetchData();
         } catch (error) {
             console.error('Error cloning plan:', error);
@@ -463,107 +312,101 @@ export default function SAPlansPage() {
     const handleToggleActive = async (plan) => {
         try {
             await api.put(`/plans/${plan._id}`, { isActive: !plan.isActive });
-            showToast(`Plan "${plan.name}" ${plan.isActive ? 'disabled' : 'enabled'}.`, plan.isActive ? 'error' : 'success');
+            showToast(`Plan status updated.`);
             await fetchData();
         } catch (error) {
-            console.error('Error toggling plan status:', error);
-            showToast('Failed to update status.', 'error');
+            console.error('Error toggling status:', error);
+            showToast('Action failed.', 'error');
         }
     };
 
     const handleDelete = async (plan) => {
-        if (window.confirm(`Are you sure you want to delete the "${plan.name}" plan? This action cannot be undone.`)) {
+        if (window.confirm(`Are you sure you want to delete "${plan.name}"?`)) {
             try {
                 await api.delete(`/plans/${plan._id}`);
-                showToast(`Plan "${plan.name}" deleted.`, 'error');
+                showToast(`Plan deleted.`, 'error');
                 await fetchData();
             } catch (error) {
                 console.error('Error deleting plan:', error);
-                showToast('Failed to delete plan.', 'error');
+                showToast('Action failed.', 'error');
             }
         }
     };
 
-    const activePlansCt = plans.filter(p => p.isActive !== false).length;
-    const totalSalonsCt = plans.reduce((a, p) => a + (p.salonsCount || 0), 0);
-    const totalRevenueCt = plans.reduce((a, p) => a + (p.salonsCount || 0) * (p.monthlyPrice || p.price || 0), 0);
-
     return (
-        <div className="space-y-6 pb-8">
-            {/* Toast */}
-            {toast && (
-                <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'
-                    }`}>
-                    <CheckCircle className="w-4 h-4 shrink-0" /> {toast.msg}
-                </div>
-            )}
+        <div className="space-y-6 pb-12">
+            {/* Toast Notifications */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={`fixed top-8 right-8 z-[200] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl text-white text-xs font-black uppercase tracking-wider border backdrop-blur-md ${toast.type === 'error' ? 'bg-red-500/90 border-red-400' : 'bg-emerald-500/90 border-emerald-400'}`}
+                    >
+                        {toast.type === 'error' ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                        {toast.msg}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-            {/* ── Page header ── */}
+            {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">Subscription Plans</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">
-                        Create and manage membership plans for salons
-                    </p>
+                   <h1 className="text-2xl font-black text-text tracking-tight uppercase italic">Subscription Plans</h1>
+                   <p className="text-sm text-text-secondary mt-0.5 font-medium">Define and manage template membership tiers for the ecosystem.</p>
                 </div>
-                <button onClick={() => setModal({})}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
-                    <Plus className="w-4 h-4" /> Create Plan
+                
+                <button 
+                    onClick={() => setModal({})}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-xs font-black uppercase tracking-wider hover:brightness-110 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+                >
+                    <Plus className="w-4 h-4" /> 
+                    <span>Create New Plan</span>
                 </button>
             </div>
 
-            {/* ── KPI strip ── */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                {[
-                    { label: 'Total Plans', value: plans.length, icon: Package, color: 'text-primary   bg-primary/10' },
-                    { label: 'Active Plans', value: activePlansCt, icon: Power, color: 'text-emerald-600 bg-emerald-50' },
-                    { label: 'Active Salons', value: totalSalonsCt, icon: Users, color: 'text-blue-600  bg-blue-50' },
-                    { label: 'Est. Monthly Income', value: `₹${totalRevenueCt.toLocaleString('en-IN')}`, icon: DollarSign, color: 'text-amber-600 bg-amber-50' },
-                ].map(k => (
-                    <div key={k.label} className="bg-white rounded-2xl border-border border shadow-sm p-4 flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl ${k.color} flex items-center justify-center shrink-0`}>
-                            <k.icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <div className="text-xl font-black text-text">{k.value}</div>
-                            <div className="text-xs text-text-muted">{k.label}</div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* ── Plan cards ── */}
+            {/* Plans Grid */}
             {loading ? (
-                <div className="flex items-center justify-center p-20 text-text-muted animate-pulse font-bold uppercase tracking-widest text-sm">
-                    Loading Plans...
+                <div className="flex flex-col items-center justify-center py-24 space-y-4">
+                    <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+                    <div className="text-[10px] text-text-muted font-black uppercase tracking-widest">Loading Plans...</div>
                 </div>
             ) : (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
-                    {plans.map(plan => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {plans.map((plan) => (
                         <PlanCard
                             key={plan._id}
                             plan={plan}
-                            allFeatures={featuresList}
                             onEdit={p => setModal(p)}
                             onClone={handleClone}
                             onToggleActive={handleToggleActive}
                             onDelete={handleDelete}
                         />
                     ))}
+                    
+                    {plans.length === 0 && (
+                        <div className="col-span-full py-24 bg-surface-alt border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center">
+                            <Package className="w-12 h-12 text-text-muted mb-4 opacity-20" />
+                            <p className="text-sm font-black text-text-muted uppercase tracking-widest">No plans defined yet</p>
+                            <button onClick={() => setModal({})} className="mt-4 text-primary font-black uppercase text-[10px] tracking-widest hover:underline">Get Started →</button>
+                        </div>
+                    )}
                 </div>
             )}
 
-
-            {/* ── Modal ── */}
-            {modal !== null && (
-                <PlanModal
-                    plan={modal?._id ? modal : null}
-                    allFeatures={featuresList}
-                    onClose={() => setModal(null)}
-                    onSave={handleSave}
-                    saving={saving}
-                />
-            )}
+            {/* Modal Architecture */}
+            <AnimatePresence>
+                {modal !== null && (
+                    <PlanModal
+                        plan={modal?._id ? modal : null}
+                        onClose={() => setModal(null)}
+                        onSave={handleSave}
+                        saving={saving}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }
+

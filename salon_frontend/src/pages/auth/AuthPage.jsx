@@ -12,7 +12,7 @@ export default function AuthPage() {
     const { theme } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
-    const { login, register } = useAuth();
+    const { login, register, logout } = useAuth();
 
     // States
     const [view, setView] = useState(location.pathname === '/register' ? 'signup' : 'signin');
@@ -51,8 +51,7 @@ export default function AuthPage() {
                 receptionist: { e: 'reception@salon.com', p: 'password' },
                 stylist: { e: 'stylist@salon.com', p: 'password' },
                 accountant: { e: 'accounts@salon.com', p: 'password' },
-                inventory_manager: { e: 'inventory@salon.com', p: 'password' },
-                superadmin: { e: 'superadmin@salon.com', p: 'password' },
+                inventory_manager: { e: 'inventory@salon.com', p: 'password' }
             };
 
             const creds = MOCK_CREDENTIALS[roleParam];
@@ -88,6 +87,15 @@ export default function AuthPage() {
         setLoading(true);
         try {
             const result = await login(signinForm.email, signinForm.password);
+            
+            // SECURITY: Block SuperAdmin from this portal
+            if (result.user.role === 'superadmin') {
+                setError('Restricted: Superadmins must use the master portal.');
+                logout();
+                setLoading(false);
+                return;
+            }
+
             const path = typeof getRedirectPath === 'function' ? getRedirectPath(result?.user) : '/admin';
             navigate(path);
         } catch (err) {
@@ -109,11 +117,9 @@ export default function AuthPage() {
             
             let currentPlan = selectedPlan;
 
-            // NEW: All public registrations are PENDING, so we skip upfront payment
-            // and let them pay after approval if needed.
             await register({
                 ...signupForm,
-                subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'free'
+                subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'none'
             });
             setRegistrationSuccess(true);
         } catch (err) {
@@ -281,7 +287,6 @@ export default function AuthPage() {
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
-                                                        { label: 'SuperAdmin', e: 'superadmin@salon.com', p: 'superadmin123' },
                                                         { label: 'Admin', e: 'mrmmultani@gmail.com', p: '123456' },
                                                         { label: 'Stylist', e: 'neha@gmail.com', p: '123456' },
                                                         { label: 'Accountant', e: 'prachi@gmail.com', p: '123456' },

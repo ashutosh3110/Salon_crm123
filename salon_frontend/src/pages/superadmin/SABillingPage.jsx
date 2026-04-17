@@ -13,6 +13,7 @@ import {
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel, exportToPDF } from '../../utils/exportUtils';
 import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 import superAdminData from '../../data/superAdminMockData.json';
 
@@ -63,9 +64,9 @@ function InvoiceModal({ onClose, onSend }) {
 
     useEffect(() => {
         setFetching(true);
-        mockApi.get('/tenants', { params: { limit: 100 } })
-            .then(res => setTenants(res.data.data.results || []))
-            .catch(err => console.error('Error fetching tenants:', err))
+        api.get('/salons', { params: { limit: 100 } })
+            .then(res => setTenants(res.data.data || []))
+            .catch(err => console.error('Error fetching salons:', err))
             .finally(() => setFetching(false));
     }, []);
 
@@ -204,8 +205,9 @@ export default function SABillingPage() {
 
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({
-        totalRevenue: 0,
-        failedCount: 0,
+        totalAmount: 0,
+        collectedAmount: 0,
+        pendingAmount: 0,
         refundedAmount: 0,
         monthlyRevenue: [],
         planDistribution: []
@@ -221,8 +223,8 @@ export default function SABillingPage() {
         try {
             setLoading(true);
             const [statsRes, transRes] = await Promise.all([
-                mockApi.get(`/billing/stats?t=${Date.now()}`),
-                mockApi.get(`/billing/transactions?limit=100&t=${Date.now()}`)
+                api.get(`/billing/stats?t=${Date.now()}`),
+                api.get(`/billing/transactions?limit=100&t=${Date.now()}`)
             ]);
 
             console.log('[Billing] Stats received:', statsRes.data);
@@ -263,11 +265,12 @@ export default function SABillingPage() {
         total: p.totalAmount,
         date: p.createdAt?.split('T')[0],
         dueDate: p.dueDate?.split('T')[0],
-        status: p.status
+        status: p.status,
+        rawId: p._id
     }));
 
     /* KPIs */
-    const { totalRevenue, failedCount, refundedAmount, monthlyRevenue, planDistribution } = stats;
+    const { totalAmount, collectedAmount, pendingAmount, refundedAmount, monthlyRevenue, planDistribution } = stats;
     
     const latestMonth = monthlyRevenue.length > 0 ? monthlyRevenue[monthlyRevenue.length - 1] : null;
     const mrr = latestMonth?.revenue || 0;
@@ -278,6 +281,18 @@ export default function SABillingPage() {
         ? new Date(latestMonth.month + '-01').toLocaleString('default', { month: 'short', year: 'numeric' })
         : new Date().toLocaleString('default', { month: 'short', year: 'numeric' });
 
+    const handleUpdateStatus = async (payId, newStatus) => {
+        try {
+            const res = await api.put(`/billing/transactions/${payId}/status`, { status: newStatus });
+            if (res.data.success) {
+                showToast(`Status updated to ${newStatus}`);
+                fetchData();
+            }
+        } catch (err) {
+            showToast('Failed to update status', 'error');
+        }
+    };
+
     const handleRetry = async (payId) => {
         setRetry(payId);
         await new Promise(r => setTimeout(r, 1200));
@@ -287,7 +302,7 @@ export default function SABillingPage() {
 
     const handleInvoiceSend = async (form) => {
         try {
-            const res = await mockApi.post('/billing/manual-invoice', {
+            const res = await api.post('/billing/manual-invoice', {
                 tenantId: form.tenantId, // Assuming we add tenant picking logic
                 amount: form.amount,
                 notes: form.note,
@@ -407,9 +422,9 @@ export default function SABillingPage() {
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Collected', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 0 },
-                    { label: 'Failed Payments', value: failedCount, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: 0 },
-                    { label: 'Refunded', value: `₹${refundedAmount.toLocaleString('en-IN')}`, icon: RotateCcw, gradient: 'from-orange-500 to-amber-600', shadow: 'shadow-orange-500/20', change: null },
+                    { label: 'Total Amount', value: `₹${(stats.totalAmount || 0).toLocaleString('en-IN')}`, icon: Layers, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 0 },
+                    { label: 'Collected Amount', value: `₹${(stats.collectedAmount || 0).toLocaleString('en-IN')}`, icon: CheckCircle, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 0 },
+                    { label: 'Pending Amount', value: `₹${(stats.pendingAmount || 0).toLocaleString('en-IN')}`, icon: Clock, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 0 },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all">
                         <div className="flex items-center justify-between mb-3">
@@ -428,18 +443,7 @@ export default function SABillingPage() {
                 ))}
             </div>
 
-            {/* ── Tabs ── */}
-            <div className="flex items-center gap-2">
-                {TABS.map(t => (
-                    <button key={t.id} onClick={() => { setTab(t.id); setSearch(''); setSF(''); }}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${tab === t.id
-                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                            : 'bg-white text-text-secondary border border-border hover:border-primary/30 hover:text-primary'
-                            }`}>
-                        <t.icon className="w-3.5 h-3.5" /> {t.label}
-                    </button>
-                ))}
-            </div>
+         
 
             {/* ════ TAB: PAYMENTS ════ */}
             {tab === 'payments' && (
@@ -474,8 +478,8 @@ export default function SABillingPage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="bg-surface/60 border-b border-border">
-                                        {['Invoice', 'Salon', 'Plan', 'Amount', 'Date', 'Method', 'Status'].map(h => (
-                                            <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 text-left`}>{h}</th>
+                                        {['Invoice', 'Salon', 'Plan', 'Amount', 'Date', 'Method', 'Status', 'Actions'].map(h => (
+                                            <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
@@ -503,6 +507,16 @@ export default function SABillingPage() {
                                                     <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${sc.cls}`}>
                                                         <sc.icon className="w-3 h-3" /> {sc.label}
                                                     </span>
+                                                </td>
+                                                <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                    {p.status === 'pending' && (
+                                                        <button 
+                                                            onClick={() => handleUpdateStatus(p._id, 'captured')}
+                                                            className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                        >
+                                                            Mark Collected
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );
@@ -579,8 +593,8 @@ export default function SABillingPage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="bg-surface/60 border-b border-border">
-                                        {['Invoice', 'Salon', 'Plan', 'Subtotal', 'GST (18%)', 'Total', 'Due Date', 'Status'].map(h => (
-                                            <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 text-left`}>{h}</th>
+                                        {['Invoice', 'Salon', 'Plan', 'Subtotal', 'GST (18%)', 'Total', 'Due Date', 'Status', 'Actions'].map(h => (
+                                            <th key={h} className={`text-xs font-semibold text-text-secondary uppercase tracking-wider px-4 py-3 ${h === 'Actions' ? 'text-right' : 'text-left'}`}>{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
@@ -600,6 +614,16 @@ export default function SABillingPage() {
                                                     <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${sc.cls}`}>
                                                         <sc.icon className="w-3 h-3" /> {sc.label}
                                                     </span>
+                                                </td>
+                                                <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                                                    {inv.status === 'pending' && (
+                                                        <button 
+                                                            onClick={() => handleUpdateStatus(inv.rawId, 'captured')}
+                                                            className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                        >
+                                                            Mark Collected
+                                                        </button>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

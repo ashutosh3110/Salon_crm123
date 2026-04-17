@@ -21,14 +21,17 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['superadmin'],
-        default: 'superadmin'
+        enum: ['superadmin', 'admin', 'vendor', 'support'],
+        default: 'admin'
     },
     phone: {
         type: String,
         trim: true
     },
-    // No salonId or outletId in Users collection as it's only for Superadmin
+    salonId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Salon'
+    },
     dob: String,
     pan: {
         type: String,
@@ -42,10 +45,6 @@ const userSchema = new mongoose.Schema({
         enum: ['active', 'inactive', 'pending'],
         default: 'active'
     },
-    // Stylist Specific Fields
-    stylistBio: String,
-    stylistExperience: String,
-    stylistSpecializations: [String],
     isActive: {
         type: Boolean,
         default: true
@@ -54,20 +53,15 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Hash password before saving
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) return next();
-    
-    // Check if already hashed (bcrypt hashes start with $2a$ or $2b$)
     if (this.password.startsWith('$2a$') || this.password.startsWith('$2b$')) {
         return next();
     }
-    
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
-// Compare password method
 userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };

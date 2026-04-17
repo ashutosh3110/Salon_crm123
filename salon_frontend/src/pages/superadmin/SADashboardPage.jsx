@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import useFirebaseNotifications from '../../hooks/useFirebaseNotifications';
 import { registerToken } from '../../services/firebase';
@@ -120,17 +121,13 @@ export default function SADashboardPage() {
     const fetchStats = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
         try {
-            const [tenantRes, analyticsRes] = await Promise.all([
-                mockApi.get('/tenants/stats'),
-                mockApi.get('/analytics/stats')
-            ]);
-            
-            const tenantData = tenantRes.data.data;
-            const analyticsData = analyticsRes.data;
-            
-            setStats(tenantData);
-            setAnalytics(analyticsData);
-            setRecentTenants(tenantData.recentTenants || []);
+            const res = await api.get('/dashboard/superadmin');
+            if (res.data.success) {
+                const d = res.data.data;
+                setStats(d);
+                setRecentTenants(d.recentSalons || []);
+                setAnalytics(d); // Contains revenue and counts
+            }
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
         } finally {
@@ -146,17 +143,19 @@ export default function SADashboardPage() {
 
     /* ── KPI values: Live ── */
     const kpi = {
-        totalSalons: stats?.totalSalons || 0,
-        activeSubs: stats?.activeSalons || 0,
-        trialSalons: stats?.countsByStatus?.find(v => v._id === 'trial')?.count || 0,
-        revenueToday: analytics?.kpis?.mrr ? Math.round(analytics.kpis.mrr / 30) : 0,
-        revenueMonth: analytics?.kpis?.mrr || 0,
-        expiredPlans: stats?.countsByStatus?.find(v => v._id === 'expired')?.count || 0,
-        totalUsers: analytics?.kpis?.totalSalons ? analytics.kpis.totalSalons * 4 : 0, // Estimating 4 users per salon
+        totalSalons: stats?.counts?.total || 0,
+        activeSubs: stats?.counts?.active || 0,
+        trialSalons: stats?.counts?.trial || 0,
+        pendingSalons: stats?.counts?.pending || 0,
+        revenueToday: stats?.revenue?.today || 0,
+        revenueMonth: stats?.revenue?.total || 0,
+        expiredPlans: stats?.counts?.expired || 0,
+        suspendedSalons: stats?.counts?.suspended || 0,
+        totalUsers: (stats?.counts?.total || 0) * 5,
     };
 
     const planDataMapping = [
-        { name: 'Free', key: 'free', color: '#94a3b8' },
+        { name: 'Free', key: 'none', color: '#94a3b8' },
         { name: 'Basic', key: 'basic', color: '#3b82f6' },
         { name: 'Pro', key: 'pro', color: '#B85C5C' },
         { name: 'Enterprise', key: 'enterprise', color: '#f59e0b' },
@@ -164,18 +163,18 @@ export default function SADashboardPage() {
 
     const currentPlanDist = planDataMapping.map(p => ({
         name: p.name,
-        value: stats?.countsByPlan?.find(v => v._id === p.key)?.count || 0,
+        value: stats?.planDistribution?.find(v => v._id?.toLowerCase() === p.key)?.count || 0,
         color: p.color
     }));
 
     const metricCards = [
-        { label: 'Registered Salons', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20', change: 12 },
-        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 8 },
-        { label: 'Trial Salons', value: kpi.trialSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 5 },
-        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 3, prefix: '₹' },
-        { label: "This Month's Income", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 11, prefix: '₹' },
-        { label: 'Expired Plans', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20', change: -4 },
-        { label: 'Total App Users', value: kpi.totalUsers, icon: Users, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20', change: 9 },
+        { label: 'Total Registered', value: kpi.totalSalons, icon: Building2, gradient: 'from-primary to-[#8B1A2D]', shadow: 'shadow-primary/20' },
+        { label: 'Active Salons', value: kpi.activeSubs, icon: CheckCircle2, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20' },
+        { label: 'Pending Approval', value: kpi.pendingSalons, icon: Clock, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20' },
+        { label: 'Inactive / Suspended', value: kpi.suspendedSalons, icon: AlertTriangle, gradient: 'from-slate-600 to-slate-800', shadow: 'shadow-slate-500/20' },
+        { label: "Today's Earnings", value: kpi.revenueToday, icon: DollarSign, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', prefix: '₹' },
+        { label: "Total Revenue", value: kpi.revenueMonth, icon: TrendingUp, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', prefix: '₹' },
+        { label: 'Expired Licenses', value: kpi.expiredPlans, icon: XCircle, gradient: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/20' },
     ];
 
     return (

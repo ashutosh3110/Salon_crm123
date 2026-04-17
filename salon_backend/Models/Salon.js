@@ -52,7 +52,7 @@ const salonSchema = new mongoose.Schema({
     },
     subscriptionPlan: {
         type: String,
-        default: 'free'
+        default: 'none'
     },
     features: {
         type: Object,

@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { TrendingUp, Users, Calendar, ArrowUpRight, ArrowDownRight, Search, Settings, CreditCard, Globe } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { TrendingUp, Users, Calendar, Search, Globe } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const defaultWeek = () => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(name => ({ name, revenue: 0, appointments: 0 }));
 
 export default function DashboardPage() {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [payload, setPayload] = useState(null);
@@ -16,7 +14,7 @@ export default function DashboardPage() {
     const loadDashboard = useCallback(async () => {
         setError(null);
         try {
-            const res = await mockApi.get('/dashboard/salon');
+            const res = await api.get('/dashboard/salon');
             if (res.data?.success) {
                 setPayload(res.data.data);
             } else {
@@ -45,21 +43,22 @@ export default function DashboardPage() {
         const s = payload?.stats || {};
         return [
             { label: 'Total Outlets', value: s.outlets ?? 0, trend: 'Outlets', positive: true, icon: Globe },
-            { label: 'Appointments', value: s.bookingsTotal ?? 0, trend: 'Bookings', positive: true, icon: Calendar },
+            { label: 'Total Bookings', value: s.bookingsTotal ?? 0, trend: 'Bookings', positive: true, icon: Calendar },
             { label: 'Active Clients', value: s.clients ?? 0, trend: 'CRM', positive: true, icon: Users },
             { label: 'Staff Members', value: s.staff ?? 0, trend: 'Team', positive: true, icon: TrendingUp },
-            { label: 'Wallet Liability', value: Math.round(s.walletLiability ?? 0), prefix: '₹', trend: 'Loyalty', positive: false, icon: CreditCard },
         ];
     }, [payload]);
 
     const liveRecentActivity = useMemo(() => payload?.recentActivity || [], [payload]);
+
+    if (loading) return <div className="p-8 text-center text-text-muted">Loading Dashboard...</div>;
 
     return (
         <div className="space-y-6 animate-reveal font-sans">
             <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
                 <div className="text-left">
                     <h1 className="text-4xl font-bold text-text tracking-tight">Welcome Back</h1>
-                    <p className="text-sm font-medium text-text-muted mt-2 tracking-wide uppercase">Offline Mode · Syncing Mock Protocol</p>
+                    <p className="text-sm font-medium text-text-muted mt-2 tracking-wide uppercase">Real-time Analytics Dashboard</p>
                 </div>
                 <div className="flex items-center gap-3 w-full lg:w-auto">
                     <div className="relative flex-1 lg:flex-none">
@@ -69,7 +68,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="responsive-grid-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {activeStats.map((stat, i) => (
                     <div key={i} className="bg-surface py-7 px-7 rounded-2xl border border-border shadow-sm group relative overflow-hidden">
                         <div className="relative z-10">
@@ -119,14 +118,14 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
-                <div className="lg:col-span-2 bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="grid grid-cols-1 gap-6 text-left">
+                <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
                     <div className="px-8 py-6 border-b border-border bg-surface-alt/10 text-left"><h3 className="text-lg font-bold text-text tracking-tight">Recent Activity Stream</h3></div>
                     <div className="divide-y divide-border/50 text-left">
                         {liveRecentActivity.map((activity, i) => (
                             <div key={i} className="px-8 py-5 flex items-center justify-between hover:bg-surface-alt/30 transition-colors">
                                 <div className="flex items-center gap-4 text-left">
-                                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client[0]}</div>
+                                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center font-bold ${activity.isLive ? 'border-primary text-primary' : 'border-border text-text-muted'}`}>{activity.client ? activity.client[0] : 'G'}</div>
                                     <div className="text-left">
                                         <p className="text-[15px] font-bold text-text">{activity.client}</p>
                                         <p className="text-xs text-text-muted font-medium">{activity.service}</p>
@@ -138,13 +137,9 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         ))}
-                    </div>
-                </div>
-                <div className="bg-white rounded-2xl border border-border shadow-sm p-6 space-y-6 text-left">
-                    <h3 className="text-lg font-bold text-text text-left">Quick Actions</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <button onClick={() => navigate('/pos/billing')} className="p-6 rounded-2xl bg-primary text-white flex flex-col items-center gap-3 shadow-lg shadow-primary/20"><CreditCard className="w-5 h-5" /><span className="text-[10px] font-black uppercase tracking-widest">Create Bill</span></button>
-                        <Link to="/admin/bookings" className="p-6 rounded-2xl bg-surface border border-border flex flex-col items-center gap-3"><Calendar className="w-5 h-5" /><span className="text-xs font-bold">Booking</span></Link>
+                        {liveRecentActivity.length === 0 && (
+                            <div className="p-8 text-center text-text-muted">No recent activity</div>
+                        )}
                     </div>
                 </div>
             </div>

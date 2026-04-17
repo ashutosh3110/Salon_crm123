@@ -206,7 +206,7 @@ export default function SATenantDetailPage() {
                 <div className="bg-white rounded-2xl border border-border shadow-sm p-6">
                     <h3 className="font-bold text-text text-sm border-b border-border pb-2 mb-4">Subscription Plan Details</h3>
                     
-                    {(!selectedTenant.subscriptionPlan || selectedTenant.subscriptionPlan === 'free') ? (
+                    {(!selectedTenant.subscriptionPlan || selectedTenant.subscriptionPlan.toLowerCase() === 'free' || selectedTenant.subscriptionPlan.toLowerCase() === 'none') ? (
                         <div className="text-center py-10">
                             <AlertTriangle className="w-12 h-12 text-orange-400 mx-auto mb-3 opacity-80" />
                             <p className="text-text-secondary font-semibold">Not Plan Buy!</p>

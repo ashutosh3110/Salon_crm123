@@ -7,9 +7,9 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Try to find in SuperAdmin (User)
+        // 1. Try to find in SuperAdmin / Salon Admin (User collection)
         let userData = await User.findOne({ email }).select('+password');
-        let role = userData ? 'superadmin' : null;
+        let role = userData ? userData.role : null;
 
         // 2. Try to find in Staff (Salon employees/managers)
         if (!userData) {
@@ -54,8 +54,18 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Determine Salon ID
-        const salonId = userData.salonId || (role === 'admin' ? userData._id : null);
+        // Determine Salon ID and fetch subscription info
+        const salonId = userData.salonId || (role === 'admin' && userData.constructor.modelName === 'Salon' ? userData._id : null);
+        let subscriptionPlan = 'none';
+        let salonIsActive = false;
+
+        if (salonId) {
+            const salon = await Salon.findById(salonId);
+            if (salon) {
+                subscriptionPlan = salon.subscriptionPlan || 'none';
+                salonIsActive = salon.isActive;
+            }
+        }
 
         // Generate JWT
         const token = jwt.sign(
@@ -74,7 +84,9 @@ exports.login = async (req, res) => {
                     email: userData.email,
                     role: role,
                     salonId: salonId,
-                    status: userData.status || 'active'
+                    status: userData.status || 'active',
+                    subscriptionPlan: subscriptionPlan,
+                    salonIsActive: salonIsActive
                 }
             }
         });

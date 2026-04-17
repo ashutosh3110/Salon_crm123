@@ -30,19 +30,14 @@ exports.createSalon = async (req, res) => {
         const hashedPassword = await bcrypt.hash(adminPassword, salt);
         console.log('Hashed Password Generated:', hashedPassword);
 
-        // 1. Check if salon or admin already exists
+        // 1. Check if salon already exists
         const existingSalon = await Salon.findOne({ email });
         if (existingSalon) {
             return res.status(400).json({ success: false, message: 'Salon with this email already exists' });
         }
 
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: 'User with this email already exists' });
-        }
-
         // Fetch default features and limits from the plan (default: free)
-        const planName = req.body.subscriptionPlan || 'free';
+        const planName = req.body.subscriptionPlan || 'none';
         const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${planName}$`, 'i') } });
         
         const features = plan ? plan.features : {};
@@ -68,17 +63,6 @@ exports.createSalon = async (req, res) => {
             limits
         });
         console.log('Salon Record Created:', salon._id);
-
-        // 3. Create Admin User for this salon
-        const user = await User.create({
-            name: ownerName,
-            email,
-            password: hashedPassword, // Use the manually hashed password
-            role: 'admin',
-            salonId: salon._id,
-            isActive: true // Direct approved
-        });
-        console.log('User Record Created:', user._id);
 
         // 4. Send Onboarding Email
         try {
@@ -132,9 +116,59 @@ exports.createSalon = async (req, res) => {
 // @access  Private/SuperAdmin
 exports.getSalons = async (req, res) => {
     try {
-        const salons = await Salon.find();
-        res.json({ success: true, count: salons.length, data: salons });
+        const { status, subscriptionPlan, search, startDate, endDate, page = 1, limit = 10 } = req.query;
+        
+        const query = {};
+
+        // Filtering
+        const freePlanRegex = /^free/i;
+        if (status) {
+            if (status === 'trial') {
+                query.$or = [{ status: 'trial' }, { subscriptionPlan: freePlanRegex }];
+            } else if (status === 'active') {
+                query.status = 'active';
+                query.subscriptionPlan = { $not: freePlanRegex }; 
+            } else {
+                query.status = status;
+            }
+        }
+        if (subscriptionPlan) query.subscriptionPlan = subscriptionPlan;
+        
+        // Date Range
+        if (startDate || endDate) {
+            query.createdAt = {};
+            if (startDate) query.createdAt.$gte = new Date(startDate);
+            if (endDate) query.createdAt.$lte = new Date(endDate);
+        }
+
+        // Search
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { ownerName: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const total = await Salon.countDocuments(query);
+        const salons = await Salon.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({ 
+            success: true, 
+            data: {
+                results: salons,
+                totalResults: total,
+                totalPages: Math.ceil(total / limit),
+                limit: parseInt(limit),
+                page: parseInt(page)
+            } 
+        });
     } catch (err) {
+        console.error('getSalons Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
@@ -171,12 +205,8 @@ exports.updateSalon = async (req, res) => {
         if (req.body.status) {
             if (req.body.status === 'active' || req.body.status === 'trial') {
                 req.body.isActive = true;
-                // Also update the admin user for this salon
-                await User.findOneAndUpdate({ email: salon.email }, { isActive: true });
             } else if (['suspended', 'expired', 'pending'].includes(req.body.status)) {
                 req.body.isActive = false;
-                // Also update the admin user for this salon
-                await User.findOneAndUpdate({ email: salon.email }, { isActive: false });
             }
         }
 
@@ -231,8 +261,8 @@ exports.deleteSalon = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Salon not found' });
         }
 
-        // Delete all users associated with this salon
-        await User.deleteMany({ salonId: req.params.id });
+        // Delete all staff associated with this salon
+        await Staff.deleteMany({ salonId: req.params.id });
 
         // Delete the salon
         await salon.deleteOne();
@@ -250,10 +280,18 @@ exports.deleteSalon = async (req, res) => {
 exports.getSalonStats = async (req, res) => {
     try {
         const totalSalons = await Salon.countDocuments();
-        const activeCount = await Salon.countDocuments({ status: 'active' });
-        const trialCount = await Salon.countDocuments({ status: 'trial' });
+        
+        // Use case-insensitive regex for free plan check (matches 'Free', 'Free Plan', etc.)
+        const freePlanRegex = /^free/i;
+        const freePlanQuery = { subscriptionPlan: freePlanRegex };
+
+        // Active count: status active and NOT free plan
+        const activeCount = await Salon.countDocuments({ status: 'active', subscriptionPlan: { $not: freePlanRegex } });
+        // Trial count: status trial OR subscriptionPlan free
+        const trialCount = await Salon.countDocuments({ $or: [{ status: 'trial' }, freePlanQuery] });
         const expiredCount = await Salon.countDocuments({ status: 'expired' });
         const suspendedCount = await Salon.countDocuments({ status: 'suspended' });
+        const pendingCount = await Salon.countDocuments({ status: 'pending' });
 
         res.json({
             success: true,
@@ -263,7 +301,8 @@ exports.getSalonStats = async (req, res) => {
                     { _id: 'active', count: activeCount },
                     { _id: 'trial', count: trialCount },
                     { _id: 'expired', count: expiredCount },
-                    { _id: 'suspended', count: suspendedCount }
+                    { _id: 'suspended', count: suspendedCount },
+                    { _id: 'pending', count: pendingCount }
                 ]
             }
         });
@@ -340,15 +379,10 @@ exports.registerSalon = async (req, res) => {
         console.log('Public Salon Registration:', { name, email });
         const adminPassword = password || '123456';
         
-        // 1. Check if salon or admin already exists
+        // 1. Check if salon already exists
         const existingSalon = await Salon.findOne({ email });
         if (existingSalon) {
             return res.status(400).json({ success: false, message: 'Salon with this email already exists' });
-        }
-
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: 'User with this email already exists' });
         }
 
         // Hash password
@@ -356,7 +390,7 @@ exports.registerSalon = async (req, res) => {
         const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
         // Fetch plan details
-        const planName = req.body.subscriptionPlan || 'free';
+        const planName = req.body.subscriptionPlan || 'none';
         const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${planName}$`, 'i') } });
         
         const features = plan ? plan.features : {};
@@ -382,15 +416,7 @@ exports.registerSalon = async (req, res) => {
             limits
         });
 
-        // 3. Create Admin User for this salon with INACTIVE status
-        const user = await User.create({
-            name: ownerName,
-            email,
-            password: hashedPassword,
-            role: 'admin',
-            salonId: salon._id,
-            isActive: false // Cannot login yet
-        });
+        console.log('Public Salon Record Created (Pending):', salon._id);
 
         // Send "Application Received" Email
         try {
@@ -449,9 +475,6 @@ exports.resendCredentials = async (req, res) => {
         // Update Salon
         salon.password = hashedPassword;
         await salon.save();
-
-        // Update Admin User
-        await User.findOneAndUpdate({ email: salon.email }, { password: hashedPassword });
 
         // Send Email
         const html = `

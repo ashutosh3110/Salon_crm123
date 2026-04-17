@@ -47,6 +47,44 @@ exports.createOrder = async (req, res) => {
         const amount = Math.round(planPrice * 100); 
         const displayPrice = planPrice; // For storage in Payment record
 
+        // Handle Free Plan (Amount is 0)
+        if (amount === 0) {
+            // Directly activate for the salon
+            const salon = await Salon.findById(salonId);
+            if (salon) {
+                salon.subscriptionPlan = plan.name;
+                salon.status = 'active';
+                salon.isActive = true;
+                salon.features = plan.features;
+                salon.limits = plan.limits;
+                
+                // Set expiry date (1 week for free plan)
+                const expiryDate = new Date();
+                expiryDate.setDate(expiryDate.getDate() + 7);
+                salon.subscriptionExpiry = expiryDate;
+                
+                await salon.save();
+
+                // Create a record for auditing
+                await Payment.create({
+                    salonId,
+                    planId,
+                    orderId: `free_${Date.now()}`,
+                    amount: 0,
+                    billingCycle,
+                    status: 'captured',
+                    paymentId: 'FREE_PLAN',
+                    signature: 'FREE_PLAN'
+                });
+
+                return res.json({
+                    success: true,
+                    isFree: true,
+                    message: `${plan.name} plan activated successfully!`
+                });
+            }
+        }
+
         const options = {
             amount: amount,
             currency: 'INR',

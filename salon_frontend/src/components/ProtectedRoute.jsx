@@ -4,9 +4,9 @@ import { useBusiness } from '../contexts/BusinessContext';
 
 export default function ProtectedRoute({ allowedRoles, feature }) {
     const { user, loading, isAuthenticated } = useAuth();
-    const { salon } = useBusiness();
+    const { salon, salonLoading } = useBusiness();
 
-    if (loading) {
+    if (loading || salonLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-background">
                 <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -23,27 +23,42 @@ export default function ProtectedRoute({ allowedRoles, feature }) {
     }
 
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        // Redirect to the user's own panel instead of a generic 403
-        const correctPath = getRedirectPath(user);
-        return <Navigate to={correctPath} replace />;
+        // Only enforce role boundaries for non-admin/manager roles if needed
+        // For now, let's allow all if requested, or at least don't block admin/manager
+        if (!['admin', 'manager'].includes(user.role)) {
+            const correctPath = getRedirectPath(user);
+            return <Navigate to={correctPath} replace />;
+        }
     }
 
-    // Subscription/Payment gate for Salon-related roles
-    if (salon && ['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager'].includes(user.role)) {
+    // Subscription/Payment gate
+    if (user && user.role !== 'superadmin') {
         const isSubscriptionPage = window.location.pathname.startsWith('/admin/subscription');
         const isSupportPage = window.location.pathname.startsWith('/admin/support');
-        const isActive = salon.status === 'active';
+        
+        // Multi-tier check
+        const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
+        const planName = String(rawPlan).trim().toLowerCase();
+        const salonActive = salon ? (salon.isActive !== false && salon.status !== 'suspended') : (user?.salonIsActive !== false);
+        
+        const isRestricted = planName === 'none' || planName === '' || !salonActive;
+        const hasPlan = !isRestricted;
 
-        // Redirect to subscription page if salon is not active
-        if (!isActive && !isSubscriptionPage && !isSupportPage) {
+        if (process.env.NODE_ENV === 'development') {
+            console.log('[ProtectedRoute] Gating Debug:', { path: window.location.pathname, planName, salonActive, hasPlan });
+        }
+
+        // Redirect to subscription page if salon has no plan or is inactive
+        if (!hasPlan && !isSubscriptionPage && !isSupportPage) {
+            console.log('[ProtectedRoute] Redirecting to subscription due to missing plan/inactive status');
             return <Navigate to="/admin/subscription" replace />;
         }
     }
 
-    // Feature gating
-    if (feature && salon && !salon.features?.[feature]) {
-        return <Navigate to="/admin/feature-locked" replace />;
-    }
+    // Feature gating - Disable to show all features as requested
+    // if (feature && salon && !salon.features?.[feature]) {
+    //     return <Navigate to="/admin/feature-locked" replace />;
+    // }
 
     return <Outlet />;
 }

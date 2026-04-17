@@ -175,6 +175,15 @@ export default function SubscriptionPage() {
             });
 
             if (!data.success) throw new Error(data.message);
+            
+            // Handle Direct Activation (Free Plans)
+            if (data.isFree) {
+                setShowSuccess(true);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+                return;
+            }
 
             const options = {
                 key: data.data.key,
@@ -265,23 +274,6 @@ export default function SubscriptionPage() {
                     </h1>
                 </div>
 
-                <div className="flex items-center gap-1 bg-surface p-1.5 border border-border rounded-2xl shadow-inner">
-                    <button 
-                        onClick={() => setBillingCycle('monthly')} 
-                        className={`px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 rounded-xl ${billingCycle === 'monthly' ? 'bg-[#B4912B] text-white shadow-lg shadow-[#B4912B]/20' : 'text-text-muted hover:text-text hover:bg-white/50'}`}
-                    >
-                        Monthly
-                    </button>
-                    <button 
-                        onClick={() => setBillingCycle('yearly')} 
-                        className={`px-6 py-2.5 text-[11px] font-black uppercase tracking-widest transition-all duration-300 relative rounded-xl ${billingCycle === 'yearly' ? 'bg-[#B4912B] text-white shadow-lg shadow-[#B4912B]/20' : 'text-text-muted hover:text-text hover:bg-white/50'}`}
-                    >
-                        Yearly
-                        <span className="absolute -top-2 -right-2 bg-emerald-500 text-[8px] text-white px-2 py-0.5 font-black rounded-full shadow-sm animate-bounce">
-                            -20%
-                        </span>
-                    </button>
-                </div>
             </div>
 
             {/* Current Plan Banner */}
@@ -318,16 +310,12 @@ export default function SubscriptionPage() {
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Expires On</p>
                                 <p className="text-2xl font-black text-text tracking-tighter">
-                                    {effectiveSalon?.subscriptionExpiry ? new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Never'}
+                                    {effectiveSalon?.subscriptionExpiry 
+                                        ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50 
+                                            ? 'Life Time' 
+                                            : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
+                                        : 'Never'}
                                 </p>
-                            </div>
-                            <div className="space-y-2">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Renewal Amount</p>
-                                <div className="space-y-1">
-                                    <p className="text-2xl font-black text-text tracking-tighter">
-                                        ₹{currentPlan ? (billingCycle === 'monthly' ? currentPlan.monthlyPrice : (currentPlan.yearlyPrice || 0)).toLocaleString() : '0'}
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -358,8 +346,8 @@ export default function SubscriptionPage() {
                                     {plan.popular && <Sparkles className="w-5 h-5 text-[#B4912B] animate-pulse" />}
                                 </div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-black tracking-tighter">₹{(billingCycle === 'monthly' ? plan.monthlyPrice : (plan.yearlyPrice || 0)).toLocaleString()}</span>
-                                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+                                    <span className="text-3xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
                                 </div>
                             </div>
 
@@ -380,38 +368,20 @@ export default function SubscriptionPage() {
                                     </li>
                                 ))}
 
-                                <div className="py-2 opacity-20 border-t border-border" />
-
-                                {/* Dynamic Features */}
-                                {allFeatures.map((feat) => {
-                                    const isAvailable = plan.features?.[feat.key];
-                                    const Icon = ICON_MAP[feat.key] || Zap;
-                                    return (
-                                        <li key={feat.key} className={`flex items-center gap-3 ${!isAvailable ? 'opacity-40 grayscale' : ''}`}>
-                                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${isAvailable ? 'bg-indigo-50 border border-indigo-100' : 'bg-surface border border-border'}`}>
-                                                <Icon className={`w-3 h-3 ${isAvailable ? 'text-indigo-600' : 'text-text-muted'}`} />
-                                            </div>
-                                            <span className={`text-[10px] font-bold uppercase tracking-wider ${isAvailable ? 'text-text' : 'text-text-muted line-through'}`}>
-                                                {feat.label}
-                                            </span>
-                                            {isAvailable && <Check className="w-3 h-3 text-emerald-500 ml-auto" />}
-                                        </li>
-                                    );
-                                })}
                             </ul>
 
                                 <button 
                                 onClick={() => handleUpgrade(plan)} 
-                                disabled={isCurrent || upgrading === plan.id || (currentPlanName && currentPlanName.toLowerCase() !== 'free')}
+                                disabled={isCurrent || upgrading === plan.id}
                                 className={`w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-lg ${
-                                    (isCurrent || (currentPlanName && currentPlanName.toLowerCase() !== 'free'))
+                                    isCurrent
                                     ? 'bg-surface text-text-muted cursor-default' 
                                     : upgrading === plan.id 
                                         ? 'bg-[#B4912B]/50 text-white cursor-wait'
                                         : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
                                 }`}
                             >
-                                {isCurrent ? 'Current Plan' : upgrading === plan.id ? 'Processing...' : (currentPlanName && currentPlanName.toLowerCase() !== 'free') ? 'Plan Active' : 'Upgrade Now'}
+                                {isCurrent ? 'Current Plan' : upgrading === plan.id ? 'Processing...' : 'Upgrade'}
                             </button>
                         </div>
                     );

@@ -25,8 +25,12 @@ const planSchema = new mongoose.Schema({
     },
     billingCycle: {
         type: String,
-        enum: ['monthly', 'yearly', 'forever'],
+        enum: ['monthly', 'yearly', 'trial', 'forever'],
         default: 'monthly'
+    },
+    popular: {
+        type: Boolean,
+        default: false
     },
     features: {
         type: Object,
