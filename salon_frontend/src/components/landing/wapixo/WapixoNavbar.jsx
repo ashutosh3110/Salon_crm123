@@ -8,6 +8,7 @@ const navItems = ['Features', 'Pricing', 'Blog', 'Contact'];
 
 export default function WapixoNavbar() {
     const { theme, toggleTheme } = useTheme();
+    const isDark = theme === 'dark';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     // Close menu on resize to desktop
@@ -64,8 +65,13 @@ export default function WapixoNavbar() {
                         src={theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png"}
                         alt="Wapixo Logo"
                         style={{
-                            height: 'clamp(40px, 12vw, 55px)',
+                            height: 'clamp(120px, 35vw, 180px)',
                             width: 'auto',
+                            maxWidth: '70vw',
+                            objectFit: 'contain',
+                            transform: 'translateY(2px)',
+                            filter: isDark ? 'drop-shadow(0 0 15px rgba(0,0,0,0.7))' : 'none',
+                            transition: 'all 0.4s ease'
                         }}
                     />
                 </Link>
