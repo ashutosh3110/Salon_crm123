@@ -38,18 +38,22 @@ export default function ProtectedRoute({ allowedRoles, feature }) {
         
         // Multi-tier check
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
-        const planName = String(rawPlan).trim().toLowerCase();
-        const salonActive = salon ? (salon.isActive !== false && salon.status !== 'suspended') : (user?.salonIsActive !== false);
+        const planName = String(rawPlan || 'none').trim().toLowerCase();
         
-        const isRestricted = planName === 'none' || planName === '' || !salonActive;
-        const hasPlan = !isRestricted;
+        // A salon is restricted if it has no plan or is explicitly inactive/suspended
+        const hasNoPlan = ['none', 'undefined', 'null', '', 'pending'].includes(planName);
+        const salonActive = salon 
+            ? (salon.isActive !== false && salon.status !== 'suspended') 
+            : (user?.salonIsActive !== false);
+        
+        const isRestricted = hasNoPlan || !salonActive;
 
         if (process.env.NODE_ENV === 'development') {
-            console.log('[ProtectedRoute] Gating Debug:', { path: window.location.pathname, planName, salonActive, hasPlan });
+            console.log('[ProtectedRoute] Gating Debug:', { path: window.location.pathname, planName, salonActive, isRestricted });
         }
 
         // Redirect to subscription page if salon has no plan or is inactive
-        if (!hasPlan && !isSubscriptionPage && !isSupportPage) {
+        if (isRestricted && !isSubscriptionPage && !isSupportPage) {
             console.log('[ProtectedRoute] Redirecting to subscription due to missing plan/inactive status');
             return <Navigate to="/admin/subscription" replace />;
         }

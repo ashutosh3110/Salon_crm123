@@ -191,29 +191,7 @@ export default function WapixoPricing() {
                                  )}
                             </ul>
 
-                            <Link to={`/register?plan=${plan.name.toLowerCase()}`} style={{ textDecoration: 'none' }}>
-                                <motion.button
-                                    whileHover={{ scale: 1.02, background: 'var(--wapixo-primary)', opacity: 0.9 }}
-                                     whileTap={{ scale: 0.98 }}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.8rem',
-                                        borderRadius: '100px',
-                                        border: '1px solid var(--wapixo-primary)',
-                                        background: plan.popular ? 'var(--wapixo-primary)' : 'transparent',
-                                        color: plan.popular ? 'white' : 'var(--wapixo-text)',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 700,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '0.15em',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        boxShadow: plan.popular ? '0 10px 20px rgba(180, 145, 43, 0.2)' : 'none'
-                                    }}
-                                >
-                                    {plan.monthlyPrice === 0 ? 'Get Started' : (plan.trialDays > 0 ? 'Start Free Trial' : 'Buy Now')}
-                                </motion.button>
-                            </Link>
+
                         </motion.div>
                     ))}
                 </div>

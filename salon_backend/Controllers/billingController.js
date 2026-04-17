@@ -8,16 +8,21 @@ const Plan = require('../Models/Plan');
 exports.getBillingStats = async (req, res) => {
     try {
         // 1. Total Stats
-        const [totals] = await Payment.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    totalAmount: { $sum: "$amount" }, // All records (captured + pending + failed)
-                    collectedAmount: { $sum: { $cond: [{ $eq: ["$status", "captured"] }, "$amount", 0] } },
-                    pendingAmount: { $sum: { $cond: [{ $eq: ["$status", "pending"] }, "$amount", 0] } }
+        const [totals, totalSubscribedSalons] = await Promise.all([
+            Payment.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: { $cond: [{ $in: ["$status", ["captured", "pending", "created"]] }, "$amount", 0] } }, // Active revenue (collected + pending)
+                        collectedAmount: { $sum: { $cond: [{ $eq: ["$status", "captured"] }, "$amount", 0] } },
+                        pendingAmount: { $sum: { $cond: [{ $in: ["$status", ["pending", "created"]] }, "$amount", 0] } }
+                    }
                 }
-            }
+            ]),
+            Salon.countDocuments({ subscriptionPlan: { $ne: 'none' } })
         ]);
+
+        const totalStats = totals[0] || { totalAmount: 0, collectedAmount: 0, pendingAmount: 0 };
 
         // 2. Monthly Revenue Trend (Last 6 Months)
         const sixMonthsAgo = new Date();
@@ -76,9 +81,10 @@ exports.getBillingStats = async (req, res) => {
             success: true,
             code: 200,
             data: {
-                totalAmount: totals?.totalAmount || 0,
-                collectedAmount: totals?.collectedAmount || 0,
-                pendingAmount: totals?.pendingAmount || 0,
+                totalAmount: totalStats.totalAmount || 0,
+                collectedAmount: totalStats.collectedAmount || 0,
+                pendingAmount: totalStats.pendingAmount || 0,
+                totalSubscribedSalons,
                 refundedAmount: 0, 
                 monthlyRevenue,
                 planDistribution

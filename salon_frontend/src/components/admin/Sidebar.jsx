@@ -64,11 +64,19 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const location = useLocation();
     
     const isRestricted = useMemo(() => {
+        // Superadmins are never restricted
+        if (user?.role === 'superadmin') return false;
+
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
-        const planName = String(rawPlan).trim().toLowerCase();
-        const salonActive = salon ? (salon.isActive !== false && salon.status !== 'suspended') : (user?.salonIsActive !== false);
+        const planName = String(rawPlan || 'none').trim().toLowerCase();
         
-        const restricted = planName === 'none' || planName === '' || !salonActive;
+        // A salon is restricted if it has no plan or is explicitly inactive/suspended
+        const hasNoPlan = ['none', 'undefined', 'null', '', 'pending'].includes(planName);
+        const salonActive = salon 
+            ? (salon.isActive !== false && salon.status !== 'suspended') 
+            : (user?.salonIsActive !== false);
+        
+        const restricted = hasNoPlan || !salonActive;
         
         if (process.env.NODE_ENV === 'development') {
             console.log('[Sidebar] Gating Debug:', { planName, salonActive, restricted, role: user?.role });
@@ -293,6 +301,19 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     <X className="w-4 h-4 text-text-muted" />
                 </button>
             </div>
+
+            {/* Warning Banner for Restricted Salons */}
+            {isRestricted && user?.role !== 'superadmin' && !effectiveCollapsed && (
+                <div className="mx-4 mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 animate-pulse">
+                    <div className="flex items-start gap-2">
+                        <ShieldAlert className="w-4 h-4 text-amber-600 mt-0.5" />
+                        <div>
+                            <p className="text-[10px] font-black text-amber-800 uppercase tracking-wider">Action Required</p>
+                            <p className="text-[10px] text-amber-700 font-medium leading-relaxed">Choose a subscription plan to unlock all features.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Nav Links */}
             <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">

@@ -225,3 +225,104 @@ exports.getSuperAdminDashboard = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Get detailed superadmin analytics
+// @route   GET /api/dashboard/superadmin/analytics
+// @access  Private/SuperAdmin
+exports.getSuperAdminAnalytics = async (req, res) => {
+    try {
+        const Payment = require('../Models/Payment');
+        const Salon = require('../Models/Salon');
+        
+        // 1. Basic Stats
+        const [totalSalons, activeSalons, paymentStats] = await Promise.all([
+            Salon.countDocuments(),
+            Salon.countDocuments({ status: 'active' }),
+            Payment.aggregate([
+                { $match: { status: 'captured' } },
+                {
+                    $group: {
+                        _id: null,
+                        totalRevenue: { $sum: "$amount" },
+                        mrr: {
+                            $sum: {
+                                $cond: [
+                                    { $gte: ["$createdAt", new Date(new Date().setMonth(new Date().getMonth() - 1))] },
+                                    "$amount",
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                }
+            ])
+        ]);
+
+        const rev = paymentStats[0] || { totalRevenue: 0, mrr: 0 };
+
+        // 2. Growth Trends (Last 6 Months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+        const [mrrTrend, salonGrowth] = await Promise.all([
+            Payment.aggregate([
+                { $match: { status: 'captured', createdAt: { $gte: sixMonthsAgo } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                        revenue: { $sum: "$amount" }
+                    }
+                },
+                { $sort: { "_id": 1 } },
+                { $project: { month: "$_id", revenue: 1, _id: 0 } }
+            ]),
+            Salon.aggregate([
+                { $match: { createdAt: { $gte: sixMonthsAgo } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                        count: { $sum: 1 }
+                    }
+                },
+                { $sort: { "_id": 1 } },
+                { $project: { month: "$_id", count: 1, _id: 0 } }
+            ])
+        ]);
+
+        // 3. Plan Distribution
+        const planDist = await Salon.aggregate([
+            { $group: { _id: "$subscriptionPlan", value: { $sum: 1 } } },
+            { $project: { name: "$_id", value: 1, _id: 0 } }
+        ]);
+
+        // 4. Geo Distribution
+        const geoDist = await Salon.aggregate([
+            { $group: { _id: "$address.city", salons: { $sum: 1 } } },
+            { $sort: { salons: -1 } },
+            { $limit: 10 },
+            { $project: { city: { $ifNull: ["$_id", "Unknown"] }, salons: 1, _id: 0 } }
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                kpis: {
+                    totalSalons,
+                    activeSalons,
+                    mrr: rev.mrr,
+                    arr: rev.mrr * 12,
+                    totalRevenue: rev.totalRevenue
+                },
+                growth: {
+                    mrrTrend,
+                    salonTrend: salonGrowth
+                },
+                planDistribution: planDist,
+                geoDistribution: geoDist
+            }
+        });
+    } catch (err) {
+        console.error('Analytics Error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};

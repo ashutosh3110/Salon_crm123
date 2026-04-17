@@ -35,11 +35,13 @@ const MOCK_INVOICES = MOCK_PAYMENTS.map((p, i) => ({
 }));
 
 const STATUS_CFG = {
+    captured: { label: 'Collected', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },
     paid: { label: 'Paid', cls: 'bg-emerald-50 text-emerald-600 border-emerald-200', icon: CheckCircle },
     failed: { label: 'Failed', cls: 'bg-red-50    text-red-600    border-red-200', icon: XCircle },
     refunded: { label: 'Refunded', cls: 'bg-orange-50 text-orange-600 border-orange-200', icon: RotateCcw },
     overdue: { label: 'Overdue', cls: 'bg-red-50    text-red-600    border-red-200', icon: AlertCircle },
     pending: { label: 'Pending', cls: 'bg-blue-50   text-blue-600   border-blue-200', icon: Clock },
+    created: { label: 'Pending', cls: 'bg-blue-50   text-blue-600   border-blue-200', icon: Clock },
 };
 
 const CustomTooltip = ({ active, payload, label, prefix = '', suffix = '' }) => {
@@ -285,7 +287,8 @@ export default function SABillingPage() {
         try {
             const res = await api.put(`/billing/transactions/${payId}/status`, { status: newStatus });
             if (res.data.success) {
-                showToast(`Status updated to ${newStatus}`);
+                const label = newStatus === 'captured' ? 'Collected' : newStatus;
+                showToast(`Status updated to ${label}`);
                 fetchData();
             }
         } catch (err) {
@@ -298,6 +301,21 @@ export default function SABillingPage() {
         await new Promise(r => setTimeout(r, 1200));
         setRetry(null);
         showToast('Payment retry initiated — awaiting gateway response.', 'info');
+    };
+
+    const handleDownloadIndividualInvoice = (p) => {
+        const invoiceData = [{
+            'Invoice #': p.invoiceNumber || p.id,
+            'Salon Name': p.tenantId?.name || p.salonName || p.salon || 'Unknown',
+            'Plan': p.planName || p.plan || 'N/A',
+            'Amount': `INR ${p.amount?.toLocaleString() || 0}`,
+            'Tax (18%)': `INR ${(p.taxAmount || p.taxAmt)?.toLocaleString() || 0}`,
+            'Total': `INR ${(p.totalAmount || p.total)?.toLocaleString() || 0}`,
+            'Date': (p.createdAt || p.date)?.split('T')[0],
+            'Status': p.status?.toUpperCase()
+        }];
+        exportToPDF(invoiceData, `Invoice_${p.invoiceNumber || p.id}`, `Invoice: ${p.invoiceNumber || p.id}`);
+        showToast('Invoice PDF generated!', 'info');
     };
 
     const handleInvoiceSend = async (form) => {
@@ -412,19 +430,17 @@ export default function SABillingPage() {
                         className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-border text-text-secondary text-sm font-semibold hover:border-primary/30 hover:text-primary transition-all shadow-sm">
                         <Download className="w-4 h-4" /> Export
                     </button>
-                    <button onClick={() => setModal(true)}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B1A2D] text-white text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25">
-                        <Plus className="w-4 h-4" /> New Invoice
-                    </button>
+
                 </div>
             </div>
 
             {/* ── KPI cards ── */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                    { label: 'Total Amount', value: `₹${(stats.totalAmount || 0).toLocaleString('en-IN')}`, icon: Layers, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 0 },
+                    { label: 'Total Revenue', value: `₹${(stats.totalAmount || 0).toLocaleString('en-IN')}`, icon: Layers, gradient: 'from-blue-500 to-indigo-600', shadow: 'shadow-blue-500/20', change: 0 },
                     { label: 'Collected Amount', value: `₹${(stats.collectedAmount || 0).toLocaleString('en-IN')}`, icon: CheckCircle, gradient: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20', change: 0 },
                     { label: 'Pending Amount', value: `₹${(stats.pendingAmount || 0).toLocaleString('en-IN')}`, icon: Clock, gradient: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20', change: 0 },
+                    { label: 'Subscribed Salons', value: stats.totalSubscribedSalons || 0, icon: Building2, gradient: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20', change: 0 },
                 ].map(k => (
                     <div key={k.label} className="bg-white rounded-2xl border border-border shadow-sm p-5 hover:shadow-md transition-all">
                         <div className="flex items-center justify-between mb-3">
@@ -442,9 +458,6 @@ export default function SABillingPage() {
                     </div>
                 ))}
             </div>
-
-         
-
             {/* ════ TAB: PAYMENTS ════ */}
             {tab === 'payments' && (
                 <div className="space-y-3">
@@ -509,14 +522,23 @@ export default function SABillingPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                                                    {p.status === 'pending' && (
+                                                    <div className="flex items-center justify-end gap-2">
                                                         <button 
-                                                            onClick={() => handleUpdateStatus(p._id, 'captured')}
-                                                            className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                            onClick={() => handleDownloadIndividualInvoice(p)}
+                                                            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                                                            title="Download PDF"
                                                         >
-                                                            Mark Collected
+                                                            <Download className="w-3.5 h-3.5" />
                                                         </button>
-                                                    )}
+                                                        {(p.status === 'pending' || p.status === 'created') && (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(p._id, 'captured')}
+                                                                className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                            >
+                                                                Mark Collected
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -527,7 +549,7 @@ export default function SABillingPage() {
                         <div className="border-t border-border px-4 py-3 flex items-center justify-between">
                             <span className="text-xs text-text-muted">{filteredPayments.length} transactions</span>
                             <span className="text-xs font-bold text-text">
-                                Total: ₹{filteredPayments.filter(p => p.status === 'paid').reduce((a, p) => a + p.amount, 0).toLocaleString('en-IN')} collected
+                                Total: ₹{filteredPayments.filter(p => p.status === 'captured').reduce((a, p) => a + p.amount, 0).toLocaleString('en-IN')} collected
                             </span>
                         </div>
                     </div>
@@ -616,14 +638,23 @@ export default function SABillingPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                                                    {inv.status === 'pending' && (
+                                                    <div className="flex items-center justify-end gap-2">
                                                         <button 
-                                                            onClick={() => handleUpdateStatus(inv.rawId, 'captured')}
-                                                            className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                            onClick={() => handleDownloadIndividualInvoice(inv)}
+                                                            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all"
+                                                            title="Download PDF"
                                                         >
-                                                            Mark Collected
+                                                            <Download className="w-3.5 h-3.5" />
                                                         </button>
-                                                    )}
+                                                        {(inv.status === 'pending' || inv.status === 'created') && (
+                                                            <button 
+                                                                onClick={() => handleUpdateStatus(inv.rawId, 'captured')}
+                                                                className="text-[10px] font-bold bg-emerald-600 text-white px-2 py-1 rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
+                                                            >
+                                                                Mark Collected
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
