@@ -10,11 +10,11 @@ const {
 } = require('../Controllers/serviceController');
 const { protect, authorize } = require('../Middleware/auth');
 
-router.get('/grouped', getServicesGrouped);
+router.get('/grouped', protect, getServicesGrouped);
 
 router
     .route('/')
-    .get(getServices)
+    .get(protect, getServices)
     .post(protect, authorize('admin', 'manager'), createService);
 
 router

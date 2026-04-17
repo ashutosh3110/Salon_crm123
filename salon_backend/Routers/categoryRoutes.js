@@ -10,7 +10,7 @@ const { protect, authorize } = require('../Middleware/auth');
 
 router
     .route('/')
-    .get(getCategories)
+    .get(protect, getCategories)
     .post(protect, authorize('admin', 'manager'), createCategory);
 
 router

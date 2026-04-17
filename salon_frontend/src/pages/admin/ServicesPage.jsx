@@ -8,6 +8,7 @@ import ServiceCategories from '../../components/admin/services/ServiceCategories
 import ServiceSettings from '../../components/admin/services/ServiceSettings';
 import { useBusiness } from '../../contexts/BusinessContext';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 export default function ServicesPage({ tab = 'list' }) {
     const activeTab = tab;
@@ -23,16 +24,20 @@ export default function ServicesPage({ tab = 'list' }) {
         deleteCategory,
         toggleCategoryStatus,
         fetchServices,
-        fetchCategories
+        fetchCategories,
+        outlets,
+        activeOutletId
     } = useBusiness();
+
+    const [selectedOutletId, setSelectedOutletId] = useState('all');
 
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingService, setEditingService] = useState(null);
 
     React.useEffect(() => {
-        fetchServices();
+        fetchServices(null, selectedOutletId === 'all' ? null : selectedOutletId);
         fetchCategories();
-    }, [fetchServices, fetchCategories]);
+    }, [fetchServices, fetchCategories, selectedOutletId]);
 
     const stats = useMemo(() => ([
         { label: 'Active Services', value: services.length, icon: Zap, color: 'primary' },
@@ -71,7 +76,7 @@ export default function ServicesPage({ tab = 'list' }) {
                         <ChevronRight className="w-3.5 h-3.5 opacity-40" />
                         <span className="text-primary">Catalog Management</span>
                     </div>
-                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Global Services</h1>
+                    <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Portfolio Services</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Architect and manage your salon service portfolio</p>
                 </div>
                 {activeTab === 'list' && (
@@ -84,6 +89,41 @@ export default function ServicesPage({ tab = 'list' }) {
                     </button>
                 )}
             </div>
+
+            {/* Outlet Filter */}
+            {activeTab === 'list' && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white/50 p-4 border border-border/40">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Layers className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black uppercase text-text-muted tracking-widest leading-none mb-1">View Scope</p>
+                            <p className="text-[11px] font-black uppercase text-text tracking-tighter">Filter by Outlet</p>
+                        </div>
+                    </div>
+                    
+                    <CustomDropdown
+                        className="w-full sm:w-64"
+                        placeholder="All Outlets"
+                        options={[
+                            { label: 'All Outlets (Global)', value: 'all' },
+                            ...outlets.map(o => ({ label: o.name, value: o._id }))
+                        ]}
+                        value={selectedOutletId}
+                        onChange={setSelectedOutletId}
+                    />
+                    
+                    {selectedOutletId !== 'all' && (
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 animate-in fade-in slide-in-from-left-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-widest italic">
+                                Showing specific + common services
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Stats Row - Always Visible in List */}
             {activeTab === 'list' && (

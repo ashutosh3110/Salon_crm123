@@ -112,17 +112,23 @@ export function BusinessProvider({ children }) {
 
     const initializationRef = useRef(false);
 
-    const fetchServices = useCallback(async (sId) => {
+    const fetchServices = useCallback(async (sId, oId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
+            const oid = oId || activeOutletId;
+
             if (!sid) return;
-            const r = await api.get(`/services?salonId=${sid}`);
+
+            let url = `/services?salonId=${sid}`;
+            if (oid) url += `&outletId=${oid}`;
+
+            const r = await api.get(url);
             setServices(r.data?.data || r.data?.results || r.data || []);
         } catch (error) {
             console.error("Fetch services failed:", error);
             setServices([]);
         }
-    }, [activeSalonId, salon?._id]);
+    }, [activeSalonId, salon?._id, activeOutletId]);
 
     const fetchGroupedServices = useCallback(async (sId) => {
         try {

@@ -6,11 +6,33 @@ const Category = require('../Models/Category');
 // @access  Private
 exports.getServices = async (req, res) => {
     try {
-        const salonId = req.user?.salonId || req.query.salonId || req.query.tenantId;
+        let salonId = req.user?.salonId;
+        
+        // If superadmin, allow overriding via query
+        if (req.user?.role === 'superadmin' && req.query.salonId) {
+            salonId = req.query.salonId;
+        }
+
+        const outletId = req.query.outletId;
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
-        const services = await Service.find({ salonId }).sort({ createdAt: -1 });
+
+        let query = { salonId };
+
+        if (outletId) {
+            // Service is available for this outlet IF:
+            // 1. the outletId is in the outletIds array
+            // 2. OR the outletIds array is empty (meaning it's common for all outlets)
+            query.$or = [
+                { outletIds: outletId },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } }
+            ];
+        }
+
+        const services = await Service.find(query).sort({ createdAt: -1 });
 
         res.json({
             success: true,
@@ -18,6 +40,7 @@ exports.getServices = async (req, res) => {
             data: services
         });
     } catch (err) {
+        console.error('Get Services Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

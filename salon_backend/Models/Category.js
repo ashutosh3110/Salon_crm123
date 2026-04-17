@@ -31,8 +31,8 @@ const categorySchema = new mongoose.Schema({
 // Virtual for service count
 categorySchema.virtual('serviceCount', {
     ref: 'Service',
-    localField: 'name', // Using name because Service model stores category as string currently
-    foreignField: 'category',
+    localField: ['name', 'salonId'], 
+    foreignField: ['category', 'salonId'],
     count: true
 });
 

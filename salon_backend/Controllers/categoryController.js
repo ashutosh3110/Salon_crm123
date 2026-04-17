@@ -5,10 +5,17 @@ const Category = require('../Models/Category');
 // @access  Private
 exports.getCategories = async (req, res) => {
     try {
-        const salonId = req.user?.salonId || req.query.salonId || req.query.tenantId;
+        let salonId = req.user?.salonId;
+        
+        // If superadmin, allow overriding via query
+        if (req.user?.role === 'superadmin' && req.query.salonId) {
+            salonId = req.query.salonId;
+        }
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
+
         const categories = await Category.find({ salonId })
             .populate('serviceCount')
             .sort({ createdAt: -1 });
