@@ -16,6 +16,7 @@ import {
     UserCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../../services/api';
 
 export default function ServiceCategories({ categories = [], onAdd, onUpdate, onDelete, onToggleStatus }) {
     const navigate = useNavigate();
@@ -39,9 +40,9 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                 alert('IMAGE EXCEEDS 2MB THRESHOLD');
                 return;
             }
+            setImage(file); // Store the actual file object
             const reader = new FileReader();
             reader.onloadend = () => {
-                setImage(reader.result);
                 setImagePreview(reader.result);
             };
             reader.readAsDataURL(file);
@@ -52,7 +53,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
         setModalState({ isOpen: true, type: 'add', data: null });
         setName('');
         setGender('women');
-        setImage('');
+        setImage(null);
         setImagePreview('');
     };
 
@@ -60,7 +61,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
         setModalState({ isOpen: true, type: 'edit', data: cat });
         setName(cat.name);
         setGender(cat.gender || 'women');
-        setImage(cat.image || '');
+        setImage(cat.image || ''); // Keep as string if it's an existing URL
         setImagePreview(cat.image || '');
     };
 
@@ -69,12 +70,23 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
             alert('NAME DESIGNATION REQUIRED');
             return;
         }
-        const payload = { name, gender, image };
+
+        // Use FormData for file upload
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('gender', gender);
+        
+        // Only append image if it's a new file (object)
+        if (image instanceof File) {
+            formData.append('image', image);
+        } else if (typeof image === 'string') {
+            formData.append('image', image);
+        }
         
         if (modalState.type === 'add') {
-            onAdd?.(payload);
+            onAdd?.(formData);
         } else {
-            onUpdate?.(modalState.data._id, payload);
+            onUpdate?.(modalState.data._id, formData);
         }
         
         closeModal();
@@ -123,7 +135,11 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div className="p-3 rounded-2xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-110 transition-transform flex items-center gap-2 overflow-hidden w-16 h-16 justify-center">
                                 {cat.image ? (
-                                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" />
+                                    <img 
+                                        src={cat.image.startsWith('http') ? cat.image : `${API_BASE_URL}${cat.image}`} 
+                                        alt={cat.name} 
+                                        className="w-full h-full object-cover" 
+                                    />
                                 ) : (
                                     <Tag className="w-6 h-6" />
                                 )}
@@ -227,7 +243,11 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     />
                                     {imagePreview ? (
                                         <div className="relative w-full aspect-video rounded-none overflow-hidden border border-border group-hover/img:border-primary transition-all">
-                                            <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                                            <img 
+                                                src={imagePreview.startsWith('data:') || imagePreview.startsWith('http') ? imagePreview : `${API_BASE_URL}${imagePreview}`} 
+                                                className="w-full h-full object-cover" 
+                                                alt="Preview" 
+                                            />
                                             <div className="absolute inset-0 bg-background/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">
                                                 <button 
                                                     onClick={(e) => { e.preventDefault(); setImage(''); setImagePreview(''); }}

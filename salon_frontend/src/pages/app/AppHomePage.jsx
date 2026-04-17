@@ -270,7 +270,10 @@ export default function AppHomePage() {
         categories,
         isInitializing,
         fetchCustomerInitialData,
-        feedbacks: reviews = []
+        fetchOutlets,
+        feedbacks,
+        loyaltySettings,
+        loyaltyPlans
     } = useBusiness();
     const { products, productCategories } = useInventory();
     const { banners } = useCMS();
@@ -282,6 +285,7 @@ export default function AppHomePage() {
     const dynamicReviews = feedbacks;
     const membershipPlans = loyaltyPlans;
     const loadingPlans = isInitializing;
+    const reviews = feedbacks || [];
 
     // Pre-select first category when categories load
     useEffect(() => {

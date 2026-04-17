@@ -36,6 +36,11 @@ exports.getCategories = async (req, res) => {
 exports.createCategory = async (req, res) => {
     try {
         const salonId = req.user.salonId;
+        
+        if (req.file) {
+            req.body.image = `/uploads/${req.file.filename}`;
+        }
+
         const category = await Category.create({
             ...req.body,
             salonId
@@ -63,6 +68,10 @@ exports.updateCategory = async (req, res) => {
 
         if (category.salonId.toString() !== req.user.salonId.toString()) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        if (req.file) {
+            req.body.image = `/uploads/${req.file.filename}`;
         }
 
         category = await Category.findByIdAndUpdate(req.params.id, req.body, {

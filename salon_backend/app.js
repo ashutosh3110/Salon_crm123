@@ -1,6 +1,7 @@
 // Backend Application Core
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Enable CORS
 app.use(cors());
+
+// Static folder for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route files
 const auth = require('./Routers/authRoutes');
