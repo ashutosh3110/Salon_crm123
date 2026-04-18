@@ -10,7 +10,10 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
 
 // Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
