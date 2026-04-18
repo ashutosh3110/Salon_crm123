@@ -18,7 +18,8 @@ exports.checkout = async (req, res) => {
             useLoyaltyPoints = 0,
             useWalletAmount = 0,
             promotionId,
-            discount = 0
+            discount = 0,
+            bookingId
         } = req.body;
 
         const salonId = req.user.salonId;
@@ -55,7 +56,8 @@ exports.checkout = async (req, res) => {
             total,
             paymentMethod,
             loyaltyPointsRedeemed: useLoyaltyPoints,
-            walletRedeemed: useWalletAmount
+            walletRedeemed: useWalletAmount,
+            bookingId
         });
 
         // 4. Update Customer Loyalty Points
@@ -82,7 +84,7 @@ exports.checkout = async (req, res) => {
                     customerId: customer._id,
                     salonId,
                     amount: earnedPoints,
-                    type: 'EARNED',
+                    type: 'EARN',
                     description: `Earned from POS Invoice #${invoiceNumber}`
                 });
             }

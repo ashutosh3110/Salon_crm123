@@ -7,9 +7,10 @@ import { toast } from 'react-hot-toast';
 
 const BusinessContext = createContext({
     salon: null, outlets: [], staff: [], services: [], categories: [], products: [],
-    customers: [], bookings: [], feedbacks: [], suppliers: [], segments: [], shifts: [], catalogue: null,
+    customers: [], bookings: [], invoices: [], orders: [], feedbacks: [], suppliers: [], segments: [], shifts: [], catalogue: null,
     fetchCustomers: async () => { }, fetchSegments: async () => { }, fetchFeedbacks: async () => { },
     fetchServices: async () => { }, fetchBookings: async () => { }, fetchProducts: async () => { }, fetchSuppliers: async () => { },
+    fetchInvoices: async () => { }, fetchOrders: async () => { },
     addCustomer: async () => { }, updateCustomer: async () => { }, deleteCustomer: async () => { },
     addSegment: async () => { }, deleteSegment: async () => { },
     updateFeedback: async () => { }, archiveFeedback: async () => { }, fetchSegmentCustomers: async () => [],
@@ -34,6 +35,8 @@ export function BusinessProvider({ children }) {
     const [products, setProducts] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [invoices, setInvoices] = useState([]);
     const [feedbacks, setFeedbacks] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [segments, setSegments] = useState([]);
@@ -182,6 +185,20 @@ export function BusinessProvider({ children }) {
         } catch { setBookings([]); }
     }, []);
 
+    const fetchInvoices = useCallback(async () => {
+        try {
+            const r = await api.get('/pos/invoices');
+            setInvoices(r.data?.data || r.data?.results || r.data || []);
+        } catch { setInvoices([]); }
+    }, []);
+
+    const fetchOrders = useCallback(async () => {
+        try {
+            const r = await api.get('/orders');
+            setOrders(r.data?.data || r.data?.results || r.data || []);
+        } catch { setOrders([]); }
+    }, []);
+
     const fetchProducts = useCallback(async () => {
         try {
             const r = await api.get('/products');
@@ -223,7 +240,8 @@ export function BusinessProvider({ children }) {
     const fetchStaff = useCallback(async (sId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
-            const r = await api.get(`/users${sid ? `?salonId=${sid}` : ''}`);
+            if (!sid) return;
+            const r = await api.get(`/users?salonId=${sid}`);
             setStaff(r.data?.data || r.data?.results || r.data || []);
         } catch (error) {
             console.error("Fetch staff failed:", error);
@@ -724,7 +742,7 @@ export function BusinessProvider({ children }) {
 
     const value = useMemo(() => ({
         salon, outlets, outletsLoading, staff, services, groupedServices, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, fetchAllCustomerIds, addCustomer, updateCustomer, deleteCustomer,
-        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments,
+        bookings, invoices, orders, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments,
         addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue,
         activeOutletId, setActiveOutletId,
         activeSalonId, setActiveSalonId,
@@ -734,7 +752,7 @@ export function BusinessProvider({ children }) {
         addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchGroupedServices, fetchBookings, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
@@ -748,11 +766,11 @@ export function BusinessProvider({ children }) {
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
-        bookings, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
+        bookings, invoices, orders, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
         shifts, catalogue, activeOutletId, setActiveOutletId, activeSalonId, setActiveSalonId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchGroupedServices, fetchBookings, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,

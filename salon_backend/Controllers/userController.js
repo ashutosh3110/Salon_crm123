@@ -5,7 +5,12 @@ const Staff = require('../Models/Staff');
 // @access  Private/Admin
 exports.getUsers = async (req, res) => {
     try {
-        const salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
+        let salonId = req.query.salonId;
+        
+        // If not provided in query, try to get from authenticated user
+        if (!salonId && req.user) {
+            salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
+        }
         
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
@@ -60,7 +65,7 @@ exports.createUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Staff member already exists with this email' });
         }
 
-        const pass = password || '123456';
+        const pass = password || Math.random().toString(36).slice(-8).toUpperCase();
 
         // Handle uploaded avatar
         const avatarPath = req.file ? req.file.path : undefined;

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
     Search, ShoppingCart, Plus, Minus, X, Trash2,
     Scissors, Package, Check, Loader2, Scan,
@@ -145,18 +145,25 @@ const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
 );
 
 export default function POSBillingPage() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { addSaleRecord, products } = useInventory();
     const { 
+        salon,
         services, 
         customers: businessCustomers, 
         addCustomer: addBusinessCustomer,
+        outlets,
         activeOutlet,
         activeOutletId,
         setActiveOutletId,
-        outlets,
         staff: businessStaff,
-        bookings: businessBookings
+        bookings: businessBookings,
+        invoices,
+        orders: businessOrders,
+        fetchInvoices,
+        fetchOrders,
+        fetchBookings
     } = useBusiness();
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
@@ -188,10 +195,16 @@ export default function POSBillingPage() {
         if (fiscal.state) setCustomerState(fiscal.state);
         // Fallback tax percent for general display
         if (fiscal.serviceGst) setTaxPercent(fiscal.serviceGst);
-    }, [fiscal]);
+        
+        // Refresh data to accurately filter billed items
+        fetchInvoices?.();
+        fetchOrders?.();
+        fetchBookings?.();
+    }, [fiscal, fetchInvoices, fetchOrders, fetchBookings]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('services');
+    const [serviceMode, setServiceMode] = useState('bookings'); // 'catalog' | 'bookings' | 'orders'    
     const [searchItem, setSearchItem] = useState('');
     const [searchClient, setSearchClient] = useState('');
     const [showClientDropdown, setShowClientDropdown] = useState(false);
@@ -217,6 +230,7 @@ export default function POSBillingPage() {
     const [redeemPoints, setRedeemPoints] = useState(0);
     const [redeemWallet, setRedeemWallet] = useState(0);
     const [appointmentId, setAppointmentId] = useState(null);
+    const [orderId, setOrderId] = useState(null);
 
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', email: '' });
 
@@ -506,12 +520,61 @@ export default function POSBillingPage() {
 
     // ─── Filters & Search ────────────────────────────────────
     const categories = useMemo(() => {
+        if (activeTab === 'services' && serviceMode === 'appointments') {
+            return ['All', 'Completed', 'Payment Success'];
+        }
         const items = activeTab === 'services' ? services : products;
         const itemsArray = Array.isArray(items) ? items : [];
         return ['All', ...new Set(itemsArray.map(i => i.category).filter(Boolean))];
-    }, [activeTab, services, products]);
+    }, [activeTab, services, products, serviceMode]);
 
     const filteredItems = useMemo(() => {
+        if (activeTab === 'services' && serviceMode === 'bookings') {
+            const list = Array.isArray(businessBookings) ? businessBookings : [];
+            return list.filter(b => {
+                const isPaid = b.paymentStatus?.toLowerCase() === 'paid';
+                if (!isPaid) return false;
+                const alreadyBilled = (invoices || []).some(inv => String(inv.bookingId?._id || inv.bookingId) === String(b._id));
+                if (alreadyBilled) return false;
+                const clientName = b.clientId?.name || b.clientName || 'Walk-in';
+                const serviceName = b.serviceId?.name || b.serviceName || 'Service';
+                return clientName.toLowerCase().includes(searchItem.toLowerCase()) ||
+                    serviceName.toLowerCase().includes(searchItem.toLowerCase());
+            }).map(b => ({
+                ...b,
+                _id: b._id,
+                name: `${b.serviceId?.name || b.serviceName || 'Service'} (${b.clientId?.name || b.clientName || 'Walk-in'})`,
+                price: b.price || b.totalPrice || 0,
+                type: 'service',
+                isAppointment: true,
+                customerPhone: b.clientId?.phone || b.clientPhone || '',
+                originalBooking: b
+            }));
+        }
+
+        if (activeTab === 'services' && serviceMode === 'orders') {
+            const list = Array.isArray(businessOrders) ? businessOrders : [];
+            return list.filter(o => {
+                const isPaid = o.paymentStatus?.toLowerCase() === 'paid';
+                if (!isPaid) return false;
+                const alreadyBilled = (invoices || []).some(inv => String(inv.orderId?._id || inv.orderId) === String(o._id));
+                if (alreadyBilled) return false;
+                const clientName = o.customerId?.name || 'Walk-in';
+                const orderLabel = `Order #${o._id.toString().slice(-6).toUpperCase()}`;
+                return clientName.toLowerCase().includes(searchItem.toLowerCase()) ||
+                    orderLabel.toLowerCase().includes(searchItem.toLowerCase());
+            }).map(o => ({
+                ...o,
+                _id: o._id,
+                name: `Order #${o._id.toString().slice(-6).toUpperCase()} (${o.customerId?.name || 'Walk-in'})`,
+                price: o.totalAmount || 0,
+                type: 'product',
+                customerPhone: o.customerId?.phone || '',
+                isOrder: true,
+                originalOrder: o
+            }));
+        }
+
         const items = activeTab === 'services' ? services : products;
         const itemsList = Array.isArray(items) ? items : [];
         return itemsList.filter(item => {
@@ -520,7 +583,7 @@ export default function POSBillingPage() {
             const matchCat = selectedCategory === 'All' || item.category === selectedCategory;
             return matchSearch && matchCat;
         });
-    }, [activeTab, searchItem, selectedCategory, services, products]);
+    }, [activeTab, searchItem, selectedCategory, services, products, serviceMode, businessBookings, businessOrders, invoices]);
 
     const filteredClients = useMemo(() => {
         const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
@@ -540,6 +603,75 @@ export default function POSBillingPage() {
 
     // ─── Cart Logic ────────────────────────────────────────
     const addToCart = (item, forcedType) => {
+        if (item.isAppointment) {
+            if (item.clientId?._id || item.clientId) {
+                const clientIdStr = String(item.clientId?._id || item.clientId);
+                const client = businessCustomers.find(c => String(c._id || c.id) === clientIdStr);
+                if (client) {
+                    setSelectedClient(client);
+                } else {
+                    setSelectedClient({
+                        _id: clientIdStr,
+                        name: item.clientName || item.clientId?.name || 'Walk-in',
+                        phone: item.clientPhone || item.clientId?.phone || '',
+                        loyaltyPoints: 0,
+                        walletBalance: 0,
+                        dueAmount: 0
+                    });
+                }
+                setShowClientInfo(true);
+            }
+            const staffId = item.staffId?._id || item.staffId;
+            setCart([{
+                ...item,
+                itemId: item.serviceId?._id || item.serviceId || item._id,
+                type: 'service',
+                quantity: 1,
+                staffIds: staffId ? [staffId] : [],
+                appointmentId: item._id
+            }]);
+            setAppointmentId(item._id);
+            setOrderId(null);
+            return;
+        }
+
+        if (item.isOrder) {
+            if (item.customerId?._id || item.customerId) {
+                const customerIdStr = String(item.customerId?._id || item.customerId);
+                const client = businessCustomers.find(c => String(c._id || c.id) === customerIdStr);
+                if (client) {
+                    setSelectedClient(client);
+                } else {
+                    setSelectedClient({
+                        _id: customerIdStr,
+                        name: item.customerId?.name || 'Walk-in',
+                        phone: item.customerId?.phone || '',
+                        loyaltyPoints: 0,
+                        walletBalance: 0,
+                        dueAmount: 0
+                    });
+                }
+                setShowClientInfo(true);
+            }
+            const newCartItems = (item.items || []).map(oi => {
+                const product = products.find(p => String(p._id) === String(oi.productId?._id || oi.productId));
+                return {
+                    ...(product || {}),
+                    name: oi.productId?.name || product?.name || 'Product',
+                    price: oi.price || product?.price || 0,
+                    itemId: oi.productId?._id || product?._id,
+                    type: 'product',
+                    quantity: oi.quantity || 1,
+                    staffIds: ['']
+                };
+            }).filter(i => i.itemId);
+
+            setCart(newCartItems);
+            setOrderId(item._id);
+            setAppointmentId(null);
+            return;
+        }
+
         const type = forcedType || (activeTab === 'services' ? 'service' : 'product');
         const itemId = item.id || item._id;
         const existingId = cart.findIndex(c => c.itemId === itemId && c.type === type);
@@ -681,7 +813,9 @@ export default function POSBillingPage() {
                     }),
                     tax: totals.tax,
                     paymentMethod: payments[0]?.method || 'cash',
-                    useLoyaltyPoints: redeemPoints
+                    useLoyaltyPoints: redeemPoints,
+                    bookingId: appointmentId,
+                    orderId: orderId
                 };
 
                 if (appliedPromotion?._id) {
@@ -719,6 +853,13 @@ export default function POSBillingPage() {
                 };
 
                 setSuccessInvoice(invoiceData);
+                fetchInvoices?.();
+                fetchOrders?.();
+
+                // Auto-navigate to invoices after 3 seconds
+                setTimeout(() => {
+                    navigate('/pos/invoices');
+                }, 3000);
 
                 // WhatsApp Auto-Send logic
                 if (autoSendWhatsApp) {
@@ -855,10 +996,10 @@ export default function POSBillingPage() {
                 {/* ─── Thermal Receipt (80mm) ─── */}
                 <div id="thermal-receipt" className="bg-white text-black p-6 w-[320px] shadow-2xl border border-slate-200 font-mono text-[12px] leading-tight print:shadow-none print:border-0 print:m-0">
                     <div className="text-center space-y-1 mb-4">
-                        <h2 className="text-lg font-black uppercase tracking-tighter">{MOCK_COMPANY_INFO.name}</h2>
-                        <p className="text-[10px]">{MOCK_COMPANY_INFO.address}</p>
-                        <p className="text-[10px]">Ph: {MOCK_COMPANY_INFO.phone}</p>
-                        <p className="text-[10px] font-bold">GSTIN: {MOCK_COMPANY_INFO.gstin}</p>
+                        <h2 className="text-lg font-black uppercase tracking-tighter">{salon?.name || fiscal.businessName}</h2>
+                        <p className="text-[10px]">{typeof salon?.address === 'object' ? `${salon.address.street || ''}, ${salon.address.city || ''}` : (salon?.address || fiscal.address || 'Address Placeholder')}</p>
+                        <p className="text-[10px]">Ph: {salon?.phone || 'Phone Placeholder'}</p>
+                        <p className="text-[10px] font-bold">GSTIN: {salon?.gstin || fiscal.gstin}</p>
                     </div>
 
                     <div className="border-t border-dashed border-black pt-2 mb-2 space-y-0.5">
@@ -981,10 +1122,14 @@ export default function POSBillingPage() {
                             >
                                 <Smartphone className="w-3.5 h-3.5" /> {isWhatsAppSending ? 'Sending...' : 'WhatsApp'}
                             </button>
-                            <button className="bg-primary/10 text-primary border border-primary/20 p-3 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:bg-primary/20 transition-all rounded-none">
-                                <FileText className="w-3.5 h-3.5" /> Email
+                            <button
+                                onClick={() => navigate('/pos/invoices')}
+                                className="bg-background border border-border p-3 font-black uppercase tracking-widest text-[9px] text-text-secondary flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-alt"
+                            >
+                                <History className="w-3.5 h-3.5 text-emerald-500" /> View All Invoices
                             </button>
                         </div>
+
                         <button
                             onClick={resetBill}
                             className="bg-primary text-white p-4 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] transition-all"
@@ -1042,7 +1187,7 @@ export default function POSBillingPage() {
             <div className="flex flex-1 overflow-hidden gap-0 lg:gap-6 lg:p-0">
 
                 {/* ─── LEFT PANEL: Item Discovery ─── */}
-                <div className={`flex-1 flex flex-col min-w-0 bg-surface border-0 lg:border border-border p-4 shadow-sm overflow-hidden ${mobileView === 'items' ? 'flex' : 'hidden'
+                <div className={`flex-1 flex flex-col h-full min-w-0 bg-surface border-0 lg:border border-border p-4 shadow-sm overflow-hidden ${mobileView === 'items' ? 'flex' : 'hidden'
                     } lg:flex`}>
                     <div className="flex gap-2 mb-4">
                         <div className="relative flex-1 group">
@@ -1058,26 +1203,7 @@ export default function POSBillingPage() {
                                 onChange={(e) => setSearchItem(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
                             />
-                            <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                <button
-                                    onClick={() => setIsBarcodeMode(!isBarcodeMode)}
-                                    className={`p-1.5 transition-all active:scale-90 flex items-center gap-1 px-2 rounded-sm ${isBarcodeMode ? 'bg-primary text-white' : 'hover:bg-primary/10 text-text-muted'
-                                        }`}
-                                    title="Toggle Barcode Mode"
-                                >
-                                    <Tag className="w-3.5 h-3.5" />
-                                    <span className="text-[9px] font-black uppercase tracking-tighter">
-                                        {isBarcodeMode ? 'ON' : 'OFF'}
-                                    </span>
-                                </button>
-                                <button
-                                    onClick={openCameraScanner}
-                                    className="p-1.5 hover:bg-primary/10 text-primary transition-all active:scale-90"
-                                    title="Open Camera Scanner"
-                                >
-                                    <Scan className="w-5 h-5" />
-                                </button>
-                            </div>
+                          
                         </div>
 
                         {/* Scan Status Overlays */}
@@ -1113,43 +1239,25 @@ export default function POSBillingPage() {
 
                         <div className="flex bg-surface-alt p-1 border border-border">
                             <button
-                                onClick={() => setActiveTab('services')}
-                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'services' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
-                            >Services</button>
+                                onClick={() => {
+                                    setActiveTab('services');
+                                    setServiceMode('bookings');
+                                    setSelectedCategory('All');
+                                }}
+                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'services' && serviceMode === 'bookings' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                            >Completed Bookings</button>
                             <button
-                                onClick={() => setActiveTab('products')}
-                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'products' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
-                            >Products</button>
+                                onClick={() => {
+                                    setActiveTab('services');
+                                    setServiceMode('orders');
+                                    setSelectedCategory('All');
+                                }}
+                                className={`px-4 py-1.5 text-xs font-bold uppercase tracking-wider ${activeTab === 'services' && serviceMode === 'orders' ? 'bg-background text-primary shadow-sm' : 'text-text-secondary'}`}
+                            >Completed Orders</button>
                         </div>
                     </div>
 
-                    <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setSelectedCategory(cat)}
-                                className={`px-4 py-1.5 whitespace-nowrap text-[11px] font-extrabold uppercase tracking-widest border transition-all ${selectedCategory === cat ? 'bg-text text-background border-text shadow-md' : 'bg-background text-text-secondary border-border hover:border-text-muted'}`}
-                            >{cat}</button>
-                        ))}
-                    </div>
-
-                    {/* Quick Access Services */}
-                    <div className="mb-4">
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                            <Sparkles className="w-3 h-3 text-amber-500" /> Fast Sell
-                        </p>
-                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {services.slice(0, 6).map(s => (
-                                <button
-                                    key={`quick-${s.id || s._id}`}
-                                    onClick={() => addToCart(s)}
-                                    className="flex-shrink-0 px-4 py-2 bg-primary/5 hover:bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
-                                >
-                                    {s.name.split(' ')[0]}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+               
 
                     <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 pr-2 scrollbar-thin">
                         {filteredItems.map(item => (
@@ -1177,8 +1285,7 @@ export default function POSBillingPage() {
                 </div>
 
                 {/* ─── RIGHT PANEL: Cart & Checkout ─── */}
-                <div className={`w-full lg:w-[420px] flex-col bg-surface border-0 lg:border border-border shadow-xl overflow-hidden ${mobileView === 'cart' ? 'flex' : 'hidden'
-                    } lg:flex`}>
+                <div className={`w-full lg:w-[420px] h-full flex flex-col bg-surface border-0 lg:border border-border shadow-xl overflow-y-auto scrollbar-thin ${mobileView === 'cart' ? 'flex' : 'hidden'} lg:flex`}>
 
                     <div className="p-4 border-b border-border space-y-3 bg-surface-alt/50">
                         <div className="flex items-center justify-between">
@@ -1297,56 +1404,6 @@ export default function POSBillingPage() {
                             </div>
                         )}
 
-                        {selectedClient && showClientInfo && (
-                            <div className="bg-slate-900 border border-slate-800 p-4 space-y-3 animate-in slide-in-from-top-4 duration-300">
-                                <div className="grid grid-cols-2 gap-2">
-                                    <div className={`p-2 text-center border transition-all ${redeemPoints > 0 ? 'bg-amber-500 border-amber-400 text-white' : 'bg-white/5 border-white/10'}`}>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className={`text-[9px] font-bold uppercase ${redeemPoints > 0 ? 'text-white/80' : 'text-slate-400'}`}>Loyalty</p>
-                                            {selectedClient.loyaltyPoints > 0 && (
-                                                <button 
-                                                    onClick={handleRedeemPoints}
-                                                    className={`px-2 py-0.5 text-[8px] font-black uppercase border transition-all ${redeemPoints > 0 ? 'bg-white text-amber-500 border-white' : 'bg-amber-500 text-white border-amber-400 hover:bg-amber-600'}`}
-                                                >
-                                                    {redeemPoints > 0 ? 'Added' : 'Add to Bill'}
-                                                </button>
-                                            )}
-                                        </div>
-                                        <p className="text-sm font-black">{selectedClient.loyaltyPoints} pts</p>
-                                        {redeemPoints > 0 && <p className="text-[9px] font-bold mt-0.5 opacity-90">-₹{redeemPoints}</p>}
-                                    </div>
-                                    <div className={`p-2 text-center border transition-all ${redeemWallet > 0 ? 'bg-emerald-500 border-emerald-400 text-white' : 'bg-white/5 border-white/10'}`}>
-                                        <div className="flex justify-between items-start mb-1">
-                                            <p className={`text-[9px] font-bold uppercase ${redeemWallet > 0 ? 'text-white/80' : 'text-slate-400'}`}>Wallet</p>
-                                            {clientWalletBalance > 0 && (
-                                                <button 
-                                                    onClick={handleRedeemWallet}
-                                                    className={`px-2 py-0.5 text-[8px] font-black uppercase border transition-all ${redeemWallet > 0 ? 'bg-white text-emerald-500 border-white' : 'bg-emerald-500 text-white border-emerald-400 hover:bg-emerald-600'}`}
-                                                >
-                                                    {redeemWallet > 0 ? 'Added' : 'Add to Bill'}
-                                                </button>
-                                            )}
-                                        </div>
-                                        <p className="text-sm font-black">₹{clientWalletBalance}</p>
-                                        {redeemWallet > 0 && <p className="text-[9px] font-bold mt-0.5 opacity-90">-₹{redeemWallet}</p>}
-                                    </div>
-                                    <div className="bg-rose-500/10 p-2 text-center border border-rose-500/20 col-span-2">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="text-[9px] font-bold text-rose-400 uppercase text-left">Previous Due</p>
-                                                <p className="text-base font-black text-rose-500 text-left">₹{selectedClient.dueAmount || 0}</p>
-                                            </div>
-                                            <button
-                                                onClick={() => setIncludePreviousDue(!includePreviousDue)}
-                                                className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest border transition-all ${includePreviousDue ? 'bg-rose-500 text-white border-rose-500' : 'bg-transparent text-rose-500 border-rose-500/50 hover:bg-rose-500/10'}`}
-                                            >
-                                                {includePreviousDue ? 'Added' : 'Add to Bill'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
 
                     {/* Pending App Order Alert */}

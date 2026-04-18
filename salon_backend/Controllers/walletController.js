@@ -22,9 +22,16 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 // @access  Private (Customer)
 exports.getWalletDetails = async (req, res) => {
     try {
-        const customer = await Customer.findById(req.user._id);
+        let customer = await Customer.findById(req.user._id || req.user.id);
+        
         if (!customer) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            // If they are Admin/Staff, they don't have a wallet yet
+            return res.json({
+                success: true,
+                balance: 0,
+                transactions: [],
+                message: 'No wallet associated with this account type'
+            });
         }
 
         const transactions = await WalletTransaction.find({ customerId: req.user._id })

@@ -145,3 +145,23 @@ exports.getOrderById = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// @desc    Get all orders for a salon (Admin)
+// @route   GET /api/orders
+// @access  Private
+exports.getOrders = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const orders = await Order.find({ salonId })
+            .populate('customerId', 'name phone')
+            .populate('items.productId', 'name image price')
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            count: orders.length,
+            data: orders
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

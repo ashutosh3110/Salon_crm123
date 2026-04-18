@@ -490,7 +490,8 @@ export default function StaffPage() {
                                         onChange={(e) => {
                                             const newRole = e.target.value;
                                             const updates = { role: newRole };
-                                            if (newRole.toLowerCase() === 'stylist' && (!form.availability || !form.availability.days)) {
+                                            const isStylistRole = ['stylist', 'stylish', 'stylsih'].includes(newRole.toLowerCase());
+                                            if (isStylistRole && (!form.availability || !form.availability.days)) {
                                                 updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
                                             }
                                             setForm({ ...form, ...updates });
@@ -550,7 +551,7 @@ export default function StaffPage() {
                                     />
                                 </div>
 
-                                {form.role?.toLowerCase() === 'stylist' && (
+                                {['stylist', 'stylish', 'stylsih'].includes(form.role?.toLowerCase()) && (
                                     <>
                                         <div className="col-span-2 pt-2 border-t border-border mt-2">
                                             <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Stylist Public Profile</p>

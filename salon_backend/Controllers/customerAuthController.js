@@ -305,10 +305,11 @@ exports.updateProfile = async (req, res) => {
         const { name, email, gender, avatar, birthday, dob, anniversary } = req.body;
         
         const userId = req.user.id || req.user._id;
-        const customer = await Customer.findById(userId);
+        let customer = await Customer.findById(userId);
         
         if (!customer) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            // Fallback for Admins/Staff testing the profile update
+            customer = req.user;
         }
 
         // Update fields if provided
@@ -342,10 +343,15 @@ exports.updateProfile = async (req, res) => {
 // @access  Private (Customer)
 exports.getProfile = async (req, res) => {
     try {
-        const customer = await Customer.findById(req.user.id);
+        let customer = await Customer.findById(req.user.id);
         
         if (!customer) {
-            return res.status(404).json({ success: false, message: 'Customer not found' });
+            // Fallback: If authenticated as Admin/Staff, use that profile
+            if (req.user) {
+                customer = req.user;
+            } else {
+                return res.status(404).json({ success: false, message: 'Customer not found' });
+            }
         }
 
         res.json({

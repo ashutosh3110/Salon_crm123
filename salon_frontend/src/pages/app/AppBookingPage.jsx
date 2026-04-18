@@ -266,7 +266,11 @@ export default function AppBookingPage() {
         if (!currentOutlet) return [];
         return (businessStaff || []).filter(s => {
             const sRole = String(s.role || '').toLowerCase();
-            const isStylist = sRole === 'stylist' || s.isStylist === true;
+            const isStylist = sRole.includes('stylist') || 
+                             sRole.includes('stylish') || 
+                             sRole.includes('stylsih') || 
+                             s.isStylist === true;
+            
             if (!isStylist) return false;
             
             const targetOutletId = String(currentOutlet._id || currentOutlet.id);

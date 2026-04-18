@@ -11,18 +11,18 @@ const { protect, authorize } = require('../Middleware/auth');
 const { optimizedUpload } = require('../Middleware/upload');
 const { processToWebP } = require('../Middleware/imageProcessor');
 
-router.use(protect);
+// router.use(protect); // Move to specific routes
 // No global authorize to allow customer access to some routes
 
 router
     .route('/')
-    .get(authorize('admin', 'manager', 'customer'), getUsers)
-    .post(authorize('admin', 'manager'), optimizedUpload.single('avatar'), processToWebP('staff'), createUser);
+    .get(getUsers) // Public, but filtered by salonId in controller
+    .post(protect, authorize('admin', 'manager'), optimizedUpload.single('avatar'), processToWebP('staff'), createUser);
 
 router
     .route('/:id')
-    .get(authorize('admin', 'manager'), getUser)
-    .patch(authorize('admin', 'manager'), optimizedUpload.single('avatar'), processToWebP('staff'), updateUser)
-    .delete(authorize('admin', 'manager'), deleteUser);
+    .get(protect, authorize('admin', 'manager'), getUser)
+    .patch(protect, authorize('admin', 'manager'), optimizedUpload.single('avatar'), processToWebP('staff'), updateUser)
+    .delete(protect, authorize('admin', 'manager'), deleteUser);
 
 module.exports = router;

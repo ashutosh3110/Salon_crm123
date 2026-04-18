@@ -4,7 +4,7 @@ import {
     Clock, CreditCard, Banknote, Smartphone, Ban,
     ChevronLeft, ChevronRight, FileText, Loader2
 } from 'lucide-react';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
@@ -56,9 +56,9 @@ const InvoicePDF = ({ invoice }) => (
             <View style={pdfStyles.metaRow}>
                 <View style={pdfStyles.metaBox}>
                     <Text style={pdfStyles.label}>Billed To</Text>
-                    <Text style={pdfStyles.value}>{invoice.clientId?.name || 'Walk-in Client'}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.clientId?.phone}</Text>
-                    <Text style={pdfStyles.salonMeta}>{invoice.clientId?.email || ''}</Text>
+                    <Text style={pdfStyles.value}>{invoice.customerId?.name || 'Walk-in Client'}</Text>
+                    <Text style={pdfStyles.salonMeta}>{invoice.customerId?.phone}</Text>
+                    <Text style={pdfStyles.salonMeta}>{invoice.customerId?.email || ''}</Text>
                 </View>
                 <View style={pdfStyles.metaBox}>
                     <Text style={pdfStyles.label}>Invoice Details</Text>
@@ -133,7 +133,7 @@ export default function POSInvoicesPage() {
         const loadInvoices = async () => {
             try {
                 setLoading(true);
-                const response = await api.get('/invoices?limit=200');
+                const response = await api.get('/pos/invoices');
                 const rows = response?.data?.results || response?.data || [];
                 setInvoices(Array.isArray(rows) ? rows : []);
             } catch (error) {
@@ -154,7 +154,25 @@ export default function POSInvoicesPage() {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${selectedInvoice.invoiceNumber}_${selectedInvoice.clientId?.name || 'Invoice'}.pdf`;
+            link.download = `${selectedInvoice.invoiceNumber}_${selectedInvoice.customerId?.name || 'Invoice'}.pdf`;
+            link.click();
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('PDF Generation Error:', error);
+            alert('Failed to generate PDF. Please try again.');
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
+
+    const handleDownloadDirectPDF = async (inv) => {
+        setIsGeneratingPDF(true);
+        try {
+            const blob = await pdf(<InvoicePDF invoice={inv} />).toBlob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${inv.invoiceNumber}_${inv.customerId?.name || 'Invoice'}.pdf`;
             link.click();
             URL.revokeObjectURL(url);
         } catch (error) {
@@ -169,8 +187,8 @@ export default function POSInvoicesPage() {
         return invoices.filter(inv => {
             const matchSearch = !search ||
                 inv.invoiceNumber?.toLowerCase().includes(search.toLowerCase()) ||
-                inv.clientId?.name?.toLowerCase().includes(search.toLowerCase()) ||
-                inv.clientId?.phone?.includes(search);
+                inv.customerId?.name?.toLowerCase().includes(search.toLowerCase()) ||
+                inv.customerId?.phone?.includes(search);
 
             let matchDate = true;
             if (dateFilter === 'today') {
@@ -278,7 +296,7 @@ export default function POSInvoicesPage() {
                                         <td className="px-6 py-5 text-text-muted text-[11px] font-bold uppercase tracking-tight flex items-center gap-2">
                                             <Clock className="w-3.5 h-3.5 opacity-40" /> {formatDate(inv.createdAt)}
                                         </td>
-                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.clientId?.name || 'Guest'}</td>
+                                        <td className="px-6 py-5 font-black text-text text-[11px] uppercase tracking-tight">{inv.customerId?.name || 'Guest'}</td>
                                         <td className="px-6 py-5 text-text-muted text-[10px] font-black uppercase tracking-widest">{inv.outletId?.name || '-'}</td>
                                         <td className="px-6 py-5">
                                             <span className="flex items-center gap-2 font-black text-text text-[10px] uppercase tracking-widest">
@@ -295,9 +313,18 @@ export default function POSInvoicesPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-5 text-center">
-                                            <button onClick={() => setSelectedInvoice(inv)} className="p-2 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all group/btn active:scale-95 shadow-sm">
-                                                <Eye className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button onClick={() => setSelectedInvoice(inv)} className="p-2 border border-border bg-surface hover:bg-primary hover:border-primary hover:text-white transition-all group/btn active:scale-95 shadow-sm" title="View Details">
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDownloadDirectPDF(inv)} 
+                                                    className="p-2 border border-border bg-surface hover:bg-emerald-500 hover:border-emerald-500 hover:text-white transition-all group/btn active:scale-95 shadow-sm"
+                                                    title="Download PDF"
+                                                >
+                                                    <FileText className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -347,7 +374,7 @@ export default function POSInvoicesPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Customer</p>
-                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.clientId?.name || 'Guest'}</p>
+                                    <p className="text-sm font-black text-text uppercase tracking-tight">{selectedInvoice.customerId?.name || 'Guest'}</p>
                                 </div>
                                 <div className="bg-surface-alt/50 border border-border p-4">
                                     <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1">Outlet</p>

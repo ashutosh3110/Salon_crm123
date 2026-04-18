@@ -55,6 +55,7 @@ import RolesPage from './pages/admin/RolesPage';
 import NewBookingPage from './pages/admin/NewBookingPage';
 import SupportPage from './pages/admin/SupportPage';
 import FeatureLockedPage from './pages/admin/FeatureLockedPage';
+import BookingDetailPage from './pages/admin/BookingDetailPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -268,6 +269,7 @@ function App() {
                             <Route path="/admin/staff" element={<StaffPage />} />
                             
                             <Route path="/admin/bookings" element={<BookingsPage />} />
+                            <Route path="/admin/bookings/:id" element={<BookingDetailPage />} />
                             <Route path="/admin/bookings/new" element={<NewBookingPage />} />
 
                             {/* CRM Routes */}

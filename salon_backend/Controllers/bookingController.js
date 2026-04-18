@@ -5,6 +5,7 @@ const Customer = require('../Models/Customer');
 const Salon = require('../Models/Salon');
 const WalletTransaction = require('../Models/WalletTransaction');
 const CustomerMembership = require('../Models/CustomerMembership');
+const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
@@ -74,10 +75,16 @@ exports.createBooking = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Service not found' });
         }
 
+        const targetCustomerId = req.body.clientId || req.user._id;
+        const customer = await Customer.findById(targetCustomerId);
+        if (!customer && req.body.clientId) {
+             return res.status(404).json({ success: false, message: 'Target customer not found' });
+        }
+
         // Fetch active membership to apply discount securely in backend
         let totalPrice = service.price;
         const activeMembership = await CustomerMembership.findOne({
-            customerId: req.user._id,
+            customerId: targetCustomerId,
             status: 'active',
             expiryDate: { $gt: new Date() }
         }).populate('planId');
@@ -96,7 +103,6 @@ exports.createBooking = async (req, res) => {
 
         // Handle Wallet Payment
         if (paymentMethod === 'Wallet' || paymentMethod === 'wallet') {
-            const customer = await Customer.findById(req.user._id);
             if (!customer) {
                 return res.status(404).json({ success: false, message: 'Customer not found' });
             }
@@ -116,7 +122,7 @@ exports.createBooking = async (req, res) => {
 
             // Create wallet transaction
             await WalletTransaction.create({
-                customerId: req.user._id,
+                customerId: targetCustomerId,
                 salonId: salonId,
                 amount: totalPrice,
                 type: 'DEBIT',
@@ -157,7 +163,6 @@ exports.createBooking = async (req, res) => {
     }
 };
 
-const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 
 // @desc    Update booking status
 // @route   PATCH /api/bookings/:id/status
@@ -176,6 +181,12 @@ exports.updateStatus = async (req, res) => {
 
         const oldStatus = booking.status;
         booking.status = req.body.status;
+
+        // Auto-complete payment for salon payments when booking is completed
+        if (booking.status === 'completed' && booking.paymentMethod === 'salon') {
+            booking.paymentStatus = 'paid';
+        }
+
         await booking.save();
 
         // If status changed to completed, award loyalty points
@@ -196,7 +207,9 @@ exports.updateStatus = async (req, res) => {
                             customerId: booking.clientId,
                             salonId: booking.salonId,
                             amount: points,
-                            type: 'EARNED',
+                            type: 'EARN',
+                            referenceId: booking._id,
+                            source: 'BOOKING',
                             description: `Earned from Booking #${booking._id.toString().slice(-6).toUpperCase()}`
                         });
                     }
@@ -211,7 +224,7 @@ exports.updateStatus = async (req, res) => {
             data: booking
         });
     } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 

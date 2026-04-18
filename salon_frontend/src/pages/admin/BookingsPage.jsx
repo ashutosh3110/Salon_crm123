@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Plus,
     Search,
@@ -19,7 +20,8 @@ import {
     AlertCircle,
     RotateCcw,
     PieChart as PieIcon,
-    BarChart3
+    BarChart3,
+    Eye
 } from 'lucide-react';
 import {
     PieChart,
@@ -65,6 +67,7 @@ const MOCK_OUTLETS = [
 ];
 
 export default function BookingsPage() {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const {
         bookings: contextBookings,
@@ -194,7 +197,7 @@ export default function BookingsPage() {
 
                 <div className="flex flex-wrap items-center gap-4 text-left font-black">
                     <button
-                        onClick={() => setIsBookingModalOpen(true)}
+                        onClick={() => navigate('/admin/bookings/new')}
                         className="w-full lg:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-none bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
                     >
                         <Plus className="w-4 h-4" /> ADD BOOKING
@@ -409,7 +412,7 @@ export default function BookingsPage() {
                             staff={staff}
                             currentDate={selectedDate}
                             onDateChange={setSelectedDate}
-                            onBookingClick={setSelectedBooking}
+                            onBookingClick={(b) => navigate(`/admin/bookings/${b._id}`)}
                         />
                     </div>
                 </div>
@@ -444,7 +447,7 @@ export default function BookingsPage() {
                                         <tr
                                             key={b._id}
                                             className="hover:bg-surface-alt/50 transition-all cursor-pointer group text-left"
-                                            onClick={() => setSelectedBooking(b)}
+                                            onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                         >
                                             <td className="px-8 py-6 text-[11px] font-black text-text-muted/60 uppercase tracking-widest text-left">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</td>
                                             <td className="px-8 py-6 text-left">
@@ -490,8 +493,15 @@ export default function BookingsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6 text-right">
-                                                <button className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all">
-                                                    <MoreVertical className="w-4 h-4" />
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/admin/bookings/${b._id}`);
+                                                    }}
+                                                    className="p-3 rounded-none bg-background border border-border text-text-muted hover:text-primary hover:border-primary transition-all flex items-center gap-2 group/btn"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest hidden group-hover/btn:inline">Details</span>
                                                 </button>
                                             </td>
                                         </tr>

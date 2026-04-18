@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, getMyOrders, getOrderById } = require('../Controllers/orderController');
+const { createOrder, getMyOrders, getOrderById, getOrders } = require('../Controllers/orderController');
 const { protect } = require('../Middleware/auth');
 
 router.use(protect);
 
 router.route('/')
-    .post(createOrder);
+    .post(createOrder)
+    .get(getOrders);
 
 router.get('/me', getMyOrders);
 router.get('/:id', getOrderById);

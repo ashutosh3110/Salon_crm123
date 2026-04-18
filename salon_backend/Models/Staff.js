@@ -31,12 +31,10 @@ const staffSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 6,
-        default: '123456'
+        default: () => Math.random().toString(36).slice(-8).toUpperCase()
     },
     role: {
-        type: String,
-        enum: ['admin', 'manager', 'receptionist', 'stylist', 'accountant', 'inventory_manager'],
-        default: 'stylist'
+        type: String
     },
     dob: String,
     gender: {
