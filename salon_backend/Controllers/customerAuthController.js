@@ -64,8 +64,8 @@ exports.requestOtp = async (req, res) => {
         );
 
         // Send SMS via SMS India Hub
-        const brand = process.env.SMS_INDIA_HUB_BRAND_NAME || "VAHANCAB";
-        const message = `${otp} is your verification code for login. Regards, ${brand}`;
+        const brand = "VAHANCAB";
+        const message =  `Welcome to the ${brand} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
         
         try {
             await sendSms(phone, message, process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID);
