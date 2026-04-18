@@ -19,10 +19,10 @@ const storage = new CloudinaryStorage({
     }
 });
 
-// Local Storage
-const diskStorage = multer.diskStorage({
+// Generic local storage with subfolder support
+const createDiskStorage = (subfolder) => multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = 'uploads/';
+        const uploadPath = path.join('uploads', subfolder);
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -30,11 +30,14 @@ const diskStorage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        cb(null, subfolder + '-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
 const upload = multer({ storage: storage });
-const localUpload = multer({ storage: diskStorage });
+const categoryUpload = multer({ storage: createDiskStorage('categories') });
+const serviceUpload = multer({ storage: createDiskStorage('services') });
+const memoryStorage = multer.memoryStorage();
+const optimizedUpload = multer({ storage: memoryStorage });
 
-module.exports = { cloudinary, upload, localUpload };
+module.exports = { cloudinary, upload, categoryUpload, serviceUpload, optimizedUpload };

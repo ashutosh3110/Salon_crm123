@@ -357,20 +357,29 @@ export default function AppLoginPage() {
 
         // NEW FLOW: If no tenantId is selected yet, just verify phone and go to discovery
         if (!tenantId) {
-            if (code === '1234') { // Using fixed OTP from backend controller
-                setOtpVerified(true);
-                setError('');
-                if (!userCoords) {
-                    setShowLocationModal(true);
+            setLoading(true); setError('');
+            try {
+                // Call public verify endpoint with 'system' as tenant placeholder
+                const res = await api.post('/auth/login-otp', { phone, otp: code, tenantId: 'system' });
+                
+                if (res.data?.success) {
+                    setOtpVerified(true);
+                    setError('');
+                    if (!userCoords) {
+                        setShowLocationModal(true);
+                    }
+                    goTo(0); // Discovery step
+                } else {
+                    setError('Invalid OTP');
                 }
-                goTo(0); // Discovery step
-                return;
-            } else {
-                setError('Invalid OTP');
+            } catch (e) {
+                setError(e.response?.data?.message || e.message || 'Verification failed');
                 setOtp(['', '', '', '']);
                 otpRefs[0].current?.focus();
-                return;
+            } finally {
+                setLoading(false);
             }
+            return;
         }
 
         setLoading(true); setError('');

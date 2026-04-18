@@ -21,6 +21,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import { API_BASE_URL } from '../../../services/api';
 
 export default function ServiceForm({ onSave, onCancel, categories = [], initialData, isModal = false }) {
     const navigate = useNavigate();
@@ -45,6 +46,8 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         resourceType: initialData?.resourceType || 'chair'
     });
 
+    const [imageFile, setImageFile] = useState(null);
+
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -52,6 +55,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 alert("File size too large. Max 2MB allowed.");
                 return;
             }
+            setImageFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setFormData({ ...formData, image: reader.result });
@@ -69,25 +73,39 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
         }
         setIsSaving(true);
         try {
-            const payload = {
-                ...formData,
-                duration: parseInt(formData.duration),
-                price: parseFloat(formData.price),
-                gst: parseInt(formData.gst),
-                commissionValue: parseFloat(formData.commissionValue) || 0,
-                outletIds: formData.outlet === 'all' ? [] : formData.outletIds,
-                gender: formData.gender,
-                resourceType: formData.resourceType
-            };
+            // Use FormData for multi-part submission (image support)
+            const submissionData = new FormData();
+            
+            // Append all fields to FormData
+            Object.keys(formData).forEach(key => {
+                if (key === 'image') return; // Handled separately
+                if (key === 'outletIds') {
+                    const ids = formData.outlet === 'all' ? [] : formData.outletIds;
+                    ids.forEach(id => submissionData.append('outletIds[]', id));
+                    return;
+                }
+                if (formData[key] !== null && formData[key] !== undefined) {
+                    submissionData.append(key, formData[key]);
+                }
+            });
 
-            // Remove internal UI state fields that backend validation rejects
-            delete payload._id;
-            delete payload.outlet;
+            // Append specific numeric conversions that backend expects
+            submissionData.set('duration', parseInt(formData.duration));
+            submissionData.set('price', parseFloat(formData.price));
+            submissionData.set('gst', parseInt(formData.gst));
+            submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
+
+            // Append Image File if new one selected
+            if (imageFile) {
+                submissionData.append('image', imageFile);
+            } else if (typeof formData.image === 'string') {
+                submissionData.append('image', formData.image);
+            }
             
             if (formData._id) {
-                await onSave?.(formData._id, payload);
+                await onSave?.(submissionData);
             } else {
-                await onSave?.(payload);
+                await onSave?.(submissionData);
             }
             if (!isModal) navigate('/admin/services/list');
         } catch (error) {
@@ -107,7 +125,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
     };
 
     return (
-        <div className={`${isModal ? 'p-5 px-6' : 'max-w-4xl mx-auto pb-20'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
+        <div className={`${isModal ? 'p-3 px-4' : 'max-w-4xl mx-auto pb-10'} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
             {/* Header - Only for Non-Modal */}
             {!isModal && (
                 <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm mb-6 flex items-center justify-between">
@@ -135,20 +153,33 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             <div className={`grid grid-cols-1 ${isModal ? 'lg:grid-cols-2' : 'md:grid-cols-2'} ${isModal ? 'gap-4' : 'gap-6'}`}>
                 {/* 1. Basic Details */}
                 <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
-                    <div className="flex items-center gap-2 mb-1">
-                        <Tag className="w-4 h-4 text-primary" />
-                        <h3 className="text-[10px] font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <Tag className="w-3.5 h-3.5 text-primary" />
+                        <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Service Name <span className="text-rose-500">*</span></label>
-                        <input
-                            type="text"
-                            className={`w-full px-4 ${isModal ? 'py-2' : 'py-2.5'} rounded-xl bg-surface-alt border border-border text-xs focus:ring-2 focus:ring-primary/20 transition-all font-bold`}
-                            placeholder="e.g. Executive Haircut"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '') })}
-                        />
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter shrink-0">Service Name <span className="text-rose-500">*</span></label>
+                            <input
+                                type="text"
+                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-[11px] focus:ring-2 focus:ring-primary/20 transition-all font-bold`}
+                                placeholder="e.g. Executive Haircut"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z0-9\s()&/-]/g, '') })}
+                            />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
+                            <input
+                                type="text"
+                                className={`w-full px-3 py-1.5 rounded-xl bg-surface-alt border border-border text-[11px] font-bold`}
+                                placeholder="Brief details..."
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     {categories.length === 0 ? (
@@ -168,7 +199,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             </button>
                         </div>
                     ) : (
-                        <div className={`${isModal ? 'space-y-3' : 'space-y-4'}`}>
+                        <div className={`${isModal ? 'space-y-2' : 'space-y-3'}`}>
                             <CustomSelect 
                                 label={isModal ? "" : "Category *"}
                                 placeholder="Select Category *"
@@ -197,7 +228,11 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                         <div className="relative group">
                             {formData.image ? (
                                 <div className="relative aspect-video rounded-2xl overflow-hidden border border-border group">
-                                    <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                                    <img 
+                                        src={formData.image.startsWith('data:') || formData.image.startsWith('http') ? formData.image : `${API_BASE_URL}${formData.image}`} 
+                                        alt="Preview" 
+                                        className="w-full h-full object-cover" 
+                                    />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                         <label className="p-2 bg-white rounded-full text-primary cursor-pointer hover:scale-110 transition-transform">
                                             <Upload className="w-4 h-4" />
@@ -212,12 +247,12 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     </div>
                                 </div>
                             ) : (
-                                <label className="flex flex-col items-center justify-center aspect-video rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
-                                    <div className="p-3 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
-                                        <ImageIcon className="w-6 h-6" />
+                                <label className="flex flex-col items-center justify-center h-28 rounded-2xl border-2 border-dashed border-border bg-surface-alt hover:bg-surface hover:border-primary/40 transition-all cursor-pointer group">
+                                    <div className="p-2 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                        <ImageIcon className="w-5 h-5" />
                                     </div>
-                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-2">Click to Upload Image</p>
-                                    <p className="text-[8px] text-text-muted opacity-60 mt-1 uppercase">JPG, PNG, WEBP (Max 2MB)</p>
+                                    <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Upload Image</p>
+                                    <p className="text-[7px] text-text-muted opacity-60 mt-0.5 uppercase">MAX 2MB :: WEBP</p>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                 </label>
                             )}
@@ -225,16 +260,6 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                     </div>
 
 
-                    <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
-                        <textarea
-                            rows={isModal ? "2" : "3"}
-                            className={`w-full px-4 ${isModal ? 'py-2' : 'py-2.5'} rounded-xl bg-surface-alt border border-border text-xs font-bold resize-none`}
-                            placeholder="Brief details..."
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        />
-                    </div>
 
                     {/* Resource Selection */}
                     <div className={`${isModal ? 'pt-3' : 'pt-4'} border-t border-border/50`}>
@@ -282,57 +307,54 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                 <div className={`${isModal ? 'space-y-4' : 'space-y-6'}`}>
                     {/* 2. Time & Pricing */}
                     <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm ${isModal ? 'space-y-3' : 'space-y-4'} h-fit`}>
-                        <div className="flex items-center gap-2 mb-1">
-                            <IndianRupee className="w-4 h-4 text-emerald-500" />
-                            <h3 className="text-[10px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <IndianRupee className="w-3.5 h-3.5 text-emerald-500" />
+                            <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">2. Time & Pricing</h3>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Dur (Min) <span className="text-rose-500">*</span></label>
+                        <div className="grid grid-cols-3 gap-2">
+                            <div className="space-y-1 col-span-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Dur (Min)</label>
                                 <div className="relative">
-                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
+                                    <Clock className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-text-muted" />
                                     <input
                                         type="number"
-                                        className={`w-full pl-8 pr-4 ${isModal ? 'py-2' : 'py-2.5'} rounded-xl bg-surface-alt border border-border text-xs font-bold`}
+                                        className={`w-full pl-6 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold`}
                                         placeholder="0"
                                         value={formData.duration}
                                         onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Price <span className="text-rose-500">*</span></label>
+                            <div className="space-y-1 col-span-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">Price</label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold text-xs">₹</span>
+                                    <span className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted font-bold text-[10px]">₹</span>
                                     <input
                                         type="number"
-                                        className={`w-full pl-7 pr-4 ${isModal ? 'py-2' : 'py-2.5'} rounded-xl bg-surface-alt border border-border text-xs font-bold text-primary`}
+                                        className={`w-full pl-5 pr-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-bold text-primary`}
                                         placeholder="0"
                                         value={formData.price}
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                     />
                                 </div>
                             </div>
+                            <div className="space-y-1 col-span-1">
+                                <label className="text-[9px] font-bold text-text-muted uppercase tracking-tighter italic">GST %</label>
+                                <select 
+                                    className="w-full bg-surface-alt border border-border rounded-lg px-2 py-1.5 text-[10px] font-bold outline-none"
+                                    value={formData.gst}
+                                    onChange={(e) => setFormData({ ...formData, gst: e.target.value })}
+                                >
+                                    <option value="0">0%</option>
+                                    <option value="5">5%</option>
+                                    <option value="12">12%</option>
+                                    <option value="18">18%</option>
+                                    <option value="28">28%</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className={`${isModal ? 'pt-3' : 'pt-4'} border-t border-border/50`}>
-                            <CustomSelect 
-                                label={isModal ? "" : "GST % *"}
-                                placeholder="Select GST % *"
-                                value={formData.gst === '0' ? '0% (Nil)' : 
-                                       formData.gst === '5' ? '5% (Essentials)' :
-                                       formData.gst === '12' ? '12%' :
-                                       formData.gst === '18' ? '18% (Standard Beauty)' :
-                                       formData.gst === '28' ? '28% (Luxury)' : formData.gst + '%'}
-                                onChange={(val) => {
-                                    const numericValue = val.split('%')[0];
-                                    setFormData({ ...formData, gst: numericValue });
-                                }} 
-                                options={["0%", "5%", "12%", "18%", "28%"]} 
-                                className={isModal ? "py-0" : ""}
-                            />
-                        </div>
                     </div>
 
                     {/* 4. Commission Rules */}
@@ -376,28 +398,28 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
 
                     {/* 5. Outlet & 6. Status - Compressed for Modal */}
                     <div className={`bg-surface ${isModal ? 'p-4' : 'p-6'} rounded-3xl border border-border shadow-sm h-fit space-y-3`}>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
                                     <Building2 className="w-3.5 h-3.5 text-violet-500" />
                                     <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">5. Outlets</h3>
                                 </div>
                                 <select 
-                                    className="w-full bg-surface-alt border border-border rounded-xl px-3 py-2 text-xs font-bold outline-none"
+                                    className="w-full bg-surface-alt border border-border rounded-xl px-2 py-1 text-[10px] font-bold outline-none mt-1"
                                     value={formData.outlet}
                                     onChange={(e) => setFormData({ ...formData, outlet: e.target.value })}
                                 >
                                     <option value="all">All Outlets</option>
                                     <option value="selected">Selected...</option>
                                 </select>
-                                
+
                                 {formData.outlet === 'selected' && (
-                                    <div className="mt-3 space-y-2 max-h-[120px] overflow-y-auto px-1 scrollbar-hide">
+                                    <div className="mt-2 space-y-1 max-h-[80px] overflow-y-auto px-1 scrollbar-hide border-t border-border pt-2">
                                         {outlets.map((o) => (
-                                            <label key={o._id} className="flex items-center gap-3 p-2 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
+                                            <label key={o._id} className="flex items-center gap-2 p-1.5 bg-surface-alt rounded-lg border border-border/50 hover:border-primary/30 cursor-pointer transition-all">
                                                 <input
                                                     type="checkbox"
-                                                    className="w-3.5 h-3.5 rounded border-border text-primary focus:ring-primary"
+                                                    className="w-3 h-3 rounded border-border text-primary focus:ring-primary"
                                                     checked={formData.outletIds.includes(o._id)}
                                                     onChange={(e) => {
                                                         const newIds = e.target.checked
@@ -407,8 +429,8 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                                     }}
                                                 />
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black uppercase text-text tracking-tighter">{o.name}</span>
-                                                    <span className="text-[8px] font-bold text-text-muted uppercase leading-none">{o.address?.city}</span>
+                                                    <span className="text-[9px] font-black uppercase text-text tracking-tighter leading-none">{o.name}</span>
+                                                    <span className="text-[7px] font-bold text-text-muted uppercase leading-tight">{o.address?.city}</span>
                                                 </div>
                                             </label>
                                         ))}
@@ -416,14 +438,14 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                     </div>
                                 )}
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                                 <div className="flex items-center gap-2 mb-1">
                                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                                     <h3 className="text-[9px] font-bold text-text uppercase tracking-widest">6. Status</h3>
                                 </div>
                                 <div className="flex bg-surface-alt rounded-xl p-0.5 border border-border">
-                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1.5 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
-                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1.5 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
+                                    <button onClick={() => setFormData({ ...formData, status: 'active' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'active' ? 'bg-emerald-500 text-white shadow-sm' : 'text-text-muted'}`}>ACTIVE</button>
+                                    <button onClick={() => setFormData({ ...formData, status: 'inactive' })} className={`flex-1 py-1 text-[9px] font-bold rounded-lg transition-all ${formData.status === 'inactive' ? 'bg-rose-500 text-white shadow-sm' : 'text-text-muted'}`}>OFF</button>
                                 </div>
                             </div>
                         </div>
@@ -432,7 +454,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             </div>
 
             {/* Actions */}
-            <div className={`${isModal ? 'mt-4' : 'mt-8'} flex flex-col sm:flex-row sm:items-center justify-end gap-2 ${isModal ? 'p-4' : 'p-6'} bg-surface-alt rounded-3xl border border-border text-left`}>
+            <div className={`${isModal ? 'mt-2' : 'mt-8'} flex flex-col sm:flex-row sm:items-center justify-end gap-2 ${isModal ? 'p-2' : 'p-6'} bg-surface-alt rounded-3xl border border-border text-left`}>
                 <button
                     onClick={handleCancel}
                     className="px-6 py-2 rounded-xl text-xs font-bold text-text-secondary hover:bg-surface transition-all border border-transparent hover:border-border"

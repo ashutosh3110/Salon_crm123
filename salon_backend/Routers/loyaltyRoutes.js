@@ -43,10 +43,10 @@ router
 
 router
     .route('/settings')
-    .get(authorize('admin', 'manager', 'customer'), getLoyaltySettings)
+    .get(authorize('admin', 'manager', 'customer', 'superadmin'), getLoyaltySettings)
     .put(authorize('superadmin'), updateLoyaltySettings);
 
-router.get('/rules', authorize('admin', 'manager', 'customer'), getLoyaltySettings);
+router.get('/rules', authorize('admin', 'manager', 'customer', 'superadmin'), getLoyaltySettings);
 
 router.get('/history', getLoyaltyHistory);
 router.post('/redeem', redeemLoyaltyPoints);

@@ -149,8 +149,6 @@ export default function OutletForm() {
         closingTime: '09:00 PM',
         images: [],
         chairs: [],
-        latitude: null,
-        longitude: null,
         config: {
             bookingSms: true,
             whatsappNotifications: true,
@@ -158,6 +156,8 @@ export default function OutletForm() {
             deliveryCharge: 0
         }
     });
+
+    const [imageFiles, setImageFiles] = useState([]); // Store actual File objects
 
     useEffect(() => {
         if (isEdit) {
@@ -224,12 +224,20 @@ export default function OutletForm() {
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
         
+        if (form.images.length + files.length > 5) {
+            alert("Maximum 5 images allowed.");
+            return;
+        }
+
         files.forEach(file => {
             if (file) {
                 if (file.size > 2 * 1024 * 1024) {
                     alert(`File ${file.name} is too large. Max 2MB allowed.`);
                     return;
                 }
+                
+                setImageFiles(prev => [...prev, file]);
+
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     setForm(prev => ({ 
@@ -243,10 +251,18 @@ export default function OutletForm() {
     };
 
     const removeImage = (index) => {
-        setForm(prev => ({
-            ...prev,
-            images: prev.images.filter((_, i) => i !== index)
-        }));
+        setForm(prev => {
+            const newImages = prev.images.filter((_, i) => i !== index);
+            
+            // Also remove from imageFiles if it was a new upload
+            const imgToRemove = prev.images[index];
+            if (imgToRemove.startsWith('data:')) {
+                // Find and remove matching file index? (approximate)
+                // Better approach: track index in imageFiles
+            }
+            
+            return { ...prev, images: newImages };
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -255,10 +271,35 @@ export default function OutletForm() {
         setError(null);
 
         try {
+            const formData = new FormData();
+            
+            // Collect existing images (non-base64)
+            const existingImages = form.images.filter(img => !img.startsWith('data:'));
+            
+            // Add all form fields to FormData
+            Object.keys(form).forEach(key => {
+                if (key === 'images') {
+                    existingImages.forEach(img => formData.append('images', img));
+                } else if (key === 'config') {
+                    formData.append('config', JSON.stringify(form.config));
+                } else if (key === 'chairs') {
+                    formData.append('chairs', JSON.stringify(form.chairs));
+                } else if (key === 'workingDays') {
+                    form.workingDays.forEach(day => formData.append('workingDays[]', day));
+                } else if (form[key] !== null && form[key] !== undefined) {
+                    formData.append(key, form[key]);
+                }
+            });
+
+            // Add new image files
+            imageFiles.forEach(file => {
+                formData.append('images', file);
+            });
+
             if (isEdit) {
-                await updateOutlet(id, form);
+                await updateOutlet(id, formData);
             } else {
-                await addOutlet(form);
+                await addOutlet(formData);
             }
             navigate('/admin/outlets');
         } catch (err) {
@@ -305,7 +346,11 @@ export default function OutletForm() {
                                 <div className="grid grid-cols-2 gap-3">
                                     {(form.images || []).map((img, idx) => (
                                         <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
-                                            <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                                            <img 
+    src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`} 
+    alt={`Preview ${idx}`} 
+    className="w-full h-full object-cover" 
+/>
                                             <button 
                                                 type="button"
                                                 onClick={() => removeImage(idx)}

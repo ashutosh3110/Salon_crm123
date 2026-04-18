@@ -54,6 +54,24 @@ const customerSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true
+    },
+    category: {
+        type: String,
+        default: 'Regular'
+    },
+    remarks: String,
+    preferredService: String,
+    isVIP: {
+        type: Boolean,
+        default: false
+    },
+    totalSpend: {
+        type: Number,
+        default: 0
+    },
+    totalVisits: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

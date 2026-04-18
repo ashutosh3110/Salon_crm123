@@ -107,6 +107,11 @@ exports.createBooking = async (req, res) => {
 
             // Deduct balance
             customer.walletBalance -= totalPrice;
+            
+            // Increment total spend and visits
+            customer.totalSpend = (customer.totalSpend || 0) + totalPrice;
+            customer.totalVisits = (customer.totalVisits || 0) + 1;
+            
             await customer.save();
 
             // Create wallet transaction

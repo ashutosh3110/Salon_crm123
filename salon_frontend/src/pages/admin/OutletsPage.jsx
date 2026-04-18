@@ -213,7 +213,11 @@ export default function OutletsPage() {
                             <div className="flex justify-between items-start mb-4">
                                 {outlet.images?.length > 0 ? (
                                     <div className="w-10 h-10 rounded-xl overflow-hidden border border-border bg-slate-50 flex-shrink-0">
-                                        <img src={outlet.images[0]} alt={outlet.name} className="w-full h-full object-cover" />
+                                        <img 
+                                            src={outlet.images[0].startsWith('http') ? outlet.images[0] : `${import.meta.env.VITE_API_URL}${outlet.images[0]}`} 
+                                            alt={outlet.name} 
+                                            className="w-full h-full object-cover" 
+                                        />
                                     </div>
                                 ) : (
                                     <div className="w-10 h-10 bg-slate-900 flex items-center justify-center text-white flex-shrink-0">

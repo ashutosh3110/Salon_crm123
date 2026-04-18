@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { toast } from 'react-hot-toast';
 import { Plus, Search, Phone, Mail, Star, Edit, Trash2, Users, TrendingUp, PieChart as PieIcon, BarChart3, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -92,19 +93,21 @@ export default function ClientsPage() {
             setShowModal(false);
             setEditingClient(null);
             setForm({ name: '', email: '', phone: '', gender: 'female', notes: '' });
+            toast.success(editingClient ? 'Client profile updated' : 'Client profile created');
             fetchClients();
         } catch (err) {
-            alert(err.response?.data?.message || 'Error saving client');
+            toast.error(err.response?.data?.message || 'Error saving client');
         }
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('Are you sure you want to delete this client?')) return;
+        if (!window.confirm('Are you sure you want to delete this client?')) return;
         try {
             await api.delete(`/clients/${id}`);
+            toast.success('Client profile purged');
             fetchClients();
         } catch (err) {
-            alert('Error deleting client');
+            toast.error('Error deleting client');
         }
     };
 

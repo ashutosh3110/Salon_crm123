@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
     Shield, 
     Plus, 
@@ -15,27 +16,46 @@ import {
     CreditCard,
     Megaphone,
     Briefcase,
-    ChevronRight,
-    Lock
+    Lock,
+    Bell,
+    DollarSign,
+    ClipboardList,
+    Crown,
+    Settings,
+    Store
 } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
 const AVAILABLE_PERMISSIONS = [
-    { id: 'dashboard', label: 'Dashboard Access', icon: LayoutDashboard, description: 'Access to main dashboard and stats' },
-    { id: 'pos', label: 'Point of Sale (POS)', icon: CreditCard, description: 'Create bills and process payments' },
-    { id: 'appointments', label: 'Appointments', icon: Scissors, description: 'Manage bookings and calendar' },
-    { id: 'inventory', label: 'Inventory', icon: Package, description: 'Manage products and stock' },
-    { id: 'crm', label: 'Customer Management', icon: Users, description: 'View and manage customer data' },
-    { id: 'marketing', label: 'Marketing Hub', icon: Megaphone, description: 'Manage coupons and campaigns' },
-    { id: 'payroll', label: 'HR & Payroll', icon: Briefcase, description: 'Manage staff and attendance' },
-    { id: 'finance', label: 'Finance Reports', icon: CreditCard, description: 'View revenue and expense reports' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Main business overview' },
+    { id: 'pos', label: 'Billing (POS)', icon: CreditCard, description: 'Sales and payments' },
+    { id: 'bookings', label: 'Bookings', icon: Scissors, description: 'Calendar and appointments' },
+    { id: 'marketing', label: 'Marketing', icon: Megaphone, description: 'Hub and CMS' },
+    { id: 'enquiries', label: 'Enquiries', icon: ClipboardList, description: 'Customer leads' },
+    { id: 'reminders', label: 'Reminders', icon: Bell, description: 'Follow-ups and links' },
+    { id: 'crm', label: 'CRM / Customers', icon: Users, description: 'Customer directory' },
+    { id: 'loyalty', label: 'Loyalty', icon: Crown, description: 'Points and memberships' },
+    { id: 'inventory', label: 'Inventory', icon: Package, description: 'Stock management' },
+    { id: 'finance', label: 'Finance', icon: DollarSign, description: 'Expenses and cash' },
+    { id: 'hr', label: 'HR / Payroll', icon: Briefcase, description: 'Staff and attendance' },
+    { id: 'setup', label: 'Business Setup', icon: Store, description: 'Outlets and services' },
+    { id: 'settings', label: 'Settings', icon: Settings, description: 'Profile and security' },
 ];
 
 export default function RolesPage() {
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+        return () => { document.body.style.overflow = 'auto'; };
+    }, [showModal]);
     const [editingRole, setEditingRole] = useState(null);
     const [search, setSearch] = useState('');
     
@@ -103,6 +123,16 @@ export default function RolesPage() {
         setForm({ name: '', description: '', permissions: [] });
         setEditingRole(null);
     };
+
+    // Disable body scroll when modal is open
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [showModal]);
 
     const togglePermission = (permId) => {
         setForm(prev => ({
@@ -181,7 +211,7 @@ export default function RolesPage() {
                                     {(role.permissions || []).map(perm => {
                                         const p = AVAILABLE_PERMISSIONS.find(ap => ap.id === perm);
                                         return (
-                                            <span key={perm} className="px-2 py-1 bg-surface border border-border rounded text-[8px] font-bold uppercase tracking-wider text-text-muted">
+                                            <span key={perm} className="px-2 py-1 bg-surface border border-border rounded text-[8px] font-bold uppercase tracking-wider text-text-muted text-left">
                                                 {p ? p.label : perm}
                                             </span>
                                         );
@@ -191,7 +221,7 @@ export default function RolesPage() {
                                     )}
                                 </div>
 
-                                <div className="col-span-12 md:col-span-3 flex items-center justify-end gap-2">
+                                <div className="col-span-12 md:col-span-3 flex items-center justify-end gap-2 text-right">
                                     <button 
                                         onClick={() => handleEdit(role)}
                                         className="p-2 text-text-muted hover:text-primary transition-colors hover:bg-white border border-transparent hover:border-border"
@@ -221,128 +251,126 @@ export default function RolesPage() {
                 </div>
             </div>
 
-            {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-[999] overflow-y-auto">
-                    <div className="flex min-h-full items-start justify-center p-4 text-center sm:p-0 pt-10 md:pt-24">
-                        {/* Backdrop */}
-                        <div 
-                            className="fixed inset-0 bg-slate-900/60 transition-opacity backdrop-blur-sm" 
-                            onClick={() => setShowModal(false)} 
-                        />
+            {/* Role Modal - Simple High-Density Design */}
+            {showModal && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setShowModal(false)}>
+                    
+                    <div 
+                        className="relative bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.4)] w-full max-w-2xl flex flex-col animate-reveal rounded-none border-2 border-text max-h-[90vh] overflow-hidden" 
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        
+                        {/* Simple Header */}
+                        <div className="flex items-center justify-between px-8 py-5 border-b-2 border-border bg-white sticky top-0 z-20">
+                            <div className="flex items-center gap-4 text-left">
+                                <div className="w-10 h-10 bg-text text-white flex items-center justify-center">
+                                    <Shield className="w-5 h-5" />
+                                </div>
+                                <div className="text-left">
+                                    <h2 className="text-lg font-black uppercase tracking-tight italic text-text leading-none mb-1 font-mono">
+                                        {editingRole ? 'Edit Role' : 'Add New Role'}
+                                    </h2>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-text-muted opacity-60 italic leading-none font-mono">Role Details & Permissions</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setShowModal(false)}
+                                className="p-2 text-text-muted hover:text-rose-500 transition-colors"
+                            >
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
 
-                        {/* Modal Panel */}
-                        <div className="relative transform overflow-hidden bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl border border-border flex flex-col animate-reveal sm:mb-20">
-                            {/* Header */}
-                            <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-slate-50">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20">
-                                        <Shield className="w-5 h-5" />
+                        {/* Form Content */}
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar text-left font-mono">
+                                
+                                {/* Basic Info */}
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Name</label>
+                                        <input
+                                            required
+                                            value={form.name}
+                                            onChange={(e) => setForm({...form, name: e.target.value})}
+                                            placeholder="Enter role name"
+                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner"
+                                        />
                                     </div>
-                                    <div>
-                                        <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">{editingRole ? 'Synching Permission Set' : 'Initialize Access Level'}</h2>
-                                        <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60">Staff Security & Authorization Protocol</p>
+                                    <div className="space-y-2 text-left">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest font-mono">Role Description</label>
+                                        <textarea
+                                            value={form.description}
+                                            onChange={(e) => setForm({...form, description: e.target.value})}
+                                            placeholder="What is this role for?"
+                                            rows={2}
+                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black tracking-widest focus:border-text outline-none transition-all placeholder:text-text-muted/40 rounded-none italic shadow-inner resize-none"
+                                        />
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={() => setShowModal(false)}
-                                    className="p-2 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                >
-                                    <XCircle className="w-6 h-6" />
-                                </button>
+
+                                {/* Permissions Matrix */}
+                                <div className="space-y-4 pt-6 border-t border-border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h3 className="text-[11px] font-black text-text uppercase tracking-widest italic font-mono">Assign Permissions</h3>
+                                        <span className="text-[9px] font-black text-primary uppercase italic"> {form.permissions.length} Selected</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {AVAILABLE_PERMISSIONS.map((perm) => (
+                                            <button
+                                                key={perm.id}
+                                                type="button"
+                                                onClick={() => togglePermission(perm.id)}
+                                                className={`flex items-center gap-3 p-3 transition-all text-left border ${form.permissions.includes(perm.id) 
+                                                    ? 'bg-white border-2 border-primary shadow-md' 
+                                                    : 'bg-surface-alt border-border hover:bg-white hover:border-text-muted'
+                                                }`}
+                                            >
+                                                <div className={`p-2 transition-all ${form.permissions.includes(perm.id) ? 'bg-primary text-white' : 'bg-white text-text-muted border border-border'}`}>
+                                                    <perm.icon className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex-1 min-w-0 pr-2">
+                                                    <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1 ${form.permissions.includes(perm.id) ? 'text-primary' : 'text-text'}`}>{perm.label}</p>
+                                                    <p className="text-[8px] font-bold text-text-muted uppercase tracking-wider leading-none opacity-40 italic">{perm.description}</p>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
-                            {/* Form */}
-                            <form onSubmit={handleSubmit} className="flex flex-col max-h-[75vh]">
-                                <div className="flex-1 overflow-y-auto p-8 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Role Identifier</label>
-                                            <input
-                                                required
-                                                value={form.name}
-                                                onChange={(e) => setForm({...form, name: e.target.value.toUpperCase()})}
-                                                placeholder="E.G. STYLIST_PRO"
-                                                className="w-full px-4 py-3 bg-slate-50 border border-border text-[11px] font-black uppercase tracking-widest focus:bg-white focus:border-primary outline-none transition-all placeholder:opacity-30"
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Internal Memo</label>
-                                            <input
-                                                value={form.description}
-                                                onChange={(e) => setForm({...form, description: e.target.value})}
-                                                placeholder="Brief description..."
-                                                className="w-full px-4 py-3 bg-slate-50 border border-border text-[11px] font-black uppercase tracking-widest focus:bg-white focus:border-primary outline-none transition-all placeholder:opacity-30"
-                                            />
-                                        </div>
+                            {/* Actions */}
+                            <div className="px-8 py-6 border-t-2 border-text bg-white flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-1 bg-surface-alt border border-border">
+                                        <div 
+                                            className="h-full bg-primary transition-all duration-500" 
+                                            style={{ width: `${(form.permissions.length / AVAILABLE_PERMISSIONS.length) * 100}%` }}
+                                        />
                                     </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-b border-border pb-3">
-                                            <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] inline-flex items-center gap-2 italic">
-                                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                                Resource Matrix
-                                            </h3>
-                                            <span className="text-[9px] font-black text-white bg-text px-3 py-1 rounded-sm uppercase tracking-widest shadow-sm">
-                                                {form.permissions.length} Protocols Active
-                                            </span>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {AVAILABLE_PERMISSIONS.map((perm) => (
-                                                <button
-                                                    key={perm.id}
-                                                    type="button"
-                                                    onClick={() => togglePermission(perm.id)}
-                                                    className={`flex items-start gap-4 p-4 border transition-all text-left group relative ${form.permissions.includes(perm.id) 
-                                                        ? 'bg-primary/5 border-primary/40 shadow-inner' 
-                                                        : 'bg-white border-border hover:bg-slate-50'
-                                                    }`}
-                                                >
-                                                    <div className={`p-2.5 rounded-lg transition-all ${form.permissions.includes(perm.id) ? 'bg-primary text-white scale-110 shadow-md shadow-primary/20' : 'bg-slate-100 text-text-muted'}`}>
-                                                        <perm.icon className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0 pr-6">
-                                                        <p className={`text-[10px] font-black uppercase tracking-widest leading-none mb-1.5 ${form.permissions.includes(perm.id) ? 'text-primary' : 'text-text'}`}>{perm.label}</p>
-                                                        <p className="text-[8px] font-bold text-text-muted/60 uppercase tracking-tighter line-clamp-1 group-hover:opacity-100">{perm.description}</p>
-                                                    </div>
-                                                    {form.permissions.includes(perm.id) && (
-                                                        <div className="absolute top-4 right-4 text-primary animate-in zoom-in-50 duration-200">
-                                                            <CheckCircle2 className="w-4 h-4" />
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <span className="text-[8px] font-black text-text-muted uppercase italic tracking-widest">Progress</span>
                                 </div>
-
-                                {/* Actions */}
-                                <div className="px-8 py-6 border-t border-border bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/20" />
-                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-widest">System deployment ready</p>
-                                    </div>
-                                    <div className="flex gap-3 w-full sm:w-auto">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowModal(false)}
-                                            className="flex-1 sm:flex-none px-8 py-3.5 border border-border text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all font-mono"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="flex-1 sm:flex-none px-10 py-3.5 bg-text text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-95 italic font-mono"
-                                        >
-                                            {editingRole ? 'Sync Protocols' : 'Authorize Deployment'}
-                                        </button>
-                                    </div>
+                                <div className="flex gap-3 w-full sm:w-auto">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="flex-1 sm:flex-none px-8 py-3 bg-surface-alt text-text-muted text-[10px] font-black uppercase tracking-widest border border-border hover:bg-slate-100 transition-all italic font-mono"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 sm:flex-none px-12 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all active:scale-[0.98] italic font-mono"
+                                    >
+                                        {editingRole ? 'Update Role' : 'Create Role'}
+                                    </button>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

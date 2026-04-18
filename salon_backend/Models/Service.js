@@ -60,7 +60,7 @@ const serviceSchema = new mongoose.Schema({
 
     resourceType: {
         type: String,
-        enum: ['chair', 'cabin', 'none'],
+        enum: ['chair', 'room', 'cabin', 'none'],
         default: 'chair'
     }
 }, {

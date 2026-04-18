@@ -7,11 +7,10 @@ import {
     Layers,
     Edit2,
     Trash2,
-    Eye,
-    EyeOff,
     ArrowUpRight,
     Camera,
     X,
+    Zap,
     User,
     UserCircle
 } from 'lucide-react';
@@ -67,7 +66,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
 
     const handleSubmit = () => {
         if (!name.trim()) {
-            alert('NAME DESIGNATION REQUIRED');
+            alert('Please enter a category name');
             return;
         }
 
@@ -152,13 +151,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                 >
                                     <Edit2 className="w-4 h-4" />
                                 </button>
-                                <button
-                                    onClick={() => onToggleStatus?.(cat._id)}
-                                    className={`p-2 rounded-xl hover:bg-surface-alt transition-all ${cat.status === 'active' ? 'text-emerald-500 hover:text-emerald-400' : 'text-text-muted hover:text-rose-500'}`}
-                                    title={cat.status === 'active' ? "Deactivate" : "Activate"}
-                                >
-                                    {cat.status === 'active' ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                                </button>
+
                                 <button
                                     onClick={() => handleDelete(cat._id, cat.name)}
                                     className="p-2 rounded-xl hover:bg-surface-alt text-text-muted hover:text-rose-500 transition-all"
@@ -220,12 +213,10 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                 {modalState.type === 'add' ? <Plus className="w-5 h-5 text-primary" /> : <Edit2 className="w-5 h-5 text-primary" />}
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-text uppercase tracking-tight leading-none">
-                                    {modalState.type === 'add' ? 'Category Setup' : 'Section Update'}
-                                </h3>
-                                <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.2em]">
-                                    {modalState.type === 'add' ? 'Define New Group' : `Editing Group :: ${modalState.data?.name}`}
-                                </p>
+                                <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">
+                                    {modalState.type === 'add' ? 'Add New Category' : `Edit Category: ${name}`}
+                                </h2>
+                                <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic">Manage your service categories</p>
                             </div>
                         </div>
 
@@ -266,8 +257,9 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                                 <Camera className="w-6 h-6" />
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-text-secondary">Upload Iconography</p>
-                                                <p className="text-[8px] font-bold text-text-muted mt-1 uppercase tracking-tighter opacity-40">2MB MAX :: PNG / JPG</p>
+                                                <p className="text-[10px] whitespace-nowrap font-black text-text-muted uppercase tracking-[0.2em] group-hover:text-primary transition-colors">
+                                                    Category Image
+                                                </p>
                                             </div>
                                         </label>
                                     )}
@@ -315,9 +307,10 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                 <button
                                     onClick={handleSubmit}
                                     disabled={!name || !image}
-                                    className="flex-1 py-4 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all italic"
                                 >
-                                    {modalState.type === 'add' ? 'Save Category' : 'Apply Changes'}
+                                    <Zap className="w-3.5 h-3.5" />
+                                    {modalState.type === 'add' ? 'Save Category' : 'Update Category'}
                                 </button>
                             </div>
                         </div>

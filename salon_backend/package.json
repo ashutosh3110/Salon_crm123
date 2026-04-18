@@ -9,6 +9,7 @@
     "seed:superadmin": "node scripts/createSuperAdmin.js"
   },
   "dependencies": {
+    "axios": "^1.15.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
@@ -21,6 +22,7 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.5",
     "razorpay": "^2.9.6",
+    "sharp": "^0.34.5",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

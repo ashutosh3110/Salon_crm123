@@ -34,10 +34,20 @@ export default function ServicesPage({ tab = 'list' }) {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [editingService, setEditingService] = useState(null);
 
+    // Disable body scroll when modal is open
+    React.useEffect(() => {
+        if (isFormModalOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [isFormModalOpen]);
+
     React.useEffect(() => {
         fetchServices(null, selectedOutletId === 'all' ? null : selectedOutletId);
         fetchCategories();
-    }, [fetchServices, fetchCategories, selectedOutletId]);
+    }, [fetchServices, fetchCategories, selectedOutletId, activeTab]);
 
     const stats = useMemo(() => ([
         { label: 'Active Services', value: services.length, icon: Zap, color: 'primary' },
@@ -176,26 +186,26 @@ export default function ServicesPage({ tab = 'list' }) {
 
             {/* Service Form Modal */}
             {isFormModalOpen && (
-                <div className="fixed inset-0 z-[1000] flex items-start justify-center p-4 sm:p-8 overflow-y-auto">
+                <div className="fixed inset-0 z-[1000] flex items-end justify-center p-0 overflow-hidden">
                     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setIsFormModalOpen(false)} />
-                    <div className="relative bg-white w-full max-w-4xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] animate-reveal flex flex-col max-h-[90vh] mt-10 md:mt-20">
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-border bg-slate-50/50">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-primary text-white rounded-xl shadow-lg shadow-primary/20">
-                                    <Scissors className="w-5 h-5" />
+                    <div className="relative bg-white w-full max-w-5xl shadow-[0_-8px_32px_rgba(0,0,0,0.2)] animate-in slide-in-from-bottom-20 duration-500 flex flex-col h-[92vh] rounded-t-[40px] border-t border-white/20">
+                        <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-slate-50/50">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-primary text-white rounded-lg shadow-lg shadow-primary/20">
+                                    <Scissors className="w-4 h-4" />
                                 </div>
                                 <div>
                                     <h2 className="text-sm font-black uppercase tracking-[0.2em] italic text-text">
                                         {editingService ? `Edit Service: ${editingService.name}` : 'Initialize New Entry'}
                                     </h2>
-                                    <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic">Define catalog service protocols</p>
+                                    <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic leading-none">Define catalog service protocols</p>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => setIsFormModalOpen(false)}
-                                className="p-2 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                className="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                             >
-                                <XCircle className="w-6 h-6" />
+                                <XCircle className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="flex-1 overflow-y-auto">

@@ -35,6 +35,7 @@ import ProductsPage from './pages/admin/ProductsPage';
 import StaffPage from './pages/admin/StaffPage';
 import OutletsPage from './pages/admin/OutletsPage';
 import OutletDetailPage from './pages/admin/OutletDetailPage';
+import ServiceDetailPage from './pages/admin/ServiceDetailPage';
 import OutletForm from './components/admin/outlets/OutletForm';
 import CustomersPage from './pages/admin/CustomersPage';
 import PromotionsPage from './pages/admin/PromotionsPage';
@@ -285,6 +286,7 @@ function App() {
                             <Route path="/admin/services/list" element={<ServicesPage tab="list" />} />
                             <Route path="/admin/services/new" element={<ServicesPage tab="add-service" />} />
                             <Route path="/admin/services/edit/:id" element={<ServicesPage tab="edit-service" />} />
+                            <Route path="/admin/services/view/:id" element={<ServiceDetailPage />} />
                             <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
 
                             <Route element={<ProtectedRoute feature="inventory" />}>

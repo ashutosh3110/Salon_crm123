@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState , useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import POSSidebar from '../components/pos/POSSidebar';
+import Sidebar from '../components/admin/Sidebar';
 import POSTopbar from '../components/pos/POSTopbar';
 
 export default function POSLayout() {
     const [collapsed, setCollapsed] = useState(window.innerWidth < 1280);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -40,9 +41,11 @@ export default function POSLayout() {
                     font-family: 'Open Sans', sans-serif !important;
                 }
             `}</style>
-            <POSSidebar
+            <Sidebar
                 collapsed={collapsed}
                 setCollapsed={setCollapsed}
+                isHovered={isHovered}
+                setIsHovered={setIsHovered}
                 mobileOpen={mobileOpen}
                 setMobileOpen={setMobileOpen}
             />

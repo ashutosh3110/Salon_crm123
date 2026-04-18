@@ -691,7 +691,7 @@ export default function SATenantsPage() {
     };
 
     const handleResendCredentials = async (tenant) => {
-        if (!confirm(`This will reset the password of "${tenant.name}" owner to "123456" and send them an email. Continue?`)) return;
+        if (!confirm(`This will reset the password of "${tenant.name}" owner to a random 6-digit password and send them an email. Continue?`)) return;
         
         try {
             const res = await api.post(`/salons/${tenant._id}/resend-credentials`);

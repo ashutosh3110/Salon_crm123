@@ -148,7 +148,18 @@ export function WalletProvider({ children }) {
         allWallets: { [customer?._id]: { balance, transactions } },
         getWallet: () => ({ balance, transactions }),
         adminAdjustBalance: async () => ({ success: true }),
-        bulkRecharge: async () => ({ success: true }),
+        bulkRecharge: async (customerIds, amount, note) => {
+            try {
+                const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note });
+                if (res.data.success) {
+                    await refreshWallet();
+                }
+                return res.data;
+            } catch (err) {
+                console.error('Bulk Recharge Error:', err);
+                return { success: false, message: err.message };
+            }
+        },
         initializeWallet,
         totalLiability: balance
     }), [balance, transactions, loading, refreshWallet, spentThisMonth, customer?._id, initializeWallet]);

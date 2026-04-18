@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import {
     Plus,
     Search,
@@ -26,6 +27,7 @@ import { useCMS } from '../../contexts/CMSContext';
 import CustomSelect from '../../components/admin/common/CustomSelect';
 import { useNavigate } from 'react-router-dom';
 import PasswordField from '../../components/common/PasswordField';
+import { API_BASE_URL } from '../../services/api';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -106,9 +108,12 @@ export default function StaffPage() {
         setFilteredStaff(result);
     }, [search, roleFilter, outletFilter, staff]);
 
+    const [avatarFile, setAvatarFile] = useState(null);
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setAvatarFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setForm(prev => ({ ...prev, avatar: reader.result }));
@@ -121,20 +126,37 @@ export default function StaffPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const payload = {
-                ...form,
-                stylistSpecializations: form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : []
-            };
+            const formData = new FormData();
+            
+            // Append all form fields to FormData
+            Object.keys(form).forEach(key => {
+                if (key === 'avatar') return; // Handled separately
+                if (key === 'availability') {
+                    formData.append(key, JSON.stringify(form[key]));
+                } else if (key === 'stylistSpecializations') {
+                    const specs = form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [];
+                    formData.append(key, JSON.stringify(specs));
+                } else {
+                    formData.append(key, form[key] || '');
+                }
+            });
+
+            // Append file if selected
+            if (avatarFile) {
+                formData.append('avatar', avatarFile);
+            }
+
             if (editing) {
-                await updateStaff(editing._id, payload);
+                await updateStaff(editing._id, formData);
             } else {
-                await addStaff(payload);
+                await addStaff(formData);
             }
             setShowModal(false);
             setEditing(null);
+            setAvatarFile(null);
             setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
         } catch (error) {
-            alert('Operation failed: ' + error.message);
+            toast.error('Operation failed: ' + error.message);
         } finally {
             setLoading(false);
         }
@@ -150,13 +172,13 @@ export default function StaffPage() {
             try {
                 await deleteStaff(id);
             } catch (error) {
-                alert('Delete failed: ' + error.message);
+                toast.error('Delete failed: ' + error.message);
             }
         }
     };
 
     const handleResendInvite = (id) => {
-        alert(`Invitation resent successfully.`);
+        toast.success(`Invitation resent successfully.`);
     };
 
     const openEdit = (u) => {
@@ -286,7 +308,11 @@ export default function StaffPage() {
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
                                                     {s.avatar ? (
-                                                        <img src={s.avatar} alt={s.name} className="w-full h-full object-cover" />
+                                                        <img 
+                                                            src={s.avatar.startsWith('http') ? s.avatar : `${API_BASE_URL}${s.avatar}`} 
+                                                            alt={s.name} 
+                                                            className="w-full h-full object-cover" 
+                                                        />
                                                     ) : (
                                                         s.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                                                     )}
@@ -399,7 +425,11 @@ export default function StaffPage() {
                                         <div className="relative group/photo">
                                             <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
                                                 {form.avatar ? (
-                                                    <img src={form.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                    <img 
+                                                        src={form.avatar.startsWith('data:') ? form.avatar : `${API_BASE_URL}${form.avatar}`} 
+                                                        alt="Preview" 
+                                                        className="w-full h-full object-cover" 
+                                                    />
                                                 ) : (
                                                     <Plus className="w-6 h-6 text-text-muted" />
                                                 )}

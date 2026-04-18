@@ -117,7 +117,17 @@ exports.forgotPassword = async (req, res) => {
         }
 
         const sendEmail = require('../Utils/sendEmail');
-        const otp = '123456'; 
+        const Otp = require('../Models/Otp');
+        
+        // Generate random 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Store OTP in database (valid for 10 minutes)
+        await Otp.create({
+            phone: email, // Using phone field for email as identifier in Otp model
+            otp,
+            expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+        });
 
         await sendEmail({
             email: userData.email,
@@ -136,18 +146,22 @@ exports.forgotPassword = async (req, res) => {
 
         res.json({ success: true, message: 'OTP sent to your email' });
     } catch (err) {
+        console.error('Forgot password error:', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 };
 
 exports.verifyOTP = async (req, res) => {
     try {
-        const { otp } = req.body;
+        const { email, otp } = req.body;
+        const Otp = require('../Models/Otp');
 
-        if (otp === '123456') {
+        const otpRecord = await Otp.findOne({ phone: email, otp });
+
+        if (otpRecord && otpRecord.expiresAt > new Date()) {
             res.json({ success: true, message: 'OTP verified successfully' });
         } else {
-            res.status(400).json({ success: false, message: 'Invalid OTP' });
+            res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
     } catch (err) {
         res.status(500).json({ success: false, message: 'Internal server error' });
@@ -158,7 +172,10 @@ exports.resetPassword = async (req, res) => {
     try {
         const { email, otp, password } = req.body;
 
-        if (otp !== '123456') {
+        const Otp = require('../Models/Otp');
+        const otpRecord = await Otp.findOne({ phone: email, otp });
+
+        if (!otpRecord || otpRecord.expiresAt < new Date()) {
             return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 

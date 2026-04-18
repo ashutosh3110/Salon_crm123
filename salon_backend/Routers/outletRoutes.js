@@ -11,6 +11,8 @@ const {
     toggleLike
 } = require('../Controllers/outletController');
 const { protect, authorize } = require('../Middleware/auth');
+const { optimizedUpload } = require('../Middleware/upload');
+const { processToWebP } = require('../Middleware/imageProcessor');
 
 // Public routes (NO protect middleware before these)
 router.get('/nearby', getNearbyOutlets);
@@ -23,11 +25,11 @@ router.post('/:id/like', toggleLike);
 
 router.route('/')
     .get(getOutlets)
-    .post(authorize('admin', 'manager'), createOutlet);
+    .post(authorize('admin', 'manager'), optimizedUpload.array('images', 5), processToWebP('outlets'), createOutlet);
 
 router.route('/:id')
     .get(getOutlet)
-    .put(authorize('admin', 'manager'), updateOutlet)
+    .put(authorize('admin', 'manager'), optimizedUpload.array('images', 5), processToWebP('outlets'), updateOutlet)
     .delete(authorize('admin'), deleteOutlet);
 
 module.exports = router;

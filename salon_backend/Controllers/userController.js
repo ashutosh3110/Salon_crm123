@@ -62,11 +62,15 @@ exports.createUser = async (req, res) => {
 
         const pass = password || '123456';
 
+        // Handle uploaded avatar
+        const avatarPath = req.file ? req.file.path : undefined;
+
         const staff = await Staff.create({
             name,
             email,
             phone,
             role,
+            avatar: avatarPath,
             password: pass,
             outletId,
             salonId: req.user.salonId
@@ -123,6 +127,11 @@ exports.updateUser = async (req, res) => {
 
         if (req.body.role) {
             req.body.role = req.body.role.toLowerCase();
+        }
+
+        // Handle uploaded avatar
+        if (req.file) {
+            req.body.avatar = req.file.path;
         }
 
         const updatedStaff = await Staff.findByIdAndUpdate(req.params.id, req.body, {

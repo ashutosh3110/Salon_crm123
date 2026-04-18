@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { toast } from 'react-hot-toast';
 import inventoryData from '../data/inventoryData.json';
 import { useFinance } from './FinanceContext';
 import { useBusiness } from './BusinessContext';
@@ -205,13 +206,75 @@ export const InventoryProvider = ({ children }) => {
         }
     };
 
-    const addProductCategory = async (d) => { try { const r = await api.post('/product-categories', d); setProductCategories(p => [r.data.data, ...p]); return r.data.data; } catch (e) { throw e; } };
-    const updateProductCategory = async (id, d) => { try { const r = await api.put(`/product-categories/${id}`, d); setProductCategories(p => p.map(x => (x._id === id) ? r.data.data : x)); return r.data.data; } catch (e) { throw e; } };
-    const deleteProductCategory = async (id) => { try { await api.delete(`/product-categories/${id}`); setProductCategories(p => p.filter(x => (x._id !== id))); } catch (e) { throw e; } };
+    const addProductCategory = async (d) => { 
+        try { 
+            const r = await api.post('/product-categories', d); 
+            setProductCategories(p => [r.data.data, ...p]); 
+            toast.success('Category vector defined');
+            return r.data.data; 
+        } catch (e) { 
+            toast.error('Failed to create category');
+            throw e; 
+        } 
+    };
+    
+    const updateProductCategory = async (id, d) => { 
+        try { 
+            const r = await api.put(`/product-categories/${id}`, d); 
+            setProductCategories(p => p.map(x => (x._id === id) ? r.data.data : x)); 
+            toast.success('Category protocols updated');
+            return r.data.data; 
+        } catch (e) { 
+            toast.error('Update failure');
+            throw e; 
+        } 
+    };
+    
+    const deleteProductCategory = async (id) => { 
+        try { 
+            await api.delete(`/product-categories/${id}`); 
+            setProductCategories(p => p.filter(x => (x._id !== id))); 
+            toast.success('Category decommissioned');
+        } catch (e) { 
+            toast.error('Deletion restricted');
+            throw e; 
+        } 
+    };
 
-    const addProduct = async (d) => { try { const r = await api.post('/products', d); setProducts(p => [normalizeProduct(r.data.data), ...p]); return r.data.data; } catch (e) { throw e; } };
-    const updateProduct = async (id, d) => { try { const r = await api.put(`/products/${id}`, d); setProducts(p => p.map(x => (x.id === id || x._id === id) ? normalizeProduct(r.data.data) : x)); return r.data.data; } catch (e) { throw e; } };
-    const deleteProduct = async (id) => { try { await api.delete(`/products/${id}`); setProducts(p => p.filter(x => (x.id !== id && x._id !== id))); } catch (e) { throw e; } };
+    const addProduct = async (d) => { 
+        try { 
+            const r = await api.post('/products', d); 
+            setProducts(p => [normalizeProduct(r.data.data), ...p]); 
+            toast.success('New SKU neutralized & stored');
+            return r.data.data; 
+        } catch (e) { 
+            toast.error('Production failure');
+            throw e; 
+        } 
+    };
+    
+    const updateProduct = async (id, d) => { 
+        try { 
+            const r = await api.put(`/products/${id}`, d); 
+            setProducts(p => p.map(x => (x.id === id || x._id === id) ? normalizeProduct(r.data.data) : x)); 
+            toast.success('Asset parameters synchronized');
+            return r.data.data; 
+        } catch (e) { 
+            toast.error('Sync failure');
+            throw e; 
+        } 
+    };
+    
+    const deleteProduct = async (id) => { 
+        try { 
+            await api.delete(`/products/${id}`); 
+            setProducts(p => p.filter(x => (x.id !== id && x._id !== id))); 
+            toast.success('Asset purged from registry');
+        } catch (e) { 
+            toast.error('Purge failed');
+            throw e; 
+        } 
+    };
 
     const value = {
         products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, shopCategories, productCategories, supplierInvoices, loading,

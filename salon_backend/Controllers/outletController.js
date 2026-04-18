@@ -67,10 +67,46 @@ exports.createOutlet = async (req, res) => {
         }
 
         req.body.salonId = req.user.salonId;
+
+        // Parse JSON strings from FormData
+        if (typeof req.body.chairs === 'string') {
+            try { req.body.chairs = JSON.parse(req.body.chairs); } catch (e) { req.body.chairs = []; }
+        }
+        if (typeof req.body.config === 'string') {
+            try { req.body.config = JSON.parse(req.body.config); } catch (e) { req.body.config = {}; }
+        }
+
+        // Handle flat address fields from FormData
+        if (!req.body.address || typeof req.body.address === 'string') {
+            const street = req.body.address;
+            req.body.address = {
+                street: street || '',
+                city: req.body.city || '',
+                state: req.body.state || '',
+                pincode: req.body.pincode || ''
+            };
+        }
+
+        // Handle flat location fields from FormData
+        if (req.body.latitude && req.body.longitude) {
+            req.body.location = {
+                type: 'Point',
+                coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)]
+            };
+        }
+
+        // Handle multiple local file uploads
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => file.path);
+            const existingImages = Array.isArray(req.body.images) ? req.body.images : (req.body.images ? [req.body.images] : []);
+            req.body.images = [...existingImages, ...newImages];
+        }
+
         const outlet = await Outlet.create(req.body);
 
         res.status(201).json({ success: true, data: outlet });
     } catch (err) {
+        console.error('Create outlet error:', err);
         res.status(400).json({ success: false, message: err.message });
     }
 };
@@ -82,6 +118,40 @@ exports.updateOutlet = async (req, res) => {
     try {
         let outlet = await Outlet.findOne({ _id: req.params.id, salonId: req.user.salonId });
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
+
+        // Parse JSON strings from FormData
+        if (typeof req.body.chairs === 'string') {
+            try { req.body.chairs = JSON.parse(req.body.chairs); } catch (e) { req.body.chairs = []; }
+        }
+        if (typeof req.body.config === 'string') {
+            try { req.body.config = JSON.parse(req.body.config); } catch (e) { req.body.config = {}; }
+        }
+
+        // Handle flat address fields from FormData
+        if (req.body.address && typeof req.body.address !== 'object') {
+            const street = req.body.address;
+            req.body.address = {
+                street: street || outlet.address.street,
+                city: req.body.city || outlet.address.city,
+                state: req.body.state || outlet.address.state,
+                pincode: req.body.pincode || outlet.address.pincode
+            };
+        }
+
+        // Handle flat location fields from FormData
+        if (req.body.latitude && req.body.longitude) {
+            req.body.location = {
+                type: 'Point',
+                coordinates: [parseFloat(req.body.longitude), parseFloat(req.body.latitude)]
+            };
+        }
+
+        // Handle multiple local file uploads
+        if (req.files && req.files.length > 0) {
+            const newImages = req.files.map(file => file.path);
+            const existingImages = Array.isArray(req.body.images) ? req.body.images : (req.body.images ? [req.body.images] : []);
+            req.body.images = [...existingImages, ...newImages];
+        }
 
         outlet = await Outlet.findByIdAndUpdate(req.params.id, req.body, {
             new: true,

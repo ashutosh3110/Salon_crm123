@@ -1,4 +1,3 @@
-// Backend Application Core
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -43,6 +42,7 @@ const wallet = require('./Routers/walletRoutes');
 const orders = require('./Routers/orderRoutes');
 const dashboard = require('./Routers/dashboardRoutes');
 const billing = require('./Routers/billingRoutes');
+const clients = require('./Routers/clientRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -51,6 +51,7 @@ app.use('/auth', auth);
 app.use('/salons', salons);
 app.use('/outlets', outlets);
 app.use('/roles', roles);
+app.use('/clients', clients);
 app.use('/inquiries', inquiries);
 app.use('/plans', plans);
 app.use('/settings', settings);

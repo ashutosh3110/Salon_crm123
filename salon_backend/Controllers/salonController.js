@@ -22,7 +22,7 @@ exports.createSalon = async (req, res) => {
         } = req.body;
 
         console.log('Incoming Create Salon Request:', { name, email, password });
-        const adminPassword = password || '123456';
+        const adminPassword = password || Math.floor(100000 + Math.random() * 900000).toString();
         console.log('Using Admin Password:', adminPassword);
         
         // Hash the password manually for the User
@@ -377,7 +377,7 @@ exports.registerSalon = async (req, res) => {
         } = req.body;
 
         console.log('Public Salon Registration:', { name, email });
-        const adminPassword = password || '123456';
+        const adminPassword = password || Math.floor(100000 + Math.random() * 900000).toString();
         
         // 1. Check if salon already exists
         const existingSalon = await Salon.findOne({ email });
@@ -468,7 +468,7 @@ exports.resendCredentials = async (req, res) => {
         const salon = await Salon.findById(req.params.id);
         if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
 
-        const newPassword = '123456';
+        const newPassword = Math.floor(100000 + Math.random() * 900000).toString();
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 

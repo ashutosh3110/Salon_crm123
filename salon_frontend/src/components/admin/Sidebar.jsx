@@ -236,7 +236,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             roles: ['admin', 'manager']
         },
     ];
-    const [expandedItem, setExpandedItem] = useState(null);
+    const [expandedItems, setExpandedItems] = useState([]);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
     useEffect(() => {
@@ -248,11 +248,19 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     useEffect(() => {
-        menuItems.forEach(item => {
-            if (item.subItems && item.subItems.some(sub => location.pathname === sub.path)) {
-                setExpandedItem(item.label);
-            }
-        });
+        const currentlyActiveItems = menuItems
+            .filter(item => item.subItems && item.subItems.some(sub => location.pathname === sub.path))
+            .map(item => item.label);
+        
+        if (currentlyActiveItems.length > 0) {
+            setExpandedItems(prev => {
+                const newItems = [...prev];
+                currentlyActiveItems.forEach(label => {
+                    if (!newItems.includes(label)) newItems.push(label);
+                });
+                return newItems;
+            });
+        }
     }, [location.pathname]);
 
     const isActive = (path) => {
@@ -263,9 +271,13 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
     const toggleExpand = (label) => {
         if (effectiveCollapsed) {
             setCollapsed(false);
-            setExpandedItem(label);
+            setExpandedItems(prev => prev.includes(label) ? prev : [...prev, label]);
         } else {
-            setExpandedItem(expandedItem === label ? null : label);
+            setExpandedItems(prev => 
+                prev.includes(label) 
+                    ? prev.filter(item => item !== label) 
+                    : [...prev, label]
+            );
         }
     };
 
@@ -328,7 +340,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     // if (item.roles && !item.roles.includes(user?.role)) return null;
 
                     const hasSubItems = item.subItems && item.subItems.length > 0;
-                    const isExpanded = expandedItem === item.label && !effectiveCollapsed;
+                    const isExpanded = expandedItems.includes(item.label) && !effectiveCollapsed;
                     const active = isActive(item.path);
 
                     if (hasSubItems) {

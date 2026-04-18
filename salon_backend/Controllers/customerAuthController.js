@@ -2,9 +2,11 @@ const Customer = require('../Models/Customer');
 const Product = require('../Models/Product');
 const Outlet = require('../Models/Outlet');
 const Salon = require('../Models/Salon');
+const Otp = require('../Models/Otp');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const sendSms = require('../Utils/sendSms');
 
 const generateReferralCode = () => {
     return 'WAP-' + crypto.randomBytes(3).toString('hex').toUpperCase();
@@ -50,13 +52,32 @@ exports.requestOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phone number is required' });
         }
 
-        // Return a fixed OTP for demo/testing as requested
-        const otp = '1234';
+        // Generate 4-digit random OTP
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        // Store OTP in the dedicated Otp collection
+        await Otp.findOneAndUpdate(
+            { phone },
+            { otp, expiresAt },
+            { upsert: true, new: true }
+        );
+
+        // Send SMS via SMS India Hub
+        const brand = brandName;
+        const message = `Welcome to the ${brand} powered by SMSINDIAHUB. Your OTP for registration is ${otp}`;
+        
+        try {
+            await sendSms(phone, message, process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID);
+        } catch (smsErr) {
+            console.error('SMS Send Error:', smsErr.message);
+        }
 
         res.json({
             success: true,
             message: 'OTP sent successfully',
-            otp: otp 
+            // Return OTP in dev mode for easier testing
+            otp: process.env.NODE_ENV === 'development' ? otp : undefined 
         });
 
     } catch (err) {
@@ -76,14 +97,31 @@ exports.customerLoginOtp = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Phone and OTP are required' });
         }
 
-        if (otp !== '1234') {
-            return res.status(400).json({ success: false, message: 'Invalid OTP' });
+        // 1. Verify OTP from Otp collection
+        const otpRecord = await Otp.findOne({ phone, otp });
+        
+        // Allow '1234' for development
+        const isDemoOtp = process.env.NODE_ENV === 'development' && otp === '1234';
+        const isOtpValid = otpRecord && otpRecord.expiresAt > new Date();
+
+        if (!isOtpValid && !isDemoOtp) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 
-        if (!tenantId) {
-            return res.status(400).json({ success: false, message: 'Salon context (tenantId) is required' });
+        // 2. If no tenantId is provided, just return success (phone verified)
+        // This is used for the flow where user verifies phone first, then picks a salon
+        if (!tenantId || tenantId === 'system') {
+            return res.json({
+                success: true,
+                message: 'Phone verified successfully',
+                data: { phoneVerified: true }
+            });
         }
 
+        // Remove OTP record after successful verification only when we have a real tenantId
+        if (otpRecord && !isDemoOtp) await Otp.deleteOne({ _id: otpRecord._id });
+
+        // 3. Procceed with salon-specific login/registration
         // Find or create customer for this specific salon
         let customer = await Customer.findOne({ phone, salonId: tenantId });
         let isNewUser = false;
@@ -93,7 +131,7 @@ exports.customerLoginOtp = async (req, res) => {
             console.log(`[Referral] New customer ${phone} registering in salon ${tenantId}. Code applied: ${appliedReferralCode}`);
             
             customer = await Customer.create({
-                name: 'New Customer',
+                name: 'Guest',
                 phone,
                 salonId: tenantId,
                 referralCode: generateReferralCode(),
@@ -141,6 +179,14 @@ exports.customerLoginOtp = async (req, res) => {
             }
         } else if (!customer.referralCode) {
             customer.referralCode = generateReferralCode();
+        }
+
+        // Check if customer is inactive
+        if (customer.status === 'inactive' || customer.status === 'suspended') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Your account has been deactivated. Please contact the salon admin.' 
+            });
         }
 
         customer.lastLogin = new Date();

@@ -142,3 +142,58 @@ exports.verifyTopup = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+// @desc    Bulk recharge wallets (Admin)
+// @route   POST /api/wallet/bulk-recharge
+// @access  Private (Admin)
+exports.bulkRecharge = async (req, res) => {
+    try {
+        const { customerIds, amount, note } = req.body;
+        
+        if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0) {
+            return res.status(400).json({ success: false, message: 'Customer IDs array is required' });
+        }
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Valid amount is required' });
+        }
+
+        const numericAmount = Number(amount);
+        const salonId = req.user.salonId;
+
+        // Perform bulk update
+        const results = await Promise.all(customerIds.map(async (cid) => {
+            try {
+                // Update customer balance
+                const customer = await Customer.findByIdAndUpdate(
+                    cid,
+                    { $inc: { walletBalance: numericAmount } },
+                    { new: true }
+                );
+
+                if (customer) {
+                    // Create transaction record
+                    await WalletTransaction.create({
+                        customerId: cid,
+                        salonId: salonId,
+                        amount: numericAmount,
+                        type: 'CREDIT',
+                        description: note || 'Bulk Promotional Credit',
+                        status: 'COMPLETED'
+                    });
+                    return { id: cid, success: true };
+                }
+                return { id: cid, success: false, message: 'Customer not found' };
+            } catch (err) {
+                return { id: cid, success: false, message: err.message };
+            }
+        }));
+
+        res.json({
+            success: true,
+            results,
+            message: `Processed ${results.filter(r => r.success).length} out of ${customerIds.length} recharges`
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

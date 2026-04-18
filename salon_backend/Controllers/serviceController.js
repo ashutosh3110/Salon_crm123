@@ -72,18 +72,18 @@ exports.createService = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         
+        // Handle local file upload path
+        if (req.file) {
+            req.body.image = `/uploads/services/${req.file.filename}`;
+        }
+
         const service = await Service.create({
             ...req.body,
             salonId
         });
-
-        res.status(201).json({
-            success: true,
-            data: service
-        });
-    } catch (err) {
-        console.error('Create Service Error:', err);
-        res.status(500).json({ success: false, message: err.message || 'Server Error' });
+        res.status(201).json({ success: true, data: service });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 
@@ -92,28 +92,26 @@ exports.createService = async (req, res) => {
 // @access  Private (Admin)
 exports.updateService = async (req, res) => {
     try {
-        let service = await Service.findById(req.params.id);
-
-        if (!service) {
-            return res.status(404).json({ success: false, message: 'Service not found' });
+        const salonId = req.user?.salonId;
+        
+        // Ensure the service belongs to the salon
+        const serviceCheck = await Service.findOne({ _id: req.params.id, salonId });
+        if (!serviceCheck) {
+            return res.status(404).json({ success: false, message: "Service not found or unauthorized access" });
         }
 
-        // Check ownership
-        if (service.salonId.toString() !== req.user.salonId.toString()) {
-            return res.status(401).json({ success: false, message: 'Not authorized' });
+        // Handle local file upload path
+        if (req.file) {
+            req.body.image = `/uploads/services/${req.file.filename}`;
         }
 
-        service = await Service.findByIdAndUpdate(req.params.id, req.body, {
+        const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
-
-        res.json({
-            success: true,
-            data: service
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.json({ success: true, data: service });
+    } catch (error) {
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 

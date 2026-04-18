@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const envUrl = import.meta.env.VITE_API_URL;
 let API_URL = '/api';
@@ -34,13 +35,10 @@ export const API_BASE_URL = API_URL;
 
 const api = axios.create({
     baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json'
-    }
+    headers: {}
 });
 
 // Add a request interceptor to add the auth token to every request
-// Priority: admin token > customer token
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token') || localStorage.getItem('customer_token');
@@ -50,6 +48,20 @@ api.interceptors.request.use(
         return config;
     },
     (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Add a response interceptor to handle errors globally
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status !== 401) {
+            const message = error.response?.data?.message || 'A network error occurred';
+            toast.error(message, {
+                id: 'global-api-error', // prevents duplicate toasts
+            });
+        }
         return Promise.reject(error);
     }
 );

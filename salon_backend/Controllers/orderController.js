@@ -36,6 +36,10 @@ exports.createOrder = async (req, res) => {
 
             // Deduct from wallet
             customer.walletBalance -= totalAmount;
+            
+            // Increment total spend
+            customer.totalSpend = (customer.totalSpend || 0) + totalAmount;
+            
             await customer.save();
 
             // Log Transaction

@@ -6,7 +6,6 @@ import {
     Scissors,
     Clock,
     IndianRupee,
-    MoreVertical,
     Eye,
     Edit2,
     EyeOff,
@@ -22,6 +21,7 @@ import {
 import { useNavigate, useLocation } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
+import { API_BASE_URL } from '../../../services/api';
 import BulkImportModal from './BulkImportModal';
 import OutletAssignmentModal from './OutletAssignmentModal';
 import ServiceDetailsModal from './ServiceDetailsModal';
@@ -130,12 +130,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                             <RefreshCcw className="w-4 h-4" />
                         </button>
 
-                        <button
-                            onClick={() => setIsImportModalOpen(true)}
-                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text text-[11px] font-black uppercase tracking-tight shadow-sm hover:bg-surface-alt transition-all scale-active"
-                        >
-                            <Upload className="w-3.5 h-3.5" /> Import
-                        </button>
 
                         <button
                             onClick={() => onAdd?.()}
@@ -231,12 +225,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                 </div>
             )}
 
-            <ServiceDetailsModal
-                isOpen={!!viewingService}
-                onClose={() => setViewingService(null)}
-                service={viewingService}
-                outlets={outlets}
-            />
+            {/* ServiceDetailsModal removed in favor of ServiceDetailPage */}
 
             <OutletAssignmentModal
                 isOpen={!!assigningOutletsService || (selectedServiceIds.length > 0 && assigningOutletsService === 'bulk')}
@@ -319,7 +308,11 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 overflow-hidden">
                                                     {service.image ? (
-                                                        <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                                        <img 
+                                                            src={service.image.startsWith('http') ? service.image : `${API_BASE_URL}${service.image}`} 
+                                                            alt={service.name} 
+                                                            className="w-full h-full object-cover" 
+                                                        />
                                                     ) : (
                                                         <Scissors className="w-5 h-5" />
                                                     )}
@@ -407,7 +400,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button 
-                                                    onClick={() => setViewingService(service)}
+                                                    onClick={() => navigate(`/admin/services/view/${service._id}`)}
                                                     className="p-2 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all" 
                                                     title="View Detail"
                                                 >
@@ -430,9 +423,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                     title="Delete Service"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
-                                                </button>
-                                                <button className="p-2 rounded-lg hover:bg-surface-alt hover:shadow-sm border border-transparent hover:border-border text-text-muted hover:text-primary transition-all">
-                                                    <MoreVertical className="w-4 h-4" />
                                                 </button>
                                             </div>
                                         </td>
@@ -466,7 +456,11 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         />
                                         <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10 shrink-0 overflow-hidden">
                                             {service.image ? (
-                                                <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
+                                                <img 
+                                                    src={service.image.startsWith('http') ? service.image : `${API_BASE_URL}${service.image}`} 
+                                                    alt={service.name} 
+                                                    className="w-full h-full object-cover" 
+                                                />
                                             ) : (
                                                 <Scissors className="w-5 h-5" />
                                             )}
@@ -497,7 +491,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <button 
-                                            onClick={() => setViewingService(service)}
+                                            onClick={() => navigate(`/admin/services/view/${service._id}`)}
                                             className="p-1.5 text-text-muted hover:text-primary transition-colors"
                                         >
                                             <Eye className="w-4 h-4" />

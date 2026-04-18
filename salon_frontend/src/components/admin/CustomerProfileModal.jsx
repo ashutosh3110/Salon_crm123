@@ -16,13 +16,14 @@ import {
     Wallet,
     ArrowUpRight,
     ArrowDownLeft,
-    Send
+    Send,
+    ShieldAlert
 } from 'lucide-react';
 
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWallet } from '../../contexts/WalletContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomerProfileModal({ customer, isOpen, onClose }) {
@@ -51,14 +52,16 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
             setEditForm({
                 name: customer.name,
                 phone: customer.phone,
-                preferred: customer.preferred,
+                preferredService: customer.preferredService,
                 status: customer.status,
                 tags: customer.tags,
                 dob: customer.dob || '',
                 anniversary: customer.anniversary || '',
                 address: customer.address || '',
                 remarks: customer.remarks || '',
-                category: customer.category || 'Regular'
+                category: customer.category || 'Regular',
+                isVIP: customer.isVIP || false,
+                status: customer.status || 'active'
             });
             // Ensure wallet exists for this customer
             initializeWallet(customer._id);
@@ -183,7 +186,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 pt-10 overflow-y-auto no-scrollbar">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center p-0">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-slate-900/80 backdrop-blur-md animate-fadeIn"
@@ -191,12 +194,25 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-5xl bg-white rounded-none shadow-2xl animate-in slide-in-from-top-4 duration-300 flex flex-col my-8 border border-border">
+            <div className="relative w-full max-w-5xl bg-white rounded-t-3xl shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom-full duration-500 ease-out flex flex-col mt-auto border-t border-border overflow-hidden max-h-[95vh]">
+                {/* Visual Handle for Bottom Sheet */}
+                <div className="w-full flex justify-center pt-3 pb-1 bg-surface">
+                    <div className="w-12 h-1.5 bg-border rounded-full opacity-50" />
+                </div>
                 {/* Header Section (Integrated Design) */}
                 <div className="bg-surface p-4 border-b border-border flex justify-between items-start">
                     <div className="flex gap-4 items-center">
-                        <div className="w-12 h-12 rounded-none bg-text text-white flex items-center justify-center text-xl font-black shadow-lg">
-                            {customer.name.charAt(0).toUpperCase()}
+                        <div className="w-16 h-16 rounded-none bg-text text-white flex items-center justify-center text-2xl font-black shadow-lg overflow-hidden border-2 border-white">
+                            {customer.avatar ? (
+                                <img 
+                                    src={customer.avatar.startsWith('http') ? customer.avatar : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}${customer.avatar}`} 
+                                    alt={customer.name} 
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = ''; e.target.parentElement.innerHTML = customer.name.charAt(0).toUpperCase(); }}
+                                />
+                            ) : (
+                                customer.name.charAt(0).toUpperCase()
+                            )}
                         </div>
                         <div className="space-y-1">
                             {isEditing ? (
@@ -273,7 +289,7 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                         color="yellow"
                     />
                     <ProfileMetric label="TOTAL MATRIX VISITS" value={customer.totalVisits} icon={History} color="blue" />
-                    <ProfileMetric label="CORE PREFERENCE" value={customer.preferred} icon={Tag} color="purple" />
+                    <ProfileMetric label="CORE PREFERENCE" value={customer.preferredService} icon={Tag} color="purple" />
                 </div>
 
                 {/* Content Tabs */}
@@ -292,8 +308,51 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                 <div className="grid grid-cols-2 gap-8">
                                     <DetailField label="Date of Birth" value={customer.dob} icon={Cake} type="date" isEditing={isEditing} editValue={editForm?.dob} onEdit={(val) => setEditForm({ ...editForm, dob: val })} />
                                     <DetailField label="Anniversary" value={customer.anniversary} icon={Calendar} type="date" isEditing={isEditing} editValue={editForm?.anniversary} onEdit={(val) => setEditForm({ ...editForm, anniversary: val })} />
+                                    
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <Star className={`w-3 h-3 ${customer.isVIP ? 'text-amber-500' : ''}`} /> VIP Privilege
+                                        </p>
+                                        {isEditing ? (
+                                            <label className="flex items-center gap-3 cursor-pointer group bg-surface border border-primary/20 p-3">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={editForm?.isVIP} 
+                                                    onChange={(e) => setEditForm({ ...editForm, isVIP: e.target.checked })}
+                                                    className="w-4 h-4 accent-primary" 
+                                                />
+                                                <span className="text-[11px] font-black uppercase tracking-widest text-text">Mark as VIP Member</span>
+                                            </label>
+                                        ) : (
+                                            <p className={`text-sm font-black uppercase tracking-tight px-4 py-3 border border-border/50 ${customer.isVIP ? 'bg-amber-500 text-white' : 'bg-surface-alt text-text-muted'}`}>
+                                                {customer.isVIP ? 'VIP MEMBER' : 'STANDARD MEMBER'}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <ShieldAlert className="w-3 h-3" /> Account Status
+                                        </p>
+                                        {isEditing ? (
+                                            <select
+                                                value={editForm?.status}
+                                                onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                                                className="w-full bg-surface border border-primary/20 px-4 py-3 text-[11px] font-black uppercase outline-none focus:border-primary transition-all"
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                                <option value="suspended">Suspended</option>
+                                            </select>
+                                        ) : (
+                                            <p className={`text-sm font-black uppercase tracking-tight px-4 py-3 border border-border/50 ${customer.status === 'active' ? 'bg-green-500 text-white' : 'bg-rose-500 text-white'}`}>
+                                                {customer.status?.toUpperCase()}
+                                            </p>
+                                        )}
+                                    </div>
+
                                     <DetailField label="Tier Category" value={customer.category} icon={Layers} isEditing={isEditing} editValue={editForm?.category} onEdit={(val) => setEditForm({ ...editForm, category: val })} type="select" options={['Regular', 'Premium', 'Elite', 'Budget']} />
-                                    <DetailField label="Core Preference" value={customer.preferred} icon={Tag} isEditing={isEditing} editValue={editForm?.preferred} onEdit={(val) => setEditForm({ ...editForm, preferred: val })} />
+                                    <DetailField label="Core Preference" value={customer.preferredService} icon={Tag} isEditing={isEditing} editValue={editForm?.preferredService} onEdit={(val) => setEditForm({ ...editForm, preferredService: val })} />
                                 </div>
                                 <div className="space-y-8">
                                     <DetailField label="Residential Address" value={customer.address} icon={MapPin} isEditing={isEditing} editValue={editForm?.address} onEdit={(val) => setEditForm({ ...editForm, address: val })} isFullWidth />
@@ -531,7 +590,7 @@ function DetailField({ label, value, icon: Icon, isFullWidth, isEditing, editVal
                 )
             ) : (
                 <p className="text-sm font-black text-text uppercase tracking-tight bg-surface-alt border border-border/50 px-4 py-3">
-                    {value || 'DATA_NOT_SYNCED'}
+                    {value || '-'}
                 </p>
             )}
         </div>

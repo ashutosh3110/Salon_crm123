@@ -10,6 +10,7 @@ import {
     ChevronRight,
     Tag,
     Trash2,
+    Eye,
     DollarSign,
     Cake,
     Calendar,
@@ -35,17 +36,27 @@ import ReEngagementTool from '../../components/admin/customers/ReEngagementTool'
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 
 export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { customers: rawCustomers, addCustomer, deleteCustomer, fetchCustomers } = useBusiness();
+    const { 
+        customers: rawCustomers, 
+        customersMetadata, 
+        globalStats,
+        addCustomer, 
+        updateCustomer, 
+        deleteCustomer, 
+        fetchCustomers 
+    } = useBusiness();
+    
+    const [currentPage, setCurrentPage] = useState(1);
     
     useEffect(() => {
-        fetchCustomers();
-    }, [fetchCustomers]);
+        fetchCustomers(currentPage, 5);
+    }, [fetchCustomers, currentPage]);
     
     // Safety Fix: Ensuring customers is always an array for filtering
     const customers = Array.isArray(rawCustomers) ? rawCustomers : (rawCustomers?.results || rawCustomers?.data || []);
@@ -56,7 +67,7 @@ export default function CustomersPage({ tab = 'directory' }) {
     const [newCustomerForm, setNewCustomerForm] = useState({
         name: '',
         phone: '',
-        preferred: 'Haircut',
+        preferredService: 'Haircut',
         dob: '',
         anniversary: '',
         address: '',
@@ -71,17 +82,18 @@ export default function CustomersPage({ tab = 'directory' }) {
         addCustomer({
             ...newCustomerForm,
             totalVisits: 0,
-            spend: 0,
-            status: 'Regular',
+            totalSpend: 0,
+            status: 'active',
+            isVIP: false,
             tags: [],
             lastVisit: new Date().toISOString()
         });
-        setNewCustomerForm({ name: '', phone: '', preferred: 'Haircut', dob: '', anniversary: '', address: '', remarks: '', category: 'Regular' });
+        setNewCustomerForm({ name: '', phone: '', preferredService: 'Haircut', dob: '', anniversary: '', address: '', remarks: '', category: 'Regular' });
         setShowAddModal(false);
     };
 
     const handleExport = () => {
-        const data = customers.map(c => `${c.name},${c.phone},${c.totalVisits},${c.spend},${c.status}`).join('\n');
+        const data = customers.map(c => `${c.name},${c.phone},${c.totalVisits},${c.totalSpend},${c.status}`).join('\n');
         const blob = new Blob([`Name,Phone,Visits,Spend,Status\n${data}`], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -122,18 +134,12 @@ export default function CustomersPage({ tab = 'directory' }) {
                     onSendWhatsApp={(c, msg) => setWhatsappModal({ isOpen: true, customer: c, message: msg })}
                 />
 
-                {/* KPI Cards */}
+                {/* KPI Cards (All Data) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <KPICard title="Total Customers" value={customers.length} icon={Users} color="blue" trend="" />
-                    <KPICard
-                        title="VIP Customers"
-                        value={customers.filter(c => (c.tags || []).includes('VIP')).length}
-                        icon={Star}
-                        color="purple"
-                        trend=""
-                    />
-                    <KPICard title="Total Revenue" value={`₹${customers.reduce((acc, c) => acc + (c.spend || 0), 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
-                    <KPICard title="Inactive" value={customers.filter(c => c.status === 'Inactive').length} icon={ShieldAlert} color="red" trend="Needs attention" />
+                    <KPICard title="Total Customers" value={globalStats.totalCount} icon={Users} color="blue" trend="" />
+                    <KPICard title="VIP Customers" value={globalStats.totalVIPs} icon={Star} color="purple" trend="" />
+                    <KPICard title="Total Revenue" value={`₹${(globalStats.totalRevenue || 0).toLocaleString()}`} icon={TrendingUp} color="green" trend="" />
+                    <KPICard title="Inactive" value={globalStats.totalInactive} icon={ShieldAlert} color="red" trend="Needs attention" />
                 </div>
 
                 {/* Content Container */}
@@ -162,13 +168,52 @@ export default function CustomersPage({ tab = 'directory' }) {
                     </div>
 
                     {activeTab === 'directory' && (
-                        <CustomerDirectory
-                            customers={customers}
-                            onCustomerClick={setSelectedCustomer}
-                            onDelete={deleteCustomer}
+                        <>
+                            <CustomerDirectory
+                                customers={customers}
+                                onCustomerClick={setSelectedCustomer}
+                                onDelete={deleteCustomer}
+                                onUpdate={updateCustomer}
+                            />
+                            
+                            {/* Pagination Controls */}
+                            <div className="px-8 py-6 border-t border-border bg-surface-alt/10 flex items-center justify-between">
+                                <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                    Displaying {customers.length} of {customersMetadata.totalCount} customers
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                    >
+                                        Prev
+                                    </button>
+                                    <div className="px-4 text-xs font-black">
+                                        Page {currentPage} of {customersMetadata.totalPages || 1}
+                                    </div>
+                                    <button 
+                                        onClick={() => setCurrentPage(p => Math.min(customersMetadata.totalPages || 1, p + 1))}
+                                        disabled={currentPage >= (customersMetadata.totalPages || 1)}
+                                        className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+
+
+                    {activeTab === 'wallets' && (
+                        <WalletMonitor 
+                            customers={customers} 
+                            onCustomerClick={setSelectedCustomer} 
+                            customersMetadata={customersMetadata}
+                            currentPage={currentPage}
+                            onPageChange={setCurrentPage}
                         />
                     )}
-                    {activeTab === 'wallets' && <WalletMonitor customers={customers} onCustomerClick={setSelectedCustomer} />}
                     {activeTab === 'segments' && <SegmentManager />}
                     {activeTab === 'feedback' && <FeedbackList />}
                     {activeTab === 'reengage' && <ReEngagementTool />}
@@ -314,64 +359,120 @@ export default function CustomersPage({ tab = 'directory' }) {
     );
 }
 
-function WalletMonitor({ customers, onCustomerClick }) {
-    const { allWallets, bulkRecharge, initializeWallet, walletSettings, setWalletSettings, totalLiability } = useWallet();
-    const [showBulkModal, setShowBulkModal] = useState(false);
-    const [activeSubTab, setActiveSubTab] = useState('directory');
+function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentPage, onPageChange }) {
+    const { allWallets, bulkRecharge } = useWallet();
+    const { fetchAllCustomerIds, globalStats } = useBusiness();
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkAmount, setBulkAmount] = useState('');
     const [bulkNote, setBulkNote] = useState('');
-    const [sendWhatsAppAfterBulk, setSendWhatsAppAfterBulk] = useState(true);
-    const [bulkWhatsAppMessage, setBulkWhatsAppMessage] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isSelectingAll, setIsSelectingAll] = useState(false);
 
-    useEffect(() => {
-        if (!Array.isArray(customers) || customers.length === 0) return;
-        customers.forEach((c) => {
-            if (c?._id) initializeWallet(c._id);
-        });
-    }, [customers]);
+    const activeSubTab = 'directory';
 
-    const handleBulkRecharge = async (e) => {
-        e.preventDefault();
+    const handleBulkRecharge = async () => {
         if (!bulkAmount || selectedIds.length === 0) return;
         setIsProcessing(true);
         try {
-            const orderRes = await mockApi.post('/billing/razorpay/create-wallet-order', { amount: Number(bulkAmount) * selectedIds.length });
-            if (orderRes.data?.success) {
-                await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit');
-                alert('Wallet recharged successfully!');
+            const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit');
+            if (res.success) {
+                alert(`Successfully recharged ${selectedIds.length} wallets!`);
+                setBulkAmount('');
+                setBulkNote('');
+                setSelectedIds([]);
+            } else {
+                alert('Recharge failed: ' + (res.message || 'Unknown error'));
             }
+        } catch (err) {
+            alert('Error processing bulk recharge');
         } finally {
             setIsProcessing(false);
         }
     };
 
+    const handleSelectAll = async (checked) => {
+        if (checked) {
+            setIsSelectingAll(true);
+            try {
+                const allIds = await fetchAllCustomerIds();
+                setSelectedIds(allIds);
+            } finally {
+                setIsSelectingAll(false);
+            }
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
     return (
         <div className="p-8 space-y-8 animate-reveal">
-            <div className="flex bg-surface-alt p-1 border border-border w-fit">
-                <button onClick={() => setActiveSubTab('directory')} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest ${activeSubTab === 'directory' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}>Wallet List</button>
-                <button onClick={() => setActiveSubTab('mechanics')} className={`px-6 py-2 text-[10px] font-black uppercase tracking-widest ${activeSubTab === 'mechanics' ? 'bg-text text-white' : 'text-text-muted hover:text-text'}`}>Recharge Offers</button>
-            </div>
+         
 
             {activeSubTab === 'directory' && (
                 <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-                        <div className="bg-text text-white p-6 border border-border shadow-xl">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-2 text-left">Total Wallet Liability</p>
-                            <h3 className="text-3xl font-black text-left">₹{totalLiability.toLocaleString()}</h3>
+                    <div className="bg-surface border border-border p-5 flex flex-col md:flex-row items-center gap-6 shadow-sm">
+                        <div className="flex-1 w-full">
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="flex flex-col md:flex-row gap-2 flex-1">
+                                    <div className="relative group">
+                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-primary uppercase tracking-widest z-10 transition-all group-focus-within:text-primary">Direct Recharge</label>
+                                        <input 
+                                            type="number" 
+                                            placeholder="ENTER AMOUNT (₹)" 
+                                            disabled={selectedIds.length === 0}
+                                            value={bulkAmount} 
+                                            onChange={e => setBulkAmount(e.target.value)} 
+                                            className="w-full md:w-48 p-4 bg-surface-alt border border-border font-black text-[10px] outline-none focus:border-primary transition-all disabled:opacity-30"
+                                        />
+                                    </div>
+                                    <div className="relative group flex-1">
+                                        <label className="absolute -top-2 left-3 bg-surface px-2 text-[8px] font-black text-text-muted uppercase tracking-widest z-10">Add Remarks</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="E.G. FESTIVAL PROMO" 
+                                            disabled={selectedIds.length === 0}
+                                            value={bulkNote} 
+                                            onChange={e => setBulkNote(e.target.value)} 
+                                            className="w-full p-4 bg-surface-alt border border-border font-black text-[10px] uppercase outline-none focus:border-primary transition-all disabled:opacity-30"
+                                        />
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => handleBulkRecharge()} 
+                                    disabled={isProcessing || !bulkAmount || selectedIds.length === 0}
+                                    className="bg-primary text-white px-10 py-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all whitespace-nowrap"
+                                >
+                                    {isProcessing ? 'Processing...' : `Apply to ${selectedIds.length} Selected`}
+                                </button>
+                            </div>
                         </div>
-                        <div className="bg-surface p-6 border border-border italic">
-                            <button onClick={() => setShowBulkModal(true)} disabled={selectedIds.length === 0} className="w-full bg-primary text-white py-4 text-[10px] font-black uppercase tracking-widest disabled:opacity-50">Bulk Recharge ({selectedIds.length})</button>
-                        </div>
+
+                        <div className="hidden lg:block w-px h-10 bg-border mx-2" />
+
                     </div>
+
                     <div className="table-responsive border border-border">
                         <table className="w-full text-left min-w-[800px]">
                             <thead className="bg-surface-alt border-b border-border">
                                 <tr>
-                                    <th className="p-4"><input type="checkbox" onChange={(e) => setSelectedIds(e.target.checked ? customers.map(c => c._id) : [])} checked={selectedIds.length === customers.length && customers.length > 0} /></th>
-                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted">Customer</th>
-                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted text-right">Balance</th>
+                                    <th className="p-4 w-24">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <input 
+                                                    type="checkbox" 
+                                                    className="w-4 h-4 accent-primary cursor-pointer"
+                                                    onChange={(e) => handleSelectAll(e.target.checked)} 
+                                                    checked={selectedIds.length === customersMetadata.totalCount && customersMetadata.totalCount > 0} 
+                                                    disabled={isSelectingAll}
+                                                />
+                                                <span className="text-[8px] font-black uppercase tracking-[0.2em]">All</span>
+                                            </div>
+                                            {isSelectingAll && <span className="text-[7px] font-black text-primary animate-pulse uppercase">Fetching...</span>}
+                                            {selectedIds.length > 0 && !isSelectingAll && <span className="text-[7px] font-black text-emerald-600 uppercase italic whitespace-nowrap">{selectedIds.length} IDs</span>}
+                                        </div>
+                                    </th>
+                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest">Customer Directory</th>
+                                    <th className="p-4 text-[10px] font-black uppercase text-text-muted tracking-widest text-right">Available Balance</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -388,31 +489,42 @@ function WalletMonitor({ customers, onCustomerClick }) {
                                             </div>
                                         </td>
                                         <td className="p-4 text-right">
-                                            <span className="text-sm font-black text-emerald-600">₹{(allWallets[c._id]?.balance || 0).toLocaleString()}</span>
+                                            <span className="text-sm font-black text-emerald-600">₹{(c.walletBalance || 0).toLocaleString()}</span>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
+
+                        {/* Pagination Controls */}
+                        <div className="px-8 py-6 border-t border-border bg-surface-alt/10 flex items-center justify-between">
+                            <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                Displaying {customers.length} of {customersMetadata.totalCount} wallets
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={() => onPageChange(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                >
+                                    Prev
+                                </button>
+                                <div className="px-4 text-xs font-black">
+                                    Page {currentPage} of {customersMetadata.totalPages || 1}
+                                </div>
+                                <button 
+                                    onClick={() => onPageChange(p => Math.min(customersMetadata.totalPages || 1, p + 1))}
+                                    disabled={currentPage >= (customersMetadata.totalPages || 1)}
+                                    className="px-6 py-3 border border-border bg-surface text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-surface-alt transition-all"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </>
             )}
 
-            {showBulkModal && (
-                <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[300] flex items-center justify-center p-4" onClick={() => setShowBulkModal(false)}>
-                    <div className="bg-surface w-full max-w-md p-8 border border-border shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black text-text uppercase tracking-tight">Bulk Recharge</h3>
-                            <button onClick={() => setShowBulkModal(false)}><X className="w-6 h-6 text-text-muted" /></button>
-                        </div>
-                        <form onSubmit={handleBulkRecharge} className="space-y-6 text-left font-black">
-                            <input type="number" required placeholder="AMOUNT" value={bulkAmount} onChange={e => setBulkAmount(e.target.value)} className="w-full p-4 border border-border font-black text-xs" />
-                            <input type="text" placeholder="NOTE" value={bulkNote} onChange={e => setBulkNote(e.target.value)} className="w-full p-4 border border-border font-black text-xs uppercase" />
-                            <button type="submit" disabled={isProcessing} className="w-full bg-primary text-white py-4 font-black text-[10px] uppercase tracking-widest">{isProcessing ? 'Processing' : 'Add Credit'}</button>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
@@ -472,7 +584,7 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
     );
 }
 
-function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
+function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
     const [searchTerm, setSearchTerm] = useState('');
     const filtered = customers.filter(c => 
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -480,7 +592,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
     );
 
     return (
-        <div className="p-8 flex flex-col h-full gap-8 slide-right overflow-y-auto no-scrollbar">
+        <div className="p-4 flex flex-col h-full gap-4 slide-right overflow-y-auto no-scrollbar">
             <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
@@ -496,28 +608,69 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete }) {
                 <table className="w-full text-left border-collapse min-w-[900px]">
                     <thead>
                         <tr className="bg-surface-alt border-b border-border">
-                            <th className="px-6 py-5 text-[10px] font-extrabold text-text-muted uppercase tracking-widest">Customer</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Last Visit</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest">Total Spend</th>
-                            <th className="px-6 py-5 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
+                            <th className="px-4 py-3 text-[10px] font-extrabold text-text-muted uppercase tracking-widest">Customer</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Last Visit</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest">Total Spend</th>
+                            <th className="px-4 py-3 text-[10px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border bg-surface text-sm">
                         {filtered.map(c => (
                             <tr key={c._id} className="hover:bg-surface-alt/50 transition-colors group cursor-pointer" onClick={() => onCustomerClick(c)}>
-                                <td className="px-6 py-5">
+                                <td className="px-4 py-3">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 bg-primary/5 border border-primary/10 flex items-center justify-center text-primary font-bold">{c.name.charAt(0)}</div>
+                                        <div className="relative">
+                                            <div className="w-10 h-10 bg-primary/5 border border-primary/10 flex items-center justify-center text-primary font-bold">
+                                                {c.name.charAt(0)}
+                                            </div>
+                                            {c.isVIP && (
+                                                <div className="absolute -top-1 -right-1 bg-amber-500 text-white p-0.5 rounded-none border border-white">
+                                                    <Star className="w-2.5 h-2.5 fill-current" />
+                                                </div>
+                                            )}
+                                        </div>
                                         <div>
-                                            <div className="font-bold text-text group-hover:text-primary transition-colors text-sm">{c.name}</div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-bold text-text group-hover:text-primary transition-colors text-sm">{c.name}</div>
+                                                {c.status === 'inactive' && <span className="text-[8px] bg-rose-500 text-white px-1 font-black">INACTIVE</span>}
+                                            </div>
                                             <div className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-5 text-xs font-bold text-text-secondary">{c.lastVisit ? new Date(c.lastVisit).toLocaleDateString() : '-'}</td>
-                                <td className="px-6 py-5 text-sm font-bold text-text">₹{(c.spend ?? 0).toLocaleString()}</td>
-                                <td className="px-6 py-5 text-right">
-                                    <button onClick={e => { e.stopPropagation(); onDelete(c._id); }} className="p-2.5 text-text-muted hover:text-rose-500 border border-border transition-all"><Trash2 className="w-4 h-4" /></button>
+                                <td className="px-4 py-3 text-xs font-bold text-text-secondary">
+                                    {c.lastLogin ? new Date(c.lastLogin).toLocaleDateString() : '-'}
+                                </td>
+                                <td className="px-4 py-3 text-sm font-bold text-text">₹{(c.totalSpend ?? 0).toLocaleString()}</td>
+                                <td className="px-4 py-3 text-right flex items-center justify-end gap-2">
+                                    <button 
+                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { status: c.status === 'active' ? 'inactive' : 'active' }); }} 
+                                        className={`p-2.5 border transition-all ${c.status === 'inactive' ? 'bg-rose-500 text-white border-rose-500' : 'text-text-muted hover:text-rose-500 border-border'}`}
+                                        title={c.status === 'active' ? "Deactivate Customer" : "Activate Customer"}
+                                    >
+                                        <ShieldAlert className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        onClick={e => { e.stopPropagation(); onUpdate(c._id, { isVIP: !c.isVIP }); }} 
+                                        className={`p-2.5 border transition-all ${c.isVIP ? 'bg-amber-500 text-white border-amber-500' : 'text-text-muted hover:text-amber-500 border-border'}`}
+                                        title={c.isVIP ? "Remove VIP Status" : "Mark as VIP"}
+                                    >
+                                        <Star className={`w-4 h-4 ${c.isVIP ? 'fill-current' : ''}`} />
+                                    </button>
+                                    <button 
+                                        onClick={e => { e.stopPropagation(); onCustomerClick(c); }} 
+                                        className="p-2.5 text-text-muted hover:text-primary border border-border transition-all"
+                                        title="View Profile"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
+                                    <button 
+                                        onClick={e => { e.stopPropagation(); if(confirm('Are you sure you want to delete this customer?')) onDelete(c._id); }} 
+                                        className="p-2.5 text-text-muted hover:text-rose-500 border border-border transition-all"
+                                        title="Delete Customer"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
