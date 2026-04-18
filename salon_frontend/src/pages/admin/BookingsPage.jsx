@@ -44,7 +44,7 @@ import { maskPhone } from '../../utils/phoneUtils';
 
 const statusColors = {
     upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
-    confirmed: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
+    confirmed: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900',
     pending: 'bg-yellow-50 dark:bg-yellow-950/30 text-yellow-600 dark:text-yellow-400 border-yellow-100 dark:border-yellow-900',
     completed: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900',
     cancelled: 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700',
@@ -423,7 +423,8 @@ export default function BookingsPage() {
                                     <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Date & Time</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Customer</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Service</th>
-                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-center">Source</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Staff</th>
+                                    <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Outlet</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-left">Status</th>
                                     <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-[0.2em] text-right">Actions</th>
                                 </tr>
@@ -468,12 +469,23 @@ export default function BookingsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-[10px] font-black text-text uppercase tracking-wider text-left">{b.service?.name}</td>
-                                            <td className="px-8 py-6 text-center text-left">
-                                                <span className="px-3 py-1.5 rounded-none bg-background border border-border text-[9px] font-black uppercase tracking-[0.2em] text-text-muted">{b.source || 'SYS'}</span>
+                                            <td className="px-8 py-6 text-left">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-surface-alt flex items-center justify-center text-[8px] font-black border border-border">
+                                                        {b.staff?.name?.split(' ').map(n => n[0]).join('') || '?'}
+                                                    </div>
+                                                    <span className="text-[10px] font-black text-text uppercase tracking-wide">{b.staff?.name || 'Unassigned'}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-8 py-6 text-left">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-text uppercase leading-none">{b.outlet?.name || 'Main Outlet'}</span>
+                                                    <span className="text-[8px] text-text-muted uppercase mt-1 tracking-tighter">{b.outlet?.city}</span>
+                                                </div>
                                             </td>
                                             <td className="px-8 py-6 text-left">
                                                     <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-none text-[9px] font-black border uppercase tracking-widest ${statusColors[b.status] || 'bg-surface text-text'}`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-none ${b.status === 'confirmed' ? 'bg-blue-500' : b.status === 'completed' ? 'bg-emerald-500' : b.status === 'pending' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                                                    <div className={`w-1.5 h-1.5 rounded-none ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'completed' ? 'bg-emerald-500' : b.status === 'pending' ? 'bg-amber-500' : 'bg-rose-500'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>

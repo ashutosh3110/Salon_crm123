@@ -7,9 +7,9 @@ import {
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2
 } from 'lucide-react';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 import {
-    MOCK_PROMOTIONS, MOCK_VOUCHERS, MOCK_SERVICES, MOCK_CLIENTS, MOCK_COMPANY_INFO
+    MOCK_COMPANY_INFO
 } from '../../data/posData';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -55,11 +55,11 @@ const pdfStyles = StyleSheet.create({
     thanks: { fontSize: 16, marginBottom: 5 }
 });
 
-const InvoicePDF = ({ invoice, role }) => (
+const InvoicePDF = ({ invoice, role, salon, taxRate = 18 }) => (
     <Document>
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
-                <Text style={pdfStyles.salonName}>{MOCK_COMPANY_INFO.name}</Text>
+                <Text style={pdfStyles.salonName}>{salon?.name || 'SALON'}</Text>
                 <Text style={pdfStyles.salonMeta}>{invoice.outlet?.address || ''}</Text>
                 <Text style={pdfStyles.salonMeta}>{invoice.outlet?.phone || ''} | {invoice.outlet?.email || ''}</Text>
                 <Text style={pdfStyles.salonMeta}>GSTIN: {invoice.outlet?.gstin || 'N/A'}</Text>
@@ -115,17 +115,17 @@ const InvoicePDF = ({ invoice, role }) => (
                     {invoice.totals.isSameState ? (
                         <>
                             <View style={pdfStyles.summaryRow}>
-                                <Text>CGST ({taxPercent / 2}%)</Text>
+                                <Text>CGST ({taxRate / 2}%)</Text>
                                 <Text>₹ {invoice.totals.cgst.toFixed(2)}</Text>
                             </View>
                             <View style={pdfStyles.summaryRow}>
-                                <Text>SGST ({taxPercent / 2}%)</Text>
+                                <Text>SGST ({taxRate / 2}%)</Text>
                                 <Text>₹ {invoice.totals.sgst.toFixed(2)}</Text>
                             </View>
                         </>
                     ) : (
                         <View style={pdfStyles.summaryRow}>
-                            <Text>IGST ({taxPercent}%)</Text>
+                            <Text>IGST ({taxRate}%)</Text>
                             <Text>₹ {invoice.totals.igst.toFixed(2)}</Text>
                         </View>
                     )}
@@ -231,11 +231,10 @@ export default function POSBillingPage() {
         if (location.state?.preSelectClient) {
             const { name, phone } = location.state.preSelectClient;
             // Attempt to find existing client or create partial
-            const existingClient = MOCK_CLIENTS.find(c => c.phone === phone);
+            const existingClient = businessCustomers.find(c => c.phone === phone);
             if (existingClient) {
                 setSelectedClient(existingClient);
                 setShowClientInfo(true);
-                initializeWallet(existingClient._id);
             } else {
                 setSelectedClient({ name, phone, email: '', loyaltyPoints: 0, walletBalance: 0, dueAmount: 0 });
                 setShowClientInfo(true);
@@ -691,7 +690,7 @@ export default function POSBillingPage() {
 
                 // REAL BACKEND CALL
                 const response = await api.post('/pos/checkout', checkoutPayload);
-                const dbInvoice = response.data;
+                const dbInvoice = response.data.data || response.data;
 
                 const invoiceData = {
                     number: dbInvoice.invoiceNumber || `INV-${Date.now().toString().slice(-4)}`,
@@ -699,8 +698,8 @@ export default function POSBillingPage() {
                         day: '2-digit', month: '2-digit', year: 'numeric',
                         hour: '2-digit', minute: '2-digit', hour12: true
                     }),
-                    outlet: activeOutlet?.name || MOCK_COMPANY_INFO.outlet,
-                    cashier: user?.name || MOCK_COMPANY_INFO.cashier,
+                    outlet: activeOutlet?.name || salon?.name || 'Salon',
+                    cashier: user?.name || 'Admin',
                     client: selectedClient,
                     items: cart.map(item => ({
                         ...item,
@@ -796,7 +795,7 @@ export default function POSBillingPage() {
     const handleDownloadPDF = async () => {
         setIsGeneratingPDF(true);
         try {
-            const blob = await pdf(<InvoicePDF invoice={successInvoice} role={user?.role} />).toBlob();
+            const blob = await pdf(<InvoicePDF invoice={successInvoice} role={user?.role} salon={salon} taxRate={taxPercent} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;

@@ -87,6 +87,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
     const menuItems = [
         { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+   
         { label: 'Subscription & Plans', icon: Crown, path: '/admin/subscription' },
         {
             label: 'Business Setup',
@@ -100,18 +101,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
             ]
         },
-        {
+             {
             label: 'Operations',
             icon: ScissorsIcon,
             path: '/pos',
             feature: 'pos',
             subItems: [
-                { label: 'New Bill (POS)', icon: Zap, path: '/pos/billing', roles: ['admin', 'manager', 'receptionist'] },
                 { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
-                { label: 'Invoices', icon: FileText, path: '/pos/invoices', badge: { count: 5, color: 'bg-emerald-400' } },
-                { label: 'Payments', icon: CreditCard, path: '/pos/payments' },
-                { label: 'Refunds', icon: TrendingUp, path: '/pos/refunds', badge: { count: 2, color: 'bg-rose-400' } },
-                { label: 'POS Settings', icon: Settings, path: '/pos/settings' },
+                { label: 'New Bill', icon: Zap, path: '/pos/billing' },
+                { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
             ]
         },
         {
