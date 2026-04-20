@@ -58,12 +58,15 @@ export default function SASupportPage() {
 
     const fetchSalons = async () => {
         try {
-            const res = await api.get('/salons'); // Adjust endpoint if needed
+            const res = await api.get('/salons');
             if (res.data.success) {
-                setSalons(res.data.data || []);
+                // The API returns a paginated object { results: [], totalResults: ... }
+                const data = res.data.data;
+                setSalons(Array.isArray(data?.results) ? data.results : []);
             }
         } catch (err) {
             console.error('[Support] Salon fetch failed:', err);
+            setSalons([]);
         }
     };
 
