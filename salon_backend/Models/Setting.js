@@ -57,6 +57,10 @@ const settingSchema = new mongoose.Schema({
         enabled: { type: Boolean, default: true },
         referralPoints: { type: Number, default: 200 },
         referredPoints: { type: Number, default: 100 }
+    },
+    maxImageSize: {
+        type: Number,
+        default: 5 // Default 5MB
     }
 }, {
     timestamps: true

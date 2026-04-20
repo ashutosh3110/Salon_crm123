@@ -449,7 +449,8 @@ export default function AppHomePage() {
             setActiveOutletId(banner.outletId);
         }
         if (banner && banner.link) {
-            navigate(banner.link);
+            console.log(banner,"banner link");
+            navigate("/app");
         }
     };
 

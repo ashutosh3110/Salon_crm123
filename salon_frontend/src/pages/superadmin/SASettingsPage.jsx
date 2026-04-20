@@ -83,7 +83,8 @@ export default function SASettingsPage() {
         address: '',
         socialLinks: { facebook: '', instagram: '', twitter: '', linkedin: '' },
         currency: 'INR',
-        currencySymbol: '₹'
+        currencySymbol: '₹',
+        maxImageSize: 5
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
     const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
@@ -458,6 +459,27 @@ export default function SASettingsPage() {
                                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                                     <Field label="Instagram" value={platform.socialLinks.instagram} onChange={e => setSocial('instagram', e.target.value)} placeholder="https://..." />
                                     <Field label="Facebook" value={platform.socialLinks.facebook} onChange={e => setSocial('facebook', e.target.value)} placeholder="https://..." />
+                                </div>
+                            </div>
+
+                            <div className="pt-6 border-t border-border">
+                                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <Shield className="w-3 h-3 text-amber-600" /> Image Upload Limits
+                                </h4>
+                                <div className="grid sm:grid-cols-3 gap-6">
+                                    <Field 
+                                        label="Max. Image Size" 
+                                        value={platform.maxImageSize} 
+                                        onChange={e => setPlat('maxImageSize', e.target.value)} 
+                                        type="number"
+                                        placeholder="5"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">MB</span>}
+                                    />
+                                    <div className="flex items-end pb-1.5">
+                                        <p className="text-[10px] text-text-muted italic leading-relaxed">
+                                            Limits the size of banner images, profile pictures, and gallery uploads across the platform.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
