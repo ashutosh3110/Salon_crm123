@@ -7,8 +7,13 @@ const { getIO } = require('../Utils/socket');
 // @access  Private
 exports.getOutlets = async (req, res) => {
     try {
+        // If superadmin, show ALL outlets. Otherwise, filter by salonId.
+        const matchStage = req.user.role === 'superadmin' 
+            ? {} 
+            : { salonId: req.user.salonId };
+
         const outlets = await Outlet.aggregate([
-            { $match: { salonId: req.user.salonId } },
+            { $match: matchStage },
             {
                 $lookup: {
                     from: 'users',
@@ -37,6 +42,7 @@ exports.getOutlets = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
 
 // @desc    Get single outlet
 // @route   GET /api/outlets/:id

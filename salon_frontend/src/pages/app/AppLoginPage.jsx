@@ -36,11 +36,11 @@ export default function AppLoginPage() {
     const [userCoords, setUserCoords] = useState(null);
     const [selectedOutlet, setSelectedOutlet] = useState(storedSelectedOutlet);
     const [tenantId, setTenantId] = useState(
-        tenantIdFromUrl || 
-        localStorage.getItem('active_salon_id') || 
-        storedSelectedOutlet?.salonId || 
-        storedSelectedOutlet?.tenantId || 
-        localStorage.getItem('active_outlet_id') || 
+        tenantIdFromUrl ||
+        localStorage.getItem('active_salon_id') ||
+        storedSelectedOutlet?.salonId ||
+        storedSelectedOutlet?.tenantId ||
+        localStorage.getItem('active_outlet_id') ||
         ''
     );
     const [otpVerified, setOtpVerified] = useState(false); // New state to track if phone is verified
@@ -113,14 +113,14 @@ export default function AppLoginPage() {
 
     const fetchOutlets = async (lat, lng, radiusKm) => {
         setIsFetchingOutlets(true);
-        const url = (lat != null && lng != null) 
+        const url = (lat != null && lng != null)
             ? `/outlets/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`
             : `/outlets/nearby`; // Public endpoint now returns all if no coords
-        
+
         try {
             const res = await api.get(url, { timeout: 30000 });
             let data = Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res.data) ? res.data : []);
-            
+
             setNearbyOutlets(data);
         } catch (err) {
             console.error('Fetch error:', err);
@@ -247,9 +247,9 @@ export default function AppLoginPage() {
         const tId = outlet.salonId || outlet.tenantId;
         localStorage.setItem('active_salon_id', tId);
         setTenantId(tId);
-        setActiveOutletId(oId); 
+        setActiveOutletId(oId);
         setActiveSalonId(tId);
-        
+
         // If already authenticated and on discovery step, go home
         if (isCustomerAuthenticated) {
             navigate('/app', { replace: true });
@@ -266,10 +266,10 @@ export default function AppLoginPage() {
 
 
 
-    const goTo = (s) => { 
-        setDir(s > step ? 1 : -1); 
-        setError(''); 
-        setStep(s); 
+    const goTo = (s) => {
+        setDir(s > step ? 1 : -1);
+        setError('');
+        setStep(s);
         if (s === 1) setOtpVerified(false); // Reset verification if going back to phone
     };
 
@@ -290,7 +290,7 @@ export default function AppLoginPage() {
         setLoading(true); setError('');
         try {
             // Send OTP without tenantId if needed, backend currently doesn't strictly check for it for demo logic
-            const res = await requestOtp(phone, tenantId || 'system'); 
+            const res = await requestOtp(phone, tenantId || 'system');
             if (res.otp) setOtpDebug(res.otp);
             setCd(30); goTo(2);
         } catch (e) { setError(e.message || 'Failed to send OTP'); }
@@ -361,7 +361,7 @@ export default function AppLoginPage() {
             try {
                 // Call public verify endpoint with 'system' as tenant placeholder
                 const res = await api.post('/auth/login-otp', { phone, otp: code, tenantId: 'system' });
-                
+
                 if (res.data?.success) {
                     setOtpVerified(true);
                     setError('');
@@ -386,7 +386,7 @@ export default function AppLoginPage() {
         try {
             const cust = await customerLogin(phone, code, tenantId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
-            
+
             // Always go to Discovery step (0) after login to force selection
             setShowLocationModal(true);
             goTo(0);
@@ -405,11 +405,11 @@ export default function AppLoginPage() {
         try {
             const cust = await customerLogin(phone, code, tId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
-            
+
             const oId = outlet._id || outlet.id;
             localStorage.setItem('active_outlet_id', oId);
             setActiveOutletId(oId);
-            
+
             navigate('/app', { replace: true });
         } catch (e) {
             setError(e.message || 'Verification failed');
@@ -506,8 +506,8 @@ export default function AppLoginPage() {
                                         <div className="absolute inset-0 bg-[#C8956C]/5 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
                                         <div className={`relative flex items-center gap-3 border h-14 px-4 rounded-2xl group-focus-within:border-[#C8956C]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
                                             <Search size={18} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#C8956C] transition-colors`} />
-                                            <input 
-                                                type="text" 
+                                            <input
+                                                type="text"
                                                 placeholder="Salon name or city..."
                                                 value={searchQuery}
                                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -518,14 +518,14 @@ export default function AppLoginPage() {
                                             />
                                         </div>
                                     </div>
-                                     {userCoords && (
-                                         <div className={`p-4 rounded-3xl border space-y-4 ${isLight ? 'bg-neutral-50 border-neutral-200 shadow-sm' : 'bg-black/40 border-white/[0.03]'}`}>
-                                             <div className="flex items-center justify-between">
-                                                 <div>
-                                                     <h2 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isLight ? 'text-neutral-400' : 'text-white/40'}`}>Search Radius</h2>
-                                                     <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
-                                                 </div>
-                                             </div>
+                                    {userCoords && (
+                                        <div className={`p-4 rounded-3xl border space-y-4 ${isLight ? 'bg-neutral-50 border-neutral-200 shadow-sm' : 'bg-black/40 border-white/[0.03]'}`}>
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <h2 className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isLight ? 'text-neutral-400' : 'text-white/40'}`}>Search Radius</h2>
+                                                    <p className="text-[11px] font-serif italic text-[#C8956C]">Within {searchRadiusKm} kilometers</p>
+                                                </div>
+                                            </div>
 
                                             <div className="grid grid-cols-4 gap-2">
                                                 {RADIUS_OPTIONS.map((km) => (
@@ -535,132 +535,131 @@ export default function AppLoginPage() {
                                                             setSearchRadiusKm(km);
                                                             fetchOutlets(userCoords?.lat, userCoords?.lng, km);
                                                         }}
-                                                        className={`h-10 rounded-xl text-xs font-bold transition-all relative ${
-                                                            searchRadiusKm === km 
-                                                            ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]' 
-                                                            : isLight 
-                                                                ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
-                                                                : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
-                                                        }`}
+                                                        className={`h-10 rounded-xl text-xs font-bold transition-all relative ${searchRadiusKm === km
+                                                                ? 'bg-[#C8956C] text-white shadow-[0_4px_12px_rgba(200,149,108,0.3)]'
+                                                                : isLight
+                                                                    ? 'bg-neutral-50 text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
+                                                                    : 'bg-white/[0.02] text-white/30 hover:bg-white/5 border border-white/[0.03]'
+                                                            }`}
                                                     >
                                                         {km} km
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
-                                     )}
+                                    )}
                                 </div>
 
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between px-1">
-                                            <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-neutral-300' : 'text-white/20'}`}>Discovery Results</span>
-                                            <button 
-                                                onClick={() => setShowLocationModal(true)}
-                                                className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
-                                            >
-                                                <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
-                                                    {detectedAddress ? `Near ${detectedAddress}` : 'Current Location'}
-                                                </span>
-                                                <MapPin size={10} className="text-[#C8956C]" />
-                                            </button>
-                                        </div>
-
-                                        <div className="space-y-3 max-h-[380px] overflow-y-auto px-1 custom-scrollbar pb-2">
-                                            {isFetchingOutlets ? (
-                                                [1, 2, 3].map(i => (
-                                                    <div key={`skeleton-${i}`} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
-                                                        <div className="w-20 h-20 rounded-2xl bg-white/[0.02]" />
-                                                        <div className="flex-1 space-y-2">
-                                                            <div className="h-4 w-1/2 bg-white/[0.02] rounded" />
-                                                            <div className="h-3 w-3/4 bg-white/[0.02] rounded" />
-                                                            <div className="h-3 w-1/4 bg-white/[0.02] rounded" />
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div key="discovery-results-container" className="space-y-3">
-                                                    {(() => {
-                                                        const q = searchQuery.toLowerCase();
-                                                        const filteredOutlets = nearbyOutlets.filter(o => {
-                                                            const nameMatch = (o.name || "").toLowerCase().includes(q);
-                                                            const cityMatch = (o.city || "").toLowerCase().includes(q);
-                                                            
-                                                            let addrStr = "";
-                                                            if (typeof o.address === 'string') {
-                                                                addrStr = o.address;
-                                                            } else if (o.address && typeof o.address === 'object') {
-                                                                addrStr = `${o.address.street || ""} ${o.address.city || ""} ${o.address.pincode || ""}`;
-                                                            }
-                                                            const addrMatch = addrStr.toLowerCase().includes(q);
-                                                            
-                                                            return !searchQuery || nameMatch || cityMatch || addrMatch;
-                                                        });
-
-                                                        if (filteredOutlets.length === 0) {
-                                                            return (
-                                                                <div key="no-results" className="py-12 flex flex-col items-center text-center px-6">
-                                                                    <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${isLight ? 'bg-neutral-50 border-neutral-100' : 'bg-white/[0.02] border-white/5'}`}>
-                                                                        <Search size={24} className={isLight ? 'text-neutral-300' : 'text-white/10'} />
-                                                                    </div>
-                                                                    <h3 className={`text-sm font-serif italic mb-2 ${isLight ? 'text-neutral-900' : 'text-white/60'}`}>No Sanctuaries Nearby</h3>
-                                                                    <p className={`text-[10px] font-medium leading-relaxed uppercase tracking-widest text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>
-                                                                        Expand your perimeter or search <br/>for a specific destination
-                                                                    </p>
-                                                                </div>
-                                                            );
-                                                        }
-
-                                                        return filteredOutlets.map((o) => {
-                                                            const displayAddr = typeof o.address === 'string' 
-                                                                ? (o.address || o.city || 'Signature Sanctuary')
-                                                                : (o.address ? `${o.address.street || ""}, ${o.address.city || ""}` : (o.city || 'Signature Sanctuary'));
-
-                                                            return (
-                                                                <motion.button
-                                                                    key={o._id || o.id}
-                                                                    initial={{ opacity: 0, y: 10 }}
-                                                                    animate={{ opacity: 1, y: 0 }}
-                                                                    onClick={() => handleSelectOutlet(o)}
-                                                                    className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
-                                                                >
-                                                                    <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                                    <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
-                                                                        <img
-                                                                            src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
-                                                                            alt={o.name}
-                                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="flex-1 min-w-0 relative z-10">
-                                                                        <div className="flex items-center justify-between mb-1">
-                                                                            <h4 className={`text-lg font-serif italic truncate drop-shadow-sm ${isLight ? 'text-neutral-900' : 'text-white'}`}>{o.name}</h4>
-                                                                            <ChevronRight size={16} className={`${isLight ? 'text-neutral-200' : 'text-white/10'} group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all`} />
-                                                                        </div>
-                                                                        <p className={`text-[11px] truncate mb-3 font-medium tracking-tight ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
-                                                                            {displayAddr}
-                                                                        </p>
-
-                                                                        <div className="flex items-center gap-3">
-                                                                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-black/40 border-white/5'}`}>
-                                                                                <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
-                                                                                <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
-                                                                                    {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="flex items-center gap-1 opacity-40">
-                                                                                <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
-                                                                                <span className={`text-[9px] font-bold uppercase tracking-tighter ${isLight ? 'text-neutral-900' : 'text-white'}`}>4.8</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </motion.button>
-                                                            );
-                                                        });
-                                                    })()}
-                                                </div>
-                                            )}
-                                        </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${isLight ? 'text-neutral-300' : 'text-white/20'}`}>Discovery Results</span>
+                                        <button
+                                            onClick={() => setShowLocationModal(true)}
+                                            className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
+                                        >
+                                            <span className="text-[10px] font-medium text-[#C8956C] truncate max-w-[150px] italic">
+                                                {detectedAddress ? `Near ${detectedAddress}` : 'Current Location'}
+                                            </span>
+                                            <MapPin size={10} className="text-[#C8956C]" />
+                                        </button>
                                     </div>
+
+                                    <div className="space-y-3 max-h-[380px] overflow-y-auto px-1 custom-scrollbar pb-2">
+                                        {isFetchingOutlets ? (
+                                            [1, 2, 3].map(i => (
+                                                <div key={`skeleton-${i}`} className="h-28 rounded-3xl bg-white/[0.01] border border-white/[0.03] animate-pulse flex items-center p-4 gap-4">
+                                                    <div className="w-20 h-20 rounded-2xl bg-white/[0.02]" />
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="h-4 w-1/2 bg-white/[0.02] rounded" />
+                                                        <div className="h-3 w-3/4 bg-white/[0.02] rounded" />
+                                                        <div className="h-3 w-1/4 bg-white/[0.02] rounded" />
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div key="discovery-results-container" className="space-y-3">
+                                                {(() => {
+                                                    const q = searchQuery.toLowerCase();
+                                                    const filteredOutlets = nearbyOutlets.filter(o => {
+                                                        const nameMatch = (o.name || "").toLowerCase().includes(q);
+                                                        const cityMatch = (o.city || "").toLowerCase().includes(q);
+
+                                                        let addrStr = "";
+                                                        if (typeof o.address === 'string') {
+                                                            addrStr = o.address;
+                                                        } else if (o.address && typeof o.address === 'object') {
+                                                            addrStr = `${o.address.street || ""} ${o.address.city || ""} ${o.address.pincode || ""}`;
+                                                        }
+                                                        const addrMatch = addrStr.toLowerCase().includes(q);
+
+                                                        return !searchQuery || nameMatch || cityMatch || addrMatch;
+                                                    });
+
+                                                    if (filteredOutlets.length === 0) {
+                                                        return (
+                                                            <div key="no-results" className="py-12 flex flex-col items-center text-center px-6">
+                                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 border ${isLight ? 'bg-neutral-50 border-neutral-100' : 'bg-white/[0.02] border-white/5'}`}>
+                                                                    <Search size={24} className={isLight ? 'text-neutral-300' : 'text-white/10'} />
+                                                                </div>
+                                                                <h3 className={`text-sm font-serif italic mb-2 ${isLight ? 'text-neutral-900' : 'text-white/60'}`}>No Sanctuaries Nearby</h3>
+                                                                <p className={`text-[10px] font-medium leading-relaxed uppercase tracking-widest text-center ${isLight ? 'text-neutral-400' : 'text-white/30'}`}>
+                                                                    Expand your perimeter or search <br />for a specific destination
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    }
+
+                                                    return filteredOutlets.map((o) => {
+                                                        const displayAddr = typeof o.address === 'string'
+                                                            ? (o.address || o.city || 'Signature Sanctuary')
+                                                            : (o.address ? `${o.address.street || ""}, ${o.address.city || ""}` : (o.city || 'Signature Sanctuary'));
+
+                                                        return (
+                                                            <motion.button
+                                                                key={o._id || o.id}
+                                                                initial={{ opacity: 0, y: 10 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                onClick={() => handleSelectOutlet(o)}
+                                                                className={`w-full group relative overflow-hidden p-4 rounded-3xl border transition-all duration-500 flex items-center gap-4 ${isLight ? 'bg-white border-neutral-100 shadow-sm hover:border-[#C8956C]/40' : 'bg-white/[0.02] border-white/[0.05] hover:border-[#C8956C]/40'}`}
+                                                            >
+                                                                <div className="absolute inset-0 bg-gradient-to-r from-[#C8956C]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                <div className={`w-20 h-20 rounded-2xl overflow-hidden shrink-0 border relative z-10 shadow-2xl ${isLight ? 'border-neutral-100' : 'border-white/10'}`}>
+                                                                    <img
+                                                                        src={o.images?.[0] || o.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                                                        alt={o.name}
+                                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                                    />
+                                                                </div>
+                                                                <div className="flex-1 min-w-0 relative z-10">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <h4 className={`text-lg font-serif italic truncate drop-shadow-sm ${isLight ? 'text-neutral-900' : 'text-white'}`}>{o.name}</h4>
+                                                                        <ChevronRight size={16} className={`${isLight ? 'text-neutral-200' : 'text-white/10'} group-hover:text-[#C8956C] transform group-hover:translate-x-1 transition-all`} />
+                                                                    </div>
+                                                                    <p className={`text-[11px] truncate mb-3 font-medium tracking-tight ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
+                                                                        {displayAddr}
+                                                                    </p>
+
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${isLight ? 'bg-neutral-100 border-neutral-200' : 'bg-black/40 border-white/5'}`}>
+                                                                            <div className="h-1 w-1 rounded-full bg-[#C8956C] animate-pulse" />
+                                                                            <span className="text-[9px] font-black text-[#C8956C] uppercase tracking-widest leading-none">
+                                                                                {o.distanceKm != null ? `${o.distanceKm.toFixed(1)} KM` : 'HUB'}
+                                                                            </span>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-1 opacity-40">
+                                                                            <Star size={10} fill="#C8956C" className="text-[#C8956C]" />
+                                                                            <span className={`text-[9px] font-bold uppercase tracking-tighter ${isLight ? 'text-neutral-900' : 'text-white'}`}>4.8</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </motion.button>
+                                                        );
+                                                    });
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
                             </div>
                         )}
@@ -681,48 +680,48 @@ export default function AppLoginPage() {
                 {step === 1 && (
                     <motion.div key="phone" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', minHeight: '80svh' }}>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-                            <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
-                            <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
-                            {selectedOutlet && <p style={{ fontSize: '13px', color: '#C8956C', marginTop: '8px' }}>{selectedOutlet.name}</p>}
-                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>{isRegistering ? 'Join our luxury network' : 'Sign in to continue'}</p>
-                        </div>
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Phone Number</label>
-                            <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: isFocused ? '1.5px solid #C8956C' : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
-                                <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`, flexShrink: 0, height: '60%' }}><span style={{ fontSize: '14px', color: isFocused ? '#C8956C' : colors.textMuted, fontWeight: 800 }}>+91</span></div>
-                                <input type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); setOtpVerified(false); }} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="98765 43210" autoFocus style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.1em', fontWeight: 600 }} />
+                            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                                <img src={isLight ? '/new black wapixo logo .png' : '/new wapixo logo .png'} alt="Logo" className="h-20 w-auto mx-auto mb-5" />
+                                <h1 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 4px', fontFamily: "'Playfair Display', serif" }}>{isRegistering ? 'Create Account' : 'Welcome Back'}</h1>
+                                {selectedOutlet && <p style={{ fontSize: '13px', color: '#C8956C', marginTop: '8px' }}>{selectedOutlet.name}</p>}
+                                <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>{isRegistering ? 'Join our luxury network' : 'Sign in to continue'}</p>
                             </div>
-                        </div>
-
-                        {isRegistering && (
                             <div style={{ marginBottom: '20px' }}>
-                                <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Referral Code (Optional)</label>
-                                <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
-                                    <input 
-                                        type="text" 
-                                        value={appliedReferralCode} 
-                                        onChange={e => setAppliedReferralCode(e.target.value.toUpperCase())} 
-                                        placeholder="E.G. WAP-C2B1D" 
-                                        style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '14px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em', fontWeight: 600 }} 
-                                    />
+                                <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Phone Number</label>
+                                <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: isFocused ? '1.5px solid #C8956C' : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
+                                    <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center', borderRight: `1px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'}`, flexShrink: 0, height: '60%' }}><span style={{ fontSize: '14px', color: isFocused ? '#C8956C' : colors.textMuted, fontWeight: 800 }}>+91</span></div>
+                                    <input type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={e => { setPhone(e.target.value.replace(/\D/g, '')); setError(''); setOtpVerified(false); }} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} placeholder="98765 43210" autoFocus style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '16px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.1em', fontWeight: 600 }} />
                                 </div>
                             </div>
-                        )}
-                        {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendOtp} disabled={loading || phone.length !== 10} style={{ ...S.btn, opacity: (loading || phone.length !== 10) ? 0.5 : 1 }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}</motion.button>
-                        
-                        <button
-                            type="button"
-                            onClick={() => setIsRegistering(!isRegistering)}
-                            style={{ ...S.ghost, display: 'block', margin: '20px auto 0', color: '#C8956C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '11px' }}
-                        >
-                            {isRegistering ? 'Existing User? Login' : 'New User? Register'}
-                        </button>
-                        
-                      
 
-                        <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> & <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a></p>
+                            {isRegistering && (
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block', marginBottom: '6px' }}>Referral Code (Optional)</label>
+                                    <div style={{ background: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)', borderRadius: '20px 6px 20px 6px', display: 'flex', alignItems: 'center', height: '52px', border: `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`, transition: 'all 0.3s' }}>
+                                        <input
+                                            type="text"
+                                            value={appliedReferralCode}
+                                            onChange={e => setAppliedReferralCode(e.target.value.toUpperCase())}
+                                            placeholder="E.G. WAP-C2B1D"
+                                            style={{ flex: 1, background: 'transparent', border: 'none', padding: '0 16px', fontSize: '14px', color: colors.text, outline: 'none', fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em', fontWeight: 600 }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                            {error && <p style={{ fontSize: '13px', color: '#ff4757', marginBottom: '12px', textAlign: 'center' }}>{error}</p>}
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={handleSendOtp} disabled={loading || phone.length !== 10} style={{ ...S.btn, opacity: (loading || phone.length !== 10) ? 0.5 : 1 }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Get OTP'}</motion.button>
+
+                            <button
+                                type="button"
+                                onClick={() => setIsRegistering(!isRegistering)}
+                                style={{ ...S.ghost, display: 'block', margin: '20px auto 0', color: '#C8956C', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '11px' }}
+                            >
+                                {isRegistering ? 'Existing User? Login' : 'New User? Register'}
+                            </button>
+
+
+
+                            <p style={{ fontSize: '12px', color: colors.textMuted, textAlign: 'center', marginTop: '24px' }}>By continuing, you agree to our <a href="/terms" style={{ color: '#C8956C', fontWeight: 600 }}>Terms</a> & <a href="/privacy" style={{ color: '#C8956C', fontWeight: 600 }}>Privacy Policy</a></p>
                         </div>
                     </motion.div>
                 )}
@@ -732,24 +731,24 @@ export default function AppLoginPage() {
                     <motion.div key="otp" custom={direction} variants={slideVariants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }} style={{ width: '100%', maxWidth: '360px', display: 'flex', flexDirection: 'column', minHeight: '80svh' }}>
                         <button onClick={() => goTo(1)} style={{ ...S.ghost, padding: '12px 0', color: isLight ? '#1A1A1A' : 'rgba(255,255,255,0.4)' }}><ArrowLeft size={18} /> Back</button>
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '36px' }}>
-                            <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>Phone Verification</h2>
-                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 4-digit OTP sent to your phone</p>
-                            <p style={{ fontSize: '13px', color: colors.textMuted, margin: '6px 0 0' }}>Sent to <span style={{ color: '#C8956C', fontWeight: 700 }}>{fmtPhone(phone)}</span></p>
-                          
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '28px' }}>
-                            {otp.map((digit, i) => (
-                                <input key={i} ref={otpRefs[i]} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKey(i, e)} autoFocus={i === 0} style={{
-                                    width: '45px', height: '54px', background: digit ? '#C8956C' : (isLight ? '#F5F5F5' : colors.inputBg), border: `1.5px solid ${digit ? '#C8956C' : (isLight ? '#E5E5E5' : colors.border)}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
-                                    cursor: 'text', transition: 'all 0.2s'
-                                }} />
-                            ))}
-                        </div>
-                        <p style={{ textAlign: 'center', fontSize: '14px', color: colors.textMuted, marginBottom: '24px' }}>{countdown > 0 ? <span style={{ fontFamily: 'monospace', fontSize: '16px', color: colors.text, fontWeight: 700 }}>{String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}</span> : null}</p>
-                        {error && <p style={{ fontSize: '13px', color: '#ff4757', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
-                        <motion.button whileTap={{ scale: 0.97 }} onClick={handleVerifyOtp} disabled={loading || otp.join('').length !== 4} style={{ ...S.btn, opacity: (loading || otp.join('').length !== 4) ? 0.5 : 1, marginBottom: '16px' }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Verify'}</motion.button>
-                        <p style={{ textAlign: 'center', fontSize: '13px', color: colors.textMuted }}>Didn't receive? {countdown > 0 ? <span>Wait {countdown}s</span> : <button onClick={handleSendOtp} style={{ ...S.ghost, display: 'inline', color: '#C8956C', fontWeight: 600 }}>Resend</button>}</p>
+                            <div style={{ textAlign: 'center', marginBottom: '36px' }}>
+                                <h2 style={{ fontSize: '24px', fontWeight: 800, color: colors.text, margin: '0 0 10px', fontFamily: "'Playfair Display', serif" }}>Phone Verification</h2>
+                                <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0 }}>Enter the 4-digit OTP sent to your phone</p>
+                                <p style={{ fontSize: '13px', color: colors.textMuted, margin: '6px 0 0' }}>Sent to <span style={{ color: '#C8956C', fontWeight: 700 }}>{fmtPhone(phone)}</span></p>
+
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '28px' }}>
+                                {otp.map((digit, i) => (
+                                    <input key={i} ref={otpRefs[i]} type="text" inputMode="numeric" maxLength={1} value={digit} onChange={e => handleOtpChange(i, e.target.value)} onKeyDown={e => handleOtpKey(i, e)} autoFocus={i === 0} style={{
+                                        width: '45px', height: '54px', background: digit ? '#C8956C' : (isLight ? '#F5F5F5' : colors.inputBg), border: `1.5px solid ${digit ? '#C8956C' : (isLight ? '#E5E5E5' : colors.border)}`, borderRadius: '14px', textAlign: 'center', fontSize: '22px', fontWeight: 800, color: digit ? '#fff' : colors.text, outline: 'none', fontFamily: "'SF Pro Text', sans-serif",
+                                        cursor: 'text', transition: 'all 0.2s'
+                                    }} />
+                                ))}
+                            </div>
+                            <p style={{ textAlign: 'center', fontSize: '14px', color: colors.textMuted, marginBottom: '24px' }}>{countdown > 0 ? <span style={{ fontFamily: 'monospace', fontSize: '16px', color: colors.text, fontWeight: 700 }}>{String(Math.floor(countdown / 60)).padStart(2, '0')}:{String(countdown % 60).padStart(2, '0')}</span> : null}</p>
+                            {error && <p style={{ fontSize: '13px', color: '#ff4757', textAlign: 'center', marginBottom: '12px' }}>{error}</p>}
+                            <motion.button whileTap={{ scale: 0.97 }} onClick={handleVerifyOtp} disabled={loading || otp.join('').length !== 4} style={{ ...S.btn, opacity: (loading || otp.join('').length !== 4) ? 0.5 : 1, marginBottom: '16px' }}>{loading ? <Loader2 size={20} className="animate-spin" /> : 'Verify'}</motion.button>
+                            <p style={{ textAlign: 'center', fontSize: '13px', color: colors.textMuted }}>Didn't receive? {countdown > 0 ? <span>Wait {countdown}s</span> : <button onClick={handleSendOtp} style={{ ...S.ghost, display: 'inline', color: '#C8956C', fontWeight: 600 }}>Resend</button>}</p>
                         </div>
                     </motion.div>
                 )}
@@ -803,7 +802,7 @@ export default function AppLoginPage() {
                             className={`relative w-full max-w-[380px] overflow-hidden rounded-[32px] border ${isLight ? 'bg-white border-neutral-100 shadow-2xl' : 'bg-[#1A1A1A] border-white/5 shadow-2xl'}`}
                         >
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#C8956C] to-transparent opacity-50" />
-                            
+
                             <div className="p-8 flex flex-col items-center text-center">
                                 <div className="relative mb-8">
                                     <div className="absolute inset-0 bg-[#C8956C]/20 blur-2xl rounded-full animate-pulse" />
@@ -819,13 +818,13 @@ export default function AppLoginPage() {
                                 <h2 className={`text-2xl font-serif italic mb-3 leading-tight ${isLight ? 'text-neutral-900' : 'text-white'}`}>
                                     Discover Nearby <span className="text-[#C8956C]">Sanctuaries</span>
                                 </h2>
-                                
+
                                 <p className={`text-sm leading-relaxed mb-8 px-2 font-medium ${isLight ? 'text-neutral-500' : 'text-white/40'}`}>
                                     To provide a curated experience, we'd like to find the finest boutiques in your immediate vicinity.
                                 </p>
 
                                 <div className="w-full space-y-3">
-                                    <motion.button 
+                                    <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleAllowLocation}
@@ -835,7 +834,7 @@ export default function AppLoginPage() {
                                         <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                                     </motion.button>
 
-                                    <button 
+                                    <button
                                         onClick={handleDenyLocation}
                                         className={`w-full h-14 rounded-2xl border text-[10px] font-black uppercase tracking-[0.15em] transition-all ${isLight ? 'border-neutral-200 text-neutral-400 hover:bg-neutral-50 hover:text-neutral-900' : 'border-white/5 text-white/30 hover:bg-white/5 hover:text-white'}`}
                                     >

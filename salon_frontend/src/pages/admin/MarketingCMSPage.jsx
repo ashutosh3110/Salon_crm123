@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,6 +12,7 @@ import {
     Edit,
     Eye,
     Smartphone,
+    ChevronDown,
     Tag,
     Zap,
     X,
@@ -23,7 +24,9 @@ import {
     User,
     UserCircle,
     Camera,
-    MapPin
+    MapPin,
+    Globe,
+    Store
 } from 'lucide-react';
 
 /** Shrink large uploads so base64 fits MongoDB document limits */
@@ -66,10 +69,15 @@ export default function MarketingCMSPage() {
         experts, approveExpertProfile, rejectExpertProfile, deleteExpertProfile, pendingExpertsCount,
         cmsLoading, fetchAppCMS,
     } = useCMS();
-    const { outlets } = useBusiness();
-
     const { user } = useAuth();
     const isSuperAdmin = user?.role === 'superadmin';
+    const { outlets, fetchOutlets } = useBusiness();
+    
+    useEffect(() => {
+        if (isSuperAdmin) {
+            fetchOutlets();
+        }
+    }, [isSuperAdmin, fetchOutlets]);
 
     const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'banners' : 'experts');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,6 +104,7 @@ export default function MarketingCMSPage() {
         expiry: '',
         validityText: '',
         btnText: 'Apply',
+        outletId: '',
         image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
     });
 
@@ -110,6 +119,7 @@ export default function MarketingCMSPage() {
             expiry: '',
             validityText: '',
             btnText: 'Apply',
+            outletId: '',
             image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
         });
         setEditingId(null);
@@ -169,6 +179,7 @@ export default function MarketingCMSPage() {
             expiry: item.expiry || '',
             validityText: item.validityText || '',
             btnText: item.btnText || 'Apply',
+            outletId: item.outletId || '',
             image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
         });
         setEditingId(item.id);
@@ -637,9 +648,10 @@ export default function MarketingCMSPage() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white w-full max-w-sm rounded-2xl border border-border shadow-2xl overflow-hidden relative"
-                        >                            <div className="p-6">
-                                    <div className="px-6 py-4 border-b border-border flex items-center justify-between mx-[-1.5rem] mt-[-1.5rem] mb-6">
+                            className="bg-white w-full max-w-xl rounded-2xl border border-border shadow-2xl relative"
+                        >
+                            <div className="p-5">
+                                    <div className="px-6 py-3 border-b border-border flex items-center justify-between mx-[-1.25rem] mt-[-1.25rem] mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-lg bg-slate-50 flex items-center justify-center text-text-secondary border border-border/50">
                                                 {modalType === 'banner' ? <ImageIcon className="w-5 h-5" /> : <Tag className="w-5 h-5" />}
@@ -657,66 +669,65 @@ export default function MarketingCMSPage() {
                                         </button>
                                     </div>
 
-                                <form className="space-y-4 text-left" onSubmit={handlePublish}>
+                                <form className="space-y-3 text-left" onSubmit={handlePublish}>
                                     {modalType === 'banner' ? (
                                         <>
-                                            <div className="grid gap-4">
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Main text (e.g. ₹200 OFF) *</label>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Main text *</label>
                                                     <input 
                                                         required 
                                                         type="text" 
                                                         value={formData.title}
                                                         onChange={(e) => setFormData({...formData, title: e.target.value})}
                                                         placeholder="e.g. ₹200 OFF" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
                                                     />
                                                 </div>
-                                                <div className="space-y-1.5">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Validity line (top of card)</label>
-                                                    <input 
-                                                        type="text" 
-                                                        value={formData.validityText}
-                                                        onChange={(e) => setFormData({...formData, validityText: e.target.value})}
-                                                        placeholder="e.g. VALID 20 MAR - 24 JUN" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
-                                                    />
+                                                <div className="space-y-1 relative">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Outlet</label>
+                                                    <div className="relative">
+                                                        <select 
+                                                            value={formData.outletId}
+                                                            onChange={(e) => setFormData({...formData, outletId: e.target.value})}
+                                                            className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer relative z-10"
+                                                        >
+                                                            <option value="">All Outlets</option>
+                                                            {outlets && outlets.length > 0 ? outlets.map(o => (
+                                                                <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
+                                                            )) : null}
+                                                        </select>
+                                                        <ChevronDown className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20" />
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-1.5">
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Button label</label>
                                                     <input 
                                                         type="text" 
                                                         value={formData.btnText}
                                                         onChange={(e) => setFormData({...formData, btnText: e.target.value})}
                                                         placeholder="Apply" 
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
+                                                        className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30" 
                                                     />
                                                 </div>
-                                                <div className="space-y-1.5">
+                                                <div className="space-y-1 relative">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Show for</label>
-                                                    <select 
-                                                        value={formData.gender}
-                                                        onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
-                                                    >
-                                                        <option value="all">Everyone</option>
-                                                        <option value="men">Men only</option>
-                                                        <option value="women">Women only</option>
-                                                    </select>
+                                                    <div className="relative">
+                                                        <select 
+                                                            value={formData.gender}
+                                                            onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                                                            className="w-full px-4 py-2 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer relative z-10"
+                                                        >
+                                                            <option value="all">Everyone</option>
+                                                            <option value="men">Men only</option>
+                                                            <option value="women">Women only</option>
+                                                        </select>
+                                                        <ChevronDown className="w-4 h-4 text-text-muted absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none z-20" />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">When customer taps the banner</label>
-                                                <select 
-                                                    value={formData.link}
-                                                    onChange={(e) => setFormData({...formData, link: e.target.value})}
-                                                    className="w-full px-4 py-2.5 bg-white border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all appearance-none cursor-pointer"
-                                                >
-                                                    <option value="/app/book">Book appointment</option>
-                                                    <option value="/app/home">Home</option>
-                                                    <option value="/app/services">Services</option>
-                                                    <option value="/app/membership">Membership</option>
-                                                </select>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Creative</label>
@@ -729,7 +740,7 @@ export default function MarketingCMSPage() {
                                                 />
                                                 <label 
                                                     htmlFor="banner-upload"
-                                                    className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
+                                                    className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
                                                     {isUploading ? (
                                                         <div className="flex flex-col items-center gap-2">
@@ -802,7 +813,7 @@ export default function MarketingCMSPage() {
                                                 />
                                                 <label 
                                                     htmlFor="lookbook-upload"
-                                                    className="border-2 border-dashed border-border p-6 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[120px]"
+                                                    className="border-2 border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 bg-slate-50 rounded-xl hover:border-primary/40 transition-all cursor-pointer group overflow-hidden relative min-h-[90px]"
                                                 >
                                                     {isUploading ? (
                                                         <div className="flex flex-col items-center gap-2">

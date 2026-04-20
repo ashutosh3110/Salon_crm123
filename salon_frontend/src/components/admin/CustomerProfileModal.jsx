@@ -53,7 +53,6 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 name: customer.name,
                 phone: customer.phone,
                 preferredService: customer.preferredService,
-                status: customer.status,
                 tags: customer.tags,
                 dob: customer.dob || '',
                 anniversary: customer.anniversary || '',

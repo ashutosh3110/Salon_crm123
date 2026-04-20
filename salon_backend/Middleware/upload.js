@@ -34,7 +34,7 @@ const createDiskStorage = (subfolder) => multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: createDiskStorage('general') });
 const categoryUpload = multer({ storage: createDiskStorage('categories') });
 const serviceUpload = multer({ storage: createDiskStorage('services') });
 const memoryStorage = multer.memoryStorage();

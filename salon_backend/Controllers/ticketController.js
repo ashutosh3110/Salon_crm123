@@ -54,7 +54,10 @@ exports.createTicket = async (req, res) => {
         const newTicket = { ...req.body };
         if (req.user) {
             newTicket.userId = req.user._id;
-            newTicket.tenantId = req.user.salonId;
+            // Only set tenantId if it's not already provided or if the user is not a superadmin
+            if (!newTicket.tenantId && req.user.role !== 'superadmin') {
+                newTicket.tenantId = req.user.salonId;
+            }
         }
 
         const ticket = await Ticket.create(newTicket);

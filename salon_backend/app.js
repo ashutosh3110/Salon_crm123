@@ -85,6 +85,6 @@ initCronJobs();
 
 // Root route
 const uploads = require('./Routers/uploadRoutes');
-app.use('/api/uploads', uploads);
+app.use('/uploads', uploads);
 
 module.exports = app;

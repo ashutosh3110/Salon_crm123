@@ -437,11 +437,21 @@ export default function AppHomePage() {
                     subtitle: validity ? validity.toUpperCase() : 'EXCLUSIVE OFFER',
                     img: p.image,
                     btnText: (p.btnText && String(p.btnText).trim()) || 'Apply',
-                    link: p.link || '/app/booking',
+                    link: p.link || '/app',
+                    outletId: p.outletId,
                     isCmsBanner: true,
                 };
             });
     }, [banners, g]);
+
+    const handleBannerClick = (banner) => {
+        if (banner && banner.outletId) {
+            setActiveOutletId(banner.outletId);
+        }
+        if (banner && banner.link) {
+            navigate(banner.link);
+        }
+    };
 
     const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
     const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
@@ -833,22 +843,27 @@ export default function AppHomePage() {
                                         />
                                     ) : null}
                                     <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
-                                    <div style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%' }}>
+                                    <div 
+                                        style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
+                                        onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}
+                                    >
                                         <p style={{ fontSize: '10px', color: '#C8956C', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
                                             {filteredPromos[currentPromoIndex]?.subtitle}
                                         </p>
                                         <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
                                             {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
                                         </h3>
-                                        <span style={{
-                                            display: 'inline-block',
-                                            background: colors.accent, border: 'none', borderRadius: '22px 5px 22px 5px',
-                                            padding: '10px 26px', color: '#fff', fontSize: '12px', fontWeight: 800,
-                                            cursor: 'pointer', boxShadow: '0 8px 24px rgba(200,149,108,0.35)',
-                                            textTransform: 'uppercase', letterSpacing: '0.06em',
-                                        }}>
+                                        <motion.span 
+                                            whileTap={{ scale: 0.95 }}
+                                            style={{
+                                                display: 'inline-block',
+                                                background: colors.accent, border: 'none', borderRadius: '22px 5px 22px 5px',
+                                                padding: '10px 26px', color: '#fff', fontSize: '12px', fontWeight: 800,
+                                                boxShadow: '0 8px 24px rgba(200,149,108,0.35)',
+                                                textTransform: 'uppercase', letterSpacing: '0.06em',
+                                            }}>
                                             {filteredPromos[currentPromoIndex]?.btnText}
-                                        </span>
+                                        </motion.span>
                                     </div>
                                 </motion.div>
                             ) : (

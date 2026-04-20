@@ -5,12 +5,19 @@ exports.uploadImage = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
+
+    // Construct full absolute URL for local environment
+    const filename = req.file.filename;
+    const protocol = req.protocol;
+    const host = req.get('host');
+    const displayUrl = `${protocol}://${host}/uploads/general/${filename}`;
     
-    // Multer-storage-cloudinary automatically uploads the file to Cloudinary
-    // and adds the Cloudinary response to req.file
+    console.log('File uploaded local path:', req.file.path);
+    console.log('Returning URL:', displayUrl);
+
     res.status(200).json({
         success: true,
-        url: req.file.path || req.file.secure_url,
-        public_id: req.file.filename
+        url: displayUrl,
+        public_id: filename
     });
 };

@@ -30,15 +30,42 @@ export default function SASupportPage() {
     const [loadingTickets, setLoadingTickets] = useState(true);
     const [activeTab, setActiveTab] = useState('tickets'); // 'tickets' or 'faqs'
 
-    // FAQ Management State
     const [faqs, setFaqs] = useState([]);
     const [loadingFaqs, setLoadingFaqs] = useState(false);
     const [savingFaqs, setSavingFaqs] = useState(false);
 
+    // Create Ticket State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [newTicket, setNewTicket] = useState({
+        subject: '',
+        description: '',
+        priority: 'low',
+        status: 'open',
+        tenantId: ''
+    });
+
+    // Tenants/Salons for ticket switching
+    const [salons, setSalons] = useState([]);
+
     useEffect(() => {
-        if (activeTab === 'tickets') fetchTickets();
+        if (activeTab === 'tickets') {
+            fetchTickets();
+            fetchSalons();
+        }
         if (activeTab === 'faqs') fetchFAQs();
     }, [activeTab]);
+
+    const fetchSalons = async () => {
+        try {
+            const res = await api.get('/salons'); // Adjust endpoint if needed
+            if (res.data.success) {
+                setSalons(res.data.data || []);
+            }
+        } catch (err) {
+            console.error('[Support] Salon fetch failed:', err);
+        }
+    };
 
     const fetchFAQs = async () => {
         try {
@@ -105,11 +132,47 @@ export default function SASupportPage() {
         try {
             const response = await api.patch(`/tickets/${id}`, { status });
             if (response.data.success) {
-                setTickets(tickets.map(t => t._id === id ? response.data.data : t));
-                showToast(`Ticket status updated to ${status}`);
+                setTickets(tickets.map(t => t._id === id ? { ...t, status: response.data.data.status } : t));
+                showToast(`Ticket status: ${status.toUpperCase()}`);
             }
         } catch (error) {
             console.error('Failed to update status:', error);
+            showToast('Status update failed', 'error');
+        }
+    };
+
+    const handleDeleteTicket = async (id) => {
+        if (!confirm('Are you sure you want to permanently delete this ticket?')) return;
+        try {
+            const response = await api.delete(`/tickets/${id}`);
+            if (response.data.success) {
+                setTickets(tickets.filter(t => t._id !== id));
+                showToast('Ticket permanently removed');
+            }
+        } catch (err) {
+            showToast('Failed to delete ticket', 'error');
+        }
+    };
+
+    const handleCreateTicket = async (e) => {
+        e.preventDefault();
+        if (!newTicket.subject.trim() || !newTicket.description.trim()) {
+            return showToast('Subject and description are required', 'error');
+        }
+
+        try {
+            setCreating(true);
+            const res = await api.post('/tickets', newTicket);
+            if (res.data.success) {
+                showToast('Ticket created successfully');
+                setIsCreateModalOpen(false);
+                setNewTicket({ subject: '', description: '', priority: 'low', status: 'open', tenantId: '' });
+                fetchTickets();
+            }
+        } catch (err) {
+            showToast('Failed to create ticket', 'error');
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -175,9 +238,17 @@ export default function SASupportPage() {
                                 <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Manage requests from salon owners and staff</p>
                             </div>
                         </div>
-                        <button onClick={fetchTickets} className="p-2 hover:bg-surface rounded-lg transition-colors text-text-muted hover:text-primary">
-                            <RefreshCw className={`w-4 h-4 ${loadingTickets ? 'animate-spin' : ''}`} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg active:scale-95"
+                            >
+                                <Plus className="w-4 h-4" /> Create Ticket
+                            </button>
+                            <button onClick={fetchTickets} className="p-2 hover:bg-surface rounded-lg transition-colors text-text-muted hover:text-primary">
+                                <RefreshCw className={`w-4 h-4 ${loadingTickets ? 'animate-spin' : ''}`} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
@@ -232,20 +303,30 @@ export default function SASupportPage() {
                                             </div>
 
                                             <div className="flex md:flex-col items-center gap-2">
-                                                {t.status !== 'resolved' && (
-                                                    <button 
-                                                        onClick={() => updateStatus(t._id, 'resolved')}
-                                                        className="flex-1 md:w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-500/10"
+                                                <div className="flex gap-2 w-full">
+                                                    <select 
+                                                        value={t.status}
+                                                        onChange={(e) => updateStatus(t._id, e.target.value)}
+                                                        className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all"
                                                     >
-                                                        <CheckCircle className="w-3.5 h-3.5" /> Close ticket
+                                                        {Object.entries(STATUS_STYLES).map(([val, cfg]) => (
+                                                            <option key={val} value={val}>{cfg.label}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button 
+                                                        onClick={() => handleDeleteTicket(t._id)}
+                                                        className="p-2 text-text-muted hover:text-red-500 transition-colors rounded-xl hover:bg-red-50 border border-transparent hover:border-red-100"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
-                                                )}
-                                                {t.status === 'open' && (
+                                                </div>
+                                                
+                                                {t.status !== 'resolved' && t.status !== 'closed' && (
                                                     <button 
-                                                        onClick={() => updateStatus(t._id, 'in-progress')}
-                                                        className="flex-1 md:w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-amber-500/10"
+                                                        onClick={() => updateStatus(t._id, 'closed')}
+                                                        className="md:w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
                                                     >
-                                                        <Clock className="w-3.5 h-3.5" /> In Progress
+                                                        <XCircle className="w-3.5 h-3.5" /> Close ticket
                                                     </button>
                                                 )}
                                             </div>
@@ -335,6 +416,106 @@ export default function SASupportPage() {
                                 </div>
                             ))
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Create Ticket Modal */}
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
+                    <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-border flex items-center justify-between bg-surface/50">
+                            <h2 className="text-xl font-black italic uppercase tracking-tight">Create <span className="text-primary italic">Support Ticket</span></h2>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-surface rounded-xl transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleCreateTicket} className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Ticket Subject</label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    value={newTicket.subject}
+                                    onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
+                                    placeholder="e.g., App sync issue"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all placeholder:text-text-muted/50"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Target Salon (Optional)</label>
+                                <select 
+                                    value={newTicket.tenantId}
+                                    onChange={(e) => setNewTicket({...newTicket, tenantId: e.target.value})}
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                >
+                                    <option value="">Platform Level (Global)</option>
+                                    {salons.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} ({s.status})</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Priority</label>
+                                    <select 
+                                        value={newTicket.priority}
+                                        onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                    >
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Initial Status</label>
+                                    <select 
+                                        value={newTicket.status}
+                                        onChange={(e) => setNewTicket({...newTicket, status: e.target.value})}
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-primary outline-none transition-all"
+                                    >
+                                        <option value="open">Open</option>
+                                        <option value="in-progress">In Progress</option>
+                                        <option value="escalated">Escalated</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Description</label>
+                                <textarea 
+                                    required
+                                    value={newTicket.description}
+                                    onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                                    rows="4"
+                                    placeholder="Describe the issue in detail..."
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted/50"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsCreateModalOpen(false)}
+                                    className="flex-1 px-6 py-3 border border-border rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-surface transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={creating}
+                                    className="flex-[2] px-6 py-3 bg-primary text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-primary/20 transition-all disabled:opacity-50"
+                                >
+                                    {creating ? <RefreshCw className="w-4 h-4 animate-spin mx-auto" /> : 'Create Ticket'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
