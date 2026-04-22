@@ -12,7 +12,7 @@ import {
     Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Components ───────────────────────────────────────────────────────── */
 
@@ -57,42 +57,21 @@ function SectionHeader({ title, desc, icon: Icon, badge }) {
 /* ─── Main Page ────────────────────────────────────────────────────────── */
 
 export default function MarketingHub() {
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState('whatsapp');
     const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
     const [campaignStep, setCampaignStep] = useState(1); // 1: Audience, 2: Message, 3: Sending
     const [campaignForm, setCampaignForm] = useState({
         name: '',
-        type: 'bulk', // bulk or segmented
+        type: 'bulk', // bulk, segmented, or selective
         segment: 'all',
+        selectedCustomers: [], // array of IDs
         message: '',
         schedule: 'now'
     });
     const [sendingProgress, setSendingProgress] = useState(0);
     const [isSending, setIsSending] = useState(false);
-    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const [isContactListOpen, setIsContactListOpen] = useState(false);
     const [campaignError, setCampaignError] = useState('');
-    const NEWSLETTER_STORAGE_KEY = 'marketing_newsletter_draft';
-    const [newsletterDraft, setNewsletterDraft] = useState(() => {
-        try {
-            const saved = localStorage.getItem('marketing_newsletter_draft');
-            return saved ? JSON.parse(saved) : { headline: 'Your Salon Name', bodyText: 'Edit this text or drag new blocks here to build your email.', buttonText: 'Book Now' };
-        } catch {
-            return { headline: 'Your Salon Name', bodyText: 'Edit this text or drag new blocks here to build your email.', buttonText: 'Book Now' };
-        }
-    });
-    const [newsletterSaved, setNewsletterSaved] = useState(false);
-    const [testEmailSent, setTestEmailSent] = useState(false);
-
-    useEffect(() => {
-        if (isEmailModalOpen) {
-            try {
-                const saved = localStorage.getItem(NEWSLETTER_STORAGE_KEY);
-                if (saved) setNewsletterDraft(JSON.parse(saved));
-            } catch { /* ignore */ }
-        }
-    }, [isEmailModalOpen]);
-
     const [dashboardData, setDashboardData] = useState(null);
     const [segments, setSegments] = useState([]);
     const [campaigns, setCampaigns] = useState([]);
@@ -101,7 +80,7 @@ export default function MarketingHub() {
 
     const loadDashboard = async () => {
         try {
-            const res = await mockApi.get('/marketing/dashboard');
+            const res = await api.get('/marketing/dashboard');
             if (res.data?.success) setDashboardData(res.data.data);
         } catch (e) {
             setDashboardData(null);
@@ -110,7 +89,7 @@ export default function MarketingHub() {
 
     const loadSegments = async () => {
         try {
-            const res = await mockApi.get('/marketing/segments');
+            const res = await api.get('/marketing/segments');
             if (res.data?.success) setSegments(res.data.data || []);
         } catch (e) {
             setSegments([]);
@@ -120,7 +99,7 @@ export default function MarketingHub() {
     const loadCampaigns = async () => {
         setCampaignsLoading(true);
         try {
-            const res = await mockApi.get('/marketing/campaigns?limit=100');
+            const res = await api.get('/marketing/campaigns?limit=100');
             if (res.data?.success) setCampaigns(res.data.data?.results || []);
         } catch (e) {
             setCampaigns([]);
@@ -159,16 +138,21 @@ export default function MarketingHub() {
                 name: campaignForm.name,
                 type: campaignForm.type,
                 segment: campaignForm.type === 'segmented' ? campaignForm.segment : 'all',
+                selectedCustomers: campaignForm.type === 'selective' ? campaignForm.selectedCustomers : [],
                 message: campaignForm.message,
                 channel: 'whatsapp',
             };
-            await mockApi.post('/marketing/campaigns', payload);
+            console.log('🚀 Initiating WhatsApp campaign...', payload);
+            const res = await api.post('/marketing/campaigns', payload);
+            console.log('✅ Campaign response received:', res.data);
+            
             clearInterval(interval);
             setSendingProgress(100);
             await loadCampaigns();
             await loadDashboard();
             await loadSegments();
         } catch (err) {
+            console.error('❌ Campaign sending FAILED:', err.response?.data || err.message);
             clearInterval(interval);
             setCampaignError(err?.response?.data?.message || err?.message || 'Failed to create campaign');
             setIsSending(false);
@@ -193,8 +177,8 @@ export default function MarketingHub() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 text-left">
                 <div className="text-left font-black leading-none">
-                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">Marketing Hub</h1>
-                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Run campaigns and connect with customers easily</p>
+                    <h1 className="text-2xl sm:text-3xl font-black text-text tracking-tight uppercase leading-none">WhatsApp Marketing</h1>
+                    <p className="text-[10px] sm:text-sm text-text-secondary mt-2 uppercase tracking-[0.1em] opacity-80 leading-tight">Send templates to all or selected customers</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                     <button className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-6 py-4 rounded-none bg-white border border-border text-text-secondary text-[10px] sm:text-xs font-black uppercase tracking-widest hover:border-primary/30 hover:text-primary transition-all shadow-sm">
@@ -209,38 +193,11 @@ export default function MarketingHub() {
                 </div>
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {tabs.map(t => (
-                    <button
-                        key={t.id}
-                        onClick={() => setActiveTab(t.id)}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${activeTab === t.id
-                            ? 'bg-primary border-primary text-primary-foreground shadow-lg shadow-primary/20'
-                            : 'bg-surface border-border text-text-muted hover:border-primary/30 hover:text-primary'
-                            }`}
-                    >
-                        <t.icon className="w-3.5 h-3.5 shrink-0" />
-                        {t.label}
-                    </button>
-                ))}
-            </div>
-
             {/* Tab Content */}
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    {activeTab === 'dashboard' && <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />}
-                    {activeTab === 'whatsapp' && <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />}
-                    {activeTab === 'email' && <EmailContent onOpenNewsletter={() => setIsEmailModalOpen(true)} onOpenContactList={() => setIsContactListOpen(true)} />}
-                    {activeTab === 'automations' && <AutomationsContent />}
-                </motion.div>
-            </AnimatePresence>
+            <div className="space-y-6">
+                <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />
+                <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />
+            </div>
 
             {/* ── Campaign Wizard Modal ── */}
             <AnimatePresence>
@@ -289,7 +246,8 @@ export default function MarketingHub() {
                                         <div className="grid grid-cols-2 gap-3">
                                             {[
                                                 { id: 'bulk', label: 'Send to Everyone', desc: 'All Customers', icon: Users },
-                                                { id: 'segmented', label: 'Send to Specific Group', desc: 'Selected Segment', icon: Zap },
+                                                { id: 'segmented', label: 'By Segment', desc: 'Auto Groups', icon: Zap },
+                                                { id: 'selective', label: 'Pick Specific', desc: 'Selected List', icon: Target },
                                             ].map(t => (
                                                 <button
                                                     key={t.id}
@@ -328,6 +286,34 @@ export default function MarketingHub() {
                                                     );
                                                 })}
                                             </div>
+                                        </motion.div>
+                                    )}
+
+                                    {campaignForm.type === 'selective' && (
+                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Recipients ({campaignForm.selectedCustomers.length})</label>
+                                                <button 
+                                                    onClick={() => setIsContactListOpen(true)}
+                                                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
+                                                >
+                                                    + Pick Customers
+                                                </button>
+                                            </div>
+                                            {campaignForm.selectedCustomers.length > 0 ? (
+                                                <div className="max-h-32 overflow-y-auto p-3 bg-surface border border-border rounded-xl flex flex-wrap gap-2 no-scrollbar">
+                                                    {campaignForm.selectedCustomers.map(id => (
+                                                        <div key={id} className="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-lg uppercase flex items-center gap-1">
+                                                            {id.slice(-4)}
+                                                            <button onClick={() => setCampaignForm(p => ({ ...p, selectedCustomers: p.selectedCustomers.filter(x => x !== id) }))} className="hover:text-rose-500"><XCircle size={10} /></button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl opacity-40">
+                                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">No customers selected</p>
+                                                </div>
+                                            )}
                                         </motion.div>
                                     )}
 
@@ -371,7 +357,9 @@ export default function MarketingHub() {
                                                 <div className="text-sm font-black text-emerald-900">
                                                     {campaignForm.type === 'bulk'
                                                         ? (segments.find(s => s.id === 'all')?.count ?? 0).toLocaleString()
-                                                        : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0).toLocaleString()
+                                                        : campaignForm.type === 'selective'
+                                                            ? campaignForm.selectedCustomers.length.toLocaleString()
+                                                            : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0).toLocaleString()
                                                     } <span className="text-[10px] font-bold opacity-60">customers</span>
                                                 </div>
                                             </div>
@@ -443,97 +431,25 @@ export default function MarketingHub() {
                 )}
             </AnimatePresence>
 
-            {/* ── Email Newsletter Builder Modal ── */}
             <AnimatePresence>
-                {isEmailModalOpen && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEmailModalOpen(false)} />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] w-full max-w-4xl h-[80vh] shadow-2xl relative overflow-hidden flex flex-col">
-                            <div className="px-8 py-6 border-b border-border flex items-center justify-between">
-                                <h3 className="text-xl font-black text-text uppercase tracking-tight">Newsletter Builder</h3>
-                                <button onClick={() => setIsEmailModalOpen(false)} className="p-2 hover:bg-surface rounded-full"><XCircle className="w-6 h-6 text-text-muted" /></button>
-                            </div>
-                            <div className="flex-1 flex bg-slate-50 overflow-hidden">
-                                <div className="w-64 border-r border-border p-6 space-y-4 bg-white shrink-0">
-                                    <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">BLOCKS</h4>
-                                    {['Hero Image', 'Button', 'Text Block', 'Service List', 'Footer'].map(b => (
-                                        <div key={b} className="p-3 bg-surface border border-border rounded-xl text-xs font-bold cursor-default hover:border-primary/50 transition-all flex items-center gap-2">
-                                            <Layout className="w-3.5 h-3.5 text-primary" /> {b}
-                                        </div>
-                                    ))}
-                                    <p className="text-[10px] text-text-muted mt-4">Edit content in the preview area.</p>
-                                </div>
-                                <div className="flex-1 p-8 overflow-y-auto">
-                                    <div className="w-full max-w-md mx-auto bg-white shadow-xl min-h-[500px] border border-border p-8 space-y-6">
-                                        <div className="w-full h-32 bg-slate-100 rounded-xl flex items-center justify-center italic text-text-muted text-xs">Header image (upload coming soon)</div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Headline</label>
-                                            <input
-                                                type="text"
-                                                value={newsletterDraft.headline}
-                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, headline: e.target.value }))}
-                                                className="w-full text-2xl font-black text-slate-800 bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none py-1"
-                                                placeholder="Your Salon Name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Body Text</label>
-                                            <textarea
-                                                value={newsletterDraft.bodyText}
-                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, bodyText: e.target.value }))}
-                                                rows={4}
-                                                className="w-full text-sm text-slate-600 bg-transparent border border-transparent hover:border-border focus:border-primary focus:outline-none rounded-lg p-2 resize-none"
-                                                placeholder="Edit this text..."
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest block mb-1">Button Text</label>
-                                            <input
-                                                type="text"
-                                                value={newsletterDraft.buttonText}
-                                                onChange={(e) => setNewsletterDraft((p) => ({ ...p, buttonText: e.target.value }))}
-                                                className="w-full text-sm font-black uppercase tracking-widest bg-slate-100 px-4 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
-                                                placeholder="Book Now"
-                                            />
-                                        </div>
-                                        <div className="pt-4">
-                                            <div className="py-3 px-8 bg-slate-900 text-white inline-block rounded-lg font-black uppercase text-[10px] tracking-widest cursor-default">
-                                                {newsletterDraft.buttonText || 'Book Now'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-6 border-t border-border flex justify-end gap-3 bg-white">
-                                <button
-                                    onClick={() => {
-                                        try {
-                                            localStorage.setItem(NEWSLETTER_STORAGE_KEY, JSON.stringify(newsletterDraft));
-                                            setNewsletterSaved(true);
-                                            setTimeout(() => setNewsletterSaved(false), 2000);
-                                        } catch (e) { /* ignore */ }
-                                    }}
-                                    className="px-6 py-2.5 rounded-xl border border-border text-xs font-black uppercase tracking-widest hover:bg-surface transition-colors"
-                                >
-                                    {newsletterSaved ? 'Saved!' : 'Save Draft'}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setTestEmailSent(true);
-                                        setTimeout(() => setTestEmailSent(false), 2500);
-                                    }}
-                                    className="px-8 py-2.5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all"
-                                >
-                                    {testEmailSent ? 'Sent!' : 'Send Test Email'}
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
+                {/* ── Contact List Modal ── */}
+                <ContactListModal 
+                    isOpen={isContactListOpen} 
+                    onClose={() => setIsContactListOpen(false)} 
+                    selectionMode={campaignForm.type === 'selective'}
+                    selectedIds={campaignForm.selectedCustomers}
+                    onToggleSelect={(id) => {
+                        setCampaignForm(prev => {
+                            const list = prev.selectedCustomers;
+                            if (list.includes(id)) {
+                                return { ...prev, selectedCustomers: list.filter(x => x !== id) };
+                            } else {
+                                return { ...prev, selectedCustomers: [...list, id] };
+                            }
+                        });
+                    }}
+                />
             </AnimatePresence>
-
-            {/* ── Contact List Modal ── */}
-            <ContactListModal isOpen={isContactListOpen} onClose={() => setIsContactListOpen(false)} />
         </div>
     );
 }
@@ -775,7 +691,7 @@ function AutomationsContent() {
     const loadAutomations = async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/marketing/automations');
+            const res = await api.get('/marketing/automations');
             const data = res.data?.data || [];
             setFlows(Array.isArray(data) ? data : []);
             if (data.length > 0 && !selectedId) setSelectedId(data[0].id);
@@ -799,7 +715,7 @@ function AutomationsContent() {
     const handleToggle = async (flowId, enabled) => {
         setActionLoading(true);
         try {
-            await mockApi.patch(`/marketing/automations/${flowId}`, { enabled });
+            await api.patch(`/marketing/automations/${flowId}`, { enabled });
             setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, enabled } : f)));
         } catch (e) {
             console.error(e);
@@ -811,7 +727,7 @@ function AutomationsContent() {
     const handleSaveMessage = async (flowId, messageTemplate) => {
         setActionLoading(true);
         try {
-            const res = await mockApi.patch(`/marketing/automations/${flowId}`, { messageTemplate });
+            const res = await api.patch(`/marketing/automations/${flowId}`, { messageTemplate });
             setFlows((prev) => prev.map((f) => (f.id === flowId ? { ...f, preview: res.data?.data?.preview ?? messageTemplate } : f)));
             setEditModal(null);
         } catch (e) {
@@ -1016,7 +932,7 @@ function AutomationsContent() {
 }
 
 /* ─── Contact List Modal ───────────────────────────────────────────────── */
-function ContactListModal({ isOpen, onClose }) {
+function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds = [], onToggleSelect }) {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -1079,6 +995,11 @@ function ContactListModal({ isOpen, onClose }) {
                             <table className="w-full min-w-[600px]">
                                 <thead>
                                     <tr className="border-b border-border">
+                                        {selectionMode && (
+                                            <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest w-10">
+                                                Select
+                                            </th>
+                                        )}
                                         <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Name</th>
                                         <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Email</th>
                                         <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Phone</th>
@@ -1087,8 +1008,21 @@ function ContactListModal({ isOpen, onClose }) {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.map((c) => (
-                                        <tr key={c._id || c.id} className="border-b border-border/50 hover:bg-surface/30">
+                                    {filtered.map((c) => {
+                                        const isSelected = selectedIds.includes(c._id || c.id);
+                                        return (
+                                            <tr 
+                                                key={c._id || c.id} 
+                                                className={`border-b border-border/50 transition-colors ${isSelected ? 'bg-primary/5' : 'hover:bg-surface/30'} ${selectionMode ? 'cursor-pointer' : ''}`}
+                                                onClick={() => selectionMode && onToggleSelect(c._id || c.id)}
+                                            >
+                                                {selectionMode && (
+                                                    <td className="px-4 py-3">
+                                                        <div className={`w-4 h-4 border-2 rounded flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary' : 'border-border'}`}>
+                                                            {isSelected && <CheckCircle size={10} className="text-white" />}
+                                                        </div>
+                                                    </td>
+                                                )}
                                             <td className="px-4 py-3 text-sm font-bold text-text">{c.name || '—'}</td>
                                             <td className="px-4 py-3 text-sm text-text-secondary">{c.email || '—'}</td>
                                             <td className="px-4 py-3 text-sm text-text-secondary font-mono">{c.phone || '—'}</td>
@@ -1097,7 +1031,8 @@ function ContactListModal({ isOpen, onClose }) {
                                                 {c.birthday ? new Date(c.birthday).toISOString().slice(0, 10) : '—'}
                                             </td>
                                         </tr>
-                                    ))}
+                                    );
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -1111,59 +1046,4 @@ function ContactListModal({ isOpen, onClose }) {
     );
 }
 
-/* ─── Email Tab ────────────────────────────────────────────────────────── */
-function EmailContent({ onOpenNewsletter, onOpenContactList }) {
-    return (
-        <div className="space-y-6">
-            <SectionHeader
-                title="Email Marketing"
-                desc="Create email campaigns and send updates to your customers."
-                icon={Mail}
-            />
 
-            <div className="grid md:grid-cols-3 gap-6">
-                {[
-                    { label: 'Newsletter Builder', icon: Layout, desc: 'Create emails with easy blocks', color: 'from-blue-500 to-indigo-600', action: onOpenNewsletter },
-                    { label: 'Auto Replies', icon: Zap, desc: 'Birthday and visit based emails', color: 'from-primary to-[#8B1A2D]' },
-                    { label: 'Contact Lists', icon: Users, desc: 'Manage and clean customer lists', color: 'from-emerald-500 to-teal-600', action: onOpenContactList },
-                ].map(b => (
-                    <motion.button
-                        whileHover={{ y: -5 }}
-                        key={b.label}
-                        onClick={b.action}
-                        className="bg-white rounded-3xl border border-border p-6 shadow-sm text-left group transition-all hover:shadow-xl hover:shadow-slate-100"
-                    >
-                        <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${b.color} flex items-center justify-center mb-6 shadow-lg shadow-slate-200 group-hover:scale-110 transition-transform`}>
-                            <b.icon className="w-6 h-6 text-white" />
-                        </div>
-                        <h4 className="text-sm font-black text-text uppercase tracking-wider mb-2">{b.label}</h4>
-                        <p className="text-xs text-text-muted font-medium mb-6 leading-relaxed">{b.desc}</p>
-                        <div className="h-0.5 w-8 bg-border group-hover:bg-primary group-hover:w-full transition-all duration-300" />
-                    </motion.button>
-                ))}
-            </div>
-
-            {/* Email Statistics Overview */}
-            <div className="bg-slate-900 rounded-3xl p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] rounded-full" />
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div>
-                        <h3 className="text-xl font-black uppercase tracking-tight mb-2">Email Health: 98%</h3>
-                        <p className="text-sm text-white/50 font-medium">Your email delivery is strong and most emails are reaching inbox.</p>
-                    </div>
-                    <div className="flex gap-4">
-                        <div className="text-center">
-                            <div className="text-2xl font-black">28%</div>
-                            <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Avg Open Rate</div>
-                        </div>
-                        <div className="w-px h-10 bg-white/10" />
-                        <div className="text-center">
-                            <div className="text-2xl font-black">4.2%</div>
-                            <div className="text-[10px] text-white/40 font-bold uppercase tracking-widest mt-1">Avg Click Rate</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}

@@ -50,6 +50,7 @@ const pos = require('./Routers/posRoutes');
 const inventory = require('./Routers/inventoryRoutes');
 const hr = require('./Routers/hrRoutes');
 const finance = require('./Routers/financeRoutes');
+const marketing = require('./Routers/marketingRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -84,6 +85,7 @@ app.use('/pos', pos);
 app.use('/inventory', inventory);
 app.use('/hr', hr);
 app.use('/finance', finance);
+app.use('/marketing', marketing);
 
 
 // Initialize Cron Jobs
