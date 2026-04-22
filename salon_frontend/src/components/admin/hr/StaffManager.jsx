@@ -35,6 +35,7 @@ function normalizeStaffUser(u, outletsList) {
     if (jd) {
         joinedStr = typeof jd === 'string' ? jd.split('T')[0] : new Date(jd).toISOString().split('T')[0];
     }
+    const hr = u.hrProfile || {};
     return {
         _id: u._id,
         id: u._id,
@@ -45,20 +46,20 @@ function normalizeStaffUser(u, outletsList) {
         roleKey: u.role,
         outlet: outletName,
         outletId: oid ? String(oid) : '',
-        joined: joinedStr,
-        salary: u.salary ?? 0,
+        joined: hr.joiningDate ? new Date(hr.joiningDate).toISOString().split('T')[0] : '',
+        salary: hr.baseSalary ?? 0,
         status: u.status || 'active',
         dob: u.dob || '',
-        pan: u.pan || '',
+        pan: hr.panNumber || '',
         address: u.address || '',
-        bankName: u.bankName || '',
-        accountNo: u.bankAccountNo || '',
-        ifsc: u.ifsc || '',
+        bankName: hr.bankDetails?.bankName || '',
+        accountNo: hr.bankDetails?.accountNumber || '',
+        ifsc: hr.bankDetails?.ifscCode || '',
         specialist: u.specialist || '',
         avatar: u.avatar || '',
-        stylistBio: u.stylistBio || '',
-        stylistExperience: u.stylistExperience || '',
-        stylistSpecializations: Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations.join(', ') : '',
+        stylistBio: u.bio || '',
+        stylistExperience: u.experience || '',
+        stylistSpecializations: Array.isArray(u.specializations) ? u.specializations.join(', ') : '',
     };
 }
 
@@ -186,18 +187,22 @@ export default function StaffManager() {
             role: form.roleKey,
             phone: form.phone,
             status: form.status,
-            joinedDate: form.joined,
-            salary: Number(form.salary) || 0,
             dob: form.dob || '',
-            pan: form.pan || '',
             address: form.address || '',
-            bankName: form.bankName || '',
-            bankAccountNo: form.accountNo || '',
-            ifsc: form.ifsc || '',
             avatar: form.avatar || '',
-            stylistBio: form.stylistBio || '',
-            stylistExperience: form.stylistExperience || '',
-            stylistSpecializations: form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [],
+            bio: form.stylistBio || '',
+            experience: form.stylistExperience || '',
+            specializations: form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [],
+            hrProfile: {
+                joiningDate: form.joined,
+                baseSalary: Number(form.salary) || 0,
+                panNumber: form.pan || '',
+                bankDetails: {
+                    bankName: form.bankName || '',
+                    accountNumber: form.accountNo || '',
+                    ifscCode: form.ifsc || ''
+                }
+            }
         };
         if (form.outletId) payload.outletId = form.outletId;
         return payload;

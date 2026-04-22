@@ -15,7 +15,8 @@ const ROLE_REDIRECT_MAP = authData.redirect_map || {};
  */
 export const getRedirectPath = (user) => {
     if (!user || !user.role) return '/login';
-    return ROLE_REDIRECT_MAP[user.role] || '/admin';
+    const roleKey = String(user.role).toLowerCase();
+    return ROLE_REDIRECT_MAP[roleKey] || '/admin';
 };
 
 export function AuthProvider({ children }) {

@@ -258,7 +258,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  ADMIN — Salon Owner Panel
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['admin', 'manager']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<AdminLayout />}>
                             <Route path="/admin" element={<DashboardPage />} />
                             <Route path="/admin/outlets" element={<OutletsPage />} />
@@ -268,12 +268,14 @@ function App() {
                             <Route path="/admin/setup/roles" element={<RolesPage />} />
                             <Route path="/admin/staff" element={<StaffPage />} />
                             
-                            <Route path="/admin/bookings" element={<BookingsPage />} />
-                            <Route path="/admin/bookings/:id" element={<BookingDetailPage />} />
-                            <Route path="/admin/bookings/new" element={<NewBookingPage />} />
+                            <Route element={<ProtectedRoute permission="bookings" />}>
+                                <Route path="/admin/bookings" element={<BookingsPage />} />
+                                <Route path="/admin/bookings/:id" element={<BookingDetailPage />} />
+                                <Route path="/admin/bookings/new" element={<NewBookingPage />} />
+                            </Route>
 
                             {/* CRM Routes */}
-                            <Route element={<ProtectedRoute feature="crm" />}>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm" />}>
                                 <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
                                 <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />
                                 <Route path="/admin/crm/segments" element={<CustomersPage tab="segments" />} />
@@ -291,7 +293,7 @@ function App() {
                             <Route path="/admin/services/view/:id" element={<ServiceDetailPage />} />
                             <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
 
-                            <Route element={<ProtectedRoute feature="inventory" />}>
+                            <Route element={<ProtectedRoute feature="inventory" permission="inventory" />}>
                                 <Route path="/admin/products" element={<ProductsPage />} />
                                 <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
                                 <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
@@ -306,7 +308,7 @@ function App() {
                             </Route>
 
                             {/* Finance Routes */}
-                            <Route element={<ProtectedRoute feature="finance" />}>
+                            <Route element={<ProtectedRoute feature="finance" permission="finance" />}>
                                 <Route path="/admin/finance" element={<FinancePage tab="dashboard" />} />
                                 <Route path="/admin/finance/dashboard" element={<FinancePage tab="dashboard" />} />
                                 <Route path="/admin/finance/suppliers" element={<FinancePage tab="suppliers" />} />
@@ -319,7 +321,7 @@ function App() {
                             </Route>
 
                             {/* HR Routes */}
-                            <Route element={<ProtectedRoute feature="payroll" />}>
+                            <Route element={<ProtectedRoute feature="payroll" permission="hr" />}>
                                 <Route path="/admin/hr" element={<HRPage tab="staff" />} />
                                 <Route path="/admin/hr/staff" element={<HRPage tab="staff" />} />
                                 <Route path="/admin/hr/attendance" element={<HRPage tab="attendance" />} />
@@ -332,13 +334,15 @@ function App() {
 
                             <Route path="/admin/promotions" element={<PromotionsPage />} />
                             
-                            <Route path="/admin/marketing" element={<MarketingHubPage />} />
-                            <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
+                            <Route element={<ProtectedRoute permission="marketing" />}>
+                                <Route path="/admin/marketing" element={<MarketingHubPage />} />
+                                <Route path="/admin/marketing/cms" element={<MarketingCMSPage />} />
+                            </Route>
 
                             <Route path="/admin/inquiries" element={<InquiryPage />} />
                             <Route path="/admin/reminders" element={<RemindersPage />} />
                             
-                            <Route element={<ProtectedRoute />}>
+                            <Route element={<ProtectedRoute permission="loyalty" />}>
                                 <Route path="/admin/loyalty" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/rules" element={<LoyaltyMembershipPage tab="rules" />} />
                                 <Route path="/admin/loyalty/plans" element={<LoyaltyMembershipPage tab="plans" />} />
@@ -358,7 +362,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  MANAGER — Operations Hub
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<ManagerLayout />}>
                             <Route path="/manager" element={<ManagerDashboard />} />
                             <Route path="/manager/team" element={<TeamPage />} />
@@ -377,7 +381,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  RECEPTIONIST — Front Desk
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['receptionist']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<ReceptionistLayout />}>
                             <Route path="/receptionist" element={<ReceptionistDashboard />} />
                             <Route path="/receptionist/appointments" element={<AppointmentsPage />} />
@@ -394,7 +398,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  STYLIST — Personal Workspace
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['stylist']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<StylistLayout />}>
                             <Route path="/stylist" element={<StylistDashboard />} />
                             <Route path="/stylist/schedule" element={<Navigate to="/stylist" replace />} />
@@ -411,7 +415,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  ACCOUNTANT — Finance Panel
                  ═══════════════════════════════════════════════════════════ */}
-                        <Route element={<ProtectedRoute allowedRoles={['admin', 'accountant']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<AccountantLayout />}>
                             <Route path="/accountant" element={<AccountantDashboard />} />
                             <Route path="/accountant/revenue" element={<RevenuePage />} />
@@ -428,7 +432,7 @@ function App() {
                         {/* ═══════════════════════════════════════════════════════════
                  INVENTORY MANAGER — Stock Panel
                    */}
-                        <Route element={<ProtectedRoute allowedRoles={['inventory_manager']} />}>
+                        <Route element={<ProtectedRoute />}>
                           <Route element={<InventoryLayout />}>
                             <Route path="/inventory" element={<InventoryDashboard />} />
                             <Route path="/inventory/stock" element={<StockOverviewPage />} />
@@ -462,7 +466,7 @@ function App() {
                           </Route>
                         </Route>
 
-                        <Route element={<ProtectedRoute allowedRoles={['admin', 'manager', 'receptionist']} feature="pos" />}>
+                        <Route element={<ProtectedRoute feature="pos" permission="pos" />}>
                           <Route element={<POSLayout />}>
                             <Route path="/pos" element={<POSDashboardPage />} />
                             <Route path="/pos/billing" element={<POSBillingPage />} />

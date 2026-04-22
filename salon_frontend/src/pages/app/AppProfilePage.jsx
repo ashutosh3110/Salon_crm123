@@ -26,7 +26,7 @@ export default function AppProfilePage() {
     const [saving, setSaving] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [showHowItWorks, setShowHowItWorks] = useState(false);
-    const { addFeedback, activeOutlet } = useBusiness();
+    const { addFeedback, activeOutlet, platformSettings } = useBusiness();
     const [review, setReview] = useState({ rating: 5, comment: '', service: 'General', staff: 'Salon Team' });
     const [reviewImages, setReviewImages] = useState([]);
     const fileInputRef = useRef(null);
@@ -35,7 +35,20 @@ export default function AppProfilePage() {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        const newImages = files.map(file => URL.createObjectURL(file));
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        const validFiles = files.filter(file => {
+            if (file.size > threshold) {
+                alert(`Image ${file.name} is too large. Max ${maxSize}${unit} allowed.`);
+                return false;
+            }
+            return true;
+        });
+
+        const newImages = validFiles.map(file => URL.createObjectURL(file));
         setReviewImages(prev => [...prev, ...newImages]);
     };
     const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -64,6 +77,16 @@ export default function AppProfilePage() {
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            alert(`Image too large. Max ${maxSize}${unit} allowed.`);
+            return;
+        }
 
         setUploadingAvatar(true);
         const formData = new FormData();
@@ -316,6 +339,7 @@ export default function AppProfilePage() {
                         <button
                             onClick={() => avatarInputRef.current.click()}
                             className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#C8956C] rounded-full border-2 border-white dark:border-[#1A1A1A] flex items-center justify-center text-white"
+                            title={`Max: ${platformSettings?.maxImageSize || 5}${platformSettings?.maxImageSizeUnit || 'MB'}`}
                         >
                             <Camera size={12} />
                         </button>

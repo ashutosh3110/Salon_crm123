@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
 import {
     MinusCircle,
     History,
@@ -18,10 +17,9 @@ import {
 const REASON_OPTIONS = ['Damage', 'Expiry', 'Internal use', 'Theft / loss', 'Audit correction', 'Other'];
 
 export default function StockAdjustment() {
-    const { products, outlets: invOutlets, fetchProducts } = useInventory();
+    const { products, outlets: invOutlets, fetchProducts, updateStock, fetchStockHistory, stockHistory } = useInventory();
     const { outlets: tenantOutlets } = useBusiness();
     const [view, setView] = useState('list');
-    const [log, setLog] = useState([]);
     const [logLoading, setLogLoading] = useState(true);
     const [logError, setLogError] = useState(null);
 
@@ -31,16 +29,13 @@ export default function StockAdjustment() {
         setLogLoading(true);
         setLogError(null);
         try {
-            const res = await mockApi.get('/inventory/adjust/history', { params: { page: 1, limit: 100 } });
-            const rows = res?.data?.results ?? res?.data ?? [];
-            setLog(Array.isArray(rows) ? rows : []);
+            await fetchStockHistory({ type: ['OUT', 'ADJUSTMENT'] });
         } catch (e) {
-            setLogError(e?.response?.data?.message || e?.message || 'Could not load adjustment log.');
-            setLog([]);
+            setLogError('Could not load adjustment log.');
         } finally {
             setLogLoading(false);
         }
-    }, []);
+    }, [fetchStockHistory]);
 
     useEffect(() => {
         fetchLog();
@@ -86,7 +81,7 @@ export default function StockAdjustment() {
 
             <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
                 {view === 'list' ? (
-                    <AdjustmentHistory rows={log} loading={logLoading} error={logError} onRetry={fetchLog} />
+                    <AdjustmentHistory rows={stockHistory} loading={logLoading} error={logError} onRetry={fetchLog} />
                 ) : (
                     <AdjustmentForm
                         onCancel={() => setView('list')}
@@ -97,6 +92,7 @@ export default function StockAdjustment() {
                         }}
                         products={products}
                         outlets={outlets}
+                        updateStock={updateStock}
                     />
                 )}
             </div>
@@ -131,7 +127,7 @@ function AdjustmentHistory({ rows, loading, error, onRetry }) {
         product: entry.productId?.name || '—',
         sku: entry.productId?.sku || '',
         quantity: entry.quantity,
-        direction: entry.adjustmentDirection || '—',
+        direction: entry.type === 'IN' ? 'ADD' : 'DEDUCT',
         reason: entry.reason || '—',
         outlet: entry.outletId?.name || '—',
         by: entry.performedBy?.name || entry.performedBy?.email || '—',
@@ -241,7 +237,7 @@ function AdjustmentHistory({ rows, loading, error, onRetry }) {
     );
 }
 
-function AdjustmentForm({ onCancel, onSuccess, products, outlets }) {
+function AdjustmentForm({ onCancel, onSuccess, products, outlets, updateStock }) {
     const [productId, setProductId] = useState('');
     const [outletId, setOutletId] = useState('');
     const [quantity, setQuantity] = useState('');
@@ -270,11 +266,11 @@ function AdjustmentForm({ onCancel, onSuccess, products, outlets }) {
 
         setSaving(true);
         try {
-            await mockApi.post('/inventory/adjust', {
+            await updateStock({
                 productId,
                 outletId,
                 quantity: qty,
-                type: direction,
+                type: direction === 'ADD' ? 'IN' : 'ADJUSTMENT',
                 reason: effectiveReason,
             });
             alert(direction === 'DEDUCT' ? 'Stock reduced successfully.' : 'Stock added successfully.');

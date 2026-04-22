@@ -24,25 +24,21 @@ import LoyaltyTransactionsTab from '../../components/admin/loyalty/LoyaltyTransa
 import ReferralSettingsTab from '../../components/admin/loyalty/ReferralSettingsTab';
 
 const TABS = [
-    { id: 'rules', label: 'Loyalty Rules', icon: Gift, description: 'Point earning & redemption protocol' },
     { id: 'plans', label: 'Membership Plans', icon: CreditCard, description: 'Manage subscription tiers' },
     { id: 'members', label: 'Active Members', icon: Users, description: 'Customer membership status' },
     { id: 'transactions', label: 'Transaction Log', icon: ArrowDownUp, description: 'Points ledger audit trail' },
-    { id: 'referral', label: 'Referral Settings', icon: Star, description: 'Growth & reward settings' }
 ];
 
-export default function LoyaltyMembershipPage({ tab: initialTab = 'rules' }) {
+export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
     const navigate = useNavigate();
     const activeTab = initialTab;
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'rules': return <LoyaltyRulesTab />;
             case 'plans': return <MembershipPlansTab />;
             case 'members': return <MembersListTab />;
             case 'transactions': return <LoyaltyTransactionsTab />;
-            case 'referral': return <ReferralSettingsTab />;
-            default: return <LoyaltyRulesTab />;
+            default: return <MembershipPlansTab />;
         }
     };
 

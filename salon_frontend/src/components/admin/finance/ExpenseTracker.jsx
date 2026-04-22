@@ -15,7 +15,7 @@ import {
     RefreshCw,
     Loader2,
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 const CATEGORY_OPTIONS = [

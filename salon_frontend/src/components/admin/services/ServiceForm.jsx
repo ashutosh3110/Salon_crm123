@@ -25,7 +25,7 @@ import { API_BASE_URL } from '../../../services/api';
 
 export default function ServiceForm({ onSave, onCancel, categories = [], initialData, isModal = false }) {
     const navigate = useNavigate();
-    const { outlets } = useBusiness();
+    const { outlets, platformSettings } = useBusiness();
     const [isSaving, setIsSaving] = useState(false);
     const [formData, setFormData] = useState({
         _id: initialData?._id || null,
@@ -51,8 +51,13 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 2 * 1024 * 1024) {
-                alert("File size too large. Max 2MB allowed.");
+            const maxSize = platformSettings?.maxImageSize || 5;
+            const unit = platformSettings?.maxImageSizeUnit || 'MB';
+            const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+            const threshold = maxSize * multiplier;
+
+            if (file.size > threshold) {
+                alert(`File size too large. Max ${maxSize}${unit} allowed.`);
                 return;
             }
             setImageFile(file);
@@ -252,7 +257,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                         <ImageIcon className="w-5 h-5" />
                                     </div>
                                     <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Upload Image</p>
-                                    <p className="text-[7px] text-text-muted opacity-60 mt-0.5 uppercase">MAX 2MB :: WEBP</p>
+                                    <p className="text-[7px] text-text-muted opacity-60 mt-0.5 uppercase">MAX {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'} :: WEBP</p>
                                     <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                 </label>
                             )}

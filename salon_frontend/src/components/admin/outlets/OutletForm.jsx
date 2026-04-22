@@ -42,7 +42,7 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
 export default function OutletForm() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { outlets, addOutlet, updateOutlet } = useBusiness();
+    const { outlets, addOutlet, updateOutlet, platformSettings } = useBusiness();
     const isEdit = !!id;
 
     const [loading, setLoading] = useState(false);
@@ -149,6 +149,7 @@ export default function OutletForm() {
         closingTime: '09:00 PM',
         images: [],
         chairs: [],
+        beds: [],
         config: {
             bookingSms: true,
             whatsappNotifications: true,
@@ -173,6 +174,7 @@ export default function OutletForm() {
                     longitude: found.location?.coordinates?.[0] || found.longitude || null,
                     images: found.images || (found.image ? [found.image] : []),
                     chairs: found.chairs || [],
+                    beds: found.beds || [],
                     workingDays: found.workingDays || ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
                     config: found.config || {
                         bookingSms: true,
@@ -198,7 +200,7 @@ export default function OutletForm() {
                 : [...prev.workingDays, day]
         }));
     };
-    
+
     const handleAddChair = () => {
         const nextId = form.chairs.length > 0 ? Math.max(...form.chairs.map(c => c.id)) + 1 : 1;
         setForm(prev => ({
@@ -220,47 +222,72 @@ export default function OutletForm() {
             chairs: prev.chairs.map(c => c.id === chairId ? { ...c, name: newName } : c)
         }));
     };
-    
+
+    const handleAddBed = () => {
+        const nextId = form.beds?.length > 0 ? Math.max(...form.beds.map(b => b.id)) + 1 : 1;
+        setForm(prev => ({
+            ...prev,
+            beds: [...(prev.beds || []), { id: nextId, name: `Bed ${nextId}` }]
+        }));
+    };
+
+    const handleRemoveBed = (bedId) => {
+        setForm(prev => ({
+            ...prev,
+            beds: prev.beds.filter(b => b.id !== bedId)
+        }));
+    };
+
+    const handleBedNameChange = (bedId, newName) => {
+        setForm(prev => ({
+            ...prev,
+            beds: prev.beds.map(b => b.id === bedId ? { ...b, name: newName } : b)
+        }));
+    };
+
     const handleImageUpload = (e) => {
         const files = Array.from(e.target.files);
-        
+
         if (form.images.length + files.length > 5) {
             alert("Maximum 5 images allowed.");
             return;
         }
 
         files.forEach(file => {
-            if (file) {
-                if (file.size > 2 * 1024 * 1024) {
-                    alert(`File ${file.name} is too large. Max 2MB allowed.`);
-                    return;
-                }
-                
-                setImageFiles(prev => [...prev, file]);
+            const maxSize = platformSettings?.maxImageSize || 5;
+            const unit = platformSettings?.maxImageSizeUnit || 'MB';
+            const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+            const threshold = maxSize * multiplier;
 
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setForm(prev => ({ 
-                        ...prev, 
-                        images: [...(prev.images || []), reader.result] 
-                    }));
-                };
-                reader.readAsDataURL(file);
+            if (file.size > threshold) {
+                alert(`File ${file.name} is too large. Max ${maxSize}${unit} allowed.`);
+                return;
             }
+
+            setImageFiles(prev => [...prev, file]);
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setForm(prev => ({
+                    ...prev,
+                    images: [...(prev.images || []), reader.result]
+                }));
+            };
+            reader.readAsDataURL(file);
         });
     };
 
     const removeImage = (index) => {
         setForm(prev => {
             const newImages = prev.images.filter((_, i) => i !== index);
-            
+
             // Also remove from imageFiles if it was a new upload
             const imgToRemove = prev.images[index];
             if (imgToRemove.startsWith('data:')) {
                 // Find and remove matching file index? (approximate)
                 // Better approach: track index in imageFiles
             }
-            
+
             return { ...prev, images: newImages };
         });
     };
@@ -272,10 +299,10 @@ export default function OutletForm() {
 
         try {
             const formData = new FormData();
-            
+
             // Collect existing images (non-base64)
             const existingImages = form.images.filter(img => !img.startsWith('data:'));
-            
+
             // Add all form fields to FormData
             Object.keys(form).forEach(key => {
                 if (key === 'images') {
@@ -284,6 +311,8 @@ export default function OutletForm() {
                     formData.append('config', JSON.stringify(form.config));
                 } else if (key === 'chairs') {
                     formData.append('chairs', JSON.stringify(form.chairs));
+                } else if (key === 'beds') {
+                    formData.append('beds', JSON.stringify(form.beds));
                 } else if (key === 'workingDays') {
                     form.workingDays.forEach(day => formData.append('workingDays[]', day));
                 } else if (form[key] !== null && form[key] !== undefined) {
@@ -340,37 +369,40 @@ export default function OutletForm() {
                             <h2 className="text-xs font-bold text-text uppercase tracking-widest">Salon Identity</h2>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-end">
                                 <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Salon Photos (Max 5)</label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {(form.images || []).map((img, idx) => (
-                                        <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
-                                            <img 
-    src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`} 
-    alt={`Preview ${idx}`} 
-    className="w-full h-full object-cover" 
-/>
-                                            <button 
-                                                type="button"
-                                                onClick={() => removeImage(idx)}
-                                                className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-rose-500 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <X className="w-3 h-3" />
-                                            </button>
+                                <span className="text-[8px] font-bold text-primary uppercase tracking-tighter opacity-70">
+                                    Max: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'} each
+                                </span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                {(form.images || []).map((img, idx) => (
+                                    <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-border group">
+                                        <img
+                                            src={img.startsWith('data:') || img.startsWith('http') ? img : `${import.meta.env.VITE_API_URL}${img}`}
+                                            alt={`Preview ${idx}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(idx)}
+                                            className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full text-rose-500 shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {(form.images?.length || 0) < 5 && (
+                                    <label className="flex flex-col items-center justify-center aspect-video rounded-xl border-2 border-dashed border-border bg-slate-50 hover:bg-white hover:border-primary/40 transition-all cursor-pointer group">
+                                        <div className="p-2 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
+                                            <Upload className="w-4 h-4" />
                                         </div>
-                                    ))}
-                                    
-                                    {(form.images?.length || 0) < 5 && (
-                                        <label className="flex flex-col items-center justify-center aspect-video rounded-xl border-2 border-dashed border-border bg-slate-50 hover:bg-white hover:border-primary/40 transition-all cursor-pointer group">
-                                            <div className="p-2 rounded-full bg-primary/5 text-text-muted group-hover:text-primary group-hover:bg-primary/10 transition-all">
-                                                <Upload className="w-4 h-4" />
-                                            </div>
-                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest mt-1">Add Photo</p>
-                                            <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
-                                        </label>
-                                    )}
-                                </div>
+                                        <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest mt-1">Add Photo</p>
+                                        <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} />
+                                    </label>
+                                )}
                             </div>
                         </div>
 
@@ -503,7 +535,7 @@ export default function OutletForm() {
                             <div className="space-y-3 pt-2">
                                 <div className="flex items-center justify-between">
                                     <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Pin Location on Map</label>
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={useCurrentLocation}
                                         className="text-[8px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2 py-1 rounded-lg hover:bg-primary/10 transition-all"
@@ -526,7 +558,7 @@ export default function OutletForm() {
                                             }}
                                         >
                                             {(form.latitude && form.longitude) && (
-                                                <MarkerF 
+                                                <MarkerF
                                                     position={{ lat: form.latitude, lng: form.longitude }}
                                                     draggable={true}
                                                     onDragEnd={onMapClick}
@@ -613,50 +645,103 @@ export default function OutletForm() {
                         )}
                     </div>
 
-                    {/* Chair Management */}
-                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-6 md:col-span-2">
+                    {/* Resource Management */}
+                    <div className="bg-white p-7 rounded-[32px] border border-border shadow-sm space-y-8 md:col-span-2">
                         <div className="flex items-center justify-between pb-3 border-b border-border/50">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-xl bg-purple-50 text-purple-500">
                                     <Users className="w-4 h-4" />
                                 </div>
-                                <h2 className="text-xs font-bold text-text uppercase tracking-widest">Chair / Station Management</h2>
+                                <h2 className="text-xs font-bold text-text uppercase tracking-widest">Station & Resource Management</h2>
                             </div>
-                            <button
-                                type="button"
-                                onClick={handleAddChair}
-                                className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all"
-                            >
-                                + Add Station
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleAddChair}
+                                    className="px-4 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary hover:text-white transition-all"
+                                >
+                                    + Add Chair
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleAddBed}
+                                    className="px-4 py-2 bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-500 hover:text-white transition-all"
+                                >
+                                    + Add Bed
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {form.chairs.map((chair) => (
-                                <div key={chair.id} className="p-4 bg-slate-50 rounded-2xl border border-border flex items-center gap-4 group">
-                                    <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-[10px] font-black text-text-muted">
-                                        {chair.id}
-                                    </div>
-                                    <input
-                                        value={chair.name}
-                                        onChange={(e) => handleChairNameChange(chair.id, e.target.value)}
-                                        placeholder="Station Name"
-                                        className="flex-1 bg-transparent border-none text-sm font-bold focus:ring-0 p-0 outline-none"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveChair(chair.id)}
-                                        className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                    >
-                                        <AlertCircle className="w-4 h-4" />
-                                    </button>
+                        <div className="space-y-6">
+                            {/* Chairs Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest">Styling Chairs ({form.chairs.length})</h3>
                                 </div>
-                            ))}
-                            {form.chairs.length === 0 && (
-                                <div className="col-span-full py-10 text-center bg-slate-50/50 rounded-2xl border border-dashed border-border">
-                                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest">No stations configured for this outlet</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {form.chairs.map((chair) => (
+                                        <div key={chair.id} className="p-4 bg-slate-50 rounded-2xl border border-border flex items-center gap-4 group hover:border-primary/30 transition-all">
+                                            <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-[10px] font-black text-text-muted">
+                                                {chair.id}
+                                            </div>
+                                            <input
+                                                value={chair.name}
+                                                onChange={(e) => handleChairNameChange(chair.id, e.target.value)}
+                                                placeholder="Station Name"
+                                                className="flex-1 bg-transparent border-none text-sm font-bold focus:ring-0 p-0 outline-none"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveChair(chair.id)}
+                                                className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {form.chairs.length === 0 && (
+                                        <div className="col-span-full py-6 text-center bg-slate-50/50 rounded-2xl border border-dashed border-border">
+                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest italic">No chairs added</p>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
+
+                            {/* Beds Section */}
+                            <div className="space-y-4 pt-4 border-t border-border/40">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    <h3 className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Beds ({form.beds?.length || 0})</h3>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {(form.beds || []).map((bed) => (
+                                        <div key={bed.id} className="p-4 bg-slate-50 rounded-2xl border border-border flex items-center gap-4 group hover:border-emerald-500/30 transition-all">
+                                            <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-[10px] font-black text-emerald-600/60">
+                                                {bed.id}
+                                            </div>
+                                            <input
+                                                value={bed.name}
+                                                onChange={(e) => handleBedNameChange(bed.id, e.target.value)}
+                                                placeholder="Bed Name"
+                                                className="flex-1 bg-transparent border-none text-sm font-bold focus:ring-0 p-0 outline-none"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveBed(bed.id)}
+                                                className="opacity-0 group-hover:opacity-100 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {(form.beds || []).length === 0 && (
+                                        <div className="col-span-full py-6 text-center bg-slate-50/50 rounded-2xl border border-dashed border-border">
+                                            <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest italic">No service beds added</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -708,7 +793,7 @@ export default function OutletForm() {
                                             type="button"
                                             onClick={() => handleDayToggle(day.full)}
                                             className={`py-3 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all ${(form.workingDays || []).includes(day.full)
-                                                ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-105 border border-white/20'
+                                                ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105 border border-white/20'
                                                 : 'bg-white/5 border border-white/10 text-white/40 hover:bg-white/10'
                                                 }`}
                                         >

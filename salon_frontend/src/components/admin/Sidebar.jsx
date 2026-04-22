@@ -85,155 +85,184 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
         return restricted;
     }, [salon, user]);
 
-    const menuItems = [
-        { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-   
-        { label: 'Subscription & Plans', icon: Crown, path: '/admin/subscription' },
-        {
-            label: 'Business Setup',
-            icon: Briefcase,
-            path: '/admin/setup',
-            subItems: [
-                { label: 'Outlets', icon: Store, path: '/admin/outlets' },
-                { label: 'Roles & Permissions', icon: Shield, path: '/admin/setup/roles' },
-                { label: 'Staff', icon: UserCog, path: '/admin/staff' },
-                { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
-                { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
-            ]
-        },
-             {
-            label: 'Operations',
-            icon: ScissorsIcon,
-            path: '/pos',
-            feature: 'pos',
-            subItems: [
-                { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
-                { label: 'New Bill', icon: Zap, path: '/pos/billing' },
-                { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
-            ]
-        },
-        {
-            label: 'Bookings',
-            icon: Calendar,
-            path: '/admin/bookings',
-            subItems: [
-                { label: 'Booking Registry', icon: List, path: '/admin/bookings' },
-                { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new' },
-            ]
-        },
-        {
-            label: 'Marketing',
-            icon: Megaphone,
-            path: '/admin/marketing',
-            subItems: [
-                { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
-                { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms', badge: pendingExpertsCount > 0 ? { count: pendingExpertsCount, color: 'bg-rose-500 animate-pulse' } : null },
-                { label: 'Coupon Codes', icon: Percent, path: '/admin/promotions' },
-            ]
-        },
-        {
-            label: 'Enquiries',
-            icon: ClipboardList,
-            path: '/admin/inquiries',
-            roles: ['admin', 'manager', 'receptionist']
-        },
-        {
-            label: 'Reminders & Links',
-            icon: Bell,
-            path: '/admin/reminders',
-            roles: ['admin', 'manager']
-        },
-        {
-            label: 'Customers',
-            icon: Users,
-            path: '/admin/crm',
-            roles: ['admin', 'manager'],
-            feature: 'crm',
-            subItems: [
-                { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
-                { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
-                { label: 'Segments', icon: Tag, path: '/admin/crm/segments' },
-                { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
-                { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
-            ]
-        },
-        {
-            label: 'Loyalty & Membership',
-            icon: Crown,
-            path: '/admin/loyalty',
-            roles: ['admin'],
-            feature: 'loyalty',
-            subItems: [
-                { label: 'Loyalty Rules', icon: Gift, path: '/admin/loyalty/rules' },
-                { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
-                { label: 'Members', icon: Users, path: '/admin/loyalty/members' },
-                { label: 'Transactions', icon: ArrowDownUp, path: '/admin/loyalty/transactions' },
-                { label: 'Referral', icon: Star, path: '/admin/loyalty/referral' },
-            ]
-        },
-        {
-            label: 'Inventory',
-            icon: Package,
-            path: '/admin/inventory',
-            feature: 'inventory',
-            subItems: [
-                { label: 'Products Master', icon: Box, path: '/admin/inventory/products', roles: ['admin'] },
-                { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories', roles: ['admin'] },
-                { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories', roles: ['admin'] },
-                { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
-                { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
-                { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
-                { label: lowStockCount > 0 ? 'Low Stock Alerts' : 'Inventory Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: lowStockCount > 0 ? { count: lowStockCount, color: 'bg-rose-400' } : null },
-            ]
-        },
-        {
-            label: 'Finance',
-            icon: TrendingUp,
-            path: '/admin/finance',
-            feature: 'finance',
-            subItems: [
-                { label: 'Finance Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
-                { label: 'Suppliers', icon: Users, path: '/admin/finance/suppliers' },
-                { label: 'Supplier Invoices', icon: FileText, path: '/admin/finance/invoices' },
-                { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
-                { label: 'Petty Cash', icon: Wallet, path: '/admin/finance/petty-cash' },
-                { label: 'Cash & Bank', icon: Wallet, path: '/admin/finance/reconciliation' },
-                { label: 'GST / Tax Reports', icon: ClipboardList, path: '/admin/finance/tax' },
-                { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },
-            ]
-        },
-        {
-            label: 'HR / Payroll',
-            icon: Briefcase,
-            path: '/admin/hr',
-            feature: 'payroll',
-            subItems: [
-                { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
-                { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
-                { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
-                { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
-                { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
-                { label: 'Service Approvals', icon: CheckCircle2, path: '/admin/hr/approvals', badge: { count: 'New', color: 'bg-primary' } },
-            ]
-        },
-        {
-            label: 'Settings',
-            icon: Settings,
-            path: '/admin/settings',
-            subItems: [
-                { label: 'Profile', icon: User, path: '/admin/settings/profile' },
-                { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business' },
-                { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications' },
-                { label: 'Security', icon: Shield, path: '/admin/settings/security' },
-            ]
-        },
-        {
-            label: 'Support',
-            icon: LifeBuoy,
-            path: '/admin/support',
-            roles: ['admin', 'manager']
-        },
-    ];
+    const menuItems = useMemo(() => {
+        const items = [
+            { label: 'Dashboard', icon: LayoutDashboard, path: '/admin', permission: 'dashboard' },
+    
+            { label: 'Subscription & Plans', icon: Crown, path: '/admin/subscription', permission: 'admin_only' },
+            {
+                label: 'Business Setup',
+                icon: Briefcase,
+                path: '/admin/setup',
+                permission: 'setup',
+                subItems: [
+                    { label: 'Outlets', icon: Store, path: '/admin/outlets' },
+                    { label: 'Roles & Permissions', icon: Shield, path: '/admin/setup/roles', permission: 'manage_roles' },
+                    { label: 'Staff', icon: UserCog, path: '/admin/staff' },
+                    { label: 'Service List', icon: ScissorsIcon, path: '/admin/services/list' },
+                    { label: 'Service Categories', icon: Tag, path: '/admin/services/categories' },
+                ]
+            },
+            {
+                label: 'Operations',
+                icon: ScissorsIcon,
+                path: '/pos',
+                permission: 'pos',
+                feature: 'pos',
+                subItems: [
+                    { label: 'POS Dashboard', icon: LayoutDashboard, path: '/pos' },
+                    { label: 'New Bill', icon: Zap, path: '/pos/billing' },
+                    { label: 'Invoices & Payments', icon: FileText, path: '/pos/invoices' },
+                ]
+            },
+            {
+                label: 'Bookings',
+                icon: Calendar,
+                path: '/admin/bookings',
+                permission: 'bookings',
+                subItems: [
+                    { label: 'Booking Registry', icon: List, path: '/admin/bookings' },
+                    { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new' },
+                ]
+            },
+            {
+                label: 'Marketing',
+                icon: Megaphone,
+                path: '/admin/marketing',
+                permission: 'marketing',
+                subItems: [
+                    { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
+                    { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms', badge: pendingExpertsCount > 0 ? { count: pendingExpertsCount, color: 'bg-rose-500 animate-pulse' } : null },
+                    { label: 'Coupon Codes', icon: Percent, path: '/admin/promotions' },
+                ]
+            },
+            {
+                label: 'Enquiries',
+                icon: ClipboardList,
+                path: '/admin/inquiries',
+                permission: 'enquiries'
+            },
+            {
+                label: 'Reminders & Links',
+                icon: Bell,
+                path: '/admin/reminders',
+                permission: 'reminders'
+            },
+            {
+                label: 'Customers',
+                icon: Users,
+                path: '/admin/crm',
+                permission: 'crm',
+                feature: 'crm',
+                subItems: [
+                    { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
+                    { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
+                    { label: 'Segments', icon: Tag, path: '/admin/crm/segments' },
+                    { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
+                    { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
+                ]
+            },
+            {
+                label: 'Loyalty & Membership',
+                icon: Crown,
+                path: '/admin/loyalty',
+                permission: 'loyalty',
+                feature: 'loyalty',
+                subItems: [
+                    { label: 'Membership Plans', icon: CreditCard, path: '/admin/loyalty/plans' },
+                    { label: 'Members', icon: Users, path: '/admin/loyalty/members' },
+                    { label: 'Transactions', icon: ArrowDownUp, path: '/admin/loyalty/transactions' },
+                ]
+            },
+            {
+                label: 'Inventory',
+                icon: Package,
+                path: '/admin/inventory',
+                permission: 'inventory',
+                feature: 'inventory',
+                subItems: [
+                    { label: 'Products Master', icon: Box, path: '/admin/inventory/products' },
+                    { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
+                    { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories' },
+                    { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
+                    { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
+                    { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
+                    { label: lowStockCount > 0 ? 'Low Stock Alerts' : 'Inventory Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: lowStockCount > 0 ? { count: lowStockCount, color: 'bg-rose-400' } : null },
+                ]
+            },
+            {
+                label: 'Finance',
+                icon: TrendingUp,
+                path: '/admin/finance',
+                permission: 'finance',
+                feature: 'finance',
+                subItems: [
+                    { label: 'Finance Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard' },
+                    { label: 'Suppliers', icon: Users, path: '/admin/finance/suppliers' },
+                    { label: 'Supplier Invoices', icon: FileText, path: '/admin/finance/invoices' },
+                    { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses' },
+                    { label: 'Petty Cash', icon: Wallet, path: '/admin/finance/petty-cash' },
+                    { label: 'Cash & Bank', icon: Wallet, path: '/admin/finance/reconciliation' },
+                    { label: 'GST / Tax Reports', icon: ClipboardList, path: '/admin/finance/tax' },
+                    { label: 'End of Day', icon: Lock, path: '/admin/finance/eod' },
+                ]
+            },
+            {
+                label: 'HR / Payroll',
+                icon: Briefcase,
+                path: '/admin/hr',
+                permission: 'hr',
+                feature: 'payroll',
+                subItems: [
+                    { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
+                    { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
+                    { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
+                    { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
+                    { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
+                    { label: 'Service Approvals', icon: CheckCircle2, path: '/admin/hr/approvals', badge: { count: 'New', color: 'bg-primary' } },
+                ]
+            },
+            {
+                label: 'Settings',
+                icon: Settings,
+                path: '/admin/settings',
+                permission: 'settings',
+                subItems: [
+                    { label: 'Profile', icon: User, path: '/admin/settings/profile' },
+                    { label: 'Business Info', icon: Briefcase, path: '/admin/settings/business' },
+                    { label: 'Notifications', icon: Bell, path: '/admin/settings/notifications' },
+                    { label: 'Security', icon: Shield, path: '/admin/settings/security' },
+                ]
+            },
+            {
+                label: 'Support',
+                icon: LifeBuoy,
+                path: '/admin/support',
+                permission: 'support'
+            },
+        ];
+
+        // Filter items based on permissions
+        return items.filter(item => {
+            // Superadmins see everything
+            if (user?.role === 'superadmin') return true;
+            
+            // Salon Admins see everything unless explicitly restricted
+            if (user?.role === 'admin') return true;
+
+            // Check specific permission
+            const userPermissions = user?.permissions || [];
+            if (userPermissions.includes('*')) return true;
+
+            // If item has a specific permission requirement
+            if (item.permission) {
+                if (item.permission === 'admin_only') return false; // Handled by role check above
+                return userPermissions.includes(item.permission);
+            }
+
+            return true; // Default show if no permission tagged
+        });
+    }, [user, pendingExpertsCount, lowStockCount]);
     const [expandedItems, setExpandedItems] = useState([]);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 

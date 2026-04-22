@@ -71,7 +71,7 @@ export default function MarketingCMSPage() {
     } = useCMS();
     const { user } = useAuth();
     const isSuperAdmin = user?.role === 'superadmin';
-    const { outlets, fetchOutlets } = useBusiness();
+    const { outlets, fetchOutlets, platformSettings } = useBusiness();
     
     useEffect(() => {
         if (isSuperAdmin) {
@@ -203,9 +203,14 @@ export default function MarketingCMSPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validation: Max 5MB
-        if (file.size > 5 * 1024 * 1024) {
-            alert("File size exceeds 5MB limit.");
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        // Validation: Dynamic
+        if (file.size > threshold) {
+            alert(`File size exceeds ${maxSize}${unit} limit.`);
             return;
         }
 
@@ -730,7 +735,12 @@ export default function MarketingCMSPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Creative</label>
+                                                <div className="flex justify-between items-end mb-1">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Creative</label>
+                                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest opacity-60">
+                                                        MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                                    </span>
+                                                </div>
                                                 <input
                                                     type="file"
                                                     id="banner-upload"
@@ -759,7 +769,7 @@ export default function MarketingCMSPage() {
                                                         <>
                                                             <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload banner</p>
-                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max 5MB)</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">PNG, JPG, WEBP (Max {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'})</p>
                                                         </>
                                                     )}
                                                 </label>
@@ -803,7 +813,12 @@ export default function MarketingCMSPage() {
                                                 </select>
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Look Image</label>
+                                                <div className="flex justify-between items-end mb-1">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Look Image</label>
+                                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest opacity-60">
+                                                        MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                                    </span>
+                                                </div>
                                                 <input
                                                     type="file"
                                                     id="lookbook-upload"
@@ -832,7 +847,7 @@ export default function MarketingCMSPage() {
                                                         <>
                                                             <Upload className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">Click to upload look</p>
-                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Portrait orientation preferred (Max 5MB)</p>
+                                                            <p className="text-[9px] text-text-muted font-bold opacity-40 uppercase tracking-[0.2em] mt-1">Portrait orientation (Max {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'})</p>
                                                         </>
                                                     )}
                                                 </label>

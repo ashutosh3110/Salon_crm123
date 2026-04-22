@@ -16,13 +16,16 @@ import {
     ChevronDown,
     Trash2,
     Upload,
+    Download,
     RefreshCcw
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import * as XLSX from 'xlsx';
+import { toast } from 'react-hot-toast';
 import CustomSelect from '../common/CustomSelect';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import { API_BASE_URL } from '../../../services/api';
-import BulkImportModal from './BulkImportModal';
+import api from '../../../services/api';
 import OutletAssignmentModal from './OutletAssignmentModal';
 import ServiceDetailsModal from './ServiceDetailsModal';
 import CategorySelectModal from './CategorySelectModal';
@@ -34,7 +37,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState(location.state?.category || 'All');
     const [filterOutlet, setFilterOutlet] = useState('All Outlets');
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [importing, setImporting] = useState(false);
     const [viewingService, setViewingService] = useState(null);
     const [assigningOutletsService, setAssigningOutletsService] = useState(null);
     const [assigningCategoryService, setAssigningCategoryService] = useState(null);
@@ -91,6 +94,63 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
         handleRefresh();
     };
 
+    const handleDownloadTemplate = () => {
+        const templateData = [
+            {
+                'Name': 'Classic Haircut',
+                'Category': 'Hair Care',
+                'Price': 499,
+                'Duration (mins)': 45,
+                'Gender': 'both',
+                'Outlets (Comma Separated)': '',
+                'Description': 'Professional precision haircutting',
+                'GST %': 18,
+                'Commission Applicable': 'yes',
+                'Commission Type': 'percent',
+                'Commission Value': 10,
+                'Resource Type': 'chair'
+            }
+        ];
+
+        const ws = XLSX.utils.json_to_sheet(templateData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Services');
+        
+        const helpData = outlets.map(o => ({ 'Available Outlets': o.name }));
+        const wsHelp = XLSX.utils.json_to_sheet(helpData);
+        XLSX.utils.book_append_sheet(wb, wsHelp, 'Outlet_Guide');
+
+        XLSX.writeFile(wb, 'Services_Bulk_Upload_Template.xlsx');
+        toast.success('Template downloaded!');
+    };
+
+    const handleDirectUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await api.post('/services/bulk-import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (response.data.success) {
+                toast.success(`Successfully imported ${response.data.importedCount} services!`);
+                handleRefresh();
+            } else if (response.data.errors?.length > 0) {
+                toast.error(`Imported ${response.data.importedCount} services, but found ${response.data.errors.length} errors.`);
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Bulk import failed');
+        } finally {
+            setImporting(false);
+            e.target.value = ''; // Reset input
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Toolbar */}
@@ -132,6 +192,37 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
 
 
                         <button
+                            onClick={handleDownloadTemplate}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight"
+                            title="Download Sample Format"
+                        >
+                            <Download className="w-3.5 h-3.5" /> Sample
+                        </button>
+
+                        <div className="relative flex-1 sm:flex-none">
+                            <input
+                                type="file"
+                                id="direct-bulk-upload"
+                                className="hidden"
+                                accept=".xlsx, .xls, .csv"
+                                onChange={handleDirectUpload}
+                            />
+                            <button
+                                onClick={() => document.getElementById('direct-bulk-upload').click()}
+                                disabled={importing}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text-muted hover:text-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-tight disabled:opacity-50"
+                                title="Bulk Import Services"
+                            >
+                                {importing ? (
+                                    <RefreshCcw className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Upload className="w-3.5 h-3.5" />
+                                )}
+                                {importing ? 'Importing...' : 'Bulk Upload'}
+                            </button>
+                        </div>
+
+                        <button
                             onClick={() => onAdd?.()}
                             className="flex-[2] sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-[11px] font-black uppercase tracking-tight shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all scale-active"
                         >
@@ -140,14 +231,6 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                     </div>
                 </div>
             </div>
-
-            <BulkImportModal 
-                isOpen={isImportModalOpen} 
-                onClose={() => setIsImportModalOpen(false)} 
-                onRefresh={handleRefresh}
-                outlets={outlets}
-            />
-
             {/* Bulk Actions Toolbar */}
             {selectedServiceIds.length > 0 && (
                 <div className="fixed bottom-4 sm:bottom-8 left-0 right-0 px-4 sm:px-0 sm:left-1/2 sm:-translate-x-1/2 z-[90] animate-in slide-in-from-bottom-10 fade-in duration-300">

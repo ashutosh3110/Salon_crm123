@@ -222,51 +222,51 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative bg-surface border border-border/40 w-full max-w-2xl overflow-hidden text-left">
-                <div className="p-8 border-b border-border/40 flex justify-between items-center bg-surface-alt">
-                    <h2 className="text-2xl font-black text-foreground uppercase italic tracking-tighter">
-                        {plan ? 'EDIT MEMBERSHIP PLAN' : 'CREATE NEW MEMBERSHIP PLAN'}
+            <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="relative bg-surface border border-border/40 w-full max-w-lg overflow-hidden text-left">
+                <div className="px-6 py-5 border-b border-border/40 flex justify-between items-center bg-surface-alt">
+                    <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">
+                        {plan ? 'EDIT PLAN' : 'CREATE NEW PLAN'}
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-primary/10 text-text-muted hover:text-primary transition-all"><X size={24} /></button>
+                    <button onClick={onClose} className="p-2 hover:bg-primary/10 text-text-muted hover:text-primary transition-all"><X size={20} /></button>
                 </div>
 
-                <div className="p-8 max-h-[70vh] overflow-y-auto no-scrollbar space-y-8 italic">
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2"><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">PLAN NAME</label><input className="w-full h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">PRICE (₹)</label><input type="number" className="w-full h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} /></div>
+                <div className="p-6 max-h-[75vh] overflow-y-auto no-scrollbar space-y-6 italic">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN NAME</label><input className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} /></div>
+                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PRICE (₹)</label><input type="number" className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} /></div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2"><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">VALIDITY (DAYS)</label><input type="number" className="w-full h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} /></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">PLAN ICON</label><select className="w-full h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" value={formData.icon} onChange={e => setFormData({ ...formData, icon: e.target.value })}><option value="star">Star</option><option value="crown">Crown</option><option value="gem">Gem</option></select></div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">VALIDITY (DAYS)</label><input type="number" className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} /></div>
+                        <div className="space-y-1.5"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN ICON</label><select className="w-full h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" value={formData.icon} onChange={e => setFormData({ ...formData, icon: e.target.value })}><option value="star">Star</option><option value="crown">Crown</option><option value="gem">Gem</option></select></div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center"><label className="text-[10px] font-black text-text-muted uppercase tracking-widest">PLAN BENEFITS</label><button onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} className="text-[9px] font-black text-primary uppercase tracking-widest">+ ADD BENEFIT</button></div>
-                        <div className="space-y-3">
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center"><label className="text-[9px] font-black text-text-muted uppercase tracking-widest">PLAN BENEFITS</label><button onClick={() => setFormData({ ...formData, benefits: [...formData.benefits, ''] })} className="text-[8px] font-black text-primary uppercase tracking-widest">+ ADD BENEFIT</button></div>
+                        <div className="space-y-2">
                             {formData.benefits.map((b, i) => (
                                 <div key={i} className="flex gap-2">
-                                    <input value={b} onChange={e => handleBenefitChange(i, e.target.value)} className="flex-1 h-11 bg-surface-alt border border-border/60 px-4 text-xs font-black italic shadow-sm" placeholder="E.g. 10% Off on Haircuts" />
-                                    <button onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} className="px-3 text-rose-500 border border-border/40"><X size={14} /></button>
+                                    <input value={b} onChange={e => handleBenefitChange(i, e.target.value)} className="flex-1 h-9 bg-surface-alt border border-border/60 px-3 text-[11px] font-black italic" placeholder="E.g. 10% Off on Haircuts" />
+                                    <button onClick={() => setFormData({ ...formData, benefits: formData.benefits.filter((_, idx) => idx !== i) })} className="px-2.5 text-rose-500 border border-border/40"><X size={12} /></button>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 pt-4 border-t border-border/20">
+                    <div className="grid grid-cols-1 gap-4 pt-4 border-t border-border/20">
                         {/* Service Discount */}
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Service Benefits (All Services)</label>
+                        <div className="space-y-3">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Service Benefits (All Services)</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" 
+                                    className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
                                     placeholder="Value"
                                     value={formData.serviceDiscountValue} 
                                     onChange={e => setFormData({ ...formData, serviceDiscountValue: e.target.value })} 
                                 />
                                 <select 
-                                    className="w-24 h-12 bg-surface-alt border border-border/60 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-10 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.serviceDiscountType}
                                     onChange={e => setFormData({ ...formData, serviceDiscountType: e.target.value })}
                                 >
@@ -277,18 +277,18 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                         </div>
 
                         {/* Product Discount */}
-                        <div className="space-y-4">
-                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Product Benefits</label>
+                        <div className="space-y-3">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest">Product Benefits</label>
                             <div className="flex gap-2">
                                 <input 
                                     type="number" 
-                                    className="flex-1 h-12 bg-surface-alt border border-border/60 px-4 text-sm font-black" 
+                                    className="flex-1 h-10 bg-surface-alt border border-border/60 px-3 text-xs font-black" 
                                     placeholder="Value"
                                     value={formData.productDiscountValue} 
                                     onChange={e => setFormData({ ...formData, productDiscountValue: e.target.value })} 
                                 />
                                 <select 
-                                    className="w-24 h-12 bg-surface-alt border border-border/60 px-2 text-[10px] font-black uppercase tracking-tighter"
+                                    className="w-24 h-10 bg-surface-alt border border-border/60 px-2 text-[9px] font-black uppercase tracking-tighter"
                                     value={formData.productDiscountType}
                                     onChange={e => setFormData({ ...formData, productDiscountType: e.target.value })}
                                 >
@@ -300,9 +300,9 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-border/40 bg-surface-alt">
-                    <button onClick={() => onSave(formData)} className="w-full py-5 bg-text text-white font-black text-[11px] uppercase tracking-widest shadow-xl flex items-center justify-center gap-3">
-                        SAVE PLAN DETAILS <Save size={16} />
+                <div className="p-6 border-t border-border/40 bg-surface-alt">
+                    <button onClick={() => onSave(formData)} className="w-full py-4 bg-text text-white font-black text-[10px] uppercase tracking-widest shadow-xl flex items-center justify-center gap-3">
+                        SAVE PLAN <Save size={14} />
                     </button>
                 </div>
             </motion.div>

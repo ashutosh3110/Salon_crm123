@@ -177,3 +177,101 @@ exports.getServicesGrouped = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+// @desc    Bulk Import Services
+// @route   POST /api/services/bulk-import
+// @access  Private (Admin)
+exports.bulkImportServices = async (req, res) => {
+    try {
+        const XLSX = require('xlsx');
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Please upload a file' });
+        }
+
+        // Use buffer instead of path since optimizedUpload uses memoryStorage
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet);
+
+        const salonId = req.user.salonId;
+        const results = {
+            totalRows: data.length,
+            importedCount: 0,
+            errors: []
+        };
+
+        const Outlet = require('../Models/Outlet');
+        const allOutlets = await Outlet.find({ salonId });
+
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            try {
+                // Explicitly initialize outletIds as empty for every row
+                let outletIds = [];
+
+                // Helper to get value case-insensitively
+                const getValue = (keys) => {
+                    for (const key of keys) {
+                        if (row[key] !== undefined) return row[key];
+                    }
+                    return undefined;
+                };
+
+                const name = getValue(['Name', 'name', 'Service Name', 'service name']);
+                const price = getValue(['Price', 'price', 'Service Price', 'service price']);
+                const category = getValue(['Category', 'category', 'Service Category', 'service category']);
+                const duration = getValue(['Duration (mins)', 'duration (mins)', 'Duration', 'duration']);
+                const description = getValue(['Description', 'description']);
+                const gst = getValue(['GST %', 'gst %', 'GST', 'gst']);
+                const gender = getValue(['Gender', 'gender']);
+                const commApp = getValue(['Commission Applicable', 'commission applicable']);
+                const commType = getValue(['Commission Type', 'commission type']);
+                const commVal = getValue(['Commission Value', 'commission value']);
+                const resType = getValue(['Resource Type', 'resource type']);
+                const outletInput = getValue(['Outlets (Comma Separated)', 'outlets (comma separated)', 'Outlets', 'outlets']);
+
+                // Basic validation
+                if (!name || !price) {
+                    results.errors.push(`Row ${i + 1}: Name and Price are required`);
+                    continue;
+                }
+                
+                // Map outlet names to IDs only if provided and not empty
+                if (outletInput && typeof outletInput === 'string' && outletInput.trim()) {
+                    const names = outletInput.split(',').map(n => n.trim().toLowerCase()).filter(n => n !== '');
+                    if (names.length > 0) {
+                        outletIds = allOutlets
+                            .filter(o => names.includes(o.name.toLowerCase()))
+                            .map(o => o._id);
+                    }
+                }
+
+                await Service.create({
+                    name: name,
+                    category: category || 'Uncategorized',
+                    price: parseFloat(price),
+                    duration: parseInt(duration) || 30,
+                    description: description || '',
+                    gst: parseFloat(gst) || 0,
+                    gender: (gender || 'both').toLowerCase(),
+                    commissionApplicable: (commApp || 'yes').toLowerCase() === 'yes',
+                    commissionType: (commType || 'percent').toLowerCase(),
+                    commissionValue: parseFloat(commVal) || 0,
+                    resourceType: (resType || 'chair').toLowerCase(),
+                    outletIds: outletIds,
+                    salonId: salonId,
+                    status: 'active'
+                });
+                results.importedCount++;
+            } catch (err) {
+                results.errors.push(`Row ${i + 1}: ${err.message}`);
+            }
+        }
+
+        res.json({ success: true, ...results });
+    } catch (err) {
+        console.error('Bulk Import Error:', err);
+        res.status(500).json({ success: false, message: 'Server Error during import' });
+    }
+};

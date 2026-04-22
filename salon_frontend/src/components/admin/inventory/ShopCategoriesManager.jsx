@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useInventory } from '../../../contexts/InventoryContext';
+import { useBusiness } from '../../../contexts/BusinessContext';
+import api from '../../../services/api';
 
 export default function ShopCategoriesManager() {
     const { shopCategories, addShopCategory, updateShopCategory, deleteShopCategory, products } = useInventory();
+    const { platformSettings } = useBusiness();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -40,14 +43,32 @@ export default function ShopCategoriesManager() {
         setFormData({ name: '', image: '' });
     };
 
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData({ ...formData, image: reader.result });
-            };
-            reader.readAsDataURL(file);
+        if (!file) return;
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            alert(`Image too large. Max ${maxSize}${unit} allowed.`);
+            return;
+        }
+
+        const uploadData = new FormData();
+        uploadData.append('image', file);
+
+        try {
+            const res = await api.post('/uploads', uploadData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (res.data.success) {
+                setFormData({ ...formData, image: res.data.url });
+            }
+        } catch (error) {
+            console.error('Upload failed:', error);
         }
     };
 
@@ -236,7 +257,12 @@ export default function ShopCategoriesManager() {
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-sm font-semibold text-text pl-1">Cover image</label>
+                                    <div className="flex justify-between items-end mb-1 px-1">
+                                        <label className="text-sm font-semibold text-text">Cover image</label>
+                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">
+                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                        </span>
+                                    </div>
                                         <p className="text-[11px] text-text-muted pl-1 -mt-0.5">Paste a link or upload a photo for this section.</p>
                                         <div className="flex gap-3">
                                             <div className="flex-1 relative">

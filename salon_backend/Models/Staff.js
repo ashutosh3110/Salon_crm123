@@ -36,6 +36,10 @@ const staffSchema = new mongoose.Schema({
     role: {
         type: String
     },
+    roleId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role'
+    },
     dob: String,
     gender: {
         type: String,
@@ -75,6 +79,24 @@ const staffSchema = new mongoose.Schema({
             friday: [{ start: String, end: String }],
             saturday: [{ start: String, end: String }],
             sunday: [{ start: String, end: String }]
+        }
+    },
+    // HR Related Fields
+    hrProfile: {
+        joiningDate: Date,
+        baseSalary: { type: Number, default: 0 },
+        aadhaarNumber: String,
+        panNumber: String,
+        bankDetails: {
+            accountNumber: String,
+            ifscCode: String,
+            bankName: String,
+            holderName: String
+        },
+        emergencyContact: {
+            name: String,
+            phone: String,
+            relation: String
         }
     }
 }, {

@@ -58,9 +58,24 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status !== 401) {
             const message = error.response?.data?.message || 'A network error occurred';
-            toast.error(message, {
-                id: 'global-api-error', // prevents duplicate toasts
-            });
+            
+            // Check if it's an image size limit error to show as info instead of error
+            if (message.toLowerCase().includes('image too large')) {
+                toast(message, {
+                    id: 'global-api-error',
+                    icon: 'ℹ️',
+                    duration: 4000,
+                    style: {
+                        background: '#333',
+                        color: '#fff',
+                        borderRadius: '8px',
+                    },
+                });
+            } else {
+                toast.error(message, {
+                    id: 'global-api-error',
+                });
+            }
         }
         return Promise.reject(error);
     }

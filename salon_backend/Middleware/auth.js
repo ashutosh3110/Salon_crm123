@@ -91,14 +91,56 @@ exports.protect = async (req, res, next) => {
     }
 };
 
-exports.authorize = (...roles) => {
-    return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+exports.authorize = (...requirements) => {
+    return async (req, res, next) => {
+        const user = req.user;
+        
+        // Always allow superadmin and salon owner (admin) to access their routes
+        if (['superadmin', 'admin'].includes(user.role)) {
+            return next();
+        }
+
+        // Check if any of the requirements are met
+        let isAuthorized = false;
+
+        for (const reqmt of requirements) {
+            // Check for specific role name
+            if (user.role === reqmt) {
+                isAuthorized = true;
+                break;
+            }
+
+            // Check for permission (prefixed with p:)
+            if (reqmt.startsWith('p:')) {
+                const permissionNeeded = reqmt.split(':')[1];
+                
+                // Fetch permissions if not already attached to req.user
+                if (!user.permissions && user.roleId) {
+                    try {
+                        const Role = require('../Models/Role');
+                        const roleDoc = await Role.findById(user.roleId);
+                        if (roleDoc) {
+                            user.permissions = roleDoc.permissions;
+                        }
+                    } catch (err) {
+                        console.error('Error fetching role permissions in middleware:', err);
+                    }
+                }
+
+                if (user.permissions && (user.permissions.includes(permissionNeeded) || user.permissions.includes('*'))) {
+                    isAuthorized = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isAuthorized) {
             return res.status(403).json({
                 success: false,
-                message: `User role ${req.user.role} is not authorized`
+                message: `User role ${user.role} is not authorized for this action`
             });
         }
+        
         next();
     };
 };

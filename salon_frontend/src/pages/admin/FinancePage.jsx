@@ -19,7 +19,7 @@ import {
     BarChart,
     Bar,
 } from 'recharts';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import FinanceDashboard from '../../components/admin/finance/FinanceDashboard';
 import SupplierManager from '../../components/admin/finance/SupplierManager';
 import SupplierInvoices from '../../components/admin/finance/SupplierInvoices';
@@ -50,9 +50,9 @@ export default function FinancePage({ tab = 'dashboard' }) {
     const loadFinance = useCallback(() => {
         setFinanceLoading(true);
         setFinanceError(null);
-        mockApi
-            .get('/invoices/finance-dashboard')
-            .then((res) => setFinanceData(res.data))
+        api
+            .get('/finance/summary')
+            .then((res) => setFinanceData(res.data?.data))
             .catch((e) => {
                 setFinanceError(
                     e?.networkHint ||

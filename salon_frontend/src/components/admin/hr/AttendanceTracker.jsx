@@ -9,7 +9,7 @@ import {
     Tooltip
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -109,15 +109,31 @@ export default function AttendanceTracker() {
         }
         setLoading(true);
         try {
-            const res = await mockApi.get('/attendance', { params: { date: selectedDate } });
-            const payload = res.data?.data ?? res.data;
-            const apiRecords = payload?.records ?? [];
+            const res = await api.get('/hr/attendance', { params: { date: selectedDate } });
+            const payload = res.data?.data ?? [];
+            const apiRecords = Array.isArray(payload) ? payload : (payload.records || []);
             const byUser = {};
             apiRecords.forEach((row) => {
-                const uid = row.userId?._id || row.userId;
+                const uid = row.staffId?._id || row.staffId;
                 if (uid) byUser[String(uid)] = row;
             });
-            const merged = list.map((u) => buildRow(u, byUser[String(u._id || u.id)]));
+            const merged = list.map((u) => {
+                const uid = String(u._id || u.id);
+                const record = byUser[uid];
+                return {
+                    id: uid,
+                    staff: u.name || '',
+                    role: ROLE_LABELS[u.role] || u.role,
+                    outlet: u.outletId?.name || (outlets.find(o => String(o._id || o.id) === String(u.outletId))?.name) || '—',
+                    checkIn: record?.checkIn || '-',
+                    checkOut: record?.checkOut || '-',
+                    hours: '-',
+                    status: record?.status || 'absent',
+                    loc: record?.notes || 'Salon',
+                    remark: record?.notes || '',
+                    attendanceId: record?._id
+                };
+            });
             setRecords(merged);
         } catch (e) {
             const msg = e?.response?.data?.message || e?.networkHint || e?.message || 'Failed to load attendance';
@@ -175,8 +191,8 @@ export default function AttendanceTracker() {
         e.preventDefault();
         if (!changeStatusModal) return;
         try {
-            await mockApi.post('/attendance', {
-                userId: changeStatusModal.id,
+            await api.post('/hr/attendance', {
+                staffId: changeStatusModal.id,
                 date: selectedDate,
                 status: newStatus,
                 checkIn: editCheckIn || undefined,

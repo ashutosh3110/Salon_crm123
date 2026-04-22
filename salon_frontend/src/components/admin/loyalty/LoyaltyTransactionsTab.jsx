@@ -10,7 +10,7 @@ import {
     FileText,
     Search
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function LoyaltyTransactionsTab() {
     const [transactions, setTransactions] = useState([]);
@@ -25,7 +25,7 @@ export default function LoyaltyTransactionsTab() {
         const fetchTransactions = async () => {
             setLoading(true);
             try {
-                const { data } = await mockApi.get('/loyalty/transactions', {
+                const { data } = await api.get('/loyalty/transactions', {
                     params: { page, limit: 25, type: filter, from: fromDate || undefined, to: toDate || undefined }
                 });
                 const rows = data?.data || data || [];
@@ -78,7 +78,7 @@ export default function LoyaltyTransactionsTab() {
                                 transactions.map((tx) => (
                                     <tr key={tx.id || tx._id} className="hover:bg-surface-alt/30 transition-colors">
                                         <td className="px-6 py-5">
-                                            <div className="text-[10px] font-bold text-foreground uppercase tracking-tighter opacity-80">{new Date().toLocaleString()}</div>
+                                            <div className="text-[10px] font-bold text-foreground uppercase tracking-tighter opacity-80">{new Date(tx.createdAt).toLocaleString()}</div>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex items-center gap-2">

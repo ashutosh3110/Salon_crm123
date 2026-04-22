@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import mockApi from '../../../services/mock/mockApi';
+import { useInventory } from '../../../contexts/InventoryContext';
 import {
     Search,
     MapPin,
@@ -8,50 +8,56 @@ import {
     AlertTriangle,
     CheckCircle2,
     Package,
-    Loader2,
     RefreshCw,
 } from 'lucide-react';
 
 /**
- * Stock grid from GET /inventory/overview (per product × outlet, tenant-scoped).
+ * Stock grid from InventoryContext.
  */
 export default function StockOverview() {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [payload, setPayload] = useState(null);
-
-    const load = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const res = await mockApi.get('/inventory/overview');
-            setPayload(res.data);
-        } catch (e) {
-            setError(e?.response?.data?.message || e?.message || 'Could not load stock overview.');
-            setPayload(null);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        load();
-    }, []);
-
+    const { products, summary, fetchInventorySummary, outlets: businessOutlets } = useInventory();
     const [search, setSearch] = useState('');
     const [outletFilter, setOutletFilter] = useState('All Outlets');
     const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
-    const lines = Array.isArray(payload?.lines) ? payload.lines : [];
-    const outlets = Array.isArray(payload?.outlets) ? payload.outlets : [];
-
-    const categories = useMemo(() => {
-        const set = new Set();
-        lines.forEach((l) => {
-            if (l.category) set.add(l.category);
+    const lines = useMemo(() => {
+        const result = [];
+        products.forEach(product => {
+            if (product.stockByOutlet && typeof product.stockByOutlet === 'object') {
+                Object.entries(product.stockByOutlet).forEach(([outletId, quantity]) => {
+                    const outlet = businessOutlets.find(o => String(o._id || o.id) === String(outletId));
+                    result.push({
+                        productId: product.id || product._id,
+                        name: product.name,
+                        sku: product.sku,
+                        category: product.categoryId?.name || product.category,
+                        outletId,
+                        outletName: outlet?.name || 'Main / Unknown',
+                        quantity,
+                        threshold: product.minStock || 5,
+                        stockStatus: product.stockStatus || (quantity <= (product.minStock || 5) ? 'Low Stock' : 'In Stock')
+                    });
+                });
+            } else if (product.outletIds?.length > 0) {
+                 // Fallback if stockByOutlet is not populated but outlets are assigned
+                 product.outletIds.forEach(outletId => {
+                    const outlet = businessOutlets.find(o => String(o._id || o.id) === String(outletId));
+                    result.push({
+                        productId: product.id || product._id,
+                        name: product.name,
+                        sku: product.sku,
+                        category: product.categoryId?.name || product.category,
+                        outletId,
+                        outletName: outlet?.name || 'Main / Unknown',
+                        quantity: 0,
+                        threshold: product.minStock || 5,
+                        stockStatus: 'Out of Stock'
+                    });
+                 });
+            }
         });
-        return Array.from(set).sort();
-    }, [lines]);
+        return result;
+    }, [products, businessOutlets]);
 
     const filteredStock = useMemo(() => {
         return lines.filter((item) => {
@@ -70,27 +76,11 @@ export default function StockOverview() {
         });
     }, [lines, search, outletFilter, categoryFilter]);
 
-    if (loading && !payload) {
+    if (!products.length) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[400px] gap-3 text-text-muted">
-                <Loader2 className="w-10 h-10 animate-spin text-primary" />
-                <p className="text-sm font-semibold">Loading stock from server…</p>
-            </div>
-        );
-    }
-
-    if (error && !payload) {
-        return (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center space-y-4">
-                <p className="text-sm font-semibold text-rose-800">{error}</p>
-                <button
-                    type="button"
-                    onClick={load}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-text text-white text-xs font-bold"
-                >
-                    <RefreshCw className="w-4 h-4" />
-                    Try again
-                </button>
+                <Package className="w-10 h-10 opacity-20" />
+                <p className="text-sm font-semibold italic">Registry Empty :: No SKU Vectors Found</p>
             </div>
         );
     }
@@ -102,20 +92,19 @@ export default function StockOverview() {
                     <h2 className="text-lg font-black text-foreground uppercase tracking-tight italic">Global Density Matrix</h2>
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] italic">
                         Real-time Asset Distribution :: SKU x Outlet Vector
-                        {payload?.summary ? (
-                            <span className="ml-2 border-l border-border/60 pl-2">
-                                {payload.summary.skuCount} REGISTERED SKUs · {payload.summary.outletCount} DEPLOYED NODES
-                            </span>
-                        ) : null}
+                        <span className="ml-2 border-l border-border/60 pl-2">
+                            {stats.skuCount} REGISTERED SKUs · {stats.outletCount} DEPLOYED NODES
+                        </span>
                     </p>
                 </div>
                 <button
                     type="button"
-                    onClick={load}
-                    disabled={loading}
+                    onClick={() => {
+                        fetchInventorySummary();
+                    }}
                     className="flex items-center gap-2 px-4 py-2 bg-surface-alt border border-border/40 text-[9px] font-black text-primary uppercase tracking-[0.2em] hover:bg-primary/5 transition-all italic shadow-sm"
                 >
-                    <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className="w-3 h-3" />
                     Synchronize Registry
                 </button>
             </div>
@@ -141,8 +130,8 @@ export default function StockOverview() {
                             className="w-full pl-10 pr-4 py-2.5 bg-surface-alt border border-border rounded-xl text-sm font-semibold text-text-secondary appearance-none focus:outline-none focus:ring-2 focus:ring-primary/10 transition-all cursor-pointer"
                         >
                             <option value="All Outlets">All outlets</option>
-                            {outlets.map((o) => (
-                                <option key={String(o._id)} value={o.name}>
+                            {businessOutlets.map((o) => (
+                                <option key={String(o._id || o.id)} value={o.name}>
                                     {o.name}
                                 </option>
                             ))}

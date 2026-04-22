@@ -33,8 +33,8 @@ import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
-    const { productCategories, suppliers, shopCategories, products } = useInventory();
-    const { outlets } = useBusiness();
+    const { productCategories, shopCategories, products } = useInventory();
+    const { outlets, platformSettings, suppliers = [] } = useBusiness();
     const navigate = useNavigate();
     const defaultFormData = {
         name: '',
@@ -89,9 +89,20 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
     });
 
     const [uploading, setUploading] = useState(false);
+
     const handleAppImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            alert(`Image too large. Max ${maxSize}${unit} allowed.`);
+            return;
+        }
 
         setUploading(true);
         const formDataUpload = new FormData();
@@ -113,7 +124,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         }
     };
 
-    const supplierNames = suppliers.map(s => s.name);
+    const supplierNames = (suppliers || []).map(s => s.name);
     const existingCategories = Array.from(
         new Set([
             ...(productCategories || []),
@@ -537,7 +548,12 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in slide-in-from-bottom-8 duration-500">
                                 {/* App Preview Image */}
                                 <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">App Display Image</label>
+                                    <div className="flex justify-between items-end mb-1">
+                                        <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">App Display Image</label>
+                                        <span className="text-[8px] font-black text-indigo-300/60 uppercase tracking-widest">
+                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                        </span>
+                                    </div>
                                     <div className="relative aspect-[4/5] rounded-[32px] overflow-hidden bg-white/5 border-2 border-dashed border-white/20 hover:border-indigo-400 transition-all group/img cursor-pointer">
                                         {formData.appImage ? (
                                             <>

@@ -60,7 +60,12 @@ const settingSchema = new mongoose.Schema({
     },
     maxImageSize: {
         type: Number,
-        default: 5 // Default 5MB
+        default: 5 // Default 5
+    },
+    maxImageSizeUnit: {
+        type: String,
+        enum: ['MB', 'KB'],
+        default: 'MB'
     }
 }, {
     timestamps: true

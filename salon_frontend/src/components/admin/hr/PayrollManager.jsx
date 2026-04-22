@@ -12,7 +12,7 @@ import {
     Cell
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 const STATUS_META = {
     paid: { label: 'Paid', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
@@ -89,10 +89,10 @@ export default function PayrollManager() {
     const loadPayroll = useCallback(async () => {
         setListLoading(true);
         try {
-            const res = await mockApi.get('/payroll', { params: { year: period.year, month: period.month } });
-            const data = res.data?.data;
-            setPeriodLocked(!!data?.period?.locked);
-            const rows = (data?.entries || []).map(mapEntryFromApi);
+            const res = await api.get('/hr/payroll', { params: { year: period.year, month: period.month } });
+            const data = res.data?.data ?? [];
+            setPeriodLocked(false); // Can add lock logic later if needed
+            const rows = data.map(mapEntryFromApi);
             setPayroll(rows);
         } catch (e) {
             showToast(e?.response?.data?.message || e?.networkHint || 'Failed to load payroll');
@@ -145,7 +145,10 @@ export default function PayrollManager() {
         e.preventDefault();
         if (!editModal) return;
         try {
-            await mockApi.patch(`/payroll/entries/${editModal.id}`, {
+            await api.post('/hr/payroll/generate', {
+                staffId: editModal.userId,
+                month: period.month,
+                year: period.year,
                 baseSalary: Number(editForm.base),
                 commission: Number(editForm.commission),
                 deductions: Number(editForm.deductions),
@@ -187,8 +190,8 @@ export default function PayrollManager() {
         if (periodLocked) return;
         setActionLoading(true);
         try {
-            await mockApi.post('/payroll/generate', { year: period.year, month: period.month });
-            showToast('Payslips generated / synced from staff');
+            await api.post('/hr/payroll/generate', { month: period.month, year: period.year });
+            showToast('Payslips generated for all active staff');
             await loadPayroll();
         } catch (err) {
             showToast(err?.response?.data?.message || 'Generate failed');

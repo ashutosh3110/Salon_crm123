@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import mockApi from '../../../services/mock/mockApi';
+import { useInventory } from '../../../contexts/InventoryContext';
+import api from '../../../services/api';
 import {
     ArrowRight,
     Package,
@@ -18,6 +19,7 @@ import {
  */
 export default function LowStockAlerts() {
     const navigate = useNavigate();
+    const { stats, fetchInventorySummary } = useInventory();
     const [payload, setPayload] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,23 +28,28 @@ export default function LowStockAlerts() {
         setLoading(true);
         setError(null);
         try {
-            const res = await mockApi.get('/inventory/low-stock');
-            setPayload(res.data);
+            const res = await api.get('/inventory/low-stock');
+            setPayload(res.data.data);
+            fetchInventorySummary();
         } catch (e) {
             setError(e?.response?.data?.message || e?.message || 'Could not load low stock data.');
             setPayload(null);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [fetchInventorySummary]);
 
     useEffect(() => {
         load();
     }, [load]);
 
-    const alerts = payload?.alerts || [];
-    const stableSample = payload?.stableSample || [];
-    const summary = payload?.summary || { total: 0, critical: 0, low: 0 };
+    const alerts = Array.isArray(payload?.alerts) ? payload.alerts : [];
+    const stableSample = Array.isArray(payload?.stableSample) ? payload.stableSample : [];
+    const summary = { 
+        total: stats.lowStockCount || alerts.length, 
+        critical: alerts.filter(a => a.stockStatus === 'Critical').length, 
+        low: alerts.filter(a => a.stockStatus === 'Low Stock').length 
+    };
 
     if (loading && !payload) {
         return (

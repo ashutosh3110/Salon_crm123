@@ -187,6 +187,16 @@ exports.updateStatus = async (req, res) => {
             booking.paymentStatus = 'paid';
         }
 
+        // If status changed to completed, increment visits and spend
+        if (booking.status === 'completed' && oldStatus !== 'completed') {
+            await Customer.findByIdAndUpdate(booking.clientId, {
+                $inc: { 
+                    totalVisits: 1,
+                    totalSpend: booking.totalPrice || 0
+                }
+            });
+        }
+
         await booking.save();
 
         // If status changed to completed, award loyalty points

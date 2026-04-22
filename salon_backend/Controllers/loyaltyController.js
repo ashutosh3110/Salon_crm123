@@ -261,3 +261,118 @@ exports.getMyReferrals = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+// @desc    Get loyalty members for salon (customers with transactions)
+// @route   GET /api/loyalty/members
+// @access  Private (Admin/Manager)
+exports.getLoyaltyMembers = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { page = 1, limit = 20, search, status } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        // Rule: Only show customers who have at least one transaction (visit or spend) in this salon
+        let query = { 
+            salonId,
+            $or: [
+                { totalVisits: { $gt: 0 } },
+                { totalSpend: { $gt: 0 } }
+            ]
+        };
+
+        if (search) {
+            const searchRegex = new RegExp(search, 'i');
+            query.$and = [
+                { 
+                    $or: [
+                        { name: searchRegex },
+                        { phone: searchRegex }
+                    ]
+                }
+            ];
+        }
+
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        const total = await Customer.countDocuments(query);
+        const members = await Customer.find(query)
+            .sort({ updatedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({
+            success: true,
+            data: members,
+            meta: {
+                page: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                total,
+                limit: parseInt(limit)
+            }
+        });
+    } catch (err) {
+        console.error('Get loyalty members error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+// @desc    Get all loyalty transactions for salon
+// @route   GET /api/loyalty/transactions
+// @access  Private (Admin/Manager)
+exports.getAdminLoyaltyTransactions = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { page = 1, limit = 25, type, from, to } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        let query = { salonId };
+
+        if (type && type !== 'ALL') {
+            // Support both REDEEM and REDEEMED for flexibility
+            if (type === 'REDEEM') {
+                query.type = { $in: ['REDEEM', 'REDEEMED'] };
+            } else {
+                query.type = type;
+            }
+        }
+
+        if (from || to) {
+            query.createdAt = {};
+            if (from) query.createdAt.$gte = new Date(from);
+            if (to) {
+                const toDate = new Date(to);
+                toDate.setHours(23, 59, 59, 999);
+                query.createdAt.$lte = toDate;
+            }
+        }
+
+        const total = await LoyaltyTransaction.countDocuments(query);
+        const transactions = await LoyaltyTransaction.find(query)
+            .populate('customerId', 'name phone')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        // Only return transactions where the customer still exists and belongs to this salon context
+        const validTransactions = transactions.filter(tx => tx.customerId);
+
+        res.json({
+            success: true,
+            data: validTransactions.map(tx => ({
+                ...tx._doc,
+                id: tx._id,
+                points: tx.amount, // Map amount to points for frontend
+                type: (tx.type === 'REDEEMED' || tx.type === 'DEBIT') ? 'REDEEM' : 'EARN' // Normalize type
+            })),
+            meta: {
+                page: parseInt(page),
+                totalPages: Math.ceil(total / parseInt(limit)),
+                total: validTransactions.length,
+                limit: parseInt(limit)
+            }
+        });
+    } catch (err) {
+        console.error('Get admin transactions error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};

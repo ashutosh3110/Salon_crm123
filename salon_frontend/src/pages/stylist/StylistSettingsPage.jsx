@@ -42,7 +42,7 @@ export default function StylistSettingsPage() {
     const { section } = useParams();
     const navigate = useNavigate();
     const { user, updateProfile, changePassword, refreshUser } = useAuth();
-    const { outlets } = useBusiness();
+    const { outlets, platformSettings } = useBusiness();
 
     const [loadError, setLoadError] = useState(null);
     const [toast, setToast] = useState(null);
@@ -163,23 +163,34 @@ export default function StylistSettingsPage() {
         }
     };
 
-    const handleImageUpload = (e) => {
+    const handleImageUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (file.size > 350 * 1024) {
-            showToast('Image too large (max ~350KB)', true);
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            showToast(`Image too large. Max ${maxSize}${unit} allowed.`, true);
             return;
         }
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            const r = reader.result;
-            if (typeof r === 'string' && r.length > 400000) {
-                showToast('Image too large for profile storage', true);
-                return;
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const res = await mockApi.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (res.data.success) {
+                setProfileForm(prev => ({ ...prev, avatar: res.data.url }));
             }
-            setProfileForm((prev) => ({ ...prev, avatar: r }));
-        };
-        reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Upload failed:', error);
+            showToast('Upload failed', true);
+        }
     };
 
     const saveSkills = async () => {
@@ -279,6 +290,7 @@ export default function StylistSettingsPage() {
                                 <label
                                     htmlFor="profile-img-upload"
                                     className="absolute -bottom-2 -right-2 w-10 h-10 border border-border bg-surface text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer"
+                                    title={`Max: ${platformSettings?.maxImageSize || 5}${platformSettings?.maxImageSizeUnit || 'MB'}`}
                                 >
                                     <Plus className="w-5 h-5" />
                                 </label>

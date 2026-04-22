@@ -59,7 +59,7 @@ const statusColors = {
 
 export default function StaffPage() {
     const { user } = useAuth();
-    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff, fetchStaff, roles, fetchRoles } = useBusiness();
+    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff, fetchStaff, roles, fetchRoles, platformSettings } = useBusiness();
     const { pendingExpertsCount } = useCMS();
     const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
@@ -78,7 +78,8 @@ export default function StaffPage() {
         name: '',
         email: '',
         phone: '',
-        role: 'stylist',
+        role: '',
+        roleId: '',
         outletId: '',
         dob: '',
         pan: '',
@@ -112,6 +113,18 @@ export default function StaffPage() {
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
+        if (!file) return;
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            alert(`Image too large. Max ${maxSize}${unit} allowed.`);
+            return;
+        }
+
         if (file) {
             setAvatarFile(file);
             const reader = new FileReader();
@@ -154,7 +167,7 @@ export default function StaffPage() {
             setShowModal(false);
             setEditing(null);
             setAvatarFile(null);
-            setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
+            setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
         } catch (error) {
             toast.error('Operation failed: ' + error.message);
         } finally {
@@ -188,6 +201,7 @@ export default function StaffPage() {
             email: u.email,
             phone: u.phone || '',
             role: u.role,
+            roleId: u.roleId || '',
             outletId: u.outletId || '',
             dob: u.dob || '',
             pan: u.pan || '',
@@ -212,7 +226,7 @@ export default function StaffPage() {
                 <button
                     onClick={() => {
                         setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: roles[0]?.name || 'stylist', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
+                        setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
                         setShowModal(true);
                     }}
                     className="flex items-center gap-2 bg-text text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-primary transition-all italic active:scale-95"
@@ -420,7 +434,12 @@ export default function StaffPage() {
                             <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(95vh-160px)] custom-scrollbar">
                                 <div className="grid grid-cols-2 gap-3 pb-4">
                                 <div className="col-span-2 space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo</label>
+                                    <div className="flex justify-between items-end mb-1">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo</label>
+                                        <span className="text-[8px] font-black text-primary uppercase tracking-widest opacity-60">
+                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                        </span>
+                                    </div>
                                     <div className="flex justify-center py-2">
                                         <div className="relative group/photo">
                                             <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
@@ -486,11 +505,14 @@ export default function StaffPage() {
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
                                     <select 
-                                        value={form.role} 
+                                        value={form.roleId} 
                                         onChange={(e) => {
-                                            const newRole = e.target.value;
-                                            const updates = { role: newRole };
-                                            const isStylistRole = ['stylist', 'stylish', 'stylsih'].includes(newRole.toLowerCase());
+                                            const rId = e.target.value;
+                                            const selectedRole = roles.find(r => r._id === rId);
+                                            const roleName = selectedRole ? selectedRole.name : '';
+                                            
+                                            const updates = { role: roleName, roleId: rId };
+                                            const isStylistRole = ['stylist', 'stylish', 'stylsih'].includes(roleName.toLowerCase());
                                             if (isStylistRole && (!form.availability || !form.availability.days)) {
                                                 updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
                                             }
@@ -498,17 +520,10 @@ export default function StaffPage() {
                                         }}
                                         className="w-full px-3 py-2 bg-surface-alt border border-border text-[10px] font-black outline-none focus:border-text font-mono uppercase"
                                     >
+                                        <option value="">Select Role</option>
                                         {roles.map(r => (
-                                            <option key={r._id} value={r.name}>{r.name.toUpperCase()}</option>
+                                            <option key={r._id} value={r._id}>{r.name.toUpperCase()}</option>
                                         ))}
-                                        {roles.length === 0 && (
-                                            <>
-                                                <option value="stylist">Stylist</option>
-                                                <option value="receptionist">Receptionist</option>
-                                                <option value="manager">Manager</option>
-                                                <option value="admin">Admin</option>
-                                            </>
-                                        )}
                                     </select>
                                 </div>
                                 <div className="space-y-1">

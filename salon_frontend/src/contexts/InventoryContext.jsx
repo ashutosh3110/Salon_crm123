@@ -106,6 +106,8 @@ export const InventoryProvider = ({ children }) => {
     const [shopCategories, setShopCategories] = useState([]);
     const [productCategories, setProductCategories] = useState([]);
     const [supplierInvoices, setSupplierInvoices] = useState([]);
+    const [stockHistory, setStockHistory] = useState([]);
+    const [summary, setSummary] = useState({ totalProducts: 0, totalStockValue: 0, potentialRevenue: 0, outOfStock: 0 });
     const [loading, setLoading] = useState(false);
     const initializationRef = useRef(false);
 
@@ -160,21 +162,34 @@ export const InventoryProvider = ({ children }) => {
         }
     }, [dashboardUser, getEffectiveSalonId]);
 
-    const fetchStockInHistory = useCallback(async () => {
+    const fetchStockHistory = useCallback(async (params = {}) => {
         try {
-            const res = await mockApi.get('/inventory/stock-in/history');
-            const rows = res?.data?.results || res?.data?.data || res?.data || [];
-            setStockInHistory(Array.isArray(rows) ? rows : []);
-        } catch { setStockInHistory([]); }
+            const res = await api.get('/inventory/history', { params });
+            setStockHistory(res.data?.data || []);
+        } catch { setStockHistory([]); }
     }, []);
 
-    const fetchSupplierInvoices = useCallback(async () => {
+    const fetchInventorySummary = useCallback(async () => {
         try {
-            const res = await mockApi.get('/suppliers/invoices');
-            const rows = res?.data?.results || res?.data?.data || res?.data || [];
-            setSupplierInvoices(Array.isArray(rows) ? rows : []);
-        } catch { setSupplierInvoices([]); }
+            const res = await api.get('/inventory/summary');
+            setSummary(res.data?.data || { totalProducts: 0, totalStockValue: 0, potentialRevenue: 0, outOfStock: 0 });
+        } catch { }
     }, []);
+
+    const updateStock = async (stockData) => {
+        try {
+            const res = await api.post('/inventory/update-stock', stockData);
+            if (res.data.success) {
+                toast.success(res.data.message || 'Stock updated');
+                fetchProducts();
+                fetchInventorySummary();
+                return res.data;
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update stock');
+            throw error;
+        }
+    };
 
     useEffect(() => {
         const isCustomerPath = window.location.pathname.startsWith('/app');
@@ -187,11 +202,11 @@ export const InventoryProvider = ({ children }) => {
             fetchProductCategories();
             
             if (canFetchPrivate) {
-                fetchStockInHistory();
-                fetchSupplierInvoices();
+                fetchStockHistory();
+                fetchInventorySummary();
             }
         }
-    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockInHistory, fetchSupplierInvoices]);
+    }, [dashboardUser, isPlanActive, isCustomerAuthenticated, salon, activeSalonId, fetchProducts, fetchShopCategories, fetchProductCategories, fetchStockHistory, fetchInventorySummary]);
 
     const toggleProductLike = async (productId) => {
         if (!isCustomerAuthenticated) return;
@@ -277,12 +292,17 @@ export const InventoryProvider = ({ children }) => {
     };
 
     const value = {
-        products, movements, purchases, transfers, outlets, saleRecords, stockInHistory, shopCategories, productCategories, supplierInvoices, loading,
-        fetchProducts, addProduct, updateProduct, deleteProduct, fetchShopCategories,
+        products, movements, purchases, transfers, outlets, saleRecords, stockHistory, shopCategories, productCategories, supplierInvoices, loading, summary,
+        fetchProducts, addProduct, updateProduct, deleteProduct, fetchShopCategories, updateStock, fetchStockHistory, fetchInventorySummary,
         fetchProductCategories, addProductCategory, updateProductCategory, deleteProductCategory,
         toggleProductLike,
         lowStockItems: products.filter(p => p.stock <= p.minStock),
-        stats: { totalProducts: products.length, lowStockCount: products.filter(p => p.stock <= p.minStock).length, totalValue: products.reduce((acc, p) => acc + (p.stock * (p.costPrice || 0)), 0) }
+        stats: { 
+            totalProducts: summary.totalProducts || products.length, 
+            lowStockCount: products.filter(p => p.stock <= p.minStock).length, 
+            totalValue: summary.totalStockValue || products.reduce((acc, p) => acc + (p.stock * (p.costPrice || 0)), 0),
+            outOfStock: summary.outOfStock
+        }
     };
 
     return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>;

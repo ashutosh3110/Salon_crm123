@@ -11,7 +11,7 @@ import {
     Cell,
 } from 'recharts';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#6366f1'];
 const TW_COLORS = ['bg-emerald-500', 'bg-blue-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-primary'];
@@ -31,7 +31,7 @@ function mapShiftFromApi(doc) {
         : outlet != null
           ? String(outlet)
           : '';
-    const assigned = (doc.assignedUserIds || []).map((u) => String(u._id || u));
+    const assigned = (doc.assignedStaff || []).map((u) => String(u._id || u));
     return {
         id: String(doc._id),
         name: doc.name,
@@ -74,8 +74,8 @@ export default function ShiftManager() {
     const fetchShifts = useCallback(async () => {
         setListLoading(true);
         try {
-            const res = await mockApi.get('/shifts');
-            const raw = res.data?.data ?? res.data ?? [];
+            const res = await api.get('/hr/shifts');
+            const raw = res.data?.data ?? [];
             const arr = Array.isArray(raw) ? raw : [];
             setShifts(arr.map(mapShiftFromApi));
         } catch (e) {
@@ -156,10 +156,10 @@ export default function ShiftManager() {
                 colorClass: form.color,
             };
             if (editTarget) {
-                await mockApi.patch(`/shifts/${editTarget.id}`, payload);
+                await api.post('/hr/shifts', { ...payload, id: editTarget.id });
                 showToast(`“${form.name}” updated`);
             } else {
-                await mockApi.post('/shifts', payload);
+                await api.post('/hr/shifts', payload);
                 showToast(`“${form.name}” added`);
             }
             setShiftModal(false);
@@ -171,7 +171,7 @@ export default function ShiftManager() {
 
     const deleteShift = async (id) => {
         try {
-            await mockApi.delete(`/shifts/${id}`);
+            await api.delete(`/hr/shifts/${id}`);
             setDeleteConfirm(null);
             showToast('Shift removed');
             await fetchShifts();
@@ -184,7 +184,7 @@ export default function ShiftManager() {
         if (!rosterModal) return;
         setSavingRoster(true);
         try {
-            await mockApi.patch(`/shifts/${rosterModal.id}/roster`, { userIds: rosterDraft });
+            await api.patch(`/hr/shifts/${rosterModal.id}/roster`, { userIds: rosterDraft });
             showToast(`Team saved for “${rosterModal.name}”`);
             setRosterModal(null);
             await fetchShifts();

@@ -53,6 +53,10 @@ const outletSchema = new mongoose.Schema({
         id: Number,
         name: String
     }],
+    beds: [{
+        id: Number,
+        name: String
+    }],
     config: {
         bookingSms: { type: Boolean, default: true },
         whatsappNotifications: { type: Boolean, default: true },

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, Download, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import api from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 import toast from 'react-hot-toast';
 
 export default function BulkImportModal({ isOpen, onClose, onRefresh, outlets = [] }) {

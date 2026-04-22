@@ -47,6 +47,9 @@ const dashboard = require('./Routers/dashboardRoutes');
 const billing = require('./Routers/billingRoutes');
 const clients = require('./Routers/clientRoutes');
 const pos = require('./Routers/posRoutes');
+const inventory = require('./Routers/inventoryRoutes');
+const hr = require('./Routers/hrRoutes');
+const finance = require('./Routers/financeRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -78,6 +81,9 @@ app.use('/orders', orders);
 app.use('/dashboard', dashboard);
 app.use('/billing', billing);
 app.use('/pos', pos);
+app.use('/inventory', inventory);
+app.use('/hr', hr);
+app.use('/finance', finance);
 
 
 // Initialize Cron Jobs

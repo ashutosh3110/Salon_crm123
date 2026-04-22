@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
@@ -18,6 +19,7 @@ const BusinessContext = createContext({
     roles: [], fetchRoles: async () => { },
     setOutlets: () => { }, fetchOutlets: async () => { }, outletsLoading: false,
     loyaltySettings: null, fetchLoyaltySettings: async () => { },
+    platformSettings: null, fetchPlatformSettings: async () => { },
     updateSalon: async () => { }, fetchSalon: async () => { },
     salonLoading: false
 });
@@ -49,6 +51,7 @@ export function BusinessProvider({ children }) {
     const [isInitializing, setIsInitializing] = useState(true);
     const [loyaltySettings, setLoyaltySettings] = useState(null);
     const [loyaltyPlans, setLoyaltyPlans] = useState([]);
+    const [platformSettings, setPlatformSettings] = useState(null);
 
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
@@ -82,6 +85,17 @@ export function BusinessProvider({ children }) {
 
     const [customersMetadata, setCustomersMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
     const [globalStats, setGlobalStats] = useState({ totalRevenue: 0, totalVIPs: 0, totalInactive: 0, totalCount: 0, totalLiability: 0 });
+    const fetchPlatformSettings = useCallback(async () => {
+        try {
+            const r = await api.get('/settings');
+            if (r.data?.success) {
+                setPlatformSettings(r.data.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch platform settings:', err);
+        }
+    }, []);
+
     const fetchCustomers = useCallback(async (page = 1, limit = 5) => {
         setCustomersLoading(true);
         try {
@@ -140,7 +154,8 @@ export function BusinessProvider({ children }) {
     const fetchServices = useCallback(async (sId, oId) => {
         try {
             const sid = sId || activeSalonId || salon?._id;
-            const oid = oId || activeOutletId;
+            // Use activeOutletId ONLY if oId is undefined. If oId is null, it means 'All Outlets'.
+            const oid = oId === undefined ? activeOutletId : oId;
 
             if (!sid) return;
 
@@ -208,7 +223,7 @@ export function BusinessProvider({ children }) {
 
     const fetchSuppliers = useCallback(async () => {
         try {
-            const r = await api.get('/suppliers');
+            const r = await api.get('/finance/suppliers');
             setSuppliers(r.data?.data || r.data || []);
         } catch { setSuppliers([]); }
     }, []);
@@ -427,10 +442,11 @@ export function BusinessProvider({ children }) {
 
     const addSupplier = useCallback(async (d) => {
         try {
-            const r = await api.post('/suppliers', d);
-            setSuppliers(p => [r.data, ...p]);
+            const r = await api.post('/finance/suppliers', d);
+            const newSup = r.data.data || r.data;
+            setSuppliers(p => [newSup, ...p]);
             toast.success('Supplier added');
-            return r.data;
+            return newSup;
         } catch (err) {
             toast.error('Failed to add supplier');
             throw err;
@@ -439,7 +455,7 @@ export function BusinessProvider({ children }) {
 
     const deleteSupplier = useCallback(async (id) => {
         try {
-            await api.delete(`/suppliers/${id}`);
+            await api.delete(`/finance/suppliers/${id}`);
             setSuppliers(p => p.filter(s => (s._id !== id && s.id !== id)));
             toast.success('Supplier removed');
         } catch (err) {
@@ -450,10 +466,11 @@ export function BusinessProvider({ children }) {
 
     const updateSupplier = useCallback(async (id, d) => {
         try {
-            const r = await api.patch(`/suppliers/${id}`, d);
-            setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...d } : s));
+            const r = await api.post('/finance/suppliers', { id, ...d });
+            const updated = r.data.data || r.data;
+            setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s));
             toast.success('Supplier details updated');
-            return r.data;
+            return updated;
         } catch (err) {
             toast.error('Failed to update supplier');
             throw err;
@@ -514,7 +531,6 @@ export function BusinessProvider({ children }) {
             toast.success('Outlet protocols updated');
             return updated;
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update outlet');
             throw err;
         }
     }, []);
@@ -603,7 +619,6 @@ export function BusinessProvider({ children }) {
             toast.success('New service launched');
             return newService;
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to create service');
             throw err;
         }
     }, []);
@@ -616,7 +631,6 @@ export function BusinessProvider({ children }) {
             toast.success('Service catalog updated');
             return updated;
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to update service');
             throw err;
         }
     }, []);
@@ -655,7 +669,6 @@ export function BusinessProvider({ children }) {
             toast.success('Category created');
             return newCat;
         } catch (err) {
-            toast.error('Failed to create category');
             throw err;
         }
     }, []);
@@ -668,7 +681,6 @@ export function BusinessProvider({ children }) {
             toast.success('Category updated');
             return updated;
         } catch (err) {
-            toast.error('Failed to update category');
             throw err;
         }
     }, []);
@@ -761,6 +773,7 @@ export function BusinessProvider({ children }) {
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,
         loyaltyPlans, fetchLoyaltyPlans,
+        platformSettings, fetchPlatformSettings,
         updateSalon, fetchSalon,
         salonLoading: isInitializing
     }), [
@@ -779,6 +792,7 @@ export function BusinessProvider({ children }) {
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,
         loyaltyPlans, fetchLoyaltyPlans,
+        platformSettings, fetchPlatformSettings,
         updateSalon, fetchSalon
     ]);
 
@@ -793,9 +807,22 @@ export function BusinessProvider({ children }) {
         }
 
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
+        
+        // Skip guest/tenant initialization for auth routes, admin, stylist and superadmin routes
+        const authRoutes = ['/login', '/register', '/admin/login', '/forgot-password'];
+        const protectedPaths = ['/admin', '/superadmin', '/stylist'];
+        
+        if (authRoutes.includes(location.pathname) || protectedPaths.some(p => location.pathname.startsWith(p))) {
+            // For protected paths, we only want to fetch data if authenticated
+            if (!(isAuthenticated || isCustomerAuthenticated)) {
+                setIsInitializing(false);
+                return;
+            }
+        }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
             fetchCustomerInitialData();
+            fetchPlatformSettings();
         } else if (effectiveTid) {
             if (lastInitializedId.current === effectiveTid) return;
             lastInitializedId.current = effectiveTid;
@@ -806,6 +833,12 @@ export function BusinessProvider({ children }) {
                     if (!salon) {
                         initTasks.push(api.get(`/salons/${effectiveTid}`).then(res => {
                             if (res.data.success) setSalon(res.data.data);
+                        }).catch(err => {
+                            if (err.response?.status === 404) {
+                                console.warn("Salon ID in localStorage is invalid, clearing...");
+                                localStorage.removeItem('active_salon_id');
+                                setActiveSalonId(null);
+                            }
                         }));
                     }
                     initTasks.push(fetchServices(effectiveTid));
@@ -823,7 +856,7 @@ export function BusinessProvider({ children }) {
         } else {
             setIsInitializing(false);
         }
-    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
+    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, location.pathname, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

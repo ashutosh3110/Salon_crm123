@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useInventory } from '../../../contexts/InventoryContext';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
 import {
     Plus,
     History,
@@ -18,10 +17,9 @@ import {
 } from 'lucide-react';
 
 export default function StockIn() {
-    const { suppliers, products, outlets: invOutlets, fetchProducts } = useInventory();
-    const { outlets: tenantOutlets, suppliers: businessSuppliers } = useBusiness();
+    const { products, outlets: invOutlets, fetchProducts, updateStock, fetchStockHistory, stockHistory } = useInventory();
+    const { outlets: tenantOutlets, suppliers: businessSuppliers, suppliers } = useBusiness();
     const [view, setView] = useState('list');
-    const [history, setHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
     const [historyError, setHistoryError] = useState(null);
 
@@ -29,16 +27,13 @@ export default function StockIn() {
         setHistoryLoading(true);
         setHistoryError(null);
         try {
-            const res = await mockApi.get('/inventory/stock-in/history', { params: { page: 1, limit: 100 } });
-            const rows = res?.data?.results ?? res?.data ?? [];
-            setHistory(Array.isArray(rows) ? rows : []);
+            await fetchStockHistory({ type: 'IN' });
         } catch (e) {
-            setHistoryError(e?.response?.data?.message || e?.message || 'Could not load history.');
-            setHistory([]);
+            setHistoryError('Could not load history.');
         } finally {
             setHistoryLoading(false);
         }
-    }, []);
+    }, [fetchStockHistory]);
 
     useEffect(() => {
         fetchHistory();
@@ -98,7 +93,7 @@ export default function StockIn() {
             <div className="flex-1 overflow-y-auto no-scrollbar bg-surface text-left">
                 {view === 'list' ? (
                     <StockInHistory
-                        rows={history}
+                        rows={stockHistory}
                         loading={historyLoading}
                         error={historyError}
                         onRetry={fetchHistory}
@@ -114,6 +109,7 @@ export default function StockIn() {
                         suppliers={businessSuppliers?.length ? businessSuppliers : suppliers}
                         products={products}
                         outlets={tenantOutlets?.length ? tenantOutlets : invOutlets || []}
+                        updateStock={updateStock}
                     />
                 )}
             </div>
@@ -246,7 +242,7 @@ function StockInHistory({ rows, loading, error, onRetry }) {
     );
 }
 
-function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
+function StockInForm({ onCancel, onSuccess, suppliers, products, outlets, updateStock }) {
     const [productId, setProductId] = useState('');
     const [outletId, setOutletId] = useState('');
     const [quantity, setQuantity] = useState('');
@@ -311,17 +307,16 @@ function StockInForm({ onCancel, onSuccess, suppliers, products, outlets }) {
         const supplier = suppliers.find((s) => String(s._id || s.id) === String(supplierId));
         setSaving(true);
         try {
-            await mockApi.post('/inventory/stock-in', {
+            await updateStock({
                 productId,
                 outletId,
                 quantity: qty,
-                purchasePrice: purchasePrice === '' ? undefined : Number(purchasePrice),
-                supplierId: supplierId || undefined,
-                invoiceRef: invoice?.trim() || undefined,
-                supplierName: supplier?.name || undefined,
-                expiryDate: expiryDate || undefined,
+                type: 'IN',
+                reason: 'Purchase',
+                referenceId: invoice?.trim() || undefined,
+                notes: `Supplier: ${supplier?.name || 'Unknown'}, Expiry: ${expiryDate || 'N/A'}`
             });
-            alert('Stock added successfully with expiry alert set.');
+            alert('Stock added successfully.');
             await onSuccess?.();
         } catch (e) {
             const msg =

@@ -11,8 +11,13 @@ exports.uploadImage = async (req, res) => {
 
     try {
         const settings = await Setting.findOne();
-        const maxSizeMB = settings?.maxImageSize || 5;
-        const maxSizeBytes = maxSizeMB * 1024 * 1024;
+        const maxSize = settings?.maxImageSize || 5;
+        const unit = settings?.maxImageSizeUnit || 'MB';
+        
+        let maxSizeBytes = maxSize * 1024 * 1024; // Default to MB
+        if (unit === 'KB') {
+            maxSizeBytes = maxSize * 1024;
+        }
 
         if (req.file.size > maxSizeBytes) {
             if (req.file.path && fs.existsSync(req.file.path)) {
@@ -20,7 +25,7 @@ exports.uploadImage = async (req, res) => {
             }
             return res.status(400).json({ 
                 success: false, 
-                message: `Image too large. Maximum allowed size is ${maxSizeMB}MB.` 
+                message: `Image too large. Maximum allowed size is ${maxSize}${unit}.` 
             });
         }
     } catch (err) {

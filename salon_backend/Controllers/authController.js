@@ -1,6 +1,7 @@
 const User = require('../Models/User');
 const Salon = require('../Models/Salon');
 const Staff = require('../Models/Staff');
+const Role = require('../Models/Role');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
@@ -9,18 +10,25 @@ exports.login = async (req, res) => {
 
         // 1. Try to find in SuperAdmin / Salon Admin (User collection)
         let userData = await User.findOne({ email }).select('+password');
-        let role = userData ? userData.role : null;
+        let roleName = userData ? userData.role : null;
+        let loginType = 'user';
 
         // 2. Try to find in Staff (Salon employees/managers)
         if (!userData) {
             userData = await Staff.findOne({ email }).select('+password');
-            if (userData) role = userData.role;
+            if (userData) {
+                roleName = userData.role;
+                loginType = 'staff';
+            }
         }
 
         // 3. Try specifically for Salon Owner
         if (!userData) {
             userData = await Salon.findOne({ email }).select('+password');
-            if (userData) role = 'admin'; // Owner is treated as admin
+            if (userData) {
+                roleName = 'admin'; // Owner is treated as admin
+                loginType = 'salon';
+            }
         }
 
         if (!userData) {
@@ -55,7 +63,7 @@ exports.login = async (req, res) => {
         }
 
         // Determine Salon ID and fetch subscription info
-        const salonId = userData.salonId || (role === 'admin' && userData.constructor.modelName === 'Salon' ? userData._id : null);
+        const salonId = userData.salonId || (roleName === 'admin' && userData.constructor.modelName === 'Salon' ? userData._id : null);
         let subscriptionPlan = 'none';
         let salonIsActive = false;
 
@@ -67,9 +75,20 @@ exports.login = async (req, res) => {
             }
         }
 
+        // 5. Fetch Permissions based on role
+        let permissions = [];
+        if (roleName === 'superadmin' || roleName === 'admin') {
+            permissions = ['*']; // All access
+        } else if (salonId && roleName) {
+            const roleDoc = await Role.findOne({ salonId, name: roleName });
+            if (roleDoc) {
+                permissions = roleDoc.permissions || [];
+            }
+        }
+
         // Generate JWT
         const token = jwt.sign(
-            { id: userData._id, role: role, salonId: salonId },
+            { id: userData._id, role: roleName, salonId: salonId, permissions },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -82,8 +101,9 @@ exports.login = async (req, res) => {
                     id: userData._id,
                     name: userData.name || userData.ownerName,
                     email: userData.email,
-                    role: role,
+                    role: roleName,
                     salonId: salonId,
+                    permissions: permissions,
                     status: userData.status || 'active',
                     subscriptionPlan: subscriptionPlan,
                     salonIsActive: salonIsActive

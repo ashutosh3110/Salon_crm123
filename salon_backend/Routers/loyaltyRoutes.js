@@ -7,7 +7,9 @@ const {
     getPublicLoyaltySettings,
     redeemLoyaltyPoints,
     getReferralSettings,
-    getMyReferrals
+    getMyReferrals,
+    getLoyaltyMembers,
+    getAdminLoyaltyTransactions
 } = require('../Controllers/loyaltyController');
 const {
     getMembershipPlans,
@@ -58,5 +60,7 @@ router.post('/membership/wallet-pay', buyMembershipWithWallet);
 
 router.get('/referral-settings', getReferralSettings);
 router.get('/referrals/me', getMyReferrals);
+router.get('/members', authorize('admin', 'manager'), getLoyaltyMembers);
+router.get('/transactions', authorize('admin', 'manager'), getAdminLoyaltyTransactions);
 
 module.exports = router;

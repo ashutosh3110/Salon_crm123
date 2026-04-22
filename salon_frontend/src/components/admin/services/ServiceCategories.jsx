@@ -12,13 +12,16 @@ import {
     X,
     Zap,
     User,
-    UserCircle
+    UserCircle,
+    Users
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../../services/api';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function ServiceCategories({ categories = [], onAdd, onUpdate, onDelete, onToggleStatus }) {
     const navigate = useNavigate();
+    const { platformSettings } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [modalState, setModalState] = useState({ isOpen: false, type: 'add', data: null });
     
@@ -35,8 +38,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 2 * 1024 * 1024) {
-                alert('IMAGE EXCEEDS 2MB THRESHOLD');
+            // Dynamic limit from platform settings
+            const maxSize = platformSettings?.maxImageSize || 5;
+            const unit = platformSettings?.maxImageSizeUnit || 'MB';
+            const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+            const threshold = maxSize * multiplier;
+
+            if (file.size > threshold) {
+                alert(`IMAGE EXCEEDS ${maxSize}${unit} THRESHOLD`);
                 return;
             }
             setImage(file); // Store the actual file object
@@ -176,8 +185,14 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     <Layers className="w-3 h-3 text-primary" />
                                     {cat.serviceCount} Services
                                 </div>
-                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' : 'bg-pink-500/10 text-pink-500 border-pink-500/20'}`}>
-                                    {cat.gender === 'men' ? <User className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
+                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
+                                    cat.gender === 'men' 
+                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' 
+                                        : cat.gender === 'both'
+                                            ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
+                                            : 'bg-pink-500/10 text-pink-500 border-pink-500/20'
+                                }`}>
+                                    {cat.gender === 'men' ? <User className="w-3 h-3" /> : cat.gender === 'both' ? <Users className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
                                     {cat.gender}
                                 </div>
                                 <span className="text-[10px] font-bold text-text-muted uppercase tracking-tighter ml-auto italic">Currently {cat.status}</span>
@@ -223,7 +238,12 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                         <div className="space-y-8">
                             {/* IMAGE UPLOAD SECTION */}
                             <div className="space-y-4">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Category Icon (Required)</label>
+                                <div className="flex justify-between items-end">
+                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Category Icon (Required)</label>
+                                    <span className="text-[9px] font-bold text-primary uppercase tracking-tighter opacity-70">
+                                        Max: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                    </span>
+                                </div>
                                 <div className="relative group/img">
                                     <input
                                         type="file"
@@ -280,10 +300,11 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
 
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] leading-none">Demographic Target</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['men', 'women'].map((g) => (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {['men', 'women', 'both'].map((g) => (
                                         <button
                                             key={g}
+                                            type="button"
                                             onClick={() => setGender(g)}
                                             className={`py-4 border text-[9px] font-black uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-2 ${gender === g
                                                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'

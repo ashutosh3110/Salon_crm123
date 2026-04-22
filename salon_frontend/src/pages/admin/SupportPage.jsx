@@ -5,6 +5,7 @@ import {
     Filter, Download, HelpCircle, ArrowRight, ArrowUpCircle,
     X, Send, RefreshCw, User as UserIcon, MoreHorizontal
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 
@@ -49,6 +50,12 @@ export default function SupportPage() {
     const [sending, setSending] = useState(false);
     const chatEndRef = useRef(null);
     const [form, setForm] = useState({ subject: '', category: 'General Inquiry', description: '' });
+    const [toast, setToast] = useState(null);
+
+    const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3000);
+    };
 
     useEffect(() => {
         fetchTickets();
@@ -171,9 +178,11 @@ export default function SupportPage() {
                 if (selectedTicket?._id === id) {
                     setSelectedTicket(response.data.data);
                 }
+                showToast(`Ticket status updated to ${status.toUpperCase()}`);
             }
         } catch (error) {
             console.error('Failed to update status:', error);
+            showToast('Failed to update status');
         }
     };
 
@@ -266,10 +275,9 @@ export default function SupportPage() {
                                             return (
                                                 <tr 
                                                     key={t._id} 
-                                                    onClick={() => handleSelectTicket(t._id)}
-                                                    className="hover:bg-primary/[0.02] transition-colors group cursor-pointer"
+                                                    className="hover:bg-primary/[0.02] transition-colors group"
                                                 >
-                                                    <td className="px-5 py-4">
+                                                    <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <div className="text-[10px] font-bold text-primary tracking-tight opacity-70 uppercase">#{t._id?.slice(-6)}</div>
                                                             {['admin', 'manager'].includes(user?.role) && t.userId && (
@@ -278,18 +286,29 @@ export default function SupportPage() {
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="font-bold text-text text-[14px] leading-tight">{t.subject}</div>
+                                                        <div className="font-bold text-text text-[14px] leading-tight group-hover:text-primary transition-colors">{t.subject}</div>
                                                         <div className="text-[9px] font-medium text-text-muted mt-0.5">{new Date(t.createdAt).toLocaleString()}</div>
                                                     </td>
-                                                    <td className="px-5 py-4">
+                                                    <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
                                                         <span className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full ${CATEGORY_STYLES[t.category]}`}>
                                                             {t.category}
                                                         </span>
                                                     </td>
-                                                    <td className="px-5 py-4">
-                                                        <span className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
-                                                            {stStyle.label}
-                                                        </span>
+                                                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                                                        {['admin', 'manager', 'superadmin'].includes(userRole) ? (
+                                                            <select
+                                                                value={t.status}
+                                                                onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
+                                                                className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full outline-none cursor-pointer appearance-none text-center ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}
+                                                            >
+                                                                {STATUSES.map(s => <option key={s} value={s}>{s.toUpperCase()}</option>)}
+                                                                <option value="escalated">ESCALATED</option>
+                                                            </select>
+                                                        ) : (
+                                                            <span className={`inline-flex items-center px-2.5 py-0.5 text-[9px] font-bold border uppercase tracking-wider rounded-full ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
+                                                                {stStyle.label}
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td className="px-5 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
@@ -579,6 +598,20 @@ export default function SupportPage() {
                     </div>
                 </div>
             )}
+            {/* Toast Notification */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 40 }}
+                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 bg-text text-background rounded-full shadow-2xl border border-white/10"
+                    >
+                        <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        <p className="text-[11px] font-bold uppercase tracking-widest">{toast}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

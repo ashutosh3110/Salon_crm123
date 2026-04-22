@@ -75,6 +75,10 @@ exports.checkout = async (req, res) => {
             
             customer.loyaltyPoints += earnedPoints;
             customer.walletBalance -= useWalletAmount;
+            
+            // Increment total visits and spend for loyalty eligibility
+            customer.totalVisits = (customer.totalVisits || 0) + 1;
+            customer.totalSpend = (customer.totalSpend || 0) + total;
 
             await customer.save();
 

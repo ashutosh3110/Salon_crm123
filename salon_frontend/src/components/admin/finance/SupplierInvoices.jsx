@@ -12,7 +12,7 @@ import {
     AlertCircle,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 function pickResults(res) {
     const d = res?.data?.data ?? res?.data;
@@ -36,7 +36,7 @@ export default function SupplierInvoices() {
         setLoading(true);
         setError(null);
         try {
-            const res = await mockApi.get('/suppliers/invoices');
+            const res = await api.get('/finance/invoices');
             setRows(pickResults(res));
         } catch (e) {
             const msg =
@@ -89,8 +89,8 @@ export default function SupplierInvoices() {
             window.alert('This invoice is already fully paid.');
             return;
         }
-        setPayingKey(inv.invoiceKey);
-        setPayAmount(String(Math.max(0, Number(inv.outstanding) || 0)));
+        setPayingKey(inv._id || inv.id);
+        setPayAmount(String(Math.max(0, Number(inv.balanceAmount || inv.outstanding) || 0)));
         setPayNote('');
     };
 
@@ -101,10 +101,10 @@ export default function SupplierInvoices() {
             return;
         }
         try {
-            await mockApi.post('/suppliers/invoices/payments', {
-                invoiceKey: payingKey,
+            await api.post('/finance/invoices/payments', {
+                invoiceId: payingKey,
                 amount: amt,
-                note: payNote?.trim() || undefined,
+                notes: payNote?.trim() || undefined,
             });
             setPayingKey(null);
             await load();

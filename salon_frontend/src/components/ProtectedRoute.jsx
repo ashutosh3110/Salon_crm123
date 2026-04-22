@@ -2,7 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth, getRedirectPath } from '../contexts/AuthContext';
 import { useBusiness } from '../contexts/BusinessContext';
 
-export default function ProtectedRoute({ allowedRoles, feature }) {
+export default function ProtectedRoute({ allowedRoles, feature, permission }) {
     const { user, loading, isAuthenticated } = useAuth();
     const { salon, salonLoading } = useBusiness();
 
@@ -22,12 +22,18 @@ export default function ProtectedRoute({ allowedRoles, feature }) {
         return <Navigate to="/login" replace />;
     }
 
+    // Role check
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        // Only enforce role boundaries for non-admin/manager roles if needed
-        // For now, let's allow all if requested, or at least don't block admin/manager
-        if (!['admin', 'manager'].includes(user.role)) {
-            const correctPath = getRedirectPath(user);
-            return <Navigate to={correctPath} replace />;
+        if (!['admin', 'superadmin'].includes(user.role)) {
+            return <Navigate to="/unauthorized" replace />;
+        }
+    }
+
+    // Permission check
+    if (permission && user.role !== 'superadmin' && user.role !== 'admin') {
+        const userPermissions = user?.permissions || [];
+        if (!userPermissions.includes('*') && !userPermissions.includes(permission)) {
+            return <Navigate to="/unauthorized" replace />;
         }
     }
 

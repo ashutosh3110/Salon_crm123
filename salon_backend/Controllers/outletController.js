@@ -78,6 +78,9 @@ exports.createOutlet = async (req, res) => {
         if (typeof req.body.chairs === 'string') {
             try { req.body.chairs = JSON.parse(req.body.chairs); } catch (e) { req.body.chairs = []; }
         }
+        if (typeof req.body.beds === 'string') {
+            try { req.body.beds = JSON.parse(req.body.beds); } catch (e) { req.body.beds = []; }
+        }
         if (typeof req.body.config === 'string') {
             try { req.body.config = JSON.parse(req.body.config); } catch (e) { req.body.config = {}; }
         }
@@ -128,6 +131,9 @@ exports.updateOutlet = async (req, res) => {
         // Parse JSON strings from FormData
         if (typeof req.body.chairs === 'string') {
             try { req.body.chairs = JSON.parse(req.body.chairs); } catch (e) { req.body.chairs = []; }
+        }
+        if (typeof req.body.beds === 'string') {
+            try { req.body.beds = JSON.parse(req.body.beds); } catch (e) { req.body.beds = []; }
         }
         if (typeof req.body.config === 'string') {
             try { req.body.config = JSON.parse(req.body.config); } catch (e) { req.body.config = {}; }

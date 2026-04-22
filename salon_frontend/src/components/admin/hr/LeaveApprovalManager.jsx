@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle2, XCircle, Search, Filter, Shield, Activity, ChevronRight, User, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function LeaveApprovalManager() {
     const [requests, setRequests] = useState([]);
@@ -13,8 +13,18 @@ export default function LeaveApprovalManager() {
     const fetchLeaves = async () => {
         try {
             setLoading(true);
-            const res = await mockApi.get('/leaves');
-            setRequests(res.data?.data || []);
+            const res = await api.get('/hr/leaves');
+            const data = res.data?.data || [];
+            const mapped = data.map(req => ({
+                id: req._id,
+                staffName: req.staffId?.name || 'Unknown',
+                type: req.type,
+                dates: `${new Date(req.startDate).toLocaleDateString()} - ${new Date(req.endDate).toLocaleDateString()}`,
+                reason: req.reason,
+                status: req.status.toUpperCase(),
+                appliedOn: new Date(req.createdAt).toLocaleDateString()
+            }));
+            setRequests(mapped);
         } catch (e) {
             console.error(e);
         } finally {
@@ -34,7 +44,7 @@ export default function LeaveApprovalManager() {
 
     const handleAction = async (id, newStatus) => {
         try {
-            await mockApi.patch(`/leaves/${id}`, { status: newStatus });
+            await api.put(`/hr/leaves/${id}`, { status: newStatus.toLowerCase() });
             showToast(`Protocol: ${newStatus === 'APPROVED' ? 'AUTHORIZED' : 'TERMINATED'}`);
             await fetchLeaves();
         } catch (e) {

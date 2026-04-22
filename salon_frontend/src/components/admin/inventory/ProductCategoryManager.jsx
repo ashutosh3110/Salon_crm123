@@ -13,9 +13,12 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useInventory } from '../../../contexts/InventoryContext';
+import { useBusiness } from '../../../contexts/BusinessContext';
+import api from '../../../services/api';
 
 export default function ProductCategoryManager() {
     const { productCategories, addProductCategory, updateProductCategory, deleteProductCategory, products } = useInventory();
+    const { platformSettings } = useBusiness();
     const [searchQuery, setSearchQuery] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -44,10 +47,19 @@ export default function ProductCategoryManager() {
             console.error('Failed to save category:', error);
         }
     };
-
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
+        const maxSize = platformSettings?.maxImageSize || 5;
+        const unit = platformSettings?.maxImageSizeUnit || 'MB';
+        const multiplier = unit === 'MB' ? 1024 * 1024 : 1024;
+        const threshold = maxSize * multiplier;
+
+        if (file.size > threshold) {
+            alert(`Image too large. Max ${maxSize}${unit} allowed.`);
+            return;
+        }
 
         const uploadData = new FormData();
         uploadData.append('image', file);
@@ -234,7 +246,12 @@ export default function ProductCategoryManager() {
                                     </div>
 
                                     <div className="space-y-1.5">
+                                    <div className="flex justify-between items-end mb-1">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Visual Reference</label>
+                                        <span className="text-[8px] font-black text-primary uppercase tracking-widest opacity-60">
+                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                        </span>
+                                    </div>
                                         <div className="flex gap-2">
                                             <input
                                                 type="text"

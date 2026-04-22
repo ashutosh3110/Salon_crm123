@@ -57,8 +57,9 @@ exports.getUser = async (req, res) => {
 // @access  Private/Admin
 exports.createUser = async (req, res) => {
     try {
-        let { email, name, role, phone, password, outletId } = req.body;
-        role = role ? role.toLowerCase() : 'stylist';
+        let { email, name, role, roleId, phone, password, outletId } = req.body;
+        // Keep role string as display name or fallback
+        const roleDisplayName = role || 'Stylist';
 
         const existingStaff = await Staff.findOne({ email });
         if (existingStaff) {
@@ -74,7 +75,8 @@ exports.createUser = async (req, res) => {
             name,
             email,
             phone,
-            role,
+            role: roleDisplayName,
+            roleId,
             avatar: avatarPath,
             password: pass,
             outletId,
@@ -91,7 +93,7 @@ exports.createUser = async (req, res) => {
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
                         <h2 style="color: #333; text-align: center;">Welcome to the Team!</h2>
                         <p>Hello <strong>${name}</strong>,</p>
-                        <p>You have been added as <strong>${role}</strong> to our salon management system.</p>
+                        <p>You have been added as <strong>${roleDisplayName}</strong> to our salon management system.</p>
                         <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; border-left: 4px solid #D32F2F; margin: 20px 0;">
                             <p style="margin: 0; font-size: 14px;"><strong>Email:</strong> ${email}</p>
                             <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${pass}</p>
@@ -130,9 +132,8 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         }
 
-        if (req.body.role) {
-            req.body.role = req.body.role.toLowerCase();
-        }
+        // roleId is handled by spreading req.body into updatedStaff if present
+        // No need to lowercase role as it's a display name now
 
         // Handle uploaded avatar
         if (req.file) {

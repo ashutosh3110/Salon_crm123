@@ -16,7 +16,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { maskPhone } from '../../../utils/phoneUtils';
 import { motion } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function MembersListTab() {
     const { customers } = useBusiness();
@@ -32,7 +32,7 @@ export default function MembersListTab() {
         const loadMembers = async () => {
             setLoading(true);
             try {
-                const res = await mockApi.get('/loyalty/members', {
+                const res = await api.get('/loyalty/members', {
                     params: {
                         page,
                         limit: 20,
@@ -40,7 +40,7 @@ export default function MembersListTab() {
                         status: filter,
                     },
                 });
-                const rows = res?.data?.data || res?.data || [];
+                const rows = res?.data?.data || [];
                 setMembers(Array.isArray(rows) ? rows : []);
                 setMeta(res?.data?.meta || { page: 1, totalPages: 1, total: rows.length, limit: 20 });
             } catch {

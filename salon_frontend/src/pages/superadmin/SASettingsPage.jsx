@@ -84,7 +84,8 @@ export default function SASettingsPage() {
         socialLinks: { facebook: '', instagram: '', twitter: '', linkedin: '' },
         currency: 'INR',
         currencySymbol: '₹',
-        maxImageSize: 5
+        maxImageSize: 5,
+        maxImageSizeUnit: 'MB'
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
     const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
@@ -473,7 +474,16 @@ export default function SASettingsPage() {
                                         onChange={e => setPlat('maxImageSize', e.target.value)} 
                                         type="number"
                                         placeholder="5"
-                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">MB</span>}
+                                        suffix={
+                                            <select 
+                                                value={platform.maxImageSizeUnit}
+                                                onChange={e => setPlat('maxImageSizeUnit', e.target.value)}
+                                                className="bg-transparent border-none outline-none text-[10px] font-bold text-primary mr-2 cursor-pointer"
+                                            >
+                                                <option value="MB">MB</option>
+                                                <option value="KB">KB</option>
+                                            </select>
+                                        }
                                     />
                                     <div className="flex items-end pb-1.5">
                                         <p className="text-[10px] text-text-muted italic leading-relaxed">
