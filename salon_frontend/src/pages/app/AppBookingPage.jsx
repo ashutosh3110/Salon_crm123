@@ -65,6 +65,7 @@ export default function AppBookingPage() {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [selectedStaff, setSelectedStaff] = useState(null);
+    const [availableSlots, setAvailableSlots] = useState([]);
     const [submitting, setSubmitting] = useState(false);
 
     // Pre-select service from query
@@ -170,41 +171,40 @@ export default function AppBookingPage() {
         setPromoDiscount(0);
     }, [location?.state?.promoCode]);
 
-    const [availabilityData, setAvailabilityData] = useState(null);
     const [loadingAvailability, setLoadingAvailability] = useState(false);
 
     // Fetch live availability from backend whenever date or salon changes
     useEffect(() => {
-        if (!selectedDate || !currentOutlet) {
-            setAvailabilityData(null);
+        if (!selectedDate || !currentOutlet || !selectedStaff || selectedServices.length === 0) {
+            setAvailableSlots([]);
             return;
         }
         
-        const fetchAvailability = async () => {
+        const fetchSlots = async () => {
             setLoadingAvailability(true);
             try {
                 // Use local date string instead of toISOString to avoid timezone shifts
                 const d = selectedDate.date;
                 const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                 
-                const res = await api.get('/bookings/availability', {
+                const res = await api.get('/bookings/available-slots', {
                     params: {
-                        outletId: currentOutlet._id || currentOutlet.id,
+                        staffId: selectedStaff._id || selectedStaff.id,
+                        serviceId: selectedServices[0]._id || selectedServices[0].id,
                         date: dateStr
                     }
                 });
-                setAvailabilityData(res.data);
+                setAvailableSlots(res.data?.data || []);
             } catch (err) {
-                console.error("[AppBookingPage] Failed to fetch availability:", err);
-                // Set to empty result rather than null to allow fallback to available slots
-                setAvailabilityData({ bookings: [] });
+                console.error("[AppBookingPage] Failed to fetch slots:", err);
+                setAvailableSlots([]);
             } finally {
                 setLoadingAvailability(false);
             }
         };
         
-        fetchAvailability();
-    }, [selectedDate, currentOutlet]);
+        fetchSlots();
+    }, [selectedDate, currentOutlet, selectedStaff, selectedServices]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -453,50 +453,20 @@ export default function AppBookingPage() {
         return !isOverlap;
     };
 
-    // Calculate dynamic time slots based on totalDuration and staff availability
+    // Calculate dynamic time slots based on availableSlots state
     const timeSlots = useMemo(() => {
         if (!selectedDate || !currentOutlet) return [];
-        const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        
-        // If a specific staff is selected, use their EXACT availability blocks as slots
-        if (selectedStaff && selectedStaff.availability?.days?.[dayName]) {
-            const staffShifts = selectedStaff.availability.days[dayName];
-            return staffShifts.map(shift => {
-                const label = `${shift.start} - ${shift.end}`;
-                
-                // Check if this block is already fully booked or overlaps? 
-                // For now, we'll mark as available if the staff exists and shift is defined
-                return {
-                    time: label,
-                    start: shift.start,
-                    end: shift.end,
-                    available: true // In block mode, we show the whole block
-                };
-            });
-        }
-
-        // Fallback for "Any Stylist" or non-staff specific view
-        const dayNameFull = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' });
-        const rawSlots = generateTimeSlots(dayNameFull, totalDuration || 30, currentOutlet);
         
         if (loadingAvailability) {
-            return rawSlots.map(s => ({ ...s, available: false }));
+            return []; // Or show loading state
         }
 
-        const salonStaff = outletStaff;
-        if (salonStaff.length === 0) return rawSlots.map(s => ({ ...s, available: false }));
-
-        return rawSlots.map(slot => {
-            const availableCount = salonStaff.filter(s => 
-                checkStylistAvailable(s, slot.time, totalDuration || 30)
-            ).length;
-            
-            return { 
-                ...slot, 
-                available: availableCount > 0
-            };
-        });
-    }, [selectedDate, totalDuration, currentOutlet, loadingAvailability, outletStaff, selectedStaff]);
+        // Map the backend slots (strings) to the format expected by the UI
+        return availableSlots.map(t => ({
+            time: t,
+            available: true
+        }));
+    }, [selectedDate, currentOutlet, loadingAvailability, availableSlots]);
 
     const finalGroups = useMemo(() => {
         const q = serviceSearch.toLowerCase().trim();

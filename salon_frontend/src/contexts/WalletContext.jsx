@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useCustomerAuth } from './CustomerAuthContext';
 import api from '../services/api';
 
@@ -36,6 +37,7 @@ export function WalletProvider({ children }) {
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    const location = useLocation();
 
     const refreshWallet = useCallback(async () => {
         if (!customer?._id) return;
@@ -58,10 +60,10 @@ export function WalletProvider({ children }) {
     }, [customer?._id]);
 
     useEffect(() => {
-        if (customer?._id) {
+        if (customer?._id && !location.pathname.startsWith('/superadmin')) {
             refreshWallet();
         }
-    }, [customer?._id, refreshWallet]);
+    }, [customer?._id, refreshWallet, location.pathname]);
 
     const createWalletOrder = async (amount) => {
         const res = await api.post('/wallet/topup/order', { amount });

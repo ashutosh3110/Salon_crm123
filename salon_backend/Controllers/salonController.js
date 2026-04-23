@@ -205,37 +205,141 @@ exports.updateSalon = async (req, res) => {
         if (req.body.status) {
             if (req.body.status === 'active' || req.body.status === 'trial') {
                 req.body.isActive = true;
-            } else if (['suspended', 'expired', 'pending'].includes(req.body.status)) {
+            } else if (['suspended', 'expired', 'pending', 'rejected'].includes(req.body.status)) {
                 req.body.isActive = false;
             }
         }
 
-        // If status is changing to active from pending, send approval email
-        if (req.body.status === 'active' && salon.status === 'pending') {
+        // If status is changing to active, send activation email
+        if (req.body.status === 'active' && salon.status !== 'active') {
             try {
+                // Generate a new random password on approval
+                const newPlainPassword = Math.floor(100000 + Math.random() * 900000).toString();
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(newPlainPassword, salt);
+                
+                // Update the request body with the new hashed password
+                req.body.password = hashedPassword;
+
                 const html = `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                        <h2 style="color: #2e7d32; text-align: center;">Account Approved!</h2>
+                        <h2 style="color: #2e7d32; text-align: center;">Account Activated!</h2>
                         <p>Dear <strong>${salon.ownerName}</strong>,</p>
-                        <p>Great news! Your salon, <strong>${salon.name}</strong>, has been approved by our team.</p>
-                        <p>You can now log in to your dashboard and start managing your business.</p>
-                        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                            <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="${process.env.FRONTEND_BASE_URL}/login">${process.env.FRONTEND_BASE_URL}/login</a></p>
-                            <p style="margin: 5px 0;"><strong>Email:</strong> ${salon.email}</p>
-                            <p style="margin: 5px 0;"><strong>Default Password:</strong> 123456</p>
+                        <p>Great news! Your salon account, <strong>${salon.name}</strong>, has been <strong>Approved & Activated</strong>.</p>
+                        <p>You can now log in to your dashboard using the credentials below:</p>
+                        
+                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #2e7d32;">
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${process.env.FRONTEND_BASE_URL}/login" style="color: #B4912B;">${process.env.FRONTEND_BASE_URL}/login</a></p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Username/Email:</strong> ${salon.email}</p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Your Generated Password:</strong> <span style="font-size: 18px; color: #2e7d32; font-family: monospace; letter-spacing: 2px;">${newPlainPassword}</span></p>
                         </div>
-                        <p>For security reasons, we strongly recommend changing your password after your first login using the profile settings.</p>
+
+                        <p style="font-size: 13px; color: #666; background: #fff3cd; padding: 10px; border-radius: 5px;"><strong>Security Tip:</strong> Please log in and change your password immediately from your profile settings.</p>
+                        
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                         <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
                     </div>
                 `;
                 await sendEmail({
                     email: salon.email,
-                    subject: `Your Salon Account is Approved - ${process.env.EMAIL_FROM_NAME}`,
+                    subject: `Account Activated & Login Details - ${process.env.EMAIL_FROM_NAME}`,
                     html
                 });
             } catch (err) {
-                console.error('Approval email failed:', err);
+                console.error('Activation email failed:', err);
+            }
+        }
+
+        // If status is changing to rejected, send rejection email
+        if (req.body.status === 'rejected' && salon.status !== 'rejected') {
+            try {
+                const reason = req.body.rejectionReason || 'Your application did not meet our current verification requirements.';
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #d32f2f; text-align: center;">Application Update</h2>
+                        <p>Dear <strong>${salon.ownerName}</strong>,</p>
+                        <p>Thank you for your interest in <strong>${process.env.EMAIL_FROM_NAME}</strong>.</p>
+                        <p>After reviewing your application for <strong>${salon.name}</strong>, we regret to inform you that we cannot approve your account at this time.</p>
+                        
+                        <div style="background-color: #fff5f5; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #d32f2f;">
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #d32f2f; font-weight: bold;">Rejection Reason:</p>
+                            <p style="margin: 0; font-size: 15px; color: #333; line-height: 1.5;">${reason}</p>
+                        </div>
+
+                        <p>If you believe this is a mistake or if you can provide additional information to address the above reason, please feel free to contact our support team.</p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                `;
+                await sendEmail({
+                    email: salon.email,
+                    subject: `Application Update - ${process.env.EMAIL_FROM_NAME}`,
+                    html
+                });
+            } catch (err) {
+                console.error('Rejection email failed:', err);
+            }
+        }
+
+        // If status is changing to suspended, send suspension email
+        if (req.body.status === 'suspended' && salon.status !== 'suspended') {
+            try {
+                const reason = req.body.suspensionReason || 'Violation of terms of service or pending administrative review.';
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #f44336; text-align: center;">Account Suspended</h2>
+                        <p>Dear <strong>${salon.ownerName}</strong>,</p>
+                        <p>This is to inform you that your salon account, <strong>${salon.name}</strong>, has been <strong>Suspended</strong> by the administrator.</p>
+                        
+                        <div style="background-color: #fffde7; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #fbc02d;">
+                            <p style="margin: 0 0 10px 0; font-size: 14px; color: #856404; font-weight: bold;">Reason for Suspension:</p>
+                            <p style="margin: 0; font-size: 15px; color: #333; line-height: 1.5;">${reason}</p>
+                        </div>
+
+                        <p>During suspension, you will not be able to access your dashboard or process new bookings. To resolve this issue, please contact our support team at the earliest.</p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                `;
+                await sendEmail({
+                    email: salon.email,
+                    subject: `Account Suspended - ${process.env.EMAIL_FROM_NAME}`,
+                    html
+                });
+            } catch (err) {
+                console.error('Suspension email failed:', err);
+            }
+        }
+
+        // If status is changing back to active from suspended, send reactivation email
+        if (req.body.status === 'active' && salon.status === 'suspended') {
+            try {
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #2e7d32; text-align: center;">Account Reactivated!</h2>
+                        <p>Dear <strong>${salon.ownerName}</strong>,</p>
+                        <p>Great news! Your salon account, <strong>${salon.name}</strong>, has been <strong>Reactivated</strong>.</p>
+                        <p>The suspension on your account has been lifted, and you can now resume your business operations as usual.</p>
+                        
+                        <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #c8e6c9; text-align: center;">
+                            <p style="margin: 0; color: #2e7d32; font-weight: bold;">You can now log in to your dashboard.</p>
+                        </div>
+
+                        <p>If you have any questions, feel free to reach out to us.</p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                `;
+                await sendEmail({
+                    email: salon.email,
+                    subject: `Account Reactivated - ${process.env.EMAIL_FROM_NAME}`,
+                    html
+                });
+            } catch (err) {
+                console.error('Reactivation email failed:', err);
             }
         }
 
@@ -422,16 +526,16 @@ exports.registerSalon = async (req, res) => {
         try {
             const html = `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Application Received!</h2>
+                    <h2 style="color: #333; text-align: center;">Welcome to ${process.env.EMAIL_FROM_NAME}!</h2>
                     <p>Dear <strong>${ownerName}</strong>,</p>
-                    <p>Thank you for registering <strong>${name}</strong> with ${process.env.EMAIL_FROM_NAME}.</p>
-                    <p>Your application is currently <strong>Pending Approval</strong>. Our team will review your details and you will receive an email once your account is activated.</p>
-                    <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #B4912B;">
-                        <p style="margin: 0; font-size: 14px; color: #555;"><strong>Status:</strong> Waiting for Superadmin Approval</p>
+                    <p>Thank you for registering <strong>${name}</strong>. Your account has been created and is currently <strong>Pending Approval</strong> from our Superadmin team.</p>
+                    
+                    <div style="background-color: #fff4e5; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff9800;">
+                        <h3 style="margin-top: 0; color: #856404; font-size: 16px;">Next Steps</h3>
+                        <p style="margin: 5px 0; font-size: 14px;">Our team is currently verifying your details. You will receive a <strong>Confirmation Email</strong> with your login credentials once your account is activated.</p>
                     </div>
-                    <p>We appreciate your patience.</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+
+                    <p>Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
                 </div>
             `;
             await sendEmail({

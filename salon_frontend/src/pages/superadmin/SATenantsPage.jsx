@@ -74,6 +74,7 @@ const STATUS_CFG = {
     suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
     inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },
     pending: { label: 'Pending', cls: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800', icon: Clock },
+    rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-700 border-red-200', icon: XCircle },
 };
 
 const FILTER_TABS = [
@@ -86,7 +87,7 @@ const FILTER_TABS = [
 ];
 
 /* ─── Row action dropdown ─────────────────────────────────────────────────── */
-function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, onApprove }) {
+function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, onApprove, onReject }) {
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
 
@@ -106,6 +107,14 @@ function ActionMenu({ tenant, onEdit, onSuspend, onDelete, onResendCredentials, 
             color: 'text-emerald-600', 
             hover: 'hover:bg-emerald-50',
             hidden: tenant.status === 'active' 
+        },
+        { 
+            label: 'Reject Application', 
+            icon: XCircle, 
+            onClick: () => { onReject(tenant); setOpen(false); }, 
+            color: 'text-red-600', 
+            hover: 'hover:bg-red-50',
+            hidden: tenant.status !== 'pending' 
         },
         { label: 'Upgrade Plan', icon: ArrowUpRight, onClick: () => { onEdit(tenant, 'plan'); setOpen(false); }, color: 'text-amber-600', hover: 'hover:bg-amber-50' },
         { divider: true },
@@ -224,6 +233,71 @@ function PlanChangeModal({ tenant, onClose, onSave, plans = [] }) {
                         </button>
                     ))}
                     {plans.length === 0 && <p className="text-center text-sm text-text-muted py-8">No active plans found. Please create one in Subscription Plans section.</p>}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/* ─── Status Reason Modal (Rejection/Suspension) ─────────────────────────── */
+function StatusReasonModal({ tenant, type, onClose, onConfirm, saving }) {
+    const [reason, setReason] = useState('');
+    if (!tenant) return null;
+
+    const isReject = type === 'reject';
+    const title = isReject ? 'Reject Application' : 'Suspend Account';
+    const colorClass = isReject ? 'red' : 'amber';
+    const btnColor = isReject ? 'bg-red-500 shadow-red-500/20' : 'bg-amber-500 shadow-amber-500/20';
+    const ringColor = isReject ? 'focus:ring-red-500/20 focus:border-red-500/50' : 'focus:ring-amber-500/20 focus:border-amber-500/50';
+
+    return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose} />
+            <div className="bg-surface rounded-[2rem] border border-border w-full max-w-md shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="px-8 py-6 border-b border-border/50 flex items-center justify-between bg-surface-alt/30">
+                    <div>
+                        <h3 className="font-black text-text uppercase italic tracking-tight">{title}</h3>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Salon: {tenant.name}</p>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-surface rounded-xl transition-colors">
+                        <XCircle className="w-5 h-5 text-text-muted" />
+                    </button>
+                </div>
+                
+                <div className="p-8 space-y-5">
+                    <div className="space-y-2">
+                        <label className="text-[11px] font-black text-text-muted uppercase tracking-widest ml-1">{isReject ? 'Rejection' : 'Suspension'} Reason</label>
+                        <textarea
+                            autoFocus
+                            className={`w-full px-4 py-4 rounded-2xl bg-surface border border-border text-text text-sm focus:outline-none focus:ring-2 transition-all shadow-sm min-h-[120px] resize-none ${ringColor}`}
+                            placeholder={`Please provide a clear reason for ${isReject ? 'rejecting' : 'suspending'} this account...`}
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                        />
+                    </div>
+
+                    <div className={`p-4 rounded-2xl flex gap-3 ${isReject ? 'bg-red-500/5 border-red-500/10' : 'bg-amber-500/5 border-amber-500/10'}`}>
+                        <AlertTriangle className={`w-4 h-4 shrink-0 ${isReject ? 'text-red-500' : 'text-amber-500'}`} />
+                        <p className={`text-[10px] font-bold uppercase leading-relaxed tracking-wide ${isReject ? 'text-red-500/80' : 'text-amber-500/80'}`}>
+                            Note: This reason will be sent to the salon owner via email. Please be professional and specific.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="px-8 py-6 border-t border-border/50 flex items-center gap-3 bg-surface-alt/30">
+                    <button 
+                        onClick={onClose}
+                        className="flex-1 px-4 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-text-muted hover:bg-surface transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        disabled={saving || !reason.trim()}
+                        onClick={() => onConfirm(tenant, reason)}
+                        className={`flex-[1.5] px-6 py-3 rounded-xl text-white text-xs font-black uppercase tracking-widest hover:brightness-110 disabled:opacity-30 transition-all shadow-lg active:scale-95 ${btnColor}`}
+                    >
+                        {saving ? 'Processing...' : `Confirm ${isReject ? 'Rejection' : 'Suspension'}`}
+                    </button>
                 </div>
             </div>
         </div>
@@ -425,6 +499,7 @@ export default function SATenantsPage() {
     const [customTo, setCustomTo] = useState('');
     const [showDateFilter, setShowDateFilter] = useState(false);
     const [modal, setModal] = useState(null); // null | { mode: 'create'|'edit'|'plan', tenant? }
+    const [statusModal, setStatusModal] = useState(null); // null | { type: 'reject'|'suspend', tenant }
     const [planModalData, setPlanModalData] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
@@ -651,6 +726,50 @@ export default function SATenantsPage() {
         }
     };
 
+    const handleReject = (tenant) => {
+        setStatusModal({ type: 'reject', tenant });
+    };
+
+    const handleSuspend = async (tenant) => {
+        const isSuspended = tenant.status === 'suspended';
+        
+        if (isSuspended) {
+            if (!window.confirm(`Reactivate "${tenant.name}"? This will send a notification email.`)) return;
+            try {
+                await api.put(`/salons/${tenant._id}`, { status: 'active' });
+                showToast(`Salon "${tenant.name}" is now Active!`);
+                fetchTenants();
+                fetchStats();
+            } catch (error) {
+                console.error('Reactivation failed:', error);
+                showToast('Reactivation failed.', 'error');
+            }
+        } else {
+            setStatusModal({ type: 'suspend', tenant });
+        }
+    };
+
+    const confirmStatusChange = async (tenant, reason) => {
+        setSaving(true);
+        const isReject = statusModal.type === 'reject';
+        const payload = isReject 
+            ? { status: 'rejected', rejectionReason: reason }
+            : { status: 'suspended', suspensionReason: reason };
+
+        try {
+            await api.put(`/salons/${tenant._id}`, payload);
+            showToast(`Salon "${tenant.name}" has been ${isReject ? 'Rejected' : 'Suspended'}.`);
+            setStatusModal(null);
+            fetchTenants();
+            fetchStats();
+        } catch (error) {
+            console.error('Status update failed:', error);
+            showToast('Update failed.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleQuickPlanUpdate = async (tenantId, newPlan) => {
         try {
             await api.put(`/salons/${tenantId}`, { subscriptionPlan: newPlan });
@@ -663,20 +782,6 @@ export default function SATenantsPage() {
         }
     };
 
-    const handleSuspend = async (tenant) => {
-        const action = tenant.status === 'suspended' ? 'reactivate' : 'suspend';
-        if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} "${tenant.name}"?`)) return;
-        
-        try {
-            const newStatus = tenant.status === 'suspended' ? 'active' : 'suspended';
-            await api.put(`/salons/${tenant._id}`, { status: newStatus });
-            showToast(`Salon ${action}d successfully.`);
-            fetchTenants();
-        } catch (error) {
-            console.error(`Error ${action}ing tenant:`, error);
-            showToast(`Failed to ${action} salon.`, 'error');
-        }
-    };
 
     const handleDelete = async (tenant) => {
         if (!confirm(`Permanently delete "${tenant.name}"? This cannot be undone.`)) return;
@@ -865,13 +970,22 @@ export default function SATenantsPage() {
 
                                                     {/* Approve/Deactivate */}
                                                     {t.status === 'pending' || t.status === 'inactive' ? (
-                                                        <button 
-                                                            onClick={() => handleApprove(t)}
-                                                            className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
-                                                            title="Approve & Activate"
-                                                        >
-                                                            <CheckCircle className="w-4 h-4" />
-                                                        </button>
+                                                        <div className="flex items-center gap-1">
+                                                            <button 
+                                                                onClick={() => handleApprove(t)}
+                                                                className="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 hover:bg-emerald-500 hover:text-white transition-all"
+                                                                title="Approve & Activate"
+                                                            >
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleReject(t)}
+                                                                className="p-2 rounded-lg bg-red-50 border border-red-200 text-red-600 hover:bg-red-500 hover:text-white transition-all"
+                                                                title="Reject Application"
+                                                            >
+                                                                <XCircle className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
                                                     ) : (
                                                         <button 
                                                             onClick={() => handleSuspend(t)}
@@ -956,6 +1070,17 @@ export default function SATenantsPage() {
                     saving={saving}
                     onClose={() => setModal(null)}
                     onSave={handleSave}
+                />
+            )}
+
+            {/* Status Reason Modal (Rejection/Suspension) */}
+            {statusModal && (
+                <StatusReasonModal 
+                    tenant={statusModal.tenant}
+                    type={statusModal.type}
+                    onClose={() => setStatusModal(null)}
+                    onConfirm={confirmStatusChange}
+                    saving={saving}
                 />
             )}
         </div>

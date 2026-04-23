@@ -66,6 +66,34 @@ export default function NewBookingPage() {
         customerId: '',
     });
 
+    const [availableSlots, setAvailableSlots] = useState([]);
+    const [fetchingSlots, setFetchingSlots] = useState(false);
+
+    useEffect(() => {
+        const fetchSlots = async () => {
+            if (!selection.staffId || !selection.serviceId || !selection.date || selection.staffId === 'any') {
+                setAvailableSlots([]);
+                return;
+            }
+            setFetchingSlots(true);
+            try {
+                const res = await api.get('/bookings/available-slots', {
+                    params: {
+                        staffId: selection.staffId,
+                        serviceId: selection.serviceId,
+                        date: selection.date
+                    }
+                });
+                setAvailableSlots(res.data?.data || []);
+            } catch (err) {
+                console.error('Failed to fetch slots', err);
+            } finally {
+                setFetchingSlots(false);
+            }
+        };
+        fetchSlots();
+    }, [selection.staffId, selection.serviceId, selection.date]);
+
     // Search/Filter States
     const [searchTerms, setSearchTerms] = useState({
         outlet: '',
@@ -173,7 +201,9 @@ export default function NewBookingPage() {
                 clientId: selection.customerId,
                 staffId: selection.staffId,
                 appointmentDate,
-                price: selectedService?.price,
+                time: selection.time,
+                duration: selectedService?.duration || 30,
+                totalPrice: selectedService?.price,
                 source: 'admin'
             });
 
@@ -461,16 +491,30 @@ export default function NewBookingPage() {
                                     <Clock className="w-4 h-4 text-primary" /> Select Time
                                 </label>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface p-6 border-2 border-border overflow-y-auto max-h-[350px]">
-                                    {['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'].map(t => (
-                                        <button
-                                            key={t}
-                                            disabled={!selection.date}
-                                            onClick={() => setSelection({...selection, time: t})}
-                                            className={`p-4 text-xs font-black font-mono border-2 transition-all ${selection.time === t ? 'bg-primary border-primary text-white shadow-lg' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text disabled:opacity-20'}`}
-                                        >
-                                            {t}
-                                        </button>
-                                    ))}
+                                    {(() => {
+                                        if (!selection.date) return <p className="col-span-full text-[10px] text-text-muted uppercase text-center py-10 font-black italic">Select a date first</p>;
+                                        
+                                        if (fetchingSlots) return <p className="col-span-full text-[10px] text-primary uppercase text-center py-10 font-black italic animate-pulse">Calculating available slots...</p>;
+
+                                        // If "Any Staff", show default slots (could be improved later to aggregate all staff)
+                                        if (selection.staffId === 'any') {
+                                            return ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'].map(t => (
+                                                <button key={t} onClick={() => setSelection({...selection, time: t})} className={`p-4 text-xs font-black font-mono border-2 transition-all ${selection.time === t ? 'bg-primary border-primary text-white shadow-lg' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text'}`}>{t}</button>
+                                            ));
+                                        }
+
+                                        if (availableSlots.length === 0) return <p className="col-span-full text-[10px] text-rose-500 uppercase text-center py-10 font-black italic">No slots available for this selection</p>;
+
+                                        return availableSlots.map(t => (
+                                            <button
+                                                key={t}
+                                                onClick={() => setSelection({...selection, time: t})}
+                                                className={`p-4 text-xs font-black font-mono border-2 transition-all ${selection.time === t ? 'bg-primary border-primary text-white shadow-lg' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text'}`}
+                                            >
+                                                {t}
+                                            </button>
+                                        ));
+                                    })()}
                                 </div>
                             </div>
                         </div>

@@ -5,6 +5,7 @@
  * Now fetches from the backend API for live data.
  */
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 
@@ -16,6 +17,7 @@ export function BookingRegistryProvider({ children }) {
     const { customer } = useCustomerAuth();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
+    const location = useLocation();
 
     const fetchBookings = useCallback(async () => {
         if (!customer?._id) {
@@ -56,8 +58,10 @@ export function BookingRegistryProvider({ children }) {
     }, [customer?._id]);
 
     useEffect(() => {
-        fetchBookings();
-    }, [fetchBookings]);
+        if (!location.pathname.startsWith('/superadmin')) {
+            fetchBookings();
+        }
+    }, [fetchBookings, location.pathname]);
 
 
     // ── Add a new booking ──

@@ -69,6 +69,10 @@ const bookingSchema = new mongoose.Schema({
     },
     time: {
         type: String
+    },
+    duration: {
+        type: Number,
+        default: 30
     }
 }, {
     timestamps: true

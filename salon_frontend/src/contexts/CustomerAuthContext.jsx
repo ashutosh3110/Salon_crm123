@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api'; // Use real API
 import { registerToken as requestForToken } from '../services/firebase';
 
@@ -9,6 +9,7 @@ export function CustomerAuthProvider({ children }) {
     const [customer, setCustomer] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const stored = localStorage.getItem('customer_user');
@@ -123,6 +124,7 @@ export function CustomerAuthProvider({ children }) {
 
     const refreshProfile = async () => {
         if (!localStorage.getItem('customer_token')) return;
+        if (location.pathname.startsWith('/superadmin')) return;
         try {
             const res = await api.get('/auth/profile');
             if (res.data?.success) {
@@ -137,10 +139,10 @@ export function CustomerAuthProvider({ children }) {
     };
 
     useEffect(() => {
-        if (customer?._id) {
+        if (customer?._id && !location.pathname.startsWith('/superadmin')) {
             refreshProfile();
         }
-    }, [customer?._id]);
+    }, [customer?._id, location.pathname]);
 
     const value = useMemo(() => ({
         customer,

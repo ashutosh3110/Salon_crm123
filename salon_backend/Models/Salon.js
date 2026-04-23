@@ -47,7 +47,7 @@ const salonSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'active', 'suspended', 'expired', 'trial'],
+        enum: ['pending', 'active', 'suspended', 'expired', 'trial', 'rejected'],
         default: 'active'
     },
     subscriptionPlan: {

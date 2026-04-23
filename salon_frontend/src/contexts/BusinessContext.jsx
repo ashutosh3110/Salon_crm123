@@ -90,6 +90,36 @@ export function BusinessProvider({ children }) {
         }
     }, [isAuthenticated, user, activeSalonId]);
 
+    // Handle logout cleanup for Business Context
+    useEffect(() => {
+        if (!isAuthenticated && !isCustomerAuthenticated) {
+            setSalon(null);
+            setOutlets([]);
+            setStaff([]);
+            setServices([]);
+            setGroupedServices([]);
+            setCategories([]);
+            setRoles([]);
+            setProducts([]);
+            setCustomers([]);
+            setBookings([]);
+            setOrders([]);
+            setInvoices([]);
+            setFeedbacks([]);
+            setSuppliers([]);
+            setSegments([]);
+            setShifts([]);
+            setCatalogue(null);
+            setLoyaltySettings(null);
+            setLoyaltyPlans([]);
+            setPlatformSettings(null);
+            setActiveOutletId(null);
+            setActiveSalonId(null);
+            initializationRef.current = false;
+            lastInitializedId.current = null;
+        }
+    }, [isAuthenticated, isCustomerAuthenticated]);
+
 
     const [customersMetadata, setCustomersMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
     const [globalStats, setGlobalStats] = useState({ totalRevenue: 0, totalVIPs: 0, totalInactive: 0, totalCount: 0, totalLiability: 0 });
@@ -848,9 +878,16 @@ export function BusinessProvider({ children }) {
         if (authRoutes.includes(location.pathname) || protectedPaths.some(p => location.pathname.startsWith(p))) {
             // For protected paths, we only want to fetch data if authenticated
             if (!(isAuthenticated || isCustomerAuthenticated)) {
+                // Special case: never initialize for superadmin routes if we are not yet authenticated as a user
                 setIsInitializing(false);
                 return;
             }
+        }
+        
+        // Final sanity check for superadmin route
+        if (location.pathname.startsWith('/superadmin')) {
+            setIsInitializing(false);
+            return;
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {

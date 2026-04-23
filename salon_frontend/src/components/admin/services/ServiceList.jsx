@@ -43,6 +43,8 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
     const [assigningCategoryService, setAssigningCategoryService] = useState(null);
     const [selectedServiceIds, setSelectedServiceIds] = useState([]);
     const [bulkCategoryId, setBulkCategoryId] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
     const handleRefresh = async () => {
         await Promise.all([fetchServices(), fetchCategories()]);
@@ -72,6 +74,9 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
 
         return matchesSearch && matchesCategory && matchesOutlet;
     });
+
+    const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+    const paginatedServices = filteredServices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     const toggleSelectAll = () => {
         if (selectedServiceIds.length === filteredServices.length) {
@@ -377,7 +382,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                     </td>
                                 </tr>
                             ) : (
-                                filteredServices.map((service) => (
+                                paginatedServices.map((service) => (
                                     <tr key={service._id} className={`hover:bg-surface-alt/50 transition-colors group ${selectedServiceIds.includes(service._id) ? 'bg-primary/5' : ''}`}>
                                         <td className="px-6 py-4">
                                             <input 
@@ -462,9 +467,11 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                                 title="Assign Outlets"
                                             >
                                                 <Building2 className="w-3.5 h-3.5 text-text-muted" />
-                                                {(!service.outletIds || service.outletIds.length === 0) 
+                                                {(!service.outletIds || service.outletIds.length === 0 || service.outletIds.length === outlets.length) 
                                                     ? 'All Outlets' 
-                                                    : `${service.outletIds.length} Outlet${service.outletIds.length > 1 ? 's' : ''}`}
+                                                    : service.outletIds.length === 1 
+                                                       ? (outlets.find(o => o._id === service.outletIds[0])?.name || '1 Outlet')
+                                                       : `${service.outletIds.length} Outlets`}
                                             </button>
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -524,7 +531,7 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                             <p className="text-sm font-bold">No services found</p>
                         </div>
                     ) : (
-                        filteredServices.map((service) => (
+                        paginatedServices.map((service) => (
                             <div 
                                 key={service._id} 
                                 className={`bg-surface-alt/30 border border-border rounded-2xl p-4 space-y-4 transition-all ${selectedServiceIds.includes(service._id) ? 'ring-2 ring-primary border-primary/20 bg-primary/5' : ''}`}
@@ -612,7 +619,11 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                                         className="inline-flex items-center gap-1.5 text-[9px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors"
                                     >
                                         <Building2 className="w-3.5 h-3.5" />
-                                        {(!service.outletIds || service.outletIds.length === 0) ? 'GLOBAL (ALL OUTLETS)' : `${service.outletIds.length} BRANCHES`}
+                                        {(!service.outletIds || service.outletIds.length === 0 || service.outletIds.length === outlets.length) 
+                                           ? 'ALL OUTLETS' 
+                                           : service.outletIds.length === 1 
+                                               ? (outlets.find(o => o._id === service.outletIds[0])?.name?.toUpperCase() || '1 BRANCH')
+                                               : `${service.outletIds.length} BRANCHES`}
                                     </button>
                                     <button 
                                         onClick={() => {
@@ -628,6 +639,31 @@ export default function ServiceList({ services = [], onDelete, onToggleStatus, o
                             </div>
                         ))
                     )}
+                </div>
+
+                {/* Pagination Footer */}
+                <div className="bg-surface-alt/50 px-6 py-4 border-t border-border flex items-center justify-between">
+                    <span className="text-[10px] font-black text-text-muted uppercase tracking-widest italic">
+                        Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredServices.length)} of {filteredServices.length} Services
+                    </span>
+                    <div className="flex gap-4">
+                        <button 
+                            type="button"
+                            onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            disabled={currentPage === 1}
+                            className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                        >
+                            Previous
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="text-[10px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                        >
+                            Next
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

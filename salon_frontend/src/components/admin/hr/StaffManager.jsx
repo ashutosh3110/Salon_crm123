@@ -60,6 +60,11 @@ function normalizeStaffUser(u, outletsList) {
         stylistBio: u.bio || '',
         stylistExperience: u.experience || '',
         stylistSpecializations: Array.isArray(u.specializations) ? u.specializations.join(', ') : '',
+        availability: u.availability || { 
+            mode: 'same', 
+            days: { monday: [{ start: '09:00', end: '18:00' }], tuesday: [{ start: '09:00', end: '18:00' }], wednesday: [{ start: '09:00', end: '18:00' }], thursday: [{ start: '09:00', end: '18:00' }], friday: [{ start: '09:00', end: '18:00' }], saturday: [{ start: '09:00', end: '18:00' }], sunday: [{ start: '09:00', end: '18:00' }] },
+            breaks: [{ start: '13:00', end: '14:00', label: 'Lunch' }]
+        }
     };
 }
 
@@ -95,6 +100,19 @@ export default function StaffManager() {
             stylistBio: '',
             stylistExperience: '',
             stylistSpecializations: '',
+            availability: {
+                mode: 'same',
+                days: {
+                    monday: [{ start: '09:00', end: '18:00' }],
+                    tuesday: [{ start: '09:00', end: '18:00' }],
+                    wednesday: [{ start: '09:00', end: '18:00' }],
+                    thursday: [{ start: '09:00', end: '18:00' }],
+                    friday: [{ start: '09:00', end: '18:00' }],
+                    saturday: [{ start: '09:00', end: '18:00' }],
+                    sunday: [{ start: '09:00', end: '18:00' }]
+                },
+                breaks: [{ start: '13:00', end: '14:00', label: 'Lunch' }]
+            }
         };
     }, [outlets]);
 
@@ -175,6 +193,19 @@ export default function StaffManager() {
             stylistBio: s.stylistBio || '',
             stylistExperience: s.stylistExperience || '',
             stylistSpecializations: s.stylistSpecializations || '',
+            availability: s.availability || { 
+                mode: 'same', 
+                days: { 
+                    monday: [{ start: '09:00', end: '18:00' }], 
+                    tuesday: [{ start: '09:00', end: '18:00' }], 
+                    wednesday: [{ start: '09:00', end: '18:00' }], 
+                    thursday: [{ start: '09:00', end: '18:00' }], 
+                    friday: [{ start: '09:00', end: '18:00' }], 
+                    saturday: [{ start: '09:00', end: '18:00' }], 
+                    sunday: [{ start: '09:00', end: '18:00' }] 
+                },
+                breaks: [{ start: '13:00', end: '14:00', label: 'Lunch' }]
+            }
         });
         setModal(true);
         setMenuOpen(null);
@@ -202,7 +233,8 @@ export default function StaffManager() {
                     accountNumber: form.accountNo || '',
                     ifscCode: form.ifsc || ''
                 }
-            }
+            },
+            availability: form.availability
         };
         if (form.outletId) payload.outletId = form.outletId;
         return payload;
@@ -472,7 +504,7 @@ export default function StaffManager() {
                 </div>
             </div>
 
-            {/* Modals industrial style ... */}
+            {/* Modals industrial style */}
             <AnimatePresence>
                 {modal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -500,12 +532,7 @@ export default function StaffManager() {
                                                         <Plus className="w-8 h-8 text-text-muted group-hover:text-primary transition-colors" />
                                                     )}
                                                 </div>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={handleImageChange}
-                                                    className="absolute inset-0 opacity-0 cursor-pointer"
-                                                />
+                                                <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
                                                 <div className="absolute -bottom-2 -right-2 bg-primary text-white p-2 shadow-lg group-hover:scale-110 transition-transform">
                                                     <Edit2 className="w-4 h-4" />
                                                 </div>
@@ -533,12 +560,9 @@ export default function StaffManager() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon *</label>
                                             <select required className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.outletId} onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}>
-                                                {outlets.map((o) => {
-                                                    const oid = String(o._id || o.id);
-                                                    return (
-                                                        <option key={oid} value={oid}>{o.name}</option>
-                                                    );
-                                                })}
+                                                {outlets.map((o) => (
+                                                    <option key={String(o._id || o.id)} value={String(o._id || o.id)}>{o.name}</option>
+                                                ))}
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
@@ -548,14 +572,8 @@ export default function StaffManager() {
                                                 value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional, min 8)' : 'Password * (min 8)'}</label>
-                                            <PasswordField
-                                                autoComplete="new-password"
-                                                placeholder={editTarget ? 'Leave blank to keep current' : 'Min 8 characters'}
-                                                inputClassName="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.password}
-                                                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-                                            />
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional)' : 'Password *'}</label>
+                                            <PasswordField placeholder="Min 8 chars" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>
@@ -567,41 +585,6 @@ export default function StaffManager() {
                                                 }} />
                                         </div>
 
-                                        <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Personal Information</div>
-
-                                        <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Work Start Date</label>
-                                            <input type="date"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.joined} onChange={e => setForm(f => ({ ...f, joined: e.target.value }))} />
-                                        </div>
-                                        <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Date of Birth</label>
-                                            <input type="date"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.dob} onChange={e => setForm(f => ({ ...f, dob: e.target.value }))} />
-                                        </div>
-                                        <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">PAN Number</label>
-                                            <input type="text" placeholder="PAN_IDENTIFIER"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value }))} />
-                                        </div>
-                                        <div className="space-y-2 text-left font-black">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Account Status</label>
-                                            <select className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
-                                                value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}>
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                            </select>
-                                        </div>
-                                        <div className="col-span-2 space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Residential Address</label>
-                                            <textarea placeholder="FULL_PHYSICAL_LOCATION"
-                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none h-20 resize-none"
-                                                value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))}></textarea>
-                                        </div>
-
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Payout & Bank Details</div>
 
                                         <div className="space-y-2 text-left">
@@ -609,6 +592,12 @@ export default function StaffManager() {
                                             <input type="number" placeholder="CURRENCY_VAL"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.salary} onChange={e => setForm(f => ({ ...f, salary: e.target.value }))} />
+                                        </div>
+                                        <div className="space-y-2 text-left">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">PAN Number</label>
+                                            <input type="text" placeholder="PAN_IDENTIFIER"
+                                                className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
+                                                value={form.pan} onChange={e => setForm(f => ({ ...f, pan: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Bank Institution</label>
@@ -622,7 +611,7 @@ export default function StaffManager() {
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.accountNo} onChange={e => setForm(f => ({ ...f, accountNo: e.target.value }))} />
                                         </div>
-                                        <div className="space-y-2 text-left">
+                                        <div className="space-y-2 text-left col-span-2">
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">IFSC Code</label>
                                             <input type="text" placeholder="IFSC_CODE"
                                                 className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
@@ -632,21 +621,12 @@ export default function StaffManager() {
                                         {form.roleKey === 'stylist' && (
                                             <>
                                                 <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mt-4 mb-2">Stylist Profile (Publicly Visible)</div>
-                                                
                                                 <div className="col-span-2 space-y-2 text-left">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Years of Experience</label>
                                                     <input type="text" placeholder="e.g. 5+ Years"
                                                         className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                         value={form.stylistExperience} onChange={e => setForm(f => ({ ...f, stylistExperience: e.target.value }))} />
                                                 </div>
-
-                                                <div className="col-span-2 space-y-2 text-left">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Specializations (Comma separated)</label>
-                                                    <input type="text" placeholder="e.g. Haircut, Coloring, Facial"
-                                                        className="w-full px-5 py-4 rounded-none bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
-                                                        value={form.stylistSpecializations} onChange={e => setForm(f => ({ ...f, stylistSpecializations: e.target.value }))} />
-                                                </div>
-
                                                 <div className="col-span-2 space-y-2 text-left">
                                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Professional Bio</label>
                                                     <textarea placeholder="Write a short summary about the expert..."
@@ -655,6 +635,142 @@ export default function StaffManager() {
                                                 </div>
                                             </>
                                         )}
+
+                                        <div className="col-span-2 mt-8 mb-4">
+                                            <div className="flex items-center justify-between pb-3 border-b border-border/20 mb-6">
+                                                <div className="text-left">
+                                                    <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.3em] leading-none">Work Schedule & Availability</h3>
+                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-widest mt-2">Manage daily slots and staff breaks</p>
+                                                </div>
+                                                <div className="flex items-center bg-background border border-border p-1">
+                                                    <button type="button" onClick={() => setForm(f => ({ ...f, availability: { ...f.availability, mode: 'same' } }))}
+                                                        className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all ${form.availability.mode === 'same' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:bg-surface'}`}>Same for All</button>
+                                                    <button type="button" onClick={() => setForm(f => ({ ...f, availability: { ...f.availability, mode: 'different' } }))}
+                                                        className={`px-5 py-2.5 text-[9px] font-black uppercase tracking-widest transition-all ${form.availability.mode === 'different' ? 'bg-primary text-white shadow-lg' : 'text-text-muted hover:bg-surface'}`}>Different Days</button>
+                                                </div>
+                                            </div>
+
+                                            {/* Dedicated Staff Breaks Section */}
+                                            <div className="bg-surface-alt/20 border border-border p-6 mb-8">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 bg-primary/10 flex items-center justify-center text-primary border border-primary/20"><Clock className="w-4 h-4" /></div>
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-muted italic">Lunch & Tea Breaks</span>
+                                                    </div>
+                                                    <button type="button" onClick={() => {
+                                                        const newBreaks = [...(form.availability.breaks || []), { start: '13:00', end: '14:00', label: 'Lunch' }];
+                                                        setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
+                                                    }} className="text-[9px] font-black text-primary border border-primary/20 px-3 py-1.5 hover:bg-primary/10">+ Add Break</button>
+                                                </div>
+                                                
+                                                <div className="space-y-2">
+                                                    {(form.availability.breaks || []).map((brk, idx) => (
+                                                        <div key={idx} className="flex items-center gap-3 bg-background border border-border p-3">
+                                                            <div className="flex-1">
+                                                                <input type="text" placeholder="Break Label" value={brk.label} onChange={(e) => {
+                                                                    const newBreaks = [...(form.availability.breaks || [])];
+                                                                    newBreaks[idx] = { ...newBreaks[idx], label: e.target.value };
+                                                                    setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
+                                                                }} className="w-full bg-transparent text-[11px] font-black outline-none border-b border-border/50 focus:border-primary" />
+                                                            </div>
+                                                            <div className="flex items-center gap-2 px-3 py-2 bg-surface border border-border">
+                                                                <Clock className="w-3 h-3 text-text-muted" />
+                                                                <input type="time" value={brk.start} onChange={(e) => {
+                                                                    const newBreaks = [...(form.availability.breaks || [])];
+                                                                    newBreaks[idx] = { ...newBreaks[idx], start: e.target.value };
+                                                                    setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
+                                                                }} className="bg-transparent text-[11px] font-black outline-none" />
+                                                            </div>
+                                                            <span className="text-text-muted text-[10px]">-</span>
+                                                            <div className="flex items-center gap-2 px-3 py-2 bg-surface border border-border">
+                                                                <Clock className="w-3 h-3 text-text-muted" />
+                                                                <input type="time" value={brk.end} onChange={(e) => {
+                                                                    const newBreaks = [...(form.availability.breaks || [])];
+                                                                    newBreaks[idx] = { ...newBreaks[idx], end: e.target.value };
+                                                                    setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
+                                                                }} className="bg-transparent text-[11px] font-black outline-none" />
+                                                            </div>
+                                                            <button type="button" onClick={() => {
+                                                                const newBreaks = (form.availability.breaks || []).filter((_, i) => i !== idx);
+                                                                setForm(f => ({ ...f, availability: { ...f.availability, breaks: newBreaks } }));
+                                                            }} className="p-1.5 text-rose-500 hover:bg-rose-500/10 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {form.availability.mode === 'same' ? (
+                                                <div className="col-span-2 p-5 bg-background border border-border space-y-4">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-muted italic leading-none">Global Slots</span>
+                                                        <button type="button" onClick={() => {
+                                                            const newDays = { ...form.availability.days };
+                                                            Object.keys(newDays).forEach(day => { newDays[day] = [...newDays[day], { start: '09:00', end: '18:00' }]; });
+                                                            setForm(f => ({ ...f, availability: { ...f.availability, days: newDays } }));
+                                                        }} className="text-[9px] font-black text-primary border border-primary/20 px-3 py-1 hover:bg-primary/10">+ Add Slot</button>
+                                                    </div>
+                                                    {form.availability.days.monday.map((slot, idx) => (
+                                                        <div key={idx} className="flex items-center gap-4">
+                                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-surface border border-border"><Clock className="w-3.5 h-3.5 text-text-muted" /><input type="time" value={slot.start} onChange={(e) => {
+                                                                const newDays = { ...form.availability.days };
+                                                                Object.keys(newDays).forEach(day => {
+                                                                    const daySlots = [...newDays[day]];
+                                                                    daySlots[idx] = { ...daySlots[idx], start: e.target.value };
+                                                                    newDays[day] = daySlots;
+                                                                });
+                                                                setForm(f => ({ ...f, availability: { ...f.availability, days: newDays } }));
+                                                            }} className="bg-transparent text-[11px] font-black outline-none w-full" /></div>
+                                                            <div className="flex-1 flex items-center gap-2 px-4 py-3 bg-surface border border-border"><Clock className="w-3.5 h-3.5 text-text-muted" /><input type="time" value={slot.end} onChange={(e) => {
+                                                                const newDays = { ...form.availability.days };
+                                                                Object.keys(newDays).forEach(day => {
+                                                                    const daySlots = [...newDays[day]];
+                                                                    daySlots[idx] = { ...daySlots[idx], end: e.target.value };
+                                                                    newDays[day] = daySlots;
+                                                                });
+                                                                setForm(f => ({ ...f, availability: { ...f.availability, days: newDays } }));
+                                                            }} className="bg-transparent text-[11px] font-black outline-none w-full" /></div>
+                                                            {idx > 0 && (<button type="button" onClick={() => {
+                                                                const newDays = { ...form.availability.days };
+                                                                Object.keys(newDays).forEach(day => { newDays[day] = newDays[day].filter((_, i) => i !== idx); });
+                                                                setForm(f => ({ ...f, availability: { ...f.availability, days: newDays } }));
+                                                            }} className="p-2 text-rose-500 hover:bg-rose-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>)}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="col-span-2 space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                                                    {Object.keys(form.availability.days).map((day) => (
+                                                        <div key={day} className="p-4 bg-background border border-border space-y-3">
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="text-[10px] font-black uppercase tracking-widest">{day}</span>
+                                                                <button type="button" onClick={() => {
+                                                                    const newSlots = [...form.availability.days[day], { start: '09:00', end: '18:00' }];
+                                                                    setForm(f => ({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [day]: newSlots } } }));
+                                                                }} className="text-[9px] font-black text-primary border border-primary/20 px-3 py-1 hover:bg-primary/10">+ Add Slot</button>
+                                                            </div>
+                                                            {form.availability.days[day].map((slot, idx) => (
+                                                                <div key={idx} className="flex items-center gap-4">
+                                                                    <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-surface border border-border"><Clock className="w-3.5 h-3.5 text-text-muted" /><input type="time" value={slot.start} onChange={(e) => {
+                                                                        const newSlots = [...form.availability.days[day]];
+                                                                        newSlots[idx] = { ...newSlots[idx], start: e.target.value };
+                                                                        setForm(f => ({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [day]: newSlots } } }));
+                                                                    }} className="bg-transparent text-[10px] font-black outline-none w-full" /></div>
+                                                                    <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-surface border border-border"><Clock className="w-3.5 h-3.5 text-text-muted" /><input type="time" value={slot.end} onChange={(e) => {
+                                                                        const newSlots = [...form.availability.days[day]];
+                                                                        newSlots[idx] = { ...newSlots[idx], end: e.target.value };
+                                                                        setForm(f => ({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [day]: newSlots } } }));
+                                                                    }} className="bg-transparent text-[10px] font-black outline-none w-full" /></div>
+                                                                    {idx > 0 && (<button type="button" onClick={() => {
+                                                                        const newSlots = form.availability.days[day].filter((_, i) => i !== idx);
+                                                                        setForm(f => ({ ...f, availability: { ...f.availability, days: { ...f.availability.days, [day]: newSlots } } }));
+                                                                    }} className="p-2 text-rose-500 hover:bg-rose-500/10 transition-colors"><Trash2 className="w-4 h-4" /></button>)}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="px-10 py-8 border-t border-border bg-surface-alt/20">
@@ -727,6 +843,47 @@ export default function StaffManager() {
                                         <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none flex items-center gap-2"><MapPin className="w-3.5 h-3.5" /> Residential Address</p>
                                         <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.address || 'Address not provided'}</p>
                                     </div>
+
+                                    {viewModal.roleKey === 'stylist' && (
+                                        <>
+                                            <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Stylist Profile</div>
+                                            <div className="text-left font-black">
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Experience</p>
+                                                <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.stylistExperience || 'N/A'}</p>
+                                            </div>
+                                            <div className="text-left font-black">
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Specializations</p>
+                                                <p className="text-[11px] font-black text-text uppercase leading-none">{viewModal.stylistSpecializations || 'N/A'}</p>
+                                            </div>
+                                            <div className="col-span-2 text-left font-black">
+                                                <p className="text-[9px] font-black text-text-muted uppercase tracking-widest mb-1.5 leading-none">Bio</p>
+                                                <p className="text-[11px] font-black text-text uppercase leading-relaxed">{viewModal.stylistBio || 'No bio provided'}</p>
+                                            </div>
+
+                                            <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Work Schedule</div>
+                                            <div className="col-span-2 grid grid-cols-1 gap-2">
+                                                {Object.entries(viewModal.availability?.days || {}).map(([day, slots]) => (
+                                                    <div key={day} className="flex items-center justify-between py-2 border-b border-border/5">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">{day}</span>
+                                                        <div className="flex flex-col items-end gap-1">
+                                                            {slots.length > 0 ? slots.map((s, i) => (
+                                                                <span key={i} className="text-[10px] font-black text-text uppercase tracking-tighter bg-surface px-2 py-0.5 border border-border">{s.start} - {s.end}</span>
+                                                            )) : <span className="text-[10px] font-black text-rose-500 uppercase">Off</span>}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Daily Breaks</div>
+                                            <div className="col-span-2 space-y-2">
+                                                {(viewModal.availability?.breaks || []).length > 0 ? (viewModal.availability.breaks.map((b, i) => (
+                                                    <div key={i} className="flex items-center justify-between py-2 border-b border-border/5">
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-text-muted">{b.label}</span>
+                                                        <span className="text-[10px] font-black text-text uppercase tracking-tighter bg-surface px-2 py-0.5 border border-border">{b.start} - {b.end}</span>
+                                                    </div>
+                                                ))) : <p className="text-[10px] font-black text-text-muted uppercase italic">No daily breaks configured</p>}
+                                            </div>
+                                        </>
+                                    )}
 
                                     <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-4 mb-2 border-b border-border/10 pb-2">Bank Account Details</div>
 

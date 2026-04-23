@@ -38,9 +38,19 @@ const api = axios.create({
     headers: {}
 });
 
+let abortController = new AbortController();
+
+export const cancelAllRequests = () => {
+    abortController.abort();
+    abortController = new AbortController();
+};
+
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
     (config) => {
+        // Attach the global abort signal
+        config.signal = abortController.signal;
+        
         const token = localStorage.getItem('token') || localStorage.getItem('customer_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;

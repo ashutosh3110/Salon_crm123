@@ -5,6 +5,7 @@ const {
     createBooking,
     updateStatus,
     getAvailability,
+    getAvailableSlots,
     createPaymentOrder,
     verifyPayment
 } = require('../Controllers/bookingController');
@@ -21,6 +22,7 @@ router
     .post(authorize('admin', 'manager', 'receptionist', 'customer'), createBooking);
 
 router.get('/availability', getAvailability);
+router.get('/available-slots', getAvailableSlots);
 
 router
     .route('/:id/status')

@@ -78,10 +78,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                         <span className="text-text-muted">Outlet Limit</span>
                         <span className="text-text">{plan.limits?.outletLimit > 100 ? 'Unlimited' : plan.limits?.outletLimit} active branch</span>
                     </div>
-                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
-                        <span className="text-text-muted">WhatsApp Quota</span>
-                        <span className="text-text">{plan.limits?.whatsappLimit || 0} msgs</span>
-                    </div>
+                    
                 </div>
 
                 <div className="flex items-center gap-2 mt-6 pt-4 border-t border-border">
@@ -205,7 +202,6 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                             {[
                                 { key: 'staffLimit', label: 'Staff Limit', icon: Users },
                                 { key: 'outletLimit', label: 'Outlet Limit', icon: Home },
-                                { key: 'whatsappLimit', label: 'Msg Quota', icon: MessageSquare },
                             ].map(l => (
                                 <div key={l.key} className="space-y-1.5">
                                     <label className={labelCls}>{l.label}</label>

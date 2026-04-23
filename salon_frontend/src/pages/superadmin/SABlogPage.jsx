@@ -68,14 +68,14 @@ export default function SABlogPage() {
         }
     };
 
-    const handleSavePost = async (e) => {
-        e.preventDefault();
+    const handleSavePost = async (e, forcedStatus = null) => {
+        if (e) e.preventDefault();
         setUploading(true);
         try {
-            const formData = new FormData(e.target);
+            const form = document.getElementById('article-form');
+            const formData = new FormData(form);
             let imageUrl = editingPost?.image || "https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200";
 
-            // 1. Upload image if selected
             if (selectedImage) {
                 const imageFormData = new FormData();
                 imageFormData.append('image', selectedImage);
@@ -87,12 +87,10 @@ export default function SABlogPage() {
 
             const postData = {
                 title: formData.get('title'),
-                slug: formData.get('slug'),
-                content: formData.get('content'), // Need to make sure this matches textarea name
-                status: formData.get('status'),
-                isFeatured: formData.get('isFeatured') === 'on',
-                author: formData.get('author') || "Wapixo HQ",
-                image: imageUrl
+                content: formData.get('content'),
+                author: "Wapixo HQ",
+                image: imageUrl,
+                status: forcedStatus || 'published'
             };
 
             if (editingPost) {
@@ -107,7 +105,7 @@ export default function SABlogPage() {
             setEditingPost(null);
             setSelectedImage(null);
             setPreviewUrl('');
-            showToast(editingPost ? "Article updated." : "Article published.");
+            showToast(forcedStatus === 'draft' ? "Article saved as draft." : "Article published.");
         } catch (err) {
             console.error('Save failed:', err);
             showToast("Failed to save article.");
@@ -216,17 +214,10 @@ export default function SABlogPage() {
                         {/* Preview Asset */}
                         <div className="relative h-64 overflow-hidden bg-black">
                             <img
-                                src={post.image}
+                                src={post.image.startsWith('http') ? post.image : `${api.defaults.baseURL.replace('/api', '')}/${post.image}`}
                                 alt={post.title}
-                                className="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
                             />
-                            <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                {post.isFeatured && (
-                                    <span className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-primary/30">
-                                        <Sparkles size={10} /> Signature Post
-                                    </span>
-                                )}
-                            </div>
                             <div className="absolute top-6 right-6">
                                 <span className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-widest shadow-xl border border-white/10 backdrop-blur-md
                                     ${post.status === 'published' ? 'bg-emerald-500/90 text-white' : 'bg-amber-500/90 text-white'}
@@ -273,10 +264,6 @@ export default function SABlogPage() {
                                         <div className="text-[8px] text-text-muted font-bold uppercase tracking-widest mt-0.5">Editor Unit</div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1.5 text-text-muted bg-surface px-3 py-1.5 regular-radius border border-border/50">
-                                    <Eye size={12} className="text-primary" />
-                                    <span className="text-[10px] font-black italic">{post.reads}</span>
-                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -289,15 +276,15 @@ export default function SABlogPage() {
                 {isEditorOpen && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditorOpen(false)} className="absolute inset-0 bg-black/95 backdrop-blur-md" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 50 }} className="relative bg-white w-full max-w-6xl h-[92vh] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.5)]">
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 50 }} className="relative bg-white w-full max-w-3xl h-[92vh] overflow-hidden flex flex-col shadow-[0_0_100px_rgba(0,0,0,0.5)] regular-radius">
 
                             {/* Modal Hub Header */}
                             <div className="flex items-center justify-between px-10 py-8 border-b border-border bg-[#fafafa]">
                                 <div>
-                                    <h3 className="text-2xl font-black italic uppercase tracking-tighter">
+                                    <h3 className="text-xl font-black italic uppercase tracking-tight">
                                         Article <span className="text-primary">Editor</span>
                                     </h3>
-                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-[0.3em] mt-1">Editing: {editingPost ? editingPost.slug : 'New Article'}</p>
+                                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-[0.2em] mt-0.5">Editing: {editingPost ? editingPost.title : 'New Article Entry'}</p>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex items-center gap-2 bg-black text-white px-5 py-2.5 shadow-xl">
@@ -310,50 +297,28 @@ export default function SABlogPage() {
                                 </div>
                             </div>
 
-                            <form onSubmit={handleSavePost} className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-                                {/* Left: Editorial Content Area */}
-                                <div className="flex-1 overflow-y-auto p-10 space-y-10 custom-scrollbar border-r border-border bg-white">
-                                    <div className="space-y-6">
-                                        <div className="space-y-2">
-                                            <input
-                                                required name="title"
-                                                defaultValue={editingPost?.title}
-                                                className="w-full text-4xl font-black italic uppercase border-none outline-none placeholder:text-text-muted/20 focus:ring-0 px-0"
-                                                placeholder="ENTER ARTICLE TITLE..."
-                                            />
-                                            <div className="flex items-center gap-4 text-[10px] font-bold text-text-muted tracking-[0.2em] uppercase">
-                                                <span>WAPIXO.IO/JOURNAL/</span>
-                                                <input name="slug" defaultValue={editingPost?.slug} required className="bg-surface border-b border-border px-3 py-1 outline-none text-black focus:border-primary transition-all min-w-[240px] font-black" placeholder="url-slug-string" />
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                                <Megaphone size={14} className="text-primary" /> Article Content (Supports images and media)
-                                            </label>
-                                            <textarea
-                                                name="content"
-                                                defaultValue={editingPost?.content}
-                                                required
-                                                className="w-full bg-[#fafafa] border border-border p-10 text-sm leading-loose focus:border-primary outline-none transition-all min-h-[500px] shadow-inner font-medium"
-                                                placeholder="# Write your article content here..."
-                                            />
-                                        </div>
-
-
+                            <form id="article-form" onSubmit={(e) => handleSavePost(e, 'published')} className="flex-1 overflow-y-auto bg-white p-10">
+                                <div className="max-w-2xl mx-auto space-y-8">
+                                    
+                                    {/* Title Section (Top) */}
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] block text-center mb-2">Article Headline</label>
+                                        <input
+                                            required name="title"
+                                            defaultValue={editingPost?.title}
+                                            className="w-full text-4xl font-black italic uppercase border-none outline-none placeholder:text-text-muted/30 focus:ring-0 px-0 bg-transparent text-center"
+                                            placeholder="ENTER ARTICLE TITLE..."
+                                        />
                                     </div>
-                                </div>
 
-                                {/* Right: Sidebar Configuration */}
-                                <div className="w-full lg:w-[400px] overflow-y-auto p-10 space-y-10 bg-[#fafafa] border-l border-border">
-                                    {/* Asset Upload */}
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
-                                            <ImageIcon size={16} className="text-primary" /> Main Article Image
+                                    {/* Image Section (Middle) */}
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2 justify-center">
+                                            <ImageIcon size={14} className="text-primary" /> Feature Image
                                         </label>
                                         <div 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="relative group aspect-video bg-black/5 border-2 border-dashed border-border flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-all shadow-sm"
+                                            className="relative group aspect-video bg-[#fafafa] border border-border flex flex-col items-center justify-center overflow-hidden cursor-pointer hover:border-primary transition-all shadow-sm regular-radius"
                                         >
                                             <input 
                                                 type="file" 
@@ -363,51 +328,58 @@ export default function SABlogPage() {
                                                 accept="image/*" 
                                             />
                                             {(previewUrl || editingPost?.image) ? (
-                                                <img src={previewUrl || editingPost.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 group-hover:opacity-100" />
+                                                <img 
+                                                    src={previewUrl || (editingPost?.image?.startsWith('http') ? editingPost.image : `${api.defaults.baseURL.replace('/api', '')}/${editingPost?.image}`)} 
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                                                />
                                             ) : (
                                                 <div className="text-center p-6">
-                                                    <ImageIcon size={32} className="text-text-muted mx-auto mb-3" />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Upload Image</span>
+                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 text-text-muted group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                                        <ImageIcon size={20} />
+                                                    </div>
+                                                    <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Upload Media Asset</span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    {/* Category & Status */}
-                                    <div className="space-y-6 mt-8">
-
-                                        <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-widest italic leading-none block px-1">Status</label>
-                                            <select name="status" defaultValue={editingPost?.status || "published"} className="w-full bg-white border border-border px-5 py-4 text-xs font-black uppercase outline-none cursor-pointer focus:ring-2 ring-primary/10 transition-all appearance-none">
-                                                <option value="published">PUBLISH NOW</option>
-                                                <option value="draft">STAY AS DRAFT</option>
-                                            </select>
-                                        </div>
-                                        <div className="pt-4 flex items-center gap-4 bg-white p-6 border border-border shadow-sm">
-                                            <input type="checkbox" name="isFeatured" defaultChecked={editingPost?.isFeatured} id="feat" className="w-5 h-5 accent-primary cursor-pointer" />
-                                            <label htmlFor="feat" className="text-[10px] font-black uppercase tracking-[0.2em] cursor-pointer">Mark as Signature Post</label>
-                                        </div>
+                                    {/* Content Section (Bottom) */}
+                                    <div className="space-y-3">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] flex items-center gap-2">
+                                            <FileText size={12} className="text-primary" /> Article Intel
+                                        </label>
+                                        <textarea
+                                            name="content"
+                                            defaultValue={editingPost?.content}
+                                            required
+                                            className="w-full bg-[#fafafa] border border-border p-6 text-sm leading-relaxed focus:border-primary outline-none transition-all min-h-[140px] shadow-inner font-medium regular-radius"
+                                            placeholder="Write your content here..."
+                                        />
                                     </div>
 
-
                                     {/* Action Hub */}
-                                    <div className="pt-10 border-t border-border space-y-4">
+                                    <div className="pt-8 grid grid-cols-2 gap-4">
+                                        <button 
+                                            type="button"
+                                            onClick={(e) => handleSavePost(e, 'draft')}
+                                            disabled={uploading}
+                                            className="py-5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all regular-radius disabled:opacity-50"
+                                        >
+                                            Save as Draft
+                                        </button>
                                         <button 
                                             type="submit" 
                                             disabled={uploading}
-                                            className="w-full py-6 bg-black text-white text-[11px] font-black uppercase tracking-[0.5em] hover:bg-primary transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-4 group active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="py-5 bg-black text-white text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary transition-all shadow-xl shadow-primary/20 flex items-center justify-center gap-3 group disabled:opacity-50 regular-radius"
                                         >
-                                            {uploading ? (
-                                                <Loader2 size={18} className="animate-spin" />
-                                            ) : (
-                                                <Save size={18} />
-                                            )}
-                                            {uploading ? 'SAVING ARTICLE...' : 'SAVE & PUBLISH'}
-                                        </button>
-                                        <button type="button" onClick={() => setIsEditorOpen(false)} className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 transition-all text-center">
-                                            CANCEL
+                                            {uploading ? <Loader2 size={16} className="animate-spin" /> : <Globe size={16} />}
+                                            {uploading ? 'PUBLISHING...' : 'Publish Now'}
                                         </button>
                                     </div>
+                                    
+                                    <button type="button" onClick={() => setIsEditorOpen(false)} className="w-full py-4 text-[9px] font-black uppercase tracking-widest text-text-muted hover:text-red-500 transition-all text-center">
+                                        Discard Entry
+                                    </button>
                                 </div>
                             </form>
                         </motion.div>

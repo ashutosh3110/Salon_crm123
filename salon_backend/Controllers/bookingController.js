@@ -8,6 +8,8 @@ const CustomerMembership = require('../Models/CustomerMembership');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
+const Break = require('../Models/Break');
+const Staff = require('../Models/Staff');
 
 // Initialize Razorpay
 let razorpay;
@@ -251,6 +253,115 @@ exports.updateStatus = async (req, res) => {
             success: true,
             data: booking
         });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// @desc    Get available slots for staff, service and date
+// @route   GET /api/bookings/available-slots
+// @access  Public/Private
+exports.getAvailableSlots = async (req, res) => {
+    try {
+        const { staffId, serviceId, date } = req.query;
+
+        if (!staffId || !serviceId || !date) {
+            return res.status(400).json({ success: false, message: 'staffId, serviceId and date are required' });
+        }
+
+        // 1. Get Staff and Service details
+        const staff = await Staff.findById(staffId);
+        const service = await Service.findById(serviceId);
+
+        if (!staff || !service) {
+            return res.status(404).json({ success: false, message: 'Staff or Service not found' });
+        }
+
+        const serviceDuration = service.duration || 30;
+        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+
+        // 2. Get Staff Working Hours for that day
+        const dayAvailability = staff.availability?.days?.[dayName] || [];
+        if (dayAvailability.length === 0) {
+            return res.json({ success: true, data: [] });
+        }
+
+        // 3. Get Breaks (Combine Daily Recurring Breaks + Date Specific Breaks)
+        const dailyBreaks = staff.availability?.breaks || [];
+        const breakDoc = await Break.findOne({ staffId, date });
+        const specificBreaks = breakDoc ? breakDoc.breaks : [];
+        
+        const breaks = [...dailyBreaks, ...specificBreaks];
+
+        // 4. Get Existing Bookings for that staff and date
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const bookings = await Booking.find({
+            staffId,
+            appointmentDate: { $gte: startOfDay, $lte: endOfDay },
+            status: { $nin: ['cancelled', 'no-show'] }
+        });
+
+        // Helper: Convert "HH:mm" to minutes from midnight
+        const toMinutes = (timeStr) => {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        };
+
+        // Helper: Convert minutes from midnight to "HH:mm"
+        const fromMinutes = (mins) => {
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        };
+
+        // 5. Generate Slots
+        const availableSlots = [];
+        
+        // Process each working hour block (staff can have multiple shifts per day)
+        dayAvailability.forEach(shift => {
+            let current = toMinutes(shift.start);
+            const shiftEnd = toMinutes(shift.end);
+
+            while (current + serviceDuration <= shiftEnd) {
+                const slotStart = current;
+                const slotEnd = current + serviceDuration;
+
+                // Check if slot overlaps with any break
+                const hasBreakOverlap = breaks.some(b => {
+                    const bStart = toMinutes(b.start);
+                    const bEnd = toMinutes(b.end);
+                    return !(slotEnd <= bStart || slotStart >= bEnd);
+                });
+
+                // Check if slot overlaps with any booking
+                const hasBookingOverlap = bookings.some(b => {
+                    const bTimeStr = b.time || b.appointmentDate.toTimeString().substring(0, 5);
+                    const bStart = toMinutes(bTimeStr);
+                    const bEnd = bStart + (b.duration || 30); // Use stored duration or default to 30
+                    return !(slotEnd <= bStart || slotStart >= bEnd);
+                });
+
+                if (!hasBreakOverlap && !hasBookingOverlap) {
+                    availableSlots.push(fromMinutes(slotStart));
+                }
+
+                // Increment by 30 mins or service duration? 
+                // User's example suggests incrementing by serviceDuration, 
+                // but usually, we allow bookings every 15 or 30 mins.
+                // Let's stick to 30 min intervals for slot starts as seen in their UI.
+                current += 30; 
+            }
+        });
+
+        res.json({
+            success: true,
+            data: availableSlots
+        });
+
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

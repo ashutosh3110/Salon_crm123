@@ -79,7 +79,12 @@ const staffSchema = new mongoose.Schema({
             friday: [{ start: String, end: String }],
             saturday: [{ start: String, end: String }],
             sunday: [{ start: String, end: String }]
-        }
+        },
+        breaks: [{
+            start: String, // e.g. "13:00"
+            end: String,   // e.g. "14:00"
+            label: { type: String, default: 'Lunch' }
+        }]
     },
     // HR Related Fields
     hrProfile: {

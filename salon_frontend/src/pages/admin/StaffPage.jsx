@@ -13,7 +13,6 @@ import {
     CheckCircle2,
     Clock,
     XCircle,
-    Send,
     MoreVertical,
     Ban,
     Trash2,
@@ -40,6 +39,7 @@ const roleColors = {
 
 const DEFAULT_AVAILABILITY = {
     mode: 'same',
+    breaks: [],
     days: {
         monday: [{ start: '09:00', end: '18:00' }],
         tuesday: [{ start: '09:00', end: '18:00' }],
@@ -74,6 +74,12 @@ export default function StaffPage() {
     const [outletFilter, setOutletFilter] = useState('all');
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+
+    const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+    const paginatedStaff = filteredStaff.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -107,6 +113,7 @@ export default function StaffPage() {
             result = result.filter(s => s.outletId === outletFilter);
         }
         setFilteredStaff(result);
+        setCurrentPage(1);
     }, [search, roleFilter, outletFilter, staff]);
 
     const [avatarFile, setAvatarFile] = useState(null);
@@ -143,9 +150,23 @@ export default function StaffPage() {
             
             // Append all form fields to FormData
             Object.keys(form).forEach(key => {
-                if (key === 'avatar') return; // Handled separately
+                if (key === 'avatar') return;
                 if (key === 'availability') {
                     formData.append(key, JSON.stringify(form[key]));
+                } else if (key === 'pan') {
+                    // Safety check for hrProfile to avoid string-spread corruption
+                    let baseHrProfile = {};
+                    if (editing?.hrProfile) {
+                        baseHrProfile = typeof editing.hrProfile === 'string' 
+                            ? JSON.parse(editing.hrProfile) 
+                            : editing.hrProfile;
+                    }
+                    
+                    const hrProfile = {
+                        ...baseHrProfile,
+                        panNumber: form.pan
+                    };
+                    formData.append('hrProfile', JSON.stringify(hrProfile));
                 } else if (key === 'stylistSpecializations') {
                     const specs = form.stylistSpecializations ? form.stylistSpecializations.split(',').map(s => s.trim()).filter(Boolean) : [];
                     formData.append(key, JSON.stringify(specs));
@@ -204,7 +225,7 @@ export default function StaffPage() {
             roleId: u.roleId || '',
             outletId: u.outletId || '',
             dob: u.dob || '',
-            pan: u.pan || '',
+            pan: u.hrProfile?.panNumber || u.pan || '',
             address: u.address || '',
             avatar: u.avatar || '',
             stylistBio: u.stylistBio || u.bio || '',
@@ -313,7 +334,7 @@ export default function StaffPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredStaff.map((s, index) => (
+                                paginatedStaff.map((s, index) => (
                                     <tr
                                         key={s._id}
                                         className="hover:bg-primary/[0.02] transition-colors group"
@@ -323,7 +344,7 @@ export default function StaffPage() {
                                                 <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text font-black text-[10px] font-mono group-hover:border-primary transition-colors overflow-hidden">
                                                     {s.avatar ? (
                                                         <img 
-                                                            src={s.avatar.startsWith('http') ? s.avatar : `${API_BASE_URL}${s.avatar}`} 
+                                                            src={(s.avatar.startsWith('http') || s.avatar.startsWith('data:')) ? s.avatar : `${API_BASE_URL}${s.avatar}`} 
                                                             alt={s.name} 
                                                             className="w-full h-full object-cover" 
                                                         />
@@ -362,13 +383,6 @@ export default function StaffPage() {
                                         <td className="px-4 py-2 text-right">
                                             <div className="flex items-center justify-end gap-1">
                                                 <button
-                                                    onClick={() => handleResendInvite(s._id)}
-                                                    className="p-1.5 text-text-muted hover:text-primary transition-colors"
-                                                    title="Resend"
-                                                >
-                                                    <Send className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button
                                                     onClick={() => openEdit(s)}
                                                     className="p-1.5 text-text-muted hover:text-text transition-colors"
                                                     title="Edit"
@@ -401,11 +415,25 @@ export default function StaffPage() {
                 {/* Footer - Compact */}
                 <div className="bg-surface px-4 py-2 border-t border-border flex items-center justify-between">
                     <span className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] font-mono italic">
-                        Team Overview: {filteredStaff.length} Members
+                        Showing {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} of {filteredStaff.length} Members
                     </span>
                     <div className="flex gap-4">
-                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20" disabled>Previous</button>
-                        <button className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors">Next</button>
+                        <button 
+                            type="button"
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1}
+                            className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                        >
+                            Previous
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages || totalPages === 0}
+                            className="text-[8px] font-black text-text-muted uppercase tracking-widest hover:text-primary transition-colors disabled:opacity-20"
+                        >
+                            Next
+                        </button>
                     </div>
                 </div>
             </div>
@@ -445,7 +473,7 @@ export default function StaffPage() {
                                             <div className="w-24 h-24 bg-surface border-2 border-dashed border-border flex items-center justify-center overflow-hidden transition-all group-hover/photo:border-primary">
                                                 {form.avatar ? (
                                                     <img 
-                                                        src={form.avatar.startsWith('data:') ? form.avatar : `${API_BASE_URL}${form.avatar}`} 
+                                                        src={(form.avatar.startsWith('http') || form.avatar.startsWith('data:')) ? form.avatar : `${API_BASE_URL}${form.avatar}`} 
                                                         alt="Preview" 
                                                         className="w-full h-full object-cover" 
                                                     />
@@ -603,6 +631,87 @@ export default function StaffPage() {
 
                                         {/* Availability & Slots Section */}
                                         <div className="col-span-2 pt-6 border-t border-border mt-4">
+                                            {/* Staff Breaks Section */}
+                                            <div className="bg-surface p-4 border border-border mb-6">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="w-3.5 h-3.5 text-primary" />
+                                                        <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Staff Breaks (Lunch/Tea)</p>
+                                                    </div>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => {
+                                                            const currentBreaks = form.availability?.breaks || [];
+                                                            setForm({
+                                                                ...form,
+                                                                availability: {
+                                                                    ...form.availability,
+                                                                    breaks: [...currentBreaks, { start: '13:00', end: '14:00', label: 'Lunch Break' }]
+                                                                }
+                                                            });
+                                                        }}
+                                                        className="text-[8px] font-black text-primary border border-primary/20 px-2 py-1 hover:bg-primary/5 transition-all"
+                                                    >
+                                                        + ADD BREAK
+                                                    </button>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {(!form.availability?.breaks || form.availability.breaks.length === 0) ? (
+                                                        <p className="text-[8px] font-black text-text-muted uppercase tracking-widest italic opacity-40 py-2">No breaks scheduled</p>
+                                                    ) : (
+                                                        form.availability.breaks.map((brk, idx) => (
+                                                            <div key={idx} className="flex items-center gap-2 bg-white border border-border p-2 group/break">
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={brk.label} 
+                                                                    onChange={(e) => {
+                                                                        const newBreaks = [...form.availability.breaks];
+                                                                        newBreaks[idx].label = e.target.value;
+                                                                        setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
+                                                                    }}
+                                                                    placeholder="Label"
+                                                                    className="flex-1 bg-transparent text-[9px] font-black outline-none border-b border-border/50 focus:border-primary uppercase font-mono" 
+                                                                />
+                                                                <div className="flex items-center gap-1">
+                                                                    <input 
+                                                                        type="time" 
+                                                                        value={brk.start} 
+                                                                        onChange={(e) => {
+                                                                            const newBreaks = [...form.availability.breaks];
+                                                                            newBreaks[idx].start = e.target.value;
+                                                                            setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
+                                                                        }}
+                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono" 
+                                                                    />
+                                                                    <span className="text-[8px] font-black text-text-muted">-</span>
+                                                                    <input 
+                                                                        type="time" 
+                                                                        value={brk.end} 
+                                                                        onChange={(e) => {
+                                                                            const newBreaks = [...form.availability.breaks];
+                                                                            newBreaks[idx].end = e.target.value;
+                                                                            setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
+                                                                        }}
+                                                                        className="bg-surface px-2 py-1 border border-border text-[9px] font-black outline-none font-mono" 
+                                                                    />
+                                                                </div>
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => {
+                                                                        const newBreaks = form.availability.breaks.filter((_, i) => i !== idx);
+                                                                        setForm({ ...form, availability: { ...form.availability, breaks: newBreaks } });
+                                                                    }}
+                                                                    className="p-1 text-rose-500 hover:bg-rose-50 transition-colors opacity-0 group-hover/break:opacity-100"
+                                                                >
+                                                                    <Trash2 size={10} />
+                                                                </button>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+
                                             <div className="flex items-center justify-between mb-4">
                                                 <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em] font-mono">Work Schedule & Availability</p>
                                                 <div className="flex bg-surface-alt p-1 rounded-none border border-border">

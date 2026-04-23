@@ -132,16 +132,9 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'marketing',
                 subItems: [
                     { label: 'Marketing Hub', icon: Layout, path: '/admin/marketing' },
-                    { label: 'App CMS', icon: Smartphone, path: '/admin/marketing/cms', badge: pendingExpertsCount > 0 ? { count: pendingExpertsCount, color: 'bg-rose-500 animate-pulse' } : null },
-                    { label: 'Coupon Codes', icon: Percent, path: '/admin/promotions' },
                 ]
             },
-            {
-                label: 'Enquiries',
-                icon: ClipboardList,
-                path: '/admin/inquiries',
-                permission: 'enquiries'
-            },
+          
             {
                 label: 'Reminders & Links',
                 icon: Bell,

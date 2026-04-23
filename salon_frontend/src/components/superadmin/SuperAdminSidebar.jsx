@@ -98,7 +98,6 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
 
     const handleLogout = () => {
         logout();
-        window.location.href = '/superadmin/login';
     };
 
     const sidebarContent = (

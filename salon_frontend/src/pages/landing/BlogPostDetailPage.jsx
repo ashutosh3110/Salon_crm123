@@ -17,8 +17,8 @@ export default function BlogPostDetailPage() {
     const getImageUrl = (url) => {
         if (!url) return 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
         if (url.startsWith('http')) return url;
-        const apiHost = API_BASE_URL.replace(/\/v1\/?$/, '');
-        return `${apiHost}${url.startsWith('/') ? '' : '/'}${url}`;
+        const backendUrl = api.defaults.baseURL.replace('/api', '');
+        return `${backendUrl}/${url}`;
     };
 
     useEffect(() => {
@@ -79,7 +79,7 @@ export default function BlogPostDetailPage() {
                     style={{ position: 'relative', zIndex: 10, padding: '0 1.5rem', maxWidth: '1000px', margin: '0 auto' }}
                 >
                     <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4em', marginBottom: '1.5rem', display: 'block' }}>
-                        {post.category} Journal
+                        Wapixo Journal Entry
                     </span>
                     <h1 style={{ fontSize: 'clamp(2rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--wapixo-text)', lineHeight: 1.1, marginBottom: '2.5rem', letterSpacing: '-0.02em' }}>
                         {post.title}
@@ -109,11 +109,13 @@ export default function BlogPostDetailPage() {
                                     lineHeight: 1.8,
                                     fontSize: '1.1rem',
                                     fontWeight: 400,
-                                    opacity: 0.8
+                                    opacity: 0.8,
+                                    whiteSpace: 'pre-wrap'
                                 }}
                                 className="blog-content-wapixo"
-                                dangerouslySetInnerHTML={{ __html: post.content }}
-                            />
+                            >
+                                {post.content}
+                            </div>
 
                             {/* Adding some basic styles for the inner HTML content */}
                             <style>{`

@@ -58,6 +58,18 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         let { email, name, role, roleId, phone, password, outletId } = req.body;
+        
+        // Parse JSON fields if they come as strings from FormData
+        if (typeof req.body.availability === 'string') {
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+        }
+        if (typeof req.body.hrProfile === 'string') {
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+        }
+        if (typeof req.body.stylistSpecializations === 'string') {
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+        }
+
         // Keep role string as display name or fallback
         const roleDisplayName = role || 'Stylist';
 
@@ -72,14 +84,10 @@ exports.createUser = async (req, res) => {
         const avatarPath = req.file ? req.file.path : undefined;
 
         const staff = await Staff.create({
-            name,
-            email,
-            phone,
+            ...req.body,
             role: roleDisplayName,
-            roleId,
             avatar: avatarPath,
             password: pass,
-            outletId,
             salonId: req.user.salonId
         });
 
@@ -132,8 +140,16 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         }
 
-        // roleId is handled by spreading req.body into updatedStaff if present
-        // No need to lowercase role as it's a display name now
+        // Parse JSON fields if they come as strings from FormData
+        if (typeof req.body.availability === 'string') {
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+        }
+        if (typeof req.body.hrProfile === 'string') {
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+        }
+        if (typeof req.body.stylistSpecializations === 'string') {
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+        }
 
         // Handle uploaded avatar
         if (req.file) {

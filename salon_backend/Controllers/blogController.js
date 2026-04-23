@@ -12,15 +12,24 @@ exports.getBlogs = async (req, res) => {
     }
 };
 
+const mongoose = require('mongoose');
+
 // @desc    Get single blog
 // @route   GET /api/blogs/:id
 // @access  Public
 exports.getBlog = async (req, res) => {
     try {
-        const blog = await Blog.findById(req.params.id);
+        let blog;
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            blog = await Blog.findById(req.params.id);
+        } else {
+            blog = await Blog.findOne({ slug: req.params.id });
+        }
+        
         if (!blog) return res.status(404).json({ success: false, message: 'Not found' });
         res.status(200).json(blog);
     } catch (err) {
+        console.error('Fetch blog error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

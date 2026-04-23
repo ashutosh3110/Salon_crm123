@@ -122,6 +122,7 @@ export default function AuthPage() {
                 subscriptionPlan: currentPlan ? currentPlan.name.toLowerCase() : 'none'
             });
             setRegistrationSuccess(true);
+            setLoading(false);
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Registration failed.');
             setLoading(false);

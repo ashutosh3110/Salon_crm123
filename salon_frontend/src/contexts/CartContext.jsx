@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useBusiness } from './BusinessContext';
@@ -11,6 +12,7 @@ export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState({ items: [] });
     const [loading, setLoading] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const location = useLocation();
 
     const fetchCart = useCallback(async () => {
         if (!customer) return;
@@ -28,8 +30,10 @@ export const CartProvider = ({ children }) => {
     }, [customer]);
 
     useEffect(() => {
-        fetchCart();
-    }, [fetchCart]);
+        if (!location.pathname.startsWith('/superadmin')) {
+            fetchCart();
+        }
+    }, [fetchCart, location.pathname]);
 
     const addToCart = async (productId, quantity = 1) => {
         if (!customer) {

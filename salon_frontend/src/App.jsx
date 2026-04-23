@@ -205,7 +205,6 @@ import ShiftsPage from './pages/manager/ShiftsPage';
 import ManagerSettingsPage from './pages/manager/ManagerSettingsPage';
 import CatalogueEditorPage from './pages/manager/CatalogueEditorPage';
 import ServiceApprovalPage from './pages/manager/ServiceApprovalPage';
-
 import { BookingRegistryProvider } from './contexts/BookingRegistryContext';
 
 function App() {
@@ -274,7 +273,7 @@ function App() {
                                 <Route path="/admin/bookings/new" element={<NewBookingPage />} />
                             </Route>
 
-                            {/* CRM Routes */}
+                            {/* CweRM Routes */}
                             <Route element={<ProtectedRoute feature="crm" permission="crm" />}>
                                 <Route path="/admin/crm/customers" element={<CustomersPage tab="directory" />} />
                                 <Route path="/admin/crm/wallets" element={<CustomersPage tab="wallets" />} />

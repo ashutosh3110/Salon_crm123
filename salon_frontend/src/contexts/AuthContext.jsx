@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import mockApi from '../services/mock/mockApi';
 import authData from '../data/authMockData.json';
 
-import api from '../services/api';
+import api, { cancelAllRequests } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -59,13 +59,37 @@ export function AuthProvider({ children }) {
     }, []);
 
     const logout = useCallback(() => {
-        const role = user?.role || 'admin';
+        // 0. Cancel all pending requests immediately
+        cancelAllRequests();
+
+        const role = user?.role || localStorage.getItem('active_auth_role') || 'admin';
+        
+        // 1. Clear Auth specific keys
         localStorage.removeItem(`auth_token_${role}`);
         localStorage.removeItem(`auth_user_${role}`);
         localStorage.removeItem('active_auth_role');
         localStorage.removeItem('token');
+        
+        // 2. Clear Tenant/Business specific keys to prevent background API calls
+        localStorage.removeItem('active_salon_id');
+        localStorage.removeItem('active_outlet_id');
+        localStorage.removeItem('active_tenant_id');
+        localStorage.removeItem('wapixo_selected_outlet');
+        
+        // 3. Clear Customer session if any
+        localStorage.removeItem('customer_token');
+        localStorage.removeItem('customer_user');
+        localStorage.removeItem('fcm_token');
+
+        // 4. Reset state
         setUser(null);
-        navigate('/login');
+        
+        // 5. Redirect based on role
+        if (role === 'superadmin') {
+            navigate('/superadmin/login');
+        } else {
+            navigate('/login');
+        }
     }, [user, navigate]);
 
     const value = useMemo(() => ({
