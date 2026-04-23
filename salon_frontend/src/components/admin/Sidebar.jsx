@@ -183,7 +183,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Products Master', icon: Box, path: '/admin/inventory/products' },
                     { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
-                    { label: 'App shop', icon: Smartphone, path: '/admin/inventory/shop-categories' },
                     { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
                     { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
                     { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
@@ -216,7 +215,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Staff Master', icon: Users, path: '/admin/hr/staff' },
                     { label: 'Attendance', icon: CalendarCheck, path: '/admin/hr/attendance' },
-                    { label: 'Shifts', icon: Lock, path: '/admin/hr/shifts' },
                     { label: 'Payroll', icon: DollarSign, path: '/admin/hr/payroll' },
                     { label: 'Performance', icon: TrendingUp, path: '/admin/hr/performance' },
                     { label: 'Service Approvals', icon: CheckCircle2, path: '/admin/hr/approvals', badge: { count: 'New', color: 'bg-primary' } },

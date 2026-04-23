@@ -79,6 +79,8 @@ exports.checkout = async (req, res) => {
             // Increment total visits and spend for loyalty eligibility
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             customer.totalSpend = (customer.totalSpend || 0) + total;
+            customer.lastVisit = new Date();
+            customer.lastOutletId = outletId;
 
             await customer.save();
 

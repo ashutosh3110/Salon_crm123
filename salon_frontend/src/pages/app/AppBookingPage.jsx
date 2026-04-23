@@ -89,7 +89,18 @@ export default function AppBookingPage() {
     const [availableCoupons, setAvailableCoupons] = useState([]);
     const [paymentMethod, setPaymentMethod] = useState('salon'); // 'salon', 'online' or 'wallet'
     const { balance, refreshWallet } = useWallet();
-    const { customer } = useCustomerAuth();
+    const { customer, isCustomerAuthenticated, loading: authLoading } = useCustomerAuth();
+
+    // Redirection logic if not authenticated
+    useEffect(() => {
+        if (!authLoading && !isCustomerAuthenticated) {
+            const params = new URLSearchParams();
+            if (outletId) params.set('outletId', outletId);
+            if (preSelectedServiceId) params.set('serviceId', preSelectedServiceId);
+            params.set('redirect', 'services');
+            navigate(`/app/login?${params.toString()}`, { replace: true });
+        }
+    }, [isCustomerAuthenticated, authLoading, outletId, preSelectedServiceId, navigate]);
 
     // Initial load for membership from backend
     useEffect(() => {

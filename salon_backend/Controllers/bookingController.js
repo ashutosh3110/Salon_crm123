@@ -140,6 +140,20 @@ exports.createBooking = async (req, res) => {
             paymentStatus: (paymentMethod === 'Wallet' || paymentMethod === 'wallet') ? 'paid' : 'pending'
         });
 
+        // If booking is created as completed, update customer stats
+        if (booking.status === 'completed') {
+            await Customer.findByIdAndUpdate(targetCustomerId, {
+                $inc: { 
+                    totalVisits: 1,
+                    totalSpend: totalPrice || 0
+                },
+                $set: {
+                    lastVisit: booking.appointmentDate || new Date(),
+                    lastOutletId: booking.outletId
+                }
+            });
+        }
+
         const populated = await Booking.findById(booking._id)
             .populate('clientId', 'name phone email')
             .populate('serviceId', 'name price duration')
@@ -193,6 +207,10 @@ exports.updateStatus = async (req, res) => {
                 $inc: { 
                     totalVisits: 1,
                     totalSpend: booking.totalPrice || 0
+                },
+                $set: {
+                    lastVisit: booking.appointmentDate || new Date(),
+                    lastOutletId: booking.outletId
                 }
             });
         }

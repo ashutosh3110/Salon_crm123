@@ -79,16 +79,33 @@ export default function AppLoginPage() {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
-    // Force clear outlet selection every time user visits login page
+    // Initialize outlet from URL or clear if none
     useEffect(() => {
-        setTenantId('');
-        setSelectedOutlet(null);
-        localStorage.removeItem('active_outlet_id');
-        localStorage.removeItem('active_salon_id');
-        localStorage.removeItem('wapixo_selected_outlet');
-        setActiveOutletId(null);
-        setActiveSalonId(null);
-    }, []);
+        const urlOutletId = searchParams.get('outletId');
+        const urlTenantId = searchParams.get('tenantId');
+        
+        if (urlOutletId && urlTenantId) {
+            setTenantId(urlTenantId);
+            localStorage.setItem('active_outlet_id', urlOutletId);
+            localStorage.setItem('active_salon_id', urlTenantId);
+            setActiveOutletId(urlOutletId);
+            setActiveSalonId(urlTenantId);
+            // We set a minimal outlet object if we have IDs but no full object
+            // This prevents the UI from thinking nothing is selected
+            if (!selectedOutlet) {
+                setSelectedOutlet({ _id: urlOutletId, id: urlOutletId, tenantId: urlTenantId, salonId: urlTenantId });
+            }
+        } else if (!urlOutletId) {
+            // Force clear outlet selection if no ID in URL
+            setTenantId('');
+            setSelectedOutlet(null);
+            localStorage.removeItem('active_outlet_id');
+            localStorage.removeItem('active_salon_id');
+            localStorage.removeItem('wapixo_selected_outlet');
+            setActiveOutletId(null);
+            setActiveSalonId(null);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (!authLoading && isCustomerAuthenticated) {
@@ -239,6 +256,30 @@ export default function AppLoginPage() {
     };
 
 
+    const handleFinalRedirect = (outlet) => {
+        if (outlet) {
+            const oId = outlet._id || outlet.id;
+            const tId = outlet.salonId || outlet.tenantId;
+            localStorage.setItem('active_outlet_id', oId);
+            localStorage.setItem('active_salon_id', tId);
+            setActiveOutletId(oId);
+            setActiveSalonId(tId);
+        }
+
+        const redirectParam = searchParams.get('redirect');
+        if (redirectParam === 'booking' || redirectParam === 'services') {
+            const params = new URLSearchParams();
+            const oId = (outlet?._id || outlet?.id) || searchParams.get('outletId');
+            const sId = searchParams.get('serviceId');
+            if (oId) params.set('outletId', oId);
+            if (sId) params.set('serviceId', sId);
+            const targetPath = redirectParam === 'services' ? '/app/services' : '/app/booking';
+            navigate(`${targetPath}?${params.toString()}`, { replace: true });
+        } else {
+            navigate('/app', { replace: true });
+        }
+    };
+
     const handleSelectOutlet = (outlet) => {
         setSelectedOutlet(outlet);
         localStorage.setItem('wapixo_selected_outlet', JSON.stringify(outlet));
@@ -252,7 +293,7 @@ export default function AppLoginPage() {
 
         // If already authenticated and on discovery step, go home
         if (isCustomerAuthenticated) {
-            navigate('/app', { replace: true });
+            handleFinalRedirect(outlet);
             return;
         }
 
@@ -368,7 +409,11 @@ export default function AppLoginPage() {
                     if (!userCoords) {
                         setShowLocationModal(true);
                     }
-                    goTo(0); // Discovery step
+                    if (selectedOutlet) {
+                        handleVerifyOtpWithTenant(tenantId, selectedOutlet);
+                    } else {
+                        goTo(0); // Discovery step
+                    }
                 } else {
                     setError('Invalid OTP');
                 }
@@ -382,14 +427,17 @@ export default function AppLoginPage() {
             return;
         }
 
-        setLoading(true); setError('');
         try {
-            const cust = await customerLogin(phone, code, tenantId, appliedReferralCode);
+            const oId = selectedOutlet?._id || selectedOutlet?.id || '';
+            const cust = await customerLogin(phone, code, tenantId, oId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
 
-            // Always go to Discovery step (0) after login to force selection
-            setShowLocationModal(true);
-            goTo(0);
+            if (selectedOutlet) {
+                handleFinalRedirect(selectedOutlet);
+            } else {
+                setShowLocationModal(true);
+                goTo(0);
+            }
         } catch (e) {
             setError(e.message || 'Verification failed');
             setOtp(['', '', '', '']);
@@ -403,14 +451,11 @@ export default function AppLoginPage() {
         setLoading(true); setError('');
         const code = otp.join('') || '1234';
         try {
-            const cust = await customerLogin(phone, code, tId, appliedReferralCode);
+            const oId = outlet?._id || outlet?.id || '';
+            const cust = await customerLogin(phone, code, tId, oId, appliedReferralCode);
             if (cust?.gender) setGlobalGender(cust.gender);
 
-            const oId = outlet._id || outlet.id;
-            localStorage.setItem('active_outlet_id', oId);
-            setActiveOutletId(oId);
-
-            navigate('/app', { replace: true });
+            handleFinalRedirect(outlet);
         } catch (e) {
             setError(e.message || 'Verification failed');
             goTo(1); // Go back to login if it failed
@@ -430,12 +475,7 @@ export default function AppLoginPage() {
             await completeProfile({ name: name.trim(), gender: selectedGender });
             if (selectedGender) setGlobalGender(selectedGender === 'male' ? 'men' : 'women');
             if (selectedOutlet) {
-                setActiveOutletId(selectedOutlet._id);
-                localStorage.setItem('active_outlet_id', selectedOutlet._id);
-                setOutlets([selectedOutlet]);
-            }
-            if (selectedOutlet) {
-                navigate('/app', { replace: true });
+                handleFinalRedirect(selectedOutlet);
             } else {
                 setShowLocationModal(true);
                 goTo(0);

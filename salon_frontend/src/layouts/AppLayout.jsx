@@ -32,7 +32,9 @@ export default function AppLayout() {
         
         if (!customer) {
             if (location.pathname !== '/app/login') {
-                navigate('/app/login', { replace: true });
+                const search = location.search;
+                const redirectFlag = search.includes('redirect=') ? '' : (search ? '&' : '?') + 'redirect=services';
+                navigate(`/app/login${search}${redirectFlag}`, { replace: true });
             }
             return;
         }

@@ -95,7 +95,7 @@ exports.requestOtp = async (req, res) => {
 // @access  Public
 exports.customerLoginOtp = async (req, res) => {
     try {
-        const { phone, otp, tenantId, referralCode: appliedReferralCode } = req.body;
+        const { phone, otp, tenantId, outletId, referralCode: appliedReferralCode } = req.body;
 
         if (!phone || !otp) {
             return res.status(400).json({ success: false, message: 'Phone and OTP are required' });
@@ -125,9 +125,9 @@ exports.customerLoginOtp = async (req, res) => {
         // Remove OTP record after successful verification only when we have a real tenantId
         if (otpRecord && !isDemoOtp) await Otp.deleteOne({ _id: otpRecord._id });
 
-        // 3. Procceed with salon-specific login/registration
-        // Find or create customer for this specific salon
-        let customer = await Customer.findOne({ phone, salonId: tenantId });
+        // 3. Proceed with Global login/registration
+        // Find customer by phone across the whole system
+        let customer = await Customer.findOne({ phone });
         let isNewUser = false;
 
         if (!customer) {
@@ -194,6 +194,15 @@ exports.customerLoginOtp = async (req, res) => {
         }
 
         customer.lastLogin = new Date();
+        
+        // Sync salonId (tenantId) to the current business context
+        if (tenantId && tenantId !== 'system') {
+            customer.salonId = tenantId;
+        }
+
+        if (outletId) {
+            customer.lastOutletId = outletId;
+        }
         await customer.save();
 
         const token = jwt.sign(
@@ -236,9 +245,9 @@ exports.registerCustomer = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
 
-        let customer = await Customer.findOne({ phone, salonId: tenantId });
+        let customer = await Customer.findOne({ phone });
         if (customer) {
-            return res.status(400).json({ success: false, message: 'Customer already exists for this salon.' });
+            return res.status(400).json({ success: false, message: 'Customer already exists in the system.' });
         }
 
         customer = await Customer.create({

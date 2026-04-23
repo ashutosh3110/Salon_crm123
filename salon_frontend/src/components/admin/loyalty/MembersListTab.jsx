@@ -10,16 +10,19 @@ import {
     ShieldCheck,
     Clock,
     AlertCircle,
-    Download
+    Download,
+    Eye,
+    X,
+    Star
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { maskPhone } from '../../../utils/phoneUtils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import api from '../../../services/api';
 
 export default function MembersListTab() {
-    const { customers } = useBusiness();
+    const { customers, outlets, activeOutletId, setActiveOutletId } = useBusiness();
     const { user } = useAuth();
     const [members, setMembers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,6 +30,7 @@ export default function MembersListTab() {
     const [filter, setFilter] = useState('all');
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState({ page: 1, totalPages: 1, total: 0, limit: 20 });
+    const [selectedMember, setSelectedMember] = useState(null);
 
     useEffect(() => {
         const loadMembers = async () => {
@@ -38,6 +42,7 @@ export default function MembersListTab() {
                         limit: 20,
                         search: searchTerm || undefined,
                         status: filter,
+                        outletId: activeOutletId || undefined
                     },
                 });
                 const rows = res?.data?.data || [];
@@ -50,7 +55,7 @@ export default function MembersListTab() {
             }
         };
         loadMembers();
-    }, [page, searchTerm, filter]);
+    }, [page, searchTerm, filter, activeOutletId]);
 
     const downloadCsv = () => {
         const header = ['Name', 'Phone', 'Plan', 'Status', 'Joined', 'Expiry', 'Points'];
@@ -100,6 +105,23 @@ export default function MembersListTab() {
                             {f} Members
                         </button>
                     ))}
+                    
+                    {/* Outlet Filter */}
+                    <div className="flex items-center gap-2 ml-2 border-l border-border/40 pl-4">
+                        <Filter className="w-3.5 h-3.5 text-text-muted" />
+                        <select
+                            value={activeOutletId || ''}
+                            onChange={(e) => setActiveOutletId(e.target.value || null)}
+                            className="bg-surface border border-border/40 px-4 py-2.5 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all min-w-[160px]"
+                        >
+                            <option value="">All Outlets</option>
+                            {outlets.map(o => (
+                                <option key={o._id || o.id} value={o._id || o.id}>
+                                    {o.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     <button onClick={downloadCsv} className="p-3.5 border border-border/40 text-text-muted hover:text-white hover:bg-surface-alt transition-all">
                         <Download size={18} />
                     </button>
@@ -116,7 +138,7 @@ export default function MembersListTab() {
                                 <Th>Protocol Status</Th>
                                 <Th>Join Cycle</Th>
                                 <Th>Expiry Timeline</Th>
-                                <Th>Actions</Th>
+                                <Th className="text-right">Actions</Th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/20">
@@ -155,10 +177,19 @@ export default function MembersListTab() {
                                                 <span className="text-xs font-bold">{member.loyaltyExpiry || 'NEVER'}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5">
-                                            <button className="p-2 text-text-muted hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
-                                                <Settings size={16} />
-                                            </button>
+                                        <td className="px-6 py-5 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button 
+                                                    onClick={() => setSelectedMember(member)}
+                                                    className="p-2 text-text-muted hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-all"
+                                                    title="View Details"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button className="p-2 text-text-muted hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all">
+                                                    <Settings size={16} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -167,12 +198,101 @@ export default function MembersListTab() {
                     </table>
                 </div>
             </div>
+
+            {/* Member Details Modal */}
+            <AnimatePresence>
+                {selectedMember && (
+                    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="bg-surface border border-border w-full max-w-lg overflow-hidden shadow-2xl rounded-none font-sans"
+                        >
+                            {/* Modal Header */}
+                            <div className="bg-surface-alt border-b border-border/40 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <ShieldCheck className="w-5 h-5 text-primary" />
+                                    <h3 className="text-sm font-black uppercase tracking-widest italic">Member Protocol Details</h3>
+                                </div>
+                                <button onClick={() => setSelectedMember(null)} className="text-text-muted hover:text-primary transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="p-8 space-y-8">
+                                {/* Profile Header */}
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary text-2xl font-black italic shadow-inner">
+                                        {(selectedMember.name || 'U')[0]}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xl font-black text-foreground italic tracking-tight leading-none">
+                                            {selectedMember.name || 'Unknown Client'}
+                                        </h4>
+                                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">
+                                            {maskPhone(selectedMember.phone || '', user?.role)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Subscription Grid */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-primary/30 transition-all">
+                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Current Tier</span>
+                                        <span className="text-sm font-black text-primary uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
+                                    </div>
+                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-emerald-500/30 transition-all">
+                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Protocol Status</span>
+                                        <StatusBadge status={selectedMember.loyaltyStatus || 'active'} />
+                                    </div>
+                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-text/30 transition-all">
+                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Activation Date</span>
+                                        <span className="text-sm font-black text-foreground italic">{new Date(selectedMember.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                    <div className="p-4 bg-surface-alt border border-border/40 group hover:border-text/30 transition-all">
+                                        <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
+                                        <span className="text-sm font-black text-foreground italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
+                                    </div>
+                                </div>
+
+                                {/* Points Wallet */}
+                                <div className="p-6 bg-primary/5 border border-primary/20 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                            <Star className="w-5 h-5 text-primary" fill="currentColor" />
+                                        </div>
+                                        <div>
+                                            <span className="text-[10px] font-black text-text-muted uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
+                                            <span className="text-xs font-bold text-text-secondary uppercase tracking-tighter">Loyalty Ledger Balance</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-3xl font-black text-primary italic tracking-tighter">
+                                        {Number(selectedMember.totalPoints || 0)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="bg-surface-alt border-t border-border/40 px-6 py-4 flex justify-end">
+                                <button 
+                                    onClick={() => setSelectedMember(null)}
+                                    className="px-6 py-2.5 bg-text text-background text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all shadow-lg"
+                                >
+                                    Close Registry
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
 
-function Th({ children }) {
-    return <th className="px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest italic">{children}</th>;
+function Th({ children, className }) {
+    return <th className={`px-6 py-4 text-[10px] font-black text-text-muted uppercase tracking-widest italic ${className}`}>{children}</th>;
 }
 
 function StatusBadge({ status }) {

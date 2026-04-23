@@ -7,7 +7,13 @@ const Salon = require('../Models/Salon');
 exports.getFeedbacks = async (req, res) => {
     try {
         const { targetId, targetType, status, salonId, outletId } = req.query;
-        let query = { status: status || 'Approved' };
+        let query = {};
+        if (status && status !== 'all') {
+            query.status = status;
+        } else if (!status) {
+            query.status = 'Approved';
+        }
+        // If status is 'all', we don't add status to query, fetching everything
         
         if (salonId) query.salonId = salonId;
         if (outletId) {
@@ -20,7 +26,10 @@ exports.getFeedbacks = async (req, res) => {
         if (targetId) query.targetId = targetId;
         if (targetType) query.targetType = targetType;
         
-        const feedbacks = await Feedback.find(query).sort({ createdAt: -1 });
+        const feedbacks = await Feedback.find(query)
+            .populate('outletId', 'name')
+            .populate('customerId', 'name phone')
+            .sort({ createdAt: -1 });
         
         res.status(200).json({
             success: true,

@@ -82,6 +82,14 @@ export function BusinessProvider({ children }) {
         }
     }, [activeOutlet, activeSalonId]);
 
+    // Auto-set salon ID from user profile if missing
+    useEffect(() => {
+        if (isAuthenticated && user?.salonId && !activeSalonId) {
+            setActiveSalonId(user.salonId);
+            localStorage.setItem('active_salon_id', user.salonId);
+        }
+    }, [isAuthenticated, user, activeSalonId]);
+
 
     const [customersMetadata, setCustomersMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
     const [globalStats, setGlobalStats] = useState({ totalRevenue: 0, totalVIPs: 0, totalInactive: 0, totalCount: 0, totalLiability: 0 });
@@ -304,7 +312,8 @@ export function BusinessProvider({ children }) {
 
         try {
             // Core Salon & Outlets
-            const t = await api.get('/salons/me');
+            const salonUrl = isAuthenticated ? '/salons/me' : `/salons/${sid}`;
+            const t = await api.get(salonUrl);
             if (t.data.success) {
                 const sData = t.data.data;
                 setSalon(sData);
@@ -328,7 +337,24 @@ export function BusinessProvider({ children }) {
     }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, fetchLoyaltyPlans, activeSalonId]);
     const fetchSalon = useCallback(async () => {
         try {
-            const res = await api.get('/salons/me');
+            const sid = activeSalonId || localStorage.getItem('active_salon_id');
+            
+            // If we are definitely authenticated, always use /salons/me
+            if (isAuthenticated) {
+                const res = await api.get('/salons/me');
+                if (res.data.success) {
+                    setSalon(res.data.data);
+                    return res.data.data;
+                }
+                return null;
+            }
+
+            // For customers, we MUST have a valid sid
+            if (!sid || sid === 'null' || sid === 'undefined') {
+                return null;
+            }
+
+            const res = await api.get(`/salons/${sid}`);
             if (res.data.success) {
                 setSalon(res.data.data);
                 return res.data.data;
@@ -336,7 +362,7 @@ export function BusinessProvider({ children }) {
         } catch (err) {
             console.error('Failed to fetch salon:', err);
         }
-    }, []);
+    }, [isAuthenticated, activeSalonId]);
 
 
 
@@ -801,9 +827,16 @@ export function BusinessProvider({ children }) {
     useEffect(() => {
         const searchParams = new URLSearchParams(window.location.search);
         const urlId = searchParams.get('tenantId');
+        const urlOutletId = searchParams.get('outletId');
+
         if (urlId && urlId !== activeSalonId) {
             localStorage.setItem('active_salon_id', urlId);
             setActiveSalonId(urlId);
+        }
+
+        if (urlOutletId && urlOutletId !== activeOutletId) {
+            localStorage.setItem('active_outlet_id', urlOutletId);
+            setActiveOutletId(urlOutletId);
         }
 
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');

@@ -153,10 +153,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                             Wallets
                             {activeTab === 'wallets' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
-                        <button onClick={() => navigate('/admin/crm/segments')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'segments' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
-                            Segments
-                            {activeTab === 'segments' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
-                        </button>
+                       
                         <button onClick={() => navigate('/admin/crm/feedback')} className={`px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all whitespace-nowrap relative ${activeTab === 'feedback' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'}`}>
                             Feedback
                             {activeTab === 'feedback' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}

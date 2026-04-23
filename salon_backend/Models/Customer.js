@@ -72,13 +72,18 @@ const customerSchema = new mongoose.Schema({
     totalVisits: {
         type: Number,
         default: 0
+    },
+    lastVisit: Date,
+    lastOutletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
     }
 }, {
     timestamps: true
 });
 
-// Compound index for unique phone per salon
-customerSchema.index({ phone: 1, salonId: 1 }, { unique: true });
+// Global unique index for phone (One profile across all salons)
+customerSchema.index({ phone: 1 }, { unique: true });
 
 const Customer = mongoose.model('Customer', customerSchema);
 module.exports = Customer;

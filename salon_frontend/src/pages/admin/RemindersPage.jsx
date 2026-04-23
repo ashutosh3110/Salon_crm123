@@ -29,14 +29,16 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { createPortal } from 'react-dom';
+import { useBusiness } from '../../contexts/BusinessContext';
 import mockApi from '../../services/mock/mockApi';
 
 /* ─── Main Page ────────────────────────────────────────────────────────── */
 
 export default function RemindersPage() {
+    const { outlets, salon } = useBusiness();
     const [activeTab, setActiveTab] = useState('bridal');
     const [loading, setLoading] = useState(true);
-    const [copyStatus, setCopyStatus] = useState(false);
+    const [copyStatus, setCopyStatus] = useState({}); // Track copy status per outlet
 
     // Modals
     const [showRuleModal, setShowRuleModal] = useState(false);
@@ -94,12 +96,22 @@ export default function RemindersPage() {
         loadState();
     }, []);
 
-    const bookingURL = `${window.location.origin}/app/book?salon=${bookingSettings.salonSlug}`;
+    const getBookingURL = (outletId) => {
+        const baseUrl = window.location.origin;
+        const tid = salon?._id || salon?.id;
+        if (!outletId) return `${baseUrl}/app/services`;
+        
+        const params = new URLSearchParams();
+        params.set('outletId', outletId);
+        if (tid) params.set('tenantId', tid);
+        
+        return `${baseUrl}/app/services?${params.toString()}`;
+    };
 
-    const handleCopyLink = () => {
-        navigator.clipboard.writeText(bookingURL);
-        setCopyStatus(true);
-        setTimeout(() => setCopyStatus(false), 2000);
+    const handleCopyLink = (url, id) => {
+        navigator.clipboard.writeText(url);
+        setCopyStatus({ ...copyStatus, [id]: true });
+        setTimeout(() => setCopyStatus({ ...copyStatus, [id]: false }), 2000);
     };
 
     const handleAddRule = (e) => {
@@ -226,7 +238,6 @@ export default function RemindersPage() {
                 <button onClick={() => setActiveTab('bridal')} className={`px-6 py-4 border-2 font-black text-[10px] uppercase tracking-widest ${activeTab === 'bridal' ? 'bg-primary text-white border-primary' : 'bg-white border-border'}`}>Bridal</button>
                 <button onClick={() => setActiveTab('service')} className={`px-6 py-4 border-2 font-black text-[10px] uppercase tracking-widest ${activeTab === 'service' ? 'bg-primary text-white border-primary' : 'bg-white border-border'}`}>Protocols</button>
                 <button onClick={() => setActiveTab('link')} className={`px-6 py-4 border-2 font-black text-[10px] uppercase tracking-widest ${activeTab === 'link' ? 'bg-primary text-white border-primary' : 'bg-white border-border'}`}>Gateway</button>
-                <button onClick={() => setActiveTab('social')} className={`px-6 py-4 border-2 font-black text-[10px] uppercase tracking-widest ${activeTab === 'social' ? 'bg-primary text-white border-primary' : 'bg-white border-border'}`}>Social</button>
             </div>
 
             <AnimatePresence mode="wait">
@@ -257,17 +268,92 @@ export default function RemindersPage() {
                     )}
 
                     {activeTab === 'link' && (
-                        <div className="max-w-2xl mx-auto bg-white border-2 border-text p-12 text-center space-y-8">
-                            <div className="p-6 border-2 border-border inline-block">
-                                <QRCodeSVG value={bookingURL} size={200} />
+                        <div className="space-y-12">
+                            <div className="text-center space-y-4">
+                                <h2 className="text-4xl font-black uppercase italic tracking-tighter">Booking Gateways</h2>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Generate & share unique booking codes for every location</p>
                             </div>
-                            <div className="space-y-2">
-                                <h3 className="text-2xl font-black uppercase tracking-tighter leading-none italic">Booking Gateway</h3>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-text-muted italic opacity-40">Share this link to accept appointments offline</p>
-                            </div>
-                            <div className="flex bg-surface border-2 border-text p-4">
-                                <code className="flex-1 text-[10px] font-black truncate">{bookingURL}</code>
-                                <button onClick={handleCopyLink} className="text-primary font-black text-[10px] uppercase pl-4">{copyStatus ? 'COPIED' : 'COPY'}</button>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                                {outlets.length > 0 ? (
+                                    outlets.map((outlet) => {
+                                        const url = getBookingURL(outlet._id || outlet.id);
+                                        const isCopied = copyStatus[outlet._id || outlet.id];
+                                        
+                                        return (
+                                            <motion.div 
+                                                key={outlet._id || outlet.id}
+                                                data-outlet-id={outlet._id || outlet.id}
+                                                whileHover={{ y: -5 }}
+                                                className="bg-white border-2 border-text p-8 flex flex-col items-center text-center space-y-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all"
+                                            >
+                                                <div className="p-4 border-2 border-text bg-surface-alt/10">
+                                                    <QRCodeSVG value={url} size={160} level="H" includeMargin={true} />
+                                                </div>
+                                                
+                                                <div className="space-y-1 w-full">
+                                                    <h3 className="text-xl font-black uppercase italic truncate">{outlet.name}</h3>
+                                                    <p className="text-[9px] font-black uppercase opacity-40 truncate">{outlet.address?.city || 'Main Branch'}</p>
+                                                </div>
+
+                                                <div className="w-full space-y-3">
+                                                    <div className="flex bg-surface border-2 border-text p-3">
+                                                        <code className="flex-1 text-[9px] font-black truncate text-left">{url}</code>
+                                                        <button 
+                                                            onClick={() => handleCopyLink(url, outlet._id || outlet.id)} 
+                                                            className="text-primary font-black text-[9px] uppercase pl-3 border-l-2 border-text ml-3 hover:text-text transition-colors"
+                                                        >
+                                                            {isCopied ? 'COPIED' : 'COPY'}
+                                                        </button>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <button 
+                                                            onClick={() => window.open(url, '_blank')}
+                                                            className="bg-text text-white py-3 text-[9px] font-black uppercase italic flex items-center justify-center gap-2"
+                                                        >
+                                                            <ExternalLink size={12} /> TEST
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => {
+                                                                const container = document.querySelector(`[data-outlet-id="${outlet._id || outlet.id}"]`);
+                                                                const svg = container?.querySelector('svg');
+                                                                if (svg) {
+                                                                    const svgData = new XMLSerializer().serializeToString(svg);
+                                                                    const canvas = document.createElement("canvas");
+                                                                    const ctx = canvas.getContext("2d");
+                                                                    const img = new Image();
+                                                                    img.onload = () => {
+                                                                        canvas.width = img.width;
+                                                                        canvas.height = img.height;
+                                                                        ctx.drawImage(img, 0, 0);
+                                                                        const pngFile = canvas.toDataURL("image/png");
+                                                                        const downloadLink = document.createElement("a");
+                                                                        downloadLink.download = `QR_${outlet.name.replace(/\s+/g, '_')}.png`;
+                                                                        downloadLink.href = pngFile;
+                                                                        downloadLink.click();
+                                                                    };
+                                                                    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+                                                                }
+                                                            }}
+                                                            className="border-2 border-text py-3 text-[9px] font-black uppercase italic flex items-center justify-center gap-2"
+                                                        >
+                                                            <Share2 size={12} /> PRINT
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="col-span-full py-20 border-4 border-dashed border-border flex flex-col items-center justify-center text-center space-y-4">
+                                        <AlertCircle size={48} className="text-border" />
+                                        <div className="space-y-1">
+                                            <p className="text-xl font-black uppercase italic opacity-20">No Outlets Found</p>
+                                            <p className="text-[10px] font-black uppercase opacity-20 tracking-widest">Initialize your first location to generate codes</p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

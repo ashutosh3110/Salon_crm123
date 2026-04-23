@@ -1172,11 +1172,16 @@ export default function AppHomePage() {
                                     </p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>
-                                            {(rev.customerName || 'U')[0]}
+                                            {(rev.customerId?.name || rev.customerName || 'U')[0]}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0, truncate: 'true' }}>{rev.customerName}</p>
-                                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0 }}>for {rev.targetName || 'Service'}</p>
+                                            <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0 }}>
+                                                {rev.customerId?.name || rev.customerName}
+                                            </p>
+                                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0, opacity: 0.8 }}>
+                                                {rev.customerId?.phone || ''}
+                                            </p>
+                                            <p style={{ fontSize: '8px', color: colors.textMuted, margin: '2px 0 0' }}>for {rev.targetName || 'General'}</p>
                                         </div>
                                     </div>
                                 </div>

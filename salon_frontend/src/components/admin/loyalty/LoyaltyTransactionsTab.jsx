@@ -11,8 +11,10 @@ import {
     Search
 } from 'lucide-react';
 import api from '../../../services/api';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 export default function LoyaltyTransactionsTab() {
+    const { outlets, activeOutletId, setActiveOutletId } = useBusiness();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('ALL');
@@ -26,7 +28,14 @@ export default function LoyaltyTransactionsTab() {
             setLoading(true);
             try {
                 const { data } = await api.get('/loyalty/transactions', {
-                    params: { page, limit: 25, type: filter, from: fromDate || undefined, to: toDate || undefined }
+                    params: { 
+                        page, 
+                        limit: 25, 
+                        type: filter, 
+                        from: fromDate || undefined, 
+                        to: toDate || undefined,
+                        outletId: activeOutletId || undefined
+                    }
                 });
                 const rows = data?.data || data || [];
                 setTransactions(Array.isArray(rows) ? rows : []);
@@ -34,7 +43,7 @@ export default function LoyaltyTransactionsTab() {
             } catch (err) { setTransactions([]); } finally { setLoading(false); }
         };
         fetchTransactions();
-    }, [filter, page, fromDate, toDate]);
+    }, [filter, page, fromDate, toDate, activeOutletId]);
 
     return (
         <div className="space-y-6 italic text-left">
@@ -54,6 +63,23 @@ export default function LoyaltyTransactionsTab() {
                     ))}
                 </div>
                 <div className="flex items-center gap-2">
+                    {/* Outlet Filter */}
+                    <div className="flex items-center gap-2 mr-2 border-r border-border/40 pr-4">
+                        <Filter className="w-3.5 h-3.5 text-text-muted" />
+                        <select
+                            value={activeOutletId || ''}
+                            onChange={(e) => setActiveOutletId(e.target.value || null)}
+                            className="bg-surface border border-border/40 px-4 py-2 text-[9px] font-black uppercase tracking-widest outline-none focus:border-primary transition-all min-w-[160px] h-10"
+                        >
+                            <option value="">All Outlets</option>
+                            {outlets.map(o => (
+                                <option key={o._id || o.id} value={o._id || o.id}>
+                                    {o.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <input type="date" value={fromDate} onChange={(e) => { setPage(1); setFromDate(e.target.value); }} className="h-10 px-2 border border-border/40 bg-surface text-xs" />
                     <input type="date" value={toDate} onChange={(e) => { setPage(1); setToDate(e.target.value); }} className="h-10 px-2 border border-border/40 bg-surface text-xs" />
                 </div>
