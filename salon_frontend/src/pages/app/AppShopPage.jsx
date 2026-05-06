@@ -112,10 +112,25 @@ export default function AppShopPage() {
     const [flyingItems, setFlyingItems] = useState([]);
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, setIsCartOpen } = useCart();
-    const { products: inventoryProducts, shopCategories, toggleProductLike } = useInventory();
-    const { isProductLiked } = useFavorites();
-    const { activeOutletId } = useBusiness();
+    const { 
+        products: inventoryProducts, 
+        productCategories: shopCategories,
+        activeOutletId,
+        fetchCustomerInitialData
+    } = useBusiness();
+    const { toggleProductLike } = useInventory(); // Keep only for actions if needed, or move toggle to business
     const navigate = useNavigate();
+
+    // Ensure data is loaded if landing directly on shop
+    useEffect(() => {
+        if (!inventoryProducts || inventoryProducts.length === 0) {
+            console.log("[Shop] No products found in context, triggering fetch...");
+            fetchCustomerInitialData();
+        }
+    }, [inventoryProducts?.length, fetchCustomerInitialData]);
+
+    console.log("[Shop] Inventory Products:", inventoryProducts?.length);
+    console.log("[Shop] Shop Categories:", shopCategories?.length);
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -173,7 +188,7 @@ export default function AppShopPage() {
             counts[p.category] = (counts[p.category] || 0) + 1;
         });
 
-        const catList = shopCategories.map(c => ({ 
+        const catList = (shopCategories || []).map(c => ({ 
             name: c.name, 
             img: c.image,
             count: counts[c.name] || 0

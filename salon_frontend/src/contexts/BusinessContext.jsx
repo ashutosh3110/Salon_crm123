@@ -377,6 +377,8 @@ export function BusinessProvider({ children }) {
                 setLoyaltySettings(lsData);
                 setLoyaltyPlans(lpData);
                 
+                console.log(`[InitialData] Fetched: ${pData?.length} products, ${sData?.name} salon`);
+
                 // We can also store these here to avoid separate context fetches
                 if (setProducts) setProducts(pData);
                 if (setProductCategories) setProductCategories(pcData);
@@ -874,7 +876,12 @@ export function BusinessProvider({ children }) {
         loyaltyPlans, fetchLoyaltyPlans,
         platformSettings, fetchPlatformSettings,
         updateSalon, fetchSalon,
-        salonLoading: isInitializing
+        salonLoading: isInitializing,
+        banners, setBanners, 
+        offers, setOffers, 
+        lookbook, setLookbook, 
+        experts, setExperts, 
+        productCategories, setProductCategories
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer, bulkImportCustomers,
@@ -892,7 +899,8 @@ export function BusinessProvider({ children }) {
         loyaltySettings, fetchLoyaltySettings,
         loyaltyPlans, fetchLoyaltyPlans,
         platformSettings, fetchPlatformSettings,
-        updateSalon, fetchSalon
+        updateSalon, fetchSalon,
+        banners, offers, lookbook, experts, productCategories
     ]);
 
 

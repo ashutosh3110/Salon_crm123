@@ -3,6 +3,8 @@ const Customer = require('../Models/Customer');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Salon = require('../Models/Salon');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const mongoose = require('mongoose');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -88,6 +90,37 @@ exports.createOrder = async (req, res) => {
                     }
                 }
             } catch (le) { console.error('Loyalty Error:', le); }
+        }
+
+        // Send WhatsApp Notification for Product Purchase
+        try {
+            const populatedOrder = await Order.findById(order._id)
+                .populate('customerId', 'name phone')
+                .populate('salonId', 'businessName name')
+                .populate('outletId', 'name city');
+
+            if (populatedOrder && populatedOrder.customerId && populatedOrder.customerId.phone) {
+                const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
+                const orderId = populatedOrder._id.toString().slice(-6).toUpperCase();
+                
+                await sendWapixoTemplate(
+                    populatedOrder.customerId.phone,
+                    process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY || 'product_buy',
+                    [
+                        populatedOrder.customerId.name || 'Customer',
+                        brandName,
+                        orderId,
+                        `${populatedOrder.items.length} Items`,
+                        `₹${populatedOrder.totalAmount}`,
+                        populatedOrder.paymentMethod.toUpperCase(),
+                        populatedOrder.outletId?.name || 'Our Outlet',
+                        new Date().toLocaleDateString()
+                    ]
+                );
+                console.log(`[Order-WhatsApp] Sent to ${populatedOrder.customerId.phone} for Order #${orderId}`);
+            }
+        } catch (wsErr) {
+            console.error('[Order-WhatsApp] Failed:', wsErr.message);
         }
 
         res.status(201).json({
