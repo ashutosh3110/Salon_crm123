@@ -1,4 +1,5 @@
 const Booking = require('../Models/Booking');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const User = require('../Models/User');
 const Service = require('../Models/Service');
 const Customer = require('../Models/Customer');
@@ -162,6 +163,29 @@ exports.createBooking = async (req, res) => {
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
             .populate('salonId', 'name logo');
+
+        // Send Booking Confirmation WhatsApp Message
+        try {
+            const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
+            const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            await sendWapixoTemplate(
+                populated.clientId.phone,
+                process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
+                [
+                    populated.clientId.name,
+                    populated.salonId.businessName || populated.salonId.name || 'Our Salon',
+                    populated.outletId.name,
+                    populated.outletId.city || populated.outletId.address?.city || 'Our Location',
+                    populated.staffId?.name || 'Assigned Stylist',
+                    populated.serviceId.name,
+                    dateStr,
+                    timeStr
+                ]
+            );
+        } catch (wsErr) {
+            console.error('Booking WhatsApp failed:', wsErr.message);
+        }
 
         res.status(201).json({
             success: true,

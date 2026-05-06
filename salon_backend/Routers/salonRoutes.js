@@ -10,7 +10,8 @@ const {
     registerSalon,
     getMe,
     updateMe,
-    resendCredentials
+    resendCredentials,
+    getCustomerInitialData
 } = require('../Controllers/salonController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -24,6 +25,7 @@ router.route('/')
     .get(protect, authorize('superadmin'), getSalons)
     .post(protect, authorize('superadmin'), createSalon);
 router.get('/:id', getSalon);
+router.get('/:id/initial-data', getCustomerInitialData);
 router.put('/:id', updateSalon);
 router.delete('/:id', deleteSalon);
 

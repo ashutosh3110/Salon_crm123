@@ -25,9 +25,12 @@ import {
     Send,
     Percent,
     TrendingDown,
-    X
+    X,
+    Upload,
+    FileSpreadsheet
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import CustomerProfileModal from '../../components/admin/CustomerProfileModal';
 import SegmentManager from '../../components/admin/customers/SegmentManager';
@@ -36,6 +39,7 @@ import ReEngagementTool from '../../components/admin/customers/ReEngagementTool'
 import { useWallet } from '../../contexts/WalletContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { maskPhone } from '../../utils/phoneUtils';
 
@@ -49,7 +53,8 @@ export default function CustomersPage({ tab = 'directory' }) {
         addCustomer, 
         updateCustomer, 
         deleteCustomer, 
-        fetchCustomers 
+        fetchCustomers,
+        bulkImportCustomers 
     } = useBusiness();
     
     const [currentPage, setCurrentPage] = useState(1);
@@ -71,8 +76,7 @@ export default function CustomersPage({ tab = 'directory' }) {
         dob: '',
         anniversary: '',
         address: '',
-        remarks: '',
-        category: 'Regular'
+        remarks: ''
     });
 
     const activeTab = tab;
@@ -88,7 +92,7 @@ export default function CustomersPage({ tab = 'directory' }) {
             tags: [],
             lastVisit: new Date().toISOString()
         });
-        setNewCustomerForm({ name: '', phone: '', preferredService: 'Haircut', dob: '', anniversary: '', address: '', remarks: '', category: 'Regular' });
+        setNewCustomerForm({ name: '', phone: '', preferredService: 'Haircut', dob: '', anniversary: '', address: '', remarks: '' });
         setShowAddModal(false);
     };
 
@@ -102,26 +106,102 @@ export default function CustomersPage({ tab = 'directory' }) {
         a.click();
     };
 
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                const data = new Uint8Array(event.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                if (json.length === 0) {
+                    toast.error('The file is empty');
+                    return;
+                }
+
+                // Map keys to lowercase for matching
+                const normalizedData = json.map(row => {
+                    const newRow = {};
+                    Object.keys(row).forEach(key => {
+                        newRow[key.toLowerCase().trim()] = row[key];
+                    });
+                    return newRow;
+                });
+
+                // Validation check
+                const firstRow = normalizedData[0];
+                if (!firstRow.name || !firstRow.phone) {
+                    toast.error('Invalid format. CSV must contain "name" and "phone" columns.');
+                    return;
+                }
+
+                await bulkImportCustomers(normalizedData);
+                // Reset input
+                e.target.value = '';
+            } catch (err) {
+                console.error('Import error:', err);
+                toast.error('Failed to parse file. Please use the sample CSV format.');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    const downloadSampleCSV = () => {
+        const csvContent = "name,phone,email,gender,dob,address\nAditya Sharma,9100000000,aditya@example.com,male,1995-05-15,Mumbai India\n";
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sample_customers.csv';
+        a.click();
+    };
+
     return (
         <>
             <div className="space-y-6 animate-reveal">
                 {/* Header */}
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-black text-text uppercase tracking-tight leading-none">Customers</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">Manage your customers, wallets, feedback and re-engagement</p>
+                        <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Customers</h1>
+                        <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">Intelligence Hub • CRM • Wallet Matrix</p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <button
-                            onClick={handleExport}
-                            className="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-surface border border-border px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] text-text-muted hover:bg-surface-alt hover:text-primary transition-all font-black shadow-sm"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export List
-                        </button>
+                    
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        {/* Secondary Actions Group */}
+                        <div className="flex items-center bg-surface border border-border p-1 shadow-sm">
+                            <button
+                                onClick={handleExport}
+                                title="Export Directory"
+                                className="p-3 text-text-muted hover:text-primary hover:bg-surface-alt transition-all group"
+                            >
+                                <Download className="w-4 h-4" />
+                            </button>
+                            <div className="w-px h-4 bg-border mx-1" />
+                            <button
+                                onClick={downloadSampleCSV}
+                                title="Download Sample CSV"
+                                className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2"
+                            >
+                                <FileSpreadsheet className="w-4 h-4" />
+                                <span className="hidden xl:inline">Sample</span>
+                            </button>
+                            <div className="w-px h-4 bg-border mx-1" />
+                            <label className="px-4 py-3 text-[10px] font-black text-text-muted hover:text-primary hover:bg-surface-alt transition-all uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+                                <Upload className="w-4 h-4" />
+                                <span className="hidden xl:inline">Import</span>
+                                <input type="file" accept=".csv" onChange={handleImport} className="hidden" />
+                            </label>
+                        </div>
+
+                        {/* Primary Action */}
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="flex-1 lg:flex-none flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-10 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all font-black"
+                            className="bg-primary text-primary-foreground px-8 py-4 rounded-none text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
                         >
                             <UserPlus className="w-4 h-4" /> Add Customer
                         </button>
@@ -281,19 +361,6 @@ export default function CustomersPage({ tab = 'directory' }) {
                                                 className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all"
                                             />
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Customer Category</label>
-                                        <select
-                                            value={newCustomerForm.category}
-                                            onChange={(e) => setNewCustomerForm({ ...newCustomerForm, category: e.target.value })}
-                                            className="w-full px-6 py-4 rounded-none bg-surface-alt border border-border text-sm font-bold outline-none focus:bg-surface focus:border-primary transition-all uppercase tracking-widest"
-                                        >
-                                            <option value="Regular">Regular</option>
-                                            <option value="Premium">Premium</option>
-                                            <option value="Elite">Elite</option>
-                                            <option value="Budget">Budget</option>
-                                        </select>
                                     </div>
                                 </div>
 
@@ -478,7 +545,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                         <td className="p-4"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
                                         <td className="p-4" onClick={() => onCustomerClick(c)}>
                                             <div className="flex items-center gap-3 cursor-pointer">
-                                                <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">{c.name.charAt(0)}</div>
+                                                <div className="w-8 h-8 bg-text text-white flex items-center justify-center font-black text-xs">{c.name?.charAt(0) || '?'}</div>
                                                 <div>
                                                     <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>
                                                     <p className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</p>
@@ -551,7 +618,7 @@ function CelebrationReminders({ customers, onSendWhatsApp }) {
                 {reminders.map(c => (
                     <div key={c._id} className="flex-shrink-0 min-w-[300px] p-4 bg-surface border border-border flex items-center justify-between group hover:border-primary transition-all">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center font-black text-sm">{c.name.charAt(0)}</div>
+                            <div className="w-10 h-10 bg-primary/10 text-primary flex items-center justify-center font-black text-sm">{c.name?.charAt(0) || '?'}</div>
                             <div>
                                 <p className="text-xs font-black text-text uppercase tracking-tight">{c.name}</p>
                                 <p className="text-[9px] font-bold text-text-muted mt-0.5 uppercase">Upcoming Event</p>
@@ -584,7 +651,7 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
 function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
     const [searchTerm, setSearchTerm] = useState('');
     const filtered = customers.filter(c => 
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (c.name && c.name.toLowerCase().includes(searchTerm.toLowerCase())) || 
         (c.phone && c.phone.replace(/\D/g, '').includes(searchTerm.replace(/\D/g, '')))
     );
 
@@ -618,7 +685,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate }) {
                                     <div className="flex items-center gap-4">
                                         <div className="relative">
                                             <div className="w-10 h-10 bg-primary/5 border border-primary/10 flex items-center justify-center text-primary font-bold">
-                                                {c.name.charAt(0)}
+                                                {c.name?.charAt(0) || '?'}
                                             </div>
                                             {c.isVIP && (
                                                 <div className="absolute -top-1 -right-1 bg-amber-500 text-white p-0.5 rounded-none border border-white">

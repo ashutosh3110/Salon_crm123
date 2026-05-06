@@ -1,7 +1,19 @@
+const mongoose = require('mongoose');
 const Salon = require('../Models/Salon');
 const User = require('../Models/User');
 const Plan = require('../Models/Plan');
+const Outlet = require('../Models/Outlet');
+const Service = require('../Models/Service');
+const Category = require('../Models/Category');
+const Feedback = require('../Models/Feedback');
+const Setting = require('../Models/Setting');
+const MembershipPlan = require('../Models/MembershipPlan');
+const Product = require('../Models/Product');
+const ProductCategory = require('../Models/ProductCategory');
+const Cms = require('../Models/Cms');
+const Customer = require('../Models/Customer');
 const sendEmail = require('../Utils/sendEmail');
+const { sendWhatsAppTemplate, sendWapixoMessage, sendWapixoTemplate } = require('../Utils/whatsapp');
 const bcrypt = require('bcryptjs');
 
 // @desc    Create a new salon and its admin
@@ -67,20 +79,29 @@ exports.createSalon = async (req, res) => {
         // 4. Send Onboarding Email
         try {
             const html = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Welcome to ${process.env.EMAIL_FROM_NAME}!</h2>
-                    <p>Dear <strong>${ownerName}</strong>,</p>
-                    <p>Congratulations! Your salon, <strong>${name}</strong>, has been successfully registered on our platform.</p>
-                    <p>You can now log in to your dashboard using the following credentials:</p>
-                    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                        <p style="margin: 5px 0;"><strong>Login URL:</strong> <a href="${process.env.FRONTEND_BASE_URL}">${process.env.FRONTEND_BASE_URL}</a></p>
-                        <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
-                        <p style="margin: 5px 0;"><strong>Password:</strong> ${adminPassword}</p>
+                <div style="font-family: 'Outfit', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 16px; background-color: #ffffff; color: #333;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h1 style="color: #B4912B; margin: 0; font-size: 28px;">Welcome to ${process.env.EMAIL_FROM_NAME}</h1>
+                        <p style="color: #666; font-size: 16px;">Elevating your salon experience</p>
                     </div>
-                    <p>Please log in and complete your profile setup. For security reasons, we recommend changing your password after your first login.</p>
-                    <p>If you have any questions, feel free to contact our support team.</p>
-                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #777; text-align: center;">Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    <p style="font-size: 16px;">Dear <strong>${ownerName}</strong>,</p>
+                    <p style="font-size: 15px; line-height: 1.6;">Congratulations! Your salon, <span style="color: #B4912B; font-weight: 600;">${name}</span>, has been successfully registered on our platform.</p>
+                    <p style="font-size: 15px;">You can now access your management dashboard using the credentials below:</p>
+                    
+                    <div style="background: linear-gradient(135deg, #fdfbf7 0%, #f9f5e8 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 1px solid #eedeab;">
+                        <p style="margin: 0 0 10px 0; font-size: 14px; color: #856404;"><strong>Login URL:</strong> <a href="${process.env.FRONTEND_BASE_URL}" style="color: #B4912B; text-decoration: none;">${process.env.FRONTEND_BASE_URL}</a></p>
+                        <p style="margin: 0 0 10px 0; font-size: 14px; color: #856404;"><strong>Username:</strong> ${email}</p>
+                        <p style="margin: 0; font-size: 14px; color: #856404;"><strong>Temporary Password:</strong> <span style="font-family: monospace; font-size: 18px; letter-spacing: 2px; color: #B4912B; font-weight: bold;">${adminPassword}</span></p>
+                    </div>
+
+                    <p style="font-size: 14px; color: #666; font-style: italic; background: #fff3cd; padding: 12px; border-radius: 8px;"><strong>Security Note:</strong> We recommend changing your password immediately after your first login for security.</p>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <a href="${process.env.FRONTEND_BASE_URL}" style="background-color: #B4912B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Get Started Now</a>
+                    </div>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center;">Best Regards,<br><strong>Team ${process.env.EMAIL_FROM_NAME}</strong></p>
                 </div>
             `;
 
@@ -89,6 +110,14 @@ exports.createSalon = async (req, res) => {
                 subject: `Welcome to ${process.env.EMAIL_FROM_NAME} - Your Salon Account is Ready!`,
                 html: html
             });
+
+            // Send WhatsApp Notification to Owner
+            try {
+                const welcomeMsg = `Hello ${ownerName}! Welcome to ${process.env.EMAIL_FROM_NAME}. Your salon "${name}" has been successfully registered. You can log in at ${process.env.FRONTEND_BASE_URL} with Email: ${email} and Password: ${adminPassword}`;
+                await sendWapixoMessage(phone, welcomeMsg);
+            } catch (waErr) {
+                console.error('WhatsApp notification to owner failed:', waErr.message);
+            }
         } catch (emailErr) {
             console.error('Email sending failed:', emailErr);
             // We don't want to fail the whole request if email fails, but we log it
@@ -525,17 +554,23 @@ exports.registerSalon = async (req, res) => {
         // Send "Application Received" Email
         try {
             const html = `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <h2 style="color: #333; text-align: center;">Welcome to ${process.env.EMAIL_FROM_NAME}!</h2>
-                    <p>Dear <strong>${ownerName}</strong>,</p>
-                    <p>Thank you for registering <strong>${name}</strong>. Your account has been created and is currently <strong>Pending Approval</strong> from our Superadmin team.</p>
+                <div style="font-family: 'Outfit', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 30px; border: 1px solid #f0f0f0; border-radius: 16px; background-color: #ffffff; color: #333;">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <h1 style="color: #B4912B; margin: 0; font-size: 28px;">Registration Received</h1>
+                        <p style="color: #666; font-size: 16px;">Welcome to ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                    <p style="font-size: 16px;">Dear <strong>${ownerName}</strong>,</p>
+                    <p style="font-size: 15px; line-height: 1.6;">Thank you for registering <span style="color: #B4912B; font-weight: 600;">${name}</span>. Your application has been received and is currently <span style="background: #fff4e5; color: #856404; padding: 2px 8px; border-radius: 4px; font-weight: bold;">Pending Approval</span>.</p>
                     
-                    <div style="background-color: #fff4e5; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ff9800;">
-                        <h3 style="margin-top: 0; color: #856404; font-size: 16px;">Next Steps</h3>
-                        <p style="margin: 5px 0; font-size: 14px;">Our team is currently verifying your details. You will receive a <strong>Confirmation Email</strong> with your login credentials once your account is activated.</p>
+                    <div style="background-color: #fdfbf7; padding: 25px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #B4912B;">
+                        <h3 style="margin-top: 0; color: #B4912B; font-size: 18px;">What's Next?</h3>
+                        <p style="margin: 10px 0 0 0; font-size: 14px; line-height: 1.5; color: #555;">Our review team is currently verifying your salon details. Once approved, you will receive a second email with your <strong>Login Credentials</strong> and a guide to get started.</p>
                     </div>
 
-                    <p>Best Regards,<br>Team ${process.env.EMAIL_FROM_NAME}</p>
+                    <p style="font-size: 14px; color: #777; text-align: center;">This verification usually takes less than 24 hours.</p>
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    <p style="font-size: 12px; color: #999; text-align: center;">Best Regards,<br><strong>Team ${process.env.EMAIL_FROM_NAME}</strong></p>
                 </div>
             `;
             await sendEmail({
@@ -543,6 +578,25 @@ exports.registerSalon = async (req, res) => {
                 subject: `Registration Received - ${process.env.EMAIL_FROM_NAME}`,
                 html
             });
+
+            // Send WhatsApp Notification to Admin
+            try {
+                const adminPhone = process.env.ADMIN_WHATSAPP_NUMBER;
+                if (adminPhone) {
+                    const templateName = process.env.WHATSAPP_TEMPLATE_ENQUIRY || 'enquirytemplate';
+                    // Parameters for enquirytemplate: [Name, Phone, Details]
+                    const parameters = [
+                        ownerName,
+                        phone,
+                        email,
+                        `New Salon Registration for ${name}. Pending approval.`,
+                        process.env.EMAIL_FROM_NAME || 'Salon CRM'
+                    ];
+                    await sendWapixoTemplate(adminPhone, templateName, parameters);
+                }
+            } catch (waErr) {
+                console.error('WhatsApp notification to admin failed:', waErr.message);
+            }
         } catch (err) {
             console.error('Registration email failed:', err);
         }
@@ -605,6 +659,95 @@ exports.resendCredentials = async (req, res) => {
         res.json({ success: true, message: `Credentials sent to ${salon.email}` });
     } catch (err) {
         console.error('Resend credentials error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get consolidated data for customer app
+// @route   GET /api/salons/:id/initial-data
+// @access  Public
+exports.getCustomerInitialData = async (req, res) => {
+    try {
+        const salonId = req.params.id;
+        const customerId = req.query.customerId;
+
+        const [
+            salon,
+            outlets,
+            services,
+            categories,
+            feedbacks,
+            staff,
+            loyaltyPlans,
+            products,
+            productCategories,
+            cmsData
+        ] = await Promise.all([
+            Salon.findById(salonId),
+            Outlet.find({ salonId }),
+            Service.find({ salonId, status: 'active' }),
+            Category.find({ salonId, status: 'active' }),
+            Feedback.find({ salonId, status: 'active' }).sort({ createdAt: -1 }).limit(10),
+            User.find({ salonId, role: 'staff', status: 'active' }).select('name bio profileImage specializations'),
+            MembershipPlan.find({ salonId, isActive: true }),
+            Product.find({ salonId, status: 'active' }),
+            ProductCategory.find({ salonId, status: 'active' }),
+            Cms.find({ tenantId: salonId })
+        ]);
+
+        if (!salon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        // Handle Welcome WhatsApp if customerId is provided and welcome not sent
+        if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
+            try {
+                const customer = await Customer.findById(customerId);
+                if (customer && !customer.welcomeSent) {
+                    const brandName = salon.businessName || salon.name || 'Our Salon';
+                    console.log(`[Consolidated-Welcome] Sending to ${customer.phone} for ${brandName}`);
+                    
+                    await sendWapixoTemplate(
+                        customer.phone,
+                        process.env.WHATSAPP_TEMPLATE_WELCOME,
+                        [customer.name || 'Guest', brandName]
+                    );
+
+                    customer.welcomeSent = true;
+                    await customer.save();
+                    console.log(`[Consolidated-Welcome] Flag updated for ${customer.phone}`);
+                }
+            } catch (wsErr) {
+                console.error('[Consolidated-Welcome] WhatsApp error:', wsErr.message);
+            }
+        }
+
+        // Get loyalty settings from Setting model
+        const loyaltySettings = await Setting.findOne({ salonId });
+
+        res.json({
+            success: true,
+            data: {
+                salon,
+                outlets,
+                services,
+                categories,
+                feedbacks,
+                staff,
+                loyaltySettings: loyaltySettings?.loyaltySettings || null,
+                loyaltyPlans,
+                products,
+                productCategories,
+                cms: {
+                    banners: cmsData.find(c => c.section === 'banners')?.content || [],
+                    offers: cmsData.find(c => c.section === 'offers')?.content || [],
+                    lookbook: cmsData.find(c => c.section === 'lookbook')?.content || [],
+                    experts: cmsData.find(c => c.section === 'experts')?.content || []
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Initial Data Fetch Error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

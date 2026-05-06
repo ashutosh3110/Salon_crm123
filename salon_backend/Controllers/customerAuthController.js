@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Customer = require('../Models/Customer');
 const Product = require('../Models/Product');
 const Outlet = require('../Models/Outlet');
@@ -7,6 +8,7 @@ const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const sendSms = require('../Utils/sendSms');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
 
 const generateReferralCode = () => {
     return 'WAP-' + crypto.randomBytes(3).toString('hex').toUpperCase();
@@ -50,6 +52,25 @@ exports.requestOtp = async (req, res) => {
 
         if (!phone) {
             return res.status(400).json({ success: false, message: 'Phone number is required' });
+        }
+
+        const salonId = tenantId || req.body.salonId;
+        const isValidSalonId = mongoose.Types.ObjectId.isValid(salonId);
+
+        // Find or Create Customer (only if salonId is a valid ObjectId)
+        if (isValidSalonId) {
+            let customer = await Customer.findOne({ phone, salonId });
+            if (!customer) {
+                customer = await Customer.create({
+                    phone,
+                    salonId,
+                    name: 'Guest Customer',
+                    status: 'active',
+                    totalVisits: 0,
+                    totalSpend: 0
+                });
+                console.log(`[Customer-Auth] New guest customer created: ${phone}`);
+            }
         }
 
         // Generate 4-digit random OTP (Special case for demo number)

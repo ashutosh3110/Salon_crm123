@@ -5,12 +5,15 @@ const {
     getClient,
     createClient,
     updateClient,
-    deleteClient
+    deleteClient,
+    bulkImport
 } = require('../Controllers/clientController');
 const { protect, authorize } = require('../Middleware/auth');
 
 // All routes are protected
 router.use(protect);
+
+router.post('/bulk', authorize('admin', 'manager', 'receptionist'), bulkImport);
 
 router
     .route('/')

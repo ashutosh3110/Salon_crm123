@@ -3,6 +3,8 @@ const Product = require('../Models/Product');
 const Customer = require('../Models/Customer');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Setting = require('../Models/Setting');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const Salon = require('../Models/Salon');
 
 // @desc    Checkout and generate invoice
 // @route   POST /api/pos/checkout
@@ -100,6 +102,35 @@ exports.checkout = async (req, res) => {
             success: true,
             data: invoice
         });
+
+        // Send Product Purchase WhatsApp Message (if items contain products)
+        try {
+            const hasProducts = items.some(item => item.type === 'product');
+            if (hasProducts && customer) {
+                const salon = await Salon.findById(salonId);
+                const brandName = salon?.businessName || salon?.name || 'Our Salon';
+                const firstProduct = items.find(item => item.type === 'product');
+                const productNames = items.filter(item => item.type === 'product').map(i => i.name).join(', ');
+                const totalQty = items.filter(item => item.type === 'product').reduce((acc, i) => acc + i.quantity, 0);
+
+                await sendWapixoTemplate(
+                    customer.phone,
+                    process.env.WHATSAPP_TEMPLATE_PRODUCT_BUY,
+                    [
+                        customer.name,
+                        brandName,
+                        productNames.length > 30 ? productNames.substring(0, 27) + '...' : productNames,
+                        String(totalQty),
+                        `₹${firstProduct.price}`,
+                        `₹${discount || 0}`,
+                        paymentMethod,
+                        `₹${total}`
+                    ]
+                );
+            }
+        } catch (wsErr) {
+            console.error('Product Purchase WhatsApp failed:', wsErr.message);
+        }
 
     } catch (err) {
         console.error('POS Checkout Error:', err);

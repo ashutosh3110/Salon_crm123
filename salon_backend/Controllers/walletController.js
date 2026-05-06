@@ -1,4 +1,5 @@
 const Customer = require('../Models/Customer');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const WalletTransaction = require('../Models/WalletTransaction');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -117,6 +118,26 @@ exports.verifyTopup = async (req, res) => {
                 orderId: razorpayOrderId,
                 status: 'COMPLETED'
             });
+
+            // Send Wallet Update WhatsApp Message
+            try {
+                const salon = await Salon.findById(customer.salonId);
+                const brandName = salon?.businessName || salon?.name || 'Our Salon';
+                
+                await sendWapixoTemplate(
+                    customer.phone,
+                    process.env.WHATSAPP_TEMPLATE_WALLET,
+                    [
+                        customer.name,
+                        'Deposit (Credit)',
+                        `₹${amount}`,
+                        `₹${customer.walletBalance}`,
+                        brandName
+                    ]
+                );
+            } catch (wsErr) {
+                console.error('Wallet WhatsApp failed:', wsErr.message);
+            }
             
             // Award Loyalty Points
             try {
@@ -187,6 +208,27 @@ exports.bulkRecharge = async (req, res) => {
                         description: note || 'Bulk Promotional Credit',
                         status: 'COMPLETED'
                     });
+
+                    // Send Wallet Update WhatsApp Message
+                    try {
+                        const salon = await Salon.findById(salonId);
+                        const brandName = salon?.businessName || salon?.name || 'Our Salon';
+                        
+                        await sendWapixoTemplate(
+                            customer.phone,
+                            process.env.WHATSAPP_TEMPLATE_WALLET,
+                            [
+                                customer.name,
+                                'Promotional Credit',
+                                `₹${numericAmount}`,
+                                `₹${customer.walletBalance}`,
+                                brandName
+                            ]
+                        );
+                    } catch (wsErr) {
+                        console.error('Wallet WhatsApp failed:', wsErr.message);
+                    }
+
                     return { id: cid, success: true };
                 }
                 return { id: cid, success: false, message: 'Customer not found' };

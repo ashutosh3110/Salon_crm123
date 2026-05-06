@@ -10,8 +10,6 @@ import {
     Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
-import { useInventory } from '../../contexts/InventoryContext';
-import { useCMS } from '../../contexts/CMSContext';
 import homeData from '../../data/appHomeData.json';
 import api from '../../services/api';
 import logoDarkMode from '/new wapixo logo .png';
@@ -273,10 +271,14 @@ export default function AppHomePage() {
         fetchOutlets,
         feedbacks,
         loyaltySettings,
-        loyaltyPlans
+        loyaltyPlans,
+        products,
+        productCategories,
+        banners,
+        offers,
+        lookbook,
+        experts
     } = useBusiness();
-    const { products, productCategories } = useInventory();
-    const { banners } = useCMS();
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
     
@@ -421,7 +423,7 @@ export default function AppHomePage() {
 
     /** Hero carousel = App CMS **Banners** tab only (no POS/coupon promos, no lookbook — those have their own UI below). */
     const filteredPromos = useMemo(() => {
-        return banners
+        return (banners || [])
             .filter((p) => {
                 const isActive = p.status?.toLowerCase() === 'active';
                 const matchesGender = !p.gender || p.gender === 'all' || p.gender === g;
@@ -979,7 +981,7 @@ export default function AppHomePage() {
                     </div>
                 </motion.div>
 
-                {productCategories.length > 0 && (
+                {(productCategories || []).length > 0 && (
                     <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -989,11 +991,11 @@ export default function AppHomePage() {
                         </div>
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {(() => {
-                                const activeCats = productCategories.filter(c => c.status === 'active');
+                                const activeCats = (productCategories || []).filter(c => c.status === 'active');
                                 // Sort by number of products in each category
                                 const sortedCats = [...activeCats].sort((a, b) => {
-                                    const countA = products.filter(p => p.category === a.name).length;
-                                    const countB = products.filter(p => p.category === b.name).length;
+                                    const countA = (products || []).filter(p => p.category === a.name).length;
+                                    const countB = (products || []).filter(p => p.category === b.name).length;
                                     return countB - countA;
                                 });
 

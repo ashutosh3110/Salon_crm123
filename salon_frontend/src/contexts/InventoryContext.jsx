@@ -196,6 +196,9 @@ export const InventoryProvider = ({ children }) => {
         const canFetchPublic = isCustomerPath && (salon?._id || activeSalonId || localStorage.getItem('active_salon_id'));
         const canFetchPrivate = (dashboardUser && isPlanActive);
 
+        // Optimization: In customer app, data is handled by BusinessContext's initial fetch
+        if (isCustomerPath) return;
+
         if (canFetchPrivate || canFetchPublic || isCustomerAuthenticated) {
             fetchProducts();
             fetchShopCategories();

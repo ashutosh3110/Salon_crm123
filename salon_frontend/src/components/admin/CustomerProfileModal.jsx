@@ -58,7 +58,6 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                 anniversary: customer.anniversary || '',
                 address: customer.address || '',
                 remarks: customer.remarks || '',
-                category: customer.category || 'Regular',
                 isVIP: customer.isVIP || false,
                 status: customer.status || 'active'
             });
@@ -350,7 +349,6 @@ export default function CustomerProfileModal({ customer, isOpen, onClose }) {
                                         )}
                                     </div>
 
-                                    <DetailField label="Tier Category" value={customer.category} icon={Layers} isEditing={isEditing} editValue={editForm?.category} onEdit={(val) => setEditForm({ ...editForm, category: val })} type="select" options={['Regular', 'Premium', 'Elite', 'Budget']} />
                                     <DetailField label="Core Preference" value={customer.preferredService} icon={Tag} isEditing={isEditing} editValue={editForm?.preferredService} onEdit={(val) => setEditForm({ ...editForm, preferredService: val })} />
                                 </div>
                                 <div className="space-y-8">

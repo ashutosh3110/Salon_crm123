@@ -1,4 +1,6 @@
 const MembershipPlan = require('../Models/MembershipPlan');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const Salon = require('../Models/Salon');
 const CustomerMembership = require('../Models/CustomerMembership');
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
@@ -254,6 +256,29 @@ exports.verifyMembershipPayment = async (req, res) => {
             { upsert: true, new: true }
         );
 
+        // Send Membership WhatsApp Message
+        try {
+            const customer = await Customer.findById(req.user._id);
+            const salon = await Salon.findById(plan.salonId);
+            const brandName = salon?.businessName || salon?.name || 'Our Salon';
+            
+            await sendWapixoTemplate(
+                customer.phone,
+                process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
+                [
+                    customer.name,
+                    brandName,
+                    plan.name,
+                    `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                    `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                    new Date().toLocaleDateString(),
+                    expiryDate.toLocaleDateString()
+                ]
+            );
+        } catch (wsErr) {
+            console.error('Membership WhatsApp failed:', wsErr.message);
+        }
+
         res.json({ success: true, data: membership });
     } catch (err) {
         console.error('Membership Verify Error:', err);
@@ -327,6 +352,28 @@ exports.buyMembershipWithWallet = async (req, res) => {
             },
             { upsert: true, new: true }
         );
+
+        // Send Membership WhatsApp Message
+        try {
+            const salon = await Salon.findById(plan.salonId);
+            const brandName = salon?.businessName || salon?.name || 'Our Salon';
+            
+            await sendWapixoTemplate(
+                customer.phone,
+                process.env.WHATSAPP_TEMPLATE_MEMBERSHIP_PLAN,
+                [
+                    customer.name,
+                    brandName,
+                    plan.name,
+                    `${plan.serviceDiscountValue}${plan.serviceDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                    `${plan.productDiscountValue}${plan.productDiscountType === 'percentage' ? '%' : ' Rs'}`,
+                    new Date().toLocaleDateString(),
+                    expiryDate.toLocaleDateString()
+                ]
+            );
+        } catch (wsErr) {
+            console.error('Membership WhatsApp failed:', wsErr.message);
+        }
 
         res.json({ success: true, data: membership });
     } catch (err) {

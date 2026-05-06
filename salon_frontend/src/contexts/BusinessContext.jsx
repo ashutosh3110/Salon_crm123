@@ -12,7 +12,7 @@ const BusinessContext = createContext({
     fetchCustomers: async () => { }, fetchSegments: async () => { }, fetchFeedbacks: async () => { },
     fetchServices: async () => { }, fetchBookings: async () => { }, fetchProducts: async () => { }, fetchSuppliers: async () => { },
     fetchInvoices: async () => { }, fetchOrders: async () => { },
-    addCustomer: async () => { }, updateCustomer: async () => { }, deleteCustomer: async () => { },
+    addCustomer: async () => { }, updateCustomer: async () => { }, deleteCustomer: async () => { }, bulkImportCustomers: async () => { },
     addSegment: async () => { }, deleteSegment: async () => { },
     updateFeedback: async () => { }, archiveFeedback: async () => { }, fetchSegmentCustomers: async () => [],
     fetchStaff: async () => { }, addStaff: async () => { }, updateStaff: async () => { }, deleteStaff: async () => { },
@@ -21,7 +21,8 @@ const BusinessContext = createContext({
     loyaltySettings: null, fetchLoyaltySettings: async () => { },
     platformSettings: null, fetchPlatformSettings: async () => { },
     updateSalon: async () => { }, fetchSalon: async () => { },
-    salonLoading: false
+    salonLoading: false,
+    banners: [], offers: [], lookbook: [], experts: [], productCategories: []
 });
 
 export function BusinessProvider({ children }) {
@@ -52,6 +53,11 @@ export function BusinessProvider({ children }) {
     const [loyaltySettings, setLoyaltySettings] = useState(null);
     const [loyaltyPlans, setLoyaltyPlans] = useState([]);
     const [platformSettings, setPlatformSettings] = useState(null);
+    const [banners, setBanners] = useState([]);
+    const [offers, setOffers] = useState([]);
+    const [lookbook, setLookbook] = useState([]);
+    const [experts, setExperts] = useState([]);
+    const [productCategories, setProductCategories] = useState([]);
 
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
@@ -341,23 +347,46 @@ export function BusinessProvider({ children }) {
         lastInitializedId.current = sid;
 
         try {
-            // Core Salon & Outlets
-            const salonUrl = isAuthenticated ? '/salons/me' : `/salons/${sid}`;
-            const t = await api.get(salonUrl);
-            if (t.data.success) {
-                const sData = t.data.data;
+            // Consolidated Initial Data Fetch (Optimization: 1 call instead of 8+)
+            // Add customerId query param to trigger welcome WhatsApp if needed
+            const cId = customer?._id || customer?.id;
+            const query = cId ? `?customerId=${cId}` : '';
+            const res = await api.get(`/salons/${sid}/initial-data${query}`);
+            
+            if (res.data.success) {
+                const { 
+                    salon: sData, 
+                    outlets: oData, 
+                    services: svData, 
+                    categories: cData, 
+                    feedbacks: fData, 
+                    staff: stData,
+                    loyaltySettings: lsData,
+                    loyaltyPlans: lpData,
+                    products: pData,
+                    productCategories: pcData,
+                    cms: cmsData
+                } = res.data.data;
+
                 setSalon(sData);
-                const salonId = sData._id;
-                // Parallel fetch for speed
-                await Promise.all([
-                    fetchOutlets(),
-                    fetchServices(salonId),
-                    fetchCategories(salonId),
-                    fetchFeedbacks(salonId),
-                    fetchStaff(salonId),
-                    fetchLoyaltySettings(salonId),
-                    fetchLoyaltyPlans(salonId)
-                ]);
+                setOutlets(oData);
+                setServices(svData);
+                setCategories(cData);
+                setFeedbacks(fData);
+                setStaff(stData);
+                setLoyaltySettings(lsData);
+                setLoyaltyPlans(lpData);
+                
+                // We can also store these here to avoid separate context fetches
+                if (setProducts) setProducts(pData);
+                if (setProductCategories) setProductCategories(pcData);
+                if (setBanners && cmsData) {
+                    setBanners(cmsData.banners || []);
+                    // If CMS context has setters for others
+                    if (setOffers) setOffers(cmsData.offers || []);
+                    if (setLookbook) setLookbook(cmsData.lookbook || []);
+                    if (setExperts) setExperts(cmsData.experts || []);
+                }
             }
         } catch (err) {
             console.error("Failed to initialize customer data:", err);
@@ -430,6 +459,20 @@ export function BusinessProvider({ children }) {
             throw err;
         }
     }, []);
+
+    const bulkImportCustomers = useCallback(async (data) => {
+        try {
+            const r = await api.post('/clients/bulk', { customers: data });
+            if (r.data?.success) {
+                toast.success(`${r.data.count} customers imported successfully`);
+                fetchCustomers(1, 5); // Refresh list
+                return r.data;
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Bulk import failed');
+            throw err;
+        }
+    }, [fetchCustomers]);
 
     const addSegment = useCallback(async (d) => {
         try {
@@ -809,7 +852,7 @@ export function BusinessProvider({ children }) {
     }, []);
 
     const value = useMemo(() => ({
-        salon, outlets, outletsLoading, staff, services, groupedServices, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, fetchAllCustomerIds, addCustomer, updateCustomer, deleteCustomer,
+        salon, outlets, outletsLoading, staff, services, groupedServices, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, fetchAllCustomerIds, addCustomer, updateCustomer, deleteCustomer, bulkImportCustomers,
         bookings, invoices, orders, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments,
         addSegment, deleteSegment, fetchSegmentCustomers, shifts, catalogue,
         activeOutletId, setActiveOutletId,
@@ -834,7 +877,7 @@ export function BusinessProvider({ children }) {
         salonLoading: isInitializing
     }), [
 
-        salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer,
+        salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer, bulkImportCustomers,
         bookings, invoices, orders, feedbacks, feedbacksLoading, fetchFeedbacks, archiveFeedback, updateFeedback, addFeedback, suppliers, segments, segmentsLoading, fetchSegments, addSegment, deleteSegment, fetchSegmentCustomers,
         shifts, catalogue, activeOutletId, setActiveOutletId, activeSalonId, setActiveSalonId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,

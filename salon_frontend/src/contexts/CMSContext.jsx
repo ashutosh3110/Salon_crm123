@@ -98,6 +98,9 @@ export function CMSProvider({ children }) {
     }, [location.pathname, customer?.tenantId, salon?._id, user?.role, user?.tenantId]);
 
     useEffect(() => {
+        const isCustomerPath = window.location.pathname.startsWith('/app');
+        if (isCustomerPath) return; // Optimization: Handled by BusinessContext
+        
         fetchAppCMS();
     }, [fetchAppCMS]);
 

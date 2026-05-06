@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Customer = require('../Models/Customer');
+const { sendWapixoTemplate } = require('../Utils/whatsapp');
+const Salon = require('../Models/Salon');
 
 // @desc    Get all clients (customers) for current salon
 // @route   GET /clients
@@ -93,6 +95,20 @@ exports.createClient = async (req, res) => {
             salonId
         });
 
+        // Send Welcome WhatsApp Message
+        try {
+            const salon = await Salon.findById(salonId);
+            const brandName = salon?.businessName || 'Our Salon';
+            
+            await sendWapixoTemplate(
+                client.phone,
+                process.env.WHATSAPP_TEMPLATE_WELCOME,
+                [client.name, brandName]
+            );
+        } catch (wsErr) {
+            console.error('Welcome WhatsApp failed:', wsErr.message);
+        }
+
         res.status(201).json({
             success: true,
             data: client
@@ -154,5 +170,70 @@ exports.deleteClient = async (req, res) => {
     } catch (err) {
         console.error('Delete client error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+// @desc    Bulk import clients
+// @route   POST /clients/bulk
+// @access  Private
+exports.bulkImport = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { customers } = req.body;
+
+        if (!salonId) {
+            return res.status(400).json({ success: false, message: 'Salon context missing. Please re-login.' });
+        }
+
+        if (!customers || !Array.isArray(customers)) {
+            return res.status(400).json({ success: false, message: 'Invalid data format. Expected an array of customers.' });
+        }
+
+        console.log(`Starting bulk import for salon ${salonId}, count: ${customers.length}`);
+
+        const validCustomers = [];
+        const existingPhones = new Set(
+            (await Customer.find({ salonId }, 'phone')).map(c => c.phone)
+        );
+
+        for (const c of customers) {
+            // Basic validation - check both lowercase and original keys
+            const name = c.name || c.Name;
+            const phone = c.phone || c.Phone;
+
+            if (!name || !phone) continue;
+            
+            // Skip if phone exists
+            if (existingPhones.has(String(phone))) continue;
+
+            validCustomers.push({
+                name,
+                phone: String(phone),
+                email: c.email || '',
+                gender: c.gender || 'Other',
+                dob: c.dob || '',
+                address: c.address || '',
+                salonId,
+                status: 'active',
+                isVIP: false,
+                totalVisits: 0,
+                totalSpend: 0
+            });
+            existingPhones.add(String(phone)); 
+        }
+
+        if (validCustomers.length === 0) {
+            return res.status(400).json({ success: false, message: 'No new unique customers to import' });
+        }
+
+        const results = await Customer.insertMany(validCustomers);
+
+        res.json({
+            success: true,
+            count: results.length,
+            message: 'Import completed successfully'
+        });
+    } catch (err) {
+        console.error('Bulk import error:', err);
+        res.status(500).json({ success: false, message: err.message || 'Server Error' });
     }
 };

@@ -77,6 +77,10 @@ const customerSchema = new mongoose.Schema({
     lastOutletId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Outlet'
+    },
+    welcomeSent: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
