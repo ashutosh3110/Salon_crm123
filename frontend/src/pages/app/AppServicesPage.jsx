@@ -124,22 +124,32 @@ export default function AppServicesPage() {
 
     const groupedServices = useMemo(() => {
         const activeServices = services.filter(s => s.status === 'active');
+        const activeCategories = categories.filter(c => c.status === 'active');
         
-        let groups = [];
-        if (categories.length > 0) {
-            groups = categories.filter(c => c.status === 'active').map(cat => {
-                const catServices = activeServices.filter(s => s.category === cat.name || String(s.category) === String(cat._id));
-                return { name: cat.name, services: catServices };
+        // Track which services were assigned to a formal category
+        const assignedServiceIds = new Set();
+        
+        // Groups from formal categories
+        const formalGroups = activeCategories.map(cat => {
+            const catServices = activeServices.filter(s => {
+                const isMatch = s.category === cat.name || String(s.category) === String(cat._id);
+                if (isMatch) assignedServiceIds.add(s._id || s.id);
+                return isMatch;
             });
-        } else {
-            // Group by distinct service category strings if categories API fails/empty
-            const uniqueCatNames = [...new Set(activeServices.map(s => s.category).filter(Boolean))];
-            groups = uniqueCatNames.map(name => {
-                const catServices = activeServices.filter(s => s.category === name);
-                return { name, services: catServices };
-            });
-        }
-        return groups;
+            return { name: cat.name, services: catServices, id: cat._id };
+        });
+
+        // Groups for services that didn't match any formal category
+        const leftoverServices = activeServices.filter(s => !assignedServiceIds.has(s._id || s.id));
+        const leftoverCatNames = [...new Set(leftoverServices.map(s => s.category || 'Uncategorized'))];
+        
+        const extraGroups = leftoverCatNames.map(name => ({
+            name,
+            services: leftoverServices.filter(s => (s.category || 'Uncategorized') === name),
+            id: `extra-${name}`
+        }));
+
+        return [...formalGroups, ...extraGroups].filter(g => g.services.length > 0);
     }, [categories, services]);
 
     const colors = {
