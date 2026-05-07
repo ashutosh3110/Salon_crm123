@@ -84,7 +84,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status !== 401 && error.response?.status !== 403) {
+        // Detailed logging for debugging APK connection issues
+        console.error(`%c[API ERROR] %cURL: ${error.config?.url} %cCode: ${error.code}`, 
+            'color: #ff5252; font-weight: bold;', 
+            'color: #888;', 
+            'color: #ff5252;');
+
+        if (!error.response) {
+            // This usually means the server is unreachable (Network Error)
+            const isLocalhost = API_URL.includes('localhost');
+            const message = isLocalhost 
+                ? `Connection failed to ${API_URL}. If you are on a mobile device, please use your computer's IP address instead of localhost.`
+                : `Network error: Unable to reach the server at ${API_URL}. Please check your internet connection.`;
+            
+            toast.error(message, {
+                id: 'connectivity-error',
+                duration: 6000
+            });
+        } else if (error.response?.status !== 401 && error.response?.status !== 403) {
             const message = error.response?.data?.message || 'A network error occurred';
             
             // Check if it's an image size limit error to show as info instead of error
@@ -108,5 +125,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+console.log(`%c[API CONFIG] %cBase URL: ${API_URL}`, 'color: #C8956C; font-weight: bold;', 'color: #888;');
 
 export default api;

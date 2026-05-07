@@ -385,7 +385,7 @@ export function BusinessProvider({ children }) {
             if (lng) params.set('lng', lng);
             params.set('radius', '10'); // Default 10km for discovery
 
-            const res = await api.get(`/salons/${sid}/initial-data?${params.toString()}`);
+            const res = await api.get(`/salons/${sid}/initial-data?${params.toString()}`, { timeout: 10000 });
             
             if (res.data.success) {
                 const { 

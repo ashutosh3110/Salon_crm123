@@ -5,9 +5,16 @@ export default function ScissorsMorph() {
     const videoRef = useRef(null);
 
     useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.playbackRate = 1.5;
-        }
+        const video = videoRef.current;
+        if (!video) return;
+
+        const handleCanPlay = () => {
+            video.playbackRate = 1.5;
+            video.play().catch(() => {});
+        };
+
+        video.addEventListener('canplay', handleCanPlay);
+        return () => video.removeEventListener('canplay', handleCanPlay);
     }, []);
 
     return (
