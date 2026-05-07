@@ -1,25 +1,62 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import BookingCard from '../../components/app/BookingCard';
 import ReviewModal from '../../components/app/ReviewModal';
 import { CalendarX, Loader2 } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
+import api from '../../services/api';
 
 const tabs = ['Upcoming', 'Past'];
 
 export default function AppMyBookingsPage() {
-    const { bookings, loading, refresh } = useBookingRegistry();
+    const { customer } = useCustomerAuth();
+    const [bookings, setBookings] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Upcoming');
-
-    useEffect(() => {
-        refresh();
-    }, [refresh]);
     const [selectedReviewBooking, setSelectedReviewBooking] = useState(null);
+    
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
+
+    // FETCH GUARD
+    const lastFetchedCustomerId = useRef(null);
+
+    const fetchBookings = useCallback(async (force = false) => {
+        if (!customer?._id) return;
+        if (!force && lastFetchedCustomerId.current === customer._id) return;
+        
+        lastFetchedCustomerId.current = customer._id;
+        setLoading(true);
+        
+        try {
+            const res = await api.get(`/bookings/customer/${customer._id}`);
+            if (res.data?.success) {
+                const data = res.data.data || [];
+                // Format for components
+                const formatted = data.map(b => ({
+                    ...b,
+                    id: b._id,
+                    service: b.serviceId || b.service,
+                    staff: b.staffId || b.staff,
+                    outlet: b.outletId || b.outlet,
+                    appointmentDate: b.appointmentDate || b.date
+                }));
+                setBookings(formatted);
+            }
+        } catch (err) {
+            console.error('Failed to fetch bookings:', err);
+            lastFetchedCustomerId.current = null; // Allow retry on error
+        } finally {
+            setLoading(false);
+        }
+    }, [customer?._id]);
+
+    useEffect(() => {
+        fetchBookings();
+    }, [fetchBookings]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -32,13 +69,19 @@ export default function AppMyBookingsPage() {
 
     const { upcoming, past } = useMemo(() => {
         const now = new Date();
-        const upcoming = bookings.filter(b =>
-            ['pending', 'confirmed'].includes(b.status) && new Date(b.appointmentDate) >= now
-        ).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
+        now.setHours(0, 0, 0, 0); // Start of today
 
-        const past = bookings.filter(b =>
-            ['completed', 'cancelled'].includes(b.status) || new Date(b.appointmentDate) < now
-        ).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+        const upcoming = bookings.filter(b => {
+            const bDate = new Date(b.appointmentDate);
+            bDate.setHours(0,0,0,0);
+            return (['pending', 'confirmed'].includes(b.status) && bDate >= now);
+        }).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
+
+        const past = bookings.filter(b => {
+            const bDate = new Date(b.appointmentDate);
+            bDate.setHours(0,0,0,0);
+            return (['completed', 'cancelled', 'no-show'].includes(b.status) || bDate < now);
+        }).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
 
         return { upcoming, past };
     }, [bookings]);
@@ -98,7 +141,9 @@ export default function AppMyBookingsPage() {
                             <div style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <CalendarX className="w-8 h-8 opacity-20" style={{ color: colors.text }} />
                             </div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>No {activeTab.toLowerCase()} bookings</p>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>
+                                {activeTab === 'Upcoming' ? 'No recent bookings' : 'No past bookings available'}
+                            </p>
                             <p className="text-[10px] mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed opacity-40" style={{ color: colors.textMuted }}>
                                 {activeTab === 'Upcoming' ? 'Book your next session to enjoy top-tier service' : 'Your history is currently a clean state'}
                             </p>
@@ -131,7 +176,7 @@ export default function AppMyBookingsPage() {
                 onClose={() => setSelectedReviewBooking(null)}
                 booking={selectedReviewBooking}
                 onSuccess={() => {
-                    // Refetch bookings or update status if needed
+                    fetchBookings(true);
                 }}
             />
         </>

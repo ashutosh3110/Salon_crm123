@@ -46,17 +46,10 @@ export default function AppBookingDetailsPage() {
 
     useEffect(() => {
         const fetchDetail = async () => {
+            if (!id) return;
+            setLoading(true);
             try {
-                // First check registry
-                const found = bookings.find(b => b._id === id || b.id === id);
-                if (found) {
-                    setBooking(found);
-                    setLoading(false);
-                    return;
-                }
-
-                // If not in registry (e.g. direct link), fetch from API
-                const res = await api.get(`/bookings/${id}`);
+                const res = await api.get(`/booking-details/${id}`);
                 if (res.data?.success) {
                     const b = res.data.data;
                     setBooking({
@@ -66,17 +59,19 @@ export default function AppBookingDetailsPage() {
                         outlet: b.outletId || b.outlet,
                         time: b.time
                     });
+                } else {
+                    setBooking(null);
                 }
             } catch (err) {
                 console.error('Failed to fetch booking details', err);
-                toast.error('Could not load booking details');
+                setBooking(null);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchDetail();
-    }, [id, bookings]);
+    }, [id]);
 
     const statusConfig = {
         pending: { icon: AlertCircle, color: '#f59e0b', label: 'Awaiting Confirmation' },
@@ -101,7 +96,7 @@ export default function AppBookingDetailsPage() {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center px-8 text-center" style={{ background: colors.bg }}>
                 <AlertCircle size={48} className="text-red-500 mb-6 opacity-20" />
-                <h2 className="text-xl font-black uppercase tracking-tight mb-2">Booking Not Found</h2>
+                <h2 className="text-xl font-black uppercase tracking-tight mb-2">Booking details not found</h2>
                 <p className="text-xs opacity-40 font-bold uppercase tracking-widest leading-relaxed mb-8">The coordinate you are looking for does not exist or has been removed.</p>
                 <button 
                     onClick={() => navigate('/app/bookings')}
