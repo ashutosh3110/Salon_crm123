@@ -125,6 +125,7 @@ import { PettyCashProvider } from './contexts/PettyCashContext';
 import { FinanceProvider } from './contexts/FinanceContext';
 import { CMSProvider } from './contexts/CMSContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
+import DebugOverlay from './components/common/DebugOverlay';
 
 
 function ScrollToHash() {
@@ -567,7 +568,7 @@ function App() {
           </BusinessProvider>
         </CustomerAuthProvider>
       </AuthProvider>
-
+      <DebugOverlay />
     </Router>
   );
 }

@@ -126,6 +126,7 @@ api.interceptors.response.use(
     }
 );
 
-console.log(`%c[API CONFIG] %cBase URL: ${API_URL}`, 'color: #C8956C; font-weight: bold;', 'color: #888;');
+console.log(`%c[SYSTEM] %cActive API URL: ${API_URL}`, 'color: #C8956C; font-weight: bold;', 'color: #fff;');
+console.log(`%c[SYSTEM] %cEnvironment: ${import.meta.env.MODE}`, 'color: #C8956C; font-weight: bold;', 'color: #fff;');
 
 export default api;
