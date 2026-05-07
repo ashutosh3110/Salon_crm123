@@ -1,5 +1,5 @@
 // Updated at 22:45 for stability
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
@@ -261,52 +261,171 @@ export default function AppHomePage() {
     const {
         activeOutlet,
         activeOutletId,
-        activeSalonId,
-        outlets,
-        setActiveOutletId,
-        services,
-        categories,
-        isInitializing,
-        fetchCustomerInitialData,
-        fetchOutlets,
-        feedbacks,
-        loyaltySettings,
-        loyaltyPlans,
-        products,
-        productCategories,
-        banners,
-        offers,
-        lookbook,
-        experts
+        isInitializing
     } = useBusiness();
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
     
-    // Core data is now synchronized via BusinessContext to prevent redundant API calls.
-    const loyaltyRule = loyaltySettings;
-    const dynamicReviews = feedbacks;
-    const membershipPlans = loyaltyPlans;
-    const loadingPlans = isInitializing;
-    const reviews = feedbacks || [];
+    // Explicit Home Page Data States
+    const [pageBanners, setPageBanners] = useState([]);
+    const [nearestOutlets, setNearestOutlets] = useState([]);
+    const [outletServices, setOutletServices] = useState([]);
+    const [outletProducts, setOutletProducts] = useState([]);
+    const [trustedReviews, setTrustedReviews] = useState([]);
+    const [outletPlans, setOutletPlans] = useState([]);
+    const [loyaltyRule, setLoyaltyRule] = useState(null);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    
+    // FETCH GUARDS
+    const lastFetchedOutletId = useRef(null);
+    const lastFetchedStatic = useRef(false);
+
+    const dynamicReviews = trustedReviews;
+    const membershipPlans = outletPlans;
+    const loadingPlans = isLoadingData;
+    const reviews = trustedReviews;
+    const services = outletServices;
+    const products = outletProducts;
+    const banners = pageBanners;
+
+    // Derive categories from fetched services
+    const categories = useMemo(() => {
+        if (!outletServices || outletServices.length === 0) return [];
+        const uniqueCatNames = [...new Set(outletServices.map(s => s.category).filter(Boolean))];
+        return uniqueCatNames.map(name => ({
+            name,
+            status: 'active',
+            gender: 'both' // Fallback
+        }));
+    }, [outletServices]);
 
     // Pre-select first category when categories load
     useEffect(() => {
         if (!selectedServiceCategory && categories?.length > 0) {
-            const firstCat = (categories || []).find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
+            const firstCat = categories.find(c => c.status === 'active' && (c.gender === 'both' || !gender || c.gender === gender));
             if (firstCat) setSelectedServiceCategory(firstCat.name);
         }
     }, [categories, gender, selectedServiceCategory]);
 
-    // ── GEOLOCATION LOGIC ──
+    // FETCH STATIC DATA (Banners, Loyalty Rules) - Once on Mount
+    const fetchStaticData = useCallback(async (force = false) => {
+        if (!force && lastFetchedStatic.current) return;
+        lastFetchedStatic.current = true;
+        
+        try {
+            const results = await Promise.allSettled([
+                api.get('/banners'),
+                api.get('/loyalty-rules')
+            ]);
+
+            // Handle Banners
+            if (results[0].status === 'fulfilled') {
+                setPageBanners(results[0].value.data?.data || []);
+            } else {
+                console.error('Error fetching banners:', results[0].reason);
+            }
+
+            // Handle Loyalty Rules
+            if (results[1].status === 'fulfilled') {
+                const resData = results[1].value.data;
+                const ruleData = (resData && resData.success && resData.data) ? resData.data : resData;
+                setLoyaltyRule(ruleData || null);
+            } else {
+                console.error('Error fetching loyalty rules:', results[1].reason);
+                lastFetchedStatic.current = false;
+            }
+        } catch (err) {
+            console.error('Static data fetch error:', err);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchStaticData();
+    }, [fetchStaticData]);
+
+    // FETCH OUTLET-SPECIFIC DATA - When activeOutletId changes
+    const fetchOutletSpecificData = useCallback(async (force = false) => {
+        if (!activeOutletId) return;
+        if (!force && lastFetchedOutletId.current === activeOutletId) return;
+        lastFetchedOutletId.current = activeOutletId;
+
+        setIsLoadingData(true);
+        try {
+            const [
+                servicesRes,
+                productsRes,
+                reviewsRes,
+                plansRes
+            ] = await Promise.all([
+                api.get(`/services/outlet/${activeOutletId}`),
+                api.get(`/products/outlet/${activeOutletId}`),
+                api.get(`/reviews/trusted/${activeOutletId}`),
+                api.get(`/membership-plans/${activeOutletId}`)
+            ]);
+
+            setOutletServices(servicesRes.data?.data || []);
+            setOutletProducts(productsRes.data?.data || []);
+            setTrustedReviews(reviewsRes.data?.data || []);
+            setOutletPlans(plansRes.data?.data || []);
+
+        } catch (error) {
+            console.error('Error fetching outlet specific data:', error);
+            lastFetchedOutletId.current = null; // Allow retry on error
+        } finally {
+            setIsLoadingData(false);
+        }
+    }, [activeOutletId]);
+
+    useEffect(() => {
+        fetchOutletSpecificData();
+    }, [fetchOutletSpecificData]);
+
+
+    // ── GEOLOCATION LOGIC & NEAREST OUTLETS ──
     const [userLocation, setUserLocation] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const fetchNearest = useCallback(async (lat, lng) => {
+        try {
+            let url = '/outlets/nearest';
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+            const res = await api.get(url);
+            setNearestOutlets(res.data?.data || []);
+        } catch (err) {
+            console.error("Failed to fetch nearest outlets:", err);
+        }
+    }, []);
+
     useEffect(() => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-                (err) => console.log('Location access denied or error')
+                (pos) => {
+                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    setUserLocation(coords);
+                    fetchNearest(coords.lat, coords.lng);
+                },
+                (err) => {
+                    console.log('Location access denied or error');
+                    fetchNearest(); // fetch without lat/lng
+                }
             );
+        } else {
+            fetchNearest();
         }
-    }, []);
+    }, [fetchNearest]);
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                fetchStaticData(true),
+                fetchOutletSpecificData(true),
+                fetchNearest(userLocation?.lat, userLocation?.lng)
+            ]);
+        } finally {
+            setRefreshing(false);
+        }
+    }, [fetchStaticData, fetchOutletSpecificData, fetchNearest, userLocation]);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -356,7 +475,7 @@ export default function AppHomePage() {
             if (pullDistance >= pullThreshold) {
                 // Trigger Refresh
                 try {
-                    await fetchCustomerInitialData(true);
+                    await onRefresh();
                 } catch (e) {
                     console.error('Refresh failed:', e);
                 }
@@ -377,21 +496,13 @@ export default function AppHomePage() {
             window.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener('touchend', handleTouchEnd);
         };
-    }, [isPulling, pullDistance, fetchCustomerInitialData]);
+    }, [isPulling, pullDistance, onRefresh]);
 
     // Core data is now synchronized via BusinessContext
 
 
-    // ── 2. FETCH NEAREST SALONS (OUTLETS) ──
-    useEffect(() => {
-        if (userLocation && (!outlets || outlets.length === 0)) {
-            fetchOutlets({ 
-                lat: userLocation.lat, 
-                lng: userLocation.lng, 
-                radius: 50 
-            });
-        }
-    }, [userLocation, outlets, fetchOutlets]);
+    // ── 2. FETCH NEAREST SALONS (HANDLED BY BusinessContext initial-data) ──
+    // No redundant calls here
 
 
 
@@ -867,7 +978,7 @@ export default function AppHomePage() {
                                 </motion.div>
                             ) : (
                                 <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <p style={{ color: colors.textMuted, fontSize: '12px' }}>No exclusive offers found ({banners?.length} banners total, g={g})</p>
+                                    <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
                                 </div>
                             )}
                         </AnimatePresence>
@@ -881,13 +992,13 @@ export default function AppHomePage() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Crown size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Other Nearest Salons</span>
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Nearby Outlets</span>
                         </div>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                         {(() => {
-                            const otherOutlets = outlets
-                                .filter(o => o._id !== activeOutletId)
+                            const otherSalons = nearestOutlets
+                                .filter(o => String(o._id || o.id) !== String(activeOutletId))
                                 .map(o => {
                                     const dist = userLocation && o.location?.coordinates?.length === 2
                                         ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
@@ -895,26 +1006,20 @@ export default function AppHomePage() {
                                     return { ...o, calculatedDist: dist };
                                 });
 
-                            // Sort real salons by distance if available
-                            const sortedReal = [...otherOutlets].sort((a, b) => {
+                            const sortedSalons = [...otherSalons].sort((a, b) => {
                                 if (a.calculatedDist !== null && b.calculatedDist !== null) return a.calculatedDist - b.calculatedDist;
-                                if (a.calculatedDist !== null) return -1;
-                                if (b.calculatedDist !== null) return 1;
                                 return 0;
                             });
 
-                            const mockSalons = (homeData.GENDER_DATA[gender]?.salons || []).map(s => ({
-                                ...s,
-                                _id: `mock-${s.id}`,
-                                image: s.img,
-                                distance: s.dist,
-                                isMock: true
-                            }));
+                            if (sortedSalons.length === 0) {
+                                return (
+                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                                        No outlets found
+                                    </div>
+                                );
+                            }
 
-                            // Show sorted real salons first, then mocks if we have fewer than 3
-                            const displaySalons = sortedReal.length >= 3 ? sortedReal : [...sortedReal, ...mockSalons];
-
-                            return displaySalons.map(outlet => (
+                            return sortedSalons.map(outlet => (
                                 <motion.div
                                     key={outlet._id}
                                     whileTap={{ scale: 0.98 }}
@@ -948,7 +1053,7 @@ export default function AppHomePage() {
                                             gap: '4px'
                                         }}>
                                             <Star size={12} fill="#C8956C" color="#C8956C" />
-                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating}</span>
+                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating || 'New'}</span>
                                         </div>
                                     </div>
                                     <div style={{ padding: '14px' }}>
@@ -960,15 +1065,8 @@ export default function AppHomePage() {
                                             <span style={{ fontSize: '11px', color: colors.textMuted }}>
                                                 {outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
                                                     ? `${outlet.calculatedDist.toFixed(1)} km`
-                                                    : (outlet.distance || '0.5 km')} · {getAddressString(outlet.address).split(',')[0]}
+                                                    : (outlet.distance || 'Near you')} · {getAddressString(outlet.address).split(',')[0]}
                                             </span>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                            {['Luxury', 'Top Rated'].map(tag => (
-                                                <span key={tag} style={{ fontSize: '9px', fontWeight: 800, color: colors.accent, background: `${colors.accent}15`, padding: '2px 8px', borderRadius: '4px' }}>
-                                                    {tag}
-                                                </span>
-                                            ))}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -977,66 +1075,13 @@ export default function AppHomePage() {
                     </div>
                 </motion.div>
 
-                {(productCategories || []).length > 0 && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Tag size={18} color="#C8956C" />
-                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Product Categories</span>
-                            </div>
-                        </div>
-                        <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
-                            {(() => {
-                                const activeCats = (productCategories || []).filter(c => c.status === 'active');
-                                // Sort by number of products in each category
-                                const sortedCats = [...activeCats].sort((a, b) => {
-                                    const countA = (products || []).filter(p => p.category === a.name).length;
-                                    const countB = (products || []).filter(p => p.category === b.name).length;
-                                    return countB - countA;
-                                });
 
-                                return sortedCats.map((cat) => (
-                                    <motion.div
-                                        key={cat._id}
-                                        whileTap={{ scale: 0.98 }}
-                                        onClick={() => navigate(`/app/shop?category=${encodeURIComponent(cat.name)}`)}
-                                        style={{
-                                            flexShrink: 0,
-                                            width: '160px',
-                                            height: '100px',
-                                            borderRadius: '20px',
-                                            overflow: 'hidden',
-                                            position: 'relative',
-                                            border: `1px solid ${colors.border}`,
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <img
-                                            src={cat.image || "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?q=80&w=800"}
-                                            alt={cat.name}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        />
-                                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%)' }} />
-                                        <div style={{ position: 'absolute', bottom: '12px', left: '12px', right: '12px' }}>
-                                            <span style={{ display: 'block', fontSize: '12px', fontWeight: 900, color: '#FFF', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                {cat.name}
-                                            </span>
-                                            <span style={{ fontSize: '8px', fontWeight: 700, color: '#C8956C', textTransform: 'uppercase' }}>
-                                                {products.filter(p => p.category === cat.name).length} Products
-                                            </span>
-                                        </div>
-                                    </motion.div>
-                                ));
-                            })()}
-                        </div>
-                    </motion.div>
-                )}
 
                 {/* ── 5. SERVICES (Filtered list) ── */}
                 <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                         <Scissors size={20} color={colors.accent} />
-                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Trending Rituals</span>
+                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Services</span>
                     </div>
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -1054,7 +1099,13 @@ export default function AppHomePage() {
                                     s.status === 'active' &&
                                     (!selectedServiceCategory || s.category === selectedServiceCategory)
                                 );
-                                if (filtered.length === 0) return null;
+                                if (filtered.length === 0) {
+                                    return (
+                                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                                            No services found
+                                        </div>
+                                    );
+                                }
                                 return filtered.map(service => (
                                     <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
                                         <ServiceCard
@@ -1072,20 +1123,25 @@ export default function AppHomePage() {
                 </motion.div>
 
                 {/* ── 5.5 PRODUCTS (Luxe Essentials) ── */}
-                {products.length > 0 && (
-                    <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <ShoppingBag size={20} color={colors.accent} />
-                                <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Luxe Essentials</span>
-                            </div>
-                            <button
-                                onClick={() => navigate('/app/shop')}
-                                style={{ fontSize: '11px', fontWeight: 700, color: colors.accent, background: 'none', border: 'none' }}
-                            >
-                                Shop All
-                            </button>
+                <motion.div variants={fadeUp} style={{ padding: '24px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <ShoppingBag size={20} color={colors.accent} />
+                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Products</span>
                         </div>
+                        <button
+                            onClick={() => navigate('/app/shop')}
+                            style={{ fontSize: '11px', fontWeight: 700, color: colors.accent, background: 'none', border: 'none' }}
+                        >
+                            Shop All
+                        </button>
+                    </div>
+                    
+                    {products.length === 0 ? (
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                            No products available
+                        </div>
+                    ) : (
                         <div
                             className="app-scroll no-scrollbar"
                             style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}
@@ -1122,21 +1178,27 @@ export default function AppHomePage() {
                                 </motion.div>
                             ))}
                         </div>
-                    </motion.div>
-                )}
-
+                    )}
+                </motion.div>
                 {/* ── 6. TRUSTED REVIEWS ── */}
                 <motion.div variants={fadeUp} style={{ padding: '32px 16px 24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
                         <MessageSquare size={20} color={colors.accent} />
                         <div>
-                            <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Trusted Reviews</h3>
+                            <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Reviews</h3>
                             <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>What our gold members say</p>
                         </div>
                     </div>
                     <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                         {(() => {
-                            const displayReviews = (dynamicReviews && dynamicReviews.length > 0) ? dynamicReviews : (homeData.REVIEWS || []);
+                            const displayReviews = dynamicReviews || [];
+                            if (displayReviews.length === 0) {
+                                return (
+                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                                        No reviews available
+                                    </div>
+                                );
+                            }
                             return displayReviews.map((rev) => (
                                 <div
                                     key={rev._id || rev.id}
@@ -1189,20 +1251,24 @@ export default function AppHomePage() {
                 </motion.div>
 
                 {/* ── 7. MEMBERSHIP PLANS ── */}
-                {membershipPlans.length > 0 && (
-                    <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
-                        <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                            Premium Memberships
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <Crown size={20} color={colors.accent} />
-                                <div>
-                                    <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Membership Hub</h3>
-                                    <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Elevate your status with our tiered privileges</p>
-                                </div>
+                <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                    <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                        Premium Memberships
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Crown size={20} color={colors.accent} />
+                            <div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Membership</h3>
+                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Elevate your status with our tiered privileges</p>
                             </div>
                         </div>
+                    </div>
+                    {membershipPlans.length === 0 ? (
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                            No membership plans available
+                        </div>
+                    ) : (
                         <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '16px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
                             {membershipPlans.filter(p => p.isActive !== false).map((plan) => (
                                 <MembershipPlanCard
@@ -1213,23 +1279,27 @@ export default function AppHomePage() {
                                 />
                             ))}
                         </div>
-                    </motion.div>
-                )}
+                    )}
+                </motion.div>
 
                 {/* ── 8. LOYALTY RULES ── */}
-                {loyaltyRule && loyaltyRule.active && (
-                    <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
-                        <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
-                            Loyalty Protocol
+                <motion.div variants={fadeUp} style={{ padding: '0 16px 32px' }}>
+                    <div style={{ color: colors.accent, fontSize: '10px', fontWeight: 900, marginBottom: '6px', letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                        Loyalty Program
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+                        <Gift size={20} color={colors.accent} />
+                        <div>
+                            <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Loyalty</h3>
+                            <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Turn your visits into rewards</p>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                            <Gift size={20} color={colors.accent} />
-                            <div>
-                                <h3 style={{ fontSize: '16px', fontWeight: 800, color: colors.text, margin: 0 }}>Point Redemption</h3>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>Turn your visits into rewards</p>
-                            </div>
-                        </div>
+                    </div>
 
+                    {!loyaltyRule || !loyaltyRule.active ? (
+                        <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
+                            Loyalty rewards currently unavailable
+                        </div>
+                    ) : (
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                             <div style={{ background: colors.card, border: `1px solid ${colors.border}`, padding: '20px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div style={{ width: '32px', height: '32px', borderRadius: '12px', background: `${colors.accent}10`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1237,7 +1307,7 @@ export default function AppHomePage() {
                                 </div>
                                 <div>
                                     <p style={{ fontSize: '8px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>Earn Rate</p>
-                                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>₹{loyaltyRule.pointsRate} = 1 PT</h4>
+                                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>₹{loyaltyRule.pointsRate || 100} = 1 PT</h4>
                                 </div>
                             </div>
 
@@ -1247,12 +1317,12 @@ export default function AppHomePage() {
                                 </div>
                                 <div>
                                     <p style={{ fontSize: '8px', fontWeight: 900, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 4px 0' }}>Value</p>
-                                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>1 PT = ₹{loyaltyRule.redeemValue}</h4>
+                                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: colors.text, margin: 0 }}>1 PT = ₹{loyaltyRule.redeemValue || 1}</h4>
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
-                )}
+                    )}
+                </motion.div>
 
             </motion.div>
         </div>

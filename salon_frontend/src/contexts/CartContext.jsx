@@ -8,7 +8,7 @@ const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
     const { customer } = useCustomerAuth();
-    const { activeSalonId } = useBusiness();
+    const { activeSalonId, userSession } = useBusiness();
     const [cart, setCart] = useState({ items: [] });
     const [loading, setLoading] = useState(false);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -30,10 +30,17 @@ export const CartProvider = ({ children }) => {
     }, [customer]);
 
     useEffect(() => {
+        // Optimization: Use data from initial-data if available
+        if (userSession?.cart) {
+            setCart(userSession.cart);
+            return;
+        }
+
         if (!location.pathname.startsWith('/superadmin')) {
             fetchCart();
         }
-    }, [fetchCart, location.pathname]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchCart, userSession?.cart]);
 
     const addToCart = async (productId, quantity = 1) => {
         if (!customer) {

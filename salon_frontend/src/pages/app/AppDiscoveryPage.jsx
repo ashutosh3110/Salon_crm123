@@ -11,7 +11,7 @@ export default function AppDiscoveryPage() {
     const [searchParams] = useSearchParams();
     const { colors, isLight } = useCustomerTheme();
     const { isSalonLiked, toggleSalonLike } = useFavorites();
-    const { outlets: businessOutlets, services: businessServices } = useBusiness();
+    const { outlets: businessOutlets, services: businessServices, setActiveOutletId, setActiveSalonId } = useBusiness();
 
     const categoryParam = searchParams.get('category');
     const serviceIdParam = searchParams.get('serviceId');
@@ -162,7 +162,16 @@ export default function AppDiscoveryPage() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 whileTap={{ scale: 0.98 }}
-                                onClick={() => navigate(`/app/salon/${salon._id}${serviceIdParam ? `?serviceId=${serviceIdParam}` : ''}`)}
+                                onClick={() => {
+                                    const oId = salon._id || salon.id;
+                                    const tId = salon.tenantId || salon.salonId;
+                                    localStorage.setItem('active_outlet_id', oId);
+                                    localStorage.setItem('active_salon_id', tId);
+                                    localStorage.setItem('wapixo_selected_outlet', JSON.stringify(salon));
+                                    setActiveOutletId(oId);
+                                    setActiveSalonId(tId);
+                                    navigate('/app');
+                                }}
                                 style={{
                                     background: colors.card,
                                     borderRadius: '28px',

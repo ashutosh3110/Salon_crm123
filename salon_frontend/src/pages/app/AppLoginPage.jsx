@@ -267,14 +267,13 @@ export default function AppLoginPage() {
         }
 
         const redirectParam = searchParams.get('redirect');
-        if (redirectParam === 'booking' || redirectParam === 'services') {
+        if (redirectParam === 'booking') {
             const params = new URLSearchParams();
             const oId = (outlet?._id || outlet?.id) || searchParams.get('outletId');
             const sId = searchParams.get('serviceId');
             if (oId) params.set('outletId', oId);
             if (sId) params.set('serviceId', sId);
-            const targetPath = redirectParam === 'services' ? '/app/services' : '/app/booking';
-            navigate(`${targetPath}?${params.toString()}`, { replace: true });
+            navigate(`/app/booking?${params.toString()}`, { replace: true });
         } else {
             navigate('/app', { replace: true });
         }

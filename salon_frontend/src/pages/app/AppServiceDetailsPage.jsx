@@ -64,12 +64,7 @@ export default function AppServiceDetailsPage() {
         return (services || []).find(s => String(s._id || s.id) === String(id));
     }, [services, id]);
 
-    useEffect(() => {
-        if (!service && id) {
-             const tid = localStorage.getItem('active_salon_id');
-             if (tid) fetchServices(tid);
-        }
-    }, [service, id, fetchServices]);
+    // Data is pre-loaded via initial-data in BusinessContext
 
     useEffect(() => {
         const fetchReviews = async () => {

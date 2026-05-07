@@ -15,6 +15,7 @@ const { protect, authorize } = require('../Middleware/auth');
 const checkImageLimit = require('../Middleware/imageLimit');
 
 router.get('/grouped', protect, getServicesGrouped);
+router.get('/outlet/:outletId', require('../Controllers/homePageController').getServicesByOutlet);
 router.post('/bulk-import', protect, authorize('admin', 'manager'), optimizedUpload.single('file'), bulkImportServices);
 
 router

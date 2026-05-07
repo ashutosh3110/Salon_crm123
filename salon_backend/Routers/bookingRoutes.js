@@ -28,4 +28,8 @@ router
     .route('/:id/status')
     .patch(authorize('admin', 'manager', 'receptionist'), updateStatus);
 
+const { getCustomerBookings, getBookingDetails } = require('../Controllers/bookingController');
+router.get('/customer/:customerId', getCustomerBookings);
+router.get('/details/:bookingId', getBookingDetails);
+
 module.exports = router;

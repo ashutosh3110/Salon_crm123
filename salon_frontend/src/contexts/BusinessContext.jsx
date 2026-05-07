@@ -22,12 +22,12 @@ const BusinessContext = createContext({
     platformSettings: null, fetchPlatformSettings: async () => { },
     updateSalon: async () => { }, fetchSalon: async () => { },
     salonLoading: false,
-    banners: [], offers: [], lookbook: [], experts: [], productCategories: []
+    banners: [], offers: [], lookbook: [], experts: [], productCategories: [], nearbyOutlets: [], userSession: null
 });
 
 export function BusinessProvider({ children }) {
     const { isAuthenticated, user } = useAuth();
-    const { isCustomerAuthenticated, customer } = useCustomerAuth();
+    const { isCustomerAuthenticated, customer, setCustomer } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [outlets, setOutlets] = useState([]);
     const [staff, setStaff] = useState([]);
@@ -58,6 +58,8 @@ export function BusinessProvider({ children }) {
     const [lookbook, setLookbook] = useState([]);
     const [experts, setExperts] = useState([]);
     const [productCategories, setProductCategories] = useState([]);
+    const [nearbyOutlets, setNearbyOutlets] = useState([]);
+    const [userSession, setUserSession] = useState(null);
 
 
     const [activeOutletId, setActiveOutletId] = useState(() => localStorage.getItem('active_outlet_id') || null);
@@ -95,6 +97,13 @@ export function BusinessProvider({ children }) {
             localStorage.setItem('active_salon_id', user.salonId);
         }
     }, [isAuthenticated, user, activeSalonId]);
+
+    // Sync profile data from initial-data back to CustomerAuthContext
+    useEffect(() => {
+        if (userSession?.profile) {
+            setCustomer(prev => ({ ...prev, ...userSession.profile }));
+        }
+    }, [userSession?.profile, setCustomer]);
 
     // Handle logout cleanup for Business Context
     useEffect(() => {
@@ -340,23 +349,49 @@ export function BusinessProvider({ children }) {
     }, [activeSalonId, salon?._id]);
 
     const lastInitializedId = useRef(null);
-    const fetchCustomerInitialData = useCallback(async () => {
+    const lastInitializedPath = useRef(null);
+    const fetchCustomerInitialData = useCallback(async (force = false) => {
         const sid = activeSalonId || localStorage.getItem('active_salon_id');
-        if (initializationRef.current && lastInitializedId.current === sid) return;
-        initializationRef.current = true;
+        const path = window.location.pathname;
+        
+        if (!force && lastInitializedId.current === sid && lastInitializedPath.current === path) {
+            setIsInitializing(false);
+            return;
+        }
+        
         lastInitializedId.current = sid;
+        lastInitializedPath.current = path;
+
+        setIsInitializing(true);
 
         try {
             // Consolidated Initial Data Fetch (Optimization: 1 call instead of 8+)
-            // Add customerId query param to trigger welcome WhatsApp if needed
             const cId = customer?._id || customer?.id;
-            const query = cId ? `?customerId=${cId}` : '';
-            const res = await api.get(`/salons/${sid}/initial-data${query}`);
+            const oId = activeOutletId || localStorage.getItem('active_outlet_id');
+            const savedCoords = localStorage.getItem('wapixo_user_coords');
+            let lat = null, lng = null;
+            if (savedCoords) {
+                try {
+                    const coords = JSON.parse(savedCoords);
+                    lat = coords.lat;
+                    lng = coords.lng;
+                } catch(e) {}
+            }
+
+            const params = new URLSearchParams();
+            if (cId) params.set('customerId', cId);
+            if (oId) params.set('outletId', oId);
+            if (lat) params.set('lat', lat);
+            if (lng) params.set('lng', lng);
+            params.set('radius', '10'); // Default 10km for discovery
+
+            const res = await api.get(`/salons/${sid}/initial-data?${params.toString()}`);
             
             if (res.data.success) {
                 const { 
                     salon: sData, 
                     outlets: oData, 
+                    nearbyOutlets: nData,
                     services: svData, 
                     categories: cData, 
                     feedbacks: fData, 
@@ -365,17 +400,20 @@ export function BusinessProvider({ children }) {
                     loyaltyPlans: lpData,
                     products: pData,
                     productCategories: pcData,
-                    cms: cmsData
+                    cms: cmsData,
+                    user: uData
                 } = res.data.data;
 
                 setSalon(sData);
                 setOutlets(oData);
+                setNearbyOutlets(nData || []);
                 setServices(svData);
                 setCategories(cData);
                 setFeedbacks(fData);
                 setStaff(stData);
                 setLoyaltySettings(lsData);
                 setLoyaltyPlans(lpData);
+                setUserSession(uData);
                 
                 console.log(`[InitialData] Fetched: ${pData?.length} products, ${sData?.name} salon`);
 
@@ -881,7 +919,8 @@ export function BusinessProvider({ children }) {
         offers, setOffers, 
         lookbook, setLookbook, 
         experts, setExperts, 
-        productCategories, setProductCategories
+        productCategories, setProductCategories,
+        nearbyOutlets, setNearbyOutlets
     }), [
 
         salon, outlets, outletsLoading, staff, services, categories, products, customers, customersMetadata, globalStats, customersLoading, fetchCustomers, addCustomer, deleteCustomer, updateCustomer, bulkImportCustomers,
@@ -900,7 +939,7 @@ export function BusinessProvider({ children }) {
         loyaltyPlans, fetchLoyaltyPlans,
         platformSettings, fetchPlatformSettings,
         updateSalon, fetchSalon,
-        banners, offers, lookbook, experts, productCategories
+        banners, offers, lookbook, experts, productCategories, nearbyOutlets, userSession
     ]);
 
 
@@ -909,6 +948,11 @@ export function BusinessProvider({ children }) {
         const searchParams = new URLSearchParams(window.location.search);
         const urlId = searchParams.get('tenantId');
         const urlOutletId = searchParams.get('outletId');
+
+        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
+        const effectiveOid = urlOutletId || activeOutletId || localStorage.getItem('active_outlet_id');
+
+        console.log(`[BusinessContext] Init Path: ${location.pathname}, TID: ${effectiveTid}, OID: ${effectiveOid}`);
 
         if (urlId && urlId !== activeSalonId) {
             localStorage.setItem('active_salon_id', urlId);
@@ -919,8 +963,6 @@ export function BusinessProvider({ children }) {
             localStorage.setItem('active_outlet_id', urlOutletId);
             setActiveOutletId(urlOutletId);
         }
-
-        const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
         
         // Skip guest/tenant initialization for auth routes, admin, stylist and superadmin routes
         const authRoutes = ['/login', '/register', '/admin/login', '/forgot-password'];
@@ -942,31 +984,24 @@ export function BusinessProvider({ children }) {
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
-            fetchCustomerInitialData();
-            fetchPlatformSettings();
+            if (location.pathname === '/app/services' || location.pathname === '/app') {
+                // These pages now handle their own granular API fetching.
+                // We just stop initialization here.
+                setIsInitializing(false);
+            } else {
+                fetchCustomerInitialData();
+            }
         } else if (effectiveTid) {
             if (lastInitializedId.current === effectiveTid) return;
             lastInitializedId.current = effectiveTid;
 
             const initGuest = async () => {
                 try {
-                    const initTasks = [];
-                    if (!salon) {
-                        initTasks.push(api.get(`/salons/${effectiveTid}`).then(res => {
-                            if (res.data.success) setSalon(res.data.data);
-                        }).catch(err => {
-                            if (err.response?.status === 404) {
-                                console.warn("Salon ID in localStorage is invalid, clearing...");
-                                localStorage.removeItem('active_salon_id');
-                                setActiveSalonId(null);
-                            }
-                        }));
+                    if (location.pathname === '/app/services' || location.pathname === '/app') {
+                        // These pages now handle their own granular API fetching.
+                    } else {
+                        await fetchCustomerInitialData();
                     }
-                    initTasks.push(fetchServices(effectiveTid));
-                    initTasks.push(fetchCategories(effectiveTid));
-                    initTasks.push(fetchFeedbacks(effectiveTid));
-                    initTasks.push(fetchStaff(effectiveTid));
-                    await Promise.all(initTasks);
                 } catch (err) {
                     console.error("Guest initialization failed:", err);
                 } finally {
@@ -977,7 +1012,7 @@ export function BusinessProvider({ children }) {
         } else {
             setIsInitializing(false);
         }
-    }, [isAuthenticated, isCustomerAuthenticated, activeSalonId, location.pathname, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
+    }, [isAuthenticated, isCustomerAuthenticated, location.pathname, activeSalonId, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

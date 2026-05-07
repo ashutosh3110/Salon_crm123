@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { useBusiness } from './BusinessContext';
 import api from '../services/api';
 
 const WalletContext = createContext(null);
@@ -32,8 +33,10 @@ function mapLoyaltyTx(tx) {
     };
 }
 
+
 export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
+    const { userSession } = useBusiness();
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,10 +63,23 @@ export function WalletProvider({ children }) {
     }, [customer?._id]);
 
     useEffect(() => {
+        // Optimization: Use data from initial-data if available
+        if (userSession?.wallet) {
+            setBalance(userSession.wallet.balance || 0);
+            setTransactions((userSession.wallet.transactions || []).map(tx => ({
+                ...tx,
+                id: tx._id,
+                date: tx.createdAt
+            })));
+            setLoading(false);
+            return;
+        }
+
         if (customer?._id && !location.pathname.startsWith('/superadmin')) {
             refreshWallet();
         }
-    }, [customer?._id, refreshWallet, location.pathname]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customer?._id, refreshWallet, userSession?.wallet]);
 
     const createWalletOrder = async (amount) => {
         const res = await api.post('/wallet/topup/order', { amount });

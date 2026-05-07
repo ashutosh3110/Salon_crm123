@@ -138,11 +138,8 @@ export function CustomerAuthProvider({ children }) {
         }
     };
 
-    useEffect(() => {
-        if (customer?._id && !location.pathname.startsWith('/superadmin')) {
-            refreshProfile();
-        }
-    }, [customer?._id, location.pathname]);
+    // Automatic profile refresh removed to prevent redundant calls on Home page.
+    // Pages can call refreshProfile() manually if needed.
 
     const value = useMemo(() => ({
         customer,
@@ -153,6 +150,7 @@ export function CustomerAuthProvider({ children }) {
         completeProfile,
         updateCustomer,
         refreshProfile,
+        setCustomer,
         isCustomerAuthenticated: !!customer,
     }), [customer, loading]);
 

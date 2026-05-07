@@ -683,8 +683,70 @@ exports.resendCredentials = async (req, res) => {
 exports.getCustomerInitialData = async (req, res) => {
     try {
         const salonId = req.params.id;
-        const customerId = req.query.customerId;
+        const { customerId, outletId, lat, lng, radius = 5 } = req.query;
 
+        // Base filters
+        const serviceFilter = { salonId, status: 'active' };
+        const productFilter = { salonId, status: 'active' };
+        const feedbackFilter = { salonId, status: 'active' };
+
+        if (outletId && mongoose.Types.ObjectId.isValid(outletId)) {
+            serviceFilter.outletId = outletId;
+            productFilter.outletId = outletId;
+            feedbackFilter.outletId = outletId;
+        }
+
+        const queries = [
+            Salon.findById(salonId),
+            Outlet.find({ salonId }),
+            Service.find(serviceFilter),
+            Category.find({ salonId, status: 'active' }),
+            Feedback.find(feedbackFilter).sort({ createdAt: -1 }).limit(10),
+            User.find({ salonId, role: 'staff', status: 'active' }).select('name bio profileImage specializations'),
+            MembershipPlan.find({ salonId, isActive: true }),
+            Product.find(productFilter),
+            ProductCategory.find({ salonId, status: 'active' }),
+            Cms.find({ tenantId: { $in: [salonId, null] } }),
+            Setting.findOne({ salonId })
+        ];
+
+        // Add nearby outlets query if location is provided
+        if (lat && lng) {
+            queries.push(
+                Outlet.find({
+                    location: {
+                        $near: {
+                            $geometry: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+                            $maxDistance: radius * 1000
+                        }
+                    }
+                }).limit(10)
+            );
+        } else {
+            queries.push(Promise.resolve([]));
+        }
+
+        // ADDED: User-specific data queries if customerId is present
+        if (customerId && mongoose.Types.ObjectId.isValid(customerId)) {
+            queries.push(Customer.findById(customerId));
+            queries.push(mongoose.model('Cart').findOne({ customerId }).populate('items.productId'));
+            queries.push(mongoose.model('Wallet').findOne({ customerId }));
+            queries.push(mongoose.model('Booking').find({ customerId }).sort({ createdAt: -1 }).limit(5));
+            queries.push(Product.find({ likedBy: customerId }).populate('categoryId', 'name'));
+            queries.push(Outlet.find({ likedBy: customerId }));
+            queries.push(mongoose.model('Notification').countDocuments({ recipient: customerId, isRead: false }));
+        } else {
+            queries.push(Promise.resolve(null));
+            queries.push(Promise.resolve(null));
+            queries.push(Promise.resolve(null));
+            queries.push(Promise.resolve([]));
+            queries.push(Promise.resolve([]));
+            queries.push(Promise.resolve([]));
+            queries.push(Promise.resolve(0));
+        }
+
+        const results = await Promise.all(queries);
+        
         const [
             salon,
             outlets,
@@ -695,19 +757,17 @@ exports.getCustomerInitialData = async (req, res) => {
             loyaltyPlans,
             products,
             productCategories,
-            cmsData
-        ] = await Promise.all([
-            Salon.findById(salonId),
-            Outlet.find({ salonId }),
-            Service.find({ salonId, status: 'active' }),
-            Category.find({ salonId, status: 'active' }),
-            Feedback.find({ salonId, status: 'active' }).sort({ createdAt: -1 }).limit(10),
-            User.find({ salonId, role: 'staff', status: 'active' }).select('name bio profileImage specializations'),
-            MembershipPlan.find({ salonId, isActive: true }),
-            Product.find({ salonId, status: 'active' }),
-            ProductCategory.find({ salonId, status: 'active' }),
-            Cms.find({ tenantId: salonId })
-        ]);
+            cmsData,
+            settings,
+            nearbyOutlets,
+            customerProfile,
+            customerCart,
+            customerWallet,
+            customerBookings,
+            favoriteProducts,
+            favoriteOutlets,
+            unreadNotificationsCount
+        ] = results;
 
         if (!salon) {
             return res.status(404).json({ success: false, message: 'Salon not found' });
@@ -736,32 +796,39 @@ exports.getCustomerInitialData = async (req, res) => {
             }
         }
 
-        // Get loyalty settings from Setting model
-        const loyaltySettings = await Setting.findOne({ salonId });
-
         res.json({
             success: true,
             data: {
                 salon,
                 outlets,
+                nearbyOutlets,
                 services,
                 categories,
                 feedbacks,
                 staff,
-                loyaltySettings: loyaltySettings?.loyaltySettings || null,
+                loyaltySettings: settings?.loyaltySettings || null,
                 loyaltyPlans,
                 products,
                 productCategories,
+                user: customerId ? {
+                    profile: customerProfile,
+                    cart: customerCart,
+                    wallet: customerWallet,
+                    bookings: customerBookings,
+                    favoriteProducts,
+                    favoriteOutlets,
+                    unreadCount: unreadNotificationsCount
+                } : null,
                 cms: {
-                    banners: cmsData.find(c => c.section === 'banners')?.content || [],
-                    offers: cmsData.find(c => c.section === 'offers')?.content || [],
-                    lookbook: cmsData.find(c => c.section === 'lookbook')?.content || [],
-                    experts: cmsData.find(c => c.section === 'experts')?.content || []
+                    banners: cmsData.filter(c => c.section === 'banners').reduce((acc, curr) => [...acc, ...(curr.content || [])], []),
+                    offers: cmsData.filter(c => c.section === 'offers').reduce((acc, curr) => [...acc, ...(curr.content || [])], []),
+                    lookbook: cmsData.filter(c => c.section === 'lookbook').reduce((acc, curr) => [...acc, ...(curr.content || [])], []),
+                    experts: cmsData.filter(c => c.section === 'experts').reduce((acc, curr) => [...acc, ...(curr.content || [])], [])
                 }
             }
         });
     } catch (err) {
         console.error('Initial Data Fetch Error:', err);
-        res.status(500).json({ success: false, message: 'Server Error' });
+        res.status(500).json({ success: false, message: 'Server Error', error: err.message, stack: err.stack });
     }
 };

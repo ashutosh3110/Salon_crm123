@@ -8,6 +8,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { useBusiness } from './BusinessContext';
 
 const STORAGE_KEY = 'WAPIXO_BOOKING_REGISTRY';
 
@@ -15,6 +16,7 @@ const BookingRegistryContext = createContext(null);
 
 export function BookingRegistryProvider({ children }) {
     const { customer } = useCustomerAuth();
+    const { userSession } = useBusiness();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
     const location = useLocation();
@@ -58,10 +60,28 @@ export function BookingRegistryProvider({ children }) {
     }, [customer?._id]);
 
     useEffect(() => {
+        // Optimization: Use data from initial-data if available
+        if (userSession?.bookings) {
+            const formatted = userSession.bookings.map(b => {
+                const srv = b.serviceId || b.service;
+                return {
+                    ...b,
+                    id: b._id,
+                    service: srv,
+                    services: srv ? [srv] : [],
+                    staff: b.staffId || b.staff,
+                    appointmentDate: b.appointmentDate || b.date
+                };
+            });
+            setBookings(formatted);
+            return;
+        }
+
         if (!location.pathname.startsWith('/superadmin')) {
             fetchBookings();
         }
-    }, [fetchBookings, location.pathname]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fetchBookings, userSession?.bookings]);
 
 
     // ── Add a new booking ──

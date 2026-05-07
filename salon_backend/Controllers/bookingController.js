@@ -480,3 +480,53 @@ exports.verifyPayment = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// @desc    Get all bookings for a specific customer
+// @route   GET /api/bookings/customer/:customerId
+// @access  Private
+exports.getCustomerBookings = async (req, res) => {
+    try {
+        const { customerId } = req.params;
+        const bookings = await Booking.find({ clientId: customerId })
+            .populate('serviceId', 'name price duration')
+            .populate('staffId', 'name profileImage')
+            .populate('outletId', 'name address city')
+            .populate('salonId', 'name logo')
+            .sort({ appointmentDate: -1 });
+
+        res.json({
+            success: true,
+            data: bookings
+        });
+    } catch (err) {
+        console.error('getCustomerBookings error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get booking details
+// @route   GET /api/booking-details/:bookingId
+// @access  Private
+exports.getBookingDetails = async (req, res) => {
+    try {
+        const { bookingId } = req.params;
+        const booking = await Booking.findById(bookingId)
+            .populate('clientId', 'name phone email')
+            .populate('serviceId', 'name price duration description')
+            .populate('staffId', 'name profileImage phone')
+            .populate('outletId', 'name address city phone')
+            .populate('salonId', 'name logo businessName');
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking details not found' });
+        }
+
+        res.json({
+            success: true,
+            data: booking
+        });
+    } catch (err) {
+        console.error('getBookingDetails error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};

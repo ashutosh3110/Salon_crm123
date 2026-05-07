@@ -217,13 +217,7 @@ export default function AppBookingPage() {
     };
 
     // Pre-select service from query
-    useEffect(() => {
-        const tid = activeSalonId || localStorage.getItem('active_salon_id');
-        if (tid) {
-            fetchGroupedServices(tid);
-            fetchStaff(tid);
-        }
-    }, [activeSalonId, fetchGroupedServices, fetchStaff]);
+    // Redundant fetches removed as data is part of initial-data
 
     useEffect(() => {
         if (preSelectedServiceId) {

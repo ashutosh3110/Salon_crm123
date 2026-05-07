@@ -16,6 +16,7 @@ const { processToWebP } = require('../Middleware/imageProcessor');
 const checkImageLimit = require('../Middleware/imageLimit');
 
 // Public routes (NO protect middleware before these)
+router.get('/nearest', require('../Controllers/homePageController').getNearestOutlets);
 router.get('/nearby', getNearbyOutlets);
 router.get('/reverse-geocode', reverseGeocode);
 

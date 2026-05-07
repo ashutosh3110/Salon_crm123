@@ -22,13 +22,13 @@ export default function AppLayout() {
     const { gender } = useGender();
     const { customer, loading: authLoading } = useCustomerAuth();
     const { theme } = useCustomerTheme();
-    const { activeOutletId } = useBusiness();
+    const { activeOutletId, isInitializing } = useBusiness();
     const { cart, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
 
     const isLight = theme === 'light';
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading || isInitializing) return;
         
         if (!customer) {
             if (location.pathname !== '/app/login') {
@@ -49,14 +49,14 @@ export default function AppLayout() {
 
         // 3. Must have an active salon/outlet selected
         if (!activeOutletId) {
-            const publicPaths = ['/app/login', '/app/gender', '/app/select-salon', '/app/discovery'];
+            const publicPaths = ['/app/login', '/app/gender', '/app/select-salon', '/app/discovery', '/app/nearby-outlets'];
             if (!publicPaths.includes(location.pathname)) {
                 navigate('/app/select-salon', { replace: true });
             }
             return;
         }
 
-    }, [authLoading, customer, gender, activeOutletId, navigate, location.pathname]);
+    }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
 
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/'];
     const hideHeaderPaths = ['/app/product', '/app/bookings/', '/app/orders/'];
@@ -74,7 +74,7 @@ export default function AppLayout() {
             : 'linear-gradient(to bottom, #1A1A1A 0%, #0F0F0F 100%) fixed';
     }, [isLight]);
 
-    if (authLoading || !customer || (!gender && location.pathname !== '/app/gender')) return null;
+    if (authLoading || isInitializing || !customer || (!gender && location.pathname !== '/app/gender')) return null;
 
     return (
         <div style={{

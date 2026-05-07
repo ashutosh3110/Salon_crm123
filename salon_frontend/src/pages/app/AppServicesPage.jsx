@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed } from 'lucide-react';
+import { Search, ArrowLeft, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed, LayoutGrid } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
+import api from '../../services/api';
 
 const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate }) => {
     const categoryName = useMemo(() => {
@@ -80,29 +81,66 @@ export default function AppServicesPage() {
     const { 
         activeOutlet, 
         activeOutletId,
-        services: businessServices,
-        categories: businessCategories,
-        groupedServices,
-        isInitializing,
-        fetchServices,
-        fetchCategories,
-        fetchGroupedServices,
-        activeSalonId
     } = useBusiness();
     
     const { gender: appGender } = useGender();
     const isLight = theme === 'light';
 
-    useEffect(() => {
-        const tid = activeSalonId || localStorage.getItem('active_salon_id');
-        if (tid) {
-            // Fetch everything we need
-            fetchServices(tid);
-            fetchCategories(tid);
-            fetchGroupedServices(tid);
-        }
-    }, [activeSalonId, fetchServices, fetchCategories, fetchGroupedServices]);
+    const [categories, setCategories] = useState([]);
+    const [services, setServices] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const lastFetchedOutletId = useRef(null);
 
+    const fetchServicesData = useCallback(async (force = false) => {
+        if (!activeOutletId) {
+            setCategories([]);
+            setServices([]);
+            setIsLoading(false);
+            return;
+        }
+
+        if (!force && lastFetchedOutletId.current === activeOutletId) return;
+        lastFetchedOutletId.current = activeOutletId;
+
+        setIsLoading(true);
+        try {
+            const [catsRes, servsRes] = await Promise.all([
+                api.get(`/service-categories/${activeOutletId}`),
+                api.get(`/services/outlet/${activeOutletId}`)
+            ]);
+            setCategories(catsRes.data?.data || []);
+            setServices(servsRes.data?.data || []);
+        } catch (err) {
+            console.error('Error fetching services page data', err);
+            lastFetchedOutletId.current = null; // Allow retry
+        } finally {
+            setIsLoading(false);
+        }
+    }, [activeOutletId]);
+
+    useEffect(() => {
+        fetchServicesData();
+    }, [fetchServicesData]);
+
+    const groupedServices = useMemo(() => {
+        const activeServices = services.filter(s => s.status === 'active');
+        
+        let groups = [];
+        if (categories.length > 0) {
+            groups = categories.filter(c => c.status === 'active').map(cat => {
+                const catServices = activeServices.filter(s => s.category === cat.name || String(s.category) === String(cat._id));
+                return { name: cat.name, services: catServices };
+            });
+        } else {
+            // Group by distinct service category strings if categories API fails/empty
+            const uniqueCatNames = [...new Set(activeServices.map(s => s.category).filter(Boolean))];
+            groups = uniqueCatNames.map(name => {
+                const catServices = activeServices.filter(s => s.category === name);
+                return { name, services: catServices };
+            });
+        }
+        return groups;
+    }, [categories, services]);
 
     const colors = {
         bg: isLight ? '#FCF9F6' : '#0F0F0F',
@@ -112,7 +150,6 @@ export default function AppServicesPage() {
         border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
         input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
     };
-
 
     // Filter categories & services by gender on client side too for safety
     const displayGroups = useMemo(() => {
@@ -138,6 +175,7 @@ export default function AppServicesPage() {
     }, [groupedServices, appGender, activeOutletId]);
 
     const dynamicCategories = useMemo(() => {
+        if (displayGroups.length === 0) return [];
         const names = displayGroups.map(g => g.name);
         return ['All', ...names];
     }, [displayGroups]);
@@ -183,15 +221,7 @@ export default function AppServicesPage() {
     const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
     const fadeUp = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } } };
 
-    if (isInitializing && (!groupedServices || groupedServices.length === 0)) {
-        return (
-            <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center p-8 text-center text-white">
-                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
-                <h2 className="text-lg font-black uppercase tracking-widest mb-2">Initializing</h2>
-                <p className="text-xs opacity-40 max-w-[200px]">Preparing your premium grooming experience...</p>
-            </div>
-        );
-    }
+
 
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
@@ -266,46 +296,68 @@ export default function AppServicesPage() {
                     <SlidersHorizontal size={16} style={{ color: colors.textMuted }} />
                 </div>
 
-                {/* Categories - Text Pills */}
-                <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4 pb-2">
-                    {dynamicCategories.map(catName => {
-                        const isActive = activeCategory === catName;
-                        
-                        return (
-                            <motion.button
-                                key={catName}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setActiveCategory(catName)}
-                                style={{
-                                    padding: '10px 20px',
-                                    borderRadius: '12px',
-                                    background: isActive ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : colors.card,
-                                    border: `1.5px solid ${isActive ? 'transparent' : colors.border}`,
-                                    color: isActive ? '#fff' : colors.textMuted,
-                                    boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.25)' : 'none',
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    whiteSpace: 'nowrap'
-                                }}
-                                className="shrink-0"
-                            >
-                                <span style={{ fontSize: '11px', fontWeight: isActive ? 800 : 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    {catName}
-                                </span>
-                            </motion.button>
-                        );
-                    })}
+                <div className="flex items-center gap-3 mb-4">
+                    <LayoutGrid size={18} className="text-[#C8956C]" />
+                    <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Categories</h2>
                 </div>
+
+                {isLoading ? (
+                    <div className="px-4 py-3 flex gap-2 overflow-x-auto -mx-4 no-scrollbar">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="h-9 w-24 rounded-xl animate-pulse bg-[#C8956C]/10 shrink-0" />
+                        ))}
+                    </div>
+                ) : dynamicCategories.length <= 1 ? (
+                    <div className="px-4 py-3 text-center opacity-50 text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.text }}>
+                        No categories available
+                    </div>
+                ) : (
+                    <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4 pb-2">
+                        {dynamicCategories.map(catName => {
+                            const isActive = activeCategory === catName;
+                            
+                            return (
+                                <motion.button
+                                    key={catName}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setActiveCategory(catName)}
+                                    style={{
+                                        padding: '10px 20px',
+                                        borderRadius: '12px',
+                                        background: isActive ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : colors.card,
+                                        border: `1.5px solid ${isActive ? 'transparent' : colors.border}`,
+                                        color: isActive ? '#fff' : colors.textMuted,
+                                        boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.25)' : 'none',
+                                        transition: 'all 0.3s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    className="shrink-0"
+                                >
+                                    <span style={{ fontSize: '11px', fontWeight: isActive ? 800 : 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                        {catName}
+                                    </span>
+                                </motion.button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Services Content Grouped by Category */}
+            <div className="px-4 mt-8 mb-4 flex items-center gap-3">
+                <Armchair size={18} className="text-[#C8956C]" />
+                <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Services</h2>
+                <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/20 to-transparent ml-2" />
+            </div>
+
             <motion.div
                 variants={stagger}
                 initial="hidden"
                 animate="show"
-                className="px-4 mt-6 space-y-10"
+                className="px-4 mt-2 space-y-10"
             >
                 {finalGroups.map((group) => (
                     <div key={group._id || group.id} className="space-y-4">
@@ -323,7 +375,7 @@ export default function AppServicesPage() {
                                         onBook={handleBook}
                                         colors={colors}
                                         isLight={isLight}
-                                        categories={businessCategories}
+                                        categories={categories}
                                         navigate={navigate}
                                     />
                                 </motion.div>
@@ -333,29 +385,28 @@ export default function AppServicesPage() {
                 ))}
 
 
-                {finalGroups.length === 0 && (
+                {isLoading ? (
+                    <div className="grid grid-cols-2 gap-4">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="aspect-[4/5] rounded-2xl animate-pulse bg-[#C8956C]/5 border border-[#C8956C]/10" />
+                        ))}
+                    </div>
+                ) : finalGroups.length === 0 ? (
                     <div className="py-20 text-center">
                         <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">
                             <Search size={32} className="text-[#C8956C] opacity-40" />
                         </div>
-                        <h3 className="text-lg font-bold mb-1" style={{ color: colors.text }}>No services found</h3>
-                        <p className="text-xs opacity-50 px-10 mb-6" style={{ color: colors.text }}>Try searching with a different keyword or browse through categories.</p>
+                        <h3 className="text-sm font-black uppercase tracking-widest mb-1" style={{ color: colors.text }}>No services available</h3>
+                        <p className="text-[10px] font-medium opacity-50 px-10 mb-6" style={{ color: colors.text }}>We couldn't find any services matching your criteria in this outlet.</p>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => {
-                                const tid = activeSalonId || localStorage.getItem('active_salon_id');
-                                if (tid) {
-                                    fetchServices(tid);
-                                    fetchCategories(tid);
-                                    fetchGroupedServices(tid);
-                                }
-                            }}
-                            className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
+                            onClick={() => fetchServicesData()}
+                            className="px-8 py-3 bg-gradient-to-br from-[#C8956C] to-[#A06844] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
                         >
                             Refresh Services
                         </motion.button>
                     </div>
-                )}
+                ) : null}
             </motion.div>
         </div>
     );

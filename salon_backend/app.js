@@ -87,6 +87,22 @@ app.use('/hr', hr);
 app.use('/finance', finance);
 app.use('/marketing', marketing);
 
+// New Explicit Home Page Routes
+const banners = require('./Routers/bannerRoutes');
+const reviews = require('./Routers/reviewRoutes');
+const membershipPlans = require('./Routers/membershipPlanRoutes');
+const loyaltyRules = require('./Routers/loyaltyRuleRoutes');
+const serviceCategories = require('./Routers/serviceCategoryRoutes');
+
+app.use('/banners', banners);
+app.use('/reviews', reviews);
+app.use('/membership-plans', membershipPlans);
+app.use('/loyalty-rules', loyaltyRules);
+app.use('/service-categories', serviceCategories);
+
+const { getBookingDetails } = require('./Controllers/bookingController');
+app.get('/booking-details/:bookingId', getBookingDetails);
+
 
 // Initialize Cron Jobs
 initCronJobs();

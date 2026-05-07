@@ -45,9 +45,27 @@ export const cancelAllRequests = () => {
     abortController = new AbortController();
 };
 
+let callCount = 0;
+let lastPath = typeof window !== 'undefined' ? window.location.pathname : '';
+
 // Add a request interceptor to add the auth token to every request
 api.interceptors.request.use(
     (config) => {
+        // Track and log API calls per page
+        if (typeof window !== 'undefined') {
+            const currentPath = window.location.pathname;
+            if (currentPath !== lastPath) {
+                callCount = 0;
+                lastPath = currentPath;
+            }
+            callCount++;
+            console.log(`%c[API #${callCount}] %cPage: ${currentPath} %cURL: ${config.url}`, 
+                'color: #C8956C; font-weight: bold; font-size: 10px;', 
+                'color: #888; font-size: 10px;', 
+                'color: #2e7d32; font-weight: bold; font-size: 10px;');
+            if (currentPath === '/app') console.trace('API Call Trace');
+        }
+
         // Attach the global abort signal
         config.signal = abortController.signal;
         

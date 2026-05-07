@@ -1,17 +1,23 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { useBusiness } from './BusinessContext';
 
 const FavoritesContext = createContext();
 
 export function FavoritesProvider({ children }) {
     const { isCustomerAuthenticated } = useCustomerAuth();
+    const { userSession } = useBusiness();
     const [favoriteSalons, setFavoriteSalons] = useState([]);
     const [favoriteProducts, setFavoriteProducts] = useState([]);
     const [loading, setLoading] = useState(false);
 
     const fetchFavorites = useCallback(async () => {
         if (!isCustomerAuthenticated) return;
+        
+        // Skip if on home page as data comes from initial-data
+        if (window.location.pathname === '/app') return;
+
         setLoading(true);
         try {
             const res = await api.get('/auth/favorites');
@@ -27,13 +33,19 @@ export function FavoritesProvider({ children }) {
     }, [isCustomerAuthenticated]);
 
     useEffect(() => {
+        if (userSession?.favoriteOutlets || userSession?.favoriteProducts) {
+            setFavoriteSalons(userSession.favoriteOutlets || []);
+            setFavoriteProducts(userSession.favoriteProducts || []);
+            return;
+        }
+
         if (isCustomerAuthenticated) {
             fetchFavorites();
         } else {
             setFavoriteSalons([]);
             setFavoriteProducts([]);
         }
-    }, [isCustomerAuthenticated, fetchFavorites]);
+    }, [isCustomerAuthenticated, fetchFavorites, userSession]);
 
     const toggleSalonLike = async (salonId) => {
         if (!isCustomerAuthenticated) return;

@@ -2,11 +2,13 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo } 
 import mockApi from '../services/mock/mockApi';
 import { useAuth } from './AuthContext';
 import { useCustomerAuth } from './CustomerAuthContext';
+import { useBusiness } from './BusinessContext';
 
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
     const { user } = useAuth();
+    const { userSession } = useBusiness();
     const { customer } = useCustomerAuth();
     
     const activeUserId = user?._id || user?.id || customer?._id || customer?.id;
@@ -17,6 +19,9 @@ export function NotificationProvider({ children }) {
 
     const fetchNotifications = useCallback(async () => {
         if (!activeUserId) return;
+        // Skip if on home page as data comes from initial-data (Optimization)
+        if (window.location.pathname === '/app') return;
+
         try {
             setLoading(true);
             const res = await mockApi.get('/notifications');
@@ -30,6 +35,9 @@ export function NotificationProvider({ children }) {
 
     const fetchUnreadCount = useCallback(async () => {
         if (!activeUserId) return;
+        // Skip if on home page as data comes from initial-data (Optimization)
+        if (window.location.pathname === '/app') return;
+
         try {
             const res = await mockApi.get('/notifications/unread-count');
             setUnreadCount(res.data.unreadCount || 0);
@@ -69,6 +77,11 @@ export function NotificationProvider({ children }) {
     }, [fetchUnreadCount]);
 
     useEffect(() => {
+        if (userSession?.unreadCount !== undefined) {
+            setUnreadCount(userSession.unreadCount);
+            return;
+        }
+
         if (activeUserId) {
             fetchNotifications();
             fetchUnreadCount();
@@ -76,7 +89,7 @@ export function NotificationProvider({ children }) {
             setNotifications([]);
             setUnreadCount(0);
         }
-    }, [activeUserId, fetchNotifications, fetchUnreadCount]);
+    }, [activeUserId, fetchNotifications, fetchUnreadCount, userSession]);
 
     const value = useMemo(() => ({
         notifications,

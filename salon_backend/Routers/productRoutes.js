@@ -9,6 +9,8 @@ const {
 } = require('../Controllers/productController');
 const { protect } = require('../Middleware/auth');
 
+router.get('/outlet/:outletId', require('../Controllers/homePageController').getProductsByOutlet);
+
 router.route('/')
     .get(getProducts)
     .post(protect, createProduct);

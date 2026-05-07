@@ -32,14 +32,9 @@ async function addBanners() {
         ];
 
         if (cmsEntry) {
-            console.log('Found existing banners, removing links and appending...');
-            let existingBanners = Array.isArray(cmsEntry.content) ? cmsEntry.content : [];
-            // Remove 'link' from all existing banners
-            existingBanners = existingBanners.map(b => {
-                const { link, ...rest } = b;
-                return rest;
-            });
-            cmsEntry.content = [...newBanners, ...existingBanners];
+            console.log('Resetting global banners and removing links...');
+            cmsEntry.content = [...newBanners];
+            cmsEntry.markModified('content');
             await cmsEntry.save();
         } else {
             console.log('Creating global banners section...');
