@@ -89,15 +89,7 @@ export default function ServicesPage({ tab = 'list' }) {
                     <h1 className="text-3xl font-black text-text tracking-tighter uppercase leading-none">Portfolio Services</h1>
                     <p className="text-[10px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60">Architect and manage your salon service portfolio</p>
                 </div>
-                {activeTab === 'list' && (
-                    <button
-                        onClick={handleAddClick}
-                        className="flex items-center justify-center gap-3 px-8 py-4 bg-text text-white text-[11px] font-black uppercase tracking-widest shadow-2xl hover:bg-primary transition-all active:scale-95 italic"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Initialize New Service
-                    </button>
-                )}
+              
             </div>
 
             {/* Outlet Filter */}
@@ -112,7 +104,7 @@ export default function ServicesPage({ tab = 'list' }) {
                             <p className="text-[11px] font-black uppercase text-text tracking-tighter">Filter by Outlet</p>
                         </div>
                     </div>
-                    
+
                     <CustomDropdown
                         className="w-full sm:w-64"
                         placeholder="All Outlets"
@@ -123,7 +115,7 @@ export default function ServicesPage({ tab = 'list' }) {
                         value={selectedOutletId}
                         onChange={setSelectedOutletId}
                     />
-                    
+
                     {selectedOutletId !== 'all' && (
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-100 animate-in fade-in slide-in-from-left-2">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -201,7 +193,7 @@ export default function ServicesPage({ tab = 'list' }) {
                                     <p className="text-[9px] font-bold uppercase tracking-widest text-text-muted opacity-60 italic leading-none">Define catalog service protocols</p>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsFormModalOpen(false)}
                                 className="p-1.5 text-text-muted hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                             >

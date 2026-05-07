@@ -406,9 +406,11 @@ export default function AppLoginPage() {
                 if (res.data?.success) {
                     setOtpVerified(true);
                     setError('');
-                    if (!userCoords) {
-                        setShowLocationModal(true);
-                    }
+                    
+                    // Always show location discovery modal after phone verification 
+                    // if no outlet is selected yet
+                    setShowLocationModal(true);
+                    
                     if (selectedOutlet) {
                         handleVerifyOtpWithTenant(tenantId, selectedOutlet);
                     } else {

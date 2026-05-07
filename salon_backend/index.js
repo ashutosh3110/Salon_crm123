@@ -7,7 +7,10 @@ const app = require('./app');
 const { init } = require('./Utils/socket');
 
 // Connect to database
-connectDB();
+connectDB().then(() => {
+    const { seedSuperAdmin } = require('./Utils/seed');
+    seedSuperAdmin();
+});
 
 const PORT = process.env.PORT || 3000;
 

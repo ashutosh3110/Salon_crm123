@@ -24,7 +24,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
     const { platformSettings } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [modalState, setModalState] = useState({ isOpen: false, type: 'add', data: null });
-    
+
     // Form States
     const [name, setName] = useState('');
     const [gender, setGender] = useState('women');
@@ -83,20 +83,20 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
         const formData = new FormData();
         formData.append('name', name);
         formData.append('gender', gender);
-        
+
         // Only append image if it's a new file (object)
         if (image instanceof File) {
             formData.append('image', image);
         } else if (typeof image === 'string') {
             formData.append('image', image);
         }
-        
+
         if (modalState.type === 'add') {
             onAdd?.(formData);
         } else {
             onUpdate?.(modalState.data._id, formData);
         }
-        
+
         closeModal();
     };
 
@@ -143,10 +143,10 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                         <div className="flex justify-between items-start mb-4 relative z-10">
                             <div className="p-3 rounded-2xl bg-primary/5 text-primary border border-primary/10 group-hover:scale-110 transition-transform flex items-center gap-2 overflow-hidden w-16 h-16 justify-center">
                                 {cat.image ? (
-                                    <img 
-                                        src={cat.image.startsWith('http') ? cat.image : `${API_BASE_URL}${cat.image}`} 
-                                        alt={cat.name} 
-                                        className="w-full h-full object-cover" 
+                                    <img
+                                        src={cat.image.startsWith('http') ? cat.image : `${API_BASE_URL}${cat.image}`}
+                                        alt={cat.name}
+                                        className="w-full h-full object-cover"
                                     />
                                 ) : (
                                     <Tag className="w-6 h-6" />
@@ -171,7 +171,7 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                             </div>
                         </div>
 
-                        <div 
+                        <div
                             className="relative z-10 cursor-pointer group/content"
                             onClick={() => navigate('/admin/services/list', { state: { category: cat.name } })}
                         >
@@ -185,13 +185,12 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     <Layers className="w-3 h-3 text-primary" />
                                     {cat.serviceCount} Services
                                 </div>
-                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${
-                                    cat.gender === 'men' 
-                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' 
+                                <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border ${cat.gender === 'men'
+                                        ? 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                                         : cat.gender === 'both'
                                             ? 'bg-purple-500/10 text-purple-500 border-purple-500/20'
                                             : 'bg-pink-500/10 text-pink-500 border-pink-500/20'
-                                }`}>
+                                    }`}>
                                     {cat.gender === 'men' ? <User className="w-3 h-3" /> : cat.gender === 'both' ? <Users className="w-3 h-3" /> : <UserCircle className="w-3 h-3" />}
                                     {cat.gender}
                                 </div>
@@ -254,13 +253,13 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                     />
                                     {imagePreview ? (
                                         <div className="relative w-full aspect-video rounded-none overflow-hidden border border-border group-hover/img:border-primary transition-all">
-                                            <img 
-                                                src={imagePreview.startsWith('data:') || imagePreview.startsWith('http') ? imagePreview : `${API_BASE_URL}${imagePreview}`} 
-                                                className="w-full h-full object-cover" 
-                                                alt="Preview" 
+                                            <img
+                                                src={imagePreview.startsWith('data:') || imagePreview.startsWith('http') ? imagePreview : `${API_BASE_URL}${imagePreview}`}
+                                                className="w-full h-full object-cover"
+                                                alt="Preview"
                                             />
                                             <div className="absolute inset-0 bg-background/60 opacity-0 group-hover/img:opacity-100 flex items-center justify-center transition-all">
-                                                <button 
+                                                <button
                                                     onClick={(e) => { e.preventDefault(); setImage(''); setImagePreview(''); }}
                                                     className="p-3 bg-rose-500 text-white rounded-full shadow-xl hover:scale-110 transition-all"
                                                 >
@@ -307,8 +306,8 @@ export default function ServiceCategories({ categories = [], onAdd, onUpdate, on
                                             type="button"
                                             onClick={() => setGender(g)}
                                             className={`py-4 border text-[9px] font-black uppercase tracking-[0.1em] transition-all flex flex-col items-center gap-2 ${gender === g
-                                                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                                    : 'bg-surface-alt text-text-muted border-border hover:border-primary/50'
+                                                ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                                : 'bg-surface-alt text-text-muted border-border hover:border-primary/50'
                                                 }`}
                                         >
                                             {g === 'men' ? <User className="w-4 h-4" /> : <UserCircle className="w-4 h-4" />}

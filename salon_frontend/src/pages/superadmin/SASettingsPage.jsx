@@ -85,7 +85,8 @@ export default function SASettingsPage() {
         currency: 'INR',
         currencySymbol: '₹',
         maxImageSize: 5,
-        maxImageSizeUnit: 'MB'
+        maxImageSizeUnit: 'MB',
+        defaultTrialDays: 14
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
     const setSocial = (k, v) => setPlatform(p => ({ ...p, socialLinks: { ...p.socialLinks, [k]: v } }));
@@ -485,9 +486,17 @@ export default function SASettingsPage() {
                                             </select>
                                         }
                                     />
+                                    <Field 
+                                        label="Free Plan Trial Days" 
+                                        value={platform.defaultTrialDays} 
+                                        onChange={e => setPlat('defaultTrialDays', e.target.value)} 
+                                        type="number"
+                                        placeholder="14"
+                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">Days</span>}
+                                    />
                                     <div className="flex items-end pb-1.5">
                                         <p className="text-[10px] text-text-muted italic leading-relaxed">
-                                            Limits the size of banner images, profile pictures, and gallery uploads across the platform.
+                                            Controls the default trial duration for new salon registrations and image upload size limits.
                                         </p>
                                     </div>
                                 </div>

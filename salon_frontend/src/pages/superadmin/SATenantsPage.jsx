@@ -69,7 +69,7 @@ const planIcons = { free: null, basic: null, pro: Crown, premium: Crown, enterpr
 
 const STATUS_CFG = {
     active: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
-    trial: { label: 'On Trial', cls: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800', icon: Clock },
+    trial: { label: 'Active', cls: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800', icon: CheckCircle },
     expired: { label: 'Ended', cls: 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800', icon: AlertTriangle },
     suspended: { label: 'Paused', cls: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800', icon: XCircle },
     inactive: { label: 'Inactive', cls: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700', icon: null },

@@ -50,6 +50,11 @@ exports.createOrder = async (req, res) => {
 
         // Handle Free Plan (Amount is 0)
         if (amount === 0) {
+            // Fetch default trial days from settings
+            const Setting = require('../Models/Setting');
+            const globalSettings = await Setting.findOne();
+            const trialDays = globalSettings?.defaultTrialDays || 14;
+
             // Directly activate for the salon
             const salon = await Salon.findById(salonId);
             if (salon) {
@@ -59,9 +64,9 @@ exports.createOrder = async (req, res) => {
                 salon.features = plan.features;
                 salon.limits = plan.limits;
                 
-                // Set expiry date (1 week for free plan)
+                // Set expiry date based on global settings
                 const expiryDate = new Date();
-                expiryDate.setDate(expiryDate.getDate() + 7);
+                expiryDate.setDate(expiryDate.getDate() + trialDays);
                 salon.subscriptionExpiry = expiryDate;
                 
                 await salon.save();

@@ -53,15 +53,33 @@ exports.getSegments = async (req, res) => {
         const salonId = req.user.salonId;
         const allCount = await Customer.countDocuments({ salonId });
         
-        // Mocking some segment logic for now
+        // Loyal: 5+ visits
+        const loyalCount = await Customer.countDocuments({ salonId, totalVisits: { $gte: 5 } });
+        
+        // At Risk: No visit in last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const atRiskCount = await Customer.countDocuments({ 
+            salonId, 
+            $or: [
+                { lastVisit: { $lt: thirtyDaysAgo } },
+                { lastVisit: { $exists: false }, createdAt: { $lt: thirtyDaysAgo } }
+            ]
+        });
+
+        // New This Month
+        const firstDayOfMonth = new Date();
+        firstDayOfMonth.setDate(1);
+        firstDayOfMonth.setHours(0,0,0,0);
+        const newCount = await Customer.countDocuments({ salonId, createdAt: { $gte: firstDayOfMonth } });
+
         res.status(200).json({
             success: true,
             data: [
                 { id: 'all', label: 'All Customers', count: allCount },
-                { id: 'loyal', label: 'Loyal Customers', count: Math.floor(allCount * 0.3) },
-                { id: 'at_risk', label: 'At Risk', count: Math.floor(allCount * 0.1) },
-                { id: 'new_month', label: 'New This Month', count: Math.floor(allCount * 0.15) },
-                { id: 'birthday', label: 'Birthday Today', count: 2 }
+                { id: 'loyal', label: 'Loyal Customers', count: loyalCount },
+                { id: 'at_risk', label: 'At Risk', count: atRiskCount },
+                { id: 'new_month', label: 'New This Month', count: newCount }
             ]
         });
     } catch (err) {
@@ -125,43 +143,47 @@ exports.createCampaign = async (req, res) => {
             status: 'sending'
         });
 
-        // Trigger the actual message sending logic
-        const templateName = process.env.WHATSAPP_TEMPLATE_MARKETING || process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || 'marketing_update';
+        // Use the centralized utilities
+        const { sendWhatsAppMessage, sendWhatsAppTemplate } = require('../Utils/whatsapp');
         
         let successfulSends = 0;
         
-        // Use a background-like processing (for small batches it's fine here)
-        // In a large salon, this should be a background job
+        // Sending messages
         const sendPromises = recipients.map(async (rcpt) => {
             if (!rcpt.phone) return;
             
-            // parameters: [customerName, salonName, messageBody, actionLink] 
-            // Matching the template requirement of 4 params
-            const params = [];
-            
-            const result = await sendWhatsAppTemplate(rcpt.phone, templateName, params);
-            if (result.success) {
-                const msgId = result.data?.messages?.[0]?.id;
-                console.log(`✅ WhatsApp sent to ${rcpt.name} (${rcpt.phone}) | ID: ${msgId || 'N/A'}`);
-                successfulSends++;
-            } else {
-                console.error(`❌ WhatsApp FAILED for ${rcpt.name} (${rcpt.phone}):`, result.message);
+            try {
+                // Use approved 'new_campaign' template: {{1}}=Name, {{2}}=Subject, {{3}}=Message
+                const result = await sendWhatsAppTemplate(rcpt.phone, 'new_campaign', [
+                    rcpt.name || 'Customer', 
+                    name, 
+                    message
+                ]);
+
+                if (result.success) {
+                    successfulSends++;
+                } else {
+                    // Fallback to plain text if template fails
+                    const personalizedMessage = message.replace(/{{name}}/g, rcpt.name || 'Customer');
+                    await sendWhatsAppMessage(rcpt.phone, personalizedMessage);
+                    successfulSends++;
+                }
+            } catch (err) {
+                console.error(`Error sending to ${rcpt.phone}:`, err.message);
             }
         });
 
-        // Wait for all sends (or move to background)
         await Promise.all(sendPromises);
 
         campaign.sentCount = successfulSends;
         campaign.status = 'completed';
+        campaign.sentAt = new Date();
         await campaign.save();
-
-        console.log(`Campaign "${name}" finished. Successfully sent: ${successfulSends}/${recipients.length}`);
 
         res.status(201).json({
             success: true,
             data: campaign,
-            message: `Campaign sent to ${successfulSends} customers.`
+            message: `Campaign "${name}" sent to ${successfulSends} customers.`
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

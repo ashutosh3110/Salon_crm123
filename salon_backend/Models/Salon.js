@@ -72,6 +72,8 @@ const salonSchema = new mongoose.Schema({
         minRedeemPoints: { type: Number, default: 0 },
         referralPoints: { type: Number, default: 200 },
         referredPoints: { type: Number, default: 100 },
+        birthdayPoints: { type: Number, default: 50 },
+        anniversaryPoints: { type: Number, default: 100 },
         active: { type: Boolean, default: true }
     }
 }, {

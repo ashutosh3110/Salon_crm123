@@ -150,7 +150,6 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Directory', icon: Users, path: '/admin/crm/customers' },
                     { label: 'Wallets', icon: Wallet, path: '/admin/crm/wallets' },
-                    { label: 'Segments', icon: Tag, path: '/admin/crm/segments' },
                     { label: 'Feedback', icon: Star, path: '/admin/crm/feedback' },
                     { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage' },
                 ]

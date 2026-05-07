@@ -40,9 +40,13 @@ exports.login = async (req, res) => {
 
         // 4. Status Checks
         if (userData.isActive === false) {
+            const msg = (userData.status === 'pending') 
+                ? 'Your account is under review by Super Admin. You will be able to login once approved.'
+                : 'Your account is currently inactive. Please contact support.';
+            
             return res.status(403).json({ 
                 success: false, 
-                message: 'Your account is currently inactive. Please contact support.' 
+                message: msg
             });
         }
 

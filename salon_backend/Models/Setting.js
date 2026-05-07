@@ -66,6 +66,10 @@ const settingSchema = new mongoose.Schema({
         type: String,
         enum: ['MB', 'KB'],
         default: 'MB'
+    },
+    defaultTrialDays: {
+        type: Number,
+        default: 14
     }
 }, {
     timestamps: true

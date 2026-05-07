@@ -439,7 +439,6 @@ export default function AppHomePage() {
                     subtitle: validity ? validity.toUpperCase() : 'EXCLUSIVE OFFER',
                     img: p.image,
                     btnText: (p.btnText && String(p.btnText).trim()) || 'Apply',
-                    link: p.link || '/app',
                     outletId: p.outletId,
                     isCmsBanner: true,
                 };
@@ -449,10 +448,7 @@ export default function AppHomePage() {
     const handleBannerClick = (banner) => {
         if (banner && banner.outletId) {
             setActiveOutletId(banner.outletId);
-        }
-        if (banner && banner.link) {
-            console.log(banner,"banner link");
-            navigate("/app");
+            navigate("/app/booking");
         }
     };
 

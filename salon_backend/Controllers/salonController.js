@@ -55,6 +55,12 @@ exports.createSalon = async (req, res) => {
         const features = plan ? plan.features : {};
         const limits = plan ? plan.limits : { staffLimit: 3, outletLimit: 1, whatsappLimit: 50 };
 
+        // Fetch default trial days from settings
+        const globalSettings = await Setting.findOne();
+        const trialDays = globalSettings?.defaultTrialDays || 14;
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + trialDays);
+
         // 2. Create Salon
         const salon = await Salon.create({
             name,
@@ -68,9 +74,10 @@ exports.createSalon = async (req, res) => {
                 street: address,
                 city: city
             },
-            status: 'active', // Direct approved
+            status: 'pending', // Default status for review flow
             isActive: true,
             subscriptionPlan: planName,
+            subscriptionExpiry: expiryDate,
             features,
             limits
         });
@@ -529,6 +536,12 @@ exports.registerSalon = async (req, res) => {
         const features = plan ? plan.features : {};
         const limits = plan ? plan.limits : { staffLimit: 3, outletLimit: 1, whatsappLimit: 50 };
 
+        // Fetch default trial days from settings
+        const globalSettings = await Setting.findOne();
+        const trialDays = globalSettings?.defaultTrialDays || 14;
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + trialDays);
+
         // 2. Create Salon with PENDING status
         const salon = await Salon.create({
             name,
@@ -545,6 +558,7 @@ exports.registerSalon = async (req, res) => {
             status: 'pending', // Waiting for approval
             isActive: false,    // Cannot operate yet
             subscriptionPlan: planName,
+            subscriptionExpiry: expiryDate,
             features,
             limits
         });

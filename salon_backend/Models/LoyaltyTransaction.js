@@ -27,9 +27,9 @@ const loyaltyTransactionSchema = new mongoose.Schema({
     referenceId: {
         type: String, // Can be orderId or bookingId
     },
-    source: {
+        source: {
         type: String,
-        enum: ['WALLET_TOPUP', 'BOOKING', 'REFUND', 'MANUAL', 'REFERRAL'],
+        enum: ['WALLET_TOPUP', 'BOOKING', 'REFUND', 'MANUAL', 'REFERRAL', 'BIRTHDAY', 'ANNIVERSARY'],
         default: 'MANUAL'
     }
 }, {

@@ -43,24 +43,43 @@ export default function ProtectedRoute({ allowedRoles, feature, permission }) {
         const isSupportPage = window.location.pathname.startsWith('/admin/support');
         
         // Multi-tier check
+        const salonStatus = (salon?.status || user?.salonStatus || user?.status || 'none').toLowerCase();
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
         const planName = String(rawPlan || 'none').trim().toLowerCase();
         
         // A salon is restricted if it has no plan or is explicitly inactive/suspended
         const hasNoPlan = ['none', 'undefined', 'null', '', 'pending'].includes(planName);
+        
+        // Safety check for active status: default to active unless explicitly suspended or isActive=false
         const salonActive = salon 
             ? (salon.isActive !== false && salon.status !== 'suspended') 
-            : (user?.salonIsActive !== false);
+            : (user?.isActive !== false && user?.status !== 'suspended');
         
-        const isRestricted = hasNoPlan || !salonActive;
+        // Special statuses that bypass plan restriction
+        const isTrial = salonStatus === 'trial';
+        const isPending = salonStatus === 'pending';
+
+        // Redirection Logic:
+        // 1. If explicitly suspended or inactive -> Redirect
+        // 2. If has no plan AND is NOT in trial AND is NOT pending -> Redirect
+        const shouldRedirect = !salonActive || (hasNoPlan && !isTrial && !isPending);
 
         if (process.env.NODE_ENV === 'development') {
-            console.log('[ProtectedRoute] Gating Debug:', { path: window.location.pathname, planName, salonActive, isRestricted });
+            console.log('[ProtectedRoute] Gating Debug:', { 
+                path: window.location.pathname, 
+                planName, 
+                salonStatus,
+                isTrial,
+                isPending,
+                salonActive, 
+                shouldRedirect 
+            });
         }
 
-        // Redirect to subscription page if salon has no plan or is inactive
-        if (isRestricted && !isSubscriptionPage && !isSupportPage) {
-            console.log('[ProtectedRoute] Redirecting to subscription due to missing plan/inactive status');
+        // Redirect to subscription page if restriction applies
+        if (shouldRedirect && !isSubscriptionPage && !isSupportPage) {
+            const reason = !salonActive ? 'Inactive/Suspended' : 'Plan Required';
+            console.log(`[ProtectedRoute] Redirecting to subscription. Reason: ${reason}`);
             return <Navigate to="/admin/subscription" replace />;
         }
     }

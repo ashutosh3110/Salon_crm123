@@ -96,7 +96,6 @@ export default function MarketingCMSPage() {
     // Form states
     const [formData, setFormData] = useState({
         title: '',
-        link: '/app/book',
         gender: 'all',
         description: '',
         tag: '',
@@ -111,7 +110,6 @@ export default function MarketingCMSPage() {
     const resetForm = () => {
         setFormData({
             title: '',
-            link: '/app/book',
             gender: 'all',
             description: '',
             tag: '',
@@ -171,7 +169,6 @@ export default function MarketingCMSPage() {
         setModalType(type);
         setFormData({
             title: item.title,
-            link: item.link || '/app/book',
             gender: item.gender || 'all',
             description: item.description || '',
             tag: item.tag || '',
@@ -387,7 +384,6 @@ export default function MarketingCMSPage() {
                                     </div>
                                     <div className="p-5">
                                         <h3 className="text-sm font-black text-text uppercase tracking-tight mb-1">{banner.title}</h3>
-                                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest break-all">Link: {banner.link}</p>
                                         <div className="mt-4 flex items-center justify-between">
                                             <button 
                                                 onClick={() => handleEdit('banner', banner)}

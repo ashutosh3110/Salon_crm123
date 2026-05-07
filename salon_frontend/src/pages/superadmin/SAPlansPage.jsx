@@ -33,7 +33,7 @@ const EMPTY_PLAN = {
 };
 
 /* ─── Plan card ──────────────────────────────────────────────────────── */
-function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
+function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete, trialDays }) {
     const isFree = plan.price === 0 || plan.billingCycle === 'trial';
     
     return (
@@ -53,7 +53,7 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                                 </span>
                              )}
                         </div>
-                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{plan.billingCycle || 'Standard'} Plan</p>
+                        <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">{plan.price === 0 ? 'Trial / Free' : (plan.billingCycle || 'Standard')} Plan</p>
                     </div>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${plan.popular ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-surface-alt border-border text-text-muted'}`}>
                         {plan.popular ? <Crown className="w-5 h-5" /> : <Package className="w-5 h-5" />}
@@ -61,8 +61,17 @@ function PlanCard({ plan, onEdit, onClone, onToggleActive, onDelete }) {
                 </div>
 
                 <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-3xl font-black text-text">₹{plan.price || 0}</span>
-                    <span className="text-xs font-bold text-text-muted uppercase tracking-widest">/ {plan.billingCycle === 'yearly' ? 'year' : 'mo'}</span>
+                    {plan.price === 0 ? (
+                        <div className="flex flex-col">
+                            <span className="text-3xl font-black text-emerald-600 tracking-tighter uppercase italic leading-none">Free</span>
+                            <span className="text-[10px] font-black text-emerald-600/60 uppercase tracking-widest mt-1">Validity: {trialDays} Days</span>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="text-3xl font-black text-text">₹{plan.price || 0}</span>
+                            <span className="text-xs font-bold text-text-muted uppercase tracking-widest">/ {plan.billingCycle === 'yearly' ? 'year' : 'mo'}</span>
+                        </>
+                    )}
                 </div>
 
                 <p className="text-xs text-text-secondary font-medium leading-relaxed mb-6 line-clamp-2 h-8">
@@ -160,26 +169,44 @@ function PlanModal({ plan, onClose, onSave, saving }) {
                                      placeholder="What's included in this plan?"
                                  />
                             </div>
-                            <div>
-                                <label className={labelCls}>Billing Cycle</label>
-                                <CustomDropdown
-                                    variant="form"
-                                    value={form.billingCycle || 'monthly'}
-                                    onChange={v => set('billingCycle', v)}
-                                    options={[
-                                        { value: 'monthly', label: 'Monthly' },
-                                        { value: 'yearly', label: 'Yearly' },
-                                        { value: 'trial', label: 'Trial / Free' },
-                                    ]}
-                                />
-                            </div>
-                            <div>
-                                <label className={labelCls}>Base Price (₹) *</label>
-                                <input type="number" className={inputCls} value={form.price} onChange={e => set('price', +e.target.value)} />
-                            </div>
+                            {form.billingCycle !== 'forever' && (
+                                <>
+                                    <div>
+                                        <label className={labelCls}>Billing Cycle</label>
+                                        <CustomDropdown
+                                            variant="form"
+                                            value={form.billingCycle || 'monthly'}
+                                            onChange={v => set('billingCycle', v)}
+                                            options={[
+                                                { value: 'monthly', label: 'Monthly' },
+                                                { value: 'yearly', label: 'Yearly' },
+                                            ]}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={labelCls}>Base Price (₹) *</label>
+                                        <input type="number" className={inputCls} value={form.price} onChange={e => set('price', +e.target.value)} />
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6 p-4 bg-surface rounded-xl border border-border">
+                        <div className="grid grid-cols-3 gap-6 p-4 bg-surface rounded-xl border border-border">
+                            <label className="flex items-center gap-3 cursor-pointer select-none">
+                                <input 
+                                    type="checkbox" 
+                                    checked={form.billingCycle === 'forever'} 
+                                    onChange={e => {
+                                        if (e.target.checked) {
+                                            setForm(p => ({ ...p, billingCycle: 'forever', price: 0 }));
+                                        } else {
+                                            setForm(p => ({ ...p, billingCycle: 'monthly' }));
+                                        }
+                                    }} 
+                                    className="w-4 h-4 accent-primary" 
+                                />
+                                <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Free Plan</span>
+                            </label>
                             <label className="flex items-center gap-3 cursor-pointer select-none">
                                 <input type="checkbox" checked={form.popular} onChange={e => set('popular', e.target.checked)} className="w-4 h-4 accent-primary" />
                                 <span className="text-[11px] font-black uppercase text-text-secondary tracking-widest">Mark as Popular</span>
@@ -243,6 +270,7 @@ export default function SAPlansPage() {
     const [modal, setModal] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
+    const [trialDays, setTrialDays] = useState(14);
 
     const showToast = (msg, type = 'success') => {
         setToast({ msg, type });
@@ -251,7 +279,17 @@ export default function SAPlansPage() {
 
     useEffect(() => {
         fetchData();
+        fetchSettings();
     }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const res = await api.get('/settings');
+            if (res.data?.success) setTrialDays(res.data.data.defaultTrialDays || 14);
+        } catch (err) {
+            console.error('Error fetching settings:', err);
+        }
+    };
 
     const fetchData = async () => {
         setLoading(true);
@@ -369,18 +407,19 @@ export default function SAPlansPage() {
                     <div className="text-[10px] text-text-muted font-black uppercase tracking-widest">Loading Plans...</div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {plans.map((plan) => (
-                        <PlanCard
-                            key={plan._id}
-                            plan={plan}
-                            onEdit={p => setModal(p)}
-                            onClone={handleClone}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {plans.map(plan => (
+                        <PlanCard 
+                            key={plan._id} 
+                            plan={plan} 
+                            trialDays={trialDays}
+                            onEdit={setModal} 
+                            onClone={handleClone} 
                             onToggleActive={handleToggleActive}
                             onDelete={handleDelete}
                         />
                     ))}
-                    
+                
                     {plans.length === 0 && (
                         <div className="col-span-full py-24 bg-surface-alt border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center">
                             <Package className="w-12 h-12 text-text-muted mb-4 opacity-20" />

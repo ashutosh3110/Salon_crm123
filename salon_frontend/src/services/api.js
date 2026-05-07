@@ -66,7 +66,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status !== 401) {
+        if (error.response?.status !== 401 && error.response?.status !== 403) {
             const message = error.response?.data?.message || 'A network error occurred';
             
             // Check if it's an image size limit error to show as info instead of error

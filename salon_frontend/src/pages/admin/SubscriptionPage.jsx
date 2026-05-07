@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
-import subscriptionData from '../../data/subscriptionPlans.json';
 
 const ICON_MAP = {
     pos: Zap,
@@ -54,6 +53,7 @@ export default function SubscriptionPage() {
     const [cancelReason, setCancelReason] = useState('');
     const [cancelComment, setCancelComment] = useState('');
     const [allFeatures, setAllFeatures] = useState([]);
+    const [trialDays, setTrialDays] = useState(14);
 
     const { refreshUser } = useAuth();
 
@@ -91,7 +91,7 @@ export default function SubscriptionPage() {
             }
         } catch (e) { 
             console.error('Error fetching plans:', e);
-            setPlans(subscriptionData.INITIAL_PLANS);
+            setPlans([]);
         } finally { setLoadingPlans(false); }
     }, []);
 
@@ -115,7 +115,17 @@ export default function SubscriptionPage() {
         fetchBillingHistory();
         fetchFeatures();
         fetchCurrentSalon();
+        fetchSettings();
     }, [fetchPlans, fetchBillingHistory, fetchCurrentSalon]);
+
+    const fetchSettings = async () => {
+        try {
+            const res = await api.get('/settings');
+            if (res.data?.success) setTrialDays(res.data.data.defaultTrialDays || 14);
+        } catch (err) {
+            console.error('Error fetching settings:', err);
+        }
+    };
 
     const fetchFeatures = async () => {
         try {
@@ -129,7 +139,7 @@ export default function SubscriptionPage() {
     const effectiveSalon = currentSalon || salon;
     const activePlanId = effectiveSalon?.subscriptionPlanId || user?.subscriptionPlanId;
     const currentPlanName = effectiveSalon?.subscriptionPlan || '';
-    const displayPlans = (plans && plans.length > 0) ? plans : subscriptionData.INITIAL_PLANS;
+    const displayPlans = plans || [];
     
     const currentPlan = displayPlans.find(p => {
         // Match by Name (case-insensitive, trimmed)
@@ -297,7 +307,12 @@ export default function SubscriptionPage() {
                                             <span className="bg-rose-500/10 text-rose-600 text-[8px] font-black px-2 py-0.5 rounded-full border border-rose-500/20 uppercase tracking-widest">Inactive</span>
                                         )}
                                     </div>
-                                    <h2 className="text-4xl font-black text-text tracking-tighter uppercase italic">{currentPlan ? currentPlan.name : 'No Active Plan'}</h2>
+                                    <h2 className="text-4xl font-black text-text tracking-tighter uppercase italic">
+                                        {currentPlan ? currentPlan.name : (
+                                            effectiveSalon?.status === 'pending' ? 'Application Under Review' : 
+                                            (effectiveSalon?.status === 'trial' ? 'Trial Period' : 'No Active Plan')
+                                        )}
+                                    </h2>
                                 </div>
                             </div>
                         </div>
@@ -305,16 +320,18 @@ export default function SubscriptionPage() {
                         <div className="flex flex-wrap gap-12 md:border-l border-border md:pl-12">
                             <div className="space-y-2">
                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Outlet Limit</p>
-                                <p className="text-2xl font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : '0'} <span className="text-sm font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
+                                <p className="text-2xl font-black text-text tracking-tighter">{currentPlan ? currentPlan.limits?.outletLimit : (effectiveSalon?.status === 'trial' ? effectiveSalon?.limits?.outletLimit : '0')} <span className="text-sm font-bold text-text-muted opacity-40">BRANCHE(S)</span></p>
                             </div>
                             <div className="space-y-2">
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Expires On</p>
+                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">
+                                    {effectiveSalon?.status === 'trial' ? 'Trial Ends On' : 'Expires On'}
+                                </p>
                                 <p className="text-2xl font-black text-text tracking-tighter">
-                                    {effectiveSalon?.subscriptionExpiry 
+                                    {(effectiveSalon?.subscriptionExpiry && (currentPlan || effectiveSalon?.status === 'trial'))
                                         ? (new Date(effectiveSalon.subscriptionExpiry).getFullYear() > new Date().getFullYear() + 50 
                                             ? 'Life Time' 
                                             : new Date(effectiveSalon.subscriptionExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }))
-                                        : 'Never'}
+                                        : '—'}
                                 </p>
                             </div>
                         </div>
@@ -345,9 +362,18 @@ export default function SubscriptionPage() {
                                     <h4 className="text-2xl font-black uppercase italic tracking-tighter text-text">{plan.name}</h4>
                                     {plan.popular && <Sparkles className="w-5 h-5 text-[#B4912B] animate-pulse" />}
                                 </div>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
-                                    <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
+                                <div className="flex flex-col">
+                                    {plan.price === 0 || (plan.monthlyPrice === 0) ? (
+                                        <>
+                                            <span className="text-3xl font-black tracking-tighter text-emerald-600 italic uppercase">Free</span>
+                                            <span className="text-[10px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mt-1">Validity: {trialDays} Days</span>
+                                        </>
+                                    ) : (
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-3xl font-black tracking-tighter">₹{(plan.monthlyPrice || 0).toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">/mo</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -372,16 +398,24 @@ export default function SubscriptionPage() {
 
                                 <button 
                                 onClick={() => handleUpgrade(plan)} 
-                                disabled={isCurrent || upgrading === plan.id}
+                                disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
                                 className={`w-full h-14 rounded-2xl text-[11px] font-black uppercase tracking-[0.3em] transition-all duration-500 shadow-lg ${
                                     isCurrent
                                     ? 'bg-surface text-text-muted cursor-default' 
-                                    : upgrading === plan.id 
-                                        ? 'bg-[#B4912B]/50 text-white cursor-wait'
-                                        : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
+                                    : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
+                                        ? 'bg-slate-100 text-slate-400 cursor-not-allowed border-dashed border-2 border-slate-200 shadow-none'
+                                        : upgrading === plan.id 
+                                            ? 'bg-[#B4912B]/50 text-white cursor-wait'
+                                            : 'bg-text text-white hover:bg-[#B4912B] hover:shadow-[#B4912B]/20 active:scale-95'
                                 }`}
                             >
-                                {isCurrent ? 'Current Plan' : upgrading === plan.id ? 'Processing...' : 'Upgrade'}
+                                {isCurrent 
+                                    ? 'Current Plan' 
+                                    : (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent)
+                                        ? 'Subscription Active'
+                                        : upgrading === plan.id 
+                                            ? 'Processing...' 
+                                            : 'Upgrade'}
                             </button>
                         </div>
                     );

@@ -17,12 +17,12 @@ router.post('/bulk', authorize('admin', 'manager', 'receptionist'), bulkImport);
 
 router
     .route('/')
-    .get(authorize('admin', 'manager', 'receptionist'), getClients)
+    .get(authorize('admin', 'manager', 'receptionist', 'p:marketing'), getClients)
     .post(authorize('admin', 'manager', 'receptionist'), createClient);
 
 router
     .route('/:id')
-    .get(authorize('admin', 'manager', 'receptionist'), getClient)
+    .get(authorize('admin', 'manager', 'receptionist', 'p:marketing'), getClient)
     .patch(authorize('admin', 'manager', 'receptionist'), updateClient)
     .put(authorize('admin', 'manager', 'receptionist'), updateClient) // Support both PUT/PATCH
     .delete(authorize('admin', 'manager', 'receptionist'), deleteClient);

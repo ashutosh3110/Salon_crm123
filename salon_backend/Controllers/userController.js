@@ -91,9 +91,20 @@ exports.createUser = async (req, res) => {
             salonId: req.user.salonId
         });
 
-        // Send Welcome Email
+        // Send Welcome Notifications (Email + WhatsApp)
         try {
+            const Salon = require('../Models/Salon');
+            const Outlet = require('../Models/Outlet');
+            const { sendWapixoTemplate } = require('../Utils/whatsapp');
             const sendEmail = require('../Utils/sendEmail');
+            
+            const salon = await Salon.findById(req.user.salonId);
+            const outlet = await Outlet.findById(outletId);
+            const businessName = salon?.businessName || salon?.name || 'Wapixo';
+            const salonDisplayName = outlet?.name || salon?.name || 'Our Salon';
+            const loginUrl = process.env.FRONTEND_BASE_URL + '/login';
+
+            // 1. Send Email
             await sendEmail({
                 email: staff.email,
                 subject: 'Welcome to the Team - Your Account Credentials',
@@ -108,12 +119,24 @@ exports.createUser = async (req, res) => {
                         </div>
                         <p>Please login and update your profile.</p>
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                        <p style="font-size: 11px; color: #777; text-align: center;">Team Salon CRM</p>
+                        <p style="font-size: 11px; color: #777; text-align: center;">Team ${businessName}</p>
                     </div>
                 `
             });
-        } catch (emailErr) {
-            console.error('Email sending failed during staff creation:', emailErr);
+
+            // 2. Send WhatsApp
+            if (phone) {
+                const template = process.env.WHATSAPP_TEMPLATE_STAFF_WELCOME || 'staff_registration_welcome';
+                await sendWapixoTemplate(phone, template, [
+                    businessName,
+                    salonDisplayName,
+                    roleDisplayName,
+                    email,
+                    loginUrl
+                ]);
+            }
+        } catch (err) {
+            console.error('Welcome notifications failed during staff creation:', err);
         }
 
         res.status(201).json({

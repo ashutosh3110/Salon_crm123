@@ -194,8 +194,11 @@ export default function MarketingHub() {
             </div>
 
             {/* Tab Content */}
-            <div className="space-y-6">
+            <div className="space-y-10">
+                {/* 1. KPI Cards & Performance Chart */}
                 <DashboardContent dashboardData={dashboardData} segments={segments} loading={loading} onRefresh={() => { loadDashboard(); loadSegments(); }} />
+                
+                {/* 2. Campaign List */}
                 <WhatsAppContent campaigns={campaigns} campaignsLoading={campaignsLoading} onNew={() => startCampaign()} onRefresh={loadCampaigns} />
             </div>
 
@@ -208,17 +211,13 @@ export default function MarketingHub() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white rounded-[2rem] border border-border w-full max-w-xl shadow-2xl relative overflow-hidden"
+                            className="bg-white rounded-[2rem] border border-border w-full max-w-xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
                         >
                             {/* Header */}
-                            <div className="px-8 py-6 border-b border-border flex items-center justify-between">
+                            <div className="px-8 py-6 border-b border-border flex items-center justify-between shrink-0">
                                 <div>
                                     <h3 className="text-xl font-black text-text uppercase tracking-tight">Create WhatsApp Campaign</h3>
-                                    <div className="flex gap-1 mt-1">
-                                        {[1, 2, 3].map(s => (
-                                            <div key={s} className={`h-1 rounded-full transition-all duration-300 ${campaignStep >= s ? 'w-8 bg-primary' : 'w-4 bg-slate-100'}`} />
-                                        ))}
-                                    </div>
+                                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Fill details and send instantly</p>
                                 </div>
                                 {!isSending && (
                                     <button onClick={() => setIsCampaignModalOpen(false)} className="p-2 hover:bg-surface rounded-full transition-colors">
@@ -227,203 +226,162 @@ export default function MarketingHub() {
                                 )}
                             </div>
 
-                            {/* Step 1: Select Audience */}
-                            {campaignStep === 1 && (
-                                <div className="p-8 space-y-6">
-                                    <div>
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3 block">Campaign Name</label>
-                                        <input
-                                            type="text"
-                                            placeholder="e.g. Summer Special 2026"
-                                            className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            value={campaignForm.name}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                                        />
-                                    </div>
+                            {/* Single Step Body */}
+                            <div className="overflow-y-auto p-8 space-y-8 flex-1 no-scrollbar">
+                                {campaignStep === 3 ? (
+                                    /* Sending State Overlay-like content */
+                                    <div className="py-12 flex flex-col items-center text-center space-y-8">
+                                        {!campaignError && (
+                                            <div className="relative w-32 h-32 flex items-center justify-center">
+                                                <svg className="w-full h-full -rotate-90">
+                                                    <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
+                                                    <motion.circle
+                                                        cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
+                                                        strokeDasharray={380}
+                                                        animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
+                                                        className="text-primary"
+                                                    />
+                                                </svg>
+                                                <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-text">
+                                                    {Math.round(sendingProgress)}%
+                                                </div>
+                                            </div>
+                                        )}
 
-                                    <div>
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-3 block">Choose Audience</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {[
-                                                { id: 'bulk', label: 'Send to Everyone', desc: 'All Customers', icon: Users },
-                                                { id: 'segmented', label: 'By Segment', desc: 'Auto Groups', icon: Zap },
-                                                { id: 'selective', label: 'Pick Specific', desc: 'Selected List', icon: Target },
-                                            ].map(t => (
-                                                <button
-                                                    key={t.id}
-                                                    onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
-                                                    className={`p-4 rounded-2xl border-2 transition-all text-left ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
-                                                >
-                                                    <t.icon className={`w-5 h-5 mb-2 ${campaignForm.type === t.id ? 'text-primary' : 'text-text-muted'}`} />
-                                                    <div className="text-xs font-black text-text uppercase tracking-tight">{t.label}</div>
-                                                    <div className="text-[10px] text-text-muted font-bold mt-0.5">{t.desc}</div>
-                                                </button>
-                                            ))}
+                                        <div>
+                                            <h3 className="text-xl font-black text-text uppercase tracking-tight">{isSending ? 'Sending Messages...' : campaignError ? 'Error' : 'Campaign Sent!'}</h3>
+                                            <p className="text-sm text-text-muted mt-2 font-medium">
+                                                {campaignError
+                                                    ? campaignError
+                                                    : isSending
+                                                        ? `Processing campaign for your selected audience...`
+                                                        : 'Campaign finished successfully! Check your list for details.'
+                                                }
+                                            </p>
                                         </div>
-                                    </div>
 
-                                    {campaignForm.type === 'segmented' && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-1 block">Pick a Segment</label>
-                                            <div className="grid grid-cols-2 gap-2">
+                                        {!isSending && !campaignError && (
+                                            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200">
+                                                <CheckCircle className="w-8 h-8" />
+                                            </motion.div>
+                                        )}
+                                        {campaignError && (
+                                            <button onClick={() => { setCampaignStep(1); setCampaignError(''); }} className="px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:brightness-110">
+                                                Try Again
+                                            </button>
+                                        )}
+                                        {!isSending && !campaignError && (
+                                            <button onClick={() => setIsCampaignModalOpen(false)} className="px-8 py-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-black">
+                                                Close
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    /* Campaign Form */
+                                    <>
+                                        {/* 1. Campaign Name */}
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Campaign Name</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Summer Special 2026"
+                                                className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                                value={campaignForm.name}
+                                                onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                                            />
+                                        </div>
+
+                                        {/* 2. Audience Selection */}
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] block">Choose Audience</label>
+                                            <div className="grid grid-cols-2 gap-3">
                                                 {[
-                                                    { id: 'inactive_60', label: 'Inactive (60d+)' },
-                                                    { id: 'high_spenders', label: 'High Spenders' },
-                                                    { id: 'birthday', label: 'Birthday Today' },
-                                                    { id: 'at_risk', label: 'At Risk (30d+)' },
-                                                    { id: 'new_month', label: 'New This Month' },
-                                                ].map(s => {
-                                                    const seg = segments.find(se => se.id === s.id);
-                                                    const cnt = seg?.count ?? 0;
-                                                    return (
-                                                        <button
-                                                            key={s.id}
-                                                            onClick={() => setCampaignForm({ ...campaignForm, segment: s.id })}
-                                                            className={`px-3 py-2 rounded-lg text-left text-[10px] font-black uppercase tracking-tight border ${campaignForm.segment === s.id ? 'bg-primary text-white border-primary' : 'bg-white text-text-secondary border-border hover:border-primary/30'}`}
-                                                        >
-                                                            {s.label} {cnt > 0 && `(${cnt})`}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </motion.div>
-                                    )}
-
-                                    {campaignForm.type === 'selective' && (
-                                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Recipients ({campaignForm.selectedCustomers.length})</label>
-                                                <button 
-                                                    onClick={() => setIsContactListOpen(true)}
-                                                    className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline"
-                                                >
-                                                    + Pick Customers
-                                                </button>
-                                            </div>
-                                            {campaignForm.selectedCustomers.length > 0 ? (
-                                                <div className="max-h-32 overflow-y-auto p-3 bg-surface border border-border rounded-xl flex flex-wrap gap-2 no-scrollbar">
-                                                    {campaignForm.selectedCustomers.map(id => (
-                                                        <div key={id} className="bg-primary/10 text-primary text-[10px] font-black px-2 py-1 rounded-lg uppercase flex items-center gap-1">
-                                                            {id.slice(-4)}
-                                                            <button onClick={() => setCampaignForm(p => ({ ...p, selectedCustomers: p.selectedCustomers.filter(x => x !== id) }))} className="hover:text-rose-500"><XCircle size={10} /></button>
+                                                    { id: 'bulk', label: 'Everyone', desc: 'All Customers', icon: Users },
+                                                    { id: 'selective', label: 'Selected', desc: 'Specific List', icon: Target },
+                                                ].map(t => (
+                                                    <button
+                                                        key={t.id}
+                                                        onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
+                                                        className={`p-4 rounded-2xl border-2 transition-all text-left flex items-start gap-4 ${campaignForm.type === t.id ? 'border-primary bg-primary/[0.02]' : 'border-border hover:border-slate-300'}`}
+                                                    >
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-surface text-text-muted'}`}>
+                                                            <t.icon className="w-5 h-5" />
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="py-8 text-center border-2 border-dashed border-border rounded-2xl opacity-40">
-                                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">No customers selected</p>
-                                                </div>
+                                                        <div>
+                                                            <div className="text-xs font-black text-text uppercase tracking-tight">{t.label}</div>
+                                                            <div className="text-[9px] text-text-muted font-bold mt-0.5 uppercase tracking-wider">{t.desc}</div>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            {/* Selective Picker UI */}
+                                            {campaignForm.type === 'selective' && (
+                                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="pt-2">
+                                                    <div className="p-4 rounded-2xl bg-surface border border-border flex items-center justify-between">
+                                                        <div>
+                                                            <div className="text-[10px] font-black text-text-muted uppercase tracking-widest">Recipients</div>
+                                                            <div className="text-sm font-black text-text">{campaignForm.selectedCustomers.length} selected</div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => setIsContactListOpen(true)}
+                                                            className="px-4 py-2 bg-white border border-border rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/30"
+                                                        >
+                                                            {campaignForm.selectedCustomers.length > 0 ? 'Edit Selection' : 'Select Customers'}
+                                                        </button>
+                                                    </div>
+                                                </motion.div>
                                             )}
-                                        </motion.div>
-                                    )}
-
-                                    <button
-                                        onClick={() => setCampaignStep(2)}
-                                        disabled={!campaignForm.name}
-                                        className="w-full py-4 bg-slate-900 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black transition-all mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                                Next: Write Message
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Step 2: Compose Message */}
-                            {campaignStep === 2 && (
-                                <div className="p-8 space-y-6">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message</label>
-                                            <button className="text-[10px] font-black text-primary uppercase tracking-widest hover:underline">Use Template</button>
                                         </div>
-                                        <textarea
-                                            rows={5}
-                                            placeholder="Type your WhatsApp message here..."
-                                            className="w-full bg-surface border border-border rounded-2xl px-4 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-                                            value={campaignForm.message}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
-                                        />
-                                        <div className="flex items-center gap-1 mt-2 text-[10px] text-text-muted font-bold uppercase tracking-widest text-right justify-end">
-                                            {campaignForm.message.length} characters
-                                        </div>
-                                    </div>
 
-                                    <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white">
-                                                <Zap className="w-4 h-4" />
+                                        {/* 3. Message Composition */}
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Message Content</label>
+                                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">{campaignForm.message.length} characters</span>
+                                            </div>
+                                            <textarea
+                                                rows={4}
+                                                placeholder="Type your WhatsApp message here... (Use {{name}} for customer name)"
+                                                className="w-full bg-surface border border-border rounded-2xl px-4 py-4 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all"
+                                                value={campaignForm.message}
+                                                onChange={(e) => setCampaignForm({ ...campaignForm, message: e.target.value })}
+                                            />
+                                        </div>
+
+                                        {/* Estimated Reach Info */}
+                                        <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100 flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                                                <Zap className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Estimated Recipients</div>
+                                                <div className="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Estimated Reach</div>
                                                 <div className="text-sm font-black text-emerald-900">
                                                     {campaignForm.type === 'bulk'
                                                         ? (segments.find(s => s.id === 'all')?.count ?? 0).toLocaleString()
-                                                        : campaignForm.type === 'selective'
-                                                            ? campaignForm.selectedCustomers.length.toLocaleString()
-                                                            : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0).toLocaleString()
-                                                    } <span className="text-[10px] font-bold opacity-60">customers</span>
+                                                        : campaignForm.selectedCustomers.length.toLocaleString()
+                                                    } <span className="text-[10px] font-bold opacity-60 uppercase">Real Customers</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {campaignError && (
-                                        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
-                                    )}
-                                    <div className="flex gap-3">
-                                        <button onClick={() => { setCampaignStep(1); setCampaignError(''); }} className="flex-1 py-4 bg-white border border-border text-text-secondary text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-surface transition-all">Back</button>
-                                        <button
-                                            onClick={handleSendCampaign}
-                                            disabled={!campaignForm.message || isSending}
-                                            className="flex-[2] py-4 bg-primary text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:brightness-110 shadow-xl shadow-primary/20 transition-all disabled:opacity-50"
-                                        >
-                                            {isSending ? 'Saving...' : 'Send Campaign Now'}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
+                                        {campaignError && (
+                                            <div className="rounded-xl bg-rose-50 border border-rose-200 p-3 text-rose-700 text-xs font-bold">{campaignError}</div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
 
-                            {/* Step 3: Sending */}
-                            {campaignStep === 3 && (
-                                <div className="p-12 flex flex-col items-center text-center space-y-8">
-                                    {!campaignError && (
-                                        <div className="relative w-32 h-32 flex items-center justify-center">
-                                            <svg className="w-full h-full -rotate-90">
-                                                <circle cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-100" />
-                                                <motion.circle
-                                                    cx="64" cy="64" r="60" stroke="currentColor" strokeWidth="8" fill="transparent"
-                                                    strokeDasharray={380}
-                                                    animate={{ strokeDashoffset: 380 - (380 * sendingProgress) / 100 }}
-                                                    className="text-primary"
-                                                />
-                                            </svg>
-                                            <div className="absolute inset-0 flex items-center justify-center text-2xl font-black text-text">
-                                                {Math.round(sendingProgress)}%
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div>
-                                        <h3 className="text-xl font-black text-text uppercase tracking-tight">{isSending ? 'Sending Messages...' : campaignError ? 'Error' : 'Campaign Sent!'}</h3>
-                                        <p className="text-sm text-text-muted mt-2 font-medium">
-                                            {campaignError
-                                                ? campaignError
-                                                : isSending
-                                                    ? `Saving campaign for ${(campaignForm.type === 'bulk' ? (segments.find(s => s.id === 'all')?.count ?? 0) : (segments.find(s => s.id === campaignForm.segment)?.count ?? 0)).toLocaleString()} customers.`
-                                                    : 'Campaign saved successfully. Connect WhatsApp API to send messages.'
-                                            }
-                                        </p>
-                                    </div>
-
-                                    {!isSending && !campaignError && (
-                                        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xl shadow-emerald-200">
-                                            <CheckCircle className="w-8 h-8" />
-                                        </motion.div>
-                                    )}
-                                    {campaignError && (
-                                        <button onClick={() => { setCampaignStep(2); setCampaignError(''); }} className="px-6 py-3 bg-primary text-white text-xs font-black uppercase tracking-widest rounded-xl hover:brightness-110">
-                                            Try Again
-                                        </button>
-                                    )}
+                            {/* Footer Action */}
+                            {campaignStep !== 3 && (
+                                <div className="p-8 border-t border-border bg-surface/30 shrink-0">
+                                    <button
+                                        onClick={handleSendCampaign}
+                                        disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
+                                        className="w-full py-5 bg-primary text-white text-xs font-black uppercase tracking-[0.3em] rounded-[1.5rem] hover:brightness-110 shadow-xl shadow-primary/25 transition-all disabled:opacity-50 active:scale-[0.98]"
+                                    >
+                                        {isSending ? 'Initiating Campaign...' : 'Send WhatsApp Campaign Now'}
+                                    </button>
                                 </div>
                             )}
                         </motion.div>
@@ -487,89 +445,8 @@ function DashboardContent({ dashboardData, segments, loading, onRefresh }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatCard label={stats[0]?.label || 'Campaign Reach'} value={stats[0]?.value || '0'} trend={stats[0]?.trend} icon={Users} color="bg-blue-50 text-blue-600" />
                 <StatCard label={stats[1]?.label || 'Conv. Rate'} value={stats[1]?.value || '0%'} trend={stats[1]?.trend} icon={TrendingUp} color="bg-emerald-50 text-emerald-600" />
-                <StatCard label={stats[2]?.label || 'Total Spent'} value={stats[2]?.value || '₹0'} icon={Zap} color="bg-amber-50 text-amber-600" />
+                <StatCard label={stats[2]?.label || 'Total Sent'} value={stats[2]?.value || '0'} icon={Zap} color="bg-amber-50 text-amber-600" />
                 <StatCard label={stats[3]?.label || 'Campaigns'} value={stats[3]?.value || '0'} trend={stats[3]?.trend} icon={Smartphone} color="bg-primary/10 text-primary" />
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-6">
-                {/* Growth Chart */}
-                <div className="lg:col-span-2 bg-white rounded-3xl border border-border p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 className="text-sm font-black text-text uppercase tracking-wider">Campaign Performance</h3>
-                            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Last 7 days by channel</p>
-                        </div>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-full bg-primary" />
-                                <span className="text-[10px] font-bold text-text-muted uppercase">WhatsApp</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2 h-2 rounded-full bg-blue-500" />
-                                <span className="text-[10px] font-bold text-text-muted uppercase">Email</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
-                                <defs>
-                                    <linearGradient id="colorWa" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#AD0B2A" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#AD0B2A" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorEmail" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                                <XAxis dataKey="name" stroke="#A3A3A3" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
-                                <YAxis stroke="#A3A3A3" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
-                                <Area type="monotone" dataKey="whatsapp" stroke="#AD0B2A" strokeWidth={3} fillOpacity={1} fill="url(#colorWa)" />
-                                <Area type="monotone" dataKey="email" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorEmail)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                {/* Audience Segments */}
-                <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-sm font-black text-text uppercase tracking-wider">Audience Segments</h3>
-                        <button onClick={onRefresh} className="p-2 hover:bg-surface rounded-lg transition-colors"><Plus className="w-4 h-4 text-primary" /></button>
-                    </div>
-                    <div className="space-y-4">
-                        {(displaySegments.length > 0 ? displaySegments : [
-                            { id: 'all', label: 'All Customers', count: 0, color: 'text-slate-400' },
-                            { id: 'loyal', label: 'Loyal (5+ visits)', count: 0, color: 'text-primary' },
-                            { id: 'at_risk', label: 'At Risk (30d+ gap)', count: 0, color: 'text-amber-500' },
-                            { id: 'new_month', label: 'New This Month', count: 0, color: 'text-emerald-500' },
-                        ]).map(s => {
-                            const total = displaySegments.find(x => x.id === 'all')?.count || 1;
-                            const pct = total > 0 ? Math.min(100, (s.count / total) * 100) : 0;
-                            return (
-                                <div key={s.id || s.label} className="p-4 rounded-2xl border border-border hover:border-primary/30 transition-all cursor-pointer group">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-[10px] font-black uppercase tracking-tight text-text-secondary">{s.label}</span>
-                                        <span className={`text-xs font-black ${s.color}`}>{s.count}</span>
-                                    </div>
-                                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            whileInView={{ width: `${pct}%` }}
-                                            className="h-full bg-primary"
-                                        />
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <button onClick={onRefresh} className="w-full mt-6 py-3 bg-surface text-text-secondary text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition-all">
-                        Refresh Segments
-                    </button>
-                </div>
             </div>
         </div>
     );
@@ -608,24 +485,9 @@ function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-4 gap-6">
-                {/* Left Column: Stats & Templates */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-3xl border border-border p-6 shadow-sm">
-                        <h4 className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-4">Quick Templates</h4>
-                        <div className="space-y-3">
-                            {['Birthday Wish', 'Review Request', 'Flash Sale', 'Appointment Reminder'].map(t => (
-                                <button key={t} className="w-full p-3 rounded-xl bg-surface border border-transparent hover:border-primary/20 text-xs font-bold text-text-secondary text-left transition-all flex items-center justify-between group">
-                                    {t} <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column: Recent Campaigns */}
-                <div className="lg:col-span-3">
-                    <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden text-center justify-center">
+            <div className="grid grid-cols-1 gap-6">
+                {/* Recent Campaigns - Full Width */}
+                <div className="bg-white rounded-3xl border border-border shadow-sm overflow-hidden text-center justify-center">
                         <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-surface/30">
                             <h3 className="text-xs font-black text-text uppercase tracking-widest leading-none">Recent Campaigns</h3>
                             <button onClick={onRefresh} className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest">Refresh</button>
@@ -674,7 +536,6 @@ function WhatsAppContent({ campaigns, campaignsLoading, onNew, onRefresh }) {
                             </table>
                         </div>
                     </div>
-                </div>
             </div>
         </div>
     );
@@ -942,7 +803,7 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
             setLoading(true);
             api.get('/clients?limit=500')
                 .then((res) => {
-                    const rows = res.data?.results || res.data || [];
+                    const rows = res.data?.data || [];
                     setContacts(Array.isArray(rows) ? rows : []);
                 })
                 .catch(() => setContacts([]))
@@ -992,7 +853,7 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                         <div className="py-16 text-center text-text-muted font-bold">No customers found.</div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[600px]">
+                            <table className="w-full min-w-[500px]">
                                 <thead>
                                     <tr className="border-b border-border">
                                         {selectionMode && (
@@ -1001,10 +862,7 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                                             </th>
                                         )}
                                         <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Name</th>
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Email</th>
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Phone</th>
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Gender</th>
-                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Birthday</th>
+                                        <th className="px-4 py-3 text-left text-[10px] font-black text-text-muted uppercase tracking-widest">Phone Number</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1023,13 +881,8 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                                                         </div>
                                                     </td>
                                                 )}
-                                            <td className="px-4 py-3 text-sm font-bold text-text">{c.name || '—'}</td>
-                                            <td className="px-4 py-3 text-sm text-text-secondary">{c.email || '—'}</td>
+                                            <td className="px-4 py-3 text-sm font-black text-text uppercase tracking-tight">{c.name || '—'}</td>
                                             <td className="px-4 py-3 text-sm text-text-secondary font-mono">{c.phone || '—'}</td>
-                                            <td className="px-4 py-3 text-xs text-text-muted capitalize">{c.gender || '—'}</td>
-                                            <td className="px-4 py-3 text-xs text-text-muted">
-                                                {c.birthday ? new Date(c.birthday).toISOString().slice(0, 10) : '—'}
-                                            </td>
                                         </tr>
                                     );
                                 })}
