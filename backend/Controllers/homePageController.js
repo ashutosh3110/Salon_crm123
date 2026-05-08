@@ -23,7 +23,7 @@ exports.getBanners = async (req, res) => {
 exports.getNearestOutlets = async (req, res) => {
     try {
         const { lat, lng, radius = 50 } = req.query;
-        let query = { status: 'active' };
+        let query = { isActive: true };
 
         if (lat && lng) {
             query.location = {
@@ -34,7 +34,13 @@ exports.getNearestOutlets = async (req, res) => {
             };
         }
 
-        const outlets = await Outlet.find(query).limit(10);
+        let outlets = await Outlet.find(query).limit(10);
+        
+        // Fallback: If no nearby outlets found with coordinates, return all active outlets
+        if (outlets.length === 0 && lat && lng) {
+            outlets = await Outlet.find({ isActive: true }).limit(10);
+        }
+
         res.json({ success: true, data: outlets });
     } catch (error) {
         console.error('getNearestOutlets error:', error);

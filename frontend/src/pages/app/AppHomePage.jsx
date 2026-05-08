@@ -9,6 +9,8 @@ import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
     Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag
 } from 'lucide-react';
+
+
 import { useBusiness } from '../../contexts/BusinessContext';
 import homeData from '../../data/appHomeData.json';
 import api from '../../services/api';
@@ -215,36 +217,71 @@ const MembershipPlanCard = ({ plan, colors, isLight }) => {
     );
 };
 
-const Particle = ({ i }) => {
-    const size = Math.random() * 3 + 1;
-    return (
-        <motion.div
-            initial={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                opacity: 0
-            }}
-            animate={{
-                y: [null, Math.random() * -100 - 50],
-                opacity: [0, 0.6, 0]
-            }}
-            transition={{
-                duration: Math.random() * 3 + 2,
-                repeat: Infinity,
-                delay: Math.random() * 2
-            }}
-            style={{
-                position: 'fixed',
-                width: size,
-                height: size,
-                background: '#C8956C',
-                borderRadius: '50%',
-                pointerEvents: 'none',
-                zIndex: 1001,
-            }}
-        />
-    );
-};
+const Particle = ({ i }) => (
+    <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{
+            opacity: [0.2, 0.5, 0.2],
+            scale: [1, 1.5, 1],
+            x: [0, Math.random() * 100 - 50, 0],
+            y: [0, Math.random() * 100 - 50, 0]
+        }}
+        transition={{ duration: 5 + Math.random() * 5, repeat: Infinity }}
+        style={{
+            position: 'absolute',
+            width: '2px',
+            height: '2px',
+            background: '#C8956C',
+            borderRadius: '50%',
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`
+        }}
+    />
+);
+
+const Skeleton = ({ width, height, borderRadius = '12px', margin = '0' }) => (
+    <div style={{
+        width,
+        height,
+        borderRadius,
+        margin,
+        background: 'linear-gradient(90deg, #1A1411 25%, #2A211B 50%, #1A1411 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite linear'
+    }} />
+);
+
+const HomeSkeleton = ({ colors }) => (
+    <div style={{ padding: '20px 16px' }}>
+        <style>{`
+            @keyframes shimmer {
+                0% { background-position: -200% 0; }
+                100% { background-position: 200% 0; }
+            }
+        `}</style>
+        {/* Header Skeleton */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+            <Skeleton width="120px" height="24px" />
+            <div style={{ display: 'flex', gap: '12px' }}>
+                <Skeleton width="32px" height="32px" borderRadius="50%" />
+                <Skeleton width="32px" height="32px" borderRadius="50%" />
+            </div>
+        </div>
+        {/* Banner Skeleton */}
+        <Skeleton width="100%" height="180px" borderRadius="24px" margin="0 0 30px 0" />
+        {/* Horizontal Sections Skeletons */}
+        {[1, 2, 3].map(i => (
+            <div key={i} style={{ marginBottom: '30px' }}>
+                <Skeleton width="150px" height="20px" margin="0 0 16px 0" />
+                <div style={{ display: 'flex', gap: '16px', overflow: 'hidden' }}>
+                    <Skeleton width="160px" height="120px" borderRadius="20px" />
+                    <Skeleton width="160px" height="120px" borderRadius="20px" />
+                    <Skeleton width="160px" height="120px" borderRadius="20px" />
+                </div>
+            </div>
+        ))}
+    </div>
+);
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
 const fadeUp = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } } };
@@ -261,12 +298,20 @@ export default function AppHomePage() {
     const {
         activeOutlet,
         activeOutletId,
-        isInitializing
+        outlets,
+        services: contextServices,
+        products: contextProducts,
+        feedbacks: contextReviews,
+        banners: contextBanners,
+        nearbyOutlets: contextNearby,
+        loyaltyPlans: contextPlans,
+        categories: contextCategories,
+        loyaltySettings: contextLoyalty,
+        isInitializing: isContextInitializing
     } = useBusiness();
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
     
-    // Explicit Home Page Data States
     const [pageBanners, setPageBanners] = useState([]);
     const [nearestOutlets, setNearestOutlets] = useState([]);
     const [outletServices, setOutletServices] = useState([]);
@@ -275,20 +320,13 @@ export default function AppHomePage() {
     const [outletPlans, setOutletPlans] = useState([]);
     const [loyaltyRule, setLoyaltyRule] = useState(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
-    
-    // FETCH GUARDS
-    const lastFetchedOutletId = useRef(null);
-    const lastFetchedStatic = useRef(false);
+    const [userLocation, setUserLocation] = useState(null);
 
-    const dynamicReviews = trustedReviews;
-    const membershipPlans = outletPlans;
-    const loadingPlans = isLoadingData;
-    const reviews = trustedReviews;
-    const services = outletServices;
-    const products = outletProducts;
-    const banners = pageBanners;
-
-    // Derive categories from fetched services
+    const services = useMemo(() => (outletServices || []).slice(0, 10), [outletServices]);
+    const products = useMemo(() => (outletProducts || []).slice(0, 15), [outletProducts]);
+    const reviews = useMemo(() => (trustedReviews || []).slice(0, 10), [trustedReviews]);
+    const banners = pageBanners || [];
+    const membershipPlans = outletPlans || [];
     const categories = useMemo(() => {
         if (!outletServices || outletServices.length === 0) return [];
         const uniqueCatNames = [...new Set(outletServices.map(s => s.category).filter(Boolean))];
@@ -299,6 +337,14 @@ export default function AppHomePage() {
         }));
     }, [outletServices]);
 
+    // Pre-select first category
+    useEffect(() => {
+        if (!selectedServiceCategory && categories?.length > 0) {
+            const firstCat = categories.find(c => c.status === 'active');
+            if (firstCat) setSelectedServiceCategory(firstCat.name);
+        }
+    }, [categories, selectedServiceCategory]);
+
     // Pre-select first category when categories load
     useEffect(() => {
         if (!selectedServiceCategory && categories?.length > 0) {
@@ -307,125 +353,71 @@ export default function AppHomePage() {
         }
     }, [categories, gender, selectedServiceCategory]);
 
-    // FETCH STATIC DATA (Banners, Loyalty Rules) - Once on Mount
-    const fetchStaticData = useCallback(async (force = false) => {
-        if (!force && lastFetchedStatic.current) return;
-        lastFetchedStatic.current = true;
-        
+    // FETCH STATIC DATA (Banners, Loyalty Rules)
+    const fetchStaticData = useCallback(async () => {
         try {
-            const results = await Promise.allSettled([
+            const [bRes, lRes] = await Promise.all([
                 api.get('/banners'),
                 api.get('/loyalty-rules')
             ]);
-
-            // Handle Banners
-            if (results[0].status === 'fulfilled') {
-                setPageBanners(results[0].value.data?.data || []);
-            } else {
-                console.error('Error fetching banners:', results[0].reason);
-            }
-
-            // Handle Loyalty Rules
-            if (results[1].status === 'fulfilled') {
-                const resData = results[1].value.data;
-                const ruleData = (resData && resData.success && resData.data) ? resData.data : resData;
-                setLoyaltyRule(ruleData || null);
-            } else {
-                console.error('Error fetching loyalty rules:', results[1].reason);
-                lastFetchedStatic.current = false;
-            }
+            setPageBanners(bRes.data?.data || []);
+            setLoyaltyRule(lRes.data?.data || lRes.data || null);
         } catch (err) {
             console.error('Static data fetch error:', err);
         }
+    }, []);
+
+    // FETCH OUTLET-SPECIFIC DATA
+    const fetchOutletSpecificData = useCallback(async () => {
+        if (!activeOutletId) return;
+        setIsLoadingData(true);
+        try {
+            const [sRes, pRes, rRes, plRes] = await Promise.all([
+                api.get(`/services/outlet/${activeOutletId}`),
+                api.get(`/products/outlet/${activeOutletId}`),
+                api.get(`/reviews/trusted/${activeOutletId}`),
+                api.get(`/membership-plans/${activeOutletId}`)
+            ]);
+            setOutletServices(sRes.data?.data || []);
+            setOutletProducts(pRes.data?.data || []);
+            setTrustedReviews(rRes.data?.data || []);
+            setOutletPlans(plRes.data?.data || []);
+        } catch (error) {
+            console.error('Outlet data fetch error:', error);
+        } finally {
+            setIsLoadingData(false);
+        }
+    }, [activeOutletId]);
+
+    // NEAREST OUTLETS
+    const fetchNearest = useCallback(async (lat, lng) => {
+        if (lat && lng) setUserLocation({ lat, lng });
+        try {
+            let url = '/outlets/nearest';
+            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
+            const res = await api.get(url);
+            setNearestOutlets(res.data?.data || []);
+        } catch (err) {}
     }, []);
 
     useEffect(() => {
         fetchStaticData();
     }, [fetchStaticData]);
 
-    // FETCH OUTLET-SPECIFIC DATA - When activeOutletId changes
-    const fetchOutletSpecificData = useCallback(async (force = false) => {
-        if (!activeOutletId) return;
-        if (!force && lastFetchedOutletId.current === activeOutletId) return;
-        lastFetchedOutletId.current = activeOutletId;
-
-        setIsLoadingData(true);
-        try {
-            const [
-                servicesRes,
-                productsRes,
-                reviewsRes,
-                plansRes
-            ] = await Promise.all([
-                api.get(`/services/outlet/${activeOutletId}`),
-                api.get(`/products/outlet/${activeOutletId}`),
-                api.get(`/reviews/trusted/${activeOutletId}`),
-                api.get(`/membership-plans/${activeOutletId}`)
-            ]);
-
-            setOutletServices(servicesRes.data?.data || []);
-            setOutletProducts(productsRes.data?.data || []);
-            setTrustedReviews(reviewsRes.data?.data || []);
-            setOutletPlans(plansRes.data?.data || []);
-
-        } catch (error) {
-            console.error('Error fetching outlet specific data:', error);
-            lastFetchedOutletId.current = null; // Allow retry on error
-        } finally {
-            setIsLoadingData(false);
-        }
-    }, [activeOutletId]);
-
     useEffect(() => {
         fetchOutletSpecificData();
     }, [fetchOutletSpecificData]);
 
-
-    // ── GEOLOCATION LOGIC & NEAREST OUTLETS ──
-    const [userLocation, setUserLocation] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
-
-    const fetchNearest = useCallback(async (lat, lng) => {
-        try {
-            let url = '/outlets/nearest';
-            if (lat && lng) url += `?lat=${lat}&lng=${lng}`;
-            const res = await api.get(url);
-            setNearestOutlets(res.data?.data || []);
-        } catch (err) {
-            console.error("Failed to fetch nearest outlets:", err);
-        }
-    }, []);
-
     useEffect(() => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    setUserLocation(coords);
-                    fetchNearest(coords.lat, coords.lng);
-                },
-                (err) => {
-
-                    fetchNearest(); // fetch without lat/lng
-                }
+                (pos) => fetchNearest(pos.coords.latitude, pos.coords.longitude),
+                () => fetchNearest()
             );
         } else {
             fetchNearest();
         }
     }, [fetchNearest]);
-
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        try {
-            await Promise.all([
-                fetchStaticData(true),
-                fetchOutletSpecificData(true),
-                fetchNearest(userLocation?.lat, userLocation?.lng)
-            ]);
-        } finally {
-            setRefreshing(false);
-        }
-    }, [fetchStaticData, fetchOutletSpecificData, fetchNearest, userLocation]);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         if (!lat1 || !lon1 || !lat2 || !lon2) return null;
@@ -438,92 +430,19 @@ export default function AppHomePage() {
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     };
 
-    // ── PULL TO REFRESH LOGIC ──
-    const [pullDistance, setPullDistance] = useState(0);
-    const [isPulling, setIsPulling] = useState(false);
-    const touchStart = useRef(0);
-    const pullThreshold = 75;
-
-    useEffect(() => {
-        const handleTouchStart = (e) => {
-            if (window.scrollY === 0) {
-                touchStart.current = e.touches[0].clientY;
-            } else {
-                touchStart.current = 0;
-            }
-        };
-
-        const handleTouchMove = (e) => {
-            if (touchStart.current === 0) return;
-            const touchY = e.touches[0].clientY;
-            const delta = touchY - touchStart.current;
-
-            if (delta > 0 && window.scrollY === 0) {
-                setIsPulling(true);
-                // Apply rubber-band resistance
-                const distance = Math.pow(delta, 0.8);
-                setPullDistance(Math.min(distance, 120));
-
-                // Prevent browser default scroll-down (important for mobile)
-                if (delta > 10 && e.cancelable) e.preventDefault();
-            }
-        };
-
-        const handleTouchEnd = async () => {
-            if (!isPulling) return;
-
-            if (pullDistance >= pullThreshold) {
-                // Trigger Refresh
-                try {
-                    await onRefresh();
-                } catch (e) {
-                    console.error('Refresh failed:', e);
-                }
-            }
-
-            // Animate back
-            setPullDistance(0);
-            setIsPulling(false);
-            touchStart.current = 0;
-        };
-
-        window.addEventListener('touchstart', handleTouchStart, { passive: true });
-        window.addEventListener('touchmove', handleTouchMove, { passive: false });
-        window.addEventListener('touchend', handleTouchEnd);
-
-        return () => {
-            window.removeEventListener('touchstart', handleTouchStart);
-            window.removeEventListener('touchmove', handleTouchMove);
-            window.removeEventListener('touchend', handleTouchEnd);
-        };
-    }, [isPulling, pullDistance, onRefresh]);
-
-    // Core data is now synchronized via BusinessContext
-
-
-    // ── 2. FETCH NEAREST SALONS (HANDLED BY BusinessContext initial-data) ──
-    // No redundant calls here
-
-
-
-    // Banners, categories, and inventory are already handled by BusinessContext, InventoryContext, and CMSContext
-    // No other API calls here to keep things smooth
-
-
-
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await Promise.all([fetchStaticData(), fetchOutletSpecificData()]);
+        setRefreshing(false);
+    }, [fetchStaticData, fetchOutletSpecificData]);
 
     const filteredPopularServices = useMemo(() => {
-
         return (services || []).filter(s => {
-            // Filter by outlet (Multi-outlet support)
             if (s.outletIds && Array.isArray(s.outletIds) && s.outletIds.length > 0) {
                 if (!s.outletIds.map(id => String(id)).includes(String(activeOutletId))) return false;
             } else if (s.outletId && s.outletId !== 'all' && String(s.outletId) !== String(activeOutletId)) {
-                // Legacy support for singular outletId
                 return false;
             }
-
-            // Filter by gender
             const cat = categories?.find(c => c.name === s.category);
             if (!cat) return true;
             if (!gender) return true;
@@ -531,8 +450,6 @@ export default function AppHomePage() {
         }).slice(0, 6);
     }, [activeOutletId, services, gender, categories]);
 
-
-    /** Hero carousel = App CMS **Banners** tab only (no POS/coupon promos, no lookbook — those have their own UI below). */
     const filteredPromos = useMemo(() => {
         return (banners || [])
             .filter((p) => {
@@ -545,7 +462,7 @@ export default function AppHomePage() {
                     || (p.tag && String(p.tag).trim())
                     || (p.description && String(p.description).trim());
                 return {
-                    id: `banner-${p.id}`,
+                    id: `banner-${p._id || p.id}`,
                     title: p.title,
                     subtitle: validity ? validity.toUpperCase() : 'EXCLUSIVE OFFER',
                     img: p.image,
@@ -564,17 +481,8 @@ export default function AppHomePage() {
     };
 
     const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
-    const [showWelcome, setShowWelcome] = useState(location.state?.justLoggedIn || false);
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
-
-
-    useEffect(() => {
-        if (showWelcome) {
-            const timer = setTimeout(() => setShowWelcome(false), 3500);
-            return () => clearTimeout(timer);
-        }
-    }, [showWelcome]);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -583,7 +491,6 @@ export default function AppHomePage() {
         return () => clearInterval(timer);
     }, []);
 
-    // ── AUTO-SCROLL BANNER ──
     useEffect(() => {
         if (filteredPromos.length <= 1) return;
         const timer = setInterval(() => {
@@ -597,7 +504,14 @@ export default function AppHomePage() {
         setCurrentPromoIndex(0);
     }, [g]);
 
-
+    if (isLoadingData) {
+        return (
+            <div style={{ background: colors.background, minHeight: '100vh' }}>
+                <HomeSkeleton colors={colors} />
+                <AppNavbar activeTab="home" />
+            </div>
+        );
+    }
 
     return (
         <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -607,198 +521,6 @@ export default function AppHomePage() {
                     opacity: 0.8;
                 }
             `}</style>
-            <AnimatePresence>
-                {showWelcome && (
-                    <motion.div
-                        key="premium-welcome-overlay"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, transition: { duration: 0.8, ease: 'easeInOut' } }}
-                        style={{
-                            position: 'fixed',
-                            inset: 0,
-                            zIndex: 2000,
-                            background: '#0a0a0a',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
-                        }}
-                    >
-                        {/* Dynamic Background */}
-                        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-                            <motion.div
-                                animate={{
-                                    scale: [1, 1.3, 1],
-                                    x: [0, 50, 0],
-                                    y: [0, -30, 0]
-                                }}
-                                transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-                                style={{
-                                    position: 'absolute', width: '600px', height: '600px',
-                                    background: 'radial-gradient(circle, rgba(200,149,108,0.12) 0%, transparent 70%)',
-                                    filter: 'blur(80px)', top: '-10%', left: '-10%'
-                                }}
-                            />
-                            <motion.div
-                                animate={{
-                                    scale: [1.3, 1, 1.3],
-                                    x: [0, -40, 0],
-                                    y: [0, 40, 0]
-                                }}
-                                transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-                                style={{
-                                    position: 'absolute', width: '700px', height: '700px',
-                                    background: 'radial-gradient(circle, rgba(160,104,68,0.08) 0%, transparent 70%)',
-                                    filter: 'blur(100px)', bottom: '-15%', right: '-15%'
-                                }}
-                            />
-                        </div>
-
-                        {/* Particles */}
-                        {[...Array(15)].map((_, i) => <Particle key={i} i={i} />)}
-
-                        {/* Main Content Card */}
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                            style={{
-                                textAlign: 'center',
-                                zIndex: 20,
-                                position: 'relative',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center'
-                            }}
-                        >
-                            {/* Sophisticated Icon Container */}
-                            <motion.div
-                                initial={{ rotate: -15, scale: 0.5, opacity: 0 }}
-                                animate={{ rotate: 0, scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.3, type: "spring", stiffness: 100, damping: 15 }}
-                                style={{ position: 'relative', marginBottom: '40px' }}
-                            >
-                                <div style={{
-                                    width: '140px',
-                                    height: '140px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    position: 'relative'
-                                }}>
-                                    <img
-                                        src={logoDarkMode}
-                                        alt="Logo"
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                    />
-
-                                    {/* Ambient Glow */}
-                                    <motion.div
-                                        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.1, 1] }}
-                                        transition={{ duration: 3, repeat: Infinity }}
-                                        style={{
-                                            position: 'absolute',
-                                            inset: -10,
-                                            background: 'radial-gradient(circle, rgba(200,149,108,0.3) 0%, transparent 70%)',
-                                            zIndex: -1
-                                        }}
-                                    />
-                                </div>
-                            </motion.div>
-
-                            {/* Text Content */}
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6, duration: 0.8 }}
-                            >
-                                <motion.span
-                                    initial={{ letterSpacing: '0.2em', opacity: 0 }}
-                                    animate={{ letterSpacing: '0.5em', opacity: 0.8 }}
-                                    transition={{ delay: 0.8, duration: 1.5, ease: 'easeOut' }}
-                                    style={{
-                                        display: 'block',
-                                        color: '#C8956C',
-                                        fontSize: '10px',
-                                        fontWeight: 900,
-                                        textTransform: 'uppercase',
-                                        marginBottom: '12px',
-                                        fontFamily: "'SF Pro Text', sans-serif"
-                                    }}
-                                >
-                                    Experience The Ritual
-                                </motion.span>
-
-                                <h1 style={{
-                                    fontSize: '52px',
-                                    fontWeight: 900,
-                                    margin: 0,
-                                    color: '#FFFFFF',
-                                    fontFamily: "'SF Pro Display', sans-serif",
-                                    letterSpacing: '-0.03em',
-                                    lineHeight: 1,
-                                    fontStyle: 'italic',
-                                    filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))'
-                                }}>
-                                    {customer?.name?.split(' ')[0] || 'Guest'}
-                                </h1>
-
-                                <motion.div
-                                    initial={{ width: 0, opacity: 0 }}
-                                    animate={{ width: 120, opacity: 1 }}
-                                    transition={{ delay: 1.2, duration: 1.2, ease: 'easeInOut' }}
-                                    style={{
-                                        height: '1px',
-                                        background: 'linear-gradient(90deg, transparent, #C8956C, #A06844, transparent)',
-                                        margin: '24px auto',
-                                        boxShadow: '0 0 10px rgba(200,149,108,0.3)'
-                                    }}
-                                />
-
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ delay: 1.5, duration: 1 }}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'rgba(255,255,255,0.3)', fontSize: '13px' }}
-                                >
-                                    <ShieldCheck size={14} />
-                                    <span>Verified Premium Member</span>
-                                </motion.div>
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Subtle Loader */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 2, duration: 1 }}
-                            style={{
-                                position: 'absolute',
-                                bottom: '60px',
-                                width: '200px',
-                                height: '2px',
-                                background: 'rgba(255,255,255,0.05)',
-                                borderRadius: '1px',
-                                overflow: 'hidden'
-                            }}
-                        >
-                            <motion.div
-                                initial={{ x: '-100%' }}
-                                animate={{ x: '100%' }}
-                                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                                style={{
-                                    width: '100px',
-                                    height: '100%',
-                                    background: 'linear-gradient(90deg, transparent, #C8956C, transparent)'
-                                }}
-                            />
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             <motion.div
                 variants={stagger}
                 initial="hidden"
@@ -807,8 +529,6 @@ export default function AppHomePage() {
                     background: colors.bg,
                     minHeight: '100svh',
                     color: colors.text,
-                    filter: showWelcome ? 'blur(10px) brightness(0.5)' : 'none',
-                    scale: showWelcome ? 0.98 : 1,
                     transition: 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)'
                 }}
             >
@@ -994,10 +714,34 @@ export default function AppHomePage() {
                             <Crown size={20} color={colors.accent} />
                             <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Nearby Outlets</span>
                         </div>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent }}></div>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent, opacity: 0.3 }}></div>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent, opacity: 0.1 }}></div>
+                        </div>
                     </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '14px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+
+                    <div 
+                        className="app-scroll no-scrollbar" 
+                        style={{ 
+                            display: 'flex', 
+                            gap: '12px', 
+                            overflowX: 'auto', 
+                            paddingBottom: '20px', 
+                            marginLeft: '-16px', 
+                            paddingLeft: '16px', 
+                            marginRight: '-16px', 
+                            paddingRight: '16px',
+                            scrollSnapType: 'x mandatory'
+                        }}
+                    >
                         {(() => {
-                            const otherSalons = nearestOutlets
+                            // If nearestOutlets is empty, we show all active outlets from the business context as fallback
+                            const sourceOutlets = (nearestOutlets && nearestOutlets.length > 0) 
+                                ? nearestOutlets 
+                                : (outlets || []); 
+
+                            const otherSalons = sourceOutlets
                                 .filter(o => String(o._id || o.id) !== String(activeOutletId))
                                 .map(o => {
                                     const dist = userLocation && o.location?.coordinates?.length === 2
@@ -1013,8 +757,16 @@ export default function AppHomePage() {
 
                             if (sortedSalons.length === 0) {
                                 return (
-                                    <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
-                                        No outlets found
+                                    <div style={{ width: '100%', padding: '40px 20px', textAlign: 'center', background: 'rgba(200,149,108,0.05)', borderRadius: '24px' }}>
+                                        <div className="w-12 h-12 bg-[#C8956C]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <MapPin size={24} color={colors.accent} className="opacity-40" />
+                                        </div>
+                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                                            Exploring new horizons
+                                        </p>
+                                        <p style={{ color: colors.textMuted, fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>
+                                            Stay tuned for more outlets nearby
+                                        </p>
                                     </div>
                                 );
                             }
@@ -1023,18 +775,23 @@ export default function AppHomePage() {
                                 <motion.div
                                     key={outlet._id}
                                     whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        // Optional: logic to switch outlet or view details
+                                        navigate(`/app/outlet/${outlet._id}`);
+                                    }}
                                     style={{
                                         flexShrink: 0,
-                                        width: '240px',
+                                        width: '160px', // Adjusted for "two on screen" feel with partial third
                                         background: colors.card,
-                                        borderRadius: '24px',
+                                        borderRadius: '20px',
                                         overflow: 'hidden',
                                         border: `1px solid ${colors.border}`,
-                                        boxShadow: isLight ? '0 10px 20px rgba(0,0,0,0.05)' : '0 10px 20px rgba(0,0,0,0.2)',
+                                        boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : '0 8px 30px rgba(0,0,0,0.2)',
                                         position: 'relative',
+                                        scrollSnapAlign: 'start'
                                     }}
                                 >
-                                    <div style={{ height: '120px', width: '100%', position: 'relative' }}>
+                                    <div style={{ height: '100px', width: '100%', position: 'relative' }}>
                                         <img
                                             src={outlet.images?.[0] || outlet.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                             alt={outlet.name}
@@ -1042,30 +799,31 @@ export default function AppHomePage() {
                                         />
                                         <div style={{
                                             position: 'absolute',
-                                            top: '12px',
-                                            right: '12px',
-                                            background: 'rgba(255,255,255,0.9)',
-                                            backdropFilter: 'blur(4px)',
-                                            padding: '4px 8px',
-                                            borderRadius: '8px',
+                                            top: '8px',
+                                            right: '8px',
+                                            background: 'rgba(0,0,0,0.6)',
+                                            backdropFilter: 'blur(8px)',
+                                            padding: '3px 6px',
+                                            borderRadius: '6px',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '4px'
+                                            gap: '3px',
+                                            color: '#FFF'
                                         }}>
-                                            <Star size={12} fill="#C8956C" color="#C8956C" />
-                                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#000' }}>{outlet.rating || 'New'}</span>
+                                            <Star size={10} fill="#C8956C" color="#C8956C" />
+                                            <span style={{ fontSize: '9px', fontWeight: 900 }}>{outlet.rating || '4.8'}</span>
                                         </div>
                                     </div>
-                                    <div style={{ padding: '14px' }}>
-                                        <h4 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
+                                    <div style={{ padding: '12px' }}>
+                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
                                             {outlet.name}
                                         </h4>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '8px' }}>
-                                            <MapPin size={12} color={colors.textMuted} />
-                                            <span style={{ fontSize: '11px', color: colors.textMuted }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                            <MapPin size={10} color={colors.accent} />
+                                            <span style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700 }}>
                                                 {outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
                                                     ? `${outlet.calculatedDist.toFixed(1)} km`
-                                                    : (outlet.distance || 'Near you')} · {getAddressString(outlet.address).split(',')[0]}
+                                                    : 'Near you'}
                                             </span>
                                         </div>
                                     </div>
@@ -1090,8 +848,8 @@ export default function AppHomePage() {
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: -20 }}
                             transition={{ duration: 0.3 }}
-                            className="app-scroll-y no-scrollbar"
-                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}
+                            className="app-scroll no-scrollbar"
+                            style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '20px', scrollSnapType: 'x mandatory' }}
                         >
                             {(() => {
                                 const sourceServices = services || [];
@@ -1107,7 +865,7 @@ export default function AppHomePage() {
                                     );
                                 }
                                 return filtered.map(service => (
-                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '260px' }}>
+                                    <div key={service._id || service.id} style={{ flexShrink: 0, width: '200px', scrollSnapAlign: 'start' }}>
                                         <ServiceCard
                                             service={service}
                                             onBook={(id) => navigate(`/app/booking?serviceId=${id}`)}
@@ -1144,34 +902,34 @@ export default function AppHomePage() {
                     ) : (
                         <div
                             className="app-scroll no-scrollbar"
-                            style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}
+                            style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px', scrollSnapType: 'x mandatory' }}
                         >
-                            {products.filter(p => p.isShopProduct).slice(0, 6).map(product => (
+                            {products.filter(p => p.isShopProduct).slice(0, 15).map(product => (
                                 <motion.div
                                     key={product._id || product.id}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => navigate(`/app/product/${product._id || product.id}`)}
                                     style={{
-                                        flexShrink: 0, width: '160px', background: colors.card,
-                                        borderRadius: '24px', border: `1px solid ${colors.border}`,
-                                        overflow: 'hidden'
+                                        flexShrink: 0, width: '125px', background: colors.card,
+                                        borderRadius: '20px', border: `1px solid ${colors.border}`,
+                                        overflow: 'hidden', scrollSnapAlign: 'start'
                                     }}
                                 >
-                                    <div style={{ height: '120px', position: 'relative' }}>
+                                    <div style={{ height: '100px', position: 'relative' }}>
                                         <img
                                             src={product.appImage || product.image || "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=400"}
                                             alt={product.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
-                                        <div style={{ position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.4)', padding: '2px 6px', borderRadius: '6px', color: '#FFF', fontSize: '8px', fontWeight: 900 }}>
+                                        <div style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.4)', padding: '2px 5px', borderRadius: '4px', color: '#FFF', fontSize: '7px', fontWeight: 900 }}>
                                             {product.brand}
                                         </div>
                                     </div>
-                                    <div style={{ padding: '12px' }}>
-                                        <p style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 4px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>
+                                    <div style={{ padding: '10px' }}>
+                                        <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: '0 0 2px', lineClamp: 1, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
                                             {product.name}
                                         </p>
-                                        <p style={{ fontSize: '13px', fontWeight: 900, color: colors.accent, margin: 0 }}>
+                                        <p style={{ fontSize: '12px', fontWeight: 900, color: colors.accent, margin: 0 }}>
                                             ₹{product.sellingPrice || product.price}
                                         </p>
                                     </div>
@@ -1189,9 +947,9 @@ export default function AppHomePage() {
                             <p style={{ fontSize: '10px', color: colors.textMuted, margin: 0 }}>What our gold members say</p>
                         </div>
                     </div>
-                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px' }}>
+                    <div className="app-scroll no-scrollbar" style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '10px', marginLeft: '-16px', paddingLeft: '16px', marginRight: '-16px', paddingRight: '16px', scrollSnapType: 'x mandatory' }}>
                         {(() => {
-                            const displayReviews = dynamicReviews || [];
+                            const displayReviews = reviews || [];
                             if (displayReviews.length === 0) {
                                 return (
                                     <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>
@@ -1203,17 +961,17 @@ export default function AppHomePage() {
                                 <div
                                     key={rev._id || rev.id}
                                     style={{
-                                        flexShrink: 0, width: '280px', background: colors.card,
-                                        padding: '20px', borderRadius: '24px', border: `1px solid ${colors.border}`,
-                                        boxShadow: '0 8px 20px rgba(0,0,0,0.03)'
+                                        flexShrink: 0, width: '240px', background: colors.card,
+                                        padding: '16px', borderRadius: '24px', border: `1px solid ${colors.border}`,
+                                        boxShadow: '0 8px 20px rgba(0,0,0,0.03)', scrollSnapAlign: 'start'
                                     }}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                        <div style={{ display: 'flex', gap: '3px' }}>
                                             {[1, 2, 3, 4, 5].map(s => (
                                                 <Star
                                                     key={s}
-                                                    size={12}
+                                                    size={10}
                                                     fill={s <= rev.rating ? colors.accent : 'none'}
                                                     color={s <= rev.rating ? colors.accent : colors.textMuted}
                                                     strokeWidth={2.5}
@@ -1221,27 +979,20 @@ export default function AppHomePage() {
                                             ))}
                                         </div>
                                         <div style={{ textAlign: 'right' }}>
-                                            <span style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: colors.accent, marginBottom: '2px', letterSpacing: '0.05em' }}>VERIFIED</span>
-                                            <span style={{ fontSize: '9px', color: colors.textMuted, fontWeight: 700, opacity: 0.6 }}>
-                                                {new Date(rev.createdAt || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase()}
-                                            </span>
+                                            <span style={{ display: 'block', fontSize: '8px', fontWeight: 900, color: colors.accent, marginBottom: '2px', letterSpacing: '0.05em' }}>VERIFIED</span>
                                         </div>
                                     </div>
-                                    <p style={{ fontSize: '13px', color: colors.text, margin: '0 0 14px', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                    <p style={{ fontSize: '12px', color: colors.text, margin: '0 0 12px', fontStyle: 'italic', lineHeight: 1.4, lineClamp: 3, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}>
                                         "{rev.comment}"
                                     </p>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '10px', fontWeight: 800 }}>
+                                        <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '9px', fontWeight: 800 }}>
                                             {(rev.customerId?.name || rev.customerName || 'U')[0]}
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ fontSize: '11px', fontWeight: 800, color: colors.text, margin: 0 }}>
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.text, margin: 0 }}>
                                                 {rev.customerId?.name || rev.customerName}
                                             </p>
-                                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: 0, opacity: 0.8 }}>
-                                                {rev.customerId?.phone || ''}
-                                            </p>
-                                            <p style={{ fontSize: '8px', color: colors.textMuted, margin: '2px 0 0' }}>for {rev.targetName || 'General'}</p>
                                         </div>
                                     </div>
                                 </div>

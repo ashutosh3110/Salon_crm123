@@ -210,8 +210,20 @@ export default function AppServicesPage() {
 
     const dynamicCategories = useMemo(() => {
         if (displayGroups.length === 0) return [];
-        const names = displayGroups.map(g => g.name);
+        // Sort groups by number of services (popularity)
+        const sortedGroups = [...displayGroups].sort((a, b) => b.services.length - a.services.length);
+        const names = sortedGroups.map(g => g.name);
         return ['All', ...names];
+    }, [displayGroups]);
+
+    const flatServices = useMemo(() => {
+        // Collect all services from displayGroups
+        let all = displayGroups.flatMap(g => g.services.map(s => ({ ...s, groupName: g.name, groupCount: g.services.length })));
+        
+        // Sort by groupCount (Popularity of category)
+        all.sort((a, b) => b.groupCount - a.groupCount);
+        
+        return all;
     }, [displayGroups]);
 
     const [searchParams] = useSearchParams();
@@ -230,23 +242,20 @@ export default function AppServicesPage() {
         }
     }, [searchParams]);
 
-    const finalGroups = useMemo(() => {
-        let result = displayGroups;
+    const finalServices = useMemo(() => {
+        let result = flatServices;
 
         if (activeCategory !== 'All') {
-            result = result.filter(g => g.name === activeCategory);
+            result = result.filter(s => s.groupName === activeCategory);
         }
 
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
-            result = result.map(g => ({
-                ...g,
-                services: g.services.filter(s => s.name.toLowerCase().includes(q))
-            })).filter(g => g.services.length > 0);
+            result = result.filter(s => s.name.toLowerCase().includes(q));
         }
 
         return result;
-    }, [displayGroups, activeCategory, searchQuery]);
+    }, [flatServices, activeCategory, searchQuery]);
 
     const handleBook = (id) => {
         navigate(`/app/booking?serviceId=${id}`);
@@ -260,32 +269,38 @@ export default function AppServicesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-40 px-4 pt-6 pb-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+            <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ 
+                background: isLight ? 'rgba(252, 249, 246, 0.8)' : 'rgba(15, 15, 15, 0.8)', 
+                backdropFilter: 'blur(20px)',
+                borderBottom: `1px solid ${colors.border}`
+            }}>
                 {/* Salon Info & Gender Badge */}
-                <div className="flex items-center justify-between mb-4 px-1">
+                <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <AppBackButton />
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#C8956C] to-[#A06844] flex items-center justify-center shadow-lg shadow-[#C8956C]/20">
-                            <ShoppingBag className="text-white" size={18} />
-                        </div>
-                        <div>
-                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-[#C8956C]">Exclusive Experience</p>
-                            <h2 className="text-sm font-black tracking-tight" style={{ color: colors.text }}>{activeOutlet?.name || 'Wapixo Salon'}</h2>
+                        <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#C8956C]" />
+                                <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#C8956C] leading-none">The Ritual</p>
+                            </div>
+                            <h2 className="text-[15px] font-black tracking-tight leading-tight mt-0.5" style={{ color: colors.text }}>
+                                {activeOutlet?.name || 'Wapixo Salon'}
+                            </h2>
                         </div>
                     </div>
 
                     {/* Gender Indicator Badge */}
                     <motion.div 
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="px-3 py-1.5 rounded-xl border flex items-center gap-2"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="px-3 py-1 rounded-full border flex items-center gap-2 shadow-sm"
                         style={{ 
-                            background: appGender === 'men' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(236, 72, 153, 0.1)',
-                            borderColor: appGender === 'men' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(236, 72, 153, 0.2)'
+                            background: isLight ? 'white' : 'rgba(255,255,255,0.03)',
+                            borderColor: colors.border
                         }}
                     >
-                        <div className={`w-1.5 h-1.5 rounded-full ${appGender === 'men' ? 'bg-blue-500' : 'bg-pink-500'}`} />
-                        <span className={`text-[10px] font-black uppercase tracking-widest ${appGender === 'men' ? 'text-blue-500' : 'text-pink-500'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${appGender === 'men' ? 'bg-blue-500' : 'bg-pink-500'} shadow-[0_0_8px] ${appGender === 'men' ? 'shadow-blue-500/50' : 'shadow-pink-500/50'}`} />
+                        <span className={`text-[9px] font-black uppercase tracking-widest ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
                             {appGender === 'men' ? 'Gentlemen' : 'Ladies'}
                         </span>
                     </motion.div>
@@ -323,7 +338,7 @@ export default function AppServicesPage() {
                     <SlidersHorizontal size={16} style={{ color: colors.textMuted }} />
                 </div>
 
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 mb-3">
                     <LayoutGrid size={18} className="text-[#C8956C]" />
                     <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Categories</h2>
                 </div>
@@ -374,7 +389,7 @@ export default function AppServicesPage() {
             </div>
 
             {/* Services Content Grouped by Category */}
-            <div className="px-4 mt-8 mb-4 flex items-center gap-3">
+            <div className="px-4 mt-6 mb-3 flex items-center gap-3">
                 <Armchair size={18} className="text-[#C8956C]" />
                 <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Services</h2>
                 <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/20 to-transparent ml-2" />
@@ -384,7 +399,7 @@ export default function AppServicesPage() {
                 variants={stagger}
                 initial="hidden"
                 animate="show"
-                className="px-4 mt-2 space-y-10"
+                className="px-4 mt-2 space-y-8"
             >
                 {isLoading ? (
                     <div className="space-y-8">
@@ -402,31 +417,21 @@ export default function AppServicesPage() {
                             </div>
                         ))}
                     </div>
-                ) : finalGroups.length > 0 ? (
-                    finalGroups.map((group) => (
-                        <div key={group._id || group.id} className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <h3 className="text-sm font-black uppercase tracking-widest text-[#C8956C]">{group.name}</h3>
-                                <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/30 to-transparent" />
-                                <span className="text-[10px] font-bold opacity-30">{group.services.length} Items</span>
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-x-3 gap-y-5">
-                                {group.services.map((service, index) => (
-                                    <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
-                                        <ServiceCard
-                                            service={service}
-                                            onBook={handleBook}
-                                            colors={colors}
-                                            isLight={isLight}
-                                            categories={categories}
-                                            navigate={navigate}
-                                        />
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </div>
-                    ))
+                ) : finalServices.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-5">
+                        {finalServices.map((service, index) => (
+                            <motion.div key={service._id || service.id} variants={fadeUp} custom={index}>
+                                <ServiceCard
+                                    service={service}
+                                    onBook={handleBook}
+                                    colors={colors}
+                                    isLight={isLight}
+                                    categories={categories}
+                                    navigate={navigate}
+                                />
+                            </motion.div>
+                        ))}
+                    </div>
                 ) : (
                     <div className="py-20 text-center">
                         <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">

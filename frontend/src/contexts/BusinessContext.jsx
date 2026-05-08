@@ -278,12 +278,17 @@ export function BusinessProvider({ children }) {
         } catch { setOrders([]); }
     }, []);
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProducts = useCallback(async (sId) => {
         try {
-            const r = await api.get('/products');
-            setProducts(r.data?.results || r.data || []);
-        } catch { setProducts([]); }
-    }, []);
+            const sid = sId || activeSalonId || salon?._id;
+            if (!sid) return;
+            const r = await api.get(`/products?salonId=${sid}`);
+            setProducts(r.data?.data || r.data?.results || r.data || []);
+        } catch (error) {
+            console.error("Fetch products failed:", error);
+            setProducts([]);
+        }
+    }, [activeSalonId, salon?._id]);
 
     const fetchSuppliers = useCallback(async () => {
         try {
@@ -361,88 +366,29 @@ export function BusinessProvider({ children }) {
 
     const lastInitializedId = useRef(null);
     const lastInitializedPath = useRef(null);
-    const fetchCustomerInitialData = useCallback(async (force = false) => {
+    const fetchCustomerInitialData = useCallback(async () => {
         const sid = activeSalonId || localStorage.getItem('active_salon_id');
-        const path = window.location.pathname;
-        
-        if (!force && lastInitializedId.current === sid && lastInitializedPath.current === path) {
+        if (!sid || sid === 'mock_tenant_id' || !/^[0-9a-fA-F]{24}$/.test(sid)) {
             setIsInitializing(false);
             return;
         }
-        
-        lastInitializedId.current = sid;
-        lastInitializedPath.current = path;
 
         setIsInitializing(true);
-
         try {
-            // Consolidated Initial Data Fetch (Optimization: 1 call instead of 8+)
-            const cId = customer?._id || customer?.id;
-            const oId = activeOutletId || localStorage.getItem('active_outlet_id');
-            const savedCoords = localStorage.getItem('wapixo_user_coords');
-            let lat = null, lng = null;
-            if (savedCoords) {
-                try {
-                    const coords = JSON.parse(savedCoords);
-                    lat = coords.lat;
-                    lng = coords.lng;
-                } catch(e) {}
-            }
-
-            const params = new URLSearchParams();
-            if (cId) params.set('customerId', cId);
-            if (oId) params.set('outletId', oId);
-            if (lat) params.set('lat', lat);
-            if (lng) params.set('lng', lng);
-            params.set('radius', '10'); // Default 10km for discovery
-
-            const res = await api.get(`/salons/${sid}/initial-data?${params.toString()}`, { timeout: 10000 });
+            const [sRes, oRes] = await Promise.all([
+                api.get(`/salons/${sid}`),
+                api.get(`/outlets?salonId=${sid}`)
+            ]);
             
-            if (res.data.success) {
-                const { 
-                    salon: sData, 
-                    outlets: oData, 
-                    nearbyOutlets: nData,
-                    services: svData, 
-                    categories: cData, 
-                    feedbacks: fData, 
-                    staff: stData,
-                    loyaltySettings: lsData,
-                    loyaltyPlans: lpData,
-                    products: pData,
-                    productCategories: pcData,
-                    cms: cmsData,
-                    user: uData
-                } = res.data.data;
-
-                setSalon(sData);
-                setOutlets(oData);
-                setNearbyOutlets(nData || []);
-                setServices(svData);
-                setCategories(cData);
-                setFeedbacks(fData);
-                setStaff(stData);
-                setLoyaltySettings(lsData);
-                setLoyaltyPlans(lpData);
-                setUserSession(uData);
-                
-                // We can also store these here to avoid separate context fetches
-                if (setProducts) setProducts(pData);
-                if (setProductCategories) setProductCategories(pcData);
-                if (setBanners && cmsData) {
-                    setBanners(cmsData.banners || []);
-                    // If CMS context has setters for others
-                    if (setOffers) setOffers(cmsData.offers || []);
-                    if (setLookbook) setLookbook(cmsData.lookbook || []);
-                    if (setExperts) setExperts(cmsData.experts || []);
-                }
-            }
+            if (sRes.data.success) setSalon(sRes.data.data);
+            if (oRes.data.success) setOutlets(oRes.data.data || []);
+            
         } catch (err) {
-            console.error("Failed to initialize customer data:", err);
+            console.error("Failed to fetch basic salon data:", err);
         } finally {
             setIsInitializing(false);
         }
-    }, [fetchOutlets, fetchServices, fetchCategories, fetchStaff, fetchFeedbacks, fetchLoyaltySettings, fetchLoyaltyPlans, activeSalonId]);
+    }, [activeSalonId]);
     const fetchSalon = useCallback(async () => {
         try {
             const sid = activeSalonId || localStorage.getItem('active_salon_id');
@@ -991,24 +937,13 @@ export function BusinessProvider({ children }) {
         }
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
-            if (['/app/services', '/app', '/app/profile'].includes(location.pathname)) {
-                // These pages now handle their own granular API fetching or are lightweight.
-                // We just stop initialization here.
-                setIsInitializing(false);
-            } else {
-                fetchCustomerInitialData();
-            }
+            fetchCustomerInitialData();
         } else if (effectiveTid) {
-            if (lastInitializedId.current === effectiveTid) return;
-            lastInitializedId.current = effectiveTid;
-
+            if (lastInitializedId.current === effectiveTid && !isInitializing) return;
+            
             const initGuest = async () => {
                 try {
-                    if (['/app/services', '/app', '/app/profile'].includes(location.pathname)) {
-                        // Skip initial-data for lightweight/granular pages
-                    } else {
-                        await fetchCustomerInitialData();
-                    }
+                    await fetchCustomerInitialData();
                 } catch (err) {
                     console.error("Guest initialization failed:", err);
                 } finally {
@@ -1017,9 +952,10 @@ export function BusinessProvider({ children }) {
             };
             initGuest();
         } else {
+            // No salon ID at all, we can stop initializing
             setIsInitializing(false);
         }
-    }, [isAuthenticated, isCustomerAuthenticated, location.pathname, activeSalonId, fetchCustomerInitialData, fetchServices, fetchCategories, fetchStaff]);
+    }, [isAuthenticated, isCustomerAuthenticated, location.pathname, activeSalonId, fetchCustomerInitialData]);
 
     return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 }

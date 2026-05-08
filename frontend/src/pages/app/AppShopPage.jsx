@@ -116,7 +116,8 @@ export default function AppShopPage() {
         products: inventoryProducts, 
         productCategories: shopCategories,
         activeOutletId,
-        fetchCustomerInitialData
+        fetchCustomerInitialData,
+        fetchProducts
     } = useBusiness();
     const { toggleProductLike } = useInventory(); // Keep only for actions if needed, or move toggle to business
     const navigate = useNavigate();
@@ -125,9 +126,9 @@ export default function AppShopPage() {
     useEffect(() => {
         if (!inventoryProducts || inventoryProducts.length === 0) {
             console.log("[Shop] No products found in context, triggering fetch...");
-            fetchCustomerInitialData();
+            fetchProducts();
         }
-    }, [inventoryProducts?.length, fetchCustomerInitialData]);
+    }, [inventoryProducts?.length, fetchProducts]);
 
     console.log("[Shop] Inventory Products:", inventoryProducts?.length);
     console.log("[Shop] Shop Categories:", shopCategories?.length);

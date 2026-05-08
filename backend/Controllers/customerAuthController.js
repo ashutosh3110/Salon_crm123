@@ -217,7 +217,7 @@ exports.customerLoginOtp = async (req, res) => {
         customer.lastLogin = new Date();
         
         // Sync salonId (tenantId) to the current business context
-        if (tenantId && tenantId !== 'system') {
+        if (tenantId && tenantId !== 'system' && mongoose.Types.ObjectId.isValid(tenantId)) {
             customer.salonId = tenantId;
         }
 

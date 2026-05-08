@@ -47,9 +47,16 @@ export default function AppLayout() {
         }
 
         // 3. Must have an active salon/outlet selected
-        if (!activeOutletId) {
-            const publicPaths = ['/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile', '/app/wallet', '/app/notifications'];
-            if (!publicPaths.includes(location.pathname)) {
+        if (!activeOutletId || activeOutletId === 'null' || activeOutletId === 'undefined') {
+            const publicPaths = [
+                '/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile', 
+                '/app/wallet', '/app/notifications', '/app/services', '/app/bookings',
+                '/app/orders', '/app/transactions'
+            ];
+            const isRestrictedPath = !publicPaths.some(p => location.pathname.startsWith(p)) && location.pathname !== '/app';
+            
+            // Critical: Never redirect if we are still initializing data from localStorage/API
+            if (isRestrictedPath && !isInitializing) {
                 navigate('/app/nearby-outlets', { replace: true });
             }
             return;
