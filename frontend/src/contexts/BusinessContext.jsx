@@ -26,8 +26,8 @@ const BusinessContext = createContext({
 });
 
 export function BusinessProvider({ children }) {
-    const { isAuthenticated, user } = useAuth();
-    const { isCustomerAuthenticated, customer, setCustomer } = useCustomerAuth();
+    const { isAuthenticated, user, loading: authLoading } = useAuth();
+    const { isCustomerAuthenticated, customer, setCustomer, loading: customerLoading } = useCustomerAuth();
     const [salon, setSalon] = useState(null);
     const [outlets, setOutlets] = useState([]);
     const [staff, setStaff] = useState([]);
@@ -118,15 +118,12 @@ export function BusinessProvider({ children }) {
 
     // Handle logout cleanup for Business Context
     useEffect(() => {
+        if (authLoading || customerLoading) return;
+
         if (!isAuthenticated && !isCustomerAuthenticated) {
-            setSalon(null);
-            setOutlets([]);
+            // We clear sensitive/private data only
+            // Public data like salon, outlets, services, products should remain accessible for guest browsing
             setStaff([]);
-            setServices([]);
-            setGroupedServices([]);
-            setCategories([]);
-            setRoles([]);
-            setProducts([]);
             setCustomers([]);
             setBookings([]);
             setOrders([]);
@@ -136,15 +133,15 @@ export function BusinessProvider({ children }) {
             setSegments([]);
             setShifts([]);
             setCatalogue(null);
-            setLoyaltySettings(null);
-            setLoyaltyPlans([]);
-            setPlatformSettings(null);
-            setActiveOutletId(null);
-            setActiveSalonId(null);
+            
+            // Critical: Don't clear activeSalonId/activeOutletId here. 
+            // They are cleared explicitly in the logout functions if needed.
+            // This prevents losing the selection on page refresh.
+            
             initializationRef.current = false;
             lastInitializedId.current = null;
         }
-    }, [isAuthenticated, isCustomerAuthenticated]);
+    }, [isAuthenticated, isCustomerAuthenticated, authLoading, customerLoading]);
 
 
     const [customersMetadata, setCustomersMetadata] = useState({ totalCount: 0, totalPages: 0, currentPage: 1 });
