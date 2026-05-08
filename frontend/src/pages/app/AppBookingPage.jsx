@@ -41,7 +41,8 @@ export default function AppBookingPage() {
         fetchStaff,
         loyaltySettings,
         activeSalonId,
-        salon
+        salon,
+        fetchServices
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
@@ -61,7 +62,8 @@ export default function AppBookingPage() {
 
     useEffect(() => {
         fetchStaff?.();
-    }, [fetchStaff]);
+        fetchServices?.();
+    }, [fetchStaff, fetchServices]);
 
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
@@ -762,6 +764,7 @@ export default function AppBookingPage() {
                                     <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
                                 </div>
                             )}
+                            <div className="text-[10px] text-red-500 font-bold">DEBUG: {businessServices.length} services found in context. preSelected: {preSelectedServiceId}</div>
                         </div>
 
                         <div className="flex flex-col gap-4 mb-4">

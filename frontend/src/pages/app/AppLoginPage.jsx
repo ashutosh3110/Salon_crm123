@@ -96,14 +96,17 @@ export default function AppLoginPage() {
                 setSelectedOutlet({ _id: urlOutletId, id: urlOutletId, tenantId: urlTenantId, salonId: urlTenantId });
             }
         } else if (!urlOutletId) {
-            // Force clear outlet selection if no ID in URL
-            setTenantId('');
-            setSelectedOutlet(null);
-            localStorage.removeItem('active_outlet_id');
-            localStorage.removeItem('active_salon_id');
-            localStorage.removeItem('wapixo_selected_outlet');
-            setActiveOutletId(null);
-            setActiveSalonId(null);
+            // Check if we already have a selection in localStorage before clearing
+            const hasStoredOutlet = localStorage.getItem('active_outlet_id');
+            if (!hasStoredOutlet) {
+                setTenantId('');
+                setSelectedOutlet(null);
+                localStorage.removeItem('active_outlet_id');
+                localStorage.removeItem('active_salon_id');
+                localStorage.removeItem('wapixo_selected_outlet');
+                setActiveOutletId(null);
+                setActiveSalonId(null);
+            }
         }
     }, [searchParams]);
 

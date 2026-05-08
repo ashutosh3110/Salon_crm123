@@ -20,6 +20,11 @@ exports.getServices = async (req, res) => {
 
         const outletId = req.query.outletId;
 
+        console.log("==== GET SERVICES ====");
+        console.log("User:", req.user?._id, "Role:", req.user?.role);
+        console.log("Query:", req.query);
+        console.log("Resolved SalonId:", salonId);
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }

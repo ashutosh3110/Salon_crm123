@@ -353,7 +353,7 @@ export default function NearbyOutletsPage() {
                                         transition={{ delay: idx * 0.1 }}
                                         onClick={() => {
                                             localStorage.setItem('wapixo_selected_outlet', JSON.stringify(o));
-                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}`);
+                                            navigate(`/app/login?outletSelected=1&tenantId=${encodeURIComponent(o.tenantId)}&outletId=${o._id || o.id}`);
                                         }}
                                         style={{ background: colors.card, border: `1px solid ${colors.border}` }}
                                         className="group relative p-4 rounded-[28px] overflow-hidden cursor-pointer shadow-xl transition-all hover:border-accent hover:shadow-accent/5"
