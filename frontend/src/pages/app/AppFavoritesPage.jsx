@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, ChevronLeft, Star, Plus } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -24,21 +25,13 @@ export default function AppFavoritesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="pt-12 pb-6 px-4">
-                <div className="flex items-center gap-4 mb-2">
-                    <button
-                        onClick={() => navigate(-1)}
-                        style={{ background: colors.card, border: `1px solid ${colors.border}`, color: colors.text }}
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
-                            Liked <span className="text-[#C8956C]">Items</span>
-                        </h1>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mt-0.5">Your curated collection</p>
-                    </div>
+            <div className="sticky top-0 z-50 pt-6 pb-6 px-4 flex items-center gap-4" style={{ background: colors.bg }}>
+                <AppBackButton />
+                <div>
+                    <h1 className="text-2xl font-black italic tracking-tighter" style={{ color: colors.text, fontFamily: "'SF Pro Display', sans-serif" }}>
+                        Liked <span className="text-[#C8956C]">Items</span>
+                    </h1>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mt-0.5">Your curated collection</p>
                 </div>
             </div>
 

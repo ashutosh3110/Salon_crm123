@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, Plus, History, TrendingUp,
-    TrendingDown, CreditCard, Wallet,
+    Plus, Wallet, TrendingUp, TrendingDown,
     CheckCircle2, ChevronRight, X, Zap
 } from 'lucide-react';
+import AppBackButton from '../../components/app/AppBackButton';
 import { useWallet } from '../../contexts/WalletContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -54,24 +54,20 @@ export default function AppWalletPage() {
     };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh', padding: '16px' }}>
+        <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-6 pt-4 px-2">
-                <button 
-                    onClick={() => navigate(-1)} 
-                    style={{ color: colors.text }}
-                    className="w-10 h-10 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-center border border-black/5 dark:border-white/5 active:scale-90 transition-all shadow-sm"
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <div>
-                    <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Financial</h1>
-                    <h2 className="text-xl font-black uppercase tracking-tight" style={{ color: colors.text }}>Wallet <span className="text-[#C8956C]">Pass</span></h2>
+            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="flex items-center gap-3">
+                    <AppBackButton />
+                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Wallet</h1>
                 </div>
             </div>
 
-            {/* Premium Wallet Card */}
-            <motion.div
+
+
+            <div className="px-4">
+                {/* Premium Wallet Card */}
+                <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 style={{
