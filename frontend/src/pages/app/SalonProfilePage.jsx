@@ -431,7 +431,7 @@ export default function SalonProfilePage() {
                             </div>
                             {businessServices
                                 .filter(s => {
-                                    const isMatch = (s.outletIds || []).map(oid => String(oid)).includes(String(id)) || String(s.outletId) === String(id) || s.outlet === 'All Outlets';
+                                    const isMatch = (!s.outletIds || s.outletIds.length === 0) || (s.outletIds).map(oid => String(oid)).includes(String(id)) || String(s.outletId) === String(id) || s.outlet === 'All Outlets';
                                     const category = businessCategories.find(c => c.name === s.category);
                                     const genderMatch = !category || category.gender === 'both' || category.gender === g;
                                     return isMatch && genderMatch && s.status === 'active';
