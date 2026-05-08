@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('./backend/Controllers/financeController.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/Controllers/promotionController.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/Controllers/marketingController.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/Routers/financeRoutes.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/Routers/promotionRoutes.js'\\); console.log\\('OK'\\)\")",
+      "Bash(node -e \"require\\('./backend/Routers/marketingRoutes.js'\\); console.log\\('OK'\\)\")"
+    ]
+  }
+}

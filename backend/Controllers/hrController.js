@@ -283,7 +283,7 @@ exports.getOverallPerformance = async (req, res) => {
         const performanceData = await Promise.all(staff.map(async (s) => {
             const query = {
                 salonId,
-                "stylists.stylistId": s._id,
+                staffId: s._id,
                 status: 'completed'
             };
             if (startDate && endDate) {

@@ -109,8 +109,11 @@ export default function BookingsPage() {
                 clientPhone.includes(searchTerm);
             const matchesStatus = statusFilter === 'all' || b.status === statusFilter;
             const matchesStaff = staffFilter === 'all' || b.staff?._id === staffFilter;
+            const matchesOutlet = outletFilter === 'all' ||
+                String(b.outletId) === String(outletFilter) ||
+                String(b.outlet?._id) === String(outletFilter);
 
-            return matchesSearch && matchesStatus && matchesStaff;
+            return matchesSearch && matchesStatus && matchesStaff && matchesOutlet;
         });
 
         // Date Filter implementation
@@ -178,7 +181,7 @@ export default function BookingsPage() {
 
     const handleUpdateStatus = async (id, status) => {
         try {
-            const normalized = status === 'upcoming' ? 'confirmed' : (status === 'no-show' ? 'cancelled' : status);
+            const normalized = status === 'upcoming' ? 'confirmed' : status;
             await updateBookingStatus(id, normalized);
             setSelectedBooking(null);
         } catch (error) {
@@ -362,7 +365,8 @@ export default function BookingsPage() {
                                         {filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
                                             return d.getDate() === selectedDate.getDate() &&
-                                                d.getMonth() === selectedDate.getMonth();
+                                                d.getMonth() === selectedDate.getMonth() &&
+                                                d.getFullYear() === selectedDate.getFullYear();
                                         }).length} Bookings
                                     </span>
                                 </div>
@@ -377,7 +381,8 @@ export default function BookingsPage() {
                                         filteredBookings.filter(b => {
                                             const d = new Date(b.appointmentDate);
                                             return d.getDate() === selectedDate.getDate() &&
-                                                d.getMonth() === selectedDate.getMonth();
+                                                d.getMonth() === selectedDate.getMonth() &&
+                                                d.getFullYear() === selectedDate.getFullYear();
                                         }).map((b, i) => (
                                             <div key={i} className="flex gap-4 px-4 group cursor-pointer hover:bg-surface-alt/50 py-4 rounded-none transition-all border border-transparent hover:border-border">
                                                 <div className="flex flex-col items-center gap-2 mt-2">

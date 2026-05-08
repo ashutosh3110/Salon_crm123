@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Wallet, CreditCard, ArrowRight, AlertCircle, CheckCircle2, RefreshCcw, Lock, Info, Calendar } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 function todayIso() {
     return new Date().toISOString().split('T')[0];
@@ -21,7 +21,7 @@ export default function CashAndBank() {
         setLoading(true);
         setError(null);
         try {
-            const res = await mockApi.get('/finance/cash-bank', { params: { date: businessDate } });
+            const res = await api.get('/finance/cash-bank', { params: { date: businessDate } });
             const d = res.data?.data;
             setPayload(d);
             if (d?.saved) {
@@ -91,7 +91,7 @@ export default function CashAndBank() {
         setSaving(true);
         setError(null);
         try {
-            await mockApi.post('/finance/cash-bank/reconcile', {
+            await api.post('/finance/cash-bank/reconcile', {
                 businessDate,
                 actualCash: parseFloat(actualCash),
                 actualBank: parseFloat(actualBank),

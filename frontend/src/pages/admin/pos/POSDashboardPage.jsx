@@ -12,7 +12,7 @@ import {
     Receipt
 } from 'lucide-react';
 import AnimatedCounter from '../../../components/common/AnimatedCounter';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function POSDashboardPage() {
     const [stats, setStats] = useState(null);
@@ -23,13 +23,21 @@ export default function POSDashboardPage() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [statsRes, invoicesRes] = await Promise.all([
-                    mockApi.get('/invoices/stats').catch(() => ({ data: {} })),
-                    mockApi.get('/invoices').catch(() => ({ data: { results: [] } })),
-                ]);
-                setStats(statsRes?.data || {});
-                const list = invoicesRes?.data?.results || invoicesRes?.data?.data?.results || [];
-                setRecentInvoices(Array.isArray(list) ? list : []);
+                const invoicesRes = await api.get('/pos/invoices').catch(() => ({ data: {} }));
+                const list = invoicesRes?.data?.data || invoicesRes?.data?.results || [];
+                const invoiceList = Array.isArray(list) ? list : [];
+                setRecentInvoices(invoiceList);
+                const today = new Date(); today.setHours(0,0,0,0);
+                const todayInvoices = invoiceList.filter(inv => new Date(inv.createdAt) >= today);
+                const computedStats = {
+                    totalRevenue: todayInvoices.reduce((s, i) => s + (i.total || 0), 0),
+                    invoiceCount: invoiceList.length,
+                    avgBillValue: invoiceList.length ? invoiceList.reduce((s, i) => s + (i.total || 0), 0) / invoiceList.length : 0,
+                    cashTotal: invoiceList.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0),
+                    cardTotal: invoiceList.filter(i => i.paymentMethod === 'card').reduce((s, i) => s + (i.total || 0), 0),
+                    onlineTotal: invoiceList.filter(i => i.paymentMethod === 'online').reduce((s, i) => s + (i.total || 0), 0),
+                };
+                setStats(computedStats);
             } catch (err) {
                 console.error('Failed to fetch POS dashboard data:', err);
             } finally {

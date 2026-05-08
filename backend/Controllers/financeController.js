@@ -1,3 +1,4 @@
+const Invoice = require('../Models/Invoice');
 const Supplier = require('../Models/Supplier');
 const SupplierInvoice = require('../Models/SupplierInvoice');
 const Expense = require('../Models/Expense');
@@ -419,6 +420,151 @@ exports.getEODReports = async (req, res) => {
         res.status(200).json({ success: true, data: reports });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+exports.getEODSummary = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const date = req.query.date ? new Date(req.query.date) : new Date();
+        const start = new Date(date); start.setHours(0, 0, 0, 0);
+        const end = new Date(date); end.setHours(23, 59, 59, 999);
+
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end } });
+        const expenses = await Expense.find({ salonId, date: { $gte: start, $lte: end } });
+
+        const totalRevenue = invoices.reduce((s, i) => s + (i.total || 0), 0);
+        const totalExpenses = expenses.reduce((s, e) => s + (e.amount || 0), 0);
+        const cashRevenue = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
+        const cardRevenue = invoices.filter(i => i.paymentMethod === 'card').reduce((s, i) => s + (i.total || 0), 0);
+        const onlineRevenue = invoices.filter(i => i.paymentMethod === 'online').reduce((s, i) => s + (i.total || 0), 0);
+
+        const dateStr = date.toISOString().split('T')[0];
+        const existingClose = await EndOfDay.findOne({ salonId, date: { $gte: start, $lte: end } });
+
+        res.json({
+            success: true,
+            data: {
+                metrics: {
+                    totalRevenue, totalExpenses, netRevenue: totalRevenue - totalExpenses,
+                    invoiceCount: invoices.length,
+                    cashRevenue, cardRevenue, onlineRevenue,
+                },
+                dayClosed: !!existingClose,
+                closure: existingClose || null,
+                reconciled: !!existingClose,
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.getEODHistory = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const limit = parseInt(req.query.limit) || 15;
+        const reports = await EndOfDay.find({ salonId }).sort({ date: -1 }).limit(limit);
+        res.json({ success: true, data: { results: reports } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.closeEOD = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const report = await EndOfDay.create({
+            ...req.body,
+            salonId,
+            performedBy: req.user._id,
+            date: req.body.businessDate ? new Date(req.body.businessDate) : new Date(),
+        });
+        res.status(201).json({ success: true, data: report });
+    } catch (err) {
+        res.status(400).json({ success: false, message: err.message });
+    }
+};
+
+exports.getGSTSummary = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const fyYear = parseInt(req.query.fy) || new Date().getFullYear();
+        const fyStart = new Date(fyYear, 3, 1); // April 1
+        const fyEnd = new Date(fyYear + 1, 2, 31, 23, 59, 59); // March 31
+
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: fyStart, $lte: fyEnd }, paymentStatus: { $ne: 'unpaid' } });
+
+        const months = {};
+        const monthLabels = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
+
+        invoices.forEach(inv => {
+            const d = new Date(inv.createdAt);
+            const mIdx = (d.getMonth() - 3 + 12) % 12;
+            const key = mIdx;
+            if (!months[key]) months[key] = { invoices: 0, revenue: 0, tax: 0 };
+            months[key].invoices += 1;
+            months[key].revenue += (inv.total || 0);
+            months[key].tax += (inv.tax || 0);
+        });
+
+        const monthly = monthLabels.map((label, i) => {
+            const m = months[i] || { invoices: 0, revenue: 0, tax: 0 };
+            const taxable = Math.max(0, m.revenue - m.tax);
+            const cgst = m.tax / 2;
+            const sgst = m.tax / 2;
+            return { monthLabel: label, taxable, cgst, sgst, gstTotal: m.tax, productGst: 0, serviceGst: m.tax, invoices: m.invoices };
+        });
+
+        const totals = monthly.reduce((acc, m) => ({
+            taxable: acc.taxable + m.taxable,
+            cgst: acc.cgst + m.cgst,
+            sgst: acc.sgst + m.sgst,
+            gstTotal: acc.gstTotal + m.gstTotal,
+            productGst: 0,
+            serviceGst: acc.serviceGst + m.serviceGst,
+            invoices: acc.invoices + m.invoices,
+        }), { taxable: 0, cgst: 0, sgst: 0, gstTotal: 0, productGst: 0, serviceGst: 0, invoices: 0 });
+
+        res.json({ success: true, data: { monthly, totals, fy: `${fyYear}-${fyYear + 1}` } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.getCashBank = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const date = req.query.date ? new Date(req.query.date) : new Date();
+        const start = new Date(date); start.setHours(0, 0, 0, 0);
+        const end = new Date(date); end.setHours(23, 59, 59, 999);
+
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: start, $lte: end } });
+        const expenses = await Expense.find({ salonId, date: { $gte: start, $lte: end } });
+
+        const cashSales = invoices.filter(i => i.paymentMethod === 'cash').reduce((s, i) => s + (i.total || 0), 0);
+        const bankSales = invoices.filter(i => i.paymentMethod !== 'cash').reduce((s, i) => s + (i.total || 0), 0);
+        const cashExpenses = expenses.filter(e => e.paymentMethod === 'cash').reduce((s, e) => s + (e.amount || 0), 0);
+        const bankExpenses = expenses.filter(e => e.paymentMethod !== 'cash').reduce((s, e) => s + (e.amount || 0), 0);
+
+        res.json({
+            success: true,
+            data: {
+                cash: { opening: 0, sales: cashSales, expenses: cashExpenses, net: cashSales - cashExpenses },
+                bank: { opening: 0, sales: bankSales, expenses: bankExpenses, net: bankSales - bankExpenses },
+                saved: null
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.reconcileCashBank = async (req, res) => {
+    try {
+        res.json({ success: true, data: { ...req.body, reconciled: true } });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 

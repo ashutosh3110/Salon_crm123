@@ -40,12 +40,6 @@ export default function HRPage({ tab = 'staff' }) {
     const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
 
-    React.useEffect(() => {
-        setLoading(true);
-        const timer = setTimeout(() => setLoading(false), 600);
-        return () => clearTimeout(timer);
-    }, [tab]);
-
     const renderContent = () => {
         if (loading) {
             return (

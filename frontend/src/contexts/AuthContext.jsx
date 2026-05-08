@@ -1,7 +1,6 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import mockApi from '../services/mock/mockApi';
 import authData from '../data/authMockData.json';
 
 import api, { cancelAllRequests } from '../services/api';
@@ -58,6 +57,36 @@ export function AuthProvider({ children }) {
         }
     }, []);
 
+    const updateProfile = useCallback(async (data) => {
+        const res = await api.patch('/auth/updatedetails', data);
+        const updated = res.data?.data || res.data?.user;
+        if (updated) {
+            const role = updated.role || user?.role || 'admin';
+            localStorage.setItem(`auth_user_${role}`, JSON.stringify(updated));
+            setUser(updated);
+        }
+        return updated;
+    }, [user]);
+
+    const changePassword = useCallback(async (currentPassword, newPassword) => {
+        await api.put('/auth/updatepassword', { currentPassword, newPassword });
+    }, []);
+
+    const refreshUser = useCallback(async () => {
+        try {
+            const role = localStorage.getItem('active_auth_role');
+            if (!role) return;
+            const res = await api.get('/auth/me');
+            const updated = res.data?.data || res.data?.user;
+            if (updated) {
+                localStorage.setItem(`auth_user_${role}`, JSON.stringify(updated));
+                setUser(updated);
+            }
+        } catch (e) {
+            console.error('refreshUser failed:', e);
+        }
+    }, []);
+
     const logout = useCallback(() => {
         // 0. Cancel all pending requests immediately
         cancelAllRequests();
@@ -97,6 +126,9 @@ export function AuthProvider({ children }) {
         loading,
         login,
         logout,
+        updateProfile,
+        changePassword,
+        refreshUser,
         register: async (formData) => {
             const response = await api.post('/salons/register', {
                 ...formData
@@ -104,7 +136,7 @@ export function AuthProvider({ children }) {
             return response.data;
         },
         isAuthenticated: !!user
-    }), [user, loading, login, logout]);
+    }), [user, loading, login, logout, updateProfile, changePassword, refreshUser]);
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

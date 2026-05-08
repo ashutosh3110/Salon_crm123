@@ -15,7 +15,7 @@ import {
     YAxis,
     CartesianGrid
 } from 'recharts';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const GENDER_COLORS = {

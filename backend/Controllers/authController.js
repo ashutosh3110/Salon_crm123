@@ -250,7 +250,7 @@ exports.updateDetails = async (req, res) => {
 
         let Model;
         if (req.user.role === 'superadmin') Model = User;
-        else if (req.user.role === 'admin' && !req.user.salonId) Model = Salon;
+        else if (req.user.role === 'admin' && req.user.ownerName !== undefined) Model = Salon;
         else if (req.user.role === 'customer') {
             const Customer = require('../Models/Customer');
             Model = Customer;

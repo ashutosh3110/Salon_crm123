@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3 } from 'lucide-react';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
+import { toast } from 'react-hot-toast';
 import {
     BarChart,
     Bar,
@@ -58,7 +59,7 @@ export default function PromotionsPage() {
     const fetchPromos = async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/promotions');
+            const res = await api.get('/promotions');
             const raw = res?.data?.results || res?.data?.data?.results || res?.data?.data || res?.data || [];
             const list = Array.isArray(raw) ? raw : [];
             setPromos(list.map(normalizePromo));
@@ -98,9 +99,9 @@ export default function PromotionsPage() {
             };
 
             if (editing) {
-                await mockApi.patch(`/promotions/${editing._id}`, payload);
+                await api.patch(`/promotions/${editing._id}`, payload);
             } else {
-                await mockApi.post('/promotions', payload);
+                await api.post('/promotions', payload);
             }
 
             setShowModal(false);
@@ -121,14 +122,14 @@ export default function PromotionsPage() {
 
         commit().catch((err) => {
             const msg = err?.response?.data?.message || err?.message || 'Could not save coupon. Please try again.';
-            alert(msg);
+            toast.error(msg);
             fetchPromos();
         });
     };
 
     const handleDelete = (id) => {
         if (!confirm('Delete this coupon? This cannot be undone.')) return;
-        mockApi.delete(`/promotions/${id}`).then(() => fetchPromos());
+        api.delete(`/promotions/${id}`).then(() => fetchPromos());
     };
 
     const openEdit = (p) => {

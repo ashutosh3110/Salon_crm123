@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getDashboard, 
-    getSegments, 
-    getCampaigns, 
+const {
+    getDashboard,
+    getSegments,
+    createSegment,
+    deleteSegment,
+    getSegmentCustomers,
+    getCampaigns,
     createCampaign,
     getAutomations
 } = require('../Controllers/marketingController');
@@ -15,6 +18,9 @@ router.use(authorize('admin', 'manager', 'p:marketing'));
 
 router.get('/dashboard', getDashboard);
 router.get('/segments', getSegments);
+router.post('/segments', createSegment);
+router.delete('/segments/:id', deleteSegment);
+router.get('/segments/:id/customers', getSegmentCustomers);
 router.get('/campaigns', getCampaigns);
 router.post('/campaigns', createCampaign);
 router.get('/automations', getAutomations);

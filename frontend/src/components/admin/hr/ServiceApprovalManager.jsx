@@ -12,7 +12,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 import toast from 'react-hot-toast';
 
 export default function ServiceApprovalManager() {
@@ -24,9 +24,9 @@ export default function ServiceApprovalManager() {
     const fetchPending = async () => {
         try {
             setLoading(true);
-            const response = await mockApi.get('/bookings/approvals');
-            // MockApi returns { data: { success: true, data: [...] } }
-            const payload = response.data?.data || response.data || [];
+            const response = await api.get('/bookings');
+            const all = response.data?.data || response.data?.results || [];
+            const payload = Array.isArray(all) ? all.filter(b => b.status === 'pending') : [];
             setBookings(Array.isArray(payload) ? payload : []);
         } catch (error) {
             console.error('[ServiceApproval] Fetch error:', error);
@@ -43,7 +43,7 @@ export default function ServiceApprovalManager() {
     const handleApprove = async (id) => {
         try {
             setProcessingId(id);
-            await mockApi.patch(`/bookings/${id}/approve`);
+            await api.patch(`/bookings/${id}/status`, { status: 'confirmed' });
             toast.success('Service Authorized. Commission Credited.');
             // Remove from list
             setBookings(prev => Array.isArray(prev) ? prev.filter(b => b._id !== id) : []);

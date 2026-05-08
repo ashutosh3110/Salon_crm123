@@ -28,6 +28,7 @@ const BusinessContext = createContext({
 export function BusinessProvider({ children }) {
     const { isAuthenticated, user } = useAuth();
     const { isCustomerAuthenticated, customer, setCustomer } = useCustomerAuth();
+    const location = useLocation();
     const [salon, setSalon] = useState(null);
     const [outlets, setOutlets] = useState([]);
     const [staff, setStaff] = useState([]);
@@ -190,7 +191,7 @@ export function BusinessProvider({ children }) {
     const fetchSegments = useCallback(async () => {
         setSegmentsLoading(true);
         try {
-            const r = await api.get('/segments');
+            const r = await api.get('/marketing/segments');
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setSegments(Array.isArray(list) ? list : []);
         } catch { setSegments([]); } finally { setSegmentsLoading(false); }
@@ -471,7 +472,7 @@ export function BusinessProvider({ children }) {
 
     const addSegment = useCallback(async (d) => {
         try {
-            const r = await api.post('/segments', d);
+            const r = await api.post('/marketing/segments', d);
             setSegments(p => [r.data, ...p]);
             toast.success(`Segment "${d.name}" created`);
             return r.data;
@@ -483,7 +484,7 @@ export function BusinessProvider({ children }) {
 
     const deleteSegment = useCallback(async (id) => {
         try {
-            await api.delete(`/segments/${id}`);
+            await api.delete(`/marketing/segments/${id}`);
             setSegments(p => p.filter(s => (s._id !== id && s.id !== id)));
             toast.success('Segment deleted');
         } catch (err) {
@@ -492,7 +493,7 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
-    const fetchSegmentCustomers = useCallback(async (sid) => (await api.get(`/clients?segmentId=${sid}`)).data?.results || [], []);
+    const fetchSegmentCustomers = useCallback(async (sid) => (await api.get(`/marketing/segments/${sid}/customers`)).data?.results || [], []);
 
     const addFeedback = useCallback(async (d) => {
         try {
@@ -560,7 +561,7 @@ export function BusinessProvider({ children }) {
 
     const updateSupplier = useCallback(async (id, d) => {
         try {
-            const r = await api.post('/finance/suppliers', { id, ...d });
+            const r = await api.put(`/finance/suppliers/${id}`, d);
             const updated = r.data.data || r.data;
             setSuppliers(p => p.map(s => (s._id === id || s.id === id) ? { ...s, ...updated } : s));
             toast.success('Supplier details updated');
@@ -830,6 +831,17 @@ export function BusinessProvider({ children }) {
         }
     }, []);
 
+    const checkoutPOS = useCallback(async (data) => {
+        try {
+            const r = await api.post('/pos/checkout', data);
+            const invoice = r.data?.data || r.data;
+            setInvoices(p => [invoice, ...p]);
+            return invoice;
+        } catch (err) {
+            throw err;
+        }
+    }, []);
+
     const updateSalon = useCallback(async (data) => {
         try {
             const res = await api.patch('/salons/me', data);
@@ -862,7 +874,7 @@ export function BusinessProvider({ children }) {
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
-        addBooking, updateBookingStatus,
+        addBooking, updateBookingStatus, checkoutPOS,
         fetchShifts, addShift, updateShift,
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,
@@ -887,7 +899,7 @@ export function BusinessProvider({ children }) {
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
-        addBooking, updateBookingStatus,
+        addBooking, updateBookingStatus, checkoutPOS,
         fetchShifts, addShift, updateShift,
         isInitializing,
         loyaltySettings, fetchLoyaltySettings,

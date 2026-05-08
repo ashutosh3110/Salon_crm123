@@ -4,7 +4,7 @@ import {
     ClipboardList, Calendar, Clock, CheckCircle,
     ChevronDown
 } from 'lucide-react';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -72,7 +72,7 @@ export default function InquiryPage() {
 
     const fetchCustomers = async () => {
         try {
-            const res = await mockApi.get('/clients', { params: { page: 1, limit: 200 } });
+            const res = await api.get('/clients', { params: { page: 1, limit: 200 } });
             const list = res.data?.results || res.data || [];
             setCustomers(Array.isArray(list) ? list : []);
         } catch (e) {
@@ -84,7 +84,7 @@ export default function InquiryPage() {
     const fetchInquiries = async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/inquiries', { params: { page: 1, limit: 200 } });
+            const res = await api.get('/inquiries', { params: { page: 1, limit: 200 } });
             const list = res.data?.results || [];
             setInquiries(list.map((i) => ({ ...i, id: i._id || i.id })));
         } catch (e) {
@@ -146,9 +146,9 @@ export default function InquiryPage() {
 
         try {
             if (editingInquiry) {
-                await mockApi.patch(`/inquiries/${editingInquiry.id || editingInquiry._id}`, payload);
+                await api.patch(`/inquiries/${editingInquiry.id || editingInquiry._id}`, payload);
             } else {
-                await mockApi.post('/inquiries', payload);
+                await api.post('/inquiries', payload);
             }
             await fetchInquiries();
             closeModal();
@@ -160,7 +160,7 @@ export default function InquiryPage() {
     const handleDelete = async (id) => {
         if (!confirm('Delete this enquiry?')) return;
         try {
-            await mockApi.delete(`/inquiries/${id}`);
+            await api.delete(`/inquiries/${id}`);
             await fetchInquiries();
         } catch (error) {
             console.error('[Inquiry] Delete failed:', error);
@@ -173,7 +173,7 @@ export default function InquiryPage() {
             setTimeout(() => setConvertedId(null), 1500);
         }
         try {
-            await mockApi.patch(`/inquiries/${id}`, { status: newStatus });
+            await api.patch(`/inquiries/${id}`, { status: newStatus });
             await fetchInquiries();
         } catch (error) {
             console.error('[Inquiry] Status update failed:', error);

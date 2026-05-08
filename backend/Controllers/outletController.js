@@ -16,7 +16,7 @@ exports.getOutlets = async (req, res) => {
             { $match: matchStage },
             {
                 $lookup: {
-                    from: 'users',
+                    from: 'staffs',
                     localField: '_id',
                     foreignField: 'outletId',
                     as: 'staff'

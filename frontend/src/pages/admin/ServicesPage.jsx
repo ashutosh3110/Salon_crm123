@@ -165,7 +165,7 @@ export default function ServicesPage({ tab = 'list' }) {
                     <ServiceCategories
                         categories={categories.map(cat => ({
                             ...cat,
-                            serviceCount: services.filter(s => s.category === cat.name).length
+                            serviceCount: services.filter(s => s.categoryId === cat._id || s.category === cat._id || s.category === cat.name).length
                         }))}
                         onAdd={addCategory}
                         onUpdate={updateCategory}

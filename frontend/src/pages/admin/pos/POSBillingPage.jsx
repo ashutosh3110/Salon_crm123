@@ -6,7 +6,8 @@ import {
     Scissors, Package, Check, ChevronDown, Loader2,
     Sparkles, Zap
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
+import { toast } from 'react-hot-toast';
 
 export default function POSBillingPage() {
     const [services, setServices] = useState([]);
@@ -41,12 +42,12 @@ export default function POSBillingPage() {
             try {
                 setLoading(true);
                 const [sRes, pRes, cRes, oRes, uRes, prRes] = await Promise.all([
-                    mockApi.get('/services').catch(() => ({ data: [] })),
-                    mockApi.get('/products').catch(() => ({ data: [] })),
-                    mockApi.get('/clients').catch(() => ({ data: [] })),
-                    mockApi.get('/outlets').catch(() => ({ data: [] })),
-                    mockApi.get('/users').catch(() => ({ data: [] })),
-                    mockApi.get('/promotions/active').catch(() => ({ data: [] })),
+                    api.get('/services').catch(() => ({ data: [] })),
+                    api.get('/products').catch(() => ({ data: [] })),
+                    api.get('/clients').catch(() => ({ data: [] })),
+                    api.get('/outlets').catch(() => ({ data: [] })),
+                    api.get('/hr/staff').catch(() => ({ data: [] })),
+                    api.get('/promotions/active').catch(() => ({ data: [] })),
                 ]);
                 const extract = (res) => res?.data?.data?.results || res?.data?.results || res?.data?.data || res?.data || [];
                 setServices(Array.isArray(extract(sRes)) ? extract(sRes) : []);
@@ -72,12 +73,7 @@ export default function POSBillingPage() {
 
     useEffect(() => {
         if (selectedClient?._id) {
-            mockApi.get(`/loyalty/wallet/${selectedClient._id}`)
-                .then(res => {
-                    const pts = res?.data?.data?.points || res?.data?.points || selectedClient?.loyaltyPoints || 0;
-                    setLoyaltyBalance(pts);
-                })
-                .catch(() => setLoyaltyBalance(selectedClient?.loyaltyPoints || 0));
+            setLoyaltyBalance(selectedClient?.loyaltyPoints || 0);
         } else {
             setLoyaltyBalance(0);
         }
@@ -163,7 +159,7 @@ export default function POSBillingPage() {
     const handleCreateClient = async (e) => {
         e.preventDefault();
         try {
-            const res = await mockApi.post('/clients', newClientForm);
+            const res = await api.post('/clients', newClientForm);
             const newClient = res?.data?.data || res?.data;
             setClients(prev => [newClient, ...prev]);
             setSelectedClient(newClient);
@@ -171,14 +167,14 @@ export default function POSBillingPage() {
             setSearchClient('');
             setNewClientForm({ name: '', phone: '', email: '', gender: 'female' });
         } catch (err) {
-            alert('Error creating client');
+            toast.error('Error creating client');
         }
     };
 
     const handleCheckout = async () => {
-        if (!selectedClient) { alert('Please select a client'); return; }
-        if (!selectedOutlet) { alert('Please select an outlet'); return; }
-        if (cart.length === 0) { alert('Cart is empty'); return; }
+        if (!selectedClient) { toast.error('Please select a client'); return; }
+        if (!selectedOutlet) { toast.error('Please select an outlet'); return; }
+        if (cart.length === 0) { toast.error('Cart is empty'); return; }
 
         setCheckingOut(true);
         try {
@@ -202,11 +198,11 @@ export default function POSBillingPage() {
                 createdAt: new Date().toISOString()
             };
 
-            const res = await mockApi.post('/pos/checkout', payload);
+            const res = await api.post('/pos/checkout', payload);
             const invoice = res?.data?.data || res?.data;
             setSuccessInvoice(invoice);
         } catch (err) {
-            alert('Checkout failed.');
+            toast.error('Checkout failed.');
         } finally {
             setCheckingOut(false);
         }

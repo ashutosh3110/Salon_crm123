@@ -26,9 +26,15 @@ exports.checkout = async (req, res) => {
 
         const salonId = req.user.salonId;
 
-        // 1. Generate Invoice Number
-        const count = await Invoice.countDocuments({ salonId });
-        const invoiceNumber = `INV-${salonId.toString().slice(-4).toUpperCase()}-${(count + 1).toString().padStart(5, '0')}`;
+        // 1. Generate Invoice Number (atomic to prevent duplicate numbers)
+        const Salon = require('../Models/Salon');
+        const salonDoc = await Salon.findByIdAndUpdate(
+            salonId,
+            { $inc: { invoiceCounter: 1 } },
+            { new: true, upsert: false }
+        );
+        const seq = salonDoc?.invoiceCounter || Date.now();
+        const invoiceNumber = `INV-${salonId.toString().slice(-4).toUpperCase()}-${String(seq).padStart(5, '0')}`;
 
         // 2. Calculate totals and verify items
         let subtotal = 0;
@@ -43,7 +49,7 @@ exports.checkout = async (req, res) => {
             }
         }
 
-        const total = subtotal - discount - useLoyaltyPoints - useWalletAmount + tax;
+        const total = Math.max(0, subtotal - discount - useLoyaltyPoints - useWalletAmount + tax);
 
         // 3. Create Invoice
         const invoice = await Invoice.create({

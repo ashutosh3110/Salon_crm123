@@ -6,7 +6,6 @@ import { useBusiness } from './BusinessContext';
 import { useCustomerAuth } from './CustomerAuthContext';
 import { useAuth } from './AuthContext';
 
-import mockApi from '../services/mock/mockApi';
 import api from '../services/api';
 
 const InventoryContext = createContext();
@@ -92,8 +91,8 @@ const normalizeShopCat = (c) => {
 
 export const InventoryProvider = ({ children }) => {
     const { addExpense } = useFinance();
-    const { outletsSnapshot = [], salon, activeSalonId } = useBusiness();
-    const { user: dashboardUser, isPlanActive } = useAuth();
+    const { outlets: outletsSnapshot = [], salon, activeSalonId } = useBusiness();
+    const { user: dashboardUser, isAuthenticated: isPlanActive } = useAuth();
     const { isCustomerAuthenticated } = useCustomerAuth();
 
     const [products, setProducts] = useState([]);

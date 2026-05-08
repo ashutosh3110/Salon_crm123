@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, FileText, IndianRupee, Download } from 'lucide-react';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const statusColors = {
     paid: 'bg-green-50 text-green-600 dark:bg-green-950/30 dark:text-green-400 border-green-100/50 dark:border-green-900/50',
@@ -15,7 +15,7 @@ export default function InvoicesPage() {
     const [search, setSearch] = useState('');
 
     const fetchInvoices = async () => {
-        try { setLoading(true); const { data } = await api.get('/invoices'); setInvoices(data.data || data || []); }
+        try { setLoading(true); const res = await api.get('/pos/invoices'); setInvoices(res.data?.data || res.data?.results || []); }
         catch (err) { console.error(err); } finally { setLoading(false); }
     };
 

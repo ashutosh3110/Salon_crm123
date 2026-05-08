@@ -30,7 +30,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import { createPortal } from 'react-dom';
 import { useBusiness } from '../../contexts/BusinessContext';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 /* ─── Main Page ────────────────────────────────────────────────────────── */
 
@@ -61,7 +61,7 @@ export default function RemindersPage() {
 
     const loadPendingSignals = async () => {
         try {
-            const res = await mockApi.get('/reminders-links/service-signals/pending');
+            const res = await api.get('/reminders-links/service-signals/pending');
             setPendingClients(res.data?.results || []);
         } catch (e) {
             console.error('[Reminders] Pending signals load failed:', e);
@@ -72,7 +72,7 @@ export default function RemindersPage() {
     const loadState = async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/reminders-links/state');
+            const res = await api.get('/reminders-links/state');
             const data = res.data || {};
             setBridalBookings(data.bridalBookings || []);
             setReminderRules(data.reminderRules || []);
@@ -118,7 +118,7 @@ export default function RemindersPage() {
         e.preventDefault();
         (async () => {
             try {
-                await mockApi.post('/reminders-links/rules', { ...newRule, active: true });
+                await api.post('/reminders-links/rules', { ...newRule, active: true });
                 await loadState();
                 setShowRuleModal(false);
                 setNewRule({ category: '', interval: 30, channel: 'WhatsApp', message: "Hi {name}, it's time for your {category}! Book your slot: {link}" });
@@ -133,7 +133,7 @@ export default function RemindersPage() {
         if (!newBridal.clientName || !newBridal.clientPhone || !newBridal.eventDate) return;
         (async () => {
             try {
-                await mockApi.post('/reminders-links/bridal-bookings', {
+                await api.post('/reminders-links/bridal-bookings', {
                     ...newBridal,
                     reminders: [
                         { id: `rem-30d-${Date.now()}`, label: '30 Days Before', daysBefore: 30, active: true, sentAt: null },
@@ -157,7 +157,7 @@ export default function RemindersPage() {
 
     const sendActionHubReminder = async (clientId, ruleId) => {
         try {
-            const res = await mockApi.post('/reminders-links/service-signals/send-whatsapp', { clientId, ruleId });
+            const res = await api.post('/reminders-links/service-signals/send-whatsapp', { clientId, ruleId });
             const waLink = res.data?.waLink;
             if (waLink) window.open(waLink, '_blank');
             await loadPendingSignals();
@@ -169,7 +169,7 @@ export default function RemindersPage() {
     const toggleReminder = (bookingId, remId) => {
         (async () => {
             try {
-                await mockApi.patch(`/reminders-links/bridal-bookings/${bookingId}/reminders/${remId}/toggle`);
+                await api.patch(`/reminders-links/bridal-bookings/${bookingId}/reminders/${remId}/toggle`);
                 await loadState();
             } catch (err) {
                 console.error('[Reminders] Toggle reminder failed:', err);
@@ -182,7 +182,7 @@ export default function RemindersPage() {
         if (!rule) return;
         (async () => {
             try {
-                await mockApi.patch(`/reminders-links/rules/${id}`, { active: !rule.active });
+                await api.patch(`/reminders-links/rules/${id}`, { active: !rule.active });
                 await loadState();
             } catch (err) {
                 console.error('[Reminders] Toggle rule failed:', err);
@@ -194,7 +194,7 @@ export default function RemindersPage() {
         setBookingSettings(data);
         (async () => {
             try {
-                await mockApi.patch('/reminders-links/settings', data);
+                await api.patch('/reminders-links/settings', data);
             } catch (err) {
                 console.error('[Reminders] Update settings failed:', err);
             }
@@ -204,7 +204,7 @@ export default function RemindersPage() {
     const handleSocialShare = async (platform) => {
         if (platform !== 'WhatsApp') return;
         try {
-            const res = await mockApi.post('/reminders-links/social-share/whatsapp', {
+            const res = await api.post('/reminders-links/social-share/whatsapp', {
                 message: `Hi {name}, book your next appointment here: {link}`,
             });
             const mode = res.data?.mode || 'manual_links';

@@ -1,16 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../Middleware/auth');
+const { protect, authorize } = require('../Middleware/auth');
+const {
+    getPromotions,
+    getActivePromotions,
+    createPromotion,
+    updatePromotion,
+    deletePromotion,
+} = require('../Controllers/promotionController');
 
-// @desc    Get active promotions
-// @route   GET /api/promotions/active
-// @access  Private (Registered Customers)
-router.get('/active', protect, (req, res) => {
-    // Return empty array for now to stop 404
-    res.json({
-        success: true,
-        data: []
-    });
-});
+router.get('/active', protect, getActivePromotions);
+
+router.use(protect);
+router.use(authorize('admin', 'manager'));
+
+router.route('/').get(getPromotions).post(createPromotion);
+router.route('/:id').patch(updatePromotion).delete(deletePromotion);
 
 module.exports = router;

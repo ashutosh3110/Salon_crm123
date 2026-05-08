@@ -87,6 +87,43 @@ exports.getSegments = async (req, res) => {
     }
 };
 
+// @desc    Create segment (static — returns the predefined list after noting the name)
+// @route   POST /marketing/segments
+exports.createSegment = async (req, res) => {
+    res.status(201).json({ success: true, data: { id: Date.now().toString(), ...req.body } });
+};
+
+// @desc    Delete segment (static — no-op for built-in segments)
+// @route   DELETE /marketing/segments/:id
+exports.deleteSegment = async (req, res) => {
+    res.json({ success: true, data: {} });
+};
+
+// @desc    Get customers in a segment
+// @route   GET /marketing/segments/:id/customers
+exports.getSegmentCustomers = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const segmentId = req.params.id;
+        let query = { salonId };
+
+        if (segmentId === 'loyal') {
+            query.totalVisits = { $gte: 5 };
+        } else if (segmentId === 'at_risk') {
+            const d = new Date(); d.setDate(d.getDate() - 30);
+            query.$or = [{ lastVisit: { $lt: d } }, { lastVisit: { $exists: false }, createdAt: { $lt: d } }];
+        } else if (segmentId === 'new_month') {
+            const d = new Date(); d.setDate(1); d.setHours(0, 0, 0, 0);
+            query.createdAt = { $gte: d };
+        }
+
+        const customers = await Customer.find(query).select('name phone email totalVisits lastVisit').limit(200);
+        res.json({ success: true, data: customers });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // @desc    Get campaigns
 // @route   GET /marketing/campaigns
 // @access  Private

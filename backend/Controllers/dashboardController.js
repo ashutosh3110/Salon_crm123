@@ -29,7 +29,7 @@ exports.getSalonDashboard = async (req, res) => {
             Customer.countDocuments({ salonId }), // Assuming customer is per salon
             Staff.countDocuments({ salonId }),
             WalletTransaction.aggregate([
-                { $match: { salonId, type: 'credit' } },
+                { $match: { salonId, type: 'CREDIT' } },
                 { $group: { _id: null, total: { $sum: '$amount' } } }
             ]).then(res => res[0]?.total || 0)
         ]);
@@ -100,11 +100,19 @@ exports.getSalonDashboard = async (req, res) => {
                 },
                 revenueWeek: chartData,
                 recentActivity,
-                serviceDistribution: [
-                    { name: 'Hair', value: 400, color: '#8B1A2D' },
-                    { name: 'Face', value: 300, color: '#B4912B' },
-                    { name: 'Body', value: 300, color: '#2C3E50' },
-                ] // Mocking distribution for now as it requires complex service-wise aggregation
+                serviceDistribution: await (async () => {
+                    const COLORS = ['#8B1A2D', '#B4912B', '#2C3E50', '#3b82f6', '#10b981', '#f59e0b'];
+                    const Service = require('../Models/Service');
+                    const dist = await Booking.aggregate([
+                        { $match: { salonId, status: 'completed' } },
+                        { $group: { _id: '$serviceId', count: { $sum: 1 } } },
+                        { $sort: { count: -1 } },
+                        { $limit: 6 },
+                        { $lookup: { from: 'services', localField: '_id', foreignField: '_id', as: 'svc' } },
+                        { $project: { name: { $ifNull: [{ $arrayElemAt: ['$svc.name', 0] }, 'Unknown'] }, value: '$count' } }
+                    ]);
+                    return dist.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }));
+                })()
             }
         });
 

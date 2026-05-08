@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Package, AlertTriangle, IndianRupee, Store, CheckCircle2 } from 'lucide-react';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
+import { toast } from 'react-hot-toast';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useInventory } from '../../contexts/InventoryContext';
 
@@ -28,7 +29,7 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
         try {
             setLoading(true);
-            const { data } = await mockApi.get('/products');
+            const { data } = await api.get('/products');
             const list = data?.data?.results || data?.results || data?.data || data || [];
             setProducts(Array.isArray(list) ? list : []);
         } catch (err) {
@@ -59,19 +60,19 @@ export default function ProductsPage() {
         try {
             const payload = toApiPayload(form);
             if (editing) {
-                await mockApi.patch(`/products/${editing._id || editing.id}`, payload);
+                await api.patch(`/products/${editing._id || editing.id}`, payload);
             } else {
-                await mockApi.post('/products', payload);
+                await api.post('/products', payload);
             }
             setShowModal(false); setEditing(null);
             setForm({ name: '', sku: '', price: '', category: '', stockQuantity: '', lowStockThreshold: 5, availabilityType: 'all', outletIds: [] });
             fetchProducts();
-        } catch (err) { alert('Error saving product locally'); }
+        } catch (err) { toast.error(err?.response?.data?.message || 'Error saving product'); }
     };
 
     const handleDelete = async (id) => {
         if (!confirm('Delete this product?')) return;
-        try { await mockApi.delete(`/products/${id}`); fetchProducts(); } catch { alert('Error deleting'); }
+        try { await api.delete(`/products/${id}`); fetchProducts(); } catch { toast.error('Error deleting product'); }
     };
 
     const openEdit = (p) => {

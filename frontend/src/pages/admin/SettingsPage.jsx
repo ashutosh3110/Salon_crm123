@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { MapPin } from 'lucide-react';
@@ -138,9 +139,9 @@ export default function SettingsPage() {
                 email: profileForm.email.trim(),
                 phone: profileForm.phone.trim(),
             });
-            alert('Profile updated successfully.');
+            toast.success('Profile updated successfully.');
         } catch (error) {
-            alert(error?.message || 'Failed to update profile');
+            toast.error(error?.message || 'Failed to update profile');
         } finally {
             setIsSaving(false);
         }
@@ -149,20 +150,20 @@ export default function SettingsPage() {
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            alert('New password and confirmation do not match.');
+            toast.error('New password and confirmation do not match.');
             return;
         }
         if (passwordForm.newPassword.length < 8) {
-            alert('New password must be at least 8 characters.');
+            toast.error('New password must be at least 8 characters.');
             return;
         }
         setIsSaving(true);
         try {
             await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            alert('Password updated successfully.');
+            toast.success('Password updated successfully.');
         } catch (error) {
-            alert(error?.message || 'Failed to update password');
+            toast.error(error?.message || 'Failed to update password');
         } finally {
             setIsSaving(false);
         }
@@ -185,9 +186,9 @@ export default function SettingsPage() {
             };
             await updateSalon(payload);
             await fetchSalon?.();
-            alert('Business & tax settings updated successfully.');
+            toast.success('Business & tax settings updated successfully.');
         } catch (error) {
-            alert(error?.message || 'Failed to update business settings');
+            toast.error(error?.message || 'Failed to update business settings');
         } finally {
             setIsSaving(false);
         }
@@ -198,16 +199,16 @@ export default function SettingsPage() {
         const lat = parseFloat(locationForm.latitude);
         const lng = parseFloat(locationForm.longitude);
         if (Number.isNaN(lat) || Number.isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-            alert('Please enter valid latitude (-90 to 90) and longitude (-180 to 180).');
+            toast.error('Please enter valid latitude (-90 to 90) and longitude (-180 to 180).');
             return;
         }
         setIsSaving(true);
         try {
             await updateSalon({ latitude: lat, longitude: lng });
             await fetchSalon?.();
-            alert('Salon location updated. Customers nearby can find your salon.');
+            toast.success('Salon location updated. Customers nearby can find your salon.');
         } catch (error) {
-            alert(error?.message || 'Failed to update location');
+            toast.error(error?.message || 'Failed to update location');
         } finally {
             setIsSaving(false);
         }
@@ -223,9 +224,9 @@ export default function SettingsPage() {
                 },
             });
             await fetchSalon?.();
-            alert('Notification preferences saved.');
+            toast.success('Notification preferences saved.');
         } catch (error) {
-            alert(error?.message || 'Failed to save notifications');
+            toast.error(error?.message || 'Failed to save notifications');
         } finally {
             setIsSaving(false);
         }
@@ -235,7 +236,7 @@ export default function SettingsPage() {
 
     const useMyLocation = () => {
         if (!navigator.geolocation) {
-            alert('Geolocation is not supported by your browser.');
+            toast.error('Geolocation is not supported by your browser.');
             return;
         }
         navigator.geolocation.getCurrentPosition(
@@ -245,7 +246,7 @@ export default function SettingsPage() {
                     longitude: pos.coords.longitude.toFixed(6),
                 });
             },
-            () => alert('Could not get your location. Please enter manually.'),
+            () => toast.error('Could not get your location. Please enter manually.'),
             { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
     };

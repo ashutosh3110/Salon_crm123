@@ -242,7 +242,7 @@ export default function SubscriptionPage() {
         if (!cancelReason) return;
         setCancelling(true);
         try {
-            await mockApi.post('/subscriptions/cancel', { reason: cancelReason });
+            await api.post('/subscriptions/cancel', { reason: cancelReason });
             setShowCancelModal(false);
             setShowSuccess(true);
             if (refreshUser) await refreshUser();

@@ -11,7 +11,7 @@ import {
     Filter,
     Receipt
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function POSPaymentsPage() {
     const [invoices, setInvoices] = useState([]);
@@ -23,8 +23,8 @@ export default function POSPaymentsPage() {
             try {
                 setLoading(true);
                 const params = dateFilter === 'today' ? '?date=today&limit=100' : '?limit=100';
-                const res = await mockApi.get(`/invoices${params}`);
-                const list = res?.data?.results || res?.data?.data?.results || [];
+                const res = await api.get(`/pos/invoices${params}`);
+                const list = res?.data?.data || res?.data?.results || [];
                 setInvoices(Array.isArray(list) ? list : []);
             } catch (err) {
                 console.error('Failed to fetch payments:', err);

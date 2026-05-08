@@ -19,7 +19,13 @@ const {
     addInvoicePayment,
     getFinanceSummary,
     getEODReports,
-    submitEOD
+    submitEOD,
+    getCashBank,
+    reconcileCashBank,
+    getEODSummary,
+    getEODHistory,
+    closeEOD,
+    getGSTSummary
 } = require('../Controllers/financeController');
 
 // All routes are protected and for admin/manager
@@ -52,8 +58,18 @@ router.post('/invoices/payments', addInvoicePayment);
 // Summary / Dashboard
 router.get('/summary', getFinanceSummary);
 
+// Tax Reports
+router.get('/tax/gst-summary', getGSTSummary);
+
+// Cash & Bank Reconciliation
+router.get('/cash-bank', getCashBank);
+router.post('/cash-bank/reconcile', reconcileCashBank);
+
 // End of Day
 router.get('/eod', getEODReports);
 router.post('/eod', submitEOD);
+router.get('/eod/summary', getEODSummary);
+router.get('/eod/history', getEODHistory);
+router.post('/eod/close', closeEOD);
 
 module.exports = router;

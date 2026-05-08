@@ -7,7 +7,8 @@ import {
     AlertCircle,
     Eye
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
+import { toast } from 'react-hot-toast';
 
 export default function POSRefundsPage() {
     const [refunds, setRefunds] = useState([]);
@@ -19,8 +20,8 @@ export default function POSRefundsPage() {
         const fetchRefunds = async () => {
             try {
                 setLoading(true);
-                const res = await mockApi.get('/invoices'); 
-                const list = res?.data?.results || res?.data?.data?.results || [];
+                const res = await api.get('/pos/invoices');
+                const list = res?.data?.data || res?.data?.results || [];
                 const simulatedRefunds = list.slice(0, 2).map((inv, i) => ({
                     id: `REF-00${i+1}`,
                     inv: inv.invoiceNumber,
@@ -41,7 +42,7 @@ export default function POSRefundsPage() {
     }, []);
 
     const handleAction = (status) => {
-        alert(`Refund ${selectedRefund.id} ${status} with remark: ${remark}`);
+        toast.success(`Refund ${selectedRefund.id} ${status}`);
         setRefunds(prev => prev.map(r => r.id === selectedRefund.id ? { ...r, status } : r));
         setSelectedRefund(null);
         setRemark('');

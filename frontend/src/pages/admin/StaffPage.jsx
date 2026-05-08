@@ -26,7 +26,7 @@ import { useCMS } from '../../contexts/CMSContext';
 import CustomSelect from '../../components/admin/common/CustomSelect';
 import { useNavigate } from 'react-router-dom';
 import PasswordField from '../../components/common/PasswordField';
-import { API_BASE_URL } from '../../services/api';
+import api, { API_BASE_URL } from '../../services/api';
 
 const roleColors = {
     admin: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400',
@@ -211,8 +211,13 @@ export default function StaffPage() {
         }
     };
 
-    const handleResendInvite = (id) => {
-        toast.success(`Invitation resent successfully.`);
+    const handleResendInvite = async (id) => {
+        try {
+            await api.post(`/users/${id}/resend-invite`);
+            toast.success('Invitation resent successfully.');
+        } catch (err) {
+            toast.error('Failed to resend invite.');
+        }
     };
 
     const openEdit = (u) => {
@@ -540,7 +545,7 @@ export default function StaffPage() {
                                             const roleName = selectedRole ? selectedRole.name : '';
                                             
                                             const updates = { role: roleName, roleId: rId };
-                                            const isStylistRole = ['stylist', 'stylish', 'stylsih'].includes(roleName.toLowerCase());
+                                            const isStylistRole = ['stylist'].includes(roleName.toLowerCase());
                                             if (isStylistRole && (!form.availability || !form.availability.days)) {
                                                 updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
                                             }
@@ -594,7 +599,7 @@ export default function StaffPage() {
                                     />
                                 </div>
 
-                                {['stylist', 'stylish', 'stylsih'].includes(form.role?.toLowerCase()) && (
+                                {['stylist'].includes(form.role?.toLowerCase()) && (
                                     <>
                                         <div className="col-span-2 pt-2 border-t border-border mt-2">
                                             <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Stylist Public Profile</p>

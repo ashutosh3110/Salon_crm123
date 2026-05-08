@@ -3,7 +3,7 @@ import {
     Search, Filter, Eye, Printer, Download, Calendar,
     Loader2, X, ChevronLeft, ChevronRight, Receipt
 } from 'lucide-react';
-import mockApi from '../../../services/mock/mockApi';
+import api from '../../../services/api';
 
 export default function POSInvoicesPage() {
     const [invoices, setInvoices] = useState([]);
@@ -21,9 +21,9 @@ export default function POSInvoicesPage() {
             params.set('page', page);
             params.set('limit', 20);
             if (dateFilter === 'today') params.set('date', 'today');
-            const res = await mockApi.get(`/invoices?${params.toString()}`);
+            const res = await api.get(`/pos/invoices?${params.toString()}`);
             const data = res?.data || {};
-            setInvoices(data.results || []);
+            setInvoices(data.data || data.results || []);
             setTotalPages(data.totalPages || 1);
         } catch (err) {
             console.error('Failed to fetch invoices:', err);

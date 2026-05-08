@@ -17,11 +17,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Tab Components
-import LoyaltyRulesTab from '../../components/admin/loyalty/LoyaltyRulesTab';
 import MembershipPlansTab from '../../components/admin/loyalty/MembershipPlansTab';
 import MembersListTab from '../../components/admin/loyalty/MembersListTab';
 import LoyaltyTransactionsTab from '../../components/admin/loyalty/LoyaltyTransactionsTab';
-import ReferralSettingsTab from '../../components/admin/loyalty/ReferralSettingsTab';
 
 const TABS = [
     { id: 'plans', label: 'Membership Plans', icon: CreditCard, description: 'Manage plans and benefits' },
