@@ -9,7 +9,8 @@ import {
     Building2,
     AlertTriangle,
     Edit2,
-    Trash2
+    Trash2,
+    Eye
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -20,7 +21,6 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
     const { outlets } = useBusiness();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
-    const [openMenuId, setOpenMenuId] = useState(null);
 
     const categories = ['All', ...new Set(products.map(p => p.category))];
 
@@ -102,8 +102,16 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                     <tr key={product.id} className="hover:bg-primary/[0.02] transition-colors group">
                                         <td className="px-4 py-2">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-surface-alt border border-border flex items-center justify-center text-text-muted font-black group-hover:border-primary transition-colors">
-                                                    <Box className="w-4 h-4" />
+                                                <div className="w-12 h-12 bg-surface-alt border border-border flex items-center justify-center text-text-muted font-black group-hover:border-primary transition-all overflow-hidden shadow-sm">
+                                                    {(product.images && product.images.length > 0) ? (
+                                                        <img 
+                                                            src={product.images[0]} 
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                        />
+                                                    ) : (
+                                                        <Box className="w-5 h-5 opacity-20" />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <p className="text-[11px] font-black text-text group-hover:text-primary transition-colors italic uppercase font-mono leading-none mb-0.5">{product.name}</p>
@@ -174,28 +182,13 @@ export default function ProductManager({ products = [], onDelete, onToggleStatus
                                                 >
                                                     <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
-                                                <div className="relative">
-                                                    <button 
-                                                        onClick={() => setOpenMenuId(openMenuId === product.id ? null : product.id)}
-                                                        className="p-1.5 text-text-muted hover:text-primary transition-colors"
-                                                    >
-                                                        <MoreVertical className="w-3.5 h-3.5" />
-                                                    </button>
-                                                    
-                                                    {openMenuId === product.id && (
-                                                        <>
-                                                            <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />
-                                                            <div className="absolute right-0 top-full mt-1 w-32 bg-white border-2 border-text shadow-2xl z-50 overflow-hidden font-mono">
-                                                                <button
-                                                                    onClick={() => { onDuplicate?.(product.id); setOpenMenuId(null); }}
-                                                                    className="w-full px-3 py-2 text-left text-[8px] font-black text-text hover:bg-surface transition-colors flex items-center gap-2 uppercase"
-                                                                >
-                                                                    <Plus className="w-2.5 h-2.5" /> COPY PRODUCT
-                                                                </button>
-                                                            </div>
-                                                        </>
-                                                    )}
-                                                </div>
+                                                <button 
+                                                    onClick={() => navigate(`/admin/inventory/products/view/${product._id || product.id}`)}
+                                                    className="p-1.5 text-text-muted hover:text-primary transition-colors"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>

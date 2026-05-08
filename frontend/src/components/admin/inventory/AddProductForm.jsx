@@ -24,7 +24,10 @@ import {
     X,
     ChevronRight,
     RefreshCw,
-    ArrowLeft
+    ArrowLeft,
+    Smartphone,
+    Package,
+    CloudUpload
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomSelect from '../common/CustomSelect';
@@ -47,6 +50,8 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         barcode: '',
         sku: '',
         threshold: '5',
+        stock: '0',
+        unit: 'pcs',
         supplier: '',
         availability: 'all',
         status: 'active',
@@ -55,7 +60,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         outletIds: initialData?.outletIds || [],
         isShopProduct: false,
         appCategory: '',
-        appImage: '',
+        images: [],
         shopDescription: '',
         rating: '4.5',
         appCare: 'Store in cool, dry place.',
@@ -75,18 +80,30 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
         // Robust safety guards for numeric fields to prevent NaN and uncontrolled warnings
         sellingPrice: (initialData?.sellingPrice !== undefined && initialData?.sellingPrice !== null && !isNaN(initialData.sellingPrice)) ? initialData.sellingPrice : defaultFormData.sellingPrice,
         threshold: (initialData?.threshold !== undefined && initialData?.threshold !== null && !isNaN(initialData.threshold)) ? initialData.threshold : defaultFormData.threshold,
+        stock: (initialData?.stock !== undefined && initialData?.stock !== null && !isNaN(initialData.stock)) ? initialData.stock : defaultFormData.stock,
+        unit: initialData?.unit || defaultFormData.unit,
         rating: (initialData?.rating !== undefined && initialData?.rating !== null && !isNaN(initialData.rating)) ? initialData.rating : defaultFormData.rating,
         gstPercent: (initialData?.gstPercent !== undefined && initialData?.gstPercent !== null && !isNaN(initialData.gstPercent)) ? initialData.gstPercent : defaultFormData.gstPercent,
-        appCare: initialData?.appCare ?? defaultFormData.appCare,
-        appUsage: initialData?.appUsage ?? defaultFormData.appUsage,
-        appOrigin: initialData?.appOrigin ?? defaultFormData.appOrigin,
-        appKnowMore: initialData?.appKnowMore ?? defaultFormData.appKnowMore,
-        appFormulaType: initialData?.appFormulaType ?? defaultFormData.appFormulaType,
-        appConsistency: initialData?.appConsistency ?? defaultFormData.appConsistency,
-        appRitualStatus: initialData?.appRitualStatus ?? defaultFormData.appRitualStatus,
-        appVendorDetails: initialData?.appVendorDetails ?? defaultFormData.appVendorDetails,
-        appReturnPolicy: initialData?.appReturnPolicy ?? defaultFormData.appReturnPolicy
+        images: initialData?.images || initialData?.appImage ? [initialData.appImage] : defaultFormData.images
     });
+
+    // Sync formData when initialData arrives asynchronously
+    React.useEffect(() => {
+        if (initialData) {
+            setFormData(prev => ({
+                ...prev,
+                ...initialData,
+                categoryId: initialData.categoryId || initialData.category || '',
+                sellingPrice: initialData.sellingPrice ?? '',
+                threshold: initialData.threshold ?? initialData.minStock ?? '5',
+                stock: initialData.stock ?? '0',
+                gstPercent: initialData.gstPercent ?? '18',
+                hsnCode: initialData.hsnCode ?? '',
+                brand: initialData.brand ?? '',
+                images: Array.isArray(initialData.images) ? initialData.images : (initialData.appImage ? [initialData.appImage] : [])
+            }));
+        }
+    }, [initialData]);
 
     const [uploading, setUploading] = useState(false);
 
@@ -148,6 +165,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
             ...formData,
             sellingPrice: parseFloat(formData.sellingPrice),
             threshold: parseInt(formData.threshold),
+            stock: parseInt(formData.stock),
             gstPercent: parseInt(formData.gstPercent),
             mfgDate: formData.mfgDate,
             expiryDate: formData.expiryDate
@@ -203,103 +221,147 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* 1. Basic Details */}
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <FileText className="w-4 h-4 text-primary" />
-                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">1. Basic Details</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* 1. Core Identity & Pricing */}
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full">
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center text-primary">
+                            <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] italic">Product Identity</h3>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Master SKU Designation</p>
+                        </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Product Name <span className="text-rose-500">*</span></label>
-                        <input
-                            type="text"
-                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm focus:ring-2 focus:ring-primary/20 transition-all font-bold"
-                            placeholder="e.g. Loreal Revive Shampoo"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Brand / Mfr</label>
+                    <div className="space-y-6">
+                        <div className="space-y-1.5">
+                            <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Product Name <span className="text-rose-500">*</span></label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
-                                placeholder="e.g. Loreal"
-                                value={formData.brand}
-                                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                                className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase placeholder:opacity-20"
+                                placeholder="e.g. LUXURY_ORGANIC_SHAMPOO"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Category <span className="text-rose-500">*</span></label>
-                            <CustomSelect
-                                value={productCategories.find(c => c._id === formData.categoryId)?.name || 'Select Category'}
-                                onChange={(val) => {
-                                    const cat = productCategories.find(c => c.name === val);
-                                    setFormData({ ...formData, categoryId: cat?._id || '' });
-                                }}
-                                options={productCategories.map(c => c.name)}
-                                placeholder="Select Category..."
-                            />
-                        </div>
-                    </div>
 
-                    <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Description (Optional)</label>
-                        <textarea
-                            rows="2"
-                            className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold resize-none"
-                            placeholder="Brief product use details..."
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        />
-                    </div>
-                </div>
-
-                {/* 2. Pricing & tax */}
-                <div className="space-y-6 text-left">
-                    <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <DollarSign className="w-4 h-4 text-emerald-500" />
-                            <h3 className="text-xs font-bold text-text uppercase tracking-widest">2. Pricing Details</h3>
-                        </div>
-
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Selling Price (MRP) <span className="text-rose-500">*</span></label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-bold text-sm">₹</span>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Brand / MFR</label>
                                 <input
-                                    type="number"
-                                    className="w-full pl-8 pr-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold text-primary focus:ring-2 focus:ring-primary/20"
-                                    placeholder="0.00"
-                                    value={formData.sellingPrice || ''}
-                                    onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+                                    type="text"
+                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    placeholder="e.g. LOREAL"
+                                    value={formData.brand}
+                                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Category <span className="text-rose-500">*</span></label>
+                                <CustomSelect
+                                    value={productCategories.find(c => c._id === formData.categoryId)?.name || 'Select'}
+                                    onChange={(val) => {
+                                        const cat = productCategories.find(c => c.name === val);
+                                        setFormData({ ...formData, categoryId: cat?._id || '' });
+                                    }}
+                                    options={productCategories.map(c => c.name)}
+                                    className="h-[46px] !text-[11px] font-black"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Selling Price (MRP) <span className="text-rose-500">*</span></label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-black text-xs">₹</span>
+                                    <input
+                                        type="number"
+                                        className="w-full pl-8 pr-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
+                                        placeholder="0.00"
+                                        value={formData.sellingPrice || ''}
+                                        onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">GST %</label>
+                                <CustomSelect
+                                    value={formData.gstPercent + '%'}
+                                    onChange={(val) => setFormData({ ...formData, gstPercent: val.replace('%', '') })}
+                                    options={["0%", "5%", "12%", "18%", "28%"]}
+                                    className="h-[46px] !text-[11px] font-black"
                                 />
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div className="bg-white p-6 rounded-3xl border border-border shadow-sm space-y-4">
-                        <div className="flex items-center gap-2 mb-2">
-                            <BadgePercent className="w-4 h-4 text-indigo-500" />
-                            <h3 className="text-xs font-bold text-text uppercase tracking-widest">3. Tax (GST) Details</h3>
+                {/* 2. Inventory & Logistics */}
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-8 h-full">
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                        <div className="w-10 h-10 bg-amber-500/10 flex items-center justify-center text-amber-600">
+                            <Truck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] italic">Logistics & SKU</h3>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Asset Tracking Vector</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">SKU (Internal Code) *</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
+                                    placeholder="e.g. SKU_001"
+                                    value={formData.sku}
+                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                />
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <CustomSelect
-                                label="GST % *"
-                                value={formData.gstPercent + '%'}
-                                onChange={(val) => setFormData({ ...formData, gstPercent: val.replace('%', '') })}
-                                options={["0%", "5%", "12%", "18%", "28%"]}
-                            />
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">HSN Code</label>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Unit Type *</label>
+                                <CustomSelect
+                                    value={formData.unit}
+                                    onChange={(val) => setFormData({ ...formData, unit: val })}
+                                    options={["pcs", "kg", "litre", "ml", "gram", "set", "box"]}
+                                    className="h-[46px] !text-[11px] font-black"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Initial Qty</label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all"
+                                    placeholder="0"
+                                    value={formData.stock}
+                                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Low Stock Alert (Units)</label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all text-rose-600"
+                                    placeholder="5"
+                                    value={formData.threshold}
+                                    onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">HSN Code</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
+                                    className="w-full px-4 py-3 bg-background border border-border text-sm font-black focus:border-primary outline-none transition-all uppercase"
                                     placeholder="e.g. 3305"
                                     value={formData.hsnCode}
                                     onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
@@ -309,451 +371,124 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                     </div>
                 </div>
 
-                {/* 4. Barcode & SKU */}
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Scan className="w-4 h-4 text-blue-500" />
-                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">4. Barcode / SKU</h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Barcode</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-mono font-bold"
-                                    placeholder="Scan or enter barcode"
-                                    value={formData.barcode}
-                                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                                />
-                                <button
-                                    onClick={() => setFormData({ ...formData, barcode: Math.floor(Math.random() * 1000000000000).toString() })}
-                                    className="p-2.5 rounded-xl bg-surface-alt hover:bg-surface text-text-muted transition-all border border-border/50" title="Generate Barcode"
-                                >
-                                    <RefreshCw className="w-4 h-4" />
-                                </button>
-                            </div>
-
-                            {formData.barcode && (
-                                <div className="mt-2 p-4 bg-surface-alt border border-border rounded-xl flex flex-col items-center justify-center animate-in zoom-in-95 duration-300">
-                                    <div className="bg-white p-2 rounded-lg shadow-sm border border-border/50">
-                                        <Barcode
-                                            value={formData.barcode}
-                                            width={1.2}
-                                            height={40}
-                                            fontSize={10}
-                                            background="#ffffff"
-                                            lineColor="#000000"
-                                            margin={0}
-                                        />
-                                    </div>
-                                    <p className="text-[8px] font-bold text-text-muted mt-2 uppercase tracking-widest">Active Scan Protocol Link</p>
-                                </div>
-                            )}
+                {/* 3. Outlet Availability */}
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2">
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                        <div className="w-10 h-10 bg-violet-500/10 flex items-center justify-center text-violet-600">
+                            <Building className="w-5 h-5" />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">SKU (Internal Code) *</label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
-                                placeholder="e.g. LRL-SH-05"
-                                value={formData.sku}
-                                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* 5. Stock Settings */}
-                <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200 relative overflow-hidden group">
-                    <div className="relative z-10 space-y-4 h-full flex flex-col justify-between">
                         <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="p-2 rounded-xl bg-white/10 border border-white/20">
-                                    <BellRing className="w-4 h-4 text-rose-400" />
-                                </div>
-                                <h3 className="text-[10px] font-bold uppercase tracking-widest text-rose-400">5. Stock Configuration</h3>
-                            </div>
-                            <h4 className="text-lg font-bold leading-tight">Low Stock Alert</h4>
-                            <p className="text-[10px] text-white/50 leading-relaxed mt-1 uppercase font-bold tracking-tighter">Receive notification when stock drops below threshold</p>
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] italic">Salon Node Availability</h3>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Deployment Logic</p>
                         </div>
+                    </div>
 
-                        <div className="space-y-1 mt-6">
-                            <label className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Trigger Threshold</label>
-                            <div className="flex items-center gap-4">
+                    <div className="flex flex-col md:flex-row gap-6">
+                        <div className="w-full md:w-1/3 space-y-3">
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer ${formData.availability === 'all' ? 'bg-text text-background border-text' : 'bg-background border-border text-text-muted hover:border-text-muted'}`}>
                                 <input
-                                    type="number"
-                                    className="w-24 bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xl font-bold focus:ring-0 outline-none focus:bg-white/20 transition-all"
-                                    value={formData.threshold || ''}
-                                    onChange={(e) => setFormData({ ...formData, threshold: e.target.value })}
+                                    type="radio"
+                                    name="outlet"
+                                    checked={formData.availability === 'all'}
+                                    onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
+                                    className="hidden"
                                 />
-                                <span className="text-xs font-bold text-white/60">Units</span>
-                            </div>
-                        </div>
-                    </div>
-                    {/* decoration */}
-                    <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-rose-500/10 blur-3xl group-hover:bg-rose-500/20 transition-all pointer-events-none" />
-                </div>
-
-                {/* 6. Supplier Mapping */}
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Truck className="w-4 h-4 text-amber-500" />
-                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">6. Supplier Mapping</h3>
-                    </div>
-
-                    <CustomSelect
-                        label="Default Supplier (Reference only)"
-                        value={formData.supplier}
-                        onChange={(val) => setFormData({ ...formData, supplier: val })}
-                        options={supplierNames}
-                        placeholder="Select Supplier..."
-                    />
-                    <p className="text-[9px] text-text-muted leading-tight mt-2 opacity-70">
-                        * This is for procurement convenience. Actual purchase tracking happens in <strong>Inventory → Stock In</strong>.
-                    </p>
-                </div>
-
-                {/* 7. Outlet Availability */}
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <Building className="w-4 h-4 text-violet-500" />
-                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">7. Outlet Availability</h3>
-                    </div>
-
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
-                            <input
-                                type="radio"
-                                name="outlet"
-                                checked={formData.availability === 'all'}
-                                onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
-                                className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
-                            />
-                            <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Available in All Outlets</span>
-                        </label>
-                        <label className="flex items-center gap-3 p-3 rounded-2xl bg-surface-alt border border-border cursor-pointer hover:bg-surface transition-all group">
-                            <input
-                                type="radio"
-                                name="outlet"
-                                checked={formData.availability === 'selected'}
-                                onChange={() => setFormData({ ...formData, availability: 'selected' })}
-                                className="w-4 h-4 text-primary focus:ring-primary ring-offset-0"
-                            />
-                            <span className="text-sm font-bold text-text group-hover:text-primary transition-colors">Selected Outlets Only</span>
-                        </label>
-                    </div>
-
-                    {formData.availability === 'selected' && (
-                        <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in slide-in-from-top-2 duration-300">
-                            {outlets.map(outlet => (
-                                <button
-                                    key={outlet._id}
-                                    type="button"
-                                    onClick={() => {
-                                        const ids = (formData.outletIds || []).includes(outlet._id)
-                                            ? formData.outletIds.filter(id => id !== outlet._id)
-                                            : [...(formData.outletIds || []), outlet._id];
-                                        setFormData({ ...formData, outletIds: ids });
-                                    }}
-                                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(formData.outletIds || []).includes(outlet._id)
-                                        ? 'bg-primary/5 border-primary text-primary shadow-sm'
-                                        : 'bg-white border-border text-text-muted hover:border-primary/40'
-                                    }`}
-                                >
-                                    <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${(formData.outletIds || []).includes(outlet._id)
-                                        ? 'bg-primary border-primary text-white'
-                                        : 'bg-white border-border'
-                                    }`}>
-                                        {(formData.outletIds || []).includes(outlet._id) && <CheckCircle2 className="w-3 h-3" />}
-                                    </div>
-                                    <span className="text-xs font-bold uppercase tracking-tight">{outlet.name}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* 8. Production & Expiry */}
-                <div className="bg-surface p-6 rounded-3xl border border-border shadow-sm space-y-4 text-left">
-                    <div className="flex items-center gap-2 mb-2">
-                        <BellRing className="w-4 h-4 text-orange-500" />
-                        <h3 className="text-xs font-bold text-text uppercase tracking-widest">8. Production & Expiry</h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Mfg. Date</label>
-                            <input
-                                type="date"
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold"
-                                value={formData.mfgDate}
-                                onChange={(e) => setFormData({ ...formData, mfgDate: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-tighter">Expiry Date</label>
-                            <input
-                                type="date"
-                                className="w-full px-4 py-2.5 rounded-xl bg-surface-alt border border-border text-sm font-bold focus:ring-2 focus:ring-rose-500/20"
-                                value={formData.expiryDate}
-                                onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                            />
-                        </div>
-                    </div>
-                    <p className="text-[9px] text-text-muted leading-tight opacity-70 mt-2">
-                        * Expiry tracking helps in generating automated alerts 60 days prior to disposal date.
-                    </p>
-                </div>
-
-                {/* 11. App Module Integration (Shop) */}
-                <div className="bg-gradient-to-br from-indigo-900 via-indigo-950 to-black text-white p-8 rounded-[40px] shadow-2xl relative group col-span-1 md:col-span-2 border border-white/10">
-                    <div className="relative z-10">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20">
-                                    <Scan className="w-6 h-6 text-indigo-400" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black italic tracking-tight text-white mb-1">APP MODULE INTEGRATION</h3>
-                                    <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-[0.2em] opacity-80">Enable Digital Retail Presence</p>
-                                </div>
-                            </div>
-
-                            <label className="flex items-center gap-4 cursor-pointer group/toggle bg-white/5 px-6 py-3 rounded-2xl border border-white/10 hover:bg-white/10 transition-all">
-                                <div 
-                                    className={`w-12 h-6 rounded-full p-1 transition-all duration-300 relative ${formData.isShopProduct ? 'bg-indigo-500' : 'bg-white/10'}`}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setFormData(prev => ({ ...prev, isShopProduct: !prev.isShopProduct }));
-                                    }}
-                                >
-                                    <div className={`w-4 h-4 bg-white rounded-full shadow-lg transition-all duration-300 ${formData.isShopProduct ? 'translate-x-6' : 'translate-x-0'}`} />
-                                </div>
-                                <span className={`text-xs font-black uppercase tracking-widest ${formData.isShopProduct ? 'text-white' : 'text-white/40'}`}>
-                                    {formData.isShopProduct ? 'VISIBLE IN APP' : 'HIDDEN FROM APP'}
-                                </span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Global (All Nodes)</span>
+                            </label>
+                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer ${formData.availability === 'selected' ? 'bg-text text-background border-text' : 'bg-background border-border text-text-muted hover:border-text-muted'}`}>
+                                <input
+                                    type="radio"
+                                    name="outlet"
+                                    checked={formData.availability === 'selected'}
+                                    onChange={() => setFormData({ ...formData, availability: 'selected' })}
+                                    className="hidden"
+                                />
+                                <span className="text-[10px] font-black uppercase tracking-widest">Targeted (Manual)</span>
                             </label>
                         </div>
 
-                        <p className="text-[9px] text-indigo-200/85 leading-relaxed max-w-3xl mb-4">
-                            <strong className="text-white">Customer app shop:</strong> keep this ON, set an app category below, then add stock from{' '}
-                            <strong>Inventory → Stock In</strong>. In <strong>section 7 (Outlet Availability)</strong>, &quot;All outlets&quot; lists the product for
-                            every salon; &quot;Selected outlets&quot; only for those you pick. The app shows the product only when stock &gt; 0 at the
-                            customer&apos;s selected outlet.
-                        </p>
-
-                        {formData.isShopProduct ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-in slide-in-from-bottom-8 duration-500">
-                                {/* App Preview Image */}
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-end mb-1">
-                                        <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">App Display Image</label>
-                                        <span className="text-[8px] font-black text-indigo-300/60 uppercase tracking-widest">
-                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
-                                        </span>
-                                    </div>
-                                    <div className="relative aspect-[4/5] rounded-[32px] overflow-hidden bg-white/5 border-2 border-dashed border-white/20 hover:border-indigo-400 transition-all group/img cursor-pointer">
-                                        {formData.appImage ? (
-                                            <>
-                                                <img src={formData.appImage} className="w-full h-full object-cover" alt="App Preview" />
-                                                <div className="absolute inset-0 bg-indigo-900/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                                    <label className="p-3 bg-white rounded-full text-indigo-900 cursor-pointer hover:scale-110 transition-all shadow-xl">
-                                                        <RefreshCw className="w-5 h-5" />
-                                                        <input type="file" className="hidden" accept="image/*" onChange={handleAppImageUpload} />
-                                                    </label>
-                                                    <button 
-                                                        onClick={() => setFormData({ ...formData, appImage: '' })}
-                                                        className="p-3 bg-white rounded-full text-rose-600 hover:scale-110 transition-all shadow-xl"
-                                                    >
-                                                        <X className="w-5 h-5" />
-                                                    </button>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <label className="w-full h-full flex flex-col items-center justify-center gap-3 cursor-pointer">
-                                                <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover/img:scale-110 transition-transform">
-                                                    <Scan className="w-6 h-6" />
-                                                </div>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-300">Upload App View</p>
-                                                <input type="file" className="hidden" accept="image/*" onChange={handleAppImageUpload} />
-                                            </label>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="md:col-span-2 space-y-6">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-white/50 italic text-[10px] font-black uppercase tracking-[0.2em]">APP CATEGORY</span>
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => navigate('/admin/inventory/shop-categories')}
-                                                    className="text-[8px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center gap-1 border border-indigo-500/30 px-2 py-0.5 rounded-full hover:bg-indigo-500/10 transition-all"
-                                                >
-                                                    <Plus className="w-2 h-2" /> Manage
-                                                </button>
-                                            </div>
-                                            <CustomSelect
-                                                value={shopCategories.find(c => c.id === formData.appCategory)?.name || 'Select Category'}
-                                                onChange={(val) => {
-                                                    const cat = shopCategories.find(c => c.name === val);
-                                                    setFormData({ ...formData, appCategory: cat?.id || '' });
-                                                }}
-                                                options={shopCategories.map(c => c.name)}
-                                                dark={true}
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">CUSTOMER RATING (MOCK)</label>
-                                            <input
-                                                type="number"
-                                                step="0.1"
-                                                max="5"
-                                                min="0"
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm font-black text-indigo-400 focus:ring-2 focus:ring-indigo-500/40 transition-all outline-none"
-                                                value={formData.rating || ''}
-                                                onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">SHOP DESCRIPTION (PREMIUM VIEW)</label>
-                                        <textarea
-                                            rows="6"
-                                            className="w-full bg-white/5 border border-white/10 rounded-[24px] px-5 py-4 text-sm font-medium text-white/90 focus:ring-2 focus:ring-indigo-500/40 transition-all outline-none resize-none leading-relaxed"
-                                            placeholder="Write a high-end description for the shop module..."
-                                            value={formData.shopDescription}
-                                            onChange={(e) => setFormData({ ...formData, shopDescription: e.target.value })}
-                                        />
-                                    </div>
-                                    
-                                    <div className="p-5 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 backdrop-blur-sm">
-                                        <p className="text-[10px] text-indigo-200 font-bold uppercase tracking-[0.1em] flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4" />
-                                            Active App Synchronization
-                                        </p>
-                                        <p className="text-[9px] text-indigo-300/60 mt-2 font-medium leading-relaxed uppercase">
-                                            Changes here reflect immediately in the mobile app's retail section. Premium styling and rich media ensure higher conversion.
-                                        </p>
-                                    </div>
-
-                                    {/* New Detailed Sections */}
-                                    <div className="space-y-6 pt-6 border-t border-white/10">
-                                        {/* Product Details Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">PRODUCT DETAILS</h4>
-                                            <div className="grid grid-cols-1 gap-3">
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-[9px] font-black text-indigo-300 uppercase italic">Care:</label>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none"
-                                                        value={formData.appCare}
-                                                        onChange={(e) => setFormData({...formData, appCare: e.target.value})}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-[9px] font-black text-indigo-300 uppercase italic">Usage:</label>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none"
-                                                        value={formData.appUsage}
-                                                        onChange={(e) => setFormData({...formData, appUsage: e.target.value})}
-                                                    />
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-[9px] font-black text-indigo-300 uppercase italic">Origin:</label>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none"
-                                                        value={formData.appOrigin}
-                                                        onChange={(e) => setFormData({...formData, appOrigin: e.target.value})}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Know Your Product Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">KNOW YOUR PRODUCT</h4>
-                                            <textarea
-                                                rows="2"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none resize-none"
-                                                placeholder="Key highlights..."
-                                                value={formData.appKnowMore}
-                                                onChange={(e) => setFormData({...formData, appKnowMore: e.target.value})}
-                                            />
-                                            <div className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-3">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[9px] font-black text-white/40 uppercase">Formula Type:</span>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-right text-[10px] font-black text-white outline-none w-1/2 focus:bg-white/10 transition-all"
-                                                        value={formData.appFormulaType}
-                                                        onChange={(e) => setFormData({...formData, appFormulaType: e.target.value})}
-                                                    />
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[9px] font-black text-white/40 uppercase">Consistency:</span>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-right text-[10px] font-black text-white outline-none w-1/2 focus:bg-white/10 transition-all"
-                                                        value={formData.appConsistency}
-                                                        onChange={(e) => setFormData({...formData, appConsistency: e.target.value})}
-                                                    />
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-[9px] font-black text-white/40 uppercase">Ritual Status:</span>
-                                                    <input 
-                                                        type="text" 
-                                                        className="bg-white/5 border border-white/10 rounded-lg px-3 py-1 text-right text-[10px] font-black text-emerald-400 outline-none w-1/2 focus:bg-white/10 transition-all"
-                                                        value={formData.appRitualStatus}
-                                                        onChange={(e) => setFormData({...formData, appRitualStatus: e.target.value})}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Vendor Details Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">VENDOR DETAILS</h4>
-                                            <textarea
-                                                rows="3"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none resize-none"
-                                                value={formData.appVendorDetails}
-                                                onChange={(e) => setFormData({...formData, appVendorDetails: e.target.value})}
-                                            />
-                                        </div>
-
-                                        {/* Return Policy Section */}
-                                        <div className="space-y-4">
-                                            <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em]">RETURN AND EXCHANGE POLICY</h4>
-                                            <textarea
-                                                rows="3"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-medium text-white/80 outline-none resize-none"
-                                                value={formData.appReturnPolicy}
-                                                onChange={(e) => setFormData({...formData, appReturnPolicy: e.target.value})}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-[32px] bg-white/[0.02]">
-                                <Scan className="w-12 h-12 text-white/10 mb-4" />
-                                <p className="text-xs font-black text-white/30 uppercase tracking-[0.3em]">Integration Disabled</p>
-                                <p className="text-[9px] text-white/20 mt-2 uppercase font-bold">This product will only be visible in Admin & POS inventory</p>
+                        {formData.availability === 'selected' && (
+                            <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-left-4 duration-500">
+                                {outlets.map(outlet => (
+                                    <button
+                                        key={outlet._id}
+                                        type="button"
+                                        onClick={() => {
+                                            const ids = (formData.outletIds || []).includes(outlet._id)
+                                                ? formData.outletIds.filter(id => id !== outlet._id)
+                                                : [...(formData.outletIds || []), outlet._id];
+                                            setFormData({ ...formData, outletIds: ids });
+                                        }}
+                                        className={`flex items-center gap-3 px-4 py-3 border text-left transition-all ${(formData.outletIds || []).includes(outlet._id)
+                                            ? 'bg-primary/5 border-primary text-primary shadow-sm font-black'
+                                            : 'bg-background border-border text-text-muted opacity-50'
+                                        }`}
+                                    >
+                                        <div className={`w-3 h-3 rounded-full border ${(formData.outletIds || []).includes(outlet._id) ? 'bg-primary border-primary' : 'bg-background border-border'}`} />
+                                        <span className="text-[9px] uppercase tracking-tighter">{outlet.name}</span>
+                                    </button>
+                                ))}
                             </div>
                         )}
                     </div>
+                </div>
 
-                    {/* Industrial BG Patterns */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/20 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-900/40 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2" />
+                {/* 4. Product Assets & Gallery */}
+                <div className="bg-surface p-8 border border-border shadow-sm space-y-6 lg:col-span-2">
+                    <div className="flex items-center gap-3 border-b border-border pb-4">
+                        <div className="w-10 h-10 bg-indigo-500/10 flex items-center justify-center text-indigo-600">
+                            <CloudUpload className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] italic">Product Visual Assets</h3>
+                            <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Gallery Management</p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Product Gallery (Multiple Images)</label>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                            {(formData.images || []).map((img, idx) => (
+                                <div key={idx} className="relative aspect-square bg-background border border-border group overflow-hidden">
+                                    <img src={img} className="w-full h-full object-cover" alt={`Gallery ${idx}`} />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <button 
+                                            onClick={() => {
+                                                const newImgs = formData.images.filter((_, i) => i !== idx);
+                                                setFormData({ ...formData, images: newImgs });
+                                            }}
+                                            className="p-2 bg-rose-500 text-white rounded-full hover:scale-110 transition-all"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                            <label className="aspect-square border-2 border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer group">
+                                <CloudUpload className="w-6 h-6 text-text-muted group-hover:scale-110 transition-all" />
+                                <span className="text-[8px] font-black uppercase tracking-widest text-text-muted">Add Image</span>
+                                <input 
+                                    type="file" 
+                                    className="hidden" 
+                                    multiple 
+                                    accept="image/*" 
+                                    onChange={(e) => {
+                                        const files = Array.from(e.target.files);
+                                        files.forEach(file => {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    images: [...(prev.images || []), reader.result]
+                                                }));
+                                            };
+                                            reader.readAsDataURL(file);
+                                        });
+                                    }}
+                                />
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -15,10 +15,14 @@ import {
  * Stock grid from InventoryContext.
  */
 export default function StockOverview() {
-    const { products, summary, fetchInventorySummary, outlets: businessOutlets } = useInventory();
+    const { products, summary, stats, fetchInventorySummary, outlets: businessOutlets } = useInventory();
     const [search, setSearch] = useState('');
     const [outletFilter, setOutletFilter] = useState('All Outlets');
     const [categoryFilter, setCategoryFilter] = useState('All Categories');
+
+    const categories = useMemo(() => {
+        return [...new Set(products.map(p => p.categoryId?.name || p.category).filter(Boolean))].sort();
+    }, [products]);
 
     const lines = useMemo(() => {
         const result = [];

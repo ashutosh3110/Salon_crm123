@@ -80,7 +80,10 @@ const normalizeProduct = (p) => {
         appCategory: p?.appCategory ?? ext.appCategory, 
         outletIds: (Array.isArray(p?.outletIds) ? p.outletIds : (Array.isArray(ext.outletIds) ? ext.outletIds : [])).map((x) => String(x)),
         likes: Number(p?.likes || 0),
-        likedBy: p?.likedBy || []
+        likedBy: p?.likedBy || [],
+        category: p?.categoryId?.name || p?.category || 'General',
+        categoryId: p?.categoryId?._id || p?.categoryId || '',
+        images: Array.isArray(p?.images) ? p.images : (p?.appImage ? [p.appImage] : [])
     });
 };
 
@@ -301,6 +304,8 @@ export const InventoryProvider = ({ children }) => {
         lowStockItems: products.filter(p => p.stock <= p.minStock),
         stats: { 
             totalProducts: summary.totalProducts || products.length, 
+            skuCount: products.length,
+            outletCount: outlets.length,
             lowStockCount: products.filter(p => p.stock <= p.minStock).length, 
             totalValue: summary.totalStockValue || products.reduce((acc, p) => acc + (p.stock * (p.costPrice || 0)), 0),
             outOfStock: summary.outOfStock

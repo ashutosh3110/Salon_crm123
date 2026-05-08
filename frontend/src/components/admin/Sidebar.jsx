@@ -167,18 +167,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
             {
-                label: 'Inventory',
+                label: 'Products & Stock',
                 icon: Package,
                 path: '/admin/inventory',
                 permission: 'inventory',
                 feature: 'inventory',
                 subItems: [
-                    { label: 'Products Master', icon: Box, path: '/admin/inventory/products' },
+                    { label: 'Products Management', icon: Box, path: '/admin/inventory/products' },
                     { label: 'Product Categories', icon: Tag, path: '/admin/inventory/product-categories' },
                     { label: 'Stock overview', icon: LayoutDashboard, path: '/admin/inventory/stock-overview' },
-                    { label: 'Stock In (Purchase)', icon: Package, path: '/admin/inventory/stock-in' },
-                    { label: 'Stock Out / Adjust', icon: FileText, path: '/admin/inventory/adjustment' },
-                    { label: lowStockCount > 0 ? 'Low Stock Alerts' : 'Inventory Alerts', icon: Bell, path: '/admin/inventory/alerts', badge: lowStockCount > 0 ? { count: lowStockCount, color: 'bg-rose-400' } : null },
                 ]
             },
             {

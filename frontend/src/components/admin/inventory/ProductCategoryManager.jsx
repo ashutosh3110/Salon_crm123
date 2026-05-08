@@ -34,6 +34,18 @@ export default function ProductCategoryManager() {
 
     const handleSave = async () => {
         if (!formData.name?.trim()) return;
+
+        // Duplicate name check (case-insensitive)
+        const isDuplicate = productCategories.some(cat => 
+            cat.name.toLowerCase().trim() === formData.name.toLowerCase().trim() && 
+            cat._id !== editingId
+        );
+
+        if (isDuplicate) {
+            alert(`A category with the name "${formData.name.trim()}" already exists. Please use a unique name.`);
+            return;
+        }
+
         try {
             if (editingId) {
                 await updateProductCategory(editingId, formData);
@@ -111,173 +123,222 @@ export default function ProductCategoryManager() {
                 </button>
             </div>
 
-            {/* List and Form Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Scrollable list */}
-                <div className="lg:col-span-8 space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input 
-                            type="text" 
-                            placeholder="SEARCH BY VECTOR NAME..."
-                            className="w-full pl-11 pr-4 py-4 bg-surface border border-border text-[10px] font-black focus:border-primary outline-none transition-all uppercase tracking-widest"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
-
-                    <div className="bg-surface border border-border overflow-hidden">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Metadata</th>
-                                    <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Load</th>
-                                    <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
-                                    <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Ops</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {filteredCategories.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-20 text-center text-[10px] font-black text-text-muted uppercase tracking-widest italic">
-                                            No Data Points Found :: System Clear
-                                        </td>
-                                    </tr>
-                                )}
-                                {filteredCategories.map(cat => (
-                                    <tr key={cat._id} className="hover:bg-surface-alt/30 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 border border-border bg-background flex items-center justify-center overflow-hidden grayscale group-hover:grayscale-0 transition-all">
-                                                    {cat.image ? (
-                                                        <img src={cat.image} className="w-full h-full object-cover" alt="" />
-                                                    ) : (
-                                                        <ImageIcon className="w-4 h-4 text-text-muted" />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <p className="text-[11px] font-black text-text uppercase tracking-tight">{cat.name}</p>
-                                                    <p className="text-[8px] text-text-muted mt-0.5">ID_REF: {cat._id?.slice(-6)}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-[10px] font-black text-text uppercase">
-                                                {getProductCount(cat.name)} <span className="text-text-muted text-[8px]">Units</span>
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <button 
-                                                onClick={() => toggleStatus(cat)}
-                                                className={`flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase tracking-widest border transition-all ${
-                                                    cat.status === 'active' 
-                                                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
-                                                    : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-                                                }`}
-                                            >
-                                                {cat.status === 'active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
-                                                {cat.status || 'Active'}
-                                            </button>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => handleEdit(cat)}
-                                                    className="p-2 border border-border bg-surface hover:bg-text hover:text-background transition-all"
-                                                >
-                                                    <Edit2 className="w-3.5 h-3.5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => {
-                                                        if (window.confirm('IRREVERSIBLE ACTION: Delete classification?')) {
-                                                            deleteProductCategory(cat._id);
-                                                        }
-                                                    }}
-                                                    className="p-2 border border-border bg-surface hover:bg-rose-500 hover:text-white transition-all"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            {/* Full-width list Area */}
+            <div className="space-y-4">
+                <div className="relative group">
+                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary transition-colors" />
+                    <input 
+                        type="text" 
+                        placeholder="SEARCH BY VECTOR NAME..."
+                        className="w-full pl-14 pr-6 py-5 bg-surface border border-border text-[11px] font-black focus:border-primary outline-none transition-all uppercase tracking-widest shadow-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                 </div>
 
-                {/* Integration Form */}
-                <div className="lg:col-span-4">
-                    <AnimatePresence mode="wait">
-                        {isAdding ? (
+                <div className="bg-surface border border-border shadow-xl overflow-hidden rounded-[32px]">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-surface-alt/50 border-b border-border">
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Metadata Vector</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Active Load</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest">Status Protocol</th>
+                                <th className="px-8 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest text-right">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                            {filteredCategories.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="px-8 py-32 text-center">
+                                        <div className="flex flex-col items-center gap-4 opacity-20">
+                                            <LayoutGrid className="w-12 h-12" />
+                                            <p className="text-[11px] font-black uppercase tracking-[0.3em] italic">No Data Points Found :: System Clear</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                            {filteredCategories.map(cat => (
+                                <tr key={cat._id} className="hover:bg-primary/[0.02] transition-all group">
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 rounded-2xl border border-border bg-background flex items-center justify-center overflow-hidden group-hover:border-primary transition-all shadow-sm">
+                                                {cat.image ? (
+                                                    <img src={cat.image} className="w-full h-full object-cover" alt="" />
+                                                ) : (
+                                                    <ImageIcon className="w-6 h-6 text-text-muted opacity-30" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors leading-none mb-1.5">{cat.name}</p>
+                                                <p className="text-[9px] text-text-muted font-bold tracking-widest">REG_ID: {cat._id?.slice(-8).toUpperCase()}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-[12px] font-black text-text uppercase font-mono italic">
+                                                {getProductCount(cat.name)} UNITS
+                                            </span>
+                                            <div className="w-24 h-1 bg-surface-alt rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-primary" 
+                                                    style={{ width: `${Math.min(100, (getProductCount(cat.name) / 20) * 100)}%` }} 
+                                                />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <button 
+                                            onClick={() => toggleStatus(cat)}
+                                            className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest border rounded-xl transition-all ${
+                                                cat.status === 'active' 
+                                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20' 
+                                                : 'bg-rose-500/10 text-rose-600 border-rose-500/20 hover:bg-rose-500/20'
+                                            }`}
+                                        >
+                                            <span className={`w-1.5 h-1.5 rounded-full ${cat.status === 'active' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
+                                            {cat.status || 'Active'}
+                                        </button>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-300">
+                                            <button
+                                                onClick={() => handleEdit(cat)}
+                                                className="p-3 rounded-xl border border-border bg-surface text-text-muted hover:bg-text hover:text-background hover:border-text transition-all"
+                                                title="Edit Metadata"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (window.confirm('IRREVERSIBLE ACTION: Delete classification?')) {
+                                                        deleteProductCategory(cat._id);
+                                                    }
+                                                }}
+                                                className="p-3 rounded-xl border border-border bg-surface text-text-muted hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                                title="Purge Entry"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Premium Category Modal */}
+            <AnimatePresence>
+                {isAdding && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAdding(false)}
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-start justify-center p-4 overflow-y-auto"
+                        >
                             <motion.div 
-                                key="form" 
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                className="bg-surface p-6 border border-border shadow-2xl space-y-6 sticky top-6"
+                                initial={{ opacity: 0, scale: 0.95, y: 50 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 50 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="w-full max-w-md bg-surface border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden rounded-[32px] relative my-10"
                             >
-                                <div className="flex items-center justify-between border-b border-border pb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="w-4 h-4 text-primary" />
-                                        <h3 className="text-xs font-black uppercase tracking-widest">
+                                {/* Modal Header */}
+                                <div className="bg-gradient-to-r from-text via-text/90 to-text/80 p-5 text-background flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-base font-black uppercase italic tracking-tight leading-none">
                                             {editingId ? 'Modify Concept' : 'Define Concept'}
                                         </h3>
+                                        <p className="text-[7px] font-bold uppercase tracking-[0.3em] opacity-60 mt-1">Inventory :: Vector Initialization</p>
                                     </div>
                                     <button
                                         onClick={() => setIsAdding(false)}
-                                        className="text-text-muted hover:text-text transition-colors"
+                                        className="p-1.5 bg-white/10 hover:bg-white/20 rounded-lg transition-all"
                                     >
-                                        <Plus className="w-5 h-5 rotate-45" />
+                                        <XCircle className="w-4 h-4" />
                                     </button>
                                 </div>
 
-                                <div className="space-y-5">
+                                <div className="p-5 space-y-5">
+                                    {/* Name Input */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Label Designation</label>
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Label Designation <span className="text-primary">*</span></label>
                                         <input
                                             type="text"
-                                            className="w-full px-4 py-3 bg-background border border-border text-[11px] font-black focus:border-primary outline-none transition-all uppercase"
+                                            autoFocus
+                                            className="w-full px-4 py-2.5 bg-background border border-border rounded-xl text-[11px] font-black focus:border-primary outline-none transition-all uppercase placeholder:opacity-20 shadow-inner"
                                             placeholder="e.g. ORGANIC_SERUM"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         />
                                     </div>
 
-                                    <div className="space-y-1.5">
-                                    <div className="flex justify-between items-end mb-1">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Visual Reference</label>
-                                        <span className="text-[8px] font-black text-primary uppercase tracking-widest opacity-60">
-                                            MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
-                                        </span>
-                                    </div>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                className="flex-1 px-4 py-3 bg-background border border-border text-[10px] font-black focus:border-primary outline-none transition-all"
-                                                placeholder="SOURCE_URL"
-                                                value={formData.image || ''}
-                                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                                            />
-                                            <label className="p-3 border border-border bg-surface-alt hover:bg-text hover:text-background transition-all cursor-pointer flex items-center justify-center">
-                                                <CloudUpload className="w-4 h-4" />
-                                                <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
-                                            </label>
+                                    {/* Image Upload Area */}
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-end">
+                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Visual Reference</label>
+                                            <span className="text-[7px] font-black text-primary uppercase tracking-widest opacity-60">
+                                                MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
+                                            </span>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 gap-4 items-start">
+                                            <div className="space-y-2">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 px-3 py-2 bg-background border border-border rounded-lg text-[9px] font-black focus:border-primary outline-none transition-all"
+                                                        placeholder="SOURCE_URL"
+                                                        value={formData.image || ''}
+                                                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                                    />
+                                                    <label className="p-2 border border-border bg-surface-alt hover:bg-text hover:text-background transition-all cursor-pointer flex items-center justify-center rounded-lg">
+                                                        <CloudUpload className="w-3.5 h-3.5" />
+                                                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                                                    </label>
+                                                </div>
+                                                
+                                                <div className="aspect-video w-full border border-border rounded-2xl overflow-hidden bg-background relative shadow-inner group/preview">
+                                                    {formData.image ? (
+                                                        <>
+                                                            <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
+                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/preview:opacity-100 transition-opacity flex items-center justify-center">
+                                                                <button 
+                                                                    onClick={() => setFormData({ ...formData, image: '' })}
+                                                                    className="p-2 bg-rose-500 rounded-full text-white shadow-xl hover:scale-110 transition-all"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-text-muted opacity-20">
+                                                            <ImageIcon size={24} />
+                                                            <p className="text-[8px] font-black uppercase italic tracking-widest">Awaiting Signal</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-1.5">
+                                    {/* Status Protocol */}
+                                    <div className="space-y-2">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em]">Operational Status</label>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 p-0.5 bg-surface-alt border border-border rounded-xl">
                                             {['active', 'inactive'].map(s => (
                                                 <button
                                                     key={s}
                                                     onClick={() => setFormData({ ...formData, status: s })}
-                                                    className={`flex-1 py-2 text-[8px] font-black uppercase tracking-widest border transition-all ${
+                                                    className={`flex-1 py-2 text-[8px] font-black uppercase tracking-widest rounded-lg transition-all ${
                                                         formData.status === s 
-                                                        ? 'bg-text text-background border-text' 
-                                                        : 'bg-transparent text-text-muted border-border hover:border-text-muted'
+                                                        ? 'bg-text text-background shadow-md' 
+                                                        : 'bg-transparent text-text-muted hover:text-text'
                                                     }`}
                                                 >
                                                     {s}
@@ -286,54 +347,30 @@ export default function ProductCategoryManager() {
                                         </div>
                                     </div>
 
-                                    {formData.image && (
-                                        <div className="aspect-square border border-border grayscale hover:grayscale-0 transition-all overflow-hidden bg-background">
-                                            <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
-                                        </div>
-                                    )}
-
+                                    {/* Action Footers */}
                                     <div className="pt-4 flex gap-3">
                                         <button
                                             type="button"
                                             onClick={() => setIsAdding(false)}
-                                            className="flex-1 py-3 border border-border text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt"
+                                            className="flex-1 py-3 px-4 border border-border rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all"
                                         >
                                             Abort
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleSave}
-                                            className="flex-[2] py-3 bg-text text-background text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl"
+                                            disabled={!formData.name?.trim()}
+                                            className="flex-[1.5] py-3 px-4 bg-text text-background rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
                                         >
-                                            {editingId ? 'Commit Update' : 'Initialize Data'}
+                                            {editingId ? 'Update' : 'Initialize'}
                                         </button>
                                     </div>
                                 </div>
                             </motion.div>
-                        ) : (
-                            <div className="bg-surface-alt/30 p-10 border-2 border-dashed border-border flex flex-col items-center justify-center text-center space-y-4 min-h-[400px]">
-                                <LayoutGrid className="w-10 h-10 text-text/10" />
-                                <div>
-                                    <h4 className="text-[11px] font-black text-text uppercase tracking-widest">Awaiting Registry Input</h4>
-                                    <p className="text-[8px] text-text-muted mt-2 max-w-[200px] mx-auto uppercase leading-loose font-black italic">
-                                        Select a designated vector for modification or initiate a new classification entry.
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setIsAdding(true);
-                                        setEditingId(null);
-                                        setFormData({ name: '', image: '', status: 'active' });
-                                    }}
-                                    className="px-6 py-2 border border-text text-[9px] font-black uppercase tracking-widest hover:bg-text hover:text-background transition-all"
-                                >
-                                    New Entry
-                                </button>
-                            </div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

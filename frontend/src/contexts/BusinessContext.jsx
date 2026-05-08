@@ -45,6 +45,31 @@ export function BusinessProvider({ children }) {
     const [segments, setSegments] = useState([]);
     const [shifts, setShifts] = useState([]);
     const [catalogue, setCatalogue] = useState(null);
+    
+    // Normalization helpers for data consistency
+    const normalizeProduct = (p) => {
+        if (!p) return null;
+        const id = String(p._id ?? p.id ?? '');
+        return {
+            ...p,
+            id,
+            _id: id,
+            category: p.categoryId?.name || p.category || 'General',
+            categoryId: p.categoryId?._id || p.categoryId || '',
+            images: Array.isArray(p.images) ? p.images : (p.appImage ? [p.appImage] : [])
+        };
+    };
+
+    const normalizeShopCat = (c) => {
+        const id = String(c?._id ?? c?.id ?? '');
+        return { 
+            ...c, 
+            id, 
+            _id: id, 
+            name: c?.name ?? '', 
+            image: c?.image || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000' 
+        };
+    };
     const [customersLoading, setCustomersLoading] = useState(false);
     const [segmentsLoading, setSegmentsLoading] = useState(false);
     const [feedbacksLoading, setFeedbacksLoading] = useState(false);
@@ -280,10 +305,24 @@ export function BusinessProvider({ children }) {
             const sid = sId || activeSalonId || salon?._id;
             if (!sid) return;
             const r = await api.get(`/products?salonId=${sid}`);
-            setProducts(r.data?.data || r.data?.results || r.data || []);
+            const raw = r.data?.data || r.data?.results || r.data || [];
+            setProducts(Array.isArray(raw) ? raw.map(normalizeProduct) : []);
         } catch (error) {
             console.error("Fetch products failed:", error);
             setProducts([]);
+        }
+    }, [activeSalonId, salon?._id]);
+
+    const fetchProductCategories = useCallback(async (sId) => {
+        try {
+            const sid = sId || activeSalonId || salon?._id;
+            if (!sid) return;
+            const r = await api.get(`/product-categories?salonId=${sid}`);
+            const raw = r.data?.data || r.data || [];
+            setProductCategories(Array.isArray(raw) ? raw.map(normalizeShopCat) : []);
+        } catch (error) {
+            console.error("Fetch product categories failed:", error);
+            setProductCategories([]);
         }
     }, [activeSalonId, salon?._id]);
 
@@ -379,6 +418,10 @@ export function BusinessProvider({ children }) {
 
             if (sRes.data.success) setSalon(sRes.data.data);
             if (oRes.data.success) setOutlets(oRes.data.data || []);
+            
+            // Also fetch shop assets
+            fetchProductCategories(sid);
+            fetchProducts(sid);
 
         } catch (err) {
             console.error("Failed to fetch basic salon data:", err);
@@ -866,7 +909,7 @@ export function BusinessProvider({ children }) {
         addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchProductCategories, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,
@@ -891,7 +934,7 @@ export function BusinessProvider({ children }) {
         shifts, catalogue, activeOutletId, setActiveOutletId, activeSalonId, setActiveSalonId, setOutlets, activeOutlet, fetchOutlets, addSupplier, updateSupplier, deleteSupplier, addOutlet, updateOutlet, deleteOutlet,
         roles, fetchRoles,
         fetchCustomerInitialData,
-        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchSuppliers,
+        fetchServices, fetchGroupedServices, fetchBookings, fetchInvoices, fetchOrders, fetchProducts, fetchProductCategories, fetchSuppliers,
         addStaff, updateStaff, deleteStaff, fetchStaff,
         addService, updateService, deleteService, toggleServiceStatus,
         fetchCategories, addCategory, updateCategory, deleteCategory, toggleCategoryStatus,

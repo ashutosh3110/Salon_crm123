@@ -86,37 +86,6 @@ export default function InventoryPage({ tab = 'products' }) {
                 </div>
             </div>
 
-            {/* Premium Tab Navigation - Compact */}
-            <div className="flex items-center gap-0.5 border-b border-border/40 overflow-x-auto no-scrollbar">
-                {[
-                    { id: 'overview', label: 'Scan', icon: TrendingUp },
-                    { id: 'products', label: 'Master', icon: Package },
-                    { id: 'product-categories', label: 'Vectors', icon: LayoutGridIcon },
-                    { id: 'shop-categories', label: 'App shop', icon: Smartphone },
-                    { id: 'stock-in', label: 'Inbound', icon: Download },
-                    { id: 'adjustment', label: 'Adjust', icon: ArrowDownRight },
-                    { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
-                ].map((t) => (
-                    <button
-                        key={t.id}
-                        onClick={() => navigate(`/admin/inventory/${t.id}`)}
-                        className={`flex items-center gap-2 px-4 py-3 text-[9px] font-black uppercase tracking-widest transition-all relative whitespace-nowrap font-mono ${
-                            activeTab === t.id 
-                            ? 'text-primary' 
-                            : 'text-text-muted hover:text-text hover:bg-surface-alt'
-                        }`}
-                    >
-                        <t.icon className={`w-3 h-3 ${activeTab === t.id ? 'text-primary' : 'text-text-muted'}`} />
-                        {t.label}
-                        {activeTab === t.id && (
-                            <motion.div 
-                                layoutId="activeInventoryTab"
-                                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                            />
-                        )}
-                    </button>
-                ))}
-            </div>
 
             {/* Analytics Grid - Compact */}
             {activeTab === 'overview' && (

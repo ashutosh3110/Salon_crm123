@@ -56,6 +56,11 @@ import NewBookingPage from './pages/admin/NewBookingPage';
 import SupportPage from './pages/admin/SupportPage';
 import FeatureLockedPage from './pages/admin/FeatureLockedPage';
 import BookingDetailPage from './pages/admin/BookingDetailPage';
+import ProductManagementPage from './pages/admin/ProductManagementPage';
+import ProductCategoriesPage from './pages/admin/ProductCategoriesPage';
+import StockOverviewPage from './pages/admin/StockOverviewPage';
+import AddProductPage from './pages/admin/AddProductPage';
+import ProductDetailsPage from './pages/admin/ProductDetailsPage';
 
 // POS App (standalone)
 import POSLayout from './layouts/POSLayout';
@@ -188,7 +193,7 @@ import PettyCashPage from './pages/accountant/PettyCashPage';
 
 import InventoryLayout from './layouts/InventoryLayout';
 import InventoryDashboard from './pages/inventory/InventoryDashboard';
-import StockOverviewPage from './pages/inventory/StockOverviewPage';
+import InventoryStockOverview from './pages/inventory/StockOverviewPage';
 import PurchasePage from './pages/inventory/PurchasePage';
 import StockTransferPage from './pages/inventory/StockTransferPage';
 import LowStockAlertsPage from './pages/inventory/LowStockAlertsPage';
@@ -294,17 +299,19 @@ function App() {
                             <Route path="/admin/services/categories" element={<ServicesPage tab="categories" />} />
 
                             <Route element={<ProtectedRoute feature="inventory" permission="inventory" />}>
-                                <Route path="/admin/products" element={<ProductsPage />} />
+                                <Route path="/admin/products" element={<ProductManagementPage />} />
                                 <Route path="/admin/inventory" element={<InventoryPage tab="overview" />} />
                                 <Route path="/admin/inventory/overview" element={<InventoryPage tab="overview" />} />
-                                <Route path="/admin/inventory/stock-overview" element={<InventoryPage tab="stock-overview" />} />
+                                <Route path="/admin/inventory/stock-overview" element={<StockOverviewPage />} />
                                 <Route path="/admin/inventory/stock-in" element={<InventoryPage tab="stock-in" />} />
                                 <Route path="/admin/inventory/adjustment" element={<InventoryPage tab="adjustment" />} />
                                 <Route path="/admin/inventory/alerts" element={<InventoryPage tab="alerts" />} />
-                                <Route path="/admin/inventory/products" element={<InventoryPage tab="products" />} />
-                                <Route path="/admin/inventory/products/new" element={<InventoryPage tab="add-product" />} />
+                                <Route path="/admin/inventory/products" element={<ProductManagementPage />} />
+                                <Route path="/admin/inventory/products/new" element={<AddProductPage />} />
+                                <Route path="/admin/inventory/products/edit/:id" element={<AddProductPage />} />
+                                <Route path="/admin/inventory/products/view/:id" element={<ProductDetailsPage />} />
                                 <Route path="/admin/inventory/shop-categories" element={<InventoryPage tab="shop-categories" />} />
-                                <Route path="/admin/inventory/product-categories" element={<InventoryPage tab="product-categories" />} />
+                                <Route path="/admin/inventory/product-categories" element={<ProductCategoriesPage />} />
                             </Route>
 
                             {/* Finance Routes */}
@@ -435,7 +442,7 @@ function App() {
                         <Route element={<ProtectedRoute />}>
                           <Route element={<InventoryLayout />}>
                             <Route path="/inventory" element={<InventoryDashboard />} />
-                            <Route path="/inventory/stock" element={<StockOverviewPage />} />
+                            <Route path="/inventory/stock" element={<InventoryStockOverview />} />
                             <Route path="/inventory/purchase" element={<PurchasePage />} />
                             <Route path="/inventory/transfer" element={<StockTransferPage />} />
                             <Route path="/inventory/alerts" element={<LowStockAlertsPage />} />

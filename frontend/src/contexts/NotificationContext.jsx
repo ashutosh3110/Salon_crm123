@@ -18,33 +18,14 @@ export function NotificationProvider({ children }) {
     const [loading, setLoading] = useState(false);
 
     const fetchNotifications = useCallback(async () => {
-        if (!activeUserId) return;
-        // Skip if on home page as data comes from initial-data (Optimization)
-        if (window.location.pathname === '/app') return;
-
-        try {
-            setLoading(true);
-            const res = await api.get('/notifications');
-            setNotifications(res.data.results || []);
-        } catch (error) {
-            console.error('Fetch Notifications Error:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, [activeUserId]);
+        // Disabled API call as per user request (returning 404)
+        setNotifications([]);
+    }, []);
 
     const fetchUnreadCount = useCallback(async () => {
-        if (!activeUserId) return;
-        // Skip if on home page as data comes from initial-data (Optimization)
-        if (window.location.pathname === '/app') return;
-
-        try {
-            const res = await api.get('/notifications/unread-count');
-            setUnreadCount(res.data.unreadCount || 0);
-        } catch (error) {
-            console.error('Fetch Unread Count Error:', error);
-        }
-    }, [activeUserId]);
+        // Disabled API call as per user request (returning 404)
+        setUnreadCount(0);
+    }, []);
 
     const markAsRead = useCallback(async (id) => {
         try {
@@ -83,13 +64,14 @@ export function NotificationProvider({ children }) {
         }
 
         if (activeUserId) {
-            fetchNotifications();
-            fetchUnreadCount();
+            // Notifications disabled to prevent 404s
+            // fetchNotifications();
+            // fetchUnreadCount();
         } else {
             setNotifications([]);
             setUnreadCount(0);
         }
-    }, [activeUserId, fetchNotifications, fetchUnreadCount, userSession]);
+    }, [activeUserId, userSession]);
 
     const value = useMemo(() => ({
         notifications,
