@@ -59,6 +59,10 @@ export default function AppBookingPage() {
 
     const currentOutlet = selectedOutlet;
 
+    useEffect(() => {
+        fetchStaff?.();
+    }, [fetchStaff]);
+
     const [step, setStep] = useState(0);
     const [direction, setDirection] = useState(1);
     const [selectedServices, setSelectedServices] = useState([]);
@@ -866,6 +870,11 @@ export default function AppBookingPage() {
                         </h2>
 
                         <div className="grid grid-cols-1 gap-4 max-h-[60vh] overflow-y-auto no-scrollbar pb-8">
+                            {outletStaff.length === 0 && (
+                                <div className="text-center py-10 opacity-50 font-bold text-sm">
+                                    No stylists available for this outlet.
+                                </div>
+                            )}
                             {outletStaff.map((s, i) => {
                                 const sid = s._id || s.id;
                                 const isSelected = !!selectedStaff && String(selectedStaff._id || selectedStaff.id) === String(sid);
