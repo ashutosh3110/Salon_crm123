@@ -42,7 +42,8 @@ export default function AppBookingPage() {
         loyaltySettings,
         activeSalonId,
         salon,
-        fetchServices
+        fetchServices,
+        isInitializing
     } = useBusiness();
 
     const [selectedOutlet, setSelectedOutlet] = useState(() => {
@@ -764,7 +765,6 @@ export default function AppBookingPage() {
                                     <span className="text-[9px] font-black uppercase tracking-widest">{currentOutlet.name}</span>
                                 </div>
                             )}
-                            <div className="text-[10px] text-red-500 font-bold">DEBUG: {businessServices.length} services found in context. preSelected: {preSelectedServiceId}</div>
                         </div>
 
                         <div className="flex flex-col gap-4 mb-4">
@@ -838,13 +838,22 @@ export default function AppBookingPage() {
                                 </div>
                             ))}
 
-                            {finalGroups.length === 0 && (
+                             {isInitializing ? (
                                 <div className="py-20 text-center">
                                     <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Search size={24} className="opacity-20" />
+                                        <Loader2 size={24} className="opacity-20 animate-spin" />
                                     </div>
-                                    <p className="text-xs font-bold uppercase tracking-widest opacity-40">No services found</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest opacity-40 italic animate-pulse">Locating Rituals...</p>
                                 </div>
+                            ) : (
+                                finalGroups.length === 0 && (
+                                    <div className="py-20 text-center">
+                                        <div className="w-16 h-16 bg-black/5 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <Search size={24} className="opacity-20" />
+                                        </div>
+                                        <p className="text-xs font-bold uppercase tracking-widest opacity-40">No rituals found in this selection</p>
+                                    </div>
+                                )
                             )}
                         </div>
 
