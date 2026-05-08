@@ -369,7 +369,10 @@ export default function AppHomePage() {
 
     // FETCH OUTLET-SPECIFIC DATA
     const fetchOutletSpecificData = useCallback(async () => {
-        if (!activeOutletId) return;
+        if (!activeOutletId) {
+            setIsLoadingData(false);
+            return;
+        }
         setIsLoadingData(true);
         try {
             const [sRes, pRes, rRes, plRes] = await Promise.all([
@@ -508,7 +511,6 @@ export default function AppHomePage() {
         return (
             <div style={{ background: colors.background, minHeight: '100vh' }}>
                 <HomeSkeleton colors={colors} />
-                <AppNavbar activeTab="home" />
             </div>
         );
     }
