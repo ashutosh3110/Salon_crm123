@@ -1,5 +1,16 @@
+import api from '../services/api';
+
 const DEFAULT_IMAGE =
     'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000';
+
+const getImageUrl = (p) => {
+    if (!p) return DEFAULT_IMAGE;
+    if (typeof p !== 'string' || !p.trim()) return DEFAULT_IMAGE;
+    let path = p.trim().replace(/\\/g, '/');
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 /**
  * Normalized shop product for grid + PDP (customer app).
@@ -14,7 +25,7 @@ export function mapInventoryProductToShopProduct(p, shopCategories = []) {
         name: p.name,
         brand: p.brand || 'Premium',
         price: Number(p.sellingPrice ?? p.price ?? 0) || 0,
-        image: p.appImage || DEFAULT_IMAGE,
+        image: getImageUrl(p.appImage || p.image),
         rating: p.rating || '4.5',
         category: shopCategories.find((c) => c.id === p.appCategory)?.name || 'General',
         description: p.shopDescription || p.description || '',

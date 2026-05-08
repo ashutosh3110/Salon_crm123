@@ -51,7 +51,7 @@ export default function AppLayout() {
             const publicPaths = [
                 '/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile', 
                 '/app/wallet', '/app/notifications', '/app/services', '/app/bookings',
-                '/app/orders', '/app/transactions'
+                '/app/orders', '/app/transactions', '/app/shop', '/app/product', '/app/service'
             ];
             const isRestrictedPath = !publicPaths.some(p => location.pathname.startsWith(p)) && location.pathname !== '/app';
             
@@ -92,44 +92,6 @@ export default function AppLayout() {
             : 'linear-gradient(to bottom, #1A1A1A 0%, #0F0F0F 100%) fixed';
     }, [isLight]);
 
-    if (authLoading || isInitializing) {
-        return (
-            <div style={{ 
-                minHeight: '100svh', 
-                background: isLight ? '#FFFFFF' : '#141414',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '20px'
-            }}>
-                <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    style={{
-                        width: '40px',
-                        height: '40px',
-                        border: '3px solid rgba(200,149,108,0.1)',
-                        borderTopColor: '#C8956C',
-                        borderRadius: '50%'
-                    }}
-                />
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.5 }}
-                    style={{
-                        fontSize: '10px',
-                        fontWeight: 900,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.2em',
-                        color: isLight ? '#000' : '#FFF'
-                    }}
-                >
-                    Establishing Secure Connection...
-                </motion.p>
-            </div>
-        );
-    }
 
     if (!customer || (!gender && location.pathname !== '/app/gender')) return null;
 

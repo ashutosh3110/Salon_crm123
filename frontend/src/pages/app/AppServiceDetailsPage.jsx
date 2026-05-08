@@ -8,6 +8,15 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import api from '../../services/api';
 import ReviewModal from '../../components/app/ReviewModal';
 
+const getImageUrl = (p) => {
+    if (!p) return null;
+    if (typeof p !== 'string' || !p.trim()) return null;
+    let path = p.trim().replace(/\\/g, '/');
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const Accordion = ({ title, subtext, children, isInitialOpen = false, colors }) => {
     const [isOpen, setIsOpen] = useState(isInitialOpen);
     return (
@@ -59,12 +68,34 @@ export default function AppServiceDetailsPage() {
     
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [fetchedService, setFetchedService] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     const service = useMemo(() => {
-        return (services || []).find(s => String(s._id || s.id) === String(id));
-    }, [services, id]);
+        const fromContext = (services || []).find(s => String(s._id || s.id) === String(id));
+        return fromContext || fetchedService;
+    }, [services, id, fetchedService]);
 
-    // Data is pre-loaded via initial-data in BusinessContext
+    useEffect(() => {
+        const loadService = async () => {
+            const fromContext = (services || []).find(s => String(s._id || s.id) === String(id));
+            if (fromContext) {
+                setIsLoading(false);
+                return;
+            }
+            try {
+                const res = await api.get(`/services/${id}`);
+                if (res.data?.success) {
+                    setFetchedService(res.data.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch service details:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadService();
+    }, [id, services]);
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -87,11 +118,69 @@ export default function AppServiceDetailsPage() {
 
 
 
+
+    if (isLoading) {
+        return (
+            <div style={{ background: colors.bg }} className="min-h-screen relative flex flex-col overflow-hidden animate-pulse">
+                {/* Header Actions Skeleton */}
+                <div className="fixed top-6 left-6 w-11 h-11 rounded-2xl bg-black/10 dark:bg-white/10 z-[70]" />
+
+                <div className="flex-1 h-[100dvh]">
+                    {/* Hero Image Skeleton */}
+                    <div className="relative aspect-[4/5] bg-black/5 dark:bg-white/5 w-full">
+                        <div className="absolute bottom-10 left-8 right-8">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="h-6 w-20 bg-black/10 dark:bg-white/10 rounded-md" />
+                                <div className="h-6 w-16 bg-black/10 dark:bg-white/10 rounded-md" />
+                                <div className="h-6 w-16 bg-black/10 dark:bg-white/10 rounded-md" />
+                            </div>
+                            <div className="h-10 w-3/4 bg-black/10 dark:bg-white/10 rounded-lg" />
+                        </div>
+                    </div>
+
+                    {/* Details Section Skeleton */}
+                    <div className="p-8 pb-32 space-y-9">
+                        <div className="flex items-end justify-between gap-4">
+                            <div className="space-y-2 w-1/3">
+                                <div className="h-3 w-16 bg-black/5 dark:bg-white/5 rounded" />
+                                <div className="h-8 w-24 bg-black/10 dark:bg-white/10 rounded" />
+                            </div>
+                            <div className="h-8 w-24 bg-black/5 dark:bg-white/5 rounded-2xl" />
+                        </div>
+
+                        <div className="space-y-6">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="border-b border-black/5 dark:border-white/5 pb-4">
+                                    <div className="h-4 w-1/3 bg-black/10 dark:bg-white/10 rounded mb-4" />
+                                    {i === 1 && (
+                                        <div className="space-y-2">
+                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+                                            <div className="h-3 w-3/4 bg-black/5 dark:bg-white/5 rounded" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="pt-6">
+                            <div className="w-full h-16 rounded-2xl bg-black/10 dark:bg-white/10" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!service) {
         return (
             <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
-                <h2 className="text-xl font-black italic uppercase tracking-tighter">Locating Ritual...</h2>
+                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-red-500 font-bold text-2xl">!</span>
+                </div>
+                <h2 className="text-xl font-black italic uppercase tracking-tighter mb-2">Ritual Not Found</h2>
+                <p className="text-sm opacity-60 mb-8">This service may have been removed or is unavailable.</p>
+                <button onClick={() => navigate(-1)} className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20">Go Back</button>
             </div>
         );
     }
@@ -118,7 +207,7 @@ export default function AppServiceDetailsPage() {
                         initial={{ scale: 1.1 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 1.5 }}
-                        src={service.image || "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1000"} 
+                        src={getImageUrl(service.image) || "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1000"} 
                         alt={service.name} 
                         className="w-full h-full object-cover opacity-90" 
                     />

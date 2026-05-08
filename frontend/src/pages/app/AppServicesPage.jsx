@@ -8,6 +8,15 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useGender } from '../../contexts/GenderContext';
 import api from '../../services/api';
 
+const getImageUrl = (p) => {
+    if (!p) return null;
+    if (typeof p !== 'string') return null;
+    let path = p.replace(/\\/g, '/');
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const ServiceSkeleton = ({ colors, isLight }) => (
     <div 
         style={{ 
@@ -56,7 +65,7 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate })
                 onClick={() => navigate(`/app/service/${service._id || service.id}`)}
             >
                 <img
-                    src={service.image || fallbackImage}
+                    src={getImageUrl(service.image) || fallbackImage}
                     alt={service.name}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -128,12 +137,21 @@ export default function AppServicesPage() {
 
         setIsLoading(true);
         try {
-            const [catsRes, servsRes] = await Promise.all([
-                api.get(`/service-categories/${activeOutletId}`),
-                api.get(`/services/outlet/${activeOutletId}`)
-            ]);
-            setCategories(catsRes.data?.data || []);
-            setServices(servsRes.data?.data || []);
+            // Revert back to fetching for outlet
+            const servsRes = await api.get(`/services/outlet/${activeOutletId}`);
+            const fetchedServices = servsRes.data?.data || [];
+            
+            setServices(fetchedServices);
+            
+            // Extract categories from the fetched services since /service-categories might be failing
+            const uniqueCatNames = [...new Set(fetchedServices.map(s => s.category || 'Uncategorized'))];
+            const inferredCategories = uniqueCatNames.map(name => ({
+                _id: name,
+                name: name,
+                status: 'active'
+            }));
+            
+            setCategories(inferredCategories);
         } catch (err) {
             console.error('Error fetching services page data', err);
             lastFetchedOutletId.current = null; // Allow retry
@@ -194,11 +212,6 @@ export default function AppServicesPage() {
                 const sG = (s.gender || 'both').toLowerCase();
                 if (appGender && sG !== 'both' && sG !== appGender.toLowerCase()) return false;
 
-                // Outlet match
-                if (activeOutletId) {
-                    const oIds = Array.isArray(s.outletIds) ? s.outletIds : [];
-                    if (oIds.length > 0 && !oIds.map(id => String(id)).includes(String(activeOutletId))) return false;
-                }
                 return true;
             });
 

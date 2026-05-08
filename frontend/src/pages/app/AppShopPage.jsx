@@ -11,6 +11,16 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { isVisibleInCustomerShop, stockQtyForOutlet } from '../../utils/shopVisibility';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
+import api from '../../services/api';
+
+const getImageUrl = (p) => {
+    if (!p) return null;
+    if (typeof p !== 'string' || !p.trim()) return null;
+    let path = p.trim().replace(/\\/g, '/');
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, colors, isLight, hasStock, onToggleLike }) => {
     const { customer } = useCustomerAuth();
@@ -31,7 +41,7 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, co
             <div className={`relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5 cursor-pointer ${!hasStock ? 'grayscale-[0.3] blur-[1.5px]' : ''}`}>
                 <img
                     onClick={() => onOpenProduct(product._id || product.id)}
-                    src={product.image}
+                    src={getImageUrl(product.image) || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000'}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
@@ -156,30 +166,8 @@ export default function AppShopPage() {
     const shopProducts = useMemo(() => {
         return inventoryProducts
             .filter((p) => p.isShopProduct)
-            .map((p) => ({
-                _id: String(p.id || p._id),
-                name: p.name,
-                brand: p.brand || 'Premium',
-                price: p.sellingPrice || 0,
-                image: p.appImage || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000',
-                rating: p.rating || '4.5',
-                likes: p.likes || 0,
-                likedBy: p.likedBy || [],
-                category: (() => {
-                    const cat = shopCategories.find(c => 
-                        String(c.id) === String(p.categoryId) || 
-                        String(c.id) === String(p.appCategory) || 
-                        c.name === p.appCategory
-                    );
-                    return cat ? cat.name : 'General';
-                })(),
-                description: p.shopDescription || p.description || '',
-                outletIds: p.outletIds || [],
-                isShopProduct: true,
-                availability: p.availability || 'all',
-                stock: p.stock,
-                stockByOutlet: p.stockByOutlet,
-            }));
+            .map((p) => mapInventoryProductToShopProduct(p, shopCategories))
+            .filter(Boolean);
     }, [inventoryProducts, shopCategories]);
 
     const categories = useMemo(() => {
@@ -191,7 +179,7 @@ export default function AppShopPage() {
 
         const catList = (shopCategories || []).map(c => ({ 
             name: c.name, 
-            img: c.image,
+            img: c.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80',
             count: counts[c.name] || 0
         }));
 
@@ -380,7 +368,7 @@ export default function AppShopPage() {
                                         border: `2px solid ${isLight ? '#fff' : '#000'}`
                                     }}>
                                         <img 
-                                            src={cat.img} 
+                                            src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'} 
                                             alt={cat.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
@@ -444,7 +432,7 @@ export default function AppShopPage() {
             <div className="fixed inset-0 pointer-events-none z-[10000]">
                 <AnimatePresence>
                     {flyingItems.map((item) => (
-                        <motion.img key={item.id} src={item.image} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#C8956C] shadow-2xl" />
+                        <motion.img key={item.id} src={getImageUrl(item.image)} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#C8956C] shadow-2xl" />
                     ))}
                 </AnimatePresence>
             </div>

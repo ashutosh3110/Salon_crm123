@@ -32,6 +32,18 @@ exports.getProducts = async (req, res) => {
     }
 };
 
+// @desc    Get single product
+// @route   GET /api/products/:id
+exports.getProduct = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id).populate('categoryId', 'name');
+        if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
+        res.status(200).json({ success: true, data: product });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
 // @desc    Create new product
 // @route   POST /api/products
 exports.createProduct = async (req, res) => {

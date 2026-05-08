@@ -31,6 +31,15 @@ const getAddressString = (addr) => {
     return '';
 };
 
+const getImageUrl = (p) => {
+    if (!p) return null;
+    if (typeof p !== 'string') return null;
+    let path = p.replace(/\\/g, '/');
+    if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('blob:')) return path;
+    const baseUrl = api.defaults.baseURL.replace('/api', '');
+    return `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+};
+
 const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
     const fallbackImage = "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=1000&auto=format&fit=crop";
 
@@ -52,7 +61,7 @@ const ServiceCard = ({ service, onBook, onClick, colors, isLight }) => {
         >
             <div style={{ position: 'relative', height: '140px', overflow: 'hidden' }}>
                 <img
-                    src={service.image || fallbackImage}
+                    src={getImageUrl(service.image) || fallbackImage}
                     alt={service.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     className="group-hover:scale-110 transition-transform duration-700"
@@ -456,9 +465,15 @@ export default function AppHomePage() {
     const filteredPromos = useMemo(() => {
         return (banners || [])
             .filter((p) => {
-                const isActive = p.status?.toLowerCase() === 'active';
+                const isActive = p.status?.toLowerCase() === 'active' || p.status === undefined;
                 const matchesGender = !p.gender || p.gender === 'all' || p.gender === g;
-                return isActive && matchesGender;
+                
+                let matchesOutlet = true;
+                if (p.outletId && String(p.outletId).trim() !== '' && String(p.outletId) !== 'all' && activeOutletId) {
+                    matchesOutlet = String(p.outletId) === String(activeOutletId);
+                }
+
+                return isActive && matchesGender && matchesOutlet;
             })
             .map((p) => {
                 const validity = (p.validityText && String(p.validityText).trim())
@@ -477,9 +492,8 @@ export default function AppHomePage() {
     }, [banners, g]);
 
     const handleBannerClick = (banner) => {
-        if (banner && banner.outletId) {
+        if (banner && banner.outletId && banner.outletId !== 'all') {
             setActiveOutletId(banner.outletId);
-            navigate("/app/booking");
         }
     };
 
@@ -669,7 +683,7 @@ export default function AppHomePage() {
                                 >
                                     {filteredPromos[currentPromoIndex]?.img ? (
                                         <img
-                                            src={filteredPromos[currentPromoIndex].img}
+                                            src={getImageUrl(filteredPromos[currentPromoIndex].img)}
                                             alt="Promo"
                                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
                                         />
@@ -778,8 +792,7 @@ export default function AppHomePage() {
                                     key={outlet._id}
                                     whileTap={{ scale: 0.98 }}
                                     onClick={() => {
-                                        // Optional: logic to switch outlet or view details
-                                        navigate(`/app/outlet/${outlet._id}`);
+                                        setActiveOutletId(outlet._id);
                                     }}
                                     style={{
                                         flexShrink: 0,
@@ -795,7 +808,7 @@ export default function AppHomePage() {
                                 >
                                     <div style={{ height: '100px', width: '100%', position: 'relative' }}>
                                         <img
-                                            src={outlet.images?.[0] || outlet.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
+                                            src={getImageUrl(outlet.images?.[0] || outlet.image) || "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=800"}
                                             alt={outlet.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />
@@ -919,7 +932,7 @@ export default function AppHomePage() {
                                 >
                                     <div style={{ height: '100px', position: 'relative' }}>
                                         <img
-                                            src={product.appImage || product.image || "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=400"}
+                                            src={getImageUrl(product.appImage || product.image) || "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=400"}
                                             alt={product.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                         />

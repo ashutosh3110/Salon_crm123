@@ -64,13 +64,38 @@ export default function AppProductDetailsPage() {
     
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    
+    const [fetchedProduct, setFetchedProduct] = useState(null);
+    const [isLoadingProduct, setIsLoadingProduct] = useState(true);
 
     const { rawRow, product } = useMemo(() => {
-        const row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
+        let row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
+        if (!row && fetchedProduct) row = fetchedProduct;
+        
         if (!row) return { rawRow: null, product: null };
         return { rawRow: row, product: mapInventoryProductToShopProduct(row, shopCategories) };
-    }, [inventoryProducts, shopCategories, id]);
+    }, [inventoryProducts, shopCategories, id, fetchedProduct]);
 
+    useEffect(() => {
+        const loadProduct = async () => {
+            const row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
+            if (row) {
+                setIsLoadingProduct(false);
+                return;
+            }
+            try {
+                const res = await api.get(`/products/${id}`);
+                if (res.data?.success) {
+                    setFetchedProduct(res.data.data);
+                }
+            } catch (err) {
+                console.error("Failed to fetch product details:", err);
+            } finally {
+                setIsLoadingProduct(false);
+            }
+        };
+        loadProduct();
+    }, [id, inventoryProducts]);
     useEffect(() => {
         const fetchReviews = async () => {
             if (!id) return;
@@ -96,14 +121,68 @@ export default function AppProductDetailsPage() {
         return String(pId) === String(id);
     });
 
+    if (isLoadingProduct) {
+        return (
+            <div style={{ background: colors.bg }} className="min-h-screen relative flex flex-col overflow-hidden animate-pulse">
+                {/* Header Actions Skeleton */}
+                <div className="fixed top-6 left-6 w-11 h-11 rounded-2xl bg-black/10 dark:bg-white/10 z-[70]" />
+                <div className="fixed top-6 right-6 w-11 h-11 rounded-2xl bg-black/10 dark:bg-white/10 z-[70]" />
+
+                <div className="flex-1 h-[100dvh]">
+                    {/* Hero Image Skeleton */}
+                    <div className="relative aspect-[4/5] bg-black/5 dark:bg-white/5 w-full">
+                        <div className="absolute bottom-10 left-8 right-8">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="h-6 w-20 bg-black/10 dark:bg-white/10 rounded-md" />
+                                <div className="h-6 w-16 bg-black/10 dark:bg-white/10 rounded-md" />
+                            </div>
+                            <div className="h-10 w-3/4 bg-black/10 dark:bg-white/10 rounded-lg" />
+                        </div>
+                    </div>
+
+                    {/* Details Section Skeleton */}
+                    <div className="p-8 pb-32 space-y-9">
+                        <div className="flex items-end justify-between gap-4">
+                            <div className="space-y-2 w-1/3">
+                                <div className="h-3 w-16 bg-black/5 dark:bg-white/5 rounded" />
+                                <div className="h-8 w-24 bg-black/10 dark:bg-white/10 rounded" />
+                            </div>
+                            <div className="h-12 w-28 bg-black/5 dark:bg-white/5 rounded-2xl" />
+                        </div>
+
+                        <div className="space-y-6">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="border-b border-black/5 dark:border-white/5 pb-4">
+                                    <div className="h-4 w-1/3 bg-black/10 dark:bg-white/10 rounded mb-4" />
+                                    {i === 1 && (
+                                        <div className="space-y-2">
+                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+                                            <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
+                                            <div className="h-3 w-3/4 bg-black/5 dark:bg-white/5 rounded" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="pt-6">
+                            <div className="w-full h-16 rounded-2xl bg-black/10 dark:bg-white/10" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!rawRow || !product) {
         return (
-            <div
-                style={{ background: colors.bg, color: colors.text }}
-                className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
-            >
-                <div className="w-12 h-12 border-4 border-[#C8956C] border-t-transparent rounded-full animate-spin mb-6" />
-                <h2 className="text-xl font-black italic uppercase tracking-tighter">Locating Product...</h2>
+            <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+                <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-red-500 font-bold text-2xl">!</span>
+                </div>
+                <h2 className="text-xl font-black italic uppercase tracking-tighter mb-2">Product Not Found</h2>
+                <p className="text-sm opacity-60 mb-8">This product may have been removed or is unavailable.</p>
+                <button onClick={() => navigate(-1)} className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20">Go Back</button>
             </div>
         );
     }
